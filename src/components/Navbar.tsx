@@ -13,19 +13,22 @@ export default function Navbar() {
   const pathname = usePathname();
 
   return (
-    <nav className="bg-[#0F2137] text-white h-14 flex items-center px-6 shrink-0">
+    <nav className="bg-[#1B2A4A] text-white h-14 flex items-center px-6 shrink-0">
       {/* Logo */}
       <Link href="/dashboard" className="flex items-center gap-2 mr-8">
-        <div className="w-7 h-7 rounded-lg bg-[#2DD4BF] flex items-center justify-center shrink-0">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M8 2L14 13H2L8 2Z" fill="white" fillOpacity="0.9" />
+        <div className="w-8 h-8 rounded-lg bg-[#2DD4BF] flex items-center justify-center shrink-0">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <rect x="2" y="2" width="6" height="6" rx="1" fill="white" fillOpacity="0.9"/>
+            <rect x="10" y="2" width="6" height="6" rx="1" fill="white" fillOpacity="0.9"/>
+            <rect x="2" y="10" width="6" height="6" rx="1" fill="white" fillOpacity="0.9"/>
+            <rect x="10" y="10" width="6" height="6" rx="1" fill="white" fillOpacity="0.6"/>
           </svg>
         </div>
-        <span className="font-semibold text-[15px] tracking-tight">HWAI Agent</span>
+        <span className="font-bold text-[15px] tracking-tight">HWAI Agent</span>
       </Link>
 
       {/* Nav tabs */}
-      <div className="flex items-center gap-1 flex-1">
+      <div className="flex items-center gap-1 flex-1 h-full">
         {navItems.map((item) => {
           const isActive = pathname.startsWith(item.href);
           return (
@@ -33,38 +36,37 @@ export default function Navbar() {
               key={item.href}
               href={item.href}
               className={[
-                "px-4 py-1.5 rounded-md text-sm font-medium transition-colors",
-                isActive
-                  ? "bg-white/15 text-white"
-                  : "text-white/60 hover:text-white hover:bg-white/10",
+                "relative flex items-center h-full px-4 text-sm font-medium transition-colors",
+                isActive ? "text-white" : "text-white/50 hover:text-white/80",
               ].join(" ")}
             >
               {item.label}
+              {isActive && (
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-white rounded-t-full" />
+              )}
             </Link>
           );
         })}
       </div>
 
-      {/* Right side: bell + avatar */}
+      {/* Right side: bell + avatar + name */}
       <div className="flex items-center gap-3">
-        <button
-          aria-label="Notifications"
-          className="text-white/60 hover:text-white transition-colors"
-        >
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <path
-              d="M10 2a6 6 0 00-6 6v2.586l-1.707 1.707A1 1 0 003 14h14a1 1 0 00.707-1.707L16 10.586V8a6 6 0 00-6-6zM10 18a2 2 0 01-2-2h4a2 2 0 01-2 2z"
-              fill="currentColor"
-            />
+        <button aria-label="Notifications" className="text-white/60 hover:text-white transition-colors">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
           </svg>
         </button>
 
-        <button
-          aria-label="User menu"
-          className="w-8 h-8 rounded-full bg-[#2DD4BF] flex items-center justify-center text-[#0F2137] font-bold text-sm"
-        >
-          T
-        </button>
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-full bg-gray-300 overflow-hidden flex items-center justify-center">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="1.5">
+              <circle cx="12" cy="8" r="4"/>
+              <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+            </svg>
+          </div>
+          <span className="text-sm font-medium text-white/90">Mr. Anderson</span>
+        </div>
       </div>
     </nav>
   );

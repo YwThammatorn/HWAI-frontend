@@ -1,49 +1,26 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { useRouter, useParams } from "next/navigation";
-import Link from "next/link";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import { useCourses, PRESET_COLORS } from "@/lib/courses";
 
-const CONFIRM_MSG = "การเปลี่ยนแปลงจะไม่ถูกบันทึก\nต้องการออกจากหน้านี้หรือไม่?";
+const CONFIRM_MSG = "ข้อมูลที่กรอกจะไม่ถูกบันทึก\nต้องการออกจากหน้านี้หรือไม่?";
 
-export default function CourseSettingsPage() {
-  const { id } = useParams<{ id: string }>();
+export default function NewCoursePage() {
   const router = useRouter();
-  const { getCourse, updateCourse, removeCourse } = useCourses();
-  const course = getCourse(id);
+  const { addCourse } = useCourses();
 
   const [name, setName] = useState("");
   const [studentCount, setStudentCount] = useState("");
   const [description, setDescription] = useState("");
   const [coverColor, setCoverColor] = useState(PRESET_COLORS[0]);
-  const [saved, setSaved] = useState(false);
-  const originalRef = useRef({ name: "", studentCount: "", description: "", coverColor: "" });
-
-  useEffect(() => {
-    if (course) {
-      const orig = {
-        name: course.name,
-        studentCount: String(course.studentCount),
-        description: course.description ?? "",
-        coverColor: course.coverColor ?? PRESET_COLORS[0],
-      };
-      setName(orig.name);
-      setStudentCount(orig.studentCount);
-      setDescription(orig.description);
-      setCoverColor(orig.coverColor);
-      originalRef.current = orig;
-    }
-  }, [course?.id]);
 
   const isDirty =
-    !saved && (
-      name !== originalRef.current.name ||
-      studentCount !== originalRef.current.studentCount ||
-      description !== originalRef.current.description ||
-      coverColor !== originalRef.current.coverColor
-    );
+    name.trim() !== "" ||
+    description.trim() !== "" ||
+    studentCount !== "" ||
+    coverColor !== PRESET_COLORS[0];
 
   useEffect(() => {
     const handler = (e: BeforeUnloadEvent) => {
@@ -58,41 +35,18 @@ export default function CourseSettingsPage() {
     router.push(to);
   }
 
-  if (!course) {
-    return (
-      <div className="min-h-screen flex flex-col bg-[#F5F6FA]">
-        <Navbar />
-        <main className="flex-1 flex items-center justify-center text-gray-400 text-sm">
-          ไม่พบรายวิชานี้ —{" "}
-          <Link href="/courses" className="text-[#2DD4BF] ml-1 hover:underline">กลับไปหน้าหลัก</Link>
-        </main>
-      </div>
-    );
-  }
-
-  function handleSave(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    updateCourse(id, {
+    const course = addCourse({
       name: name.trim(),
       description: description.trim(),
       studentCount: parseInt(studentCount) || 0,
+      status: "active",
+      source: "manual",
       coverColor,
       iconColor: coverColor,
     });
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
-  }
-
-  function handleArchive() {
-    if (!confirm(`Archive "${course?.name}"? คุณสามารถ restore ได้ภายหลัง`)) return;
-    updateCourse(id, { status: "archived" });
-    router.push("/courses");
-  }
-
-  function handleDelete() {
-    if (!confirm(`ลบ "${course?.name}" ถาวร? ไม่สามารถกู้คืนได้`)) return;
-    removeCourse(id);
-    router.push("/courses");
+    router.push(`/courses/${course.id}`);
   }
 
   const isValid = name.trim().length > 0;
@@ -110,9 +64,9 @@ export default function CourseSettingsPage() {
           Back to All Courses
         </button>
 
-        <h1 className="text-2xl font-bold text-[#1B2A4A] mb-6">Edit Existing Course</h1>
+        <h1 className="text-2xl font-bold text-[#1B2A4A] mb-6">Add New Course</h1>
 
-        <form onSubmit={handleSave} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
           {/* General Information */}
           <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
             <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-5">General Information</h2>
@@ -125,6 +79,7 @@ export default function CourseSettingsPage() {
                 <input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g. UX/UI Design Principles"
                   className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#2DD4BF]/30 focus:border-[#2DD4BF] transition-colors"
                   required
                 />
@@ -138,6 +93,7 @@ export default function CourseSettingsPage() {
                   min="0"
                   value={studentCount}
                   onChange={(e) => setStudentCount(e.target.value)}
+                  placeholder="0"
                   className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#2DD4BF]/30 focus:border-[#2DD4BF] transition-colors"
                 />
               </div>
@@ -148,6 +104,7 @@ export default function CourseSettingsPage() {
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
+                placeholder="Brief description of the course..."
                 rows={3}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#2DD4BF]/30 focus:border-[#2DD4BF] resize-none transition-colors"
               />
@@ -226,33 +183,11 @@ export default function CourseSettingsPage() {
             </div>
           </section>
 
-          {/* Danger Zone */}
-          <section className="bg-white rounded-2xl border border-red-100 shadow-sm p-6">
-            <h2 className="text-sm font-semibold text-red-500 uppercase tracking-wider mb-4">Danger Zone</h2>
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={handleArchive}
-                className="px-4 py-2 text-sm font-medium rounded-xl border border-orange-200 text-orange-500 hover:bg-orange-50 transition-colors"
-              >
-                Archive Course
-              </button>
-              <button
-                type="button"
-                onClick={handleDelete}
-                className="px-4 py-2 text-sm font-medium rounded-xl border border-red-200 text-red-500 hover:bg-red-50 transition-colors"
-              >
-                Delete Permanently
-              </button>
-            </div>
-            <p className="text-xs text-gray-400 mt-3">Archive จะซ่อนรายวิชา — สามารถ restore ได้ภายหลัง. Delete จะลบถาวร</p>
-          </section>
-
           {/* Actions */}
           <div className="flex justify-end gap-3 pb-4">
             <button
               type="button"
-              onClick={() => navAway(`/courses/${id}`)}
+              onClick={() => navAway("/courses")}
               className="px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
             >
               Cancel
@@ -260,19 +195,12 @@ export default function CourseSettingsPage() {
             <button
               type="submit"
               disabled={!isValid}
-              className={[
-                "flex items-center gap-2 px-5 py-2.5 rounded-xl text-white text-sm font-medium transition-colors",
-                saved ? "bg-emerald-500" : "bg-[#2DD4BF] hover:bg-[#14B8A6] disabled:opacity-40 disabled:cursor-not-allowed",
-              ].join(" ")}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#2DD4BF] hover:bg-[#14B8A6] disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors"
             >
-              {saved ? (
-                <>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                  Saved
-                </>
-              ) : (
-                "Save Changes"
-              )}
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+              </svg>
+              Create Course
             </button>
           </div>
         </form>

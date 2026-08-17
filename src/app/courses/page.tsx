@@ -1,73 +1,123 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
-import type { Course } from "@/types/course";
-
-// Placeholder data — will be replaced with API calls
-const MOCK_COURSES: Course[] = [
-  {
-    id: "c1",
-    code: "CE220",
-    name: "UX/UI Design",
-    semester: 1,
-    year: 2567,
-    section: "01",
-    studentCount: 34,
-    assignmentCount: 3,
-    status: "active",
-    createdAt: "2024-06-01",
-  },
-  {
-    id: "c2",
-    code: "CE320",
-    name: "Interaction Design",
-    semester: 1,
-    year: 2567,
-    section: "01",
-    studentCount: 28,
-    assignmentCount: 2,
-    status: "active",
-    createdAt: "2024-06-01",
-  },
-];
-
-const USE_MOCK = false; // flip to true to preview list state
+import { useCourses } from "@/lib/courses";
+import type { Course } from "@/lib/courses";
 
 export default function CoursesPage() {
-  const courses = USE_MOCK ? MOCK_COURSES : [];
+  const { courses, updateCourse } = useCourses();
+  const [tab, setTab] = useState<"active" | "archived">("active");
+  const [search, setSearch] = useState("");
+
+  const active = courses.filter((c) => c.status !== "archived");
+  const archived = courses.filter((c) => c.status === "archived");
+
+  useEffect(() => {
+    if (tab === "archived" && archived.length === 0) {
+      setTab("active");
+    }
+  }, [archived.length, tab]);
+
+  const pool = tab === "active" ? active : archived;
+  const visible = search
+    ? pool.filter((c) => c.name.toLowerCase().includes(search.toLowerCase()))
+    : pool;
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F7F9FC]">
+    <div className="min-h-screen flex flex-col bg-[#F5F6FA]">
       <Navbar />
 
-      <main className="flex-1 w-full max-w-[1280px] mx-auto px-8 py-8">
-        {/* Page header */}
-        <div className="flex items-start justify-between mb-8">
+      <main className="flex-1 w-full max-w-[1200px] mx-auto px-8 py-8">
+        {/* Header */}
+        <div className="flex items-end justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-[#0F2137]">All Courses</h1>
-            <p className="mt-1 text-sm text-gray-500">
+            <h1 className="text-3xl font-bold text-[#1B2A4A]">All Courses</h1>
+            <p className="mt-1 text-sm text-gray-400">
               Manage your classes, assignments, and student progress from here.
             </p>
           </div>
-          <Link
-            href="/courses/new"
-            className="flex items-center gap-2 px-4 py-2 bg-[#2DD4BF] hover:bg-[#14B8A6] text-white font-medium rounded-lg text-sm transition-colors"
-          >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path
-                d="M8 3v10M3 8h10"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-            </svg>
-            Add Course
-          </Link>
+
+          {active.length > 0 && (
+            <div className="flex items-center gap-3">
+              {/* Search */}
+              <div className="relative">
+                <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                </svg>
+                <input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search courses..."
+                  className="pl-9 pr-4 py-2 text-sm rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#2DD4BF]/30 focus:border-[#2DD4BF] w-56"
+                />
+              </div>
+              {/* Add Course */}
+              <Link
+                href="/courses/new"
+                className="flex items-center gap-2 px-4 py-2 bg-[#2DD4BF] hover:bg-[#14B8A6] text-white font-medium rounded-xl text-sm transition-colors"
+              >
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                  <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+                </svg>
+                Add Course
+              </Link>
+            </div>
+          )}
         </div>
 
-        {courses.length === 0 ? (
-          <EmptyState />
+        {/* Tab filter — only show when there are archived */}
+        {archived.length > 0 && (
+          <div className="flex gap-1 mb-6">
+            {(["active", "archived"] as const).map((t) => (
+              <button
+                key={t}
+                onClick={() => setTab(t)}
+                className={[
+                  "px-4 py-1.5 rounded-lg text-sm font-medium capitalize transition-colors",
+                  tab === t ? "bg-[#1B2A4A] text-white" : "text-gray-500 hover:bg-gray-100",
+                ].join(" ")}
+              >
+                {t}
+                <span className={["ml-1.5 text-xs px-1.5 py-0.5 rounded-full", tab === t ? "bg-white/20" : "bg-gray-200"].join(" ")}>
+                  {t === "active" ? active.length : archived.length}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Content */}
+        {visible.length === 0 ? (
+          tab === "active" ? (
+            <EmptyState />
+          ) : (
+            <p className="text-center text-gray-400 text-sm py-20">ไม่มีรายวิชาที่ถูก archive</p>
+          )
         ) : (
-          <CourseGrid courses={courses} />
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {visible.map((course) => (
+                <CourseCard
+                  key={course.id}
+                  course={course}
+                  isArchived={tab === "archived"}
+                  onRestore={() => updateCourse(course.id, { status: "active" })}
+                />
+              ))}
+            </div>
+            {/* Pagination placeholder */}
+            {visible.length > 6 && (
+              <div className="flex justify-center gap-1 mt-8">
+                {[1, 2, 3].map((p) => (
+                  <button key={p} className={["w-8 h-8 rounded-full text-sm font-medium", p === 1 ? "bg-[#2DD4BF] text-white" : "text-gray-500 hover:bg-gray-100"].join(" ")}>
+                    {p}
+                  </button>
+                ))}
+              </div>
+            )}
+          </>
         )}
       </main>
     </div>
@@ -76,109 +126,108 @@ export default function CoursesPage() {
 
 function EmptyState() {
   return (
-    <div className="flex flex-col items-center justify-center py-24 text-center">
-      {/* Illustration */}
-      <div className="w-24 h-24 mb-6 rounded-2xl bg-[#E0F7F4] flex items-center justify-center">
-        <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-          <rect x="8" y="10" width="32" height="28" rx="4" stroke="#2DD4BF" strokeWidth="2.5" />
-          <path d="M16 18h16M16 24h10" stroke="#2DD4BF" strokeWidth="2.5" strokeLinecap="round" />
-          <path
-            d="M34 34l6 6"
-            stroke="#2DD4BF"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-          />
-          <circle cx="34" cy="30" r="5" stroke="#2DD4BF" strokeWidth="2.5" />
-        </svg>
+    <div className="flex items-center justify-center py-16">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 px-16 py-14 flex flex-col items-center text-center max-w-md w-full">
+        {/* Illustration */}
+        <div className="relative mb-8">
+          <div className="w-28 h-28 rounded-full bg-[#E6FAF8] flex items-center justify-center">
+            <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
+              <path d="M10 14a4 4 0 0 1 4-4h24a4 4 0 0 1 4 4v28a4 4 0 0 1-4 4H14a4 4 0 0 1-4-4V14z" stroke="#2DD4BF" strokeWidth="2"/>
+              <path d="M18 20h16M18 27h10" stroke="#2DD4BF" strokeWidth="2" strokeLinecap="round"/>
+              <path d="M18 34h6" stroke="#2DD4BF" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+          </div>
+          <div className="absolute top-1 right-0 w-3 h-3 rounded-full bg-[#2DD4BF] opacity-60"/>
+          <div className="absolute bottom-2 left-0 w-2 h-2 rounded-full bg-gray-300"/>
+          <div className="absolute top-8 -left-3 w-2 h-2 rounded-full bg-[#2DD4BF] opacity-40"/>
+        </div>
+
+        <h2 className="text-xl font-bold text-[#1B2A4A] mb-2">Let&apos;s start your first class</h2>
+        <p className="text-sm text-gray-400 mb-8 leading-relaxed">
+          Create a course to begin grading assignments with HWAI Agent.
+        </p>
+
+        <Link
+          href="/courses/new"
+          className="flex items-center gap-2 px-6 py-2.5 bg-[#2DD4BF] hover:bg-[#14B8A6] text-white font-medium rounded-full text-sm transition-colors"
+        >
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+            <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+          </svg>
+          Add Your First Course
+        </Link>
       </div>
-
-      <h2 className="text-xl font-semibold text-[#0F2137] mb-2">
-        Let&apos;s start your first class
-      </h2>
-      <p className="text-sm text-gray-500 max-w-sm mb-8">
-        Create a course to manage your assignments and start grading student submissions with AI assistance.
-      </p>
-
-      <Link
-        href="/courses/new"
-        className="flex items-center gap-2 px-6 py-2.5 bg-[#2DD4BF] hover:bg-[#14B8A6] text-white font-medium rounded-lg text-sm transition-colors"
-      >
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <path
-            d="M8 3v10M3 8h10"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-          />
-        </svg>
-        Add Your First Course
-      </Link>
     </div>
   );
 }
 
-function CourseGrid({ courses }: { courses: Course[] }) {
-  return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-      {courses.map((course) => (
-        <CourseCard key={course.id} course={course} />
-      ))}
-    </div>
-  );
-}
-
-function CourseCard({ course }: { course: Course }) {
-  const statusColor: Record<string, string> = {
-    active: "bg-emerald-100 text-emerald-700",
-    archived: "bg-gray-100 text-gray-500",
-    draft: "bg-amber-100 text-amber-700",
+function CourseCard({ course, isArchived, onRestore }: { course: Course; isArchived: boolean; onRestore: () => void }) {
+  const sourceLabel: Record<string, { label: string; dot: string }> = {
+    manual: { label: "Manually Added", dot: "" },
+    google: { label: "Google Classroom", dot: "#34D399" },
+    teams: { label: "Microsoft Teams", dot: "#60A5FA" },
   };
+  const src = sourceLabel[course.source] ?? { label: course.source, dot: "" };
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow p-5 flex flex-col gap-4">
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <span className="text-xs font-mono text-gray-400">{course.code}</span>
-          <h3 className="mt-0.5 font-semibold text-[#0F2137] leading-snug">
-            {course.name}
-          </h3>
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
+      {/* Colored banner */}
+      <Link href={isArchived ? "#" : `/courses/${course.id}`} className="block relative h-28" style={{ background: course.coverColor }}>
+        <div className="absolute bottom-3 left-3 w-9 h-9 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+          </svg>
         </div>
-        <span
-          className={[
-            "text-xs font-medium px-2 py-0.5 rounded-full capitalize",
-            statusColor[course.status],
-          ].join(" ")}
-        >
-          {course.status}
-        </span>
-      </div>
+        {isArchived && (
+          <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+            <span className="text-white text-xs font-medium bg-black/40 px-2 py-1 rounded-full">Archived</span>
+          </div>
+        )}
+      </Link>
 
-      {/* Meta */}
-      <div className="text-xs text-gray-500 space-y-1">
-        <div>
-          ภาคเรียนที่ {course.semester}/{course.year} • Sec {course.section}
+      {/* Card body */}
+      <div className="p-4">
+        <div className="flex items-start justify-between mb-1">
+          <h3 className="font-bold text-[#1B2A4A] text-[15px] leading-snug">{course.name}</h3>
+          {course.source === "manual" && !isArchived && (
+            <div className="flex gap-2 text-xs ml-2 shrink-0">
+              <Link href={`/courses/${course.id}/settings`} className="text-[#2DD4BF] hover:underline font-medium">Edit</Link>
+              <button onClick={() => {}} className="text-red-400 hover:underline font-medium">Delete</button>
+            </div>
+          )}
         </div>
-        <div className="flex gap-4">
-          <span>{course.studentCount} students</span>
-          <span>{course.assignmentCount} assignments</span>
-        </div>
-      </div>
 
-      {/* Actions */}
-      <div className="flex gap-2 mt-auto pt-2 border-t border-gray-50">
-        <Link
-          href={`/courses/${course.id}`}
-          className="flex-1 text-center text-xs font-medium py-1.5 rounded-md bg-[#F7F9FC] hover:bg-[#E0F7F4] text-[#0F2137] hover:text-[#2DD4BF] transition-colors"
-        >
-          View
-        </Link>
-        <Link
-          href={`/courses/${course.id}/settings`}
-          className="flex-1 text-center text-xs font-medium py-1.5 rounded-md bg-[#F7F9FC] hover:bg-gray-100 text-gray-500 transition-colors"
-        >
-          Settings
-        </Link>
+        <div className="flex items-center gap-1.5 mb-3">
+          {src.dot && <span className="w-2 h-2 rounded-full inline-block" style={{ background: src.dot }} />}
+          <span className="text-xs text-gray-400">{src.label}</span>
+        </div>
+
+        {isArchived ? (
+          <button
+            onClick={onRestore}
+            className="w-full text-xs font-medium py-1.5 rounded-lg bg-[#E0F7F4] hover:bg-[#2DD4BF] text-[#0F7B6C] hover:text-white transition-colors"
+          >
+            Restore
+          </button>
+        ) : (
+          <div className="flex items-center justify-between text-xs text-gray-500 border-t border-gray-50 pt-3">
+            <span className="flex items-center gap-1">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              {course.studentCount} Students
+            </span>
+            {course.allGraded ? (
+              <span className="flex items-center gap-1 text-[#2DD4BF] font-medium">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                All Graded
+              </span>
+            ) : (
+              <span className="flex items-center gap-1 text-orange-500">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                {course.activeAssignments} Active
+              </span>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
