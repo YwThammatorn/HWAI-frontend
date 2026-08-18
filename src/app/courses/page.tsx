@@ -7,7 +7,7 @@ import { useCourses } from "@/lib/courses";
 import type { Course } from "@/lib/courses";
 
 export default function CoursesPage() {
-  const { courses, updateCourse } = useCourses();
+  const { courses, updateCourse, removeCourse } = useCourses();
   const [tab, setTab] = useState<"active" | "archived">("active");
   const [search, setSearch] = useState("");
 
@@ -90,7 +90,9 @@ export default function CoursesPage() {
 
         {/* Content */}
         {visible.length === 0 ? (
-          tab === "active" ? (
+          search ? (
+            <p className="text-center text-gray-400 text-sm py-20">ไม่พบรายวิชาที่ตรงกับ &ldquo;{search}&rdquo;</p>
+          ) : tab === "active" ? (
             <EmptyState />
           ) : (
             <p className="text-center text-gray-400 text-sm py-20">ไม่มีรายวิชาที่ถูก archive</p>
@@ -104,6 +106,11 @@ export default function CoursesPage() {
                   course={course}
                   isArchived={tab === "archived"}
                   onRestore={() => updateCourse(course.id, { status: "active" })}
+                  onDelete={() => {
+                    if (window.confirm(`ลบ "${course.name}" ถาวร?\nไม่สามารถกู้คืนได้`)) {
+                      removeCourse(course.id);
+                    }
+                  }}
                 />
               ))}
             </div>
@@ -161,7 +168,7 @@ function EmptyState() {
   );
 }
 
-function CourseCard({ course, isArchived, onRestore }: { course: Course; isArchived: boolean; onRestore: () => void }) {
+function CourseCard({ course, isArchived, onRestore, onDelete }: { course: Course; isArchived: boolean; onRestore: () => void; onDelete: () => void }) {
   const sourceLabel: Record<string, { label: string; dot: string }> = {
     manual: { label: "Manually Added", dot: "" },
     google: { label: "Google Classroom", dot: "#34D399" },
@@ -192,7 +199,7 @@ function CourseCard({ course, isArchived, onRestore }: { course: Course; isArchi
           {course.source === "manual" && !isArchived && (
             <div className="flex gap-2 text-xs ml-2 shrink-0">
               <Link href={`/courses/${course.id}/settings`} className="text-[#2DD4BF] hover:underline font-medium">Edit</Link>
-              <button onClick={() => {}} className="text-red-400 hover:underline font-medium">Delete</button>
+              <button onClick={onDelete} className="text-red-400 hover:underline font-medium">Delete</button>
             </div>
           )}
         </div>

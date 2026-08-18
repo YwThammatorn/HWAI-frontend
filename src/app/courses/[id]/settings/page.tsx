@@ -80,7 +80,7 @@ export default function CourseSettingsPage() {
       iconColor: coverColor,
     });
     setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    setTimeout(() => router.push(`/courses/${id}`), 800);
   }
 
   function handleArchive() {

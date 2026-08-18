@@ -4,11 +4,14 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import { useCourses } from "@/lib/courses";
+import { useStudents } from "@/lib/students";
 
 export default function CourseDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { getCourse } = useCourses();
+  const { getStudentsByCourse } = useStudents();
   const course = getCourse(id);
+  const students = getStudentsByCourse(id);
 
   if (!course) {
     return (
@@ -68,12 +71,9 @@ export default function CourseDetailPage() {
         {/* Stats row */}
         <div className="grid grid-cols-3 gap-4 mb-6">
           {[
-            { label: "Students", value: `${course.studentCount}` },
+            { label: "Students", value: `${students.length}` },
             { label: "Assignments", value: `${course.assignmentCount}` },
-            {
-              label: "Grading Status",
-              value: course.allGraded ? "All Graded" : `${course.activeAssignments} Active`,
-            },
+            { label: "Grading Status", value: course.allGraded ? "All Graded" : `${course.activeAssignments} Active` },
           ].map((s) => (
             <div key={s.label} className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
               <p className="text-xs text-gray-400 mb-1">{s.label}</p>
@@ -82,27 +82,88 @@ export default function CourseDetailPage() {
           ))}
         </div>
 
-        {/* Placeholder tabs */}
+        {/* Tabs */}
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
           <div className="flex border-b border-gray-100 px-6">
             {["Assignments", "Students", "Results"].map((tab, i) => (
               <button key={tab} className={[
                 "py-3 px-4 text-sm font-medium border-b-2 transition-colors",
-                i === 0 ? "border-[#2DD4BF] text-[#2DD4BF]" : "border-transparent text-gray-400",
+                i === 1 ? "border-[#2DD4BF] text-[#2DD4BF]" : "border-transparent text-gray-400",
               ].join(" ")}>
                 {tab}
+                {i === 1 && students.length > 0 && (
+                  <span className="ml-1.5 text-xs bg-[#E6FAF8] text-[#0F7B6C] px-1.5 py-0.5 rounded-full">
+                    {students.length}
+                  </span>
+                )}
               </button>
             ))}
           </div>
-          <div className="p-12 flex flex-col items-center justify-center text-center text-gray-400">
-            <div className="w-16 h-16 rounded-2xl bg-gray-50 flex items-center justify-center mb-4">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="1.5">
-                <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
-              </svg>
+
+          {students.length === 0 ? (
+            /* Empty state */
+            <div className="p-12 flex flex-col items-center justify-center text-center">
+              <div className="w-16 h-16 rounded-2xl bg-gray-50 flex items-center justify-center mb-4">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="1.5">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+              </div>
+              <p className="text-sm font-medium text-gray-500 mb-1">ยังไม่มีรายชื่อนักศึกษา</p>
+              <p className="text-xs text-gray-400 mb-5">นำเข้ารายชื่อจากไฟล์ CSV เพื่อเริ่มต้น</p>
+              <Link
+                href={`/courses/${id}/students/import`}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-[#2DD4BF] hover:bg-[#14B8A6] text-white text-sm font-medium rounded-xl transition-colors"
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>
+                  <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
+                </svg>
+                Import Students
+              </Link>
             </div>
-            <p className="text-sm">หน้านี้กำลังสร้าง</p>
-            <p className="text-xs mt-1">จะพร้อมใช้งานเร็วๆ นี้</p>
-          </div>
+          ) : (
+            /* Student list */
+            <div>
+              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50">
+                <p className="text-sm text-gray-500">{students.length} นักศึกษา</p>
+                <Link
+                  href={`/courses/${id}/students/import`}
+                  className="inline-flex items-center gap-1.5 text-xs text-[#2DD4BF] hover:underline font-medium"
+                >
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                    <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>
+                    <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
+                  </svg>
+                  Import เพิ่มเติม
+                </Link>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="border-b border-gray-50">
+                    <tr className="text-left text-xs text-gray-400 uppercase tracking-wider">
+                      <th className="px-6 py-3 font-medium">#</th>
+                      <th className="px-6 py-3 font-medium">รหัสนักศึกษา</th>
+                      <th className="px-6 py-3 font-medium">ชื่อ</th>
+                      <th className="px-6 py-3 font-medium">นามสกุล</th>
+                      <th className="px-6 py-3 font-medium">Email</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50">
+                    {students.map((s, i) => (
+                      <tr key={s.id} className="hover:bg-gray-50/50">
+                        <td className="px-6 py-3 text-gray-300 text-xs">{i + 1}</td>
+                        <td className="px-6 py-3 font-mono text-xs text-gray-500">{s.studentId}</td>
+                        <td className="px-6 py-3 text-[#1B2A4A]">{s.firstName}</td>
+                        <td className="px-6 py-3 text-[#1B2A4A]">{s.lastName}</td>
+                        <td className="px-6 py-3 text-gray-400 text-xs">{s.email || "—"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </div>
       </main>
     </div>
