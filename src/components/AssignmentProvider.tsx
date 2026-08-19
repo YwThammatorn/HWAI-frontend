@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { AssignmentContext, Assignment, Submission } from "@/lib/assignments";
+import { AssignmentContext, Assignment, Submission, Rubric } from "@/lib/assignments";
 
 const LS_ASSIGNMENTS = "hwai_assignments_v1";
 const LS_SUBMISSIONS = "hwai_submissions_v1";
+const LS_RUBRICS = "hwai_rubrics_v1";
 
 const SEED_ASSIGNMENTS: Assignment[] = [
   {
@@ -12,6 +13,7 @@ const SEED_ASSIGNMENTS: Assignment[] = [
     name: "User Research Report",
     description: "จัดทำรายงานการวิจัยผู้ใช้ โดยสัมภาษณ์ผู้ใช้งานจริงอย่างน้อย 5 คน วิเคราะห์ความต้องการ และสรุปเป็น User Persona อย่างน้อย 2 คน พร้อม Pain Points และ Insight",
     dueDate: "2026-08-05", maxPoints: 100,
+    acceptsFiles: true, fileTypes: ["figma", "pdf"], submissionType: "individual", maxGroupSize: null, rubricIds: ["r-seed-1-1"],
     createdAt: "2026-07-20T09:00:00.000Z", updatedAt: "2026-07-20T09:00:00.000Z",
   },
   {
@@ -19,6 +21,7 @@ const SEED_ASSIGNMENTS: Assignment[] = [
     name: "Wireframe Prototype",
     description: "สร้าง Wireframe ระดับ Mid-fidelity ใน Figma ครอบคลุมอย่างน้อย 8 screens ของแอปพลิเคชันที่เลือก พร้อม flow diagram และ annotation ประกอบ",
     dueDate: "2026-08-15", maxPoints: 100,
+    acceptsFiles: true, fileTypes: ["figma"], submissionType: "individual", maxGroupSize: null, rubricIds: [],
     createdAt: "2026-07-25T09:00:00.000Z", updatedAt: "2026-07-25T09:00:00.000Z",
   },
   {
@@ -26,6 +29,7 @@ const SEED_ASSIGNMENTS: Assignment[] = [
     name: "Final UI Design (Figma)",
     description: "ส่ง Figma file ที่มี UI Design ระดับ High-fidelity ครบทุก screen พร้อม component library, style guide และ prototype link",
     dueDate: "2026-08-30", maxPoints: 100,
+    acceptsFiles: true, fileTypes: ["figma"], submissionType: "group", maxGroupSize: 3, rubricIds: [],
     createdAt: "2026-08-01T09:00:00.000Z", updatedAt: "2026-08-01T09:00:00.000Z",
   },
   {
@@ -33,6 +37,7 @@ const SEED_ASSIGNMENTS: Assignment[] = [
     name: "Interaction Flow Diagram",
     description: "ออกแบบ Interaction Flow Diagram สำหรับ digital product ที่เลือก ครอบคลุม user journey อย่างน้อย 3 flows หลัก พร้อม annotation อธิบาย trigger และ feedback",
     dueDate: "2026-07-28", maxPoints: 100,
+    acceptsFiles: true, fileTypes: ["figma", "pdf"], submissionType: "individual", maxGroupSize: null, rubricIds: [],
     createdAt: "2026-07-10T09:00:00.000Z", updatedAt: "2026-07-10T09:00:00.000Z",
   },
   {
@@ -40,6 +45,20 @@ const SEED_ASSIGNMENTS: Assignment[] = [
     name: "Usability Test Report",
     description: "ดำเนินการ Usability Testing กับกลุ่มตัวอย่าง 5 คน บันทึกผลการทดสอบ วิเคราะห์ปัญหาตาม Severity Rating และเสนอแนวทางแก้ไขพร้อม mockup",
     dueDate: "2026-08-12", maxPoints: 100,
+    acceptsFiles: true, fileTypes: ["pdf"], submissionType: "individual", maxGroupSize: null, rubricIds: [],
+    createdAt: "2026-07-20T09:00:00.000Z", updatedAt: "2026-07-20T09:00:00.000Z",
+  },
+];
+
+const SEED_RUBRICS: Rubric[] = [
+  {
+    id: "r-seed-1-1", assignmentId: "a-seed-1-1",
+    name: "User Research Rubric",
+    criteria: [
+      { id: "rc-1-1-1", name: "การสัมภาษณ์ผู้ใช้", description: "คุณภาพและความลึกของการสัมภาษณ์ผู้ใช้งาน", maxPoints: 30, weight: 30 },
+      { id: "rc-1-1-2", name: "User Persona", description: "ความครบถ้วนและความแม่นยำของ Persona", maxPoints: 40, weight: 40 },
+      { id: "rc-1-1-3", name: "Insight และสรุปผล", description: "ความลึกและความเข้าใจของ Pain Points และ Insights", maxPoints: 30, weight: 30 },
+    ],
     createdAt: "2026-07-20T09:00:00.000Z", updatedAt: "2026-07-20T09:00:00.000Z",
   },
 ];
@@ -82,14 +101,26 @@ function loadData<T>(key: string, fallback: T[]): T[] {
   } catch { return fallback; }
 }
 
+const ASSIGNMENT_DEFAULTS = {
+  acceptsFiles: true,
+  fileTypes: ["figma", "pdf"] as Assignment["fileTypes"],
+  submissionType: "individual" as const,
+  maxGroupSize: null,
+  rubricIds: [] as string[],
+};
+
 export default function AssignmentProvider({ children }: { children: React.ReactNode }) {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [rubrics, setRubrics] = useState<Rubric[]>([]);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    setAssignments(loadData<Assignment>(LS_ASSIGNMENTS, SEED_ASSIGNMENTS));
+    const rawA = loadData<Assignment>(LS_ASSIGNMENTS, SEED_ASSIGNMENTS);
+    // migrate old assignments that lack new fields
+    setAssignments(rawA.map(a => ({ ...ASSIGNMENT_DEFAULTS, ...a })));
     setSubmissions(loadData<Submission>(LS_SUBMISSIONS, SEED_SUBMISSIONS));
+    setRubrics(loadData<Rubric>(LS_RUBRICS, SEED_RUBRICS));
     setReady(true);
   }, []);
 
@@ -101,6 +132,11 @@ export default function AssignmentProvider({ children }: { children: React.React
   const persistS = useCallback((next: Submission[]) => {
     setSubmissions(next);
     localStorage.setItem(LS_SUBMISSIONS, JSON.stringify(next));
+  }, []);
+
+  const persistR = useCallback((next: Rubric[]) => {
+    setRubrics(next);
+    localStorage.setItem(LS_RUBRICS, JSON.stringify(next));
   }, []);
 
   const addAssignment = useCallback((data: Omit<Assignment, "id" | "createdAt" | "updatedAt">): Assignment => {
@@ -117,7 +153,8 @@ export default function AssignmentProvider({ children }: { children: React.React
   const removeAssignment = useCallback((id: string) => {
     persistA(assignments.filter(a => a.id !== id));
     persistS(submissions.filter(s => s.assignmentId !== id)); // cascade
-  }, [assignments, submissions, persistA, persistS]);
+    persistR(rubrics.filter(r => r.assignmentId !== id)); // cascade
+  }, [assignments, submissions, rubrics, persistA, persistS, persistR]);
 
   const getAssignment = useCallback((id: string) => assignments.find(a => a.id === id), [assignments]);
 
@@ -141,14 +178,33 @@ export default function AssignmentProvider({ children }: { children: React.React
   const getSubmissionsByAssignment = useCallback((assignmentId: string) =>
     submissions.filter(s => s.assignmentId === assignmentId), [submissions]);
 
+  const addRubric = useCallback((data: Omit<Rubric, "id" | "createdAt" | "updatedAt">): Rubric => {
+    const now = new Date().toISOString();
+    const r: Rubric = { ...data, id: crypto.randomUUID(), createdAt: now, updatedAt: now };
+    persistR([...rubrics, r]);
+    return r;
+  }, [rubrics, persistR]);
+
+  const updateRubric = useCallback((id: string, data: Partial<Omit<Rubric, "id" | "assignmentId" | "createdAt" | "updatedAt">>) => {
+    persistR(rubrics.map(r => r.id === id ? { ...r, ...data, updatedAt: new Date().toISOString() } : r));
+  }, [rubrics, persistR]);
+
+  const removeRubric = useCallback((id: string) => {
+    persistR(rubrics.filter(r => r.id !== id));
+  }, [rubrics, persistR]);
+
+  const getRubricsByAssignment = useCallback((assignmentId: string) =>
+    rubrics.filter(r => r.assignmentId === assignmentId), [rubrics]);
+
   if (!ready) return null;
 
   return (
     <AssignmentContext.Provider value={{
-      assignments, submissions,
+      assignments, submissions, rubrics,
       addAssignment, updateAssignment, removeAssignment,
       getAssignment, getAssignmentsByCourse,
       addSubmission, updateSubmission, getSubmissionsByAssignment,
+      addRubric, updateRubric, removeRubric, getRubricsByAssignment,
     }}>
       {children}
     </AssignmentContext.Provider>

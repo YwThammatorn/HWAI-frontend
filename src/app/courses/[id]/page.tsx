@@ -110,6 +110,12 @@ export default function CourseDetailPage() {
                 </span>
               )}
             </Link>
+            <Link
+              href={`/courses/${id}/clo`}
+              className="py-3 px-4 text-sm font-medium border-b-2 border-transparent text-gray-400 hover:text-[#2DD4BF] transition-colors"
+            >
+              CLO
+            </Link>
             <button className="py-3 px-4 text-sm font-medium border-b-2 border-[#2DD4BF] text-[#2DD4BF]">
               Students
               {students.length > 0 && (

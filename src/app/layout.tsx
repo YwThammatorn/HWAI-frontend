@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import CourseProvider from "@/components/CourseProvider";
 import StudentProvider from "@/components/StudentProvider";
+import CLOProvider from "@/components/CLOProvider";
 import AssignmentProvider from "@/components/AssignmentProvider";
 import "./globals.css";
 
@@ -15,7 +16,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-full flex flex-col">
         <CourseProvider>
           <StudentProvider>
-            <AssignmentProvider>{children}</AssignmentProvider>
+            <CLOProvider>
+              <AssignmentProvider>{children}</AssignmentProvider>
+            </CLOProvider>
           </StudentProvider>
         </CourseProvider>
       </body>

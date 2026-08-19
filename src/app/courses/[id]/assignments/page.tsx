@@ -295,6 +295,32 @@ export default function AssignmentsPage() {
                             {subs.length > 0 && ` • ${subs.length} Submissions`}
                           </span>
                         </div>
+                        <div className="flex items-center gap-1 mt-1.5 flex-wrap">
+                          {a.submissionType === "group" ? (
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-violet-50 text-violet-600 text-[10px] font-medium">
+                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                              </svg>
+                              กลุ่ม{a.maxGroupSize ? ` ≤ ${a.maxGroupSize} คน` : ""}
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-gray-50 text-gray-400 text-[10px] font-medium">
+                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                              </svg>
+                              รายบุคคล
+                            </span>
+                          )}
+                          {(a.fileTypes ?? []).map(ft => (
+                            <span key={ft} className="px-1.5 py-0.5 rounded-md bg-gray-100 text-gray-500 text-[10px] font-mono">
+                              {ft === "figma" ? "Figma" : ft === "pdf" ? "PDF" : "รูปภาพ"}
+                            </span>
+                          ))}
+                          {!(a.acceptsFiles ?? true) && (
+                            <span className="px-1.5 py-0.5 rounded-md bg-gray-50 text-gray-400 text-[10px]">ไม่รับไฟล์</span>
+                          )}
+                        </div>
                       </div>
                       <div className="flex items-center gap-3 shrink-0 ml-4">
                         {st.avg !== null && (

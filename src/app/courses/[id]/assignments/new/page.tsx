@@ -4,9 +4,15 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import { useCourses } from "@/lib/courses";
-import { useAssignments } from "@/lib/assignments";
+import { useAssignments, Assignment } from "@/lib/assignments";
 
 const CONFIRM_MSG = "ข้อมูลที่กรอกจะไม่ถูกบันทึก\nต้องการออกจากหน้านี้หรือไม่?";
+
+const FILE_TYPE_OPTIONS: { id: Assignment["fileTypes"][number]; label: string }[] = [
+  { id: "figma", label: "Figma" },
+  { id: "pdf", label: "PDF" },
+  { id: "image", label: "รูปภาพ" },
+];
 
 export default function NewAssignmentPage() {
   const { id } = useParams<{ id: string }>();
@@ -18,11 +24,17 @@ export default function NewAssignmentPage() {
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [maxPoints, setMaxPoints] = useState("100");
+  const [acceptsFiles, setAcceptsFiles] = useState(true);
+  const [fileTypes, setFileTypes] = useState<Assignment["fileTypes"]>(["figma", "pdf"]);
+  const [submissionType, setSubmissionType] = useState<"individual" | "group">("individual");
+  const [maxGroupSize, setMaxGroupSize] = useState<string>("");
 
   const course = getCourse(id);
-
   const todayStr = new Date().toISOString().split("T")[0];
-  const isDirty = name.trim() !== "" || description.trim() !== "" || dueDate !== "" || maxPoints !== "100";
+
+  const isDirty =
+    name.trim() !== "" || description.trim() !== "" || dueDate !== "" || maxPoints !== "100" ||
+    submissionType !== "individual" || maxGroupSize !== "";
 
   useEffect(() => {
     const handler = (e: BeforeUnloadEvent) => {
@@ -37,6 +49,15 @@ export default function NewAssignmentPage() {
     router.push(to);
   }
 
+  function toggleFileType(t: Assignment["fileTypes"][number]) {
+    setFileTypes(prev => prev.includes(t) ? prev.filter(x => x !== t) : [...prev, t]);
+  }
+
+  function handleSubmissionTypeChange(type: "individual" | "group") {
+    setSubmissionType(type);
+    if (type === "individual") setMaxGroupSize("");
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const a = addAssignment({
@@ -45,38 +66,50 @@ export default function NewAssignmentPage() {
       description: description.trim(),
       dueDate,
       maxPoints: parseInt(maxPoints) || 100,
+      acceptsFiles,
+      fileTypes: acceptsFiles ? fileTypes : [],
+      submissionType,
+      maxGroupSize: submissionType === "group" && maxGroupSize ? parseInt(maxGroupSize) : null,
+      rubricIds: [],
     });
     router.push(`/courses/${id}/assignments/${a.id}`);
   }
 
-  const isValid = name.trim().length > 0 && dueDate !== "";
+  const isValid = name.trim().length > 0 && dueDate !== "" && (!acceptsFiles || fileTypes.length > 0);
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F5F6FA]">
       <Navbar />
       <main className="flex-1 w-full max-w-[700px] mx-auto px-8 py-10">
-        <h1 className="text-2xl font-bold text-[#1B2A4A] mb-1">Create New Assignment</h1>
+
+        <button
+          onClick={() => navAway(`/courses/${id}/assignments`)}
+          className="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-[#2DD4BF] mb-6 transition-colors"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+          กลับรายการชิ้นงาน
+        </button>
+
+        <h1 className="text-2xl font-bold text-[#1B2A4A] mb-1">สร้างชิ้นงานใหม่</h1>
         <p className="text-sm text-gray-400 mb-8">
-          You are creating new assignment within course{" "}
+          สร้างชิ้นงานในวิชา{" "}
           <span className="font-semibold text-[#1B2A4A]">{course?.name ?? "..."}</span>
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-5">
+
           {/* General Information */}
           <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-            <div className="flex items-center gap-2 mb-5">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2DD4BF" strokeWidth="2" strokeLinecap="round">
-                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-              </svg>
-              <h2 className="text-sm font-semibold text-[#1B2A4A]">General Information</h2>
-            </div>
+            <SectionHeader icon="info" label="ข้อมูลทั่วไป" />
             <label className="block text-sm font-medium text-[#1B2A4A] mb-1.5">
-              Assignment Name <span className="text-red-400">*</span>
+              ชื่อชิ้นงาน <span className="text-red-400">*</span>
             </label>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g., Derivative Implementation Quiz"
+              placeholder="เช่น User Research Report"
               className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#2DD4BF]/30 focus:border-[#2DD4BF] transition-colors"
               required
             />
@@ -84,16 +117,11 @@ export default function NewAssignmentPage() {
 
           {/* Description */}
           <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-            <div className="flex items-center gap-2 mb-5">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2DD4BF" strokeWidth="2" strokeLinecap="round">
-                <rect x="5" y="2" width="14" height="20" rx="2"/><line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="11" x2="15" y2="11"/><line x1="9" y1="15" x2="13" y2="15"/>
-              </svg>
-              <h2 className="text-sm font-semibold text-[#1B2A4A]">Assignment Description</h2>
-            </div>
+            <SectionHeader icon="doc" label="รายละเอียดชิ้นงาน" />
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Description about assignment. Briefly describe the objective, type of submission file, etc."
+              placeholder="อธิบายวัตถุประสงค์ รูปแบบไฟล์ที่ต้องส่ง เกณฑ์เบื้องต้น ฯลฯ"
               rows={4}
               className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#2DD4BF]/30 focus:border-[#2DD4BF] resize-none transition-colors"
             />
@@ -101,25 +129,18 @@ export default function NewAssignmentPage() {
 
           {/* Details */}
           <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-            <div className="flex items-center gap-2 mb-5">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2DD4BF" strokeWidth="2" strokeLinecap="round">
-                <rect x="5" y="2" width="14" height="20" rx="2"/><line x1="9" y1="7" x2="15" y2="7"/>
-              </svg>
-              <h2 className="text-sm font-semibold text-[#1B2A4A]">Assignment Details</h2>
-            </div>
+            <SectionHeader icon="cal" label="กำหนดเวลาและคะแนน" />
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-[#1B2A4A] mb-1.5">
-                  Due Date <span className="text-red-400">*</span>
+                  วันครบกำหนด <span className="text-red-400">*</span>
                 </label>
                 <div className="relative">
                   <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
                   </svg>
                   <input
-                    type="date"
-                    value={dueDate}
-                    min={todayStr}
+                    type="date" value={dueDate} min={todayStr}
                     onChange={(e) => setDueDate(e.target.value)}
                     className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#2DD4BF]/30 focus:border-[#2DD4BF] transition-colors"
                     required
@@ -127,29 +148,19 @@ export default function NewAssignmentPage() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-[#1B2A4A] mb-1.5">Points Possible</label>
+                <label className="block text-sm font-medium text-[#1B2A4A] mb-1.5">คะแนนเต็ม</label>
                 <div className="flex gap-1.5 mb-2 flex-wrap">
                   {[10, 15, 25, 100].map((p) => (
-                    <button
-                      key={p}
-                      type="button"
-                      onClick={() => setMaxPoints(String(p))}
-                      className={[
-                        "px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors",
-                        maxPoints === String(p)
-                          ? "bg-[#2DD4BF] text-white border-[#2DD4BF]"
-                          : "border-gray-200 text-gray-500 hover:border-[#2DD4BF] hover:text-[#2DD4BF]",
-                      ].join(" ")}
-                    >
+                    <button key={p} type="button" onClick={() => setMaxPoints(String(p))}
+                      className={["px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors",
+                        maxPoints === String(p) ? "bg-[#2DD4BF] text-white border-[#2DD4BF]" : "border-gray-200 text-gray-500 hover:border-[#2DD4BF] hover:text-[#2DD4BF]"
+                      ].join(" ")}>
                       {p}
                     </button>
                   ))}
                 </div>
                 <input
-                  type="number"
-                  min="1"
-                  max="1000"
-                  value={maxPoints}
+                  type="number" min="1" max="1000" value={maxPoints}
                   onChange={(e) => setMaxPoints(e.target.value)}
                   placeholder="หรือพิมพ์เอง"
                   className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#2DD4BF]/30 focus:border-[#2DD4BF] transition-colors"
@@ -158,6 +169,105 @@ export default function NewAssignmentPage() {
             </div>
           </section>
 
+          {/* Submission Settings */}
+          <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+            <SectionHeader icon="upload" label="การรับและรูปแบบงาน" />
+
+            {/* รับไฟล์ */}
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-sm font-medium text-[#1B2A4A]">รับไฟล์จากนักศึกษา</p>
+                <p className="text-xs text-gray-400 mt-0.5">ปิดถ้างานนี้ไม่ต้องอัปโหลดไฟล์ (เช่น งานนำเสนอในชั้น)</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setAcceptsFiles(v => !v)}
+                className={[
+                  "relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none",
+                  acceptsFiles ? "bg-[#2DD4BF]" : "bg-gray-200",
+                ].join(" ")}
+              >
+                <span className={[
+                  "inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform",
+                  acceptsFiles ? "translate-x-6" : "translate-x-1",
+                ].join(" ")} />
+              </button>
+            </div>
+
+            {/* ประเภทไฟล์ */}
+            {acceptsFiles && (
+              <div className="mb-5 pl-0">
+                <label className="block text-xs font-medium text-gray-500 mb-2">ประเภทไฟล์ที่รับ</label>
+                <div className="flex gap-2">
+                  {FILE_TYPE_OPTIONS.map(({ id: fid, label }) => (
+                    <button
+                      key={fid}
+                      type="button"
+                      onClick={() => toggleFileType(fid)}
+                      className={[
+                        "px-3.5 py-1.5 rounded-xl text-sm font-medium border transition-colors",
+                        fileTypes.includes(fid)
+                          ? "bg-[#1B2A4A] text-white border-[#1B2A4A]"
+                          : "border-gray-200 text-gray-500 hover:border-[#1B2A4A] hover:text-[#1B2A4A]",
+                      ].join(" ")}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                {fileTypes.length === 0 && (
+                  <p className="text-xs text-red-400 mt-1.5">เลือกประเภทไฟล์อย่างน้อย 1 ประเภท</p>
+                )}
+              </div>
+            )}
+
+            {/* รูปแบบการส่ง */}
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-2">รูปแบบการส่งงาน</label>
+              <div className="inline-flex rounded-xl border border-gray-200 overflow-hidden">
+                {(["individual", "group"] as const).map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => handleSubmissionTypeChange(t)}
+                    className={[
+                      "px-4 py-2 text-sm font-medium transition-colors",
+                      submissionType === t
+                        ? "bg-[#1B2A4A] text-white"
+                        : "bg-white text-gray-500 hover:bg-gray-50",
+                    ].join(" ")}
+                  >
+                    {t === "individual" ? "รายบุคคล" : "กลุ่ม"}
+                  </button>
+                ))}
+              </div>
+
+              {submissionType === "group" && (
+                <div className="mt-3 flex items-center gap-2">
+                  <label className="text-sm text-gray-500">สมาชิกต่อกลุ่มสูงสุด</label>
+                  <input
+                    type="number" min="2" max="20"
+                    value={maxGroupSize}
+                    onChange={e => setMaxGroupSize(e.target.value)}
+                    placeholder="เช่น 4"
+                    className="w-24 px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#2DD4BF]/30 focus:border-[#2DD4BF] transition-colors"
+                  />
+                  <span className="text-sm text-gray-400">คน</span>
+                </div>
+              )}
+            </div>
+          </section>
+
+          {/* Rubric note */}
+          <div className="flex gap-2.5 bg-amber-50 border border-amber-100 rounded-xl px-4 py-3">
+            <svg className="shrink-0 mt-0.5" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2" strokeLinecap="round">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <p className="text-xs text-amber-700 leading-relaxed">
+              <strong>เกณฑ์การให้คะแนน (Rubric)</strong> — สามารถเพิ่มและจัดการ Rubric ได้ในหน้าแก้ไขชิ้นงาน หลังจากบันทึกชิ้นงานนี้แล้ว
+            </p>
+          </div>
+
           {/* Actions */}
           <div className="flex justify-end gap-3 pb-4">
             <button
@@ -165,7 +275,7 @@ export default function NewAssignmentPage() {
               onClick={() => navAway(`/courses/${id}/assignments`)}
               className="px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
             >
-              Cancel
+              ยกเลิก
             </button>
             <button
               type="submit"
@@ -175,11 +285,44 @@ export default function NewAssignmentPage() {
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
                 <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
               </svg>
-              Create Assignment
+              สร้างชิ้นงาน
             </button>
           </div>
         </form>
       </main>
+    </div>
+  );
+}
+
+function SectionHeader({ icon, label }: { icon: "info" | "doc" | "cal" | "upload"; label: string }) {
+  const icons: Record<string, React.ReactNode> = {
+    info: (
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2DD4BF" strokeWidth="2" strokeLinecap="round">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+    ),
+    doc: (
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2DD4BF" strokeWidth="2" strokeLinecap="round">
+        <rect x="5" y="2" width="14" height="20" rx="2"/><line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="11" x2="15" y2="11"/><line x1="9" y1="15" x2="13" y2="15"/>
+      </svg>
+    ),
+    cal: (
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2DD4BF" strokeWidth="2" strokeLinecap="round">
+        <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+      </svg>
+    ),
+    upload: (
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2DD4BF" strokeWidth="2" strokeLinecap="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="17 8 12 3 7 8"/>
+        <line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+    ),
+  };
+  return (
+    <div className="flex items-center gap-2 mb-5">
+      {icons[icon]}
+      <h2 className="text-sm font-semibold text-[#1B2A4A]">{label}</h2>
     </div>
   );
 }
