@@ -35,12 +35,24 @@ export interface Submission {
   updatedAt: string;
 }
 
+export interface CriterionLevel {
+  label: string;
+  description: string;
+}
+
+export const DEFAULT_LEVELS: CriterionLevel[] = [
+  { label: "ดีเยี่ยม", description: "" },
+  { label: "ดี", description: "" },
+  { label: "ต้องปรับปรุง", description: "" },
+];
+
 export interface RubricCriterion {
   id: string;
   name: string;
   description: string;
   maxPoints: number;
   weight: number; // 0–100, sum of all criteria must equal 100
+  levels: CriterionLevel[];
 }
 
 export interface Rubric {
@@ -67,6 +79,7 @@ export interface AssignmentContextValue {
   addRubric: (data: Omit<Rubric, "id" | "createdAt" | "updatedAt">) => Rubric;
   updateRubric: (id: string, data: Partial<Omit<Rubric, "id" | "assignmentId" | "createdAt" | "updatedAt">>) => void;
   removeRubric: (id: string) => void;
+  getRubric: (id: string) => Rubric | undefined;
   getRubricsByAssignment: (assignmentId: string) => Rubric[];
 }
 

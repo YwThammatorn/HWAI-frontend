@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { AssignmentContext, Assignment, Submission, Rubric } from "@/lib/assignments";
+import { AssignmentContext, Assignment, Submission, Rubric, DEFAULT_LEVELS } from "@/lib/assignments";
 
 const LS_ASSIGNMENTS = "hwai_assignments_v1";
 const LS_SUBMISSIONS = "hwai_submissions_v1";
@@ -55,9 +55,9 @@ const SEED_RUBRICS: Rubric[] = [
     id: "r-seed-1-1", assignmentId: "a-seed-1-1",
     name: "User Research Rubric",
     criteria: [
-      { id: "rc-1-1-1", name: "การสัมภาษณ์ผู้ใช้", description: "คุณภาพและความลึกของการสัมภาษณ์ผู้ใช้งาน", maxPoints: 30, weight: 30 },
-      { id: "rc-1-1-2", name: "User Persona", description: "ความครบถ้วนและความแม่นยำของ Persona", maxPoints: 40, weight: 40 },
-      { id: "rc-1-1-3", name: "Insight และสรุปผล", description: "ความลึกและความเข้าใจของ Pain Points และ Insights", maxPoints: 30, weight: 30 },
+      { id: "rc-1-1-1", name: "การสัมภาษณ์ผู้ใช้", description: "คุณภาพและความลึกของการสัมภาษณ์ผู้ใช้งาน", maxPoints: 30, weight: 30, levels: [{ label: "ดีเยี่ยม", description: "สัมภาษณ์ครบ 5 คน ข้อมูลลึกและหลากหลาย มี Insight ที่ชัดเจน" }, { label: "ดี", description: "สัมภาษณ์ครบ 5 คน แต่ข้อมูลบางส่วนยังขาดความลึก" }, { label: "ต้องปรับปรุง", description: "สัมภาษณ์ไม่ครบหรือข้อมูลที่ได้ไม่เพียงพอต่อการวิเคราะห์" }] },
+      { id: "rc-1-1-2", name: "User Persona", description: "ความครบถ้วนและความแม่นยำของ Persona", maxPoints: 40, weight: 40, levels: [{ label: "ดีเยี่ยม", description: "Persona ครบ 2 คน มีข้อมูล Pain Points, Goal และ Behavior ชัดเจน" }, { label: "ดี", description: "Persona ครบจำนวน แต่ข้อมูลบางส่วนยังไม่สมบูรณ์" }, { label: "ต้องปรับปรุง", description: "Persona ไม่ครบหรือข้อมูลไม่เพียงพอ" }] },
+      { id: "rc-1-1-3", name: "Insight และสรุปผล", description: "ความลึกและความเข้าใจของ Pain Points และ Insights", maxPoints: 30, weight: 30, levels: [{ label: "ดีเยี่ยม", description: "Insight ชัดเจน นำไปสู่ Design Direction ที่มีเหตุผล" }, { label: "ดี", description: "มี Insight แต่การสรุปยังขาดความเชื่อมโยงกับ Design" }, { label: "ต้องปรับปรุง", description: "Insight ไม่ชัดเจนหรือขาดการวิเคราะห์" }] },
     ],
     createdAt: "2026-07-20T09:00:00.000Z", updatedAt: "2026-07-20T09:00:00.000Z",
   },
@@ -117,10 +117,14 @@ export default function AssignmentProvider({ children }: { children: React.React
 
   useEffect(() => {
     const rawA = loadData<Assignment>(LS_ASSIGNMENTS, SEED_ASSIGNMENTS);
-    // migrate old assignments that lack new fields
     setAssignments(rawA.map(a => ({ ...ASSIGNMENT_DEFAULTS, ...a })));
     setSubmissions(loadData<Submission>(LS_SUBMISSIONS, SEED_SUBMISSIONS));
-    setRubrics(loadData<Rubric>(LS_RUBRICS, SEED_RUBRICS));
+    const rawR = loadData<Rubric>(LS_RUBRICS, SEED_RUBRICS);
+    // migrate old criteria that lack levels
+    setRubrics(rawR.map(r => ({
+      ...r,
+      criteria: r.criteria.map(c => ({ ...c, levels: c.levels ?? DEFAULT_LEVELS })),
+    })));
     setReady(true);
   }, []);
 
@@ -193,6 +197,8 @@ export default function AssignmentProvider({ children }: { children: React.React
     persistR(rubrics.filter(r => r.id !== id));
   }, [rubrics, persistR]);
 
+  const getRubric = useCallback((id: string) => rubrics.find(r => r.id === id), [rubrics]);
+
   const getRubricsByAssignment = useCallback((assignmentId: string) =>
     rubrics.filter(r => r.assignmentId === assignmentId), [rubrics]);
 
@@ -204,7 +210,7 @@ export default function AssignmentProvider({ children }: { children: React.React
       addAssignment, updateAssignment, removeAssignment,
       getAssignment, getAssignmentsByCourse,
       addSubmission, updateSubmission, getSubmissionsByAssignment,
-      addRubric, updateRubric, removeRubric, getRubricsByAssignment,
+      addRubric, updateRubric, removeRubric, getRubric, getRubricsByAssignment,
     }}>
       {children}
     </AssignmentContext.Provider>

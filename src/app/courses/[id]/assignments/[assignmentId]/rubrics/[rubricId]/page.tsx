@@ -1,0 +1,359 @@
+"use client";
+
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
+import Navbar from "@/components/Navbar";
+import { useCourses } from "@/lib/courses";
+import { useAssignments, RubricCriterion, CriterionLevel, DEFAULT_LEVELS } from "@/lib/assignments";
+
+const CONFIRM_MSG = "การเปลี่ยนแปลงจะไม่ถูกบันทึก\nต้องการออกจากหน้านี้หรือไม่?";
+
+interface CriterionDraft {
+  id: string;
+  name: string;
+  description: string;
+  weight: string; // string for easy input editing
+  levels: CriterionLevel[];
+}
+
+function toDraft(c: RubricCriterion): CriterionDraft {
+  return {
+    id: c.id,
+    name: c.name,
+    description: c.description,
+    weight: String(c.weight),
+    levels: c.levels?.length ? c.levels : [...DEFAULT_LEVELS],
+  };
+}
+
+const LEVEL_COLORS = [
+  { border: "border-green-200", bg: "bg-green-50", label: "text-green-600", dot: "bg-green-500" },
+  { border: "border-amber-200", bg: "bg-amber-50", label: "text-amber-600", dot: "bg-amber-400" },
+  { border: "border-red-200", bg: "bg-red-50", label: "text-red-500", dot: "bg-red-400" },
+];
+
+export default function RubricEditorPage() {
+  const { id, assignmentId, rubricId } = useParams<{ id: string; assignmentId: string; rubricId: string }>();
+  const router = useRouter();
+  const { getCourse } = useCourses();
+  const { getAssignment, getRubric, updateRubric } = useAssignments();
+
+  const course = getCourse(id);
+  const assignment = getAssignment(assignmentId);
+  const rubric = getRubric(rubricId);
+
+  const [criteria, setCriteria] = useState<CriterionDraft[]>([]);
+  const [rubricName, setRubricName] = useState("");
+  const [saved, setSaved] = useState(false);
+
+  const origRef = useRef({ criteriaJson: "", name: "" });
+
+  useEffect(() => {
+    if (rubric) {
+      const drafts = rubric.criteria.map(toDraft);
+      const json = JSON.stringify(drafts);
+      setCriteria(drafts);
+      setRubricName(rubric.name);
+      origRef.current = { criteriaJson: json, name: rubric.name };
+    }
+  }, [rubric?.id]);
+
+  const isDirty = !saved && (
+    rubricName !== origRef.current.name ||
+    JSON.stringify(criteria) !== origRef.current.criteriaJson
+  );
+
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (isDirty) { e.preventDefault(); e.returnValue = ""; }
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [isDirty]);
+
+  function navAway(to: string) {
+    if (isDirty && !window.confirm(CONFIRM_MSG)) return;
+    router.push(to);
+  }
+
+  const totalWeight = criteria.reduce((sum, c) => sum + (parseFloat(c.weight) || 0), 0);
+  const weightOk = Math.abs(totalWeight - 100) < 0.01;
+
+  const updateCriterion = useCallback((cid: string, field: keyof Omit<CriterionDraft, "id" | "levels">, value: string) => {
+    setCriteria(prev => prev.map(c => c.id === cid ? { ...c, [field]: value } : c));
+  }, []);
+
+  const updateLevel = useCallback((cid: string, li: number, value: string) => {
+    setCriteria(prev => prev.map(c => {
+      if (c.id !== cid) return c;
+      const levels = c.levels.map((lv, i) => i === li ? { ...lv, description: value } : lv);
+      return { ...c, levels };
+    }));
+  }, []);
+
+  function addCriterion() {
+    const newC: CriterionDraft = {
+      id: crypto.randomUUID(),
+      name: `เกณฑ์ที่ ${criteria.length + 1}`,
+      description: "",
+      weight: "0",
+      levels: [...DEFAULT_LEVELS],
+    };
+    setCriteria(prev => [...prev, newC]);
+  }
+
+  function removeCriterion(cid: string, name: string) {
+    if (criteria.length <= 1) return;
+    if (!window.confirm(`ลบเกณฑ์ "${name}" ถาวร?`)) return;
+    setCriteria(prev => prev.filter(c => c.id !== cid));
+  }
+
+  function handleSave() {
+    if (!weightOk) return;
+    const now = new Date().toISOString();
+    const finalized: RubricCriterion[] = criteria.map(c => ({
+      id: c.id,
+      name: c.name.trim() || "ไม่มีชื่อ",
+      description: c.description.trim(),
+      weight: parseFloat(c.weight) || 0,
+      maxPoints: Math.round((assignment?.maxPoints ?? 100) * ((parseFloat(c.weight) || 0) / 100)),
+      levels: c.levels,
+    }));
+    updateRubric(rubricId, { name: rubricName.trim() || rubric?.name || "Rubric", criteria: finalized });
+    setSaved(true);
+    setTimeout(() => router.push(`/courses/${id}/assignments/${assignmentId}/edit`), 800);
+  }
+
+  if (!course || !assignment || !rubric) {
+    return (
+      <div className="min-h-screen flex flex-col bg-[#F5F6FA]">
+        <Navbar />
+        <main className="flex-1 flex items-center justify-center text-gray-400 text-sm">
+          ไม่พบข้อมูล —{" "}
+          <Link href={`/courses/${id}/assignments/${assignmentId}/edit`} className="text-[#2DD4BF] ml-1 hover:underline">
+            กลับหน้าแก้ไขชิ้นงาน
+          </Link>
+        </main>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col bg-[#F5F6FA]">
+      <Navbar />
+      <main className="flex-1 w-full max-w-[800px] mx-auto px-8 py-8">
+
+        {/* Breadcrumb */}
+        <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-6 flex-wrap">
+          <Link href="/courses" className="hover:text-[#2DD4BF] transition-colors">All Courses</Link>
+          <span>/</span>
+          <Link href={`/courses/${id}/assignments`} className="hover:text-[#2DD4BF] transition-colors">{course.name}</Link>
+          <span>/</span>
+          <button onClick={() => navAway(`/courses/${id}/assignments/${assignmentId}/edit`)} className="hover:text-[#2DD4BF] transition-colors">
+            {assignment.name}
+          </button>
+          <span>/</span>
+          <span className="text-[#1B2A4A] font-medium">{rubric.name}</span>
+        </div>
+
+        {/* Header */}
+        <div className="flex items-start justify-between gap-4 mb-8">
+          <div>
+            <h1 className="text-2xl font-bold text-[#1B2A4A] mb-1">กำหนดเกณฑ์การให้คะแนน</h1>
+            <p className="text-sm text-gray-400">ตั้งค่าเกณฑ์ที่ HWAI Agent จะใช้ในการตรวจงาน</p>
+          </div>
+          <div className="flex items-center gap-3 shrink-0">
+            <button
+              disabled
+              title="AI Rubric Assistant จะพร้อมใช้งานเร็ว ๆ นี้"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-300 cursor-not-allowed select-none"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+              </svg>
+              AI Rubric Assistant
+            </button>
+            <div className="w-px h-4 bg-gray-200" />
+            <button
+              disabled
+              title="ฟีเจอร์นี้จะพร้อมใช้งานเร็ว ๆ นี้"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-300 cursor-not-allowed select-none"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              Import Rubric
+            </button>
+          </div>
+        </div>
+
+        {/* Rubric name */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-5 py-4 mb-5">
+          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">ชื่อ Rubric</label>
+          <input
+            value={rubricName}
+            onChange={e => { setRubricName(e.target.value); setSaved(false); }}
+            className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm font-medium text-[#1B2A4A] focus:outline-none focus:ring-2 focus:ring-[#2DD4BF]/30 focus:border-[#2DD4BF] transition-colors"
+            placeholder="ชื่อ Rubric"
+          />
+        </div>
+
+        {/* Weight total bar */}
+        <div className={`flex items-center justify-between px-5 py-3 rounded-xl mb-5 text-sm font-medium ${
+          weightOk ? "bg-teal-50 text-teal-700 border border-teal-100" : "bg-amber-50 text-amber-700 border border-amber-100"
+        }`}>
+          <div className="flex items-center gap-2">
+            {weightOk ? (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            ) : (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+            )}
+            <span>
+              {weightOk
+                ? "น้ำหนักรวมครบ 100% พร้อมบันทึก"
+                : `น้ำหนักรวมปัจจุบัน ${totalWeight.toFixed(0)}% — ต้องรวมได้ 100% เพื่อบันทึก`}
+            </span>
+          </div>
+          <span className="font-mono text-base font-bold">{totalWeight.toFixed(0)} / 100%</span>
+        </div>
+
+        {/* Criteria list */}
+        <div className="space-y-4">
+          {criteria.map((c, idx) => {
+            const pts = Math.round((assignment.maxPoints) * ((parseFloat(c.weight) || 0) / 100));
+            return (
+              <div key={c.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                {/* Card header */}
+                <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-50">
+                  <span className="text-xs font-mono text-gray-300 w-5 shrink-0">{String(idx + 1).padStart(2, "0")}</span>
+                  <input
+                    value={c.name}
+                    onChange={e => updateCriterion(c.id, "name", e.target.value)}
+                    className="flex-1 text-sm font-semibold text-[#1B2A4A] bg-transparent border-0 outline-none focus:bg-gray-50 rounded-lg px-2 py-1 -ml-2 transition-colors placeholder:text-gray-300"
+                    placeholder="ชื่อเกณฑ์"
+                  />
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-xs text-gray-400 uppercase tracking-wider font-medium">น้ำหนัก</span>
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="number"
+                        min={0}
+                        max={100}
+                        value={c.weight}
+                        onChange={e => updateCriterion(c.id, "weight", e.target.value)}
+                        className={`w-14 text-center text-sm font-semibold border rounded-lg px-2 py-1 outline-none focus:ring-2 transition-colors ${
+                          parseFloat(c.weight) > 0
+                            ? "border-[#2DD4BF] text-[#0F7B6C] focus:ring-[#2DD4BF]/30"
+                            : "border-gray-200 text-gray-400 focus:ring-gray-200"
+                        }`}
+                      />
+                      <span className="text-xs text-gray-400 font-medium">%</span>
+                    </div>
+                    <span className="text-xs text-gray-300 font-mono">≈ {pts} pts</span>
+                  </div>
+                  <button
+                    onClick={() => removeCriterion(c.id, c.name)}
+                    disabled={criteria.length <= 1}
+                    title="ลบเกณฑ์นี้"
+                    className="p-1.5 rounded-lg text-gray-300 hover:text-red-400 hover:bg-red-50 transition-colors disabled:opacity-20 disabled:cursor-not-allowed shrink-0"
+                  >
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                      <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                      <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                    </svg>
+                  </button>
+                </div>
+
+                {/* Description */}
+                <div className="px-5 py-4 border-b border-gray-50">
+                  <label className="block text-xs text-gray-400 mb-1.5">คำอธิบายสำหรับนักศึกษา</label>
+                  <textarea
+                    value={c.description}
+                    onChange={e => updateCriterion(c.id, "description", e.target.value)}
+                    rows={2}
+                    placeholder="อธิบายสิ่งที่นักศึกษาต้องแสดงในเกณฑ์นี้..."
+                    className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm text-[#1B2A4A] resize-none focus:outline-none focus:ring-2 focus:ring-[#2DD4BF]/30 focus:border-[#2DD4BF] transition-colors placeholder:text-gray-300"
+                  />
+                </div>
+
+                {/* Level cards */}
+                <div className="grid grid-cols-3 divide-x divide-gray-50 px-0">
+                  {c.levels.map((lv, li) => {
+                    const col = LEVEL_COLORS[li] ?? LEVEL_COLORS[2];
+                    return (
+                      <div key={li} className="px-5 py-4">
+                        <div className="flex items-center gap-1.5 mb-2">
+                          <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${col.dot}`} />
+                          <span className={`text-xs font-semibold ${col.label}`}>{lv.label}</span>
+                        </div>
+                        <textarea
+                          value={lv.description}
+                          onChange={e => updateLevel(c.id, li, e.target.value)}
+                          rows={2}
+                          placeholder="อธิบายลักษณะงาน..."
+                          className="w-full text-xs text-gray-600 resize-none border-0 outline-none bg-transparent placeholder:text-gray-300 leading-relaxed"
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Add criterion */}
+        <button
+          onClick={addCriterion}
+          className="w-full mt-4 py-3.5 rounded-2xl border-2 border-dashed border-gray-200 text-sm text-gray-400 hover:border-[#2DD4BF] hover:text-[#2DD4BF] hover:bg-teal-50/30 transition-all flex items-center justify-center gap-2"
+        >
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+            <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+          </svg>
+          เพิ่มเกณฑ์ย่อยใหม่
+        </button>
+
+        {/* Footer actions */}
+        <div className="flex items-center justify-between mt-8 pt-6 border-t border-gray-100">
+          <button
+            onClick={() => navAway(`/courses/${id}/assignments/${assignmentId}/edit`)}
+            className="px-5 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-500 hover:bg-gray-50 transition-colors"
+          >
+            ยกเลิก
+          </button>
+          <div className="flex items-center gap-3">
+            {!weightOk && (
+              <span className="text-xs text-amber-500">น้ำหนักรวมต้องเท่ากับ 100%</span>
+            )}
+            <button
+              onClick={handleSave}
+              disabled={!weightOk || saved}
+              className={`px-6 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                saved
+                  ? "bg-green-500 text-white"
+                  : weightOk
+                    ? "bg-[#2DD4BF] hover:bg-[#14B8A6] text-white shadow-sm shadow-teal-200"
+                    : "bg-gray-100 text-gray-300 cursor-not-allowed"
+              }`}
+            >
+              {saved ? (
+                <span className="flex items-center gap-2">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                  บันทึกแล้ว
+                </span>
+              ) : "บันทึก Rubric"}
+            </button>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
