@@ -9,15 +9,12 @@ export interface Course {
   id: string;
   name: string;
   description: string;
-  studentCount: number;
-  assignmentCount: number;
-  activeAssignments: number;
-  allGraded: boolean;
   status: CourseStatus;
   source: CourseSource;
   coverColor: string;
   iconColor: string;
   createdAt: string;
+  updatedAt: string;
 }
 
 export const PRESET_COLORS = [
@@ -30,35 +27,29 @@ export const SEED_COURSES: Course[] = [
     id: "seed-1",
     name: "UX/UI Design",
     description: "",
-    studentCount: 28,
-    assignmentCount: 1,
-    activeAssignments: 1,
-    allGraded: false,
     status: "active",
     source: "manual",
     coverColor: "#2DD4BF",
     iconColor: "#2DD4BF",
-    createdAt: new Date().toISOString(),
+    createdAt: "2026-07-01T00:00:00.000Z",
+    updatedAt: "2026-07-01T00:00:00.000Z",
   },
   {
     id: "seed-2",
     name: "Interaction Design",
     description: "",
-    studentCount: 32,
-    assignmentCount: 1,
-    activeAssignments: 1,
-    allGraded: false,
     status: "active",
     source: "manual",
     coverColor: "#A78BFA",
     iconColor: "#A78BFA",
-    createdAt: new Date().toISOString(),
+    createdAt: "2026-07-01T00:00:00.000Z",
+    updatedAt: "2026-07-01T00:00:00.000Z",
   },
 ];
 
 export interface CourseContextValue {
   courses: Course[];
-  addCourse: (data: Omit<Course, "id" | "assignmentCount" | "activeAssignments" | "allGraded" | "createdAt">) => Course;
+  addCourse: (data: Omit<Course, "id" | "createdAt" | "updatedAt">) => Course;
   updateCourse: (id: string, data: Partial<Omit<Course, "id" | "createdAt">>) => void;
   removeCourse: (id: string) => void;
   getCourse: (id: string) => Course | undefined;

@@ -5,13 +5,27 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import { useCourses } from "@/lib/courses";
 import { useStudents } from "@/lib/students";
+import { useAssignments } from "@/lib/assignments";
 
 export default function CourseDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { getCourse } = useCourses();
   const { getStudentsByCourse } = useStudents();
+  const { getAssignmentsByCourse, getSubmissionsByAssignment } = useAssignments();
   const course = getCourse(id);
   const students = getStudentsByCourse(id);
+  const assignments = getAssignmentsByCourse(id);
+
+  const activeAssignments = assignments.filter((a) => {
+    const subs = getSubmissionsByAssignment(a.id);
+    return subs.length > 0 && subs.some((s) => s.status !== "graded");
+  }).length;
+  const allGraded =
+    assignments.length > 0 &&
+    assignments.every((a) => {
+      const subs = getSubmissionsByAssignment(a.id);
+      return subs.length > 0 && subs.every((s) => s.status === "graded");
+    });
 
   if (!course) {
     return (
@@ -72,8 +86,8 @@ export default function CourseDetailPage() {
         <div className="grid grid-cols-3 gap-4 mb-6">
           {[
             { label: "Students", value: `${students.length}` },
-            { label: "Assignments", value: `${course.assignmentCount}` },
-            { label: "Grading Status", value: course.allGraded ? "All Graded" : `${course.activeAssignments} Active` },
+            { label: "Assignments", value: `${assignments.length}` },
+            { label: "Grading Status", value: allGraded ? "All Graded" : `${activeAssignments} Active` },
           ].map((s) => (
             <div key={s.label} className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
               <p className="text-xs text-gray-400 mb-1">{s.label}</p>
@@ -85,19 +99,28 @@ export default function CourseDetailPage() {
         {/* Tabs */}
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
           <div className="flex border-b border-gray-100 px-6">
-            {["Assignments", "Students", "Results"].map((tab, i) => (
-              <button key={tab} className={[
-                "py-3 px-4 text-sm font-medium border-b-2 transition-colors",
-                i === 1 ? "border-[#2DD4BF] text-[#2DD4BF]" : "border-transparent text-gray-400",
-              ].join(" ")}>
-                {tab}
-                {i === 1 && students.length > 0 && (
-                  <span className="ml-1.5 text-xs bg-[#E6FAF8] text-[#0F7B6C] px-1.5 py-0.5 rounded-full">
-                    {students.length}
-                  </span>
-                )}
-              </button>
-            ))}
+            <Link
+              href={`/courses/${id}/assignments`}
+              className="py-3 px-4 text-sm font-medium border-b-2 border-transparent text-gray-400 hover:text-[#2DD4BF] transition-colors"
+            >
+              Assignments
+              {assignments.length > 0 && (
+                <span className="ml-1.5 text-xs bg-[#EEF2FF] text-[#6366F1] px-1.5 py-0.5 rounded-full">
+                  {assignments.length}
+                </span>
+              )}
+            </Link>
+            <button className="py-3 px-4 text-sm font-medium border-b-2 border-[#2DD4BF] text-[#2DD4BF]">
+              Students
+              {students.length > 0 && (
+                <span className="ml-1.5 text-xs bg-[#E6FAF8] text-[#0F7B6C] px-1.5 py-0.5 rounded-full">
+                  {students.length}
+                </span>
+              )}
+            </button>
+            <button className="py-3 px-4 text-sm font-medium border-b-2 border-transparent text-gray-400 hover:text-[#2DD4BF] transition-colors">
+              Results
+            </button>
           </div>
 
           {students.length === 0 ? (

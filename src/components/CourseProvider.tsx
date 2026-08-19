@@ -16,10 +16,6 @@ function loadFromStorage(): Course[] {
   }
 }
 
-function saveToStorage(courses: Course[]) {
-  localStorage.setItem(LS_KEY, JSON.stringify(courses));
-}
-
 export default function CourseProvider({ children }: { children: React.ReactNode }) {
   const [courses, setCourses] = useState<Course[]>([]);
   const [ready, setReady] = useState(false);
@@ -31,18 +27,17 @@ export default function CourseProvider({ children }: { children: React.ReactNode
 
   const persist = useCallback((next: Course[]) => {
     setCourses(next);
-    saveToStorage(next);
+    localStorage.setItem(LS_KEY, JSON.stringify(next));
   }, []);
 
   const addCourse = useCallback(
-    (data: Omit<Course, "id" | "assignmentCount" | "activeAssignments" | "allGraded" | "createdAt">): Course => {
+    (data: Omit<Course, "id" | "createdAt" | "updatedAt">): Course => {
+      const now = new Date().toISOString();
       const course: Course = {
         ...data,
-        id: `c-${Date.now()}`,
-        assignmentCount: 0,
-        activeAssignments: 0,
-        allGraded: false,
-        createdAt: new Date().toISOString(),
+        id: crypto.randomUUID(),
+        createdAt: now,
+        updatedAt: now,
       };
       persist([...courses, course]);
       return course;
@@ -52,13 +47,17 @@ export default function CourseProvider({ children }: { children: React.ReactNode
 
   const updateCourse = useCallback(
     (id: string, data: Partial<Omit<Course, "id" | "createdAt">>) => {
-      persist(courses.map((c) => (c.id === id ? { ...c, ...data } : c)));
+      persist(
+        courses.map((c) =>
+          c.id === id ? { ...c, ...data, updatedAt: new Date().toISOString() } : c
+        )
+      );
     },
     [courses, persist]
   );
 
   const removeCourse = useCallback(
-    (id: string) => { persist(courses.filter((c) => c.id !== id)); },
+    (id: string) => persist(courses.filter((c) => c.id !== id)),
     [courses, persist]
   );
 

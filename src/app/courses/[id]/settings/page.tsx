@@ -15,22 +15,19 @@ export default function CourseSettingsPage() {
   const course = getCourse(id);
 
   const [name, setName] = useState("");
-  const [studentCount, setStudentCount] = useState("");
   const [description, setDescription] = useState("");
   const [coverColor, setCoverColor] = useState(PRESET_COLORS[0]);
   const [saved, setSaved] = useState(false);
-  const originalRef = useRef({ name: "", studentCount: "", description: "", coverColor: "" });
+  const originalRef = useRef({ name: "", description: "", coverColor: "" });
 
   useEffect(() => {
     if (course) {
       const orig = {
         name: course.name,
-        studentCount: String(course.studentCount),
         description: course.description ?? "",
         coverColor: course.coverColor ?? PRESET_COLORS[0],
       };
       setName(orig.name);
-      setStudentCount(orig.studentCount);
       setDescription(orig.description);
       setCoverColor(orig.coverColor);
       originalRef.current = orig;
@@ -40,7 +37,6 @@ export default function CourseSettingsPage() {
   const isDirty =
     !saved && (
       name !== originalRef.current.name ||
-      studentCount !== originalRef.current.studentCount ||
       description !== originalRef.current.description ||
       coverColor !== originalRef.current.coverColor
     );
@@ -75,7 +71,6 @@ export default function CourseSettingsPage() {
     updateCourse(id, {
       name: name.trim(),
       description: description.trim(),
-      studentCount: parseInt(studentCount) || 0,
       coverColor,
       iconColor: coverColor,
     });
@@ -117,30 +112,16 @@ export default function CourseSettingsPage() {
           <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
             <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-5">General Information</h2>
 
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <div>
-                <label className="block text-sm font-medium text-[#1B2A4A] mb-1.5">
-                  Course Name <span className="text-red-400">*</span>
-                </label>
-                <input
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#2DD4BF]/30 focus:border-[#2DD4BF] transition-colors"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-[#1B2A4A] mb-1.5">
-                  Student Enrolled
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  value={studentCount}
-                  onChange={(e) => setStudentCount(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#2DD4BF]/30 focus:border-[#2DD4BF] transition-colors"
-                />
-              </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-[#1B2A4A] mb-1.5">
+                Course Name <span className="text-red-400">*</span>
+              </label>
+              <input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#2DD4BF]/30 focus:border-[#2DD4BF] transition-colors"
+                required
+              />
             </div>
 
             <div>

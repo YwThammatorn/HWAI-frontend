@@ -13,10 +13,6 @@ function load(): Student[] {
   } catch { return []; }
 }
 
-function save(students: Student[]) {
-  localStorage.setItem(LS_KEY, JSON.stringify(students));
-}
-
 export default function StudentProvider({ children }: { children: React.ReactNode }) {
   const [students, setStudents] = useState<Student[]>([]);
   const [ready, setReady] = useState(false);
@@ -28,15 +24,14 @@ export default function StudentProvider({ children }: { children: React.ReactNod
 
   const persist = useCallback((next: Student[]) => {
     setStudents(next);
-    save(next);
+    localStorage.setItem(LS_KEY, JSON.stringify(next));
   }, []);
 
   const addStudents = useCallback(
     (courseId: string, incoming: Omit<Student, "id" | "courseId">[]) => {
-      const now = Date.now();
-      const next: Student[] = incoming.map((s, i) => ({
+      const next: Student[] = incoming.map((s) => ({
         ...s,
-        id: `s-${now}-${i}`,
+        id: crypto.randomUUID(),
         courseId,
       }));
       persist([...students.filter((s) => s.courseId !== courseId), ...next]);

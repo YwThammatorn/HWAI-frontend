@@ -4,10 +4,14 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import { useCourses } from "@/lib/courses";
+import { useStudents } from "@/lib/students";
+import { useAssignments } from "@/lib/assignments";
 import type { Course } from "@/lib/courses";
 
 export default function CoursesPage() {
   const { courses, updateCourse, removeCourse } = useCourses();
+  const { getStudentsByCourse } = useStudents();
+  const { getAssignmentsByCourse, getSubmissionsByAssignment } = useAssignments();
   const [tab, setTab] = useState<"active" | "archived">("active");
   const [search, setSearch] = useState("");
 
@@ -100,19 +104,34 @@ export default function CoursesPage() {
         ) : (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {visible.map((course) => (
-                <CourseCard
-                  key={course.id}
-                  course={course}
-                  isArchived={tab === "archived"}
-                  onRestore={() => updateCourse(course.id, { status: "active" })}
-                  onDelete={() => {
-                    if (window.confirm(`ลบ "${course.name}" ถาวร?\nไม่สามารถกู้คืนได้`)) {
-                      removeCourse(course.id);
-                    }
-                  }}
-                />
-              ))}
+              {visible.map((course) => {
+                const studentCount = getStudentsByCourse(course.id).length;
+                const assignments = getAssignmentsByCourse(course.id);
+                const allGraded = assignments.length > 0 && assignments.every((a) => {
+                  const subs = getSubmissionsByAssignment(a.id);
+                  return subs.length > 0 && subs.every((s) => s.status === "graded");
+                });
+                const activeAssignments = assignments.filter((a) => {
+                  const subs = getSubmissionsByAssignment(a.id);
+                  return subs.some((s) => s.status !== "graded");
+                }).length;
+                return (
+                  <CourseCard
+                    key={course.id}
+                    course={course}
+                    studentCount={studentCount}
+                    allGraded={allGraded}
+                    activeAssignments={activeAssignments}
+                    isArchived={tab === "archived"}
+                    onRestore={() => updateCourse(course.id, { status: "active" })}
+                    onDelete={() => {
+                      if (window.confirm(`ลบ "${course.name}" ถาวร?\nไม่สามารถกู้คืนได้`)) {
+                        removeCourse(course.id);
+                      }
+                    }}
+                  />
+                );
+              })}
             </div>
             {/* Pagination placeholder */}
             {visible.length > 6 && (
@@ -168,7 +187,15 @@ function EmptyState() {
   );
 }
 
-function CourseCard({ course, isArchived, onRestore, onDelete }: { course: Course; isArchived: boolean; onRestore: () => void; onDelete: () => void }) {
+function CourseCard({ course, studentCount, allGraded, activeAssignments, isArchived, onRestore, onDelete }: {
+  course: Course;
+  studentCount: number;
+  allGraded: boolean;
+  activeAssignments: number;
+  isArchived: boolean;
+  onRestore: () => void;
+  onDelete: () => void;
+}) {
   const sourceLabel: Record<string, { label: string; dot: string }> = {
     manual: { label: "Manually Added", dot: "" },
     google: { label: "Google Classroom", dot: "#34D399" },
@@ -220,9 +247,9 @@ function CourseCard({ course, isArchived, onRestore, onDelete }: { course: Cours
           <div className="flex items-center justify-between text-xs text-gray-500 border-t border-gray-50 pt-3">
             <span className="flex items-center gap-1">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-              {course.studentCount} Students
+              {studentCount} Students
             </span>
-            {course.allGraded ? (
+            {allGraded ? (
               <span className="flex items-center gap-1 text-[#2DD4BF] font-medium">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                 All Graded
@@ -230,7 +257,7 @@ function CourseCard({ course, isArchived, onRestore, onDelete }: { course: Cours
             ) : (
               <span className="flex items-center gap-1 text-orange-500">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                {course.activeAssignments} Active
+                {activeAssignments} Active
               </span>
             )}
           </div>

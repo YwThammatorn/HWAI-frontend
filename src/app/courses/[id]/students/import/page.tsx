@@ -48,7 +48,7 @@ function parseCSV(text: string): ParsedRow[] {
 export default function ImportStudentsPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const { getCourse, updateCourse } = useCourses();
+  const { getCourse } = useCourses();
   const { addStudents, getStudentsByCourse } = useStudents();
   const course = getCourse(id);
 
@@ -90,7 +90,6 @@ export default function ImportStudentsPage() {
     addStudents(id, validRows.map(({ studentId, firstName, lastName, email }) => ({
       studentId, firstName, lastName, email,
     })));
-    updateCourse(id, { studentCount: validRows.length });
     setImporting(false);
     setStep("done");
   }

@@ -13,7 +13,7 @@ export default function Navbar() {
   const pathname = usePathname();
 
   return (
-    <nav className="bg-[#1B2A4A] text-white h-14 flex items-center px-6 shrink-0">
+    <nav className="sticky top-0 z-50 bg-[#1B2A4A] text-white h-14 flex items-center px-6 shrink-0">
       {/* Logo */}
       <Link href="/dashboard" className="flex items-center gap-2 mr-8">
         <div className="w-8 h-8 rounded-lg bg-[#2DD4BF] flex items-center justify-center shrink-0">
