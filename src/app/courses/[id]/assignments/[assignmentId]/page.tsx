@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { useParams } from "next/navigation";
@@ -65,7 +65,7 @@ export default function ViewAssignmentPage() {
         <Navbar />
         <main className="flex-1 flex items-center justify-center text-gray-400 text-sm">
           ไม่พบข้อมูล —{" "}
-          <Link href={`/courses/${id}/assignments`} className="text-[#2DD4BF] ml-1 hover:underline">กลับไปรายการชิ้นงาน</Link>
+          <Link href={`/courses/${id}/assignments`} className="text-[#0F766E] ml-1 hover:underline">กลับไปรายการชิ้นงาน</Link>
         </main>
       </div>
     );
@@ -103,15 +103,15 @@ export default function ViewAssignmentPage() {
 
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-gray-400 mb-6">
-          <Link href="/courses" className="hover:text-[#2DD4BF]">
+          <Link href="/courses" className="hover:text-[#0F766E]">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
             </svg>
           </Link>
           <span>/</span>
-          <Link href={`/courses/${id}/assignments`} className="hover:text-[#2DD4BF] transition-colors">{course.name}</Link>
+          <Link href={`/courses/${id}/assignments`} className="hover:text-[#0F766E] transition-colors">{course.name}</Link>
           <span>/</span>
-          <span className="text-[#2DD4BF] font-medium">{assignment.name}</span>
+          <span className="text-[#0F766E] font-medium">{assignment.name}</span>
         </div>
 
         {/* Header */}
@@ -144,7 +144,7 @@ export default function ViewAssignmentPage() {
               </svg>
               Edit Assignment
             </Link>
-            <button className="flex items-center gap-2 px-4 py-2 bg-[#2DD4BF] hover:bg-[#14B8A6] text-white text-sm font-medium rounded-xl transition-colors">
+            <button className="flex items-center gap-2 px-4 py-2 bg-[#2DD4BF] hover:bg-[#14B8A6] text-[#1B2A4A] text-sm font-medium rounded-xl transition-colors">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                 <polygon points="5 3 19 12 5 21 5 3"/>
               </svg>
@@ -240,10 +240,18 @@ export default function ViewAssignmentPage() {
               </svg>
             </div>
             <p className="text-xs text-gray-400 mb-1">Rubric</p>
-            <p className="text-xl font-bold text-gray-400 mb-2">Empty</p>
-            <button className="px-3 py-1.5 bg-[#2DD4BF] hover:bg-[#14B8A6] text-white text-xs font-medium rounded-lg transition-colors">
-              Add Rubric
-            </button>
+            <p className="text-2xl font-bold text-[#1B2A4A]">
+              {assignment.rubricIds.length}
+              <span className="text-sm font-normal text-gray-400 ml-1">rubric</span>
+            </p>
+            <p className="text-xs text-gray-400 mt-1.5">
+              <Link
+                href={`/courses/${id}/assignments/${assignmentId}/edit`}
+                className="text-[#0F766E] hover:underline"
+              >
+                {assignment.rubricIds.length > 0 ? "จัดการ Rubric" : "เพิ่ม Rubric"}
+              </Link>
+            </p>
           </div>
         </div>
 
@@ -253,7 +261,7 @@ export default function ViewAssignmentPage() {
             <p className="text-xs text-gray-400 mb-1.5">Assignment Description</p>
             <div className="flex items-start justify-between gap-4">
               <p className="text-sm text-[#1B2A4A] leading-relaxed">{assignment.description}</p>
-              <Link href={`/courses/${id}/assignments/${assignmentId}/edit`} className="text-[#2DD4BF] text-sm hover:underline shrink-0">Edit</Link>
+              <Link href={`/courses/${id}/assignments/${assignmentId}/edit`} className="text-[#0F766E] text-sm hover:underline shrink-0">Edit</Link>
             </div>
           </div>
         )}
@@ -269,7 +277,7 @@ export default function ViewAssignmentPage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search students..."
-                className="pl-8 pr-3 py-1.5 text-sm rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#2DD4BF]/30 focus:border-[#2DD4BF] w-52"
+                className="pl-8 pr-3 py-1.5 text-sm rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#0F766E]/30 focus:border-[#0F766E] w-52"
               />
             </div>
             <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-medium text-gray-500 hover:bg-gray-50 transition-colors">
@@ -349,7 +357,7 @@ export default function ViewAssignmentPage() {
                       </td>
                       <td className="px-3 py-3.5">
                         {s.status === "need_review" && (
-                          <button className="text-xs text-[#2DD4BF] hover:underline font-medium">Review</button>
+                          <button className="text-xs text-[#0F766E] hover:underline font-medium">Review</button>
                         )}
                       </td>
                     </tr>
@@ -363,7 +371,7 @@ export default function ViewAssignmentPage() {
                     {[1, 2, 3].map((p) => (
                       <button key={p} className={[
                         "w-7 h-7 rounded-full text-xs font-medium",
-                        p === 1 ? "bg-[#2DD4BF] text-white" : "text-gray-500 hover:bg-gray-100",
+                        p === 1 ? "bg-[#2DD4BF] text-[#1B2A4A]" : "text-gray-500 hover:bg-gray-100",
                       ].join(" ")}>{p}</button>
                     ))}
                   </div>

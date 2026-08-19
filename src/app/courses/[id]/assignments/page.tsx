@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -61,7 +61,7 @@ export default function AssignmentsPage() {
         <Navbar />
         <main className="flex-1 flex items-center justify-center text-gray-400 text-sm">
           ไม่พบรายวิชานี้ —{" "}
-          <Link href="/courses" className="text-[#2DD4BF] ml-1 hover:underline">กลับไปหน้าหลัก</Link>
+          <Link href="/courses" className="text-[#0F766E] ml-1 hover:underline">กลับไปหน้าหลัก</Link>
         </main>
       </div>
     );
@@ -147,15 +147,15 @@ export default function AssignmentsPage() {
 
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-gray-400 mb-6">
-          <Link href="/courses" className="hover:text-[#2DD4BF] transition-colors">
+          <Link href="/courses" className="hover:text-[#0F766E] transition-colors">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
             </svg>
           </Link>
           <span>/</span>
-          <Link href={`/courses/${id}`} className="hover:text-[#2DD4BF] transition-colors">{course.name}</Link>
+          <Link href={`/courses/${id}`} className="hover:text-[#0F766E] transition-colors">{course.name}</Link>
           <span>/</span>
-          <span className="text-[#2DD4BF] font-medium">Assignments</span>
+          <span className="text-[#0F766E] font-medium">Assignments</span>
         </div>
 
         {/* Course header */}
@@ -170,7 +170,7 @@ export default function AssignmentsPage() {
               </svg>
               <span>{students.length} Students</span>
               <span className="text-gray-300">|</span>
-              <Link href={`/courses/${id}/settings`} className="text-[#2DD4BF] hover:underline font-medium">Edit</Link>
+              <Link href={`/courses/${id}/settings`} className="text-[#0F766E] hover:underline font-medium">Edit</Link>
               <button onClick={handleDelete} className="text-red-400 hover:underline font-medium">Delete this Course</button>
             </div>
           </div>
@@ -184,7 +184,7 @@ export default function AssignmentsPage() {
             </button>
             <Link
               href={`/courses/${id}/assignments/new`}
-              className="flex items-center gap-2 px-4 py-2 bg-[#2DD4BF] hover:bg-[#14B8A6] text-white font-medium rounded-xl text-sm transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-[#2DD4BF] hover:bg-[#14B8A6] text-[#1B2A4A] font-medium rounded-xl text-sm transition-colors"
             >
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
                 <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
@@ -215,7 +215,7 @@ export default function AssignmentsPage() {
             <p className="text-xs text-gray-400 mb-1.5">Course Description</p>
             <div className="flex items-start justify-between gap-4">
               <p className="text-sm text-[#1B2A4A] leading-relaxed">{course.description}</p>
-              <Link href={`/courses/${id}/settings`} className="text-[#2DD4BF] text-sm hover:underline shrink-0">Edit</Link>
+              <Link href={`/courses/${id}/settings`} className="text-[#0F766E] text-sm hover:underline shrink-0">Edit</Link>
             </div>
           </div>
         )}
@@ -233,7 +233,7 @@ export default function AssignmentsPage() {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search tasks..."
-                  className="pl-8 pr-3 py-1.5 text-sm rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#2DD4BF]/30 focus:border-[#2DD4BF] w-48"
+                  className="pl-8 pr-3 py-1.5 text-sm rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#0F766E]/30 focus:border-[#0F766E] w-48"
                 />
               </div>
               <button className="text-gray-400 hover:text-gray-600 transition-colors p-1">
@@ -259,7 +259,7 @@ export default function AssignmentsPage() {
                   <p className="text-xs text-gray-400 mb-4">กด Create Assignment เพื่อเพิ่มชิ้นงานแรก</p>
                   <Link
                     href={`/courses/${id}/assignments/new`}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-[#2DD4BF] hover:bg-[#14B8A6] text-white text-sm font-medium rounded-xl transition-colors"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-[#2DD4BF] hover:bg-[#14B8A6] text-[#1B2A4A] text-sm font-medium rounded-xl transition-colors"
                   >
                     <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
                       <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
@@ -282,7 +282,7 @@ export default function AssignmentsPage() {
                       <div className="flex-1 min-w-0">
                         <Link
                           href={`/courses/${id}/assignments/${a.id}`}
-                          className="text-[#2DD4BF] font-medium hover:underline text-sm"
+                          className="text-[#0F766E] font-medium hover:underline text-sm"
                         >
                           {a.name}
                         </Link>
@@ -435,7 +435,7 @@ export default function AssignmentsPage() {
                               {needReview > 0 && (
                                 <Link
                                   href={`/courses/${id}/assignments/${a.id}`}
-                                  className="flex items-center gap-1.5 px-3 py-1.5 bg-[#2DD4BF] hover:bg-[#14B8A6] text-white text-xs font-medium rounded-lg transition-colors"
+                                  className="flex items-center gap-1.5 px-3 py-1.5 bg-[#2DD4BF] hover:bg-[#14B8A6] text-[#1B2A4A] text-xs font-medium rounded-lg transition-colors"
                                 >
                                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                                     <polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
@@ -471,7 +471,7 @@ export default function AssignmentsPage() {
                       {[1, 2, 3].map((p) => (
                         <button key={p} className={[
                           "w-7 h-7 rounded-full text-xs font-medium",
-                          p === 1 ? "bg-[#2DD4BF] text-white" : "text-gray-500 hover:bg-gray-100",
+                          p === 1 ? "bg-[#2DD4BF] text-[#1B2A4A]" : "text-gray-500 hover:bg-gray-100",
                         ].join(" ")}>{p}</button>
                       ))}
                     </div>

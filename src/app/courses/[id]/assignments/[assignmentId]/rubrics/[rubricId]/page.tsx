@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -78,7 +78,7 @@ export default function RubricEditorPage() {
   }
 
   const totalWeight = criteria.reduce((sum, c) => sum + (parseFloat(c.weight) || 0), 0);
-  const weightOk = Math.abs(totalWeight - 100) < 0.01;
+  const weightOk = Math.abs(totalWeight - 100) <= 0.5;
 
   const updateCriterion = useCallback((cid: string, field: keyof Omit<CriterionDraft, "id" | "levels">, value: string) => {
     setCriteria(prev => prev.map(c => c.id === cid ? { ...c, [field]: value } : c));
@@ -111,7 +111,6 @@ export default function RubricEditorPage() {
 
   function handleSave() {
     if (!weightOk) return;
-    const now = new Date().toISOString();
     const finalized: RubricCriterion[] = criteria.map(c => ({
       id: c.id,
       name: c.name.trim() || "ไม่มีชื่อ",
@@ -131,7 +130,7 @@ export default function RubricEditorPage() {
         <Navbar />
         <main className="flex-1 flex items-center justify-center text-gray-400 text-sm">
           ไม่พบข้อมูล —{" "}
-          <Link href={`/courses/${id}/assignments/${assignmentId}/edit`} className="text-[#2DD4BF] ml-1 hover:underline">
+          <Link href={`/courses/${id}/assignments/${assignmentId}/edit`} className="text-[#0F766E] ml-1 hover:underline">
             กลับหน้าแก้ไขชิ้นงาน
           </Link>
         </main>
@@ -146,11 +145,11 @@ export default function RubricEditorPage() {
 
         {/* Breadcrumb */}
         <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-6 flex-wrap">
-          <Link href="/courses" className="hover:text-[#2DD4BF] transition-colors">All Courses</Link>
+          <Link href="/courses" className="hover:text-[#0F766E] transition-colors">All Courses</Link>
           <span>/</span>
-          <Link href={`/courses/${id}/assignments`} className="hover:text-[#2DD4BF] transition-colors">{course.name}</Link>
+          <Link href={`/courses/${id}/assignments`} className="hover:text-[#0F766E] transition-colors">{course.name}</Link>
           <span>/</span>
-          <button onClick={() => navAway(`/courses/${id}/assignments/${assignmentId}/edit`)} className="hover:text-[#2DD4BF] transition-colors">
+          <button onClick={() => navAway(`/courses/${id}/assignments/${assignmentId}/edit`)} className="hover:text-[#0F766E] transition-colors">
             {assignment.name}
           </button>
           <span>/</span>
@@ -194,7 +193,7 @@ export default function RubricEditorPage() {
           <input
             value={rubricName}
             onChange={e => { setRubricName(e.target.value); setSaved(false); }}
-            className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm font-medium text-[#1B2A4A] focus:outline-none focus:ring-2 focus:ring-[#2DD4BF]/30 focus:border-[#2DD4BF] transition-colors"
+            className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm font-medium text-[#1B2A4A] focus:outline-none focus:ring-2 focus:ring-[#0F766E]/30 focus:border-[#0F766E] transition-colors"
             placeholder="ชื่อ Rubric"
           />
         </div>
@@ -249,7 +248,7 @@ export default function RubricEditorPage() {
                         onChange={e => updateCriterion(c.id, "weight", e.target.value)}
                         className={`w-14 text-center text-sm font-semibold border rounded-lg px-2 py-1 outline-none focus:ring-2 transition-colors ${
                           parseFloat(c.weight) > 0
-                            ? "border-[#2DD4BF] text-[#0F7B6C] focus:ring-[#2DD4BF]/30"
+                            ? "border-[#0F766E] text-[#0F7B6C] focus:ring-[#0F766E]/30"
                             : "border-gray-200 text-gray-400 focus:ring-gray-200"
                         }`}
                       />
@@ -278,7 +277,7 @@ export default function RubricEditorPage() {
                     onChange={e => updateCriterion(c.id, "description", e.target.value)}
                     rows={2}
                     placeholder="อธิบายสิ่งที่นักศึกษาต้องแสดงในเกณฑ์นี้..."
-                    className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm text-[#1B2A4A] resize-none focus:outline-none focus:ring-2 focus:ring-[#2DD4BF]/30 focus:border-[#2DD4BF] transition-colors placeholder:text-gray-300"
+                    className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm text-[#1B2A4A] resize-none focus:outline-none focus:ring-2 focus:ring-[#0F766E]/30 focus:border-[#0F766E] transition-colors placeholder:text-gray-300"
                   />
                 </div>
 
@@ -311,7 +310,7 @@ export default function RubricEditorPage() {
         {/* Add criterion */}
         <button
           onClick={addCriterion}
-          className="w-full mt-4 py-3.5 rounded-2xl border-2 border-dashed border-gray-200 text-sm text-gray-400 hover:border-[#2DD4BF] hover:text-[#2DD4BF] hover:bg-teal-50/30 transition-all flex items-center justify-center gap-2"
+          className="w-full mt-4 py-3.5 rounded-2xl border-2 border-dashed border-gray-200 text-sm text-gray-400 hover:border-[#0F766E] hover:text-[#0F766E] hover:bg-teal-50/30 transition-all flex items-center justify-center gap-2"
         >
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
             <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
@@ -338,7 +337,7 @@ export default function RubricEditorPage() {
                 saved
                   ? "bg-green-500 text-white"
                   : weightOk
-                    ? "bg-[#2DD4BF] hover:bg-[#14B8A6] text-white shadow-sm shadow-teal-200"
+                    ? "bg-[#2DD4BF] hover:bg-[#14B8A6] text-[#1B2A4A] shadow-sm shadow-teal-200"
                     : "bg-gray-100 text-gray-300 cursor-not-allowed"
               }`}
             >

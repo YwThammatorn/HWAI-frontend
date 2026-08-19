@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -161,7 +161,7 @@ export default function EditAssignmentPage() {
         <Navbar />
         <main className="flex-1 flex items-center justify-center text-gray-400 text-sm">
           ไม่พบข้อมูล —{" "}
-          <Link href={`/courses/${id}/assignments`} className="text-[#2DD4BF] ml-1 hover:underline">กลับรายการชิ้นงาน</Link>
+          <Link href={`/courses/${id}/assignments`} className="text-[#0F766E] ml-1 hover:underline">กลับรายการชิ้นงาน</Link>
         </main>
       </div>
     );
@@ -176,7 +176,7 @@ export default function EditAssignmentPage() {
 
         <button
           onClick={() => navAway(`/courses/${id}/assignments/${assignmentId}`)}
-          className="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-[#2DD4BF] mb-6 transition-colors"
+          className="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-[#0F766E] mb-6 transition-colors"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
             <polyline points="15 18 9 12 15 6"/>
@@ -201,7 +201,7 @@ export default function EditAssignmentPage() {
             </label>
             <input
               value={name} onChange={(e) => setName(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#2DD4BF]/30 focus:border-[#2DD4BF] transition-colors"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#0F766E]/30 focus:border-[#0F766E] transition-colors"
               required
             />
           </section>
@@ -212,7 +212,7 @@ export default function EditAssignmentPage() {
             <textarea
               value={description} onChange={(e) => setDescription(e.target.value)}
               rows={4}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#2DD4BF]/30 focus:border-[#2DD4BF] resize-none transition-colors"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#0F766E]/30 focus:border-[#0F766E] resize-none transition-colors"
             />
           </section>
 
@@ -231,7 +231,7 @@ export default function EditAssignmentPage() {
                   <input
                     type="date" value={dueDate} min={minDate}
                     onChange={(e) => setDueDate(e.target.value)}
-                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#2DD4BF]/30 focus:border-[#2DD4BF] transition-colors"
+                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#0F766E]/30 focus:border-[#0F766E] transition-colors"
                     required
                   />
                 </div>
@@ -242,7 +242,7 @@ export default function EditAssignmentPage() {
                   {[10, 15, 25, 100].map((p) => (
                     <button key={p} type="button" onClick={() => setMaxPoints(String(p))}
                       className={["px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors",
-                        maxPoints === String(p) ? "bg-[#2DD4BF] text-white border-[#2DD4BF]" : "border-gray-200 text-gray-500 hover:border-[#2DD4BF] hover:text-[#2DD4BF]"
+                        maxPoints === String(p) ? "bg-[#2DD4BF] text-[#1B2A4A] border-[#0F766E]" : "border-gray-200 text-gray-500 hover:border-[#0F766E] hover:text-[#0F766E]"
                       ].join(" ")}>
                       {p}
                     </button>
@@ -252,7 +252,7 @@ export default function EditAssignmentPage() {
                   type="number" min="1" max="1000" value={maxPoints}
                   onChange={(e) => setMaxPoints(e.target.value)}
                   placeholder="หรือพิมพ์เอง"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#2DD4BF]/30 focus:border-[#2DD4BF] transition-colors"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#0F766E]/30 focus:border-[#0F766E] transition-colors"
                 />
               </div>
             </div>
@@ -315,7 +315,7 @@ export default function EditAssignmentPage() {
                     type="number" min="2" max="20"
                     value={maxGroupSize} onChange={e => setMaxGroupSize(e.target.value)}
                     placeholder="เช่น 4"
-                    className="w-24 px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#2DD4BF]/30 focus:border-[#2DD4BF] transition-colors"
+                    className="w-24 px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#0F766E]/30 focus:border-[#0F766E] transition-colors"
                   />
                   <span className="text-sm text-gray-400">คน</span>
                 </div>
@@ -336,7 +336,7 @@ export default function EditAssignmentPage() {
                 type="button"
                 onClick={() => { setShowNewRubricForm(true); setNewRubricName(""); }}
                 disabled={showNewRubricForm}
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-[#2DD4BF] text-[#2DD4BF] text-xs font-medium hover:bg-teal-50 transition-colors disabled:opacity-40"
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-[#0F766E] text-[#0F766E] text-xs font-medium hover:bg-teal-50 transition-colors disabled:opacity-40"
               >
                 <svg width="11" height="11" viewBox="0 0 16 16" fill="none">
                   <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
@@ -369,7 +369,7 @@ export default function EditAssignmentPage() {
                     <div className="flex items-center gap-1">
                       <Link
                         href={`/courses/${id}/assignments/${assignmentId}/rubrics/${rubric.id}`}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs text-[#2DD4BF] border border-[#2DD4BF] hover:bg-teal-50 transition-colors font-medium"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs text-[#0F766E] border border-[#0F766E] hover:bg-teal-50 transition-colors font-medium"
                       >
                         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                           <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -395,7 +395,7 @@ export default function EditAssignmentPage() {
             )}
 
             {showNewRubricForm && (
-              <div className="mt-3 p-4 rounded-xl bg-teal-50/50 border border-[#2DD4BF]/20">
+              <div className="mt-3 p-4 rounded-xl bg-teal-50/50 border border-[#0F766E]/20">
                 <label className="block text-xs font-medium text-gray-500 mb-2">ชื่อเกณฑ์</label>
                 <div className="flex gap-2">
                   <input
@@ -407,10 +407,10 @@ export default function EditAssignmentPage() {
                       if (e.key === "Escape") { setShowNewRubricForm(false); setNewRubricName(""); }
                     }}
                     placeholder="เช่น User Research Rubric"
-                    className="flex-1 px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#2DD4BF]/30 focus:border-[#2DD4BF] transition-colors"
+                    className="flex-1 px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#0F766E]/30 focus:border-[#0F766E] transition-colors"
                   />
                   <button type="button" onClick={handleAddRubric} disabled={!newRubricName.trim()}
-                    className="px-3 py-2 rounded-xl bg-[#2DD4BF] text-white text-sm font-medium hover:bg-[#14B8A6] disabled:opacity-40 transition-colors">
+                    className="px-3 py-2 rounded-xl bg-[#2DD4BF] text-[#1B2A4A] text-sm font-medium hover:bg-[#14B8A6] disabled:opacity-40 transition-colors">
                     บันทึก
                   </button>
                   <button type="button" onClick={() => { setShowNewRubricForm(false); setNewRubricName(""); }}
@@ -442,8 +442,8 @@ export default function EditAssignmentPage() {
             </button>
             <button
               type="submit" disabled={!isValid}
-              className={["flex items-center gap-2 px-5 py-2.5 rounded-xl text-white text-sm font-medium transition-colors",
-                saved ? "bg-emerald-500" : "bg-[#2DD4BF] hover:bg-[#14B8A6] disabled:opacity-40 disabled:cursor-not-allowed"
+              className={["flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-colors",
+                saved ? "bg-emerald-500 text-white" : "bg-[#2DD4BF] hover:bg-[#14B8A6] text-[#1B2A4A] disabled:opacity-40 disabled:cursor-not-allowed"
               ].join(" ")}
             >
               {saved ? (

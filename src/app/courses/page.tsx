@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -54,13 +54,13 @@ export default function CoursesPage() {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search courses..."
-                  className="pl-9 pr-4 py-2 text-sm rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#2DD4BF]/30 focus:border-[#2DD4BF] w-56"
+                  className="pl-9 pr-4 py-2 text-sm rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#0F766E]/30 focus:border-[#0F766E] w-56"
                 />
               </div>
               {/* Add Course */}
               <Link
                 href="/courses/new"
-                className="flex items-center gap-2 px-4 py-2 bg-[#2DD4BF] hover:bg-[#14B8A6] text-white font-medium rounded-xl text-sm transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-[#2DD4BF] hover:bg-[#14B8A6] text-[#1B2A4A] font-medium rounded-xl text-sm transition-colors"
               >
                 <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
                   <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
@@ -71,7 +71,7 @@ export default function CoursesPage() {
           )}
         </div>
 
-        {/* Tab filter — only show when there are archived */}
+        {/* Tab filter â€” only show when there are archived */}
         {archived.length > 0 && (
           <div className="flex gap-1 mb-6">
             {(["active", "archived"] as const).map((t) => (
@@ -95,11 +95,11 @@ export default function CoursesPage() {
         {/* Content */}
         {visible.length === 0 ? (
           search ? (
-            <p className="text-center text-gray-400 text-sm py-20">ไม่พบรายวิชาที่ตรงกับ &ldquo;{search}&rdquo;</p>
+            <p className="text-center text-gray-400 text-sm py-20">à¹„à¸¡à¹ˆà¸žà¸šà¸£à¸²à¸¢à¸§à¸´à¸Šà¸²à¸—à¸µà¹ˆà¸•à¸£à¸‡à¸à¸±à¸š &ldquo;{search}&rdquo;</p>
           ) : tab === "active" ? (
             <EmptyState />
           ) : (
-            <p className="text-center text-gray-400 text-sm py-20">ไม่มีรายวิชาที่ถูก archive</p>
+            <p className="text-center text-gray-400 text-sm py-20">à¹„à¸¡à¹ˆà¸¡à¸µà¸£à¸²à¸¢à¸§à¸´à¸Šà¸²à¸—à¸µà¹ˆà¸–à¸¹à¸ archive</p>
           )
         ) : (
           <>
@@ -125,7 +125,7 @@ export default function CoursesPage() {
                     isArchived={tab === "archived"}
                     onRestore={() => updateCourse(course.id, { status: "active" })}
                     onDelete={() => {
-                      if (window.confirm(`ลบ "${course.name}" ถาวร?\nไม่สามารถกู้คืนได้`)) {
+                      if (window.confirm(`à¸¥à¸š "${course.name}" à¸–à¸²à¸§à¸£?\nà¹„à¸¡à¹ˆà¸ªà¸²à¸¡à¸²à¸£à¸–à¸à¸¹à¹‰à¸„à¸·à¸™à¹„à¸”à¹‰`)) {
                         removeCourse(course.id);
                       }
                     }}
@@ -137,7 +137,7 @@ export default function CoursesPage() {
             {visible.length > 6 && (
               <div className="flex justify-center gap-1 mt-8">
                 {[1, 2, 3].map((p) => (
-                  <button key={p} className={["w-8 h-8 rounded-full text-sm font-medium", p === 1 ? "bg-[#2DD4BF] text-white" : "text-gray-500 hover:bg-gray-100"].join(" ")}>
+                  <button key={p} className={["w-8 h-8 rounded-full text-sm font-medium", p === 1 ? "bg-[#2DD4BF] text-[#1B2A4A]" : "text-gray-500 hover:bg-gray-100"].join(" ")}>
                     {p}
                   </button>
                 ))}
@@ -175,7 +175,7 @@ function EmptyState() {
 
         <Link
           href="/courses/new"
-          className="flex items-center gap-2 px-6 py-2.5 bg-[#2DD4BF] hover:bg-[#14B8A6] text-white font-medium rounded-full text-sm transition-colors"
+          className="flex items-center gap-2 px-6 py-2.5 bg-[#2DD4BF] hover:bg-[#14B8A6] text-[#1B2A4A] font-medium rounded-full text-sm transition-colors"
         >
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
             <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
@@ -225,7 +225,7 @@ function CourseCard({ course, studentCount, allGraded, activeAssignments, isArch
           <h3 className="font-bold text-[#1B2A4A] text-[15px] leading-snug">{course.name}</h3>
           {course.source === "manual" && !isArchived && (
             <div className="flex gap-2 text-xs ml-2 shrink-0">
-              <Link href={`/courses/${course.id}/settings`} className="text-[#2DD4BF] hover:underline font-medium">Edit</Link>
+              <Link href={`/courses/${course.id}/settings`} className="text-[#0F766E] hover:underline font-medium">Edit</Link>
               <button onClick={onDelete} className="text-red-400 hover:underline font-medium">Delete</button>
             </div>
           )}
@@ -239,7 +239,7 @@ function CourseCard({ course, studentCount, allGraded, activeAssignments, isArch
         {isArchived ? (
           <button
             onClick={onRestore}
-            className="w-full text-xs font-medium py-1.5 rounded-lg bg-[#E0F7F4] hover:bg-[#2DD4BF] text-[#0F7B6C] hover:text-white transition-colors"
+            className="w-full text-xs font-medium py-1.5 rounded-lg bg-[#E0F7F4] hover:bg-[#2DD4BF] text-[#0F7B6C] hover:text-[#1B2A4A] transition-colors"
           >
             Restore
           </button>
@@ -250,7 +250,7 @@ function CourseCard({ course, studentCount, allGraded, activeAssignments, isArch
               {studentCount} Students
             </span>
             {allGraded ? (
-              <span className="flex items-center gap-1 text-[#2DD4BF] font-medium">
+              <span className="flex items-center gap-1 text-[#0F766E] font-medium">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                 All Graded
               </span>

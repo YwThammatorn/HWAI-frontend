@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -100,7 +100,7 @@ export default function ImportStudentsPage() {
         <Navbar />
         <main className="flex-1 flex items-center justify-center text-gray-400 text-sm">
           ไม่พบรายวิชานี้ —{" "}
-          <Link href="/courses" className="text-[#2DD4BF] ml-1 hover:underline">กลับไปหน้าหลัก</Link>
+          <Link href="/courses" className="text-[#0F766E] ml-1 hover:underline">กลับไปหน้าหลัก</Link>
         </main>
       </div>
     );
@@ -113,9 +113,9 @@ export default function ImportStudentsPage() {
       <main className="flex-1 w-full max-w-[860px] mx-auto px-8 py-8">
         {/* Breadcrumb */}
         <div className="flex items-center gap-1.5 text-sm text-gray-400 mb-6">
-          <Link href="/courses" className="hover:text-[#2DD4BF] transition-colors">All Courses</Link>
+          <Link href="/courses" className="hover:text-[#0F766E] transition-colors">All Courses</Link>
           <span>/</span>
-          <Link href={`/courses/${id}`} className="hover:text-[#2DD4BF] transition-colors">{course.name}</Link>
+          <Link href={`/courses/${id}`} className="hover:text-[#0F766E] transition-colors">{course.name}</Link>
           <span>/</span>
           <span className="text-[#1B2A4A] font-medium">Import Students</span>
         </div>
@@ -138,8 +138,8 @@ export default function ImportStudentsPage() {
               className={[
                 "border-2 border-dashed rounded-2xl py-16 flex flex-col items-center gap-3 transition-colors cursor-pointer",
                 isDragging
-                  ? "border-[#2DD4BF] bg-[#E6FAF8]"
-                  : "border-gray-200 bg-white hover:border-[#2DD4BF] hover:bg-[#F0FFFE]",
+                  ? "border-[#0F766E] bg-[#E6FAF8]"
+                  : "border-gray-200 bg-white hover:border-[#0F766E] hover:bg-[#F0FFFE]",
               ].join(" ")}
               onClick={() => fileRef.current?.click()}
             >
@@ -154,7 +154,7 @@ export default function ImportStudentsPage() {
                 <p className="text-sm font-medium text-[#1B2A4A]">Drag and drop your file here</p>
                 <p className="text-sm text-gray-400 mt-0.5">
                   or{" "}
-                  <span className="text-[#2DD4BF] font-medium">browse your computer</span>
+                  <span className="text-[#0F766E] font-medium">browse your computer</span>
                 </p>
               </div>
               <p className="text-xs text-gray-300 uppercase tracking-wide">Supports .csv • UTF-8 encoding</p>
@@ -186,7 +186,7 @@ export default function ImportStudentsPage() {
               <a
                 href="/students-template.csv"
                 download
-                className="px-4 py-2 text-sm font-medium rounded-xl border border-[#2DD4BF] text-[#2DD4BF] hover:bg-[#E6FAF8] transition-colors"
+                className="px-4 py-2 text-sm font-medium rounded-xl border border-[#0F766E] text-[#0F766E] hover:bg-[#E6FAF8] transition-colors"
                 onClick={(e) => e.stopPropagation()}
               >
                 Download
@@ -277,7 +277,7 @@ export default function ImportStudentsPage() {
                               {row.error}
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 text-xs text-[#2DD4BF]">
+                            <span className="inline-flex items-center gap-1 text-xs text-[#0F766E]">
                               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                               OK
                             </span>
@@ -311,7 +311,7 @@ export default function ImportStudentsPage() {
                 <button
                   onClick={handleImport}
                   disabled={validRows.length === 0 || importing}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#2DD4BF] hover:bg-[#14B8A6] disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors"
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#2DD4BF] hover:bg-[#14B8A6] disabled:opacity-40 disabled:cursor-not-allowed text-[#1B2A4A] text-sm font-medium transition-colors"
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                     <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>
@@ -346,7 +346,7 @@ export default function ImportStudentsPage() {
                 </button>
                 <Link
                   href={`/courses/${id}`}
-                  className="px-5 py-2.5 rounded-xl bg-[#2DD4BF] hover:bg-[#14B8A6] text-white text-sm font-medium transition-colors"
+                  className="px-5 py-2.5 rounded-xl bg-[#2DD4BF] hover:bg-[#14B8A6] text-[#1B2A4A] text-sm font-medium transition-colors"
                 >
                   กลับไปหน้า Course
                 </Link>

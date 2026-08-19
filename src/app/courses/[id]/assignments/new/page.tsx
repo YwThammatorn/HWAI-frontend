@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -84,7 +84,7 @@ export default function NewAssignmentPage() {
 
         <button
           onClick={() => navAway(`/courses/${id}/assignments`)}
-          className="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-[#2DD4BF] mb-6 transition-colors"
+          className="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-[#0F766E] mb-6 transition-colors"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
             <polyline points="15 18 9 12 15 6"/>
@@ -110,7 +110,7 @@ export default function NewAssignmentPage() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="เช่น User Research Report"
-              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#2DD4BF]/30 focus:border-[#2DD4BF] transition-colors"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#0F766E]/30 focus:border-[#0F766E] transition-colors"
               required
             />
           </section>
@@ -123,7 +123,7 @@ export default function NewAssignmentPage() {
               onChange={(e) => setDescription(e.target.value)}
               placeholder="อธิบายวัตถุประสงค์ รูปแบบไฟล์ที่ต้องส่ง เกณฑ์เบื้องต้น ฯลฯ"
               rows={4}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#2DD4BF]/30 focus:border-[#2DD4BF] resize-none transition-colors"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#0F766E]/30 focus:border-[#0F766E] resize-none transition-colors"
             />
           </section>
 
@@ -142,7 +142,7 @@ export default function NewAssignmentPage() {
                   <input
                     type="date" value={dueDate} min={todayStr}
                     onChange={(e) => setDueDate(e.target.value)}
-                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#2DD4BF]/30 focus:border-[#2DD4BF] transition-colors"
+                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#0F766E]/30 focus:border-[#0F766E] transition-colors"
                     required
                   />
                 </div>
@@ -153,7 +153,7 @@ export default function NewAssignmentPage() {
                   {[10, 15, 25, 100].map((p) => (
                     <button key={p} type="button" onClick={() => setMaxPoints(String(p))}
                       className={["px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors",
-                        maxPoints === String(p) ? "bg-[#2DD4BF] text-white border-[#2DD4BF]" : "border-gray-200 text-gray-500 hover:border-[#2DD4BF] hover:text-[#2DD4BF]"
+                        maxPoints === String(p) ? "bg-[#2DD4BF] text-[#1B2A4A] border-[#0F766E]" : "border-gray-200 text-gray-500 hover:border-[#0F766E] hover:text-[#0F766E]"
                       ].join(" ")}>
                       {p}
                     </button>
@@ -163,7 +163,7 @@ export default function NewAssignmentPage() {
                   type="number" min="1" max="1000" value={maxPoints}
                   onChange={(e) => setMaxPoints(e.target.value)}
                   placeholder="หรือพิมพ์เอง"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#2DD4BF]/30 focus:border-[#2DD4BF] transition-colors"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#0F766E]/30 focus:border-[#0F766E] transition-colors"
                 />
               </div>
             </div>
@@ -250,7 +250,7 @@ export default function NewAssignmentPage() {
                     value={maxGroupSize}
                     onChange={e => setMaxGroupSize(e.target.value)}
                     placeholder="เช่น 4"
-                    className="w-24 px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#2DD4BF]/30 focus:border-[#2DD4BF] transition-colors"
+                    className="w-24 px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#0F766E]/30 focus:border-[#0F766E] transition-colors"
                   />
                   <span className="text-sm text-gray-400">คน</span>
                 </div>
@@ -280,7 +280,7 @@ export default function NewAssignmentPage() {
             <button
               type="submit"
               disabled={!isValid}
-              className="flex items-center gap-2 px-5 py-2.5 bg-[#2DD4BF] hover:bg-[#14B8A6] disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium rounded-xl transition-colors"
+              className="flex items-center gap-2 px-5 py-2.5 bg-[#2DD4BF] hover:bg-[#14B8A6] disabled:opacity-40 disabled:cursor-not-allowed text-[#1B2A4A] text-sm font-medium rounded-xl transition-colors"
             >
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
                 <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>

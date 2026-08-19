@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
@@ -60,7 +60,7 @@ export default function CourseSettingsPage() {
         <Navbar />
         <main className="flex-1 flex items-center justify-center text-gray-400 text-sm">
           ไม่พบรายวิชานี้ —{" "}
-          <Link href="/courses" className="text-[#2DD4BF] ml-1 hover:underline">กลับไปหน้าหลัก</Link>
+          <Link href="/courses" className="text-[#0F766E] ml-1 hover:underline">กลับไปหน้าหลัก</Link>
         </main>
       </div>
     );
@@ -98,7 +98,7 @@ export default function CourseSettingsPage() {
 
       <main className="flex-1 w-full max-w-[860px] mx-auto px-8 py-8">
         {/* Back */}
-        <button onClick={() => navAway("/courses")} className="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-[#2DD4BF] mb-6 transition-colors">
+        <button onClick={() => navAway("/courses")} className="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-[#0F766E] mb-6 transition-colors">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
             <polyline points="15 18 9 12 15 6"/>
           </svg>
@@ -119,7 +119,7 @@ export default function CourseSettingsPage() {
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#2DD4BF]/30 focus:border-[#2DD4BF] transition-colors"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#0F766E]/30 focus:border-[#0F766E] transition-colors"
                 required
               />
             </div>
@@ -130,7 +130,7 @@ export default function CourseSettingsPage() {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={3}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#2DD4BF]/30 focus:border-[#2DD4BF] resize-none transition-colors"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#0F766E]/30 focus:border-[#0F766E] resize-none transition-colors"
               />
             </div>
           </section>
@@ -143,7 +143,7 @@ export default function CourseSettingsPage() {
               {/* Upload Icon */}
               <div>
                 <label className="block text-sm font-medium text-[#1B2A4A] mb-2">Upload Icon Image</label>
-                <div className="border-2 border-dashed border-gray-200 rounded-xl h-32 flex flex-col items-center justify-center gap-2 text-gray-400 hover:border-[#2DD4BF] hover:text-[#2DD4BF] cursor-pointer transition-colors">
+                <div className="border-2 border-dashed border-gray-200 rounded-xl h-32 flex flex-col items-center justify-center gap-2 text-gray-400 hover:border-[#0F766E] hover:text-[#0F766E] cursor-pointer transition-colors">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                     <rect x="3" y="3" width="18" height="18" rx="3"/>
                     <circle cx="8.5" cy="8.5" r="1.5"/>
@@ -177,7 +177,7 @@ export default function CourseSettingsPage() {
               {/* Upload Cover */}
               <div>
                 <label className="block text-sm font-medium text-[#1B2A4A] mb-2">Upload Cover Image</label>
-                <div className="border-2 border-dashed border-gray-200 rounded-xl h-32 flex flex-col items-center justify-center gap-2 text-gray-400 hover:border-[#2DD4BF] hover:text-[#2DD4BF] cursor-pointer transition-colors">
+                <div className="border-2 border-dashed border-gray-200 rounded-xl h-32 flex flex-col items-center justify-center gap-2 text-gray-400 hover:border-[#0F766E] hover:text-[#0F766E] cursor-pointer transition-colors">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                     <polyline points="17 8 12 3 7 8"/>
@@ -242,8 +242,8 @@ export default function CourseSettingsPage() {
               type="submit"
               disabled={!isValid}
               className={[
-                "flex items-center gap-2 px-5 py-2.5 rounded-xl text-white text-sm font-medium transition-colors",
-                saved ? "bg-emerald-500" : "bg-[#2DD4BF] hover:bg-[#14B8A6] disabled:opacity-40 disabled:cursor-not-allowed",
+                "flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-colors",
+                saved ? "bg-emerald-500 text-white" : "bg-[#2DD4BF] hover:bg-[#14B8A6] text-[#1B2A4A] disabled:opacity-40 disabled:cursor-not-allowed",
               ].join(" ")}
             >
               {saved ? (
