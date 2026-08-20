@@ -259,21 +259,13 @@ export default function SettingsPage() {
                 { label: "AI Grading Completion", desc: "Receive a digest when AI finishes grading a batch of papers.", value: notifAI, set: () => setNotifAI((v) => !v) },
                 { label: "System Updates", desc: "Receive notifications about new features and maintenance.", value: notifSystem, set: () => setNotifSystem((v) => !v) },
               ].map((item) => (
-                <label key={item.label} className="flex items-start gap-3 cursor-pointer">
-                  <div
-                    onClick={item.set}
-                    className={[
-                      "w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 transition-colors cursor-pointer",
-                      item.value ? "border-[#0F766E] bg-[#0F766E]" : "border-gray-300",
-                    ].join(" ")}
-                  >
-                    {item.value && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
-                  </div>
-                  <div onClick={item.set}>
+                <div key={item.label} className="flex items-start justify-between gap-3">
+                  <div>
                     <p className="text-sm font-medium text-[#1B2A4A]">{item.label}</p>
                     <p className="text-xs text-gray-500 mt-0.5">{item.desc}</p>
                   </div>
-                </label>
+                  <Toggle checked={item.value} onChange={item.set} label={item.label} />
+                </div>
               ))}
             </div>
           </Section>
