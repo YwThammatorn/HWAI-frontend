@@ -3,10 +3,49 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
-const NAV_ITEMS = [
+const MAIN_NAV = [
+  {
+    label: "Dashboard",
+    href: "/dashboard",
+    match: (p: string) => p === "/dashboard",
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="3" width="7" height="7" rx="1" />
+        <rect x="14" y="3" width="7" height="7" rx="1" />
+        <rect x="3" y="14" width="7" height="7" rx="1" />
+        <rect x="14" y="14" width="7" height="7" rx="1" />
+      </svg>
+    ),
+  },
+  {
+    label: "Courses",
+    href: "/courses",
+    match: (p: string) => p.startsWith("/courses"),
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+      </svg>
+    ),
+  },
+  {
+    label: "History",
+    href: "/history",
+    match: (p: string) => p === "/history",
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="9" />
+        <polyline points="12 7 12 12 15 15" />
+      </svg>
+    ),
+  },
+];
+
+const ACCOUNT_NAV = [
   {
     label: "Information",
     href: "/profile",
+    match: (p: string) => p === "/profile",
     icon: (
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
         <circle cx="12" cy="8" r="4" />
@@ -17,6 +56,7 @@ const NAV_ITEMS = [
   {
     label: "Settings",
     href: "/settings",
+    match: (p: string) => p === "/settings",
     icon: (
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
         <circle cx="12" cy="12" r="3" />
@@ -27,6 +67,7 @@ const NAV_ITEMS = [
   {
     label: "Notifications",
     href: "/notifications",
+    match: (p: string) => p === "/notifications",
     icon: (
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
@@ -36,33 +77,43 @@ const NAV_ITEMS = [
   },
 ];
 
+function NavItem({ label, href, icon, active }: { label: string; href: string; icon: React.ReactNode; active: boolean }) {
+  return (
+    <Link
+      href={href}
+      className={[
+        "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors",
+        active ? "bg-[#2DD4BF]/20 text-[#2DD4BF]" : "text-white/55 hover:text-white hover:bg-white/8",
+      ].join(" ")}
+    >
+      {icon}
+      {label}
+    </Link>
+  );
+}
+
 export default function ProfileSidebar() {
   const pathname = usePathname();
   const router = useRouter();
 
   return (
-    <aside className="w-52 bg-[#1B2A4A] shrink-0 flex flex-col py-6 px-3 min-h-full">
-      <p className="text-white font-bold text-base px-3 mb-5">Profile</p>
+    <aside className="w-52 bg-[#1B2A4A] shrink-0 flex flex-col py-6 px-3">
+      {/* Main navigation */}
+      <p className="text-white/40 text-[10px] font-semibold uppercase tracking-widest px-3 mb-2">Main</p>
+      <nav className="flex flex-col gap-0.5 mb-4">
+        {MAIN_NAV.map((item) => (
+          <NavItem key={item.href} {...item} active={item.match(pathname)} />
+        ))}
+      </nav>
 
+      <div className="border-t border-white/10 my-1" />
+
+      {/* Account navigation */}
+      <p className="text-white/40 text-[10px] font-semibold uppercase tracking-widest px-3 mt-4 mb-2">Account</p>
       <nav className="flex flex-col gap-0.5 flex-1">
-        {NAV_ITEMS.map((item) => {
-          const active = pathname === item.href;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={[
-                "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors",
-                active
-                  ? "bg-[#2DD4BF]/20 text-[#2DD4BF]"
-                  : "text-white/55 hover:text-white hover:bg-white/8",
-              ].join(" ")}
-            >
-              {item.icon}
-              {item.label}
-            </Link>
-          );
-        })}
+        {ACCOUNT_NAV.map((item) => (
+          <NavItem key={item.href} {...item} active={item.match(pathname)} />
+        ))}
       </nav>
 
       <button
