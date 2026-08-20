@@ -122,7 +122,7 @@ export default function RecheckPage() {
     <AppShell>
       <div className="flex h-full overflow-hidden">
         {/* Left: file viewer */}
-        <div className="flex-1 min-w-0 flex flex-col bg-[#EAECF0] overflow-hidden">
+        <div className="flex-1 min-w-0 flex flex-col bg-[var(--surface)] overflow-hidden">
           {/* Zoom toolbar */}
           <div className="flex items-center gap-3 px-5 py-2.5 bg-white border-b border-gray-100 shadow-sm">
             <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">View:</span>

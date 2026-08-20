@@ -103,7 +103,7 @@ export default function CourseDetailPage() {
             >
               Assignments
               {assignments.length > 0 && (
-                <span className="ml-1.5 text-xs bg-[#EEF2FF] text-[#6366F1] px-1.5 py-0.5 rounded-full">
+                <span className="ml-1.5 text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full">
                   {assignments.length}
                 </span>
               )}

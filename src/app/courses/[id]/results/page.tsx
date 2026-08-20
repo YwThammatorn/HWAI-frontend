@@ -15,12 +15,11 @@ function gradeLetter(score: number, max: number): string {
   return "F";
 }
 
-function gradeColor(letter: string): string {
-  return { A: "#065F46", B: "#1E40AF", C: "#92400E", D: "#9A3412", F: "#991B1B" }[letter] ?? "#374151";
-}
-
-function gradeBg(letter: string): string {
-  return { A: "#D1FAE5", B: "#DBEAFE", C: "#FEF3C7", D: "#FED7AA", F: "#FEE2E2" }[letter] ?? "#F3F4F6";
+function gradeClass(letter: string): string {
+  return (
+    { A: "bg-green-100 text-green-700", B: "bg-blue-100 text-blue-700", C: "bg-yellow-100 text-yellow-700",
+      D: "bg-orange-100 text-orange-700", F: "bg-red-100 text-red-700" }[letter] ?? "bg-gray-100 text-gray-500"
+  );
 }
 
 export default function CourseResultsPage() {
@@ -115,8 +114,7 @@ export default function CourseResultsPage() {
                           <span className="font-semibold text-[var(--text-primary)]">{avg.toFixed(1)}</span>
                           {" "}
                           <span
-                            className="px-1.5 py-0.5 rounded text-[10px] font-bold"
-                            style={{ backgroundColor: gradeBg(avgLetter), color: gradeColor(avgLetter) }}
+                            className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${gradeClass(avgLetter)}`}
                           >
                             {avgLetter}
                           </span>

@@ -22,13 +22,13 @@ function gradeLetter(score: number, max: number): string {
   return "F";
 }
 
-function gradeBg(letter: string): string {
-  return { A: "#D1FAE5", B: "#DBEAFE", C: "#FEF3C7", D: "#FED7AA", F: "#FEE2E2" }[letter] ?? "#F3F4F6";
+function gradeBgClass(l: string) {
+  return ({ A:"bg-green-100",B:"bg-blue-100",C:"bg-yellow-100",D:"bg-orange-100",F:"bg-red-100" }[l]??"bg-gray-100");
 }
-
-function gradeColor(letter: string): string {
-  return { A: "#065F46", B: "#1E40AF", C: "#92400E", D: "#9A3412", F: "#991B1B" }[letter] ?? "#374151";
+function gradeTextClass(l: string) {
+  return ({ A:"text-green-700",B:"text-blue-700",C:"text-yellow-700",D:"text-orange-700",F:"text-red-700" }[l]??"text-gray-500");
 }
+function gradeClass(l: string) { return `${gradeBgClass(l)} ${gradeTextClass(l)}`; }
 
 function confidence(sub: Submission, max: number): { label: string; color: string; pct: number } {
   const score = sub.aiScore ?? 0;
@@ -271,13 +271,11 @@ export default function ResultsPage() {
                   return (
                     <div key={letter} className="flex flex-col items-center gap-2 flex-1">
                       <span className="text-xs text-gray-400">{count}</span>
-                      <div className="w-full rounded-t-lg transition-all" style={{
-                        height: `${Math.max(4, heightPct)}%`,
-                        backgroundColor: count > 0 ? gradeBg(letter) : "#F3F4F6",
-                        border: count > 0 ? `1px solid ${gradeColor(letter)}30` : "1px solid #E5E7EB",
-                        minHeight: "4px",
-                      }} />
-                      <span className="text-xs font-semibold" style={{ color: count > 0 ? gradeColor(letter) : "#9CA3AF" }}>
+                      <div
+                        className={`w-full rounded-t-lg transition-all border ${count > 0 ? `${gradeBgClass(letter)} border-gray-200` : "bg-gray-100 border-gray-100"}`}
+                        style={{ height: `${Math.max(4, heightPct)}%`, minHeight: "4px" }}
+                      />
+                      <span className={`text-xs font-semibold ${count > 0 ? gradeTextClass(letter) : "text-gray-400"}`}>
                         {letter}
                       </span>
                     </div>
@@ -347,10 +345,7 @@ export default function ResultsPage() {
                                 <span className="font-semibold text-[var(--text-primary)]">
                                   {score}/{max}
                                 </span>
-                                <span
-                                  className="text-xs font-semibold px-1.5 py-0.5 rounded"
-                                  style={{ backgroundColor: gradeBg(letter), color: gradeColor(letter) }}
-                                >
+                                <span className={`text-xs font-semibold px-1.5 py-0.5 rounded ${gradeClass(letter)}`}>
                                   {letter}
                                 </span>
                               </div>
@@ -430,7 +425,7 @@ export default function ResultsPage() {
                       >
                         <div>
                           <p className="text-xs font-semibold text-[var(--text-primary)]">{s.studentName}</p>
-                          <p className="text-xs" style={{ color: gradeColor(letter) }}>
+                          <p className={`text-xs ${gradeTextClass(letter)}`}>
                             Score: {score}/{max} ({letter})
                           </p>
                         </div>

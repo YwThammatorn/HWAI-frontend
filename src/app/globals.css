@@ -104,6 +104,59 @@ body {
 [data-theme="dark"] .shadow-md { box-shadow: 0 4px 6px -1px rgba(0,0,0,0.5); }
 [data-theme="dark"] .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.6); }
 
+/* Additional light bg overrides */
+[data-theme="dark"] .bg-red-50      { background-color: rgba(69,10,10,0.4); }
+[data-theme="dark"] .bg-green-50    { background-color: #052e16; }
+[data-theme="dark"] .bg-blue-50     { background-color: rgba(12,26,107,0.5); }
+[data-theme="dark"] .bg-purple-50   { background-color: #2d1b69; }
+[data-theme="dark"] .bg-violet-50   { background-color: #2d1b69; }
+[data-theme="dark"] .bg-emerald-50  { background-color: #052e16; }
+[data-theme="dark"] .bg-emerald-100 { background-color: #052e16; }
+[data-theme="dark"] .bg-amber-50    { background-color: rgba(69,26,3,0.5); }
+[data-theme="dark"] .bg-amber-100   { background-color: #451a03; }
+[data-theme="dark"] .bg-teal-50     { background-color: var(--accent-subtle); }
+[data-theme="dark"] .bg-teal-100    { background-color: var(--accent-subtle); }
+
+/* Opacity variants — /XX suffix creates a different class name from the base */
+[data-theme="dark"] .hover\:bg-gray-50\/50:hover  { background-color: var(--surface); }
+[data-theme="dark"] .hover\:bg-gray-50\/70:hover  { background-color: var(--surface); }
+[data-theme="dark"] .bg-red-50\/60   { background-color: rgba(69,10,10,0.4); }
+[data-theme="dark"] .bg-teal-50\/40  { background-color: var(--accent-subtle); }
+[data-theme="dark"] .bg-teal-50\/50  { background-color: var(--accent-subtle); }
+[data-theme="dark"] .bg-amber-50\/30 { background-color: rgba(69,26,3,0.3); }
+
+/* Hover backgrounds */
+[data-theme="dark"] .hover\:bg-red-100:hover  { background-color: rgba(69,10,10,0.6); }
+[data-theme="dark"] .hover\:bg-teal-50:hover  { background-color: var(--accent-subtle); }
+[data-theme="dark"] .hover\:bg-teal-100:hover { background-color: var(--accent-subtle); }
+
+/* Additional text overrides */
+[data-theme="dark"] .text-red-500     { color: #f87171; }
+[data-theme="dark"] .text-blue-600    { color: #60a5fa; }
+[data-theme="dark"] .text-violet-600  { color: #a78bfa; }
+[data-theme="dark"] .text-emerald-600 { color: #34d399; }
+[data-theme="dark"] .text-emerald-700 { color: #34d399; }
+[data-theme="dark"] .text-amber-600   { color: #fbbf24; }
+[data-theme="dark"] .text-amber-700   { color: #fbbf24; }
+[data-theme="dark"] .text-teal-600    { color: var(--accent); }
+[data-theme="dark"] .text-teal-700    { color: var(--accent); }
+
+/* Border overrides for additional color classes */
+[data-theme="dark"] .border-red-100     { border-color: var(--border); }
+[data-theme="dark"] .border-green-200   { border-color: var(--border); }
+[data-theme="dark"] .border-emerald-100 { border-color: var(--border); }
+[data-theme="dark"] .border-emerald-200 { border-color: var(--border); }
+[data-theme="dark"] .border-amber-100   { border-color: var(--border); }
+[data-theme="dark"] .border-amber-200   { border-color: var(--border); }
+[data-theme="dark"] .border-teal-100    { border-color: var(--border); }
+[data-theme="dark"] .border-teal-200    { border-color: var(--border); }
+[data-theme="dark"] .border-blue-100    { border-color: var(--border); }
+[data-theme="dark"] .border-purple-200  { border-color: var(--border); }
+
+/* Teal buttons: dark navy text works in both light and dark modes */
+/* (bg-[#2DD4BF] + text-[var(--text-primary)] fails in dark: #E2EAF4 on #2DD4BF = 1.56:1 ❌) */
+.bg-\[\#2DD4BF\] { color: #1B2A4A; }
+
 /* Input dark mode */
 [data-theme="dark"] input,
 [data-theme="dark"] textarea,

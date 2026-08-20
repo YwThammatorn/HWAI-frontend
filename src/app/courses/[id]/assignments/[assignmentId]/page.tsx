@@ -35,13 +35,13 @@ function fmtDateTime(iso: string) {
 
 function StatusBadge({ status }: { status: Submission["status"] }) {
   const cfg = {
-    need_review: { label: "Need Review", className: "bg-[#EDE9FE] text-[#6D28D9] border border-[#C4B5FD]" },
-    not_graded: { label: "Not Graded", className: "bg-[#FEE2E2] text-[#991B1B] border border-[#FECACA]" },
-    graded: { label: "Graded", className: "bg-[#D1FAE5] text-[#065F46] border border-[#A7F3D0]" },
+    need_review: { label: "Need Review", className: "bg-purple-100 text-purple-700" },
+    not_graded:  { label: "Not Graded",  className: "bg-red-100 text-red-700" },
+    graded:      { label: "Graded",      className: "bg-green-100 text-green-700" },
   }[status];
   return (
     <span className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium ${cfg.className}`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${status === "need_review" ? "bg-[#7C3AED]" : status === "not_graded" ? "bg-red-500" : "bg-emerald-500"}`} />
+      <span className={`w-1.5 h-1.5 rounded-full ${status === "need_review" ? "bg-purple-400" : status === "not_graded" ? "bg-red-400" : "bg-green-400"}`} />
       {cfg.label}
     </span>
   );
