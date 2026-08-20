@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import Navbar from "@/components/Navbar";
+import AppShell from "@/components/AppShell";
 import { useCourses } from "@/lib/courses";
 import { useStudents } from "@/lib/students";
 
@@ -96,21 +96,18 @@ export default function ImportStudentsPage() {
 
   if (!course) {
     return (
-      <div className="min-h-screen flex flex-col bg-[#F5F6FA]">
-        <Navbar />
+      <AppShell>
         <main className="flex-1 flex items-center justify-center text-gray-400 text-sm">
           ไม่พบรายวิชานี้ —{" "}
           <Link href="/courses" className="text-[#0F766E] ml-1 hover:underline">กลับไปหน้าหลัก</Link>
         </main>
-      </div>
+      </AppShell>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F5F6FA]">
-      <Navbar />
-
-      <main className="flex-1 w-full max-w-[860px] mx-auto px-8 py-8">
+    <AppShell>
+      <main className="w-full max-w-[860px] mx-auto px-8 py-8">
         {/* Breadcrumb */}
         <div className="flex items-center gap-1.5 text-sm text-gray-400 mb-6">
           <Link href="/courses" className="hover:text-[#0F766E] transition-colors">All Courses</Link>
@@ -355,6 +352,6 @@ export default function ImportStudentsPage() {
           </div>
         )}
       </main>
-    </div>
+    </AppShell>
   );
 }

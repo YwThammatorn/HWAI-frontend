@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import Navbar from "@/components/Navbar";
+import AppShell from "@/components/AppShell";
 import { useCourses } from "@/lib/courses";
 import { useCLOs, CLO } from "@/lib/clo";
 
@@ -89,12 +89,11 @@ export default function CLOPage() {
 
   if (!course) {
     return (
-      <div className="min-h-screen flex flex-col bg-[#F5F6FA]">
-        <Navbar />
+      <AppShell>
         <main className="flex-1 flex items-center justify-center text-sm text-gray-400">
           ไม่พบวิชา
         </main>
-      </div>
+      </AppShell>
     );
   }
 
@@ -102,9 +101,8 @@ export default function CLOPage() {
   const showEmpty = clos.length === 0 && formMode === "idle";
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F5F6FA]">
-      <Navbar />
-      <main className="flex-1 w-full max-w-[860px] mx-auto px-8 py-10">
+    <AppShell>
+      <main className="w-full max-w-[860px] mx-auto px-8 py-10">
 
         {/* Back */}
         <button
@@ -340,6 +338,6 @@ export default function CLOPage() {
           <p className="text-xs text-gray-400 mt-3 text-right">{clos.length} CLO</p>
         )}
       </main>
-    </div>
+    </AppShell>
   );
 }

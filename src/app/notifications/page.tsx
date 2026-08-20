@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Navbar from "@/components/Navbar";
-import ProfileSidebar from "@/components/ProfileSidebar";
+import AppShell from "@/components/AppShell";
 import {
   INITIAL_NOTIFS,
   formatNotifTime,
@@ -200,13 +199,8 @@ export default function NotificationsPage() {
   const isEmpty = notifs.length === 0;
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F5F6FA]">
-      <Navbar />
-
-      <div className="flex flex-1">
-        <ProfileSidebar />
-
-        <main className="flex-1 px-10 py-8">
+    <AppShell>
+        <main className="w-full max-w-2xl mx-auto px-8 py-8">
           <h1 className="text-2xl font-bold text-[#1B2A4A] mb-6">Notifications</h1>
 
           {isEmpty ? (
@@ -248,7 +242,6 @@ export default function NotificationsPage() {
             </div>
           )}
         </main>
-      </div>
-    </div>
+    </AppShell>
   );
 }

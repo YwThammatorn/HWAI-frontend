@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Navbar from "@/components/Navbar";
-import ProfileSidebar from "@/components/ProfileSidebar";
+import AppShell from "@/components/AppShell";
 
 const INITIAL = {
   fullName: "Alex Teacher",
@@ -67,11 +66,8 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F5F6FA]">
-      <Navbar />
-      <div className="flex flex-1">
-        <ProfileSidebar />
-        <main className="flex-1 px-10 py-8 max-w-3xl">
+    <AppShell>
+        <main className="px-10 py-8 max-w-3xl mx-auto">
 
           {/* Profile Information */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm mb-5">
@@ -211,7 +207,6 @@ export default function ProfilePage() {
           </div>
 
         </main>
-      </div>
-    </div>
+    </AppShell>
   );
 }

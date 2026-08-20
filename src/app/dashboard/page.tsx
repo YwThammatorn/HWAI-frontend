@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import Navbar from "@/components/Navbar";
+import AppShell from "@/components/AppShell";
 
 // ─── Mock data ────────────────────────────────────────────────────────────────
 
@@ -133,10 +133,8 @@ export default function DashboardPage() {
   const [usagePeriod, setUsagePeriod] = useState<"This Month" | "Last 30 Days" | "Last Quarter">("This Month");
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F5F6FA]">
-      <Navbar />
-
-      <main className="flex-1 w-full max-w-[1200px] mx-auto px-8 py-8">
+    <AppShell>
+      <main className="w-full max-w-[1200px] mx-auto px-8 py-8">
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-[#1B2A4A]">Dashboard Overview</h1>
@@ -408,6 +406,6 @@ export default function DashboardPage() {
           <UsageChart grading={USAGE_DATA_GRADING} plagiarism={USAGE_DATA_PLAGIARISM} />
         </div>
       </main>
-    </div>
+    </AppShell>
   );
 }

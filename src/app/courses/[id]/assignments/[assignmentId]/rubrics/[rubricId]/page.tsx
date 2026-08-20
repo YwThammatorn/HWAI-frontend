@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import Navbar from "@/components/Navbar";
+import AppShell from "@/components/AppShell";
 import { useCourses } from "@/lib/courses";
 import { useAssignments, RubricCriterion, CriterionLevel, DEFAULT_LEVELS } from "@/lib/assignments";
 
@@ -126,22 +126,20 @@ export default function RubricEditorPage() {
 
   if (!course || !assignment || !rubric) {
     return (
-      <div className="min-h-screen flex flex-col bg-[#F5F6FA]">
-        <Navbar />
+      <AppShell>
         <main className="flex-1 flex items-center justify-center text-gray-400 text-sm">
           ไม่พบข้อมูล —{" "}
           <Link href={`/courses/${id}/assignments/${assignmentId}/edit`} className="text-[#0F766E] ml-1 hover:underline">
             กลับหน้าแก้ไขชิ้นงาน
           </Link>
         </main>
-      </div>
+      </AppShell>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F5F6FA]">
-      <Navbar />
-      <main className="flex-1 w-full max-w-[800px] mx-auto px-8 py-8">
+    <AppShell>
+      <main className="w-full max-w-[800px] mx-auto px-8 py-8">
 
         {/* Breadcrumb */}
         <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-6 flex-wrap">
@@ -353,6 +351,6 @@ export default function RubricEditorPage() {
           </div>
         </div>
       </main>
-    </div>
+    </AppShell>
   );
 }

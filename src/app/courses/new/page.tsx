@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Navbar from "@/components/Navbar";
+import AppShell from "@/components/AppShell";
 import { useCourses, PRESET_COLORS } from "@/lib/courses";
 
 const CONFIRM_MSG = "à¸‚à¹‰à¸­à¸¡à¸¹à¸¥à¸—à¸µà¹ˆà¸à¸£à¸­à¸à¸ˆà¸°à¹„à¸¡à¹ˆà¸–à¸¹à¸à¸šà¸±à¸™à¸—à¸¶à¸\nà¸•à¹‰à¸­à¸‡à¸à¸²à¸£à¸­à¸­à¸à¸ˆà¸²à¸à¸«à¸™à¹‰à¸²à¸™à¸µà¹‰à¸«à¸£à¸·à¸­à¹„à¸¡à¹ˆ?";
@@ -49,10 +49,8 @@ export default function NewCoursePage() {
   const isValid = name.trim().length > 0;
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F5F6FA]">
-      <Navbar />
-
-      <main className="flex-1 w-full max-w-[860px] mx-auto px-8 py-8">
+    <AppShell>
+      <main className="w-full max-w-[860px] mx-auto px-8 py-8">
         {/* Back */}
         <button onClick={() => navAway("/courses")} className="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-[#0F766E] mb-6 transition-colors">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -187,6 +185,6 @@ export default function NewCoursePage() {
           </div>
         </form>
       </main>
-    </div>
+    </AppShell>
   );
 }

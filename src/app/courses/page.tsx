@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import Navbar from "@/components/Navbar";
+import AppShell from "@/components/AppShell";
 import { useCourses } from "@/lib/courses";
 import { useStudents } from "@/lib/students";
 import { useAssignments } from "@/lib/assignments";
@@ -30,10 +30,8 @@ export default function CoursesPage() {
     : pool;
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F5F6FA]">
-      <Navbar />
-
-      <main className="flex-1 w-full max-w-[1200px] mx-auto px-8 py-8">
+    <AppShell>
+      <main className="w-full max-w-[1200px] mx-auto px-8 py-8">
         {/* Header */}
         <div className="flex items-end justify-between mb-6">
           <div>
@@ -146,7 +144,7 @@ export default function CoursesPage() {
           </>
         )}
       </main>
-    </div>
+    </AppShell>
   );
 }
 

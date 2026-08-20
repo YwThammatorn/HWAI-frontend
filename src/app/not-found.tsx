@@ -1,11 +1,9 @@
 import Link from "next/link";
-import Navbar from "@/components/Navbar";
+import AppShell from "@/components/AppShell";
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen flex flex-col bg-[#F5F6FA]">
-      <Navbar />
-
+    <AppShell>
       <main className="flex-1 flex items-center justify-center px-8">
         <div className="flex items-center gap-16 max-w-4xl w-full">
 
@@ -77,6 +75,6 @@ export default function NotFound() {
 
         </div>
       </main>
-    </div>
+    </AppShell>
   );
 }

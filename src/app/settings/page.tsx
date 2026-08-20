@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import Navbar from "@/components/Navbar";
-import ProfileSidebar from "@/components/ProfileSidebar";
+import AppShell from "@/components/AppShell";
 
 // ─── Toggle ───────────────────────────────────────────────────────────────────
 
@@ -140,11 +139,8 @@ export default function SettingsPage() {
   const strictLabel = strictness < 33 ? "Lenient" : strictness < 66 ? "Balanced" : "Strict";
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F5F6FA]">
-      <Navbar />
-      <div className="flex flex-1">
-        <ProfileSidebar />
-        <main className="flex-1 px-10 py-8 max-w-3xl pb-28">
+    <AppShell>
+      <main className="px-10 py-8 max-w-3xl mx-auto pb-28">
 
           {/* Header */}
           <div className="mb-6">
@@ -346,7 +342,6 @@ export default function SettingsPage() {
           </div>
 
         </main>
-      </div>
 
       {/* Sticky save bar */}
       {(isDirty || saved) && (
@@ -374,6 +369,6 @@ export default function SettingsPage() {
           </div>
         </div>
       )}
-    </div>
+    </AppShell>
   );
 }

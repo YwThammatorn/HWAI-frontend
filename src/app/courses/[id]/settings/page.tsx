@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import Navbar from "@/components/Navbar";
+import AppShell from "@/components/AppShell";
 import { useCourses, PRESET_COLORS } from "@/lib/courses";
 
 const CONFIRM_MSG = "การเปลี่ยนแปลงจะไม่ถูกบันทึก\nต้องการออกจากหน้านี้หรือไม่?";
@@ -56,13 +56,12 @@ export default function CourseSettingsPage() {
 
   if (!course) {
     return (
-      <div className="min-h-screen flex flex-col bg-[#F5F6FA]">
-        <Navbar />
+      <AppShell>
         <main className="flex-1 flex items-center justify-center text-gray-400 text-sm">
           ไม่พบรายวิชานี้ —{" "}
           <Link href="/courses" className="text-[#0F766E] ml-1 hover:underline">กลับไปหน้าหลัก</Link>
         </main>
-      </div>
+      </AppShell>
     );
   }
 
@@ -93,10 +92,8 @@ export default function CourseSettingsPage() {
   const isValid = name.trim().length > 0;
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F5F6FA]">
-      <Navbar />
-
-      <main className="flex-1 w-full max-w-[860px] mx-auto px-8 py-8">
+    <AppShell>
+      <main className="w-full max-w-[860px] mx-auto px-8 py-8">
         {/* Back */}
         <button onClick={() => navAway("/courses")} className="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-[#0F766E] mb-6 transition-colors">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -258,6 +255,6 @@ export default function CourseSettingsPage() {
           </div>
         </form>
       </main>
-    </div>
+    </AppShell>
   );
 }

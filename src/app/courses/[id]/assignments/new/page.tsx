@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import Navbar from "@/components/Navbar";
+import AppShell from "@/components/AppShell";
 import { useCourses } from "@/lib/courses";
 import { useAssignments, Assignment } from "@/lib/assignments";
 
@@ -78,9 +78,8 @@ export default function NewAssignmentPage() {
   const isValid = name.trim().length > 0 && dueDate !== "" && (!acceptsFiles || fileTypes.length > 0);
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F5F6FA]">
-      <Navbar />
-      <main className="flex-1 w-full max-w-[700px] mx-auto px-8 py-10">
+    <AppShell>
+      <main className="w-full max-w-[700px] mx-auto px-8 py-10">
 
         <button
           onClick={() => navAway(`/courses/${id}/assignments`)}
@@ -290,7 +289,7 @@ export default function NewAssignmentPage() {
           </div>
         </form>
       </main>
-    </div>
+    </AppShell>
   );
 }
 

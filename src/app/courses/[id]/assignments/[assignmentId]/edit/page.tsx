@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import Navbar from "@/components/Navbar";
+import AppShell from "@/components/AppShell";
 import { useCourses } from "@/lib/courses";
 import { useAssignments, Assignment } from "@/lib/assignments";
 
@@ -157,22 +157,20 @@ export default function EditAssignmentPage() {
 
   if (!course || !assignment) {
     return (
-      <div className="min-h-screen flex flex-col bg-[#F5F6FA]">
-        <Navbar />
+      <AppShell>
         <main className="flex-1 flex items-center justify-center text-gray-400 text-sm">
           ไม่พบข้อมูล —{" "}
           <Link href={`/courses/${id}/assignments`} className="text-[#0F766E] ml-1 hover:underline">กลับรายการชิ้นงาน</Link>
         </main>
-      </div>
+      </AppShell>
     );
   }
 
   const isValid = name.trim().length > 0 && dueDate !== "" && (!acceptsFiles || fileTypes.length > 0);
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F5F6FA]">
-      <Navbar />
-      <main className="flex-1 w-full max-w-[700px] mx-auto px-8 py-10">
+    <AppShell>
+      <main className="w-full max-w-[700px] mx-auto px-8 py-10">
 
         <button
           onClick={() => navAway(`/courses/${id}/assignments/${assignmentId}`)}
@@ -453,7 +451,7 @@ export default function EditAssignmentPage() {
           </div>
         </form>
       </main>
-    </div>
+    </AppShell>
   );
 }
 
