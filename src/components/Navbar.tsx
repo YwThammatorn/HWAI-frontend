@@ -1,18 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-
-
-const navItems = [
-  { label: "Dashboard", href: "/dashboard" },
-  { label: "Courses", href: "/courses" },
-  { label: "History", href: "/history" },
-];
 
 export default function Navbar() {
-  const pathname = usePathname();
-
   return (
     <nav className="sticky top-0 z-50 bg-[#1B2A4A] text-white h-14 flex items-center px-6 shrink-0">
       {/* Logo */}
@@ -28,27 +18,7 @@ export default function Navbar() {
         <span className="font-bold text-[15px] tracking-tight">HWAI Agent</span>
       </Link>
 
-      {/* Nav tabs */}
-      <div className="flex items-center gap-1 flex-1 h-full">
-        {navItems.map((item) => {
-          const isActive = pathname.startsWith(item.href);
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={[
-                "relative flex items-center h-full px-4 text-sm font-medium transition-colors",
-                isActive ? "text-white" : "text-white/50 hover:text-white/80",
-              ].join(" ")}
-            >
-              {item.label}
-              {isActive && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-white rounded-t-full" />
-              )}
-            </Link>
-          );
-        })}
-      </div>
+      <div className="flex-1" />
 
       {/* Right side: bell + avatar + name */}
       <div className="flex items-center gap-3">
