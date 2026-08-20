@@ -307,7 +307,10 @@ export default function SettingsPage() {
                   }
                   <button
                     onClick={() => setGoogleConnected((v) => !v)}
-                    className="text-xs font-medium px-3 py-1.5 border border-gray-200 rounded-lg text-[var(--text-primary)] hover:bg-gray-50 transition-colors"
+                    className={googleConnected
+                      ? "text-xs font-medium px-3 py-1.5 border border-gray-200 rounded-lg text-[var(--text-primary)] hover:bg-gray-50 transition-colors"
+                      : "text-xs font-semibold px-3 py-1.5 bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)] rounded-lg transition-colors"
+                    }
                   >
                     {googleConnected ? "Manage Sync" : "Connect"}
                   </button>
