@@ -99,7 +99,7 @@ export default function AssignmentsPage() {
     {
       label: "Total Assignments",
       value: totalAssignments,
-      iconBg: "bg-[#EEF2FF]",
+      iconBg: "bg-blue-100",
       icon: (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6366F1" strokeWidth="1.8" strokeLinecap="round">
           <rect x="5" y="2" width="14" height="20" rx="2"/><line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="11" x2="15" y2="11"/><line x1="9" y1="15" x2="13" y2="15"/>
@@ -109,7 +109,7 @@ export default function AssignmentsPage() {
     {
       label: "Graded",
       value: graded,
-      iconBg: "bg-[#D1FAE5]",
+      iconBg: "bg-green-100",
       icon: (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="1.8" strokeLinecap="round">
           <circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/>
@@ -119,7 +119,7 @@ export default function AssignmentsPage() {
     {
       label: "Pending Review",
       value: pendingReview,
-      iconBg: "bg-[#FEF9C3]",
+      iconBg: "bg-yellow-100",
       icon: (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="1.8" strokeLinecap="round">
           <path d="M5 3h14l-2 7H7L5 3z"/><path d="M7 10l-2 11h14L17 10"/><circle cx="12" cy="16" r="1" fill="#D97706"/>
@@ -129,7 +129,7 @@ export default function AssignmentsPage() {
     {
       label: "Overdue",
       value: overdue,
-      iconBg: "bg-[#FEE2E2]",
+      iconBg: "bg-red-100",
       icon: (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="1.8" strokeLinecap="round">
           <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
@@ -182,7 +182,7 @@ export default function AssignmentsPage() {
             </button>
             <Link
               href={`/courses/${id}/assignments/new`}
-              className="flex items-center gap-2 px-4 py-2 bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)] font-medium rounded-xl text-sm transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-[#2DD4BF] hover:bg-[#14B8A6] text-[#1B2A4A] font-medium rounded-xl text-sm transition-colors"
             >
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
                 <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
@@ -257,7 +257,7 @@ export default function AssignmentsPage() {
                   <p className="text-xs text-gray-500 mb-4">กด Create Assignment เพื่อเพิ่มชิ้นงานแรก</p>
                   <Link
                     href={`/courses/${id}/assignments/new`}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)] text-sm font-medium rounded-xl transition-colors"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-[#2DD4BF] hover:bg-[#14B8A6] text-[#1B2A4A] text-sm font-medium rounded-xl transition-colors"
                   >
                     <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
                       <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
@@ -276,7 +276,7 @@ export default function AssignmentsPage() {
                 return (
                   <div key={a.id} className="border-b border-gray-50 last:border-0">
                     {/* Main row */}
-                    <div className="flex items-center px-5 py-4 hover:bg-gray-50/50 transition-colors">
+                    <div className="flex items-center px-5 py-4 hover:bg-[var(--surface)] transition-colors">
                       <div className="flex-1 min-w-0">
                         <Link
                           href={`/courses/${id}/assignments/${a.id}`}
@@ -295,7 +295,7 @@ export default function AssignmentsPage() {
                         </div>
                         <div className="flex items-center gap-1 mt-1.5 flex-wrap">
                           {a.submissionType === "group" ? (
-                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-violet-50 text-violet-600 text-[10px] font-medium">
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-purple-100 text-purple-700 text-[10px] font-medium">
                               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
                                 <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
@@ -328,9 +328,9 @@ export default function AssignmentsPage() {
                         )}
                         <span className={[
                           "text-xs px-2.5 py-1 rounded-full font-medium",
-                          st.type === "graded" ? "bg-[#D1FAE5] text-[#065F46]"
+                          st.type === "graded" ? "bg-green-100 text-green-700"
                           : st.type === "late" ? "bg-slate-700 text-white"
-                          : "bg-[#FEE2E2] text-[#991B1B]",
+                          : "bg-red-100 text-red-700",
                         ].join(" ")}>
                           {st.label}
                         </span>
@@ -397,7 +397,7 @@ export default function AssignmentsPage() {
                       const needReview = subs.filter(s => s.status === "need_review").length;
                       const notGraded = subs.filter(s => s.status === "not_graded").length;
                       return (
-                        <div className="px-5 pb-4 bg-gray-50/60 border-t border-gray-100">
+                        <div className="px-5 pb-4 bg-[var(--surface)] border-t border-[var(--border)]">
                           <div className="pt-4 flex gap-6">
                             {/* Left: description + submission breakdown */}
                             <div className="flex-1 min-w-0">
@@ -407,12 +407,12 @@ export default function AssignmentsPage() {
                                 <p className="text-xs text-gray-300 italic mb-3">ไม่มีคำอธิบาย</p>
                               )}
                               <div className="flex items-center gap-2 flex-wrap">
-                                <span className="flex items-center gap-1 text-xs bg-[#D1FAE5] text-[#065F46] px-2 py-0.5 rounded-full font-medium">
+                                <span className="flex items-center gap-1 text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">
                                   <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] inline-block"/>
                                   Graded {graded}
                                 </span>
                                 {needReview > 0 && (
-                                  <span className="flex items-center gap-1 text-xs bg-[#FEF9C3] text-[#92400E] px-2 py-0.5 rounded-full font-medium">
+                                  <span className="flex items-center gap-1 text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-medium">
                                     <span className="w-1.5 h-1.5 rounded-full bg-[#D97706] inline-block"/>
                                     Need Review {needReview}
                                   </span>
@@ -433,7 +433,7 @@ export default function AssignmentsPage() {
                               {needReview > 0 && (
                                 <Link
                                   href={`/courses/${id}/assignments/${a.id}`}
-                                  className="flex items-center gap-1.5 px-3 py-1.5 bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)] text-xs font-medium rounded-lg transition-colors"
+                                  className="flex items-center gap-1.5 px-3 py-1.5 bg-[#2DD4BF] hover:bg-[#14B8A6] text-[#1B2A4A] text-xs font-medium rounded-lg transition-colors"
                                 >
                                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                                     <polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
@@ -469,7 +469,7 @@ export default function AssignmentsPage() {
                       {[1, 2, 3].map((p) => (
                         <button key={p} className={[
                           "w-7 h-7 rounded-full text-xs font-medium",
-                          p === 1 ? "bg-[#2DD4BF] text-[var(--text-primary)]" : "text-gray-500 hover:bg-gray-100",
+                          p === 1 ? "bg-[#2DD4BF] text-[#1B2A4A]" : "text-gray-500 hover:bg-gray-100",
                         ].join(" ")}>{p}</button>
                       ))}
                     </div>
