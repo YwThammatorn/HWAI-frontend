@@ -4,6 +4,7 @@ import StudentProvider from "@/components/StudentProvider";
 import CLOProvider from "@/components/CLOProvider";
 import AssignmentProvider from "@/components/AssignmentProvider";
 import ThemeProvider from "@/components/ThemeProvider";
+import { AuthProvider } from "@/context/AuthContext";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -16,13 +17,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="th" className="h-full" suppressHydrationWarning>
       <body className="min-h-full flex flex-col">
         <ThemeProvider>
-          <CourseProvider>
-            <StudentProvider>
-              <CLOProvider>
-                <AssignmentProvider>{children}</AssignmentProvider>
-              </CLOProvider>
-            </StudentProvider>
-          </CourseProvider>
+          <AuthProvider>
+            <CourseProvider>
+              <StudentProvider>
+                <CLOProvider>
+                  <AssignmentProvider>{children}</AssignmentProvider>
+                </CLOProvider>
+              </StudentProvider>
+            </CourseProvider>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

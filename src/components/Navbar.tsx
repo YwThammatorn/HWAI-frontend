@@ -1,10 +1,19 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useTheme } from "./ThemeProvider";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Navbar() {
   const { effectiveTheme, toggleTheme } = useTheme();
+  const { user, logout } = useAuth();
+  const router = useRouter();
+
+  function handleLogout() {
+    logout();
+    router.replace("/login");
+  }
 
   return (
     <nav className="sticky top-0 z-50 bg-[var(--bg-nav)] text-white h-14 flex items-center px-6 shrink-0">
@@ -67,7 +76,20 @@ export default function Navbar() {
               <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
             </svg>
           </div>
-          <span className="text-sm font-medium text-white/90">Mr. Anderson</span>
+          <span className="text-sm font-medium text-white/90">{user?.name ?? "—"}</span>
+          <button
+            type="button"
+            onClick={handleLogout}
+            aria-label="Sign out"
+            title="Sign out"
+            className="ml-1 w-7 h-7 flex items-center justify-center rounded-lg text-white/50 hover:text-white hover:bg-white/10 transition-colors"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+          </button>
         </div>
       </div>
     </nav>

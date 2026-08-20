@@ -1,5 +1,16 @@
-import { redirect } from "next/navigation";
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 
 export default function RootPage() {
-  redirect("/courses");
+  const { user } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    router.replace(user ? "/dashboard" : "/login");
+  }, [user, router]);
+
+  return null;
 }
