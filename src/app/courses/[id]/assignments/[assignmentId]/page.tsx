@@ -142,12 +142,28 @@ export default function ViewAssignmentPage() {
               </svg>
               Edit Assignment
             </Link>
-            <button className="flex items-center gap-2 px-4 py-2 bg-[#2DD4BF] hover:bg-[#14B8A6] text-[#1B2A4A] text-sm font-medium rounded-xl transition-colors">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                <polygon points="5 3 19 12 5 21 5 3"/>
-              </svg>
-              Start Grading
-            </button>
+            <Link
+              href={allGraded
+                ? `/courses/${id}/assignments/${assignmentId}/results`
+                : `/courses/${id}/assignments/${assignmentId}/grading`}
+              className="flex items-center gap-2 px-4 py-2 bg-[#2DD4BF] hover:bg-[#14B8A6] text-[#1B2A4A] text-sm font-medium rounded-xl transition-colors"
+            >
+              {allGraded ? (
+                <>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                  </svg>
+                  View Results
+                </>
+              ) : (
+                <>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                    <polygon points="5 3 19 12 5 21 5 3"/>
+                  </svg>
+                  Start Grading
+                </>
+              )}
+            </Link>
           </div>
         </div>
 
@@ -354,8 +370,13 @@ export default function ViewAssignmentPage() {
                         </svg>
                       </td>
                       <td className="px-3 py-3.5">
-                        {s.status === "need_review" && (
-                          <button className="text-xs text-[#0F766E] hover:underline font-medium">Review</button>
+                        {(s.status === "need_review" || s.status === "graded") && (
+                          <Link
+                            href={`/courses/${id}/assignments/${assignmentId}/recheck?sub=${s.id}`}
+                            className="text-xs text-[#0F766E] hover:underline font-medium"
+                          >
+                            {s.status === "need_review" ? "Review" : "Recheck"}
+                          </Link>
                         )}
                       </td>
                     </tr>
