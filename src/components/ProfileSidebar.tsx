@@ -99,7 +99,7 @@ export default function ProfileSidebar() {
   return (
     <aside className="w-52 bg-[#1B2A4A] shrink-0 flex flex-col py-6 px-3">
       {/* Main navigation */}
-      <p className="text-white/40 text-[10px] font-semibold uppercase tracking-widest px-3 mb-2">Main</p>
+      <p className="text-white/55 text-[10px] font-semibold uppercase tracking-widest px-3 mb-2">Main</p>
       <nav className="flex flex-col gap-0.5 mb-4">
         {MAIN_NAV.map((item) => (
           <NavItem key={item.href} {...item} active={item.match(pathname)} />
@@ -109,7 +109,7 @@ export default function ProfileSidebar() {
       <div className="border-t border-white/10 my-1" />
 
       {/* Account navigation */}
-      <p className="text-white/40 text-[10px] font-semibold uppercase tracking-widest px-3 mt-4 mb-2">Account</p>
+      <p className="text-white/55 text-[10px] font-semibold uppercase tracking-widest px-3 mt-4 mb-2">Account</p>
       <nav className="flex flex-col gap-0.5 flex-1">
         {ACCOUNT_NAV.map((item) => (
           <NavItem key={item.href} {...item} active={item.match(pathname)} />

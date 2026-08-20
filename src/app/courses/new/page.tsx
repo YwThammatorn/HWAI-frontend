@@ -52,7 +52,7 @@ export default function NewCoursePage() {
     <AppShell>
       <main className="w-full max-w-[860px] mx-auto px-8 py-8">
         {/* Back */}
-        <button onClick={() => navAway("/courses")} className="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-[#0F766E] mb-6 transition-colors">
+        <button onClick={() => navAway("/courses")} className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#0F766E] mb-6 transition-colors">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
             <polyline points="15 18 9 12 15 6"/>
           </svg>
@@ -99,7 +99,7 @@ export default function NewCoursePage() {
               {/* Upload Icon */}
               <div>
                 <label className="block text-sm font-medium text-[#1B2A4A] mb-2">Upload Icon Image</label>
-                <div className="border-2 border-dashed border-gray-200 rounded-xl h-32 flex flex-col items-center justify-center gap-2 text-gray-400 hover:border-[#0F766E] hover:text-[#0F766E] cursor-pointer transition-colors">
+                <div className="border-2 border-dashed border-gray-200 rounded-xl h-32 flex flex-col items-center justify-center gap-2 text-gray-500 hover:border-[#0F766E] hover:text-[#0F766E] cursor-pointer transition-colors">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                     <rect x="3" y="3" width="18" height="18" rx="3"/>
                     <circle cx="8.5" cy="8.5" r="1.5"/>
@@ -133,7 +133,7 @@ export default function NewCoursePage() {
               {/* Upload Cover */}
               <div>
                 <label className="block text-sm font-medium text-[#1B2A4A] mb-2">Upload Cover Image</label>
-                <div className="border-2 border-dashed border-gray-200 rounded-xl h-32 flex flex-col items-center justify-center gap-2 text-gray-400 hover:border-[#0F766E] hover:text-[#0F766E] cursor-pointer transition-colors">
+                <div className="border-2 border-dashed border-gray-200 rounded-xl h-32 flex flex-col items-center justify-center gap-2 text-gray-500 hover:border-[#0F766E] hover:text-[#0F766E] cursor-pointer transition-colors">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                     <polyline points="17 8 12 3 7 8"/>
@@ -146,7 +146,7 @@ export default function NewCoursePage() {
 
             {/* Live preview */}
             <div className="mt-5">
-              <p className="text-xs text-gray-400 mb-2">Preview</p>
+              <p className="text-xs text-gray-500 mb-2">Preview</p>
               <div className="w-48 rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
                 <div className="h-20 relative" style={{ background: coverColor }}>
                   <div className="absolute bottom-2 left-2 w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center">
@@ -157,7 +157,7 @@ export default function NewCoursePage() {
                 </div>
                 <div className="bg-white p-3">
                   <p className="text-xs font-bold text-[#1B2A4A] truncate">{name || "Course Name"}</p>
-                  <p className="text-[10px] text-gray-400 mt-0.5">Manually Added</p>
+                  <p className="text-[10px] text-gray-500 mt-0.5">Manually Added</p>
                 </div>
               </div>
             </div>

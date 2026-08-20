@@ -11,7 +11,7 @@ export default function ComingSoon({ title }: { title: string }) {
           </svg>
         </div>
         <h1 className="text-xl font-bold text-[#0F2137]">{title}</h1>
-        <p className="text-sm text-gray-400">หน้านี้กำลังสร้าง — จะพร้อมเร็ว ๆ นี้</p>
+        <p className="text-sm text-gray-500">หน้านี้กำลังสร้าง — จะพร้อมเร็ว ๆ นี้</p>
       </main>
     </AppShell>
   );

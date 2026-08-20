@@ -13,7 +13,7 @@ const INITIAL = {
 function Field({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-xs text-gray-400 mb-1">{label}</p>
+      <p className="text-xs text-gray-500 mb-1">{label}</p>
       <p className="text-sm font-medium text-[#1B2A4A]">{value}</p>
     </div>
   );
@@ -74,7 +74,7 @@ export default function ProfilePage() {
             <div className="flex items-start justify-between px-6 pt-5 pb-4 border-b border-gray-50">
               <div>
                 <h2 className="text-base font-bold text-[#1B2A4A]">Profile Information</h2>
-                <p className="text-xs text-gray-400 mt-0.5">Personal details and application status.</p>
+                <p className="text-xs text-gray-500 mt-0.5">Personal details and application status.</p>
               </div>
               {!editing && (
                 <button
@@ -109,7 +109,7 @@ export default function ProfilePage() {
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="text-xs text-gray-400 mb-1 block">Full name</label>
+                      <label className="text-xs text-gray-500 mb-1 block">Full name</label>
                       <input
                         value={draft.fullName}
                         onChange={(e) => setDraft({ ...draft, fullName: e.target.value })}
@@ -117,7 +117,7 @@ export default function ProfilePage() {
                       />
                     </div>
                     <div>
-                      <label className="text-xs text-gray-400 mb-1 block">Email address</label>
+                      <label className="text-xs text-gray-500 mb-1 block">Email address</label>
                       <input
                         value={draft.email}
                         onChange={(e) => setDraft({ ...draft, email: e.target.value })}
@@ -146,7 +146,7 @@ export default function ProfilePage() {
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm mb-5">
             <div className="px-6 pt-5 pb-4 border-b border-gray-50">
               <h2 className="text-base font-bold text-[#1B2A4A]">Security &amp; Password</h2>
-              <p className="text-xs text-gray-400 mt-0.5">Update your password and manage account security.</p>
+              <p className="text-xs text-gray-500 mt-0.5">Update your password and manage account security.</p>
             </div>
             <form onSubmit={handlePwSubmit} className="px-6 py-5 space-y-4">
               <div>

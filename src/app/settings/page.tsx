@@ -37,7 +37,7 @@ function Section({ title, description, accent, children }: {
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm mb-5">
       <div className="px-6 pt-5 pb-4 border-b border-gray-50">
         <h2 className={`text-base font-bold ${accent ? "text-[#0F766E]" : "text-[#1B2A4A]"}`}>{title}</h2>
-        {description && <p className="text-xs text-gray-400 mt-0.5">{description}</p>}
+        {description && <p className="text-xs text-gray-500 mt-0.5">{description}</p>}
       </div>
       <div className="px-6 py-5">{children}</div>
     </div>
@@ -159,7 +159,7 @@ export default function SettingsPage() {
                     <span className="text-sm font-bold text-[#0F766E]">{confidence}%</span>
                   </div>
                   <Slider value={confidence} onChange={setConfidence} />
-                  <p className="text-xs text-gray-400 mt-2">Assignments below this confidence level will be flagged for manual review.</p>
+                  <p className="text-xs text-gray-500 mt-2">Assignments below this confidence level will be flagged for manual review.</p>
                 </div>
 
                 {/* Feedback style */}
@@ -174,7 +174,7 @@ export default function SettingsPage() {
                           "flex flex-col items-center gap-1.5 px-3 py-2.5 rounded-xl border text-xs font-medium transition-colors flex-1",
                           feedback === s
                             ? "border-[#0F766E] text-[#0F766E] bg-[#E6FAF8]"
-                            : "border-gray-200 text-gray-400 hover:border-gray-300",
+                            : "border-gray-200 text-gray-500 hover:border-gray-300",
                         ].join(" ")}
                       >
                         {FEEDBACK_ICONS[s]}
@@ -195,7 +195,7 @@ export default function SettingsPage() {
                   <div key={item.label} className="flex items-start justify-between gap-3">
                     <div>
                       <p className="text-sm font-medium text-[#1B2A4A]">{item.label}</p>
-                      <p className="text-xs text-gray-400 mt-0.5">{item.desc}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">{item.desc}</p>
                     </div>
                     <Toggle checked={item.value} onChange={item.set} label={item.label} />
                   </div>
@@ -245,7 +245,7 @@ export default function SettingsPage() {
                     ].join(" ")}
                   >
                     {THEME_PREVIEW[t]}
-                    <p className={`text-xs font-medium mt-1.5 ${theme === t ? "text-[#0F766E]" : "text-gray-400"}`}>{t}</p>
+                    <p className={`text-xs font-medium mt-1.5 ${theme === t ? "text-[#0F766E]" : "text-gray-500"}`}>{t}</p>
                   </button>
                 ))}
               </div>
@@ -271,7 +271,7 @@ export default function SettingsPage() {
                   </div>
                   <div onClick={item.set}>
                     <p className="text-sm font-medium text-[#1B2A4A]">{item.label}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">{item.desc}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">{item.desc}</p>
                   </div>
                 </label>
               ))}
@@ -287,11 +287,11 @@ export default function SettingsPage() {
                   <div className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center text-base">🎓</div>
                   <p className="font-semibold text-sm text-[#1B2A4A]">Google Classroom</p>
                 </div>
-                <p className="text-xs text-gray-400 mb-3 leading-relaxed">Sync classes, assignments, and grades directly with your Google Classroom courses.</p>
+                <p className="text-xs text-gray-500 mb-3 leading-relaxed">Sync classes, assignments, and grades directly with your Google Classroom courses.</p>
                 <div className="flex items-center justify-between">
                   {googleConnected
                     ? <span className="text-xs font-medium text-[#0F766E] bg-[#E6FAF8] px-2.5 py-1 rounded-full">Connected</span>
-                    : <span className="text-xs text-gray-400">Not Connected</span>
+                    : <span className="text-xs text-gray-500">Not Connected</span>
                   }
                   <button
                     onClick={() => setGoogleConnected((v) => !v)}
@@ -307,11 +307,11 @@ export default function SettingsPage() {
                   <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-base">💼</div>
                   <p className="font-semibold text-sm text-[#1B2A4A]">Microsoft Teams</p>
                 </div>
-                <p className="text-xs text-gray-400 mb-3 leading-relaxed">Integrate with Teams for Education to streamline assignment distribution and communication.</p>
+                <p className="text-xs text-gray-500 mb-3 leading-relaxed">Integrate with Teams for Education to streamline assignment distribution and communication.</p>
                 <div className="flex items-center justify-between">
                   {teamsConnected
                     ? <span className="text-xs font-medium text-[#0F766E] bg-[#E6FAF8] px-2.5 py-1 rounded-full">Connected</span>
-                    : <span className="text-xs text-gray-400">Not Connected</span>
+                    : <span className="text-xs text-gray-500">Not Connected</span>
                   }
                   <button
                     onClick={() => setTeamsConnected((v) => !v)}
@@ -348,7 +348,7 @@ export default function SettingsPage() {
         <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-100 shadow-lg px-8 py-4 flex items-center justify-between">
           <div>
             <p className="text-sm font-semibold text-[#1B2A4A]">Save or Discard Changes</p>
-            <p className="text-xs text-gray-400 mt-0.5">Once you have done configuring settings, you can save your changes or discard them to reset to default.</p>
+            <p className="text-xs text-gray-500 mt-0.5">Once you have done configuring settings, you can save your changes or discard them to reset to default.</p>
           </div>
           <div className="flex gap-3">
             <button

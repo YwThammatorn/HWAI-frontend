@@ -90,7 +90,7 @@ export default function CLOPage() {
   if (!course) {
     return (
       <AppShell>
-        <main className="flex-1 flex items-center justify-center text-sm text-gray-400">
+        <main className="flex-1 flex items-center justify-center text-sm text-gray-500">
           ไม่พบวิชา
         </main>
       </AppShell>
@@ -107,7 +107,7 @@ export default function CLOPage() {
         {/* Back */}
         <button
           onClick={() => navAway(`/courses/${id}`)}
-          className="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-[#0F766E] mb-6 transition-colors"
+          className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#0F766E] mb-6 transition-colors"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
             <polyline points="15 18 9 12 15 6"/>
@@ -119,7 +119,7 @@ export default function CLOPage() {
         <div className="flex items-start justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold text-[#1B2A4A] mb-1">ผลลัพธ์การเรียนรู้รายวิชา (CLO)</h1>
-            <p className="text-sm text-gray-400">{course.name}</p>
+            <p className="text-sm text-gray-500">{course.name}</p>
           </div>
           <div className="flex items-center gap-2 mt-1">
             <button
@@ -165,7 +165,7 @@ export default function CLOPage() {
               </svg>
             </div>
             <p className="text-sm font-medium text-gray-500 mb-1">ยังไม่มี CLO กำหนดไว้</p>
-            <p className="text-xs text-gray-400 mb-6">เพิ่ม CLO เพื่อวัดผลลัพธ์การเรียนรู้และ CLO Attainment ของนักศึกษา</p>
+            <p className="text-xs text-gray-500 mb-6">เพิ่ม CLO เพื่อวัดผลลัพธ์การเรียนรู้และ CLO Attainment ของนักศึกษา</p>
             <button
               onClick={openAdd}
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#2DD4BF] hover:bg-[#14B8A6] text-[#1B2A4A] text-sm font-medium transition-colors"
@@ -182,7 +182,7 @@ export default function CLOPage() {
             {/* Table header */}
             <div className="grid gap-0 border-b border-gray-100" style={{ gridTemplateColumns: "88px 1fr 148px 170px 76px" }}>
               {["รหัส", "ข้อความ CLO", "PLO", "เกณฑ์ที่ผูก", ""].map((h, i) => (
-                <div key={i} className="px-4 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">{h}</div>
+                <div key={i} className="px-4 py-3 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">{h}</div>
               ))}
             </div>
 
@@ -236,7 +236,7 @@ export default function CLOPage() {
                   <button
                     onClick={() => openEdit(clo)}
                     disabled={editingId === clo.id}
-                    className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-[#1B2A4A] transition-colors disabled:opacity-20"
+                    className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-[#1B2A4A] transition-colors disabled:opacity-20"
                     title="แก้ไข"
                   >
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -246,7 +246,7 @@ export default function CLOPage() {
                   </button>
                   <button
                     onClick={() => handleDelete(clo)}
-                    className="p-1.5 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors"
+                    className="p-1.5 rounded-lg hover:bg-red-50 text-gray-500 hover:text-red-500 transition-colors"
                     title="ลบ"
                   >
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -335,7 +335,7 @@ export default function CLOPage() {
 
         {/* Footer count */}
         {clos.length > 0 && (
-          <p className="text-xs text-gray-400 mt-3 text-right">{clos.length} CLO</p>
+          <p className="text-xs text-gray-500 mt-3 text-right">{clos.length} CLO</p>
         )}
       </main>
     </AppShell>

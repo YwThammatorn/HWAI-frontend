@@ -57,7 +57,7 @@ export default function NotFound() {
               <br />
               <span className="text-[#0F766E]">graduated</span>.
             </h1>
-            <p className="text-gray-400 text-base mt-5 leading-relaxed max-w-sm">
+            <p className="text-gray-500 text-base mt-5 leading-relaxed max-w-sm">
               It looks like the page you're looking for isn't here anymore.
               It might have been moved, deleted, or simply never existed in our curriculum.
             </p>

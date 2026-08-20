@@ -62,7 +62,7 @@ export default function ViewAssignmentPage() {
   if (!course || !assignment) {
     return (
       <AppShell>
-        <main className="flex-1 flex items-center justify-center text-gray-400 text-sm">
+        <main className="flex-1 flex items-center justify-center text-gray-500 text-sm">
           ไม่พบข้อมูล —{" "}
           <Link href={`/courses/${id}/assignments`} className="text-[#0F766E] ml-1 hover:underline">กลับไปรายการชิ้นงาน</Link>
         </main>
@@ -100,7 +100,7 @@ export default function ViewAssignmentPage() {
       <main className="w-full max-w-[1200px] mx-auto px-8 py-8">
 
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-gray-400 mb-6">
+        <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
           <Link href="/courses" className="hover:text-[#0F766E]">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
@@ -120,7 +120,7 @@ export default function ViewAssignmentPage() {
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2">
                 <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
               </svg>
-              <span className="text-gray-400">Due {fmtDate(assignment.dueDate)} at 11:59 PM</span>
+              <span className="text-gray-500">Due {fmtDate(assignment.dueDate)} at 11:59 PM</span>
               <span className="text-gray-300">·</span>
               {allGraded ? (
                 <span className="text-emerald-500 font-medium">All Graded</span>
@@ -186,9 +186,9 @@ export default function ViewAssignmentPage() {
                 <polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
               </svg>
             </div>
-            <p className="text-xs text-gray-400 mb-1">Submissions</p>
+            <p className="text-xs text-gray-500 mb-1">Submissions</p>
             <p className="text-2xl font-bold text-[#1B2A4A]">
-              {submissions.length} <span className="text-sm font-normal text-gray-400">/ {assignment.maxPoints}</span>
+              {submissions.length} <span className="text-sm font-normal text-gray-500">/ {assignment.maxPoints}</span>
             </p>
             <div className="mt-2 h-1.5 bg-gray-100 rounded-full overflow-hidden">
               <div
@@ -197,7 +197,7 @@ export default function ViewAssignmentPage() {
               />
             </div>
             {submissions.length < assignment.maxPoints && (
-              <p className="text-xs text-gray-400 mt-1.5">{assignment.maxPoints - submissions.length} students pending</p>
+              <p className="text-xs text-gray-500 mt-1.5">{assignment.maxPoints - submissions.length} students pending</p>
             )}
           </div>
           {/* Average Grade */}
@@ -207,9 +207,9 @@ export default function ViewAssignmentPage() {
                 <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
               </svg>
             </div>
-            <p className="text-xs text-gray-400 mb-1">Average Grade</p>
+            <p className="text-xs text-gray-500 mb-1">Average Grade</p>
             <p className="text-2xl font-bold text-[#1B2A4A]">{submissions.length > 0 ? `${avgScore}%` : "0%"}</p>
-            <p className="text-xs text-gray-400 mt-1.5 flex items-center gap-1">
+            <p className="text-xs text-gray-500 mt-1.5 flex items-center gap-1">
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" strokeWidth="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
               AI Confidence: {submissions.length > 0 ? "High" : "None"}
             </p>
@@ -221,9 +221,9 @@ export default function ViewAssignmentPage() {
                 <rect x="3" y="3" width="18" height="18" rx="2"/><polyline points="9 11 12 14 15 11"/>
               </svg>
             </div>
-            <p className="text-xs text-gray-400 mb-1">Graded</p>
-            <p className="text-2xl font-bold text-[#1B2A4A]">{gradedCount} <span className="text-sm font-normal text-gray-400">papers</span></p>
-            <p className="text-xs text-gray-400 mt-1.5">
+            <p className="text-xs text-gray-500 mb-1">Graded</p>
+            <p className="text-2xl font-bold text-[#1B2A4A]">{gradedCount} <span className="text-sm font-normal text-gray-500">papers</span></p>
+            <p className="text-xs text-gray-500 mt-1.5">
               {submissions.length - gradedCount > 0
                 ? `${submissions.length - gradedCount} not graded`
                 : submissions.length > 0 ? "All graded" : "No submissions"}
@@ -237,12 +237,12 @@ export default function ViewAssignmentPage() {
                 <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
               </svg>
             </div>
-            <p className="text-xs text-gray-400 mb-1">Rubric</p>
+            <p className="text-xs text-gray-500 mb-1">Rubric</p>
             <p className="text-2xl font-bold text-[#1B2A4A]">
               {assignment.rubricIds.length}
-              <span className="text-sm font-normal text-gray-400 ml-1">rubric</span>
+              <span className="text-sm font-normal text-gray-500 ml-1">rubric</span>
             </p>
-            <p className="text-xs text-gray-400 mt-1.5">
+            <p className="text-xs text-gray-500 mt-1.5">
               <Link
                 href={`/courses/${id}/assignments/${assignmentId}/edit`}
                 className="text-[#0F766E] hover:underline"
@@ -256,7 +256,7 @@ export default function ViewAssignmentPage() {
         {/* Description */}
         {assignment.description && (
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 mb-5">
-            <p className="text-xs text-gray-400 mb-1.5">Assignment Description</p>
+            <p className="text-xs text-gray-500 mb-1.5">Assignment Description</p>
             <div className="flex items-start justify-between gap-4">
               <p className="text-sm text-[#1B2A4A] leading-relaxed">{assignment.description}</p>
               <Link href={`/courses/${id}/assignments/${assignmentId}/edit`} className="text-[#0F766E] text-sm hover:underline shrink-0">Edit</Link>
@@ -294,7 +294,7 @@ export default function ViewAssignmentPage() {
                   <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                 </svg>
               </div>
-              <p className="text-sm text-gray-400">ยังไม่มีนักศึกษาส่งงาน</p>
+              <p className="text-sm text-gray-500">ยังไม่มีนักศึกษาส่งงาน</p>
             </div>
           ) : (
             <>
@@ -329,7 +329,7 @@ export default function ViewAssignmentPage() {
                           </div>
                           <div>
                             <p className="font-medium text-[#1B2A4A] text-sm">{s.studentName}</p>
-                            <p className="text-xs text-gray-400">{s.email}</p>
+                            <p className="text-xs text-gray-500">{s.email}</p>
                           </div>
                         </div>
                       </td>
@@ -362,7 +362,7 @@ export default function ViewAssignmentPage() {
                   ))}
                 </tbody>
               </table>
-              <div className="flex items-center justify-between px-5 py-3 text-xs text-gray-400 border-t border-gray-50">
+              <div className="flex items-center justify-between px-5 py-3 text-xs text-gray-500 border-t border-gray-50">
                 <span>Showing <span className="font-medium text-[#1B2A4A]">1–{visible.length}</span> of <span className="font-medium text-[#1B2A4A]">{submissions.length}</span> submissions</span>
                 {submissions.length > 5 && (
                   <div className="flex gap-1">

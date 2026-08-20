@@ -158,7 +158,7 @@ export default function EditAssignmentPage() {
   if (!course || !assignment) {
     return (
       <AppShell>
-        <main className="flex-1 flex items-center justify-center text-gray-400 text-sm">
+        <main className="flex-1 flex items-center justify-center text-gray-500 text-sm">
           ไม่พบข้อมูล —{" "}
           <Link href={`/courses/${id}/assignments`} className="text-[#0F766E] ml-1 hover:underline">กลับรายการชิ้นงาน</Link>
         </main>
@@ -174,7 +174,7 @@ export default function EditAssignmentPage() {
 
         <button
           onClick={() => navAway(`/courses/${id}/assignments/${assignmentId}`)}
-          className="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-[#0F766E] mb-6 transition-colors"
+          className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#0F766E] mb-6 transition-colors"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
             <polyline points="15 18 9 12 15 6"/>
@@ -183,7 +183,7 @@ export default function EditAssignmentPage() {
         </button>
 
         <h1 className="text-2xl font-bold text-[#1B2A4A] mb-1">แก้ไขชิ้นงาน</h1>
-        <p className="text-sm text-gray-400 mb-8">
+        <p className="text-sm text-gray-500 mb-8">
           กำลังแก้ไข{" "}
           <span className="font-semibold text-[#1B2A4A]">{assignment.name}</span>{" "}
           ในวิชา <span className="font-semibold text-[#1B2A4A]">{course.name}</span>
@@ -223,7 +223,7 @@ export default function EditAssignmentPage() {
                   วันครบกำหนด <span className="text-red-400">*</span>
                 </label>
                 <div className="relative">
-                  <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
                   </svg>
                   <input
@@ -263,7 +263,7 @@ export default function EditAssignmentPage() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-sm font-medium text-[#1B2A4A]">รับไฟล์จากนักศึกษา</p>
-                <p className="text-xs text-gray-400 mt-0.5">ปิดถ้างานนี้ไม่ต้องอัปโหลดไฟล์</p>
+                <p className="text-xs text-gray-500 mt-0.5">ปิดถ้างานนี้ไม่ต้องอัปโหลดไฟล์</p>
               </div>
               <button
                 type="button"
@@ -315,7 +315,7 @@ export default function EditAssignmentPage() {
                     placeholder="เช่น 4"
                     className="w-24 px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#0F766E]/30 focus:border-[#0F766E] transition-colors"
                   />
-                  <span className="text-sm text-gray-400">คน</span>
+                  <span className="text-sm text-gray-500">คน</span>
                 </div>
               )}
             </div>
@@ -344,7 +344,7 @@ export default function EditAssignmentPage() {
             </div>
 
             {linkedRubrics.length === 0 && !showNewRubricForm ? (
-              <div className="text-center py-6 text-xs text-gray-400">
+              <div className="text-center py-6 text-xs text-gray-500">
                 ยังไม่มีเกณฑ์การให้คะแนน — กด "สร้างเกณฑ์ใหม่" เพื่อเพิ่ม
               </div>
             ) : (
@@ -357,7 +357,7 @@ export default function EditAssignmentPage() {
                       </svg>
                       <div>
                         <p className="text-sm font-medium text-[#1B2A4A]">{rubric.name}</p>
-                        <p className="text-xs text-gray-400 mt-0.5">
+                        <p className="text-xs text-gray-500 mt-0.5">
                           {rubric.criteria.length > 0
                             ? `${rubric.criteria.length} เกณฑ์ย่อย · ${rubric.criteria.reduce((s, c) => s + c.maxPoints, 0)} คะแนนรวม`
                             : "ยังไม่มีเกณฑ์ย่อย — เปิด Rubric Editor เพื่อเพิ่ม"}
@@ -378,7 +378,7 @@ export default function EditAssignmentPage() {
                       <button
                         type="button"
                         onClick={() => handleDeleteRubric(rubric.id, rubric.name)}
-                        className="p-1.5 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors"
+                        className="p-1.5 rounded-lg hover:bg-red-50 text-gray-500 hover:text-red-500 transition-colors"
                         title="ลบเกณฑ์"
                       >
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -429,7 +429,7 @@ export default function EditAssignmentPage() {
             >
               ลบชิ้นงาน
             </button>
-            <p className="text-xs text-gray-400 mt-3">การลบชิ้นงานจะลบข้อมูลการส่งและผลการตรวจทั้งหมด ไม่สามารถกู้คืนได้</p>
+            <p className="text-xs text-gray-500 mt-3">การลบชิ้นงานจะลบข้อมูลการส่งและผลการตรวจทั้งหมด ไม่สามารถกู้คืนได้</p>
           </section>
 
           {/* Actions */}

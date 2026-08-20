@@ -97,7 +97,7 @@ export default function ImportStudentsPage() {
   if (!course) {
     return (
       <AppShell>
-        <main className="flex-1 flex items-center justify-center text-gray-400 text-sm">
+        <main className="flex-1 flex items-center justify-center text-gray-500 text-sm">
           ไม่พบรายวิชานี้ —{" "}
           <Link href="/courses" className="text-[#0F766E] ml-1 hover:underline">กลับไปหน้าหลัก</Link>
         </main>
@@ -109,7 +109,7 @@ export default function ImportStudentsPage() {
     <AppShell>
       <main className="w-full max-w-[860px] mx-auto px-8 py-8">
         {/* Breadcrumb */}
-        <div className="flex items-center gap-1.5 text-sm text-gray-400 mb-6">
+        <div className="flex items-center gap-1.5 text-sm text-gray-500 mb-6">
           <Link href="/courses" className="hover:text-[#0F766E] transition-colors">All Courses</Link>
           <span>/</span>
           <Link href={`/courses/${id}`} className="hover:text-[#0F766E] transition-colors">{course.name}</Link>
@@ -119,7 +119,7 @@ export default function ImportStudentsPage() {
 
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-[#1B2A4A]">Import Students</h1>
-          <p className="mt-1 text-sm text-gray-400">
+          <p className="mt-1 text-sm text-gray-500">
             Upload a CSV file to enroll students in <span className="font-medium text-[#1B2A4A]">{course.name}</span>
           </p>
         </div>
@@ -149,7 +149,7 @@ export default function ImportStudentsPage() {
               </div>
               <div className="text-center">
                 <p className="text-sm font-medium text-[#1B2A4A]">Drag and drop your file here</p>
-                <p className="text-sm text-gray-400 mt-0.5">
+                <p className="text-sm text-gray-500 mt-0.5">
                   or{" "}
                   <span className="text-[#0F766E] font-medium">browse your computer</span>
                 </p>
@@ -177,7 +177,7 @@ export default function ImportStudentsPage() {
                 </div>
                 <div>
                   <p className="text-sm font-medium text-[#1B2A4A]">ดาวน์โหลด Template</p>
-                  <p className="text-xs text-gray-400">students-template.csv — รูปแบบที่ระบบรองรับ</p>
+                  <p className="text-xs text-gray-500">students-template.csv — รูปแบบที่ระบบรองรับ</p>
                 </div>
               </div>
               <a
@@ -196,7 +196,7 @@ export default function ImportStudentsPage() {
               <div className="overflow-x-auto">
                 <table className="text-xs w-full">
                   <thead>
-                    <tr className="text-left text-gray-400 border-b border-gray-50">
+                    <tr className="text-left text-gray-500 border-b border-gray-50">
                       {["student_id", "first_name", "last_name", "email"].map((h) => (
                         <th key={h} className="pb-2 pr-6 font-mono font-medium">{h}</th>
                       ))}
@@ -212,7 +212,7 @@ export default function ImportStudentsPage() {
                   </tbody>
                 </table>
               </div>
-              <p className="text-xs text-gray-400 mt-3">* email ไม่บังคับ — student_id, first_name, last_name จำเป็น</p>
+              <p className="text-xs text-gray-500 mt-3">* email ไม่บังคับ — student_id, first_name, last_name จำเป็น</p>
             </div>
 
             <div className="flex justify-end">
@@ -242,7 +242,7 @@ export default function ImportStudentsPage() {
                   </div>
                 )}
               </div>
-              <span className="text-xs text-gray-400">{fileName}</span>
+              <span className="text-xs text-gray-500">{fileName}</span>
             </div>
 
             {/* Table */}
@@ -250,7 +250,7 @@ export default function ImportStudentsPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead className="border-b border-gray-100">
-                    <tr className="text-left text-xs text-gray-400 uppercase tracking-wider">
+                    <tr className="text-left text-xs text-gray-500 uppercase tracking-wider">
                       {["#", "รหัสนักศึกษา", "ชื่อ", "นามสกุล", "Email", "สถานะ"].map((h) => (
                         <th key={h} className="px-5 py-3 font-medium">{h}</th>
                       ))}
@@ -266,7 +266,7 @@ export default function ImportStudentsPage() {
                         <td className="px-5 py-3 font-mono text-xs text-gray-600">{row.studentId || <span className="text-red-300">—</span>}</td>
                         <td className="px-5 py-3 text-[#1B2A4A]">{row.firstName || <span className="text-red-300">—</span>}</td>
                         <td className="px-5 py-3 text-[#1B2A4A]">{row.lastName || <span className="text-red-300">—</span>}</td>
-                        <td className="px-5 py-3 text-gray-400 text-xs">{row.email || "—"}</td>
+                        <td className="px-5 py-3 text-gray-500 text-xs">{row.email || "—"}</td>
                         <td className="px-5 py-3">
                           {row.error ? (
                             <span className="inline-flex items-center gap-1 text-xs text-red-500">
@@ -288,7 +288,7 @@ export default function ImportStudentsPage() {
             </div>
 
             {errorRows.length > 0 && (
-              <p className="text-xs text-gray-400 flex items-center gap-1.5">
+              <p className="text-xs text-gray-500 flex items-center gap-1.5">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                 แถวที่มีข้อผิดพลาดจะถูกข้ามไป — เฉพาะ {validRows.length} แถวที่ถูกต้องจะถูก import
               </p>
@@ -331,7 +331,7 @@ export default function ImportStudentsPage() {
                 </svg>
               </div>
               <h2 className="text-xl font-bold text-[#1B2A4A] mb-2">Import สำเร็จ</h2>
-              <p className="text-sm text-gray-400 mb-8">
+              <p className="text-sm text-gray-500 mb-8">
                 เพิ่ม <span className="font-semibold text-[#1B2A4A]">{validRows.length} นักศึกษา</span> เข้า {course.name} เรียบร้อยแล้ว
               </p>
               <div className="flex gap-3">

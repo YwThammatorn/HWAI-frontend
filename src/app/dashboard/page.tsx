@@ -138,7 +138,7 @@ export default function DashboardPage() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-[#1B2A4A]">Dashboard Overview</h1>
-          <p className="text-sm text-gray-400 mt-1">Welcome back, check your grading status, credits used and AI usage history from here</p>
+          <p className="text-sm text-gray-500 mt-1">Welcome back, check your grading status, credits used and AI usage history from here</p>
         </div>
 
         {/* ── Stat cards ── */}
@@ -146,7 +146,7 @@ export default function DashboardPage() {
           {/* Total Assignments */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
             <div className="flex items-start justify-between mb-3">
-              <p className="text-xs text-gray-400">Total Assignments</p>
+              <p className="text-xs text-gray-500">Total Assignments</p>
               <div className="w-8 h-8 rounded-lg bg-[#E6FAF8] flex items-center justify-center">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="2" strokeLinecap="round">
                   <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
@@ -164,7 +164,7 @@ export default function DashboardPage() {
           {/* Pending Grades */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
             <div className="flex items-start justify-between mb-3">
-              <p className="text-xs text-gray-400">Pending Grades</p>
+              <p className="text-xs text-gray-500">Pending Grades</p>
               <div className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" strokeLinecap="round">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
@@ -179,7 +179,7 @@ export default function DashboardPage() {
           {/* Avg. Class Score */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
             <div className="flex items-start justify-between mb-3">
-              <p className="text-xs text-gray-400">Avg. Class Score</p>
+              <p className="text-xs text-gray-500">Avg. Class Score</p>
               <div className="w-8 h-8 rounded-lg bg-[#E6FAF8] flex items-center justify-center">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="2" strokeLinecap="round">
                   <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
@@ -196,7 +196,7 @@ export default function DashboardPage() {
           {/* AI Credits */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
             <div className="flex items-start justify-between mb-3">
-              <p className="text-xs text-gray-400">AI Credits</p>
+              <p className="text-xs text-gray-500">AI Credits</p>
               <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth="2" strokeLinecap="round">
                   <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
@@ -208,7 +208,7 @@ export default function DashboardPage() {
               <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
                 <div className="h-full bg-purple-400 rounded-full" style={{ width: "70%" }} />
               </div>
-              <p className="text-xs text-gray-400 mt-1">70% remaining for this month</p>
+              <p className="text-xs text-gray-500 mt-1">70% remaining for this month</p>
             </div>
           </div>
         </div>
@@ -228,7 +228,7 @@ export default function DashboardPage() {
               </div>
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-left text-[10px] font-semibold text-gray-400 uppercase tracking-wider border-b border-gray-50">
+                  <tr className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-50">
                     <th className="px-6 py-2.5">Course Name</th>
                     <th className="px-4 py-2.5">Assignment</th>
                     <th className="px-4 py-2.5">Status</th>
@@ -242,7 +242,7 @@ export default function DashboardPage() {
                       <td className="px-6 py-3.5 font-medium text-[#1B2A4A] text-xs leading-snug">{a.course}</td>
                       <td className="px-4 py-3.5 text-gray-500 text-xs">{a.assignment}</td>
                       <td className="px-4 py-3.5"><StatusBadge status={a.status} /></td>
-                      <td className="px-4 py-3.5 text-gray-400 text-xs whitespace-nowrap">{a.dueDate}</td>
+                      <td className="px-4 py-3.5 text-gray-500 text-xs whitespace-nowrap">{a.dueDate}</td>
                       <td className="px-4 py-3.5">
                         <Link href="/courses" className="text-xs text-[#0F766E] font-medium hover:underline">View</Link>
                       </td>
@@ -269,7 +269,7 @@ export default function DashboardPage() {
                       onClick={() => setPerfPeriod(p)}
                       className={[
                         "px-3 py-1.5 font-medium transition-colors",
-                        perfPeriod === p ? "bg-[#1B2A4A] text-white" : "text-gray-400 hover:text-gray-600",
+                        perfPeriod === p ? "bg-[#1B2A4A] text-white" : "text-gray-500 hover:text-gray-600",
                       ].join(" ")}
                     >
                       {p}
@@ -317,7 +317,7 @@ export default function DashboardPage() {
                     </div>
                     <div>
                       <p className="text-xs font-semibold text-[#1B2A4A] leading-snug">{d.title}</p>
-                      <p className="text-[11px] text-gray-400 mt-0.5">{d.sub}</p>
+                      <p className="text-[11px] text-gray-500 mt-0.5">{d.sub}</p>
                     </div>
                   </div>
                 ))}
@@ -356,7 +356,7 @@ export default function DashboardPage() {
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="2.5" strokeLinecap="round">
                 <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
               </svg>
-              <p className="text-xs text-gray-400">Total Credits Used</p>
+              <p className="text-xs text-gray-500">Total Credits Used</p>
             </div>
             <p className="text-4xl font-extrabold text-[#1B2A4A]">3,750 <span className="text-base font-normal text-gray-300">/ 5,000</span></p>
             <p className="text-xs text-green-600 mt-2">↗ 12% more than last month</p>
@@ -366,10 +366,10 @@ export default function DashboardPage() {
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="2.5" strokeLinecap="round">
                 <polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
               </svg>
-              <p className="text-xs text-gray-400">Assignments Graded</p>
+              <p className="text-xs text-gray-500">Assignments Graded</p>
             </div>
             <p className="text-4xl font-extrabold text-[#1B2A4A]">248 <span className="text-base font-normal text-gray-300">papers</span></p>
-            <p className="text-xs text-gray-400 mt-2">Avg. 15 credits per paper</p>
+            <p className="text-xs text-gray-500 mt-2">Avg. 15 credits per paper</p>
           </div>
         </div>
 
@@ -378,7 +378,7 @@ export default function DashboardPage() {
           <div className="flex items-start justify-between mb-5">
             <div>
               <h2 className="text-xl font-extrabold text-[#1B2A4A]">AI Usage History</h2>
-              <p className="text-xs text-gray-400 mt-0.5">Track your grading activity and credit consumption.</p>
+              <p className="text-xs text-gray-500 mt-0.5">Track your grading activity and credit consumption.</p>
             </div>
             <div className="flex rounded-lg border border-gray-200 overflow-hidden text-xs">
               {(["This Month", "Last 30 Days", "Last Quarter"] as const).map((p) => (
@@ -387,7 +387,7 @@ export default function DashboardPage() {
                   onClick={() => setUsagePeriod(p)}
                   className={[
                     "px-3 py-1.5 font-medium transition-colors",
-                    usagePeriod === p ? "bg-[#2DD4BF] text-[#1B2A4A]" : "text-gray-400 hover:text-gray-600",
+                    usagePeriod === p ? "bg-[#2DD4BF] text-[#1B2A4A]" : "text-gray-500 hover:text-gray-600",
                   ].join(" ")}
                 >
                   {p}
@@ -398,7 +398,7 @@ export default function DashboardPage() {
 
           <div className="flex items-center justify-between mb-3">
             <p className="text-sm font-semibold text-[#1B2A4A]">Daily Credit Consumption</p>
-            <div className="flex items-center gap-4 text-xs text-gray-400">
+            <div className="flex items-center gap-4 text-xs text-gray-500">
               <span className="flex items-center gap-1.5"><span className="w-3 h-1.5 rounded-full bg-[#2DD4BF] inline-block" /> Auto-Grading</span>
               <span className="flex items-center gap-1.5"><span className="w-3 h-1.5 rounded-full bg-gray-300 inline-block" /> Plagiarism Check</span>
             </div>

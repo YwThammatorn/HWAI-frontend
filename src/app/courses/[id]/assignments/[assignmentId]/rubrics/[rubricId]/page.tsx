@@ -127,7 +127,7 @@ export default function RubricEditorPage() {
   if (!course || !assignment || !rubric) {
     return (
       <AppShell>
-        <main className="flex-1 flex items-center justify-center text-gray-400 text-sm">
+        <main className="flex-1 flex items-center justify-center text-gray-500 text-sm">
           ไม่พบข้อมูล —{" "}
           <Link href={`/courses/${id}/assignments/${assignmentId}/edit`} className="text-[#0F766E] ml-1 hover:underline">
             กลับหน้าแก้ไขชิ้นงาน
@@ -142,7 +142,7 @@ export default function RubricEditorPage() {
       <main className="w-full max-w-[800px] mx-auto px-8 py-8">
 
         {/* Breadcrumb */}
-        <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-6 flex-wrap">
+        <div className="flex items-center gap-1.5 text-xs text-gray-500 mb-6 flex-wrap">
           <Link href="/courses" className="hover:text-[#0F766E] transition-colors">All Courses</Link>
           <span>/</span>
           <Link href={`/courses/${id}/assignments`} className="hover:text-[#0F766E] transition-colors">{course.name}</Link>
@@ -158,7 +158,7 @@ export default function RubricEditorPage() {
         <div className="flex items-start justify-between gap-4 mb-8">
           <div>
             <h1 className="text-2xl font-bold text-[#1B2A4A] mb-1">กำหนดเกณฑ์การให้คะแนน</h1>
-            <p className="text-sm text-gray-400">ตั้งค่าเกณฑ์ที่ HWAI Agent จะใช้ในการตรวจงาน</p>
+            <p className="text-sm text-gray-500">ตั้งค่าเกณฑ์ที่ HWAI Agent จะใช้ในการตรวจงาน</p>
           </div>
           <div className="flex items-center gap-3 shrink-0">
             <button
@@ -236,7 +236,7 @@ export default function RubricEditorPage() {
                     placeholder="ชื่อเกณฑ์"
                   />
                   <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-xs text-gray-400 uppercase tracking-wider font-medium">น้ำหนัก</span>
+                    <span className="text-xs text-gray-500 uppercase tracking-wider font-medium">น้ำหนัก</span>
                     <div className="flex items-center gap-1">
                       <input
                         type="number"
@@ -247,10 +247,10 @@ export default function RubricEditorPage() {
                         className={`w-14 text-center text-sm font-semibold border rounded-lg px-2 py-1 outline-none focus:ring-2 transition-colors ${
                           parseFloat(c.weight) > 0
                             ? "border-[#0F766E] text-[#0F7B6C] focus:ring-[#0F766E]/30"
-                            : "border-gray-200 text-gray-400 focus:ring-gray-200"
+                            : "border-gray-200 text-gray-500 focus:ring-gray-200"
                         }`}
                       />
-                      <span className="text-xs text-gray-400 font-medium">%</span>
+                      <span className="text-xs text-gray-500 font-medium">%</span>
                     </div>
                     <span className="text-xs text-gray-300 font-mono">≈ {pts} pts</span>
                   </div>
@@ -269,7 +269,7 @@ export default function RubricEditorPage() {
 
                 {/* Description */}
                 <div className="px-5 py-4 border-b border-gray-50">
-                  <label className="block text-xs text-gray-400 mb-1.5">คำอธิบายสำหรับนักศึกษา</label>
+                  <label className="block text-xs text-gray-500 mb-1.5">คำอธิบายสำหรับนักศึกษา</label>
                   <textarea
                     value={c.description}
                     onChange={e => updateCriterion(c.id, "description", e.target.value)}
@@ -308,7 +308,7 @@ export default function RubricEditorPage() {
         {/* Add criterion */}
         <button
           onClick={addCriterion}
-          className="w-full mt-4 py-3.5 rounded-2xl border-2 border-dashed border-gray-200 text-sm text-gray-400 hover:border-[#0F766E] hover:text-[#0F766E] hover:bg-teal-50/30 transition-all flex items-center justify-center gap-2"
+          className="w-full mt-4 py-3.5 rounded-2xl border-2 border-dashed border-gray-200 text-sm text-gray-500 hover:border-[#0F766E] hover:text-[#0F766E] hover:bg-teal-50/30 transition-all flex items-center justify-center gap-2"
         >
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
             <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>

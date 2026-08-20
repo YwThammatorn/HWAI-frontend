@@ -114,7 +114,7 @@ function RowMenu({
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+        className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-500 hover:text-gray-600 hover:bg-gray-100 transition-colors"
         aria-label="More options"
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -167,7 +167,7 @@ export default function CollaboratorsPage() {
   if (!course) {
     return (
       <AppShell>
-        <main className="flex-1 flex items-center justify-center text-gray-400 text-sm">
+        <main className="flex-1 flex items-center justify-center text-gray-500 text-sm">
           ไม่พบรายวิชานี้ —{" "}
           <Link href="/courses" className="text-[#0F766E] ml-1 hover:underline">กลับไปหน้าหลัก</Link>
         </main>
@@ -179,7 +179,7 @@ export default function CollaboratorsPage() {
     <AppShell>
       <main className="w-full max-w-[900px] mx-auto px-8 py-8">
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-gray-400 mb-6">
+        <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
           <Link href="/courses" className="hover:text-[#0F766E] transition-colors">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="inline -mt-0.5">
               <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
@@ -203,7 +203,7 @@ export default function CollaboratorsPage() {
           <div className="flex items-start justify-between gap-4 px-6 pt-5 pb-4 border-b border-gray-50">
             <div>
               <h2 className="text-base font-bold text-[#1B2A4A]">Course Team</h2>
-              <p className="text-sm text-gray-400 mt-0.5">
+              <p className="text-sm text-gray-500 mt-0.5">
                 A list of all collaborators with administrative or grading access to this course.
               </p>
             </div>
@@ -223,7 +223,7 @@ export default function CollaboratorsPage() {
 
           {/* Rows */}
           {filtered.length === 0 ? (
-            <div className="px-6 py-10 text-center text-sm text-gray-400">ไม่พบผู้ร่วมงานที่ตรงกัน</div>
+            <div className="px-6 py-10 text-center text-sm text-gray-500">ไม่พบผู้ร่วมงานที่ตรงกัน</div>
           ) : (
             <div className="divide-y divide-gray-50">
               {filtered.map((c) => (
@@ -232,12 +232,12 @@ export default function CollaboratorsPage() {
 
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-[#1B2A4A]">{c.name}</p>
-                    <p className="text-xs text-gray-400">{c.email}</p>
+                    <p className="text-xs text-gray-500">{c.email}</p>
                   </div>
 
                   <div className="text-right shrink-0">
                     <p className="text-sm font-semibold text-[#1B2A4A]">{c.role}</p>
-                    <p className="text-xs text-gray-400">{c.permissions}</p>
+                    <p className="text-xs text-gray-500">{c.permissions}</p>
                   </div>
 
                   <div className="w-24 flex justify-end">
@@ -252,10 +252,10 @@ export default function CollaboratorsPage() {
 
           {/* Card footer */}
           <div className="flex items-center justify-between px-6 py-3 border-t border-gray-50">
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-gray-500">
               Showing <strong className="text-[#1B2A4A]">{filtered.length}</strong> collaborator{filtered.length !== 1 ? "s" : ""}
             </p>
-            <p className="text-xs text-gray-400 flex items-center gap-1">
+            <p className="text-xs text-gray-500 flex items-center gap-1">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
               </svg>
@@ -269,7 +269,7 @@ export default function CollaboratorsPage() {
           <div className="flex items-start justify-between gap-6 px-6 py-5">
             <div className="flex-1">
               <h2 className="text-base font-bold text-[#1B2A4A] mb-1">Invite Code</h2>
-              <p className="text-sm text-gray-400 leading-relaxed max-w-sm">
+              <p className="text-sm text-gray-500 leading-relaxed max-w-sm">
                 Share this code to allow TAs to request access to this course. Requests will need your approval.
               </p>
             </div>

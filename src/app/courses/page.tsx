@@ -36,7 +36,7 @@ export default function CoursesPage() {
         <div className="flex items-end justify-between mb-6">
           <div>
             <h1 className="text-3xl font-bold text-[#1B2A4A]">All Courses</h1>
-            <p className="mt-1 text-sm text-gray-400">
+            <p className="mt-1 text-sm text-gray-500">
               Manage your classes, assignments, and student progress from here.
             </p>
           </div>
@@ -45,7 +45,7 @@ export default function CoursesPage() {
             <div className="flex items-center gap-3">
               {/* Search */}
               <div className="relative">
-                <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
                 </svg>
                 <input
@@ -93,11 +93,11 @@ export default function CoursesPage() {
         {/* Content */}
         {visible.length === 0 ? (
           search ? (
-            <p className="text-center text-gray-400 text-sm py-20">à¹„à¸¡à¹ˆà¸žà¸šà¸£à¸²à¸¢à¸§à¸´à¸Šà¸²à¸—à¸µà¹ˆà¸•à¸£à¸‡à¸à¸±à¸š &ldquo;{search}&rdquo;</p>
+            <p className="text-center text-gray-500 text-sm py-20">à¹„à¸¡à¹ˆà¸žà¸šà¸£à¸²à¸¢à¸§à¸´à¸Šà¸²à¸—à¸µà¹ˆà¸•à¸£à¸‡à¸à¸±à¸š &ldquo;{search}&rdquo;</p>
           ) : tab === "active" ? (
             <EmptyState />
           ) : (
-            <p className="text-center text-gray-400 text-sm py-20">à¹„à¸¡à¹ˆà¸¡à¸µà¸£à¸²à¸¢à¸§à¸´à¸Šà¸²à¸—à¸µà¹ˆà¸–à¸¹à¸ archive</p>
+            <p className="text-center text-gray-500 text-sm py-20">à¹„à¸¡à¹ˆà¸¡à¸µà¸£à¸²à¸¢à¸§à¸´à¸Šà¸²à¸—à¸µà¹ˆà¸–à¸¹à¸ archive</p>
           )
         ) : (
           <>
@@ -167,7 +167,7 @@ function EmptyState() {
         </div>
 
         <h2 className="text-xl font-bold text-[#1B2A4A] mb-2">Let&apos;s start your first class</h2>
-        <p className="text-sm text-gray-400 mb-8 leading-relaxed">
+        <p className="text-sm text-gray-500 mb-8 leading-relaxed">
           Create a course to begin grading assignments with HWAI Agent.
         </p>
 
@@ -231,7 +231,7 @@ function CourseCard({ course, studentCount, allGraded, activeAssignments, isArch
 
         <div className="flex items-center gap-1.5 mb-3">
           {src.dot && <span className="w-2 h-2 rounded-full inline-block" style={{ background: src.dot }} />}
-          <span className="text-xs text-gray-400">{src.label}</span>
+          <span className="text-xs text-gray-500">{src.label}</span>
         </div>
 
         {isArchived ? (

@@ -83,7 +83,7 @@ export default function NewAssignmentPage() {
 
         <button
           onClick={() => navAway(`/courses/${id}/assignments`)}
-          className="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-[#0F766E] mb-6 transition-colors"
+          className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#0F766E] mb-6 transition-colors"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
             <polyline points="15 18 9 12 15 6"/>
@@ -92,7 +92,7 @@ export default function NewAssignmentPage() {
         </button>
 
         <h1 className="text-2xl font-bold text-[#1B2A4A] mb-1">สร้างชิ้นงานใหม่</h1>
-        <p className="text-sm text-gray-400 mb-8">
+        <p className="text-sm text-gray-500 mb-8">
           สร้างชิ้นงานในวิชา{" "}
           <span className="font-semibold text-[#1B2A4A]">{course?.name ?? "..."}</span>
         </p>
@@ -135,7 +135,7 @@ export default function NewAssignmentPage() {
                   วันครบกำหนด <span className="text-red-400">*</span>
                 </label>
                 <div className="relative">
-                  <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
                   </svg>
                   <input
@@ -176,7 +176,7 @@ export default function NewAssignmentPage() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-sm font-medium text-[#1B2A4A]">รับไฟล์จากนักศึกษา</p>
-                <p className="text-xs text-gray-400 mt-0.5">ปิดถ้างานนี้ไม่ต้องอัปโหลดไฟล์ (เช่น งานนำเสนอในชั้น)</p>
+                <p className="text-xs text-gray-500 mt-0.5">ปิดถ้างานนี้ไม่ต้องอัปโหลดไฟล์ (เช่น งานนำเสนอในชั้น)</p>
               </div>
               <button
                 type="button"
@@ -251,7 +251,7 @@ export default function NewAssignmentPage() {
                     placeholder="เช่น 4"
                     className="w-24 px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#0F766E]/30 focus:border-[#0F766E] transition-colors"
                   />
-                  <span className="text-sm text-gray-400">คน</span>
+                  <span className="text-sm text-gray-500">คน</span>
                 </div>
               )}
             </div>
