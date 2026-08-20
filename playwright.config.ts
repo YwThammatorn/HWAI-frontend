@@ -17,6 +17,10 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"] },
     },
   ],
-  // dev server ต้องรันอยู่แล้ว — ไม่ auto-start เพราะใช้ preview_start ของ Claude
-  webServer: undefined,
+  webServer: {
+    command: "npm run dev",
+    url: "http://localhost:3000",
+    reuseExistingServer: true, // ถ้า server รันอยู่แล้วก็ใช้ต่อ ไม่ start ซ้ำ
+    timeout: 600000, // รอ 10 นาที เผื่อ first compile
+  },
 });

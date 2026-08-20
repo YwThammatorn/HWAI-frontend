@@ -21,9 +21,10 @@ test.describe("Navigation", () => {
     await expect(page.locator("text=UX/UI Design").first()).toBeVisible();
   });
 
-  test("history page loads", async ({ page }) => {
+  test("history page loads with grading log", async ({ page }) => {
     await waitReady(page, "/history");
-    await expect(page).toHaveURL(/\/history/);
+    await expect(page.locator("h1").filter({ hasText: /grading history/i })).toBeVisible();
+    await expect(page.locator("text=/Detailed Grading Log/i")).toBeVisible();
   });
 
   test("profile page loads", async ({ page }) => {
@@ -189,7 +190,49 @@ test.describe("Course Results", () => {
   });
 });
 
-// ── 8. Rubric Editor ──────────────────────────────────────────────────────────
+// ── 8. History ────────────────────────────────────────────────────────────────
+
+test.describe("History", () => {
+  test("stat cards show credits and papers count", async ({ page }) => {
+    await waitReady(page, "/history");
+    await expect(page.locator("text=/Total Credits Used/i")).toBeVisible();
+    await expect(page.locator("text=/Assignments Graded/i")).toBeVisible();
+    await expect(page.locator("text=/Remaining Balance/i")).toBeVisible();
+  });
+
+  test("grading log table shows rows", async ({ page }) => {
+    await waitReady(page, "/history");
+    const rows = page.locator("tbody tr");
+    await expect(rows.first()).toBeVisible();
+  });
+
+  test("search filters table rows", async ({ page }) => {
+    await waitReady(page, "/history");
+    const search = page.getByPlaceholder("Search activity...");
+    await search.fill("Wireframe");
+    await expect(page.locator("text=Wireframe Prototype").first()).toBeVisible();
+    await expect(page.locator("text=User Research Report")).not.toBeVisible();
+  });
+
+  test("status filter shows only completed", async ({ page }) => {
+    await waitReady(page, "/history");
+    await page.selectOption("select", "completed");
+    const cells = page.locator("tbody td").filter({ hasText: /Failed/i });
+    await expect(cells).toHaveCount(0);
+  });
+
+  test("Export CSV button is present", async ({ page }) => {
+    await waitReady(page, "/history");
+    await expect(page.getByRole("button", { name: /export csv/i })).toBeVisible();
+  });
+
+  test("pagination controls render", async ({ page }) => {
+    await waitReady(page, "/history");
+    await expect(page.locator("text=/Showing/i")).toBeVisible();
+  });
+});
+
+// ── 9. Rubric Editor ──────────────────────────────────────────────────────────
 
 test.describe("Rubric Editor", () => {
   test("page loads with rubric criteria", async ({ page }) => {
