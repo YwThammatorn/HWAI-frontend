@@ -46,6 +46,10 @@ export default function RubricEditorPage() {
   const [criteria, setCriteria] = useState<CriterionDraft[]>([]);
   const [rubricName, setRubricName] = useState("");
   const [saved, setSaved] = useState(false);
+  const [aiOpen, setAiOpen] = useState(false);
+  const [generating, setGenerating] = useState<Record<string, boolean>>({});
+  const [aiSuggestions, setAiSuggestions] = useState<{ name: string; description: string; weight: number }[]>([]);
+  const [aiLoading, setAiLoading] = useState(false);
 
   const origRef = useRef({ criteriaJson: "", name: "" });
 
@@ -91,6 +95,61 @@ export default function RubricEditorPage() {
       return { ...c, levels };
     }));
   }, []);
+
+  function generateLevels(cid: string) {
+    const c = criteria.find((x) => x.id === cid);
+    if (!c) return;
+    setGenerating((prev) => ({ ...prev, [cid]: true }));
+    setTimeout(() => {
+      const n = c.name || "เกณฑ์นี้";
+      setCriteria((prev) =>
+        prev.map((x) =>
+          x.id !== cid ? x : {
+            ...x,
+            levels: [
+              { label: x.levels[0]?.label ?? "ดีเยี่ยม", description: `แสดงความเข้าใจ ${n} ได้อย่างชัดเจนและครบถ้วน มีหลักฐานประกอบที่น่าเชื่อถือ` },
+              { label: x.levels[1]?.label ?? "ดี", description: `แสดง ${n} ได้ในระดับที่ยอมรับได้ แต่ยังมีบางส่วนที่ต้องปรับปรุง` },
+              { label: x.levels[2]?.label ?? "ต้องปรับปรุง", description: `${n} ยังไม่เพียงพอ จำเป็นต้องแก้ไขและพัฒนาเพิ่มเติมอย่างมีนัยสำคัญ` },
+            ],
+          }
+        )
+      );
+      setSaved(false);
+      setGenerating((prev) => ({ ...prev, [cid]: false }));
+    }, 900);
+  }
+
+  function openAiAssistant() {
+    setAiOpen(true);
+    setAiSuggestions([]);
+    setAiLoading(true);
+    setTimeout(() => {
+      setAiSuggestions([
+        { name: "ความครบถ้วนของเนื้อหา", description: "ครอบคลุมประเด็นสำคัญทั้งหมดตามที่กำหนด", weight: 40 },
+        { name: "ความถูกต้องและแม่นยำ", description: "ข้อมูลและการวิเคราะห์มีความถูกต้องตามหลักวิชา", weight: 30 },
+        { name: "การนำเสนอและโครงสร้าง", description: "จัดเรียงเนื้อหาได้อย่างเป็นระบบและชัดเจน", weight: 20 },
+        { name: "ความคิดสร้างสรรค์", description: "แสดงความคิดริเริ่มและมุมมองเชิงวิเคราะห์", weight: 10 },
+      ]);
+      setAiLoading(false);
+    }, 1500);
+  }
+
+  function applyAiSuggestions() {
+    const newCriteria: CriterionDraft[] = aiSuggestions.map((s) => ({
+      id: crypto.randomUUID(),
+      name: s.name,
+      description: s.description,
+      weight: String(s.weight),
+      levels: [
+        { label: "ดีเยี่ยม", description: `แสดง${s.name}ได้อย่างยอดเยี่ยม` },
+        { label: "ดี", description: `แสดง${s.name}ได้ในระดับที่ดี` },
+        { label: "ต้องปรับปรุง", description: `${s.name}ยังต้องพัฒนาเพิ่มเติม` },
+      ],
+    }));
+    setCriteria(newCriteria);
+    setSaved(false);
+    setAiOpen(false);
+  }
 
   function addCriterion() {
     const newC: CriterionDraft = {
@@ -162,11 +221,10 @@ export default function RubricEditorPage() {
           </div>
           <div className="flex items-center gap-3 shrink-0">
             <button
-              disabled
-              title="AI Rubric Assistant จะพร้อมใช้งานเร็ว ๆ นี้"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-300 cursor-not-allowed select-none"
+              onClick={openAiAssistant}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#0F766E] text-xs text-[#0F766E] hover:bg-teal-50 transition-colors font-medium"
             >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
                 <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
               </svg>
               AI Rubric Assistant
@@ -253,6 +311,20 @@ export default function RubricEditorPage() {
                       <span className="text-xs text-gray-500 font-medium">%</span>
                     </div>
                     <span className="text-xs text-gray-300 font-mono">≈ {pts} pts</span>
+                    <button
+                      onClick={() => generateLevels(c.id)}
+                      disabled={generating[c.id]}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-teal-50 border border-teal-200 text-xs text-[#0F766E] font-medium hover:bg-teal-100 transition-colors disabled:opacity-60"
+                    >
+                      {generating[c.id] ? (
+                        <svg className="animate-spin" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                      ) : (
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                        </svg>
+                      )}
+                      Generate
+                    </button>
                   </div>
                   <button
                     onClick={() => removeCriterion(c.id, c.name)}
@@ -351,6 +423,79 @@ export default function RubricEditorPage() {
           </div>
         </div>
       </main>
+
+      {/* AI Rubric Assistant Modal */}
+      {aiOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setAiOpen(false)} />
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+              <div className="flex items-center gap-2">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="#0F766E">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+                <h3 className="text-base font-bold text-[#1B2A4A]">AI Rubric Assistant</h3>
+              </div>
+              <button onClick={() => setAiOpen(false)} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2.5" strokeLinecap="round">
+                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+
+            <div className="px-6 py-5">
+              {aiLoading ? (
+                <div className="flex flex-col items-center py-10 gap-4">
+                  <div className="w-12 h-12 rounded-full bg-teal-50 flex items-center justify-center">
+                    <svg className="animate-spin" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="2">
+                      <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                    </svg>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm font-semibold text-[#1B2A4A]">กำลังวิเคราะห์ชิ้นงาน...</p>
+                    <p className="text-xs text-gray-400 mt-1">AI กำลังสร้างเกณฑ์ที่เหมาะสม</p>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <p className="text-xs text-gray-400 mb-4">
+                    AI แนะนำเกณฑ์ต่อไปนี้สำหรับ{" "}
+                    <span className="font-medium text-[#1B2A4A]">{assignment.name}</span>
+                  </p>
+                  <div className="space-y-2 mb-5">
+                    {aiSuggestions.map((s, i) => (
+                      <div key={i} className="flex items-center gap-3 px-4 py-3 rounded-xl bg-teal-50/50 border border-teal-100">
+                        <div className="w-6 h-6 rounded-full bg-[#0F766E] flex items-center justify-center shrink-0">
+                          <span className="text-white text-[10px] font-bold">{i + 1}</span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-[#1B2A4A]">{s.name}</p>
+                          <p className="text-xs text-gray-400 truncate">{s.description}</p>
+                        </div>
+                        <span className="text-xs font-semibold text-[#0F766E] shrink-0">{s.weight}%</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => setAiOpen(false)}
+                      className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-500 hover:bg-gray-50 transition-colors"
+                    >
+                      ยกเลิก
+                    </button>
+                    <button
+                      onClick={applyAiSuggestions}
+                      className="flex-1 py-2.5 rounded-xl bg-[#0F766E] hover:bg-[#0E7490] text-white text-sm font-semibold transition-colors"
+                    >
+                      Apply Suggestions
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </AppShell>
   );
 }

@@ -128,9 +128,12 @@ export default function CourseDetailPage() {
             >
               Collaborators
             </Link>
-            <button className="py-3 px-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-[#0F766E] transition-colors">
+            <Link
+              href={`/courses/${id}/results`}
+              className="py-3 px-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-[#0F766E] transition-colors"
+            >
               Results
-            </button>
+            </Link>
           </div>
 
           {students.length === 0 ? (
