@@ -97,7 +97,7 @@ export default function ProfileSidebar() {
   const router = useRouter();
 
   return (
-    <aside className="w-52 bg-[#1B2A4A] shrink-0 flex flex-col py-6 px-3">
+    <aside className="w-52 bg-[var(--bg-nav)] shrink-0 flex flex-col py-6 px-3">
       {/* Main navigation */}
       <p className="text-white/55 text-[10px] font-semibold uppercase tracking-widest px-3 mb-2">Main</p>
       <nav className="flex flex-col gap-0.5 mb-4">

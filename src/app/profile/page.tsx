@@ -14,7 +14,7 @@ function Field({ label, value }: { label: string; value: string }) {
   return (
     <div>
       <p className="text-xs text-gray-500 mb-1">{label}</p>
-      <p className="text-sm font-medium text-[#1B2A4A]">{value}</p>
+      <p className="text-sm font-medium text-[var(--text-primary)]">{value}</p>
     </div>
   );
 }
@@ -28,7 +28,7 @@ function Toggle({ label, checked, onChange }: { label?: string; checked: boolean
       onClick={onChange}
       className={[
         "relative w-11 h-6 rounded-full transition-colors shrink-0",
-        checked ? "bg-[#0F766E]" : "bg-gray-200",
+        checked ? "bg-[var(--accent)]" : "bg-gray-200",
       ].join(" ")}
     >
       <span
@@ -73,13 +73,13 @@ export default function ProfilePage() {
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm mb-5">
             <div className="flex items-start justify-between px-6 pt-5 pb-4 border-b border-gray-50">
               <div>
-                <h2 className="text-base font-bold text-[#1B2A4A]">Profile Information</h2>
+                <h2 className="text-base font-bold text-[var(--text-primary)]">Profile Information</h2>
                 <p className="text-xs text-gray-500 mt-0.5">Personal details and application status.</p>
               </div>
               {!editing && (
                 <button
                   onClick={startEdit}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#1B2A4A] text-white text-xs font-semibold rounded-xl hover:bg-[#162240] transition-colors"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-[var(--bg-nav)] text-white text-xs font-semibold rounded-xl hover:bg-[#162240] transition-colors"
                 >
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -93,14 +93,14 @@ export default function ProfilePage() {
             <div className="px-6 py-5">
               {/* Avatar row */}
               <div className="flex items-center gap-4 mb-6">
-                <div className="w-16 h-16 rounded-full bg-[#E6FAF8] flex items-center justify-center overflow-hidden">
+                <div className="w-16 h-16 rounded-full bg-[var(--accent-subtle)] flex items-center justify-center overflow-hidden">
                   <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="1.5">
                     <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
                   </svg>
                 </div>
                 <div>
-                  <p className="font-bold text-[#1B2A4A] text-base">{info.fullName}</p>
-                  <button className="text-xs text-[#0F766E] hover:underline mt-0.5">Change avatar</button>
+                  <p className="font-bold text-[var(--text-primary)] text-base">{info.fullName}</p>
+                  <button className="text-xs text-[var(--accent)] hover:underline mt-0.5">Change avatar</button>
                 </div>
               </div>
 
@@ -113,7 +113,7 @@ export default function ProfilePage() {
                       <input
                         value={draft.fullName}
                         onChange={(e) => setDraft({ ...draft, fullName: e.target.value })}
-                        className="w-full px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0F766E]/30 focus:border-[#0F766E] transition-colors"
+                        className="w-full px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
                       />
                     </div>
                     <div>
@@ -122,13 +122,13 @@ export default function ProfilePage() {
                         value={draft.email}
                         onChange={(e) => setDraft({ ...draft, email: e.target.value })}
                         type="email"
-                        className="w-full px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0F766E]/30 focus:border-[#0F766E] transition-colors"
+                        className="w-full px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
                       />
                     </div>
                   </div>
                   <div className="flex justify-end gap-2 pt-2">
                     <button onClick={cancelEdit} className="px-4 py-2 text-sm border border-gray-200 rounded-xl text-gray-500 hover:bg-gray-50 transition-colors">Cancel</button>
-                    <button onClick={saveEdit} className="px-4 py-2 text-sm bg-[#2DD4BF] hover:bg-[#14B8A6] text-[#1B2A4A] font-semibold rounded-xl transition-colors">Save</button>
+                    <button onClick={saveEdit} className="px-4 py-2 text-sm bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)] font-semibold rounded-xl transition-colors">Save</button>
                   </div>
                 </div>
               ) : (
@@ -145,18 +145,18 @@ export default function ProfilePage() {
           {/* Security & Password */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm mb-5">
             <div className="px-6 pt-5 pb-4 border-b border-gray-50">
-              <h2 className="text-base font-bold text-[#1B2A4A]">Security &amp; Password</h2>
+              <h2 className="text-base font-bold text-[var(--text-primary)]">Security &amp; Password</h2>
               <p className="text-xs text-gray-500 mt-0.5">Update your password and manage account security.</p>
             </div>
             <form onSubmit={handlePwSubmit} className="px-6 py-5 space-y-4">
               <div>
-                <p className="text-sm font-semibold text-[#1B2A4A] mb-4">Change Password</p>
+                <p className="text-sm font-semibold text-[var(--text-primary)] mb-4">Change Password</p>
                 <label className="text-xs text-gray-500 block mb-1">Current Password</label>
                 <input
                   type="password"
                   value={pwForm.current}
                   onChange={(e) => setPwForm({ ...pwForm, current: e.target.value })}
-                  className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0F766E]/30 focus:border-[#0F766E] transition-colors"
+                  className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -166,7 +166,7 @@ export default function ProfilePage() {
                     type="password"
                     value={pwForm.next}
                     onChange={(e) => setPwForm({ ...pwForm, next: e.target.value })}
-                    className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0F766E]/30 focus:border-[#0F766E] transition-colors"
+                    className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
                   />
                 </div>
                 <div>
@@ -175,7 +175,7 @@ export default function ProfilePage() {
                     type="password"
                     value={pwForm.confirm}
                     onChange={(e) => setPwForm({ ...pwForm, confirm: e.target.value })}
-                    className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0F766E]/30 focus:border-[#0F766E] transition-colors"
+                    className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
                   />
                 </div>
               </div>
@@ -184,7 +184,7 @@ export default function ProfilePage() {
               <div className="flex justify-end">
                 <button
                   type="submit"
-                  className="px-5 py-2 text-sm font-medium border border-gray-200 rounded-xl text-[#1B2A4A] hover:bg-gray-50 transition-colors"
+                  className="px-5 py-2 text-sm font-medium border border-gray-200 rounded-xl text-[var(--text-primary)] hover:bg-gray-50 transition-colors"
                 >
                   Update Password
                 </button>

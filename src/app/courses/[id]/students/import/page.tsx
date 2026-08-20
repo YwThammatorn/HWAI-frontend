@@ -99,7 +99,7 @@ export default function ImportStudentsPage() {
       <AppShell>
         <main className="flex-1 flex items-center justify-center text-gray-500 text-sm">
           ไม่พบรายวิชานี้ —{" "}
-          <Link href="/courses" className="text-[#0F766E] ml-1 hover:underline">กลับไปหน้าหลัก</Link>
+          <Link href="/courses" className="text-[var(--accent)] ml-1 hover:underline">กลับไปหน้าหลัก</Link>
         </main>
       </AppShell>
     );
@@ -110,17 +110,17 @@ export default function ImportStudentsPage() {
       <main className="w-full max-w-[860px] mx-auto px-8 py-8">
         {/* Breadcrumb */}
         <div className="flex items-center gap-1.5 text-sm text-gray-500 mb-6">
-          <Link href="/courses" className="hover:text-[#0F766E] transition-colors">All Courses</Link>
+          <Link href="/courses" className="hover:text-[var(--accent)] transition-colors">All Courses</Link>
           <span>/</span>
-          <Link href={`/courses/${id}`} className="hover:text-[#0F766E] transition-colors">{course.name}</Link>
+          <Link href={`/courses/${id}`} className="hover:text-[var(--accent)] transition-colors">{course.name}</Link>
           <span>/</span>
-          <span className="text-[#1B2A4A] font-medium">Import Students</span>
+          <span className="text-[var(--text-primary)] font-medium">Import Students</span>
         </div>
 
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-[#1B2A4A]">Import Students</h1>
+          <h1 className="text-2xl font-bold text-[var(--text-primary)]">Import Students</h1>
           <p className="mt-1 text-sm text-gray-500">
-            Upload a CSV file to enroll students in <span className="font-medium text-[#1B2A4A]">{course.name}</span>
+            Upload a CSV file to enroll students in <span className="font-medium text-[var(--text-primary)]">{course.name}</span>
           </p>
         </div>
 
@@ -135,12 +135,12 @@ export default function ImportStudentsPage() {
               className={[
                 "border-2 border-dashed rounded-2xl py-16 flex flex-col items-center gap-3 transition-colors cursor-pointer",
                 isDragging
-                  ? "border-[#0F766E] bg-[#E6FAF8]"
-                  : "border-gray-200 bg-white hover:border-[#0F766E] hover:bg-[#F0FFFE]",
+                  ? "border-[var(--accent)] bg-[var(--accent-subtle)]"
+                  : "border-gray-200 bg-white hover:border-[var(--accent)] hover:bg-[#F0FFFE]",
               ].join(" ")}
               onClick={() => fileRef.current?.click()}
             >
-              <div className="w-14 h-14 rounded-full bg-[#E6FAF8] flex items-center justify-center">
+              <div className="w-14 h-14 rounded-full bg-[var(--accent-subtle)] flex items-center justify-center">
                 <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2DD4BF" strokeWidth="1.8" strokeLinecap="round">
                   <polyline points="16 16 12 12 8 16"/>
                   <line x1="12" y1="12" x2="12" y2="21"/>
@@ -148,10 +148,10 @@ export default function ImportStudentsPage() {
                 </svg>
               </div>
               <div className="text-center">
-                <p className="text-sm font-medium text-[#1B2A4A]">Drag and drop your file here</p>
+                <p className="text-sm font-medium text-[var(--text-primary)]">Drag and drop your file here</p>
                 <p className="text-sm text-gray-500 mt-0.5">
                   or{" "}
-                  <span className="text-[#0F766E] font-medium">browse your computer</span>
+                  <span className="text-[var(--accent)] font-medium">browse your computer</span>
                 </p>
               </div>
               <p className="text-xs text-gray-300 uppercase tracking-wide">Supports .csv • UTF-8 encoding</p>
@@ -167,7 +167,7 @@ export default function ImportStudentsPage() {
             {/* Template download */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-[#E6FAF8] flex items-center justify-center">
+                <div className="w-9 h-9 rounded-xl bg-[var(--accent-subtle)] flex items-center justify-center">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2DD4BF" strokeWidth="2" strokeLinecap="round">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                     <polyline points="14 2 14 8 20 8"/>
@@ -176,14 +176,14 @@ export default function ImportStudentsPage() {
                   </svg>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-[#1B2A4A]">ดาวน์โหลด Template</p>
+                  <p className="text-sm font-medium text-[var(--text-primary)]">ดาวน์โหลด Template</p>
                   <p className="text-xs text-gray-500">students-template.csv — รูปแบบที่ระบบรองรับ</p>
                 </div>
               </div>
               <a
                 href="/students-template.csv"
                 download
-                className="px-4 py-2 text-sm font-medium rounded-xl border border-[#0F766E] text-[#0F766E] hover:bg-[#E6FAF8] transition-colors"
+                className="px-4 py-2 text-sm font-medium rounded-xl border border-[var(--accent)] text-[var(--accent)] hover:bg-[var(--accent-subtle)] transition-colors"
                 onClick={(e) => e.stopPropagation()}
               >
                 Download
@@ -231,7 +231,7 @@ export default function ImportStudentsPage() {
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-1.5 text-sm">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2DD4BF" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                  <span className="font-semibold text-[#1B2A4A]">{validRows.length}</span>
+                  <span className="font-semibold text-[var(--text-primary)]">{validRows.length}</span>
                   <span className="text-gray-500">พร้อม import</span>
                 </div>
                 {errorRows.length > 0 && (
@@ -264,8 +264,8 @@ export default function ImportStudentsPage() {
                       >
                         <td className="px-5 py-3 text-gray-300 text-xs">{row.line}</td>
                         <td className="px-5 py-3 font-mono text-xs text-gray-600">{row.studentId || <span className="text-red-300">—</span>}</td>
-                        <td className="px-5 py-3 text-[#1B2A4A]">{row.firstName || <span className="text-red-300">—</span>}</td>
-                        <td className="px-5 py-3 text-[#1B2A4A]">{row.lastName || <span className="text-red-300">—</span>}</td>
+                        <td className="px-5 py-3 text-[var(--text-primary)]">{row.firstName || <span className="text-red-300">—</span>}</td>
+                        <td className="px-5 py-3 text-[var(--text-primary)]">{row.lastName || <span className="text-red-300">—</span>}</td>
                         <td className="px-5 py-3 text-gray-500 text-xs">{row.email || "—"}</td>
                         <td className="px-5 py-3">
                           {row.error ? (
@@ -274,7 +274,7 @@ export default function ImportStudentsPage() {
                               {row.error}
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 text-xs text-[#0F766E]">
+                            <span className="inline-flex items-center gap-1 text-xs text-[var(--accent)]">
                               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                               OK
                             </span>
@@ -308,7 +308,7 @@ export default function ImportStudentsPage() {
                 <button
                   onClick={handleImport}
                   disabled={validRows.length === 0 || importing}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#2DD4BF] hover:bg-[#14B8A6] disabled:opacity-40 disabled:cursor-not-allowed text-[#1B2A4A] text-sm font-medium transition-colors"
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#2DD4BF] hover:bg-[#14B8A6] disabled:opacity-40 disabled:cursor-not-allowed text-[var(--text-primary)] text-sm font-medium transition-colors"
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                     <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>
@@ -325,14 +325,14 @@ export default function ImportStudentsPage() {
         {step === "done" && (
           <div className="flex items-center justify-center py-16">
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-16 py-14 flex flex-col items-center text-center max-w-md w-full">
-              <div className="w-16 h-16 rounded-full bg-[#E6FAF8] flex items-center justify-center mb-6">
+              <div className="w-16 h-16 rounded-full bg-[var(--accent-subtle)] flex items-center justify-center mb-6">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2DD4BF" strokeWidth="2.5" strokeLinecap="round">
                   <polyline points="20 6 9 17 4 12"/>
                 </svg>
               </div>
-              <h2 className="text-xl font-bold text-[#1B2A4A] mb-2">Import สำเร็จ</h2>
+              <h2 className="text-xl font-bold text-[var(--text-primary)] mb-2">Import สำเร็จ</h2>
               <p className="text-sm text-gray-500 mb-8">
-                เพิ่ม <span className="font-semibold text-[#1B2A4A]">{validRows.length} นักศึกษา</span> เข้า {course.name} เรียบร้อยแล้ว
+                เพิ่ม <span className="font-semibold text-[var(--text-primary)]">{validRows.length} นักศึกษา</span> เข้า {course.name} เรียบร้อยแล้ว
               </p>
               <div className="flex gap-3">
                 <button
@@ -343,7 +343,7 @@ export default function ImportStudentsPage() {
                 </button>
                 <Link
                   href={`/courses/${id}`}
-                  className="px-5 py-2.5 rounded-xl bg-[#2DD4BF] hover:bg-[#14B8A6] text-[#1B2A4A] text-sm font-medium transition-colors"
+                  className="px-5 py-2.5 rounded-xl bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)] text-sm font-medium transition-colors"
                 >
                   กลับไปหน้า Course
                 </Link>

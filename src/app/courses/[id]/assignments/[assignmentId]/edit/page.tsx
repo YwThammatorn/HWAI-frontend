@@ -160,7 +160,7 @@ export default function EditAssignmentPage() {
       <AppShell>
         <main className="flex-1 flex items-center justify-center text-gray-500 text-sm">
           ไม่พบข้อมูล —{" "}
-          <Link href={`/courses/${id}/assignments`} className="text-[#0F766E] ml-1 hover:underline">กลับรายการชิ้นงาน</Link>
+          <Link href={`/courses/${id}/assignments`} className="text-[var(--accent)] ml-1 hover:underline">กลับรายการชิ้นงาน</Link>
         </main>
       </AppShell>
     );
@@ -174,7 +174,7 @@ export default function EditAssignmentPage() {
 
         <button
           onClick={() => navAway(`/courses/${id}/assignments/${assignmentId}`)}
-          className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#0F766E] mb-6 transition-colors"
+          className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-[var(--accent)] mb-6 transition-colors"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
             <polyline points="15 18 9 12 15 6"/>
@@ -182,11 +182,11 @@ export default function EditAssignmentPage() {
           กลับหน้าชิ้นงาน
         </button>
 
-        <h1 className="text-2xl font-bold text-[#1B2A4A] mb-1">แก้ไขชิ้นงาน</h1>
+        <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">แก้ไขชิ้นงาน</h1>
         <p className="text-sm text-gray-500 mb-8">
           กำลังแก้ไข{" "}
-          <span className="font-semibold text-[#1B2A4A]">{assignment.name}</span>{" "}
-          ในวิชา <span className="font-semibold text-[#1B2A4A]">{course.name}</span>
+          <span className="font-semibold text-[var(--text-primary)]">{assignment.name}</span>{" "}
+          ในวิชา <span className="font-semibold text-[var(--text-primary)]">{course.name}</span>
         </p>
 
         <form onSubmit={handleSave} className="space-y-5">
@@ -194,12 +194,12 @@ export default function EditAssignmentPage() {
           {/* General Information */}
           <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
             <SectionHeader icon="info" label="ข้อมูลทั่วไป" />
-            <label className="block text-sm font-medium text-[#1B2A4A] mb-1.5">
+            <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">
               ชื่อชิ้นงาน <span className="text-red-400">*</span>
             </label>
             <input
               value={name} onChange={(e) => setName(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#0F766E]/30 focus:border-[#0F766E] transition-colors"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
               required
             />
           </section>
@@ -210,7 +210,7 @@ export default function EditAssignmentPage() {
             <textarea
               value={description} onChange={(e) => setDescription(e.target.value)}
               rows={4}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#0F766E]/30 focus:border-[#0F766E] resize-none transition-colors"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] resize-none transition-colors"
             />
           </section>
 
@@ -219,7 +219,7 @@ export default function EditAssignmentPage() {
             <SectionHeader icon="cal" label="กำหนดเวลาและคะแนน" />
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-[#1B2A4A] mb-1.5">
+                <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">
                   วันครบกำหนด <span className="text-red-400">*</span>
                 </label>
                 <div className="relative">
@@ -229,18 +229,18 @@ export default function EditAssignmentPage() {
                   <input
                     type="date" value={dueDate} min={minDate}
                     onChange={(e) => setDueDate(e.target.value)}
-                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#0F766E]/30 focus:border-[#0F766E] transition-colors"
+                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
                     required
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-[#1B2A4A] mb-1.5">คะแนนเต็ม</label>
+                <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">คะแนนเต็ม</label>
                 <div className="flex gap-1.5 mb-2 flex-wrap">
                   {[10, 15, 25, 100].map((p) => (
                     <button key={p} type="button" onClick={() => setMaxPoints(String(p))}
                       className={["px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors",
-                        maxPoints === String(p) ? "bg-[#2DD4BF] text-[#1B2A4A] border-[#0F766E]" : "border-gray-200 text-gray-500 hover:border-[#0F766E] hover:text-[#0F766E]"
+                        maxPoints === String(p) ? "bg-[#2DD4BF] text-[var(--text-primary)] border-[var(--accent)]" : "border-gray-200 text-gray-500 hover:border-[var(--accent)] hover:text-[var(--accent)]"
                       ].join(" ")}>
                       {p}
                     </button>
@@ -250,7 +250,7 @@ export default function EditAssignmentPage() {
                   type="number" min="1" max="1000" value={maxPoints}
                   onChange={(e) => setMaxPoints(e.target.value)}
                   placeholder="หรือพิมพ์เอง"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#0F766E]/30 focus:border-[#0F766E] transition-colors"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
                 />
               </div>
             </div>
@@ -262,7 +262,7 @@ export default function EditAssignmentPage() {
 
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-sm font-medium text-[#1B2A4A]">รับไฟล์จากนักศึกษา</p>
+                <p className="text-sm font-medium text-[var(--text-primary)]">รับไฟล์จากนักศึกษา</p>
                 <p className="text-xs text-gray-500 mt-0.5">ปิดถ้างานนี้ไม่ต้องอัปโหลดไฟล์</p>
               </div>
               <button
@@ -282,8 +282,8 @@ export default function EditAssignmentPage() {
                     <button key={fid} type="button" onClick={() => toggleFileType(fid)}
                       className={["px-3.5 py-1.5 rounded-xl text-sm font-medium border transition-colors",
                         fileTypes.includes(fid)
-                          ? "bg-[#1B2A4A] text-white border-[#1B2A4A]"
-                          : "border-gray-200 text-gray-500 hover:border-[#1B2A4A] hover:text-[#1B2A4A]"
+                          ? "bg-[var(--bg-nav)] text-white border-[var(--bg-nav)]"
+                          : "border-gray-200 text-gray-500 hover:border-[var(--bg-nav)] hover:text-[var(--text-primary)]"
                       ].join(" ")}
                     >{label}</button>
                   ))}
@@ -300,7 +300,7 @@ export default function EditAssignmentPage() {
                 {(["individual", "group"] as const).map((t) => (
                   <button key={t} type="button" onClick={() => handleSubmissionTypeChange(t)}
                     className={["px-4 py-2 text-sm font-medium transition-colors",
-                      submissionType === t ? "bg-[#1B2A4A] text-white" : "bg-white text-gray-500 hover:bg-gray-50"
+                      submissionType === t ? "bg-[var(--bg-nav)] text-white" : "bg-white text-gray-500 hover:bg-gray-50"
                     ].join(" ")}>
                     {t === "individual" ? "รายบุคคล" : "กลุ่ม"}
                   </button>
@@ -313,7 +313,7 @@ export default function EditAssignmentPage() {
                     type="number" min="2" max="20"
                     value={maxGroupSize} onChange={e => setMaxGroupSize(e.target.value)}
                     placeholder="เช่น 4"
-                    className="w-24 px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#0F766E]/30 focus:border-[#0F766E] transition-colors"
+                    className="w-24 px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
                   />
                   <span className="text-sm text-gray-500">คน</span>
                 </div>
@@ -328,13 +328,13 @@ export default function EditAssignmentPage() {
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2DD4BF" strokeWidth="2" strokeLinecap="round">
                   <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
                 </svg>
-                <h2 className="text-sm font-semibold text-[#1B2A4A]">เกณฑ์การให้คะแนน (Rubric)</h2>
+                <h2 className="text-sm font-semibold text-[var(--text-primary)]">เกณฑ์การให้คะแนน (Rubric)</h2>
               </div>
               <button
                 type="button"
                 onClick={() => { setShowNewRubricForm(true); setNewRubricName(""); }}
                 disabled={showNewRubricForm}
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-[#0F766E] text-[#0F766E] text-xs font-medium hover:bg-teal-50 transition-colors disabled:opacity-40"
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-[var(--accent)] text-[var(--accent)] text-xs font-medium hover:bg-teal-50 transition-colors disabled:opacity-40"
               >
                 <svg width="11" height="11" viewBox="0 0 16 16" fill="none">
                   <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
@@ -356,7 +356,7 @@ export default function EditAssignmentPage() {
                         <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
                       </svg>
                       <div>
-                        <p className="text-sm font-medium text-[#1B2A4A]">{rubric.name}</p>
+                        <p className="text-sm font-medium text-[var(--text-primary)]">{rubric.name}</p>
                         <p className="text-xs text-gray-500 mt-0.5">
                           {rubric.criteria.length > 0
                             ? `${rubric.criteria.length} เกณฑ์ย่อย · ${rubric.criteria.reduce((s, c) => s + c.maxPoints, 0)} คะแนนรวม`
@@ -367,7 +367,7 @@ export default function EditAssignmentPage() {
                     <div className="flex items-center gap-1">
                       <Link
                         href={`/courses/${id}/assignments/${assignmentId}/rubrics/${rubric.id}`}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs text-[#0F766E] border border-[#0F766E] hover:bg-teal-50 transition-colors font-medium"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs text-[var(--accent)] border border-[var(--accent)] hover:bg-teal-50 transition-colors font-medium"
                       >
                         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                           <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -393,7 +393,7 @@ export default function EditAssignmentPage() {
             )}
 
             {showNewRubricForm && (
-              <div className="mt-3 p-4 rounded-xl bg-teal-50/50 border border-[#0F766E]/20">
+              <div className="mt-3 p-4 rounded-xl bg-teal-50/50 border border-[var(--accent)]/20">
                 <label className="block text-xs font-medium text-gray-500 mb-2">ชื่อเกณฑ์</label>
                 <div className="flex gap-2">
                   <input
@@ -405,10 +405,10 @@ export default function EditAssignmentPage() {
                       if (e.key === "Escape") { setShowNewRubricForm(false); setNewRubricName(""); }
                     }}
                     placeholder="เช่น User Research Rubric"
-                    className="flex-1 px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#0F766E]/30 focus:border-[#0F766E] transition-colors"
+                    className="flex-1 px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
                   />
                   <button type="button" onClick={handleAddRubric} disabled={!newRubricName.trim()}
-                    className="px-3 py-2 rounded-xl bg-[#2DD4BF] text-[#1B2A4A] text-sm font-medium hover:bg-[#14B8A6] disabled:opacity-40 transition-colors">
+                    className="px-3 py-2 rounded-xl bg-[#2DD4BF] text-[var(--text-primary)] text-sm font-medium hover:bg-[#14B8A6] disabled:opacity-40 transition-colors">
                     บันทึก
                   </button>
                   <button type="button" onClick={() => { setShowNewRubricForm(false); setNewRubricName(""); }}
@@ -441,7 +441,7 @@ export default function EditAssignmentPage() {
             <button
               type="submit" disabled={!isValid}
               className={["flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-colors",
-                saved ? "bg-emerald-500 text-white" : "bg-[#2DD4BF] hover:bg-[#14B8A6] text-[#1B2A4A] disabled:opacity-40 disabled:cursor-not-allowed"
+                saved ? "bg-emerald-500 text-white" : "bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)] disabled:opacity-40 disabled:cursor-not-allowed"
               ].join(" ")}
             >
               {saved ? (
@@ -478,7 +478,7 @@ function SectionHeader({ icon, label }: { icon: "info" | "doc" | "cal" | "upload
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
         </svg>
       )}
-      <h2 className="text-sm font-semibold text-[#1B2A4A]">{label}</h2>
+      <h2 className="text-sm font-semibold text-[var(--text-primary)]">{label}</h2>
     </div>
   );
 }

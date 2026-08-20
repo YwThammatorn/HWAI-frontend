@@ -68,7 +68,7 @@ export default function GradingProgressPage() {
       <AppShell>
         <main className="flex-1 flex items-center justify-center text-gray-500 text-sm">
           ไม่พบข้อมูล —{" "}
-          <Link href={`/courses/${id}/assignments`} className="text-[#0F766E] ml-1 hover:underline">
+          <Link href={`/courses/${id}/assignments`} className="text-[var(--accent)] ml-1 hover:underline">
             กลับหน้างาน
           </Link>
         </main>
@@ -92,26 +92,26 @@ export default function GradingProgressPage() {
       <main className="w-full max-w-[1100px] mx-auto px-8 py-8">
         {/* Breadcrumb */}
         <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-5 flex-wrap">
-          <Link href="/courses" className="hover:text-[#0F766E] transition-colors">Courses</Link>
+          <Link href="/courses" className="hover:text-[var(--accent)] transition-colors">Courses</Link>
           <span>/</span>
-          <Link href={`/courses/${id}/assignments`} className="hover:text-[#0F766E] transition-colors">
+          <Link href={`/courses/${id}/assignments`} className="hover:text-[var(--accent)] transition-colors">
             {course.name}
           </Link>
           <span>/</span>
           <Link
             href={`/courses/${id}/assignments/${assignmentId}`}
-            className="hover:text-[#0F766E] transition-colors"
+            className="hover:text-[var(--accent)] transition-colors"
           >
             {assignment.name}
           </Link>
           <span>/</span>
-          <span className="text-[#1B2A4A] font-medium">Grading</span>
+          <span className="text-[var(--text-primary)] font-medium">Grading</span>
         </div>
 
         {/* Header */}
         <div className="flex items-start justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-[#1B2A4A] mb-1">{assignment.name}</h1>
+            <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">{assignment.name}</h1>
             <div className="flex items-center gap-3 text-sm text-gray-400">
               <span>
                 Due{" "}
@@ -120,7 +120,7 @@ export default function GradingProgressPage() {
                 })}{" "}
                 at 11:59 PM
               </span>
-              <span className="font-medium text-[#0F766E]">• Grading</span>
+              <span className="font-medium text-[var(--accent)]">• Grading</span>
             </div>
           </div>
           <div className="flex items-center gap-3 shrink-0">
@@ -137,7 +137,7 @@ export default function GradingProgressPage() {
             {isDone ? (
               <Link
                 href={`/courses/${id}/assignments/${assignmentId}/results`}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#2DD4BF] hover:bg-[#14B8A6] text-[#1B2A4A] text-sm font-semibold transition-colors"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)] text-sm font-semibold transition-colors"
               >
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                   <polyline points="9 11 12 14 22 4"/>
@@ -146,7 +146,7 @@ export default function GradingProgressPage() {
                 View Results
               </Link>
             ) : (
-              <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#2DD4BF]/60 text-[#1B2A4A] text-sm font-semibold select-none">
+              <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#2DD4BF]/60 text-[var(--text-primary)] text-sm font-semibold select-none">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
                   <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
                 </svg>
@@ -219,7 +219,7 @@ export default function GradingProgressPage() {
           <div className="flex flex-col items-center justify-center py-8 gap-6">
             <CircleProgress pct={total > 0 ? pct : 0} />
             <div className="text-center">
-              <p className="text-base font-semibold text-[#1B2A4A]">
+              <p className="text-base font-semibold text-[var(--text-primary)]">
                 {total === 0
                   ? "ยังไม่มีการส่งงาน"
                   : isDone
@@ -229,7 +229,7 @@ export default function GradingProgressPage() {
               {!isDone && total > 0 && (
                 <p className="text-sm text-gray-400 mt-1">
                   Estimated remaining time:{" "}
-                  <span className="text-[#0F766E] font-medium">
+                  <span className="text-[var(--accent)] font-medium">
                     ~{Math.max(1, Math.round((total - processed) * 0.3))} mins
                   </span>
                 </p>
@@ -237,7 +237,7 @@ export default function GradingProgressPage() {
               {isDone && (
                 <Link
                   href={`/courses/${id}/assignments/${assignmentId}/results`}
-                  className="inline-flex items-center gap-2 mt-4 px-5 py-2.5 bg-[#2DD4BF] hover:bg-[#14B8A6] text-[#1B2A4A] text-sm font-semibold rounded-xl transition-colors"
+                  className="inline-flex items-center gap-2 mt-4 px-5 py-2.5 bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)] text-sm font-semibold rounded-xl transition-colors"
                 >
                   View Results →
                 </Link>

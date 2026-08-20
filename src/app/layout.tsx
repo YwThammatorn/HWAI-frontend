@@ -3,6 +3,7 @@ import CourseProvider from "@/components/CourseProvider";
 import StudentProvider from "@/components/StudentProvider";
 import CLOProvider from "@/components/CLOProvider";
 import AssignmentProvider from "@/components/AssignmentProvider";
+import ThemeProvider from "@/components/ThemeProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -12,15 +13,17 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="th" className="h-full">
+    <html lang="th" className="h-full" suppressHydrationWarning>
       <body className="min-h-full flex flex-col">
-        <CourseProvider>
-          <StudentProvider>
-            <CLOProvider>
-              <AssignmentProvider>{children}</AssignmentProvider>
-            </CLOProvider>
-          </StudentProvider>
-        </CourseProvider>
+        <ThemeProvider>
+          <CourseProvider>
+            <StudentProvider>
+              <CLOProvider>
+                <AssignmentProvider>{children}</AssignmentProvider>
+              </CLOProvider>
+            </StudentProvider>
+          </CourseProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

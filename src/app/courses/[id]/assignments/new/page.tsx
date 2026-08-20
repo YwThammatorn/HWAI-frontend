@@ -83,7 +83,7 @@ export default function NewAssignmentPage() {
 
         <button
           onClick={() => navAway(`/courses/${id}/assignments`)}
-          className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#0F766E] mb-6 transition-colors"
+          className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-[var(--accent)] mb-6 transition-colors"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
             <polyline points="15 18 9 12 15 6"/>
@@ -91,10 +91,10 @@ export default function NewAssignmentPage() {
           กลับรายการชิ้นงาน
         </button>
 
-        <h1 className="text-2xl font-bold text-[#1B2A4A] mb-1">สร้างชิ้นงานใหม่</h1>
+        <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">สร้างชิ้นงานใหม่</h1>
         <p className="text-sm text-gray-500 mb-8">
           สร้างชิ้นงานในวิชา{" "}
-          <span className="font-semibold text-[#1B2A4A]">{course?.name ?? "..."}</span>
+          <span className="font-semibold text-[var(--text-primary)]">{course?.name ?? "..."}</span>
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-5">
@@ -102,14 +102,14 @@ export default function NewAssignmentPage() {
           {/* General Information */}
           <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
             <SectionHeader icon="info" label="ข้อมูลทั่วไป" />
-            <label className="block text-sm font-medium text-[#1B2A4A] mb-1.5">
+            <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">
               ชื่อชิ้นงาน <span className="text-red-400">*</span>
             </label>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="เช่น User Research Report"
-              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#0F766E]/30 focus:border-[#0F766E] transition-colors"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
               required
             />
           </section>
@@ -122,7 +122,7 @@ export default function NewAssignmentPage() {
               onChange={(e) => setDescription(e.target.value)}
               placeholder="อธิบายวัตถุประสงค์ รูปแบบไฟล์ที่ต้องส่ง เกณฑ์เบื้องต้น ฯลฯ"
               rows={4}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#0F766E]/30 focus:border-[#0F766E] resize-none transition-colors"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] resize-none transition-colors"
             />
           </section>
 
@@ -131,7 +131,7 @@ export default function NewAssignmentPage() {
             <SectionHeader icon="cal" label="กำหนดเวลาและคะแนน" />
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-[#1B2A4A] mb-1.5">
+                <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">
                   วันครบกำหนด <span className="text-red-400">*</span>
                 </label>
                 <div className="relative">
@@ -141,18 +141,18 @@ export default function NewAssignmentPage() {
                   <input
                     type="date" value={dueDate} min={todayStr}
                     onChange={(e) => setDueDate(e.target.value)}
-                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#0F766E]/30 focus:border-[#0F766E] transition-colors"
+                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
                     required
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-[#1B2A4A] mb-1.5">คะแนนเต็ม</label>
+                <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">คะแนนเต็ม</label>
                 <div className="flex gap-1.5 mb-2 flex-wrap">
                   {[10, 15, 25, 100].map((p) => (
                     <button key={p} type="button" onClick={() => setMaxPoints(String(p))}
                       className={["px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors",
-                        maxPoints === String(p) ? "bg-[#2DD4BF] text-[#1B2A4A] border-[#0F766E]" : "border-gray-200 text-gray-500 hover:border-[#0F766E] hover:text-[#0F766E]"
+                        maxPoints === String(p) ? "bg-[#2DD4BF] text-[var(--text-primary)] border-[var(--accent)]" : "border-gray-200 text-gray-500 hover:border-[var(--accent)] hover:text-[var(--accent)]"
                       ].join(" ")}>
                       {p}
                     </button>
@@ -162,7 +162,7 @@ export default function NewAssignmentPage() {
                   type="number" min="1" max="1000" value={maxPoints}
                   onChange={(e) => setMaxPoints(e.target.value)}
                   placeholder="หรือพิมพ์เอง"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#0F766E]/30 focus:border-[#0F766E] transition-colors"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
                 />
               </div>
             </div>
@@ -175,7 +175,7 @@ export default function NewAssignmentPage() {
             {/* รับไฟล์ */}
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-sm font-medium text-[#1B2A4A]">รับไฟล์จากนักศึกษา</p>
+                <p className="text-sm font-medium text-[var(--text-primary)]">รับไฟล์จากนักศึกษา</p>
                 <p className="text-xs text-gray-500 mt-0.5">ปิดถ้างานนี้ไม่ต้องอัปโหลดไฟล์ (เช่น งานนำเสนอในชั้น)</p>
               </div>
               <button
@@ -206,8 +206,8 @@ export default function NewAssignmentPage() {
                       className={[
                         "px-3.5 py-1.5 rounded-xl text-sm font-medium border transition-colors",
                         fileTypes.includes(fid)
-                          ? "bg-[#1B2A4A] text-white border-[#1B2A4A]"
-                          : "border-gray-200 text-gray-500 hover:border-[#1B2A4A] hover:text-[#1B2A4A]",
+                          ? "bg-[var(--bg-nav)] text-white border-[var(--bg-nav)]"
+                          : "border-gray-200 text-gray-500 hover:border-[var(--bg-nav)] hover:text-[var(--text-primary)]",
                       ].join(" ")}
                     >
                       {label}
@@ -232,7 +232,7 @@ export default function NewAssignmentPage() {
                     className={[
                       "px-4 py-2 text-sm font-medium transition-colors",
                       submissionType === t
-                        ? "bg-[#1B2A4A] text-white"
+                        ? "bg-[var(--bg-nav)] text-white"
                         : "bg-white text-gray-500 hover:bg-gray-50",
                     ].join(" ")}
                   >
@@ -249,7 +249,7 @@ export default function NewAssignmentPage() {
                     value={maxGroupSize}
                     onChange={e => setMaxGroupSize(e.target.value)}
                     placeholder="เช่น 4"
-                    className="w-24 px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#0F766E]/30 focus:border-[#0F766E] transition-colors"
+                    className="w-24 px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
                   />
                   <span className="text-sm text-gray-500">คน</span>
                 </div>
@@ -279,7 +279,7 @@ export default function NewAssignmentPage() {
             <button
               type="submit"
               disabled={!isValid}
-              className="flex items-center gap-2 px-5 py-2.5 bg-[#2DD4BF] hover:bg-[#14B8A6] disabled:opacity-40 disabled:cursor-not-allowed text-[#1B2A4A] text-sm font-medium rounded-xl transition-colors"
+              className="flex items-center gap-2 px-5 py-2.5 bg-[#2DD4BF] hover:bg-[#14B8A6] disabled:opacity-40 disabled:cursor-not-allowed text-[var(--text-primary)] text-sm font-medium rounded-xl transition-colors"
             >
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
                 <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
@@ -321,7 +321,7 @@ function SectionHeader({ icon, label }: { icon: "info" | "doc" | "cal" | "upload
   return (
     <div className="flex items-center gap-2 mb-5">
       {icons[icon]}
-      <h2 className="text-sm font-semibold text-[#1B2A4A]">{label}</h2>
+      <h2 className="text-sm font-semibold text-[var(--text-primary)]">{label}</h2>
     </div>
   );
 }

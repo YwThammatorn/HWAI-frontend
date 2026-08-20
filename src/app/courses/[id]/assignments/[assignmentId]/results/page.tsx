@@ -76,7 +76,7 @@ export default function ResultsPage() {
       <AppShell>
         <main className="flex-1 flex items-center justify-center text-gray-500 text-sm">
           ไม่พบข้อมูล —{" "}
-          <Link href={`/courses/${id}/assignments`} className="text-[#0F766E] ml-1 hover:underline">
+          <Link href={`/courses/${id}/assignments`} className="text-[var(--accent)] ml-1 hover:underline">
             กลับหน้างาน
           </Link>
         </main>
@@ -139,7 +139,7 @@ export default function ResultsPage() {
         {/* Back link */}
         <Link
           href={`/courses/${id}/assignments/${assignmentId}`}
-          className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-[#0F766E] transition-colors mb-4"
+          className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-[var(--accent)] transition-colors mb-4"
         >
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
             <polyline points="15 18 9 12 15 6"/>
@@ -150,7 +150,7 @@ export default function ResultsPage() {
         {/* Header */}
         <div className="flex items-start justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-[#1B2A4A] mb-1">
+            <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">
               Grading Result : {assignment.name}
             </h1>
             <p className="text-sm text-gray-400">
@@ -168,7 +168,7 @@ export default function ResultsPage() {
             </Link>
             <button
               onClick={exportCSV}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#2DD4BF] hover:bg-[#14B8A6] text-[#1B2A4A] text-sm font-semibold transition-colors"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)] text-sm font-semibold transition-colors"
             >
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -260,9 +260,9 @@ export default function ResultsPage() {
                     <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/>
                     <line x1="6" y1="20" x2="6" y2="14"/>
                   </svg>
-                  <h2 className="text-sm font-semibold text-[#1B2A4A]">Grade Distribution</h2>
+                  <h2 className="text-sm font-semibold text-[var(--text-primary)]">Grade Distribution</h2>
                 </div>
-                <button className="text-xs text-[#0F766E] hover:underline">View Details</button>
+                <button className="text-xs text-[var(--accent)] hover:underline">View Details</button>
               </div>
               <div className="flex items-end justify-around h-32 gap-3">
                 {["F", "D", "C", "B", "A"].map((letter) => {
@@ -289,7 +289,7 @@ export default function ResultsPage() {
             {/* Student results table */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
               <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50">
-                <h2 className="text-sm font-semibold text-[#1B2A4A]">Student Results</h2>
+                <h2 className="text-sm font-semibold text-[var(--text-primary)]">Student Results</h2>
                 <div className="relative">
                   <svg
                     className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400"
@@ -301,7 +301,7 @@ export default function ResultsPage() {
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder="Search student..."
-                    className="pl-7 pr-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0F766E]/30 focus:border-[#0F766E] transition-colors"
+                    className="pl-7 pr-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
                   />
                 </div>
               </div>
@@ -336,7 +336,7 @@ export default function ResultsPage() {
                                 {initials(s.studentName)}
                               </div>
                               <div>
-                                <p className="font-medium text-[#1B2A4A] text-sm">{s.studentName}</p>
+                                <p className="font-medium text-[var(--text-primary)] text-sm">{s.studentName}</p>
                                 <p className="text-xs text-gray-400">{s.email}</p>
                               </div>
                             </div>
@@ -344,7 +344,7 @@ export default function ResultsPage() {
                           <td className="px-6 py-3">
                             {score !== null && letter ? (
                               <div className="flex items-baseline gap-1.5">
-                                <span className="font-semibold text-[#1B2A4A]">
+                                <span className="font-semibold text-[var(--text-primary)]">
                                   {score}/{max}
                                 </span>
                                 <span
@@ -387,7 +387,7 @@ export default function ResultsPage() {
                                   </Link>
                                   <Link
                                     href={`/courses/${id}/assignments/${assignmentId}/recheck?sub=${s.id}`}
-                                    className="px-3 py-1.5 rounded-lg bg-[#2DD4BF] hover:bg-[#14B8A6] text-[#1B2A4A] text-xs font-semibold transition-colors"
+                                    className="px-3 py-1.5 rounded-lg bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)] text-xs font-semibold transition-colors"
                                   >
                                     Recheck
                                   </Link>
@@ -429,14 +429,14 @@ export default function ResultsPage() {
                         className="flex items-center justify-between p-3 rounded-xl bg-red-50 border border-red-100"
                       >
                         <div>
-                          <p className="text-xs font-semibold text-[#1B2A4A]">{s.studentName}</p>
+                          <p className="text-xs font-semibold text-[var(--text-primary)]">{s.studentName}</p>
                           <p className="text-xs" style={{ color: gradeColor(letter) }}>
                             Score: {score}/{max} ({letter})
                           </p>
                         </div>
                         <Link
                           href={`/courses/${id}/assignments/${assignmentId}/recheck?sub=${s.id}`}
-                          className="text-xs text-[#0F766E] font-medium hover:underline shrink-0"
+                          className="text-xs text-[var(--accent)] font-medium hover:underline shrink-0"
                         >
                           View
                         </Link>
@@ -454,7 +454,7 @@ export default function ResultsPage() {
                   Top Performer
                 </p>
                 <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-100">
-                  <p className="text-xs font-semibold text-[#1B2A4A]">{topPerformer.studentName}</p>
+                  <p className="text-xs font-semibold text-[var(--text-primary)]">{topPerformer.studentName}</p>
                   <p className="text-xs text-emerald-700 font-medium mt-0.5">
                     Score: {topPerformer.instructorScore ?? topPerformer.aiScore}/{max} (A+)
                   </p>
@@ -475,7 +475,7 @@ export default function ResultsPage() {
                 onChange={(e) => setFeedbackText(e.target.value)}
                 rows={5}
                 placeholder="Share your feedback on the AI grading quality..."
-                className="w-full px-3 py-2 text-xs border border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-[#0F766E]/30 focus:border-[#0F766E] transition-colors text-[#1B2A4A] placeholder:text-gray-300"
+                className="w-full px-3 py-2 text-xs border border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors text-[var(--text-primary)] placeholder:text-gray-300"
               />
               <button
                 onClick={() => { setFeedbackSent(true); setTimeout(() => setFeedbackSent(false), 3000); }}

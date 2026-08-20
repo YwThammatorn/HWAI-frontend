@@ -32,7 +32,7 @@ export default function CourseDetailPage() {
       <AppShell>
         <main className="flex-1 flex items-center justify-center text-gray-500 text-sm">
           ไม่พบรายวิชานี้ —{" "}
-          <Link href="/courses" className="text-[#0F766E] ml-1 hover:underline">กลับไปหน้าหลัก</Link>
+          <Link href="/courses" className="text-[var(--accent)] ml-1 hover:underline">กลับไปหน้าหลัก</Link>
         </main>
       </AppShell>
     );
@@ -49,9 +49,9 @@ export default function CourseDetailPage() {
       <main className="w-full max-w-[1200px] mx-auto px-8 py-8">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
-          <Link href="/courses" className="hover:text-[#0F766E] transition-colors">All Courses</Link>
+          <Link href="/courses" className="hover:text-[var(--accent)] transition-colors">All Courses</Link>
           <span>/</span>
-          <span className="text-[#1B2A4A] font-medium">{course.name}</span>
+          <span className="text-[var(--text-primary)] font-medium">{course.name}</span>
         </div>
 
         {/* Course header banner */}
@@ -89,7 +89,7 @@ export default function CourseDetailPage() {
           ].map((s) => (
             <div key={s.label} className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
               <p className="text-xs text-gray-500 mb-1">{s.label}</p>
-              <p className="text-2xl font-bold text-[#1B2A4A]">{s.value}</p>
+              <p className="text-2xl font-bold text-[var(--text-primary)]">{s.value}</p>
             </div>
           ))}
         </div>
@@ -99,7 +99,7 @@ export default function CourseDetailPage() {
           <div className="flex border-b border-gray-100 px-6">
             <Link
               href={`/courses/${id}/assignments`}
-              className="py-3 px-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-[#0F766E] transition-colors"
+              className="py-3 px-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-[var(--accent)] transition-colors"
             >
               Assignments
               {assignments.length > 0 && (
@@ -110,27 +110,27 @@ export default function CourseDetailPage() {
             </Link>
             <Link
               href={`/courses/${id}/clo`}
-              className="py-3 px-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-[#0F766E] transition-colors"
+              className="py-3 px-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-[var(--accent)] transition-colors"
             >
               CLO
             </Link>
-            <button className="py-3 px-4 text-sm font-medium border-b-2 border-[#0F766E] text-[#0F766E]">
+            <button className="py-3 px-4 text-sm font-medium border-b-2 border-[var(--accent)] text-[var(--accent)]">
               Students
               {students.length > 0 && (
-                <span className="ml-1.5 text-xs bg-[#E6FAF8] text-[#0F7B6C] px-1.5 py-0.5 rounded-full">
+                <span className="ml-1.5 text-xs bg-[var(--accent-subtle)] text-[var(--accent)] px-1.5 py-0.5 rounded-full">
                   {students.length}
                 </span>
               )}
             </button>
             <Link
               href={`/courses/${id}/collaborators`}
-              className="py-3 px-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-[#0F766E] transition-colors"
+              className="py-3 px-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-[var(--accent)] transition-colors"
             >
               Collaborators
             </Link>
             <Link
               href={`/courses/${id}/results`}
-              className="py-3 px-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-[#0F766E] transition-colors"
+              className="py-3 px-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-[var(--accent)] transition-colors"
             >
               Results
             </Link>
@@ -149,7 +149,7 @@ export default function CourseDetailPage() {
               <p className="text-xs text-gray-500 mb-5">นำเข้ารายชื่อจากไฟล์ CSV เพื่อเริ่มต้น</p>
               <Link
                 href={`/courses/${id}/students/import`}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-[#2DD4BF] hover:bg-[#14B8A6] text-[#1B2A4A] text-sm font-medium rounded-xl transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)] text-sm font-medium rounded-xl transition-colors"
               >
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                   <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>
@@ -165,7 +165,7 @@ export default function CourseDetailPage() {
                 <p className="text-sm text-gray-500">{students.length} นักศึกษา</p>
                 <Link
                   href={`/courses/${id}/students/import`}
-                  className="inline-flex items-center gap-1.5 text-xs text-[#0F766E] hover:underline font-medium"
+                  className="inline-flex items-center gap-1.5 text-xs text-[var(--accent)] hover:underline font-medium"
                 >
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                     <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>
@@ -190,8 +190,8 @@ export default function CourseDetailPage() {
                       <tr key={s.id} className="hover:bg-gray-50/50">
                         <td className="px-6 py-3 text-gray-300 text-xs">{i + 1}</td>
                         <td className="px-6 py-3 font-mono text-xs text-gray-500">{s.studentId}</td>
-                        <td className="px-6 py-3 text-[#1B2A4A]">{s.firstName}</td>
-                        <td className="px-6 py-3 text-[#1B2A4A]">{s.lastName}</td>
+                        <td className="px-6 py-3 text-[var(--text-primary)]">{s.firstName}</td>
+                        <td className="px-6 py-3 text-[var(--text-primary)]">{s.lastName}</td>
                         <td className="px-6 py-3 text-gray-500 text-xs">{s.email || "—"}</td>
                       </tr>
                     ))}

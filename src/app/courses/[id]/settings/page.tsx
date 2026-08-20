@@ -59,7 +59,7 @@ export default function CourseSettingsPage() {
       <AppShell>
         <main className="flex-1 flex items-center justify-center text-gray-500 text-sm">
           ไม่พบรายวิชานี้ —{" "}
-          <Link href="/courses" className="text-[#0F766E] ml-1 hover:underline">กลับไปหน้าหลัก</Link>
+          <Link href="/courses" className="text-[var(--accent)] ml-1 hover:underline">กลับไปหน้าหลัก</Link>
         </main>
       </AppShell>
     );
@@ -95,14 +95,14 @@ export default function CourseSettingsPage() {
     <AppShell>
       <main className="w-full max-w-[860px] mx-auto px-8 py-8">
         {/* Back */}
-        <button onClick={() => navAway("/courses")} className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#0F766E] mb-6 transition-colors">
+        <button onClick={() => navAway("/courses")} className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-[var(--accent)] mb-6 transition-colors">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
             <polyline points="15 18 9 12 15 6"/>
           </svg>
           Back to All Courses
         </button>
 
-        <h1 className="text-2xl font-bold text-[#1B2A4A] mb-6">Edit Existing Course</h1>
+        <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-6">Edit Existing Course</h1>
 
         <form onSubmit={handleSave} className="space-y-6">
           {/* General Information */}
@@ -110,24 +110,24 @@ export default function CourseSettingsPage() {
             <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-5">General Information</h2>
 
             <div className="mb-4">
-              <label className="block text-sm font-medium text-[#1B2A4A] mb-1.5">
+              <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">
                 Course Name <span className="text-red-400">*</span>
               </label>
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#0F766E]/30 focus:border-[#0F766E] transition-colors"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[#1B2A4A] mb-1.5">Course Description</label>
+              <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">Course Description</label>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={3}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#0F766E]/30 focus:border-[#0F766E] resize-none transition-colors"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] resize-none transition-colors"
               />
             </div>
           </section>
@@ -139,8 +139,8 @@ export default function CourseSettingsPage() {
             <div className="grid grid-cols-[1fr_auto_1fr] gap-6 items-start">
               {/* Upload Icon */}
               <div>
-                <label className="block text-sm font-medium text-[#1B2A4A] mb-2">Upload Icon Image</label>
-                <div className="border-2 border-dashed border-gray-200 rounded-xl h-32 flex flex-col items-center justify-center gap-2 text-gray-500 hover:border-[#0F766E] hover:text-[#0F766E] cursor-pointer transition-colors">
+                <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">Upload Icon Image</label>
+                <div className="border-2 border-dashed border-gray-200 rounded-xl h-32 flex flex-col items-center justify-center gap-2 text-gray-500 hover:border-[var(--accent)] hover:text-[var(--accent)] cursor-pointer transition-colors">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                     <rect x="3" y="3" width="18" height="18" rx="3"/>
                     <circle cx="8.5" cy="8.5" r="1.5"/>
@@ -152,7 +152,7 @@ export default function CourseSettingsPage() {
 
               {/* Color Picker */}
               <div className="flex flex-col items-center">
-                <label className="block text-sm font-medium text-[#1B2A4A] mb-2 self-start">Cover Color</label>
+                <label className="block text-sm font-medium text-[var(--text-primary)] mb-2 self-start">Cover Color</label>
                 <div className="w-16 h-16 rounded-xl mb-3 shadow" style={{ background: coverColor }} />
                 <div className="grid grid-cols-4 gap-1.5">
                   {PRESET_COLORS.map((c) => (
@@ -173,8 +173,8 @@ export default function CourseSettingsPage() {
 
               {/* Upload Cover */}
               <div>
-                <label className="block text-sm font-medium text-[#1B2A4A] mb-2">Upload Cover Image</label>
-                <div className="border-2 border-dashed border-gray-200 rounded-xl h-32 flex flex-col items-center justify-center gap-2 text-gray-500 hover:border-[#0F766E] hover:text-[#0F766E] cursor-pointer transition-colors">
+                <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">Upload Cover Image</label>
+                <div className="border-2 border-dashed border-gray-200 rounded-xl h-32 flex flex-col items-center justify-center gap-2 text-gray-500 hover:border-[var(--accent)] hover:text-[var(--accent)] cursor-pointer transition-colors">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                     <polyline points="17 8 12 3 7 8"/>
@@ -197,7 +197,7 @@ export default function CourseSettingsPage() {
                   </div>
                 </div>
                 <div className="bg-white p-3">
-                  <p className="text-xs font-bold text-[#1B2A4A] truncate">{name || "Course Name"}</p>
+                  <p className="text-xs font-bold text-[var(--text-primary)] truncate">{name || "Course Name"}</p>
                   <p className="text-[10px] text-gray-500 mt-0.5">Manually Added</p>
                 </div>
               </div>
@@ -240,7 +240,7 @@ export default function CourseSettingsPage() {
               disabled={!isValid}
               className={[
                 "flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-colors",
-                saved ? "bg-emerald-500 text-white" : "bg-[#2DD4BF] hover:bg-[#14B8A6] text-[#1B2A4A] disabled:opacity-40 disabled:cursor-not-allowed",
+                saved ? "bg-emerald-500 text-white" : "bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)] disabled:opacity-40 disabled:cursor-not-allowed",
               ].join(" ")}
             >
               {saved ? (

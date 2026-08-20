@@ -4,7 +4,7 @@ import ProfileSidebar from "./ProfileSidebar";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="h-screen flex flex-col bg-[#F5F6FA]">
+    <div className="h-screen flex flex-col bg-[var(--bg-app)]">
       <Navbar />
       <div className="flex flex-1 overflow-hidden">
         <ProfileSidebar />

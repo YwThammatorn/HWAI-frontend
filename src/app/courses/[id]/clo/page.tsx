@@ -107,7 +107,7 @@ export default function CLOPage() {
         {/* Back */}
         <button
           onClick={() => navAway(`/courses/${id}`)}
-          className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#0F766E] mb-6 transition-colors"
+          className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-[var(--accent)] mb-6 transition-colors"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
             <polyline points="15 18 9 12 15 6"/>
@@ -118,7 +118,7 @@ export default function CLOPage() {
         {/* Header */}
         <div className="flex items-start justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-[#1B2A4A] mb-1">ผลลัพธ์การเรียนรู้รายวิชา (CLO)</h1>
+            <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">ผลลัพธ์การเรียนรู้รายวิชา (CLO)</h1>
             <p className="text-sm text-gray-500">{course.name}</p>
           </div>
           <div className="flex items-center gap-2 mt-1">
@@ -134,7 +134,7 @@ export default function CLOPage() {
             </button>
             <button
               onClick={openAdd}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#2DD4BF] hover:bg-[#14B8A6] text-[#1B2A4A] text-sm font-medium transition-colors"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)] text-sm font-medium transition-colors"
             >
               <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
                 <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
@@ -168,7 +168,7 @@ export default function CLOPage() {
             <p className="text-xs text-gray-500 mb-6">เพิ่ม CLO เพื่อวัดผลลัพธ์การเรียนรู้และ CLO Attainment ของนักศึกษา</p>
             <button
               onClick={openAdd}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#2DD4BF] hover:bg-[#14B8A6] text-[#1B2A4A] text-sm font-medium transition-colors"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)] text-sm font-medium transition-colors"
             >
               <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
                 <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
@@ -205,7 +205,7 @@ export default function CLOPage() {
                 </div>
 
                 {/* Text */}
-                <div className="px-4 text-sm text-[#1B2A4A] leading-relaxed">{clo.text}</div>
+                <div className="px-4 text-sm text-[var(--text-primary)] leading-relaxed">{clo.text}</div>
 
                 {/* PLO */}
                 <div className="px-4 flex flex-wrap gap-1 pt-0.5">
@@ -236,7 +236,7 @@ export default function CLOPage() {
                   <button
                     onClick={() => openEdit(clo)}
                     disabled={editingId === clo.id}
-                    className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-[#1B2A4A] transition-colors disabled:opacity-20"
+                    className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-[var(--text-primary)] transition-colors disabled:opacity-20"
                     title="แก้ไข"
                   >
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -260,7 +260,7 @@ export default function CLOPage() {
 
             {/* Inline form panel */}
             {formMode !== "idle" && (
-              <div className="border-t-2 border-[#0F766E]/20 bg-teal-50/40 p-6">
+              <div className="border-t-2 border-[var(--accent)]/20 bg-teal-50/40 p-6">
                 <p className="text-xs font-semibold text-[#14B8A6] uppercase tracking-wider mb-4">
                   {formMode === "add" ? "เพิ่ม CLO ใหม่" : `แก้ไข ${editingId ? clos.find(c => c.id === editingId)?.code : ""}`}
                 </p>
@@ -273,7 +273,7 @@ export default function CLOPage() {
                       value={formCode}
                       onChange={e => setFormCode(e.target.value)}
                       placeholder="CLO1"
-                      className="w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-white text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#0F766E]/30 focus:border-[#0F766E] transition-colors"
+                      className="w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-white text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
                     />
                   </div>
                   <div>
@@ -285,7 +285,7 @@ export default function CLOPage() {
                       onChange={e => setFormText(e.target.value)}
                       placeholder="นักศึกษาสามารถ..."
                       rows={2}
-                      className="w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#0F766E]/30 focus:border-[#0F766E] resize-none transition-colors"
+                      className="w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] resize-none transition-colors"
                     />
                   </div>
                 </div>
@@ -323,7 +323,7 @@ export default function CLOPage() {
                     type="button"
                     onClick={handleSave}
                     disabled={!isFormValid}
-                    className="px-4 py-2 rounded-xl bg-[#2DD4BF] hover:bg-[#14B8A6] text-[#1B2A4A] text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="px-4 py-2 rounded-xl bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)] text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     บันทึก
                   </button>

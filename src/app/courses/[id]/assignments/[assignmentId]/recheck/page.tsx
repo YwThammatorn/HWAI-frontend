@@ -66,7 +66,7 @@ export default function RecheckPage() {
           ไม่พบข้อมูล —{" "}
           <Link
             href={`/courses/${id}/assignments/${assignmentId}/results`}
-            className="text-[#0F766E] ml-1 hover:underline"
+            className="text-[var(--accent)] ml-1 hover:underline"
           >
             กลับหน้าผลลัพธ์
           </Link>
@@ -132,7 +132,7 @@ export default function RecheckPage() {
             >
               −
             </button>
-            <span className="text-sm font-medium text-[#1B2A4A] w-12 text-center">{zoom}%</span>
+            <span className="text-sm font-medium text-[var(--text-primary)] w-12 text-center">{zoom}%</span>
             <button
               onClick={() => setZoom((z) => Math.min(200, z + 25))}
               className="w-6 h-6 flex items-center justify-center rounded hover:bg-gray-100 text-gray-500 text-sm font-bold transition-colors"
@@ -166,7 +166,7 @@ export default function RecheckPage() {
                   </svg>
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-[#1B2A4A] mb-1">{submission.studentName}</p>
+                  <p className="text-sm font-semibold text-[var(--text-primary)] mb-1">{submission.studentName}</p>
                   <p className="text-xs text-gray-400">
                     Submitted{" "}
                     {new Date(submission.submittedAt).toLocaleDateString("en-US", {
@@ -185,13 +185,13 @@ export default function RecheckPage() {
         {/* Right: grading panel */}
         <div className="w-80 shrink-0 flex flex-col border-l border-gray-100 bg-white overflow-y-auto">
           <div className="px-5 py-5 border-b border-gray-50">
-            <h2 className="text-base font-bold text-[#1B2A4A] mb-3">Grading Review</h2>
+            <h2 className="text-base font-bold text-[var(--text-primary)] mb-3">Grading Review</h2>
             {/* AI confidence */}
             <div className="flex items-center gap-2 mb-1">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" className="text-[#0F766E]">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" className="text-[var(--accent)]">
                 <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
               </svg>
-              <span className="text-xs font-medium text-[#1B2A4A]">
+              <span className="text-xs font-medium text-[var(--text-primary)]">
                 AI Confidence:{" "}
                 <span style={{ color: aiConfidence.color }} className="font-semibold">
                   {aiConfidence.label} ({aiConfidence.pct}%)
@@ -229,7 +229,7 @@ export default function RecheckPage() {
                       ) : (
                         <div className="w-4 h-4 rounded-full bg-gray-100" />
                       )}
-                      <span className="text-xs font-semibold text-[#1B2A4A]">{c.name}</span>
+                      <span className="text-xs font-semibold text-[var(--text-primary)]">{c.name}</span>
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">
                       <span className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">Score</span>
@@ -239,7 +239,7 @@ export default function RecheckPage() {
                         max={s.maxPoints}
                         value={s.score}
                         onChange={(e) => updateScore(s.criterionId, parseInt(e.target.value) || 0)}
-                        className="w-12 text-center text-sm font-bold text-[#1B2A4A] border border-gray-200 rounded-lg px-1 py-0.5 focus:outline-none focus:ring-2 focus:ring-[#0F766E]/30 focus:border-[#0F766E] transition-colors"
+                        className="w-12 text-center text-sm font-bold text-[var(--text-primary)] border border-gray-200 rounded-lg px-1 py-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
                       />
                       <span className="text-xs text-gray-400">/ {s.maxPoints}</span>
                     </div>
@@ -271,12 +271,12 @@ export default function RecheckPage() {
                 onChange={(e) => { setComment(e.target.value); setSaved(false); }}
                 rows={3}
                 placeholder="เพิ่มความคิดเห็นสำหรับนักศึกษา..."
-                className="w-full text-xs text-[#1B2A4A] resize-none border-0 outline-none bg-transparent placeholder:text-gray-300 leading-relaxed"
+                className="w-full text-xs text-[var(--text-primary)] resize-none border-0 outline-none bg-transparent placeholder:text-gray-300 leading-relaxed"
               />
             </div>
 
             {/* Total */}
-            <div className="rounded-xl bg-[#1B2A4A] p-4">
+            <div className="rounded-xl bg-[var(--bg-nav)] p-4">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-white/60">Total Score</span>
                 <span className="text-xl font-bold text-white">

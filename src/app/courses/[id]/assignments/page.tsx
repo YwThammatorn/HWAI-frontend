@@ -60,7 +60,7 @@ export default function AssignmentsPage() {
       <AppShell>
         <main className="flex-1 flex items-center justify-center text-gray-500 text-sm">
           ไม่พบรายวิชานี้ —{" "}
-          <Link href="/courses" className="text-[#0F766E] ml-1 hover:underline">กลับไปหน้าหลัก</Link>
+          <Link href="/courses" className="text-[var(--accent)] ml-1 hover:underline">กลับไปหน้าหลัก</Link>
         </main>
       </AppShell>
     );
@@ -145,21 +145,21 @@ export default function AssignmentsPage() {
 
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
-          <Link href="/courses" className="hover:text-[#0F766E] transition-colors">
+          <Link href="/courses" className="hover:text-[var(--accent)] transition-colors">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
             </svg>
           </Link>
           <span>/</span>
-          <Link href={`/courses/${id}`} className="hover:text-[#0F766E] transition-colors">{course.name}</Link>
+          <Link href={`/courses/${id}`} className="hover:text-[var(--accent)] transition-colors">{course.name}</Link>
           <span>/</span>
-          <span className="text-[#0F766E] font-medium">Assignments</span>
+          <span className="text-[var(--accent)] font-medium">Assignments</span>
         </div>
 
         {/* Course header */}
         <div className="flex items-start justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-[#1B2A4A]">{course.name}</h1>
+            <h1 className="text-3xl font-bold text-[var(--text-primary)]">{course.name}</h1>
             <div className="flex items-center gap-2 mt-1.5 text-sm text-gray-500">
               <span>{sourceLabel[course.source] ?? course.source}</span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -168,7 +168,7 @@ export default function AssignmentsPage() {
               </svg>
               <span>{students.length} Students</span>
               <span className="text-gray-300">|</span>
-              <Link href={`/courses/${id}/settings`} className="text-[#0F766E] hover:underline font-medium">Edit</Link>
+              <Link href={`/courses/${id}/settings`} className="text-[var(--accent)] hover:underline font-medium">Edit</Link>
               <button onClick={handleDelete} className="text-red-400 hover:underline font-medium">Delete this Course</button>
             </div>
           </div>
@@ -182,7 +182,7 @@ export default function AssignmentsPage() {
             </button>
             <Link
               href={`/courses/${id}/assignments/new`}
-              className="flex items-center gap-2 px-4 py-2 bg-[#2DD4BF] hover:bg-[#14B8A6] text-[#1B2A4A] font-medium rounded-xl text-sm transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)] font-medium rounded-xl text-sm transition-colors"
             >
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
                 <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
@@ -201,7 +201,7 @@ export default function AssignmentsPage() {
               </div>
               <div>
                 <p className="text-xs text-gray-500">{s.label}</p>
-                <p className="text-2xl font-bold text-[#1B2A4A]">{s.value}</p>
+                <p className="text-2xl font-bold text-[var(--text-primary)]">{s.value}</p>
               </div>
             </div>
           ))}
@@ -212,8 +212,8 @@ export default function AssignmentsPage() {
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 mb-6">
             <p className="text-xs text-gray-500 mb-1.5">Course Description</p>
             <div className="flex items-start justify-between gap-4">
-              <p className="text-sm text-[#1B2A4A] leading-relaxed">{course.description}</p>
-              <Link href={`/courses/${id}/settings`} className="text-[#0F766E] text-sm hover:underline shrink-0">Edit</Link>
+              <p className="text-sm text-[var(--text-primary)] leading-relaxed">{course.description}</p>
+              <Link href={`/courses/${id}/settings`} className="text-[var(--accent)] text-sm hover:underline shrink-0">Edit</Link>
             </div>
           </div>
         )}
@@ -221,7 +221,7 @@ export default function AssignmentsPage() {
         {/* Assignments list */}
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
           <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-            <h2 className="font-bold text-[#1B2A4A]">Active Assignments</h2>
+            <h2 className="font-bold text-[var(--text-primary)]">Active Assignments</h2>
             <div className="flex items-center gap-2">
               <div className="relative">
                 <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -231,7 +231,7 @@ export default function AssignmentsPage() {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search tasks..."
-                  className="pl-8 pr-3 py-1.5 text-sm rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#0F766E]/30 focus:border-[#0F766E] w-48"
+                  className="pl-8 pr-3 py-1.5 text-sm rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] w-48"
                 />
               </div>
               <button className="text-gray-500 hover:text-gray-600 transition-colors p-1">
@@ -257,7 +257,7 @@ export default function AssignmentsPage() {
                   <p className="text-xs text-gray-500 mb-4">กด Create Assignment เพื่อเพิ่มชิ้นงานแรก</p>
                   <Link
                     href={`/courses/${id}/assignments/new`}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-[#2DD4BF] hover:bg-[#14B8A6] text-[#1B2A4A] text-sm font-medium rounded-xl transition-colors"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)] text-sm font-medium rounded-xl transition-colors"
                   >
                     <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
                       <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
@@ -280,7 +280,7 @@ export default function AssignmentsPage() {
                       <div className="flex-1 min-w-0">
                         <Link
                           href={`/courses/${id}/assignments/${a.id}`}
-                          className="text-[#0F766E] font-medium hover:underline text-sm"
+                          className="text-[var(--accent)] font-medium hover:underline text-sm"
                         >
                           {a.name}
                         </Link>
@@ -323,13 +323,13 @@ export default function AssignmentsPage() {
                       <div className="flex items-center gap-3 shrink-0 ml-4">
                         {st.avg !== null && (
                           <span className="text-xs text-gray-500">
-                            Avg Score: <span className="font-semibold text-[#1B2A4A]">{st.avg}%</span>
+                            Avg Score: <span className="font-semibold text-[var(--text-primary)]">{st.avg}%</span>
                           </span>
                         )}
                         <span className={[
                           "text-xs px-2.5 py-1 rounded-full font-medium",
                           st.type === "graded" ? "bg-[#D1FAE5] text-[#065F46]"
-                          : st.type === "late" ? "bg-[#1F2937] text-white"
+                          : st.type === "late" ? "bg-slate-700 text-white"
                           : "bg-[#FEE2E2] text-[#991B1B]",
                         ].join(" ")}>
                           {st.label}
@@ -433,7 +433,7 @@ export default function AssignmentsPage() {
                               {needReview > 0 && (
                                 <Link
                                   href={`/courses/${id}/assignments/${a.id}`}
-                                  className="flex items-center gap-1.5 px-3 py-1.5 bg-[#2DD4BF] hover:bg-[#14B8A6] text-[#1B2A4A] text-xs font-medium rounded-lg transition-colors"
+                                  className="flex items-center gap-1.5 px-3 py-1.5 bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)] text-xs font-medium rounded-lg transition-colors"
                                 >
                                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                                     <polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
@@ -463,13 +463,13 @@ export default function AssignmentsPage() {
               })}
               {visible.length > 0 && (
                 <div className="flex items-center justify-between px-5 py-3 text-xs text-gray-500">
-                  <span>Showing <span className="font-medium text-[#1B2A4A]">1–{visible.length}</span> of <span className="font-medium text-[#1B2A4A]">{visible.length}</span> assignments</span>
+                  <span>Showing <span className="font-medium text-[var(--text-primary)]">1–{visible.length}</span> of <span className="font-medium text-[var(--text-primary)]">{visible.length}</span> assignments</span>
                   {visible.length > 5 && (
                     <div className="flex gap-1">
                       {[1, 2, 3].map((p) => (
                         <button key={p} className={[
                           "w-7 h-7 rounded-full text-xs font-medium",
-                          p === 1 ? "bg-[#2DD4BF] text-[#1B2A4A]" : "text-gray-500 hover:bg-gray-100",
+                          p === 1 ? "bg-[#2DD4BF] text-[var(--text-primary)]" : "text-gray-500 hover:bg-gray-100",
                         ].join(" ")}>{p}</button>
                       ))}
                     </div>

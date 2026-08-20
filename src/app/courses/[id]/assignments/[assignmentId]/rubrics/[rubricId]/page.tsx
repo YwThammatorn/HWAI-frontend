@@ -188,7 +188,7 @@ export default function RubricEditorPage() {
       <AppShell>
         <main className="flex-1 flex items-center justify-center text-gray-500 text-sm">
           ไม่พบข้อมูล —{" "}
-          <Link href={`/courses/${id}/assignments/${assignmentId}/edit`} className="text-[#0F766E] ml-1 hover:underline">
+          <Link href={`/courses/${id}/assignments/${assignmentId}/edit`} className="text-[var(--accent)] ml-1 hover:underline">
             กลับหน้าแก้ไขชิ้นงาน
           </Link>
         </main>
@@ -202,27 +202,27 @@ export default function RubricEditorPage() {
 
         {/* Breadcrumb */}
         <div className="flex items-center gap-1.5 text-xs text-gray-500 mb-6 flex-wrap">
-          <Link href="/courses" className="hover:text-[#0F766E] transition-colors">All Courses</Link>
+          <Link href="/courses" className="hover:text-[var(--accent)] transition-colors">All Courses</Link>
           <span>/</span>
-          <Link href={`/courses/${id}/assignments`} className="hover:text-[#0F766E] transition-colors">{course.name}</Link>
+          <Link href={`/courses/${id}/assignments`} className="hover:text-[var(--accent)] transition-colors">{course.name}</Link>
           <span>/</span>
-          <button onClick={() => navAway(`/courses/${id}/assignments/${assignmentId}/edit`)} className="hover:text-[#0F766E] transition-colors">
+          <button onClick={() => navAway(`/courses/${id}/assignments/${assignmentId}/edit`)} className="hover:text-[var(--accent)] transition-colors">
             {assignment.name}
           </button>
           <span>/</span>
-          <span className="text-[#1B2A4A] font-medium">{rubric.name}</span>
+          <span className="text-[var(--text-primary)] font-medium">{rubric.name}</span>
         </div>
 
         {/* Header */}
         <div className="flex items-start justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-[#1B2A4A] mb-1">กำหนดเกณฑ์การให้คะแนน</h1>
+            <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">กำหนดเกณฑ์การให้คะแนน</h1>
             <p className="text-sm text-gray-500">ตั้งค่าเกณฑ์ที่ HWAI Agent จะใช้ในการตรวจงาน</p>
           </div>
           <div className="flex items-center gap-3 shrink-0">
             <button
               onClick={openAiAssistant}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#0F766E] text-xs text-[#0F766E] hover:bg-teal-50 transition-colors font-medium"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[var(--accent)] text-xs text-[var(--accent)] hover:bg-teal-50 transition-colors font-medium"
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
                 <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
@@ -249,7 +249,7 @@ export default function RubricEditorPage() {
           <input
             value={rubricName}
             onChange={e => { setRubricName(e.target.value); setSaved(false); }}
-            className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm font-medium text-[#1B2A4A] focus:outline-none focus:ring-2 focus:ring-[#0F766E]/30 focus:border-[#0F766E] transition-colors"
+            className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm font-medium text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
             placeholder="ชื่อ Rubric"
           />
         </div>
@@ -290,7 +290,7 @@ export default function RubricEditorPage() {
                   <input
                     value={c.name}
                     onChange={e => updateCriterion(c.id, "name", e.target.value)}
-                    className="flex-1 text-sm font-semibold text-[#1B2A4A] bg-transparent border-0 outline-none focus:bg-gray-50 rounded-lg px-2 py-1 -ml-2 transition-colors placeholder:text-gray-300"
+                    className="flex-1 text-sm font-semibold text-[var(--text-primary)] bg-transparent border-0 outline-none focus:bg-gray-50 rounded-lg px-2 py-1 -ml-2 transition-colors placeholder:text-gray-300"
                     placeholder="ชื่อเกณฑ์"
                   />
                   <div className="flex items-center gap-2 shrink-0">
@@ -304,7 +304,7 @@ export default function RubricEditorPage() {
                         onChange={e => updateCriterion(c.id, "weight", e.target.value)}
                         className={`w-14 text-center text-sm font-semibold border rounded-lg px-2 py-1 outline-none focus:ring-2 transition-colors ${
                           parseFloat(c.weight) > 0
-                            ? "border-[#0F766E] text-[#0F7B6C] focus:ring-[#0F766E]/30"
+                            ? "border-[var(--accent)] text-[var(--accent)] focus:ring-[var(--accent)]/30"
                             : "border-gray-200 text-gray-500 focus:ring-gray-200"
                         }`}
                       />
@@ -314,7 +314,7 @@ export default function RubricEditorPage() {
                     <button
                       onClick={() => generateLevels(c.id)}
                       disabled={generating[c.id]}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-teal-50 border border-teal-200 text-xs text-[#0F766E] font-medium hover:bg-teal-100 transition-colors disabled:opacity-60"
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-teal-50 border border-teal-200 text-xs text-[var(--accent)] font-medium hover:bg-teal-100 transition-colors disabled:opacity-60"
                     >
                       {generating[c.id] ? (
                         <svg className="animate-spin" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
@@ -347,7 +347,7 @@ export default function RubricEditorPage() {
                     onChange={e => updateCriterion(c.id, "description", e.target.value)}
                     rows={2}
                     placeholder="อธิบายสิ่งที่นักศึกษาต้องแสดงในเกณฑ์นี้..."
-                    className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm text-[#1B2A4A] resize-none focus:outline-none focus:ring-2 focus:ring-[#0F766E]/30 focus:border-[#0F766E] transition-colors placeholder:text-gray-300"
+                    className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm text-[var(--text-primary)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors placeholder:text-gray-300"
                   />
                 </div>
 
@@ -380,7 +380,7 @@ export default function RubricEditorPage() {
         {/* Add criterion */}
         <button
           onClick={addCriterion}
-          className="w-full mt-4 py-3.5 rounded-2xl border-2 border-dashed border-gray-200 text-sm text-gray-500 hover:border-[#0F766E] hover:text-[#0F766E] hover:bg-teal-50/30 transition-all flex items-center justify-center gap-2"
+          className="w-full mt-4 py-3.5 rounded-2xl border-2 border-dashed border-gray-200 text-sm text-gray-500 hover:border-[var(--accent)] hover:text-[var(--accent)] hover:bg-teal-50/30 transition-all flex items-center justify-center gap-2"
         >
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
             <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
@@ -407,7 +407,7 @@ export default function RubricEditorPage() {
                 saved
                   ? "bg-green-500 text-white"
                   : weightOk
-                    ? "bg-[#2DD4BF] hover:bg-[#14B8A6] text-[#1B2A4A] shadow-sm shadow-teal-200"
+                    ? "bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)] shadow-sm shadow-teal-200"
                     : "bg-gray-100 text-gray-300 cursor-not-allowed"
               }`}
             >
@@ -434,7 +434,7 @@ export default function RubricEditorPage() {
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="#0F766E">
                   <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
                 </svg>
-                <h3 className="text-base font-bold text-[#1B2A4A]">AI Rubric Assistant</h3>
+                <h3 className="text-base font-bold text-[var(--text-primary)]">AI Rubric Assistant</h3>
               </div>
               <button onClick={() => setAiOpen(false)} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2.5" strokeLinecap="round">
@@ -452,7 +452,7 @@ export default function RubricEditorPage() {
                     </svg>
                   </div>
                   <div className="text-center">
-                    <p className="text-sm font-semibold text-[#1B2A4A]">กำลังวิเคราะห์ชิ้นงาน...</p>
+                    <p className="text-sm font-semibold text-[var(--text-primary)]">กำลังวิเคราะห์ชิ้นงาน...</p>
                     <p className="text-xs text-gray-400 mt-1">AI กำลังสร้างเกณฑ์ที่เหมาะสม</p>
                   </div>
                 </div>
@@ -460,7 +460,7 @@ export default function RubricEditorPage() {
                 <>
                   <p className="text-xs text-gray-400 mb-4">
                     AI แนะนำเกณฑ์ต่อไปนี้สำหรับ{" "}
-                    <span className="font-medium text-[#1B2A4A]">{assignment.name}</span>
+                    <span className="font-medium text-[var(--text-primary)]">{assignment.name}</span>
                   </p>
                   <div className="space-y-2 mb-5">
                     {aiSuggestions.map((s, i) => (
@@ -469,10 +469,10 @@ export default function RubricEditorPage() {
                           <span className="text-white text-[10px] font-bold">{i + 1}</span>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-[#1B2A4A]">{s.name}</p>
+                          <p className="text-sm font-semibold text-[var(--text-primary)]">{s.name}</p>
                           <p className="text-xs text-gray-400 truncate">{s.description}</p>
                         </div>
-                        <span className="text-xs font-semibold text-[#0F766E] shrink-0">{s.weight}%</span>
+                        <span className="text-xs font-semibold text-[var(--accent)] shrink-0">{s.weight}%</span>
                       </div>
                     ))}
                   </div>

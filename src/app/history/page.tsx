@@ -201,7 +201,7 @@ export default function HistoryPage() {
       <main className="max-w-5xl mx-auto px-8 py-8 w-full">
         {/* ── Page Title ── */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-[#1B2A4A]">Grading History</h1>
+          <h1 className="text-2xl font-bold text-[var(--text-primary)]">Grading History</h1>
           <p className="text-sm text-gray-500 mt-1">Track your grading activity and credit consumption.</p>
         </div>
 
@@ -209,15 +209,15 @@ export default function HistoryPage() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
           {/* Credits Used */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-            <div className="flex items-center gap-2 text-[#0F766E] mb-3">
+            <div className="flex items-center gap-2 text-[var(--accent)] mb-3">
               <IconBolt />
               <span className="text-xs font-semibold tracking-wide uppercase text-gray-500">Total Credits Used</span>
             </div>
             <div className="flex items-end gap-2">
-              <span className="text-3xl font-bold text-[#1B2A4A] tabular-nums">{totalCreditsUsed.toLocaleString()}</span>
+              <span className="text-3xl font-bold text-[var(--text-primary)] tabular-nums">{totalCreditsUsed.toLocaleString()}</span>
               <span className="text-sm text-gray-400 mb-1">/ {TOTAL_CREDIT_LIMIT.toLocaleString()}</span>
             </div>
-            <p className="text-xs text-[#0F766E] mt-2 font-medium">↑ {usedPct}% of total limit used</p>
+            <p className="text-xs text-[var(--accent)] mt-2 font-medium">↑ {usedPct}% of total limit used</p>
           </div>
 
           {/* Assignments Graded */}
@@ -227,14 +227,14 @@ export default function HistoryPage() {
               <span className="text-xs font-semibold tracking-wide uppercase text-gray-500">Assignments Graded</span>
             </div>
             <div className="flex items-end gap-2">
-              <span className="text-3xl font-bold text-[#1B2A4A] tabular-nums">{totalPapersGraded}</span>
+              <span className="text-3xl font-bold text-[var(--text-primary)] tabular-nums">{totalPapersGraded}</span>
               <span className="text-sm text-gray-400 mb-1">papers</span>
             </div>
             <p className="text-xs text-gray-400 mt-2">Avg. {avgCostPerPaper} credits per paper</p>
           </div>
 
           {/* Remaining Balance — dark card */}
-          <div className="bg-[#1B2A4A] rounded-2xl shadow-sm p-5 flex flex-col">
+          <div className="bg-[var(--bg-nav)] rounded-2xl shadow-sm p-5 flex flex-col">
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">Remaining Balance</p>
@@ -247,7 +247,7 @@ export default function HistoryPage() {
               </div>
               <CreditRing pct={remainingPct} />
             </div>
-            <button className="mt-4 flex items-center justify-center gap-1.5 w-full py-2 rounded-xl bg-[#2DD4BF] text-[#1B2A4A] text-sm font-semibold hover:bg-[#14B8A6] transition-colors">
+            <button className="mt-4 flex items-center justify-center gap-1.5 w-full py-2 rounded-xl bg-[#2DD4BF] text-[var(--text-primary)] text-sm font-semibold hover:bg-[#14B8A6] transition-colors">
               <IconPlus />
               Buy Credits
             </button>
@@ -258,7 +258,7 @@ export default function HistoryPage() {
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           {/* Table header / controls */}
           <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 flex-wrap gap-3">
-            <h2 className="text-base font-bold text-[#1B2A4A]">Detailed Grading Log</h2>
+            <h2 className="text-base font-bold text-[var(--text-primary)]">Detailed Grading Log</h2>
             <div className="flex items-center gap-2">
               {/* Search */}
               <div className="relative">
@@ -289,7 +289,7 @@ export default function HistoryPage() {
               <button
                 onClick={() => exportCSV(filtered)}
                 title="Export CSV"
-                className="p-2 rounded-xl border border-gray-200 text-gray-500 hover:text-[#1B2A4A] hover:border-gray-300 hover:bg-gray-50 transition-colors"
+                className="p-2 rounded-xl border border-gray-200 text-gray-500 hover:text-[var(--text-primary)] hover:border-gray-300 hover:bg-gray-50 transition-colors"
               >
                 <IconDownload />
               </button>
@@ -322,11 +322,11 @@ export default function HistoryPage() {
                   visible.map((session) => (
                     <tr key={session.id} className="border-b border-gray-50 hover:bg-gray-50/70 transition-colors">
                       <td className="px-5 py-3.5 whitespace-nowrap">
-                        <p className="text-sm font-medium text-[#1B2A4A]">{formatDate(session.date)}</p>
+                        <p className="text-sm font-medium text-[var(--text-primary)]">{formatDate(session.date)}</p>
                         <p className="text-xs text-gray-400">{formatTime(session.date)}</p>
                       </td>
                       <td className="px-4 py-3.5">
-                        <p className="text-sm font-medium text-[#1B2A4A] leading-snug max-w-[200px]">{session.assignment}</p>
+                        <p className="text-sm font-medium text-[var(--text-primary)] leading-snug max-w-[200px]">{session.assignment}</p>
                       </td>
                       <td className="px-4 py-3.5">
                         <div className="flex items-center gap-2">
@@ -338,7 +338,7 @@ export default function HistoryPage() {
                         </div>
                       </td>
                       <td className="px-4 py-3.5 text-right tabular-nums">
-                        <span className="text-sm font-medium text-[#1B2A4A]">{session.count}</span>
+                        <span className="text-sm font-medium text-[var(--text-primary)]">{session.count}</span>
                       </td>
                       <td className="px-4 py-3.5 text-right tabular-nums">
                         <span className={`text-sm font-medium ${session.status === "failed" ? "text-gray-400" : "text-red-500"}`}>
@@ -359,7 +359,7 @@ export default function HistoryPage() {
                         )}
                       </td>
                       <td className="px-4 py-3.5">
-                        <span className="text-sm font-medium text-[#0F766E]">{session.grader}</span>
+                        <span className="text-sm font-medium text-[var(--accent)]">{session.grader}</span>
                       </td>
                       <td className="px-3 py-3.5 text-gray-300">
                         <IconChevronRight />
@@ -394,7 +394,7 @@ export default function HistoryPage() {
                     className={[
                       "w-7 h-7 flex items-center justify-center rounded-lg text-xs font-medium transition-colors",
                       n === safeePage
-                        ? "bg-[#2DD4BF] text-[#1B2A4A] font-semibold"
+                        ? "bg-[#2DD4BF] text-[var(--text-primary)] font-semibold"
                         : "text-gray-500 hover:bg-gray-100",
                     ].join(" ")}
                   >

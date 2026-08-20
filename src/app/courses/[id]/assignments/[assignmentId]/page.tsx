@@ -64,7 +64,7 @@ export default function ViewAssignmentPage() {
       <AppShell>
         <main className="flex-1 flex items-center justify-center text-gray-500 text-sm">
           ไม่พบข้อมูล —{" "}
-          <Link href={`/courses/${id}/assignments`} className="text-[#0F766E] ml-1 hover:underline">กลับไปรายการชิ้นงาน</Link>
+          <Link href={`/courses/${id}/assignments`} className="text-[var(--accent)] ml-1 hover:underline">กลับไปรายการชิ้นงาน</Link>
         </main>
       </AppShell>
     );
@@ -101,21 +101,21 @@ export default function ViewAssignmentPage() {
 
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
-          <Link href="/courses" className="hover:text-[#0F766E]">
+          <Link href="/courses" className="hover:text-[var(--accent)]">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
             </svg>
           </Link>
           <span>/</span>
-          <Link href={`/courses/${id}/assignments`} className="hover:text-[#0F766E] transition-colors">{course.name}</Link>
+          <Link href={`/courses/${id}/assignments`} className="hover:text-[var(--accent)] transition-colors">{course.name}</Link>
           <span>/</span>
-          <span className="text-[#0F766E] font-medium">{assignment.name}</span>
+          <span className="text-[var(--accent)] font-medium">{assignment.name}</span>
         </div>
 
         {/* Header */}
         <div className="flex items-start justify-between mb-5">
           <div>
-            <h1 className="text-2xl font-bold text-[#1B2A4A]">{assignment.name}</h1>
+            <h1 className="text-2xl font-bold text-[var(--text-primary)]">{assignment.name}</h1>
             <div className="flex items-center gap-2 mt-1 text-sm">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2">
                 <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
@@ -146,7 +146,7 @@ export default function ViewAssignmentPage() {
               href={allGraded
                 ? `/courses/${id}/assignments/${assignmentId}/results`
                 : `/courses/${id}/assignments/${assignmentId}/grading`}
-              className="flex items-center gap-2 px-4 py-2 bg-[#2DD4BF] hover:bg-[#14B8A6] text-[#1B2A4A] text-sm font-medium rounded-xl transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)] text-sm font-medium rounded-xl transition-colors"
             >
               {allGraded ? (
                 <>
@@ -203,7 +203,7 @@ export default function ViewAssignmentPage() {
               </svg>
             </div>
             <p className="text-xs text-gray-500 mb-1">Submissions</p>
-            <p className="text-2xl font-bold text-[#1B2A4A]">
+            <p className="text-2xl font-bold text-[var(--text-primary)]">
               {submissions.length} <span className="text-sm font-normal text-gray-500">/ {assignment.maxPoints}</span>
             </p>
             <div className="mt-2 h-1.5 bg-gray-100 rounded-full overflow-hidden">
@@ -224,7 +224,7 @@ export default function ViewAssignmentPage() {
               </svg>
             </div>
             <p className="text-xs text-gray-500 mb-1">Average Grade</p>
-            <p className="text-2xl font-bold text-[#1B2A4A]">{submissions.length > 0 ? `${avgScore}%` : "0%"}</p>
+            <p className="text-2xl font-bold text-[var(--text-primary)]">{submissions.length > 0 ? `${avgScore}%` : "0%"}</p>
             <p className="text-xs text-gray-500 mt-1.5 flex items-center gap-1">
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" strokeWidth="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
               AI Confidence: {submissions.length > 0 ? "High" : "None"}
@@ -238,7 +238,7 @@ export default function ViewAssignmentPage() {
               </svg>
             </div>
             <p className="text-xs text-gray-500 mb-1">Graded</p>
-            <p className="text-2xl font-bold text-[#1B2A4A]">{gradedCount} <span className="text-sm font-normal text-gray-500">papers</span></p>
+            <p className="text-2xl font-bold text-[var(--text-primary)]">{gradedCount} <span className="text-sm font-normal text-gray-500">papers</span></p>
             <p className="text-xs text-gray-500 mt-1.5">
               {submissions.length - gradedCount > 0
                 ? `${submissions.length - gradedCount} not graded`
@@ -254,14 +254,14 @@ export default function ViewAssignmentPage() {
               </svg>
             </div>
             <p className="text-xs text-gray-500 mb-1">Rubric</p>
-            <p className="text-2xl font-bold text-[#1B2A4A]">
+            <p className="text-2xl font-bold text-[var(--text-primary)]">
               {assignment.rubricIds.length}
               <span className="text-sm font-normal text-gray-500 ml-1">rubric</span>
             </p>
             <p className="text-xs text-gray-500 mt-1.5">
               <Link
                 href={`/courses/${id}/assignments/${assignmentId}/edit`}
-                className="text-[#0F766E] hover:underline"
+                className="text-[var(--accent)] hover:underline"
               >
                 {assignment.rubricIds.length > 0 ? "จัดการ Rubric" : "เพิ่ม Rubric"}
               </Link>
@@ -274,8 +274,8 @@ export default function ViewAssignmentPage() {
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 mb-5">
             <p className="text-xs text-gray-500 mb-1.5">Assignment Description</p>
             <div className="flex items-start justify-between gap-4">
-              <p className="text-sm text-[#1B2A4A] leading-relaxed">{assignment.description}</p>
-              <Link href={`/courses/${id}/assignments/${assignmentId}/edit`} className="text-[#0F766E] text-sm hover:underline shrink-0">Edit</Link>
+              <p className="text-sm text-[var(--text-primary)] leading-relaxed">{assignment.description}</p>
+              <Link href={`/courses/${id}/assignments/${assignmentId}/edit`} className="text-[var(--accent)] text-sm hover:underline shrink-0">Edit</Link>
             </div>
           </div>
         )}
@@ -291,7 +291,7 @@ export default function ViewAssignmentPage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search students..."
-                className="pl-8 pr-3 py-1.5 text-sm rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#0F766E]/30 focus:border-[#0F766E] w-52"
+                className="pl-8 pr-3 py-1.5 text-sm rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] w-52"
               />
             </div>
             <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-medium text-gray-500 hover:bg-gray-50 transition-colors">
@@ -344,7 +344,7 @@ export default function ViewAssignmentPage() {
                             {initials(s.studentName)}
                           </div>
                           <div>
-                            <p className="font-medium text-[#1B2A4A] text-sm">{s.studentName}</p>
+                            <p className="font-medium text-[var(--text-primary)] text-sm">{s.studentName}</p>
                             <p className="text-xs text-gray-500">{s.email}</p>
                           </div>
                         </div>
@@ -353,7 +353,7 @@ export default function ViewAssignmentPage() {
                       <td className="px-3 py-3.5">
                         {s.aiScore !== null ? (
                           <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium text-[#1B2A4A]">{s.aiScore}%</span>
+                            <span className="text-sm font-medium text-[var(--text-primary)]">{s.aiScore}%</span>
                             <div className="w-20 h-1.5 bg-gray-100 rounded-full overflow-hidden">
                               <div className="h-full bg-[#2DD4BF] rounded-full" style={{ width: `${s.aiScore}%` }} />
                             </div>
@@ -373,7 +373,7 @@ export default function ViewAssignmentPage() {
                         {(s.status === "need_review" || s.status === "graded") && (
                           <Link
                             href={`/courses/${id}/assignments/${assignmentId}/recheck?sub=${s.id}`}
-                            className="text-xs text-[#0F766E] hover:underline font-medium"
+                            className="text-xs text-[var(--accent)] hover:underline font-medium"
                           >
                             {s.status === "need_review" ? "Review" : "Recheck"}
                           </Link>
@@ -384,13 +384,13 @@ export default function ViewAssignmentPage() {
                 </tbody>
               </table>
               <div className="flex items-center justify-between px-5 py-3 text-xs text-gray-500 border-t border-gray-50">
-                <span>Showing <span className="font-medium text-[#1B2A4A]">1–{visible.length}</span> of <span className="font-medium text-[#1B2A4A]">{submissions.length}</span> submissions</span>
+                <span>Showing <span className="font-medium text-[var(--text-primary)]">1–{visible.length}</span> of <span className="font-medium text-[var(--text-primary)]">{submissions.length}</span> submissions</span>
                 {submissions.length > 5 && (
                   <div className="flex gap-1">
                     {[1, 2, 3].map((p) => (
                       <button key={p} className={[
                         "w-7 h-7 rounded-full text-xs font-medium",
-                        p === 1 ? "bg-[#2DD4BF] text-[#1B2A4A]" : "text-gray-500 hover:bg-gray-100",
+                        p === 1 ? "bg-[#2DD4BF] text-[var(--text-primary)]" : "text-gray-500 hover:bg-gray-100",
                       ].join(" ")}>{p}</button>
                     ))}
                   </div>

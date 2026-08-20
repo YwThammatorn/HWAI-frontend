@@ -49,13 +49,13 @@ export default function NotFound() {
 
           {/* Text */}
           <div className="flex-1">
-            <p className="text-[120px] font-black leading-none text-[#1B2A4A]/10 select-none">
+            <p className="text-[120px] font-black leading-none text-[var(--text-primary)]/10 select-none">
               404
             </p>
-            <h1 className="text-4xl font-extrabold text-[#1B2A4A] -mt-6 leading-tight">
+            <h1 className="text-4xl font-extrabold text-[var(--text-primary)] -mt-6 leading-tight">
               Oops! This page
               <br />
-              <span className="text-[#0F766E]">graduated</span>.
+              <span className="text-[var(--accent)]">graduated</span>.
             </h1>
             <p className="text-gray-500 text-base mt-5 leading-relaxed max-w-sm">
               It looks like the page you're looking for isn't here anymore.

@@ -169,7 +169,7 @@ export default function CollaboratorsPage() {
       <AppShell>
         <main className="flex-1 flex items-center justify-center text-gray-500 text-sm">
           ไม่พบรายวิชานี้ —{" "}
-          <Link href="/courses" className="text-[#0F766E] ml-1 hover:underline">กลับไปหน้าหลัก</Link>
+          <Link href="/courses" className="text-[var(--accent)] ml-1 hover:underline">กลับไปหน้าหลัก</Link>
         </main>
       </AppShell>
     );
@@ -180,21 +180,21 @@ export default function CollaboratorsPage() {
       <main className="w-full max-w-[900px] mx-auto px-8 py-8">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
-          <Link href="/courses" className="hover:text-[#0F766E] transition-colors">
+          <Link href="/courses" className="hover:text-[var(--accent)] transition-colors">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="inline -mt-0.5">
               <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
             </svg>
           </Link>
           <span>/</span>
-          <Link href={`/courses/${id}`} className="hover:text-[#0F766E] transition-colors">{course.name}</Link>
+          <Link href={`/courses/${id}`} className="hover:text-[var(--accent)] transition-colors">{course.name}</Link>
           <span>/</span>
-          <span className="text-[#0F766E] font-medium">Collaborators</span>
+          <span className="text-[var(--accent)] font-medium">Collaborators</span>
         </div>
 
         {/* Title */}
-        <h1 className="text-2xl font-bold text-[#1B2A4A] mb-1">Collaborators Management</h1>
+        <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">Collaborators Management</h1>
         <p className="text-sm text-gray-500 mb-8">
-          Manage teachers and teaching assistants for <strong className="text-[#1B2A4A]">{course.name}</strong>.
+          Manage teachers and teaching assistants for <strong className="text-[var(--text-primary)]">{course.name}</strong>.
         </p>
 
         {/* Course Team card */}
@@ -202,7 +202,7 @@ export default function CollaboratorsPage() {
           {/* Card header */}
           <div className="flex items-start justify-between gap-4 px-6 pt-5 pb-4 border-b border-gray-50">
             <div>
-              <h2 className="text-base font-bold text-[#1B2A4A]">Course Team</h2>
+              <h2 className="text-base font-bold text-[var(--text-primary)]">Course Team</h2>
               <p className="text-sm text-gray-500 mt-0.5">
                 A list of all collaborators with administrative or grading access to this course.
               </p>
@@ -216,7 +216,7 @@ export default function CollaboratorsPage() {
                 placeholder="Search by name or email"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-8 pr-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0F766E]/30 focus:border-[#0F766E] transition-colors w-56"
+                className="pl-8 pr-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors w-56"
               />
             </div>
           </div>
@@ -231,12 +231,12 @@ export default function CollaboratorsPage() {
                   <Avatar initials={c.initials} bg={c.avatarBg} />
 
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-[#1B2A4A]">{c.name}</p>
+                    <p className="text-sm font-semibold text-[var(--text-primary)]">{c.name}</p>
                     <p className="text-xs text-gray-500">{c.email}</p>
                   </div>
 
                   <div className="text-right shrink-0">
-                    <p className="text-sm font-semibold text-[#1B2A4A]">{c.role}</p>
+                    <p className="text-sm font-semibold text-[var(--text-primary)]">{c.role}</p>
                     <p className="text-xs text-gray-500">{c.permissions}</p>
                   </div>
 
@@ -253,7 +253,7 @@ export default function CollaboratorsPage() {
           {/* Card footer */}
           <div className="flex items-center justify-between px-6 py-3 border-t border-gray-50">
             <p className="text-xs text-gray-500">
-              Showing <strong className="text-[#1B2A4A]">{filtered.length}</strong> collaborator{filtered.length !== 1 ? "s" : ""}
+              Showing <strong className="text-[var(--text-primary)]">{filtered.length}</strong> collaborator{filtered.length !== 1 ? "s" : ""}
             </p>
             <p className="text-xs text-gray-500 flex items-center gap-1">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -268,14 +268,14 @@ export default function CollaboratorsPage() {
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm">
           <div className="flex items-start justify-between gap-6 px-6 py-5">
             <div className="flex-1">
-              <h2 className="text-base font-bold text-[#1B2A4A] mb-1">Invite Code</h2>
+              <h2 className="text-base font-bold text-[var(--text-primary)] mb-1">Invite Code</h2>
               <p className="text-sm text-gray-500 leading-relaxed max-w-sm">
                 Share this code to allow TAs to request access to this course. Requests will need your approval.
               </p>
             </div>
 
             <div className="flex items-center gap-2 shrink-0">
-              <div className="px-4 py-2 border border-gray-200 rounded-xl text-sm font-mono font-semibold text-[#1B2A4A] bg-gray-50 min-w-[80px] text-center tracking-widest">
+              <div className="px-4 py-2 border border-gray-200 rounded-xl text-sm font-mono font-semibold text-[var(--text-primary)] bg-gray-50 min-w-[80px] text-center tracking-widest">
                 {inviteCode}
               </div>
               <button
@@ -284,7 +284,7 @@ export default function CollaboratorsPage() {
                   "flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium border transition-colors",
                   copied
                     ? "bg-green-50 border-green-200 text-green-700"
-                    : "border-gray-200 text-[#1B2A4A] hover:bg-gray-50",
+                    : "border-gray-200 text-[var(--text-primary)] hover:bg-gray-50",
                 ].join(" ")}
               >
                 {copied ? (
@@ -303,7 +303,7 @@ export default function CollaboratorsPage() {
               </button>
               <button
                 onClick={() => setInviteCode(generateCode())}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium border border-gray-200 text-[#1B2A4A] hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium border border-gray-200 text-[var(--text-primary)] hover:bg-gray-50 transition-colors"
               >
                 Regenerate
               </button>

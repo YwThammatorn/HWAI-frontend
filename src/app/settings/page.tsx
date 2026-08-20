@@ -15,7 +15,7 @@ function Toggle({ checked, onChange, label }: { checked: boolean; onChange: () =
       onClick={onChange}
       className={[
         "relative w-11 h-6 rounded-full transition-colors shrink-0",
-        checked ? "bg-[#0F766E]" : "bg-gray-200",
+        checked ? "bg-[var(--accent)]" : "bg-gray-200",
       ].join(" ")}
     >
       <span
@@ -36,7 +36,7 @@ function Section({ title, description, accent, children }: {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm mb-5">
       <div className="px-6 pt-5 pb-4 border-b border-gray-50">
-        <h2 className={`text-base font-bold ${accent ? "text-[#0F766E]" : "text-[#1B2A4A]"}`}>{title}</h2>
+        <h2 className={`text-base font-bold ${accent ? "text-[var(--accent)]" : "text-[var(--text-primary)]"}`}>{title}</h2>
         {description && <p className="text-xs text-gray-500 mt-0.5">{description}</p>}
       </div>
       <div className="px-6 py-5">{children}</div>
@@ -56,7 +56,7 @@ function Slider({ value, onChange, min = 0, max = 100 }: {
       max={max}
       value={value}
       onChange={(e) => onChange(Number(e.target.value))}
-      className="w-full accent-[#0F766E] h-1.5 rounded-full"
+      className="w-full accent-[var(--accent)] h-1.5 rounded-full"
     />
   );
 }
@@ -144,8 +144,8 @@ export default function SettingsPage() {
 
           {/* Header */}
           <div className="mb-6">
-            <h1 className="text-2xl font-bold text-[#1B2A4A]">Application Setting</h1>
-            <p className="text-sm text-[#0F766E] mt-0.5">Manage your workspace localization, appearance, and AI behavior.</p>
+            <h1 className="text-2xl font-bold text-[var(--text-primary)]">Application Setting</h1>
+            <p className="text-sm text-[var(--accent)] mt-0.5">Manage your workspace localization, appearance, and AI behavior.</p>
           </div>
 
           {/* Grading Preferences */}
@@ -155,8 +155,8 @@ export default function SettingsPage() {
                 {/* Confidence threshold */}
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-sm font-medium text-[#1B2A4A]">AI Confidence Threshold</p>
-                    <span className="text-sm font-bold text-[#0F766E]">{confidence}%</span>
+                    <p className="text-sm font-medium text-[var(--text-primary)]">AI Confidence Threshold</p>
+                    <span className="text-sm font-bold text-[var(--accent)]">{confidence}%</span>
                   </div>
                   <Slider value={confidence} onChange={setConfidence} />
                   <p className="text-xs text-gray-500 mt-2">Assignments below this confidence level will be flagged for manual review.</p>
@@ -164,7 +164,7 @@ export default function SettingsPage() {
 
                 {/* Feedback style */}
                 <div>
-                  <p className="text-sm font-medium text-[#1B2A4A] mb-2">Default Feedback Style</p>
+                  <p className="text-sm font-medium text-[var(--text-primary)] mb-2">Default Feedback Style</p>
                   <div className="flex gap-2">
                     {(["Encouraging", "Concise", "Technical"] as FeedbackStyle[]).map((s) => (
                       <button
@@ -173,7 +173,7 @@ export default function SettingsPage() {
                         className={[
                           "flex flex-col items-center gap-1.5 px-3 py-2.5 rounded-xl border text-xs font-medium transition-colors flex-1",
                           feedback === s
-                            ? "border-[#0F766E] text-[#0F766E] bg-[#E6FAF8]"
+                            ? "border-[var(--accent)] text-[var(--accent)] bg-[var(--accent-subtle)]"
                             : "border-gray-200 text-gray-500 hover:border-gray-300",
                         ].join(" ")}
                       >
@@ -194,7 +194,7 @@ export default function SettingsPage() {
                 ].map((item) => (
                   <div key={item.label} className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-sm font-medium text-[#1B2A4A]">{item.label}</p>
+                      <p className="text-sm font-medium text-[var(--text-primary)]">{item.label}</p>
                       <p className="text-xs text-gray-500 mt-0.5">{item.desc}</p>
                     </div>
                     <Toggle checked={item.value} onChange={item.set} label={item.label} />
@@ -209,20 +209,20 @@ export default function SettingsPage() {
             <div className="space-y-5">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-sm font-medium text-[#1B2A4A]">Auto-Feedback Generation</p>
-                  <p className="text-xs text-[#0F766E] mt-0.5">Automatically draft qualitative feedback for students based on rubric scores.</p>
+                  <p className="text-sm font-medium text-[var(--text-primary)]">Auto-Feedback Generation</p>
+                  <p className="text-xs text-[var(--accent)] mt-0.5">Automatically draft qualitative feedback for students based on rubric scores.</p>
                 </div>
                 <Toggle checked={autoFeedback} onChange={() => setAutoFeedback((v) => !v)} label="Auto-Feedback Generation" />
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <p className="text-sm font-medium text-[#1B2A4A]">Grading Strictness</p>
-                  <span className="text-xs font-semibold text-[#0F766E]">{strictLabel}</span>
+                  <p className="text-sm font-medium text-[var(--text-primary)]">Grading Strictness</p>
+                  <span className="text-xs font-semibold text-[var(--accent)]">{strictLabel}</span>
                 </div>
-                <p className="text-xs text-[#0F766E] mb-3">Adjust how lenient or strict the AI should be on partial credit.</p>
+                <p className="text-xs text-[var(--accent)] mb-3">Adjust how lenient or strict the AI should be on partial credit.</p>
                 <Slider value={strictness} onChange={setStrictness} />
-                <div className="flex justify-between text-xs text-[#0F766E] mt-1">
+                <div className="flex justify-between text-xs text-[var(--accent)] mt-1">
                   <span>Lenient</span><span>Balanced</span><span>Strict</span>
                 </div>
               </div>
@@ -232,8 +232,8 @@ export default function SettingsPage() {
           {/* Appearance */}
           <Section title="Appearance">
             <div>
-              <p className="text-sm font-medium text-[#1B2A4A]">Interface Theme</p>
-              <p className="text-xs text-[#0F766E] mb-3 mt-0.5">Choose how the application looks to you.</p>
+              <p className="text-sm font-medium text-[var(--text-primary)]">Interface Theme</p>
+              <p className="text-xs text-[var(--accent)] mb-3 mt-0.5">Choose how the application looks to you.</p>
               <div className="grid grid-cols-3 gap-3">
                 {(["Light", "Dark", "System"] as Theme[]).map((t) => (
                   <button
@@ -241,11 +241,11 @@ export default function SettingsPage() {
                     onClick={() => setTheme(t)}
                     className={[
                       "rounded-xl border-2 p-2 transition-colors",
-                      theme === t ? "border-[#0F766E]" : "border-gray-200 hover:border-gray-300",
+                      theme === t ? "border-[var(--accent)]" : "border-gray-200 hover:border-gray-300",
                     ].join(" ")}
                   >
                     {THEME_PREVIEW[t]}
-                    <p className={`text-xs font-medium mt-1.5 ${theme === t ? "text-[#0F766E]" : "text-gray-500"}`}>{t}</p>
+                    <p className={`text-xs font-medium mt-1.5 ${theme === t ? "text-[var(--accent)]" : "text-gray-500"}`}>{t}</p>
                   </button>
                 ))}
               </div>
@@ -261,7 +261,7 @@ export default function SettingsPage() {
               ].map((item) => (
                 <div key={item.label} className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-sm font-medium text-[#1B2A4A]">{item.label}</p>
+                    <p className="text-sm font-medium text-[var(--text-primary)]">{item.label}</p>
                     <p className="text-xs text-gray-500 mt-0.5">{item.desc}</p>
                   </div>
                   <Toggle checked={item.value} onChange={item.set} label={item.label} />
@@ -277,17 +277,17 @@ export default function SettingsPage() {
               <div className="border border-gray-100 rounded-xl p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center text-base">🎓</div>
-                  <p className="font-semibold text-sm text-[#1B2A4A]">Google Classroom</p>
+                  <p className="font-semibold text-sm text-[var(--text-primary)]">Google Classroom</p>
                 </div>
                 <p className="text-xs text-gray-500 mb-3 leading-relaxed">Sync classes, assignments, and grades directly with your Google Classroom courses.</p>
                 <div className="flex items-center justify-between">
                   {googleConnected
-                    ? <span className="text-xs font-medium text-[#0F766E] bg-[#E6FAF8] px-2.5 py-1 rounded-full">Connected</span>
+                    ? <span className="text-xs font-medium text-[var(--accent)] bg-[var(--accent-subtle)] px-2.5 py-1 rounded-full">Connected</span>
                     : <span className="text-xs text-gray-500">Not Connected</span>
                   }
                   <button
                     onClick={() => setGoogleConnected((v) => !v)}
-                    className="text-xs font-medium px-3 py-1.5 border border-gray-200 rounded-lg text-[#1B2A4A] hover:bg-gray-50 transition-colors"
+                    className="text-xs font-medium px-3 py-1.5 border border-gray-200 rounded-lg text-[var(--text-primary)] hover:bg-gray-50 transition-colors"
                   >
                     {googleConnected ? "Manage Sync" : "Connect"}
                   </button>
@@ -297,19 +297,19 @@ export default function SettingsPage() {
               <div className="border border-gray-100 rounded-xl p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-base">💼</div>
-                  <p className="font-semibold text-sm text-[#1B2A4A]">Microsoft Teams</p>
+                  <p className="font-semibold text-sm text-[var(--text-primary)]">Microsoft Teams</p>
                 </div>
                 <p className="text-xs text-gray-500 mb-3 leading-relaxed">Integrate with Teams for Education to streamline assignment distribution and communication.</p>
                 <div className="flex items-center justify-between">
                   {teamsConnected
-                    ? <span className="text-xs font-medium text-[#0F766E] bg-[#E6FAF8] px-2.5 py-1 rounded-full">Connected</span>
+                    ? <span className="text-xs font-medium text-[var(--accent)] bg-[var(--accent-subtle)] px-2.5 py-1 rounded-full">Connected</span>
                     : <span className="text-xs text-gray-500">Not Connected</span>
                   }
                   <button
                     onClick={() => setTeamsConnected((v) => !v)}
                     className={teamsConnected
-                      ? "text-xs font-medium px-3 py-1.5 border border-gray-200 rounded-lg text-[#1B2A4A] hover:bg-gray-50 transition-colors"
-                      : "text-xs font-semibold px-3 py-1.5 bg-[#2DD4BF] hover:bg-[#14B8A6] text-[#1B2A4A] rounded-lg transition-colors"
+                      ? "text-xs font-medium px-3 py-1.5 border border-gray-200 rounded-lg text-[var(--text-primary)] hover:bg-gray-50 transition-colors"
+                      : "text-xs font-semibold px-3 py-1.5 bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)] rounded-lg transition-colors"
                     }
                   >
                     {teamsConnected ? "Manage Sync" : "Connect"}
@@ -339,7 +339,7 @@ export default function SettingsPage() {
       {(isDirty || saved) && (
         <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-100 shadow-lg px-8 py-4 flex items-center justify-between">
           <div>
-            <p className="text-sm font-semibold text-[#1B2A4A]">Save or Discard Changes</p>
+            <p className="text-sm font-semibold text-[var(--text-primary)]">Save or Discard Changes</p>
             <p className="text-xs text-gray-500 mt-0.5">Once you have done configuring settings, you can save your changes or discard them to reset to default.</p>
           </div>
           <div className="flex gap-3">
@@ -353,7 +353,7 @@ export default function SettingsPage() {
               onClick={handleSave}
               className={[
                 "px-5 py-2.5 text-sm font-semibold rounded-xl transition-colors",
-                saved ? "bg-emerald-500 text-white" : "bg-[#2DD4BF] hover:bg-[#14B8A6] text-[#1B2A4A]",
+                saved ? "bg-emerald-500 text-white" : "bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)]",
               ].join(" ")}
             >
               {saved ? "Saved ✓" : "Save Changes"}

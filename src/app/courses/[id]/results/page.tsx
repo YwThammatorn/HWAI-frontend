@@ -36,7 +36,7 @@ export default function CourseResultsPage() {
       <AppShell>
         <main className="flex-1 flex items-center justify-center text-gray-500 text-sm">
           ไม่พบรายวิชา —{" "}
-          <Link href="/courses" className="text-[#0F766E] ml-1 hover:underline">กลับหน้าหลัก</Link>
+          <Link href="/courses" className="text-[var(--accent)] ml-1 hover:underline">กลับหน้าหลัก</Link>
         </main>
       </AppShell>
     );
@@ -47,14 +47,14 @@ export default function CourseResultsPage() {
       <main className="w-full max-w-[900px] mx-auto px-8 py-8">
         {/* Breadcrumb */}
         <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-5 flex-wrap">
-          <Link href="/courses" className="hover:text-[#0F766E] transition-colors">Courses</Link>
+          <Link href="/courses" className="hover:text-[var(--accent)] transition-colors">Courses</Link>
           <span>/</span>
-          <Link href={`/courses/${id}`} className="hover:text-[#0F766E] transition-colors">{course.name}</Link>
+          <Link href={`/courses/${id}`} className="hover:text-[var(--accent)] transition-colors">{course.name}</Link>
           <span>/</span>
-          <span className="text-[#1B2A4A] font-medium">Results</span>
+          <span className="text-[var(--text-primary)] font-medium">Results</span>
         </div>
 
-        <h1 className="text-2xl font-bold text-[#1B2A4A] mb-1">Grading Results</h1>
+        <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">Grading Results</h1>
         <p className="text-sm text-gray-400 mb-8">{course.name}</p>
 
         {assignments.length === 0 ? (
@@ -89,7 +89,7 @@ export default function CourseResultsPage() {
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-sm font-semibold text-[#1B2A4A] truncate">{a.name}</h3>
+                      <h3 className="text-sm font-semibold text-[var(--text-primary)] truncate">{a.name}</h3>
                       {total === 0 ? (
                         <span className="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-400 font-medium shrink-0">
                           No submissions
@@ -112,7 +112,7 @@ export default function CourseResultsPage() {
                       {avg !== null && avgLetter && (
                         <span>
                           Avg:{" "}
-                          <span className="font-semibold text-[#1B2A4A]">{avg.toFixed(1)}</span>
+                          <span className="font-semibold text-[var(--text-primary)]">{avg.toFixed(1)}</span>
                           {" "}
                           <span
                             className="px-1.5 py-0.5 rounded text-[10px] font-bold"
@@ -139,7 +139,7 @@ export default function CourseResultsPage() {
                     {total === 0 ? null : allDone ? (
                       <Link
                         href={`/courses/${id}/assignments/${a.id}/results`}
-                        className="px-3 py-2 rounded-lg bg-[#2DD4BF] hover:bg-[#14B8A6] text-[#1B2A4A] text-xs font-semibold transition-colors"
+                        className="px-3 py-2 rounded-lg bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)] text-xs font-semibold transition-colors"
                       >
                         View Results
                       </Link>

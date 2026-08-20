@@ -35,7 +35,7 @@ export default function CoursesPage() {
         {/* Header */}
         <div className="flex items-end justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-[#1B2A4A]">All Courses</h1>
+            <h1 className="text-3xl font-bold text-[var(--text-primary)]">All Courses</h1>
             <p className="mt-1 text-sm text-gray-500">
               Manage your classes, assignments, and student progress from here.
             </p>
@@ -52,13 +52,13 @@ export default function CoursesPage() {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search courses..."
-                  className="pl-9 pr-4 py-2 text-sm rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#0F766E]/30 focus:border-[#0F766E] w-56"
+                  className="pl-9 pr-4 py-2 text-sm rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] w-56"
                 />
               </div>
               {/* Add Course */}
               <Link
                 href="/courses/new"
-                className="flex items-center gap-2 px-4 py-2 bg-[#2DD4BF] hover:bg-[#14B8A6] text-[#1B2A4A] font-medium rounded-xl text-sm transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)] font-medium rounded-xl text-sm transition-colors"
               >
                 <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
                   <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
@@ -78,7 +78,7 @@ export default function CoursesPage() {
                 onClick={() => setTab(t)}
                 className={[
                   "px-4 py-1.5 rounded-lg text-sm font-medium capitalize transition-colors",
-                  tab === t ? "bg-[#1B2A4A] text-white" : "text-gray-500 hover:bg-gray-100",
+                  tab === t ? "bg-[var(--bg-nav)] text-white" : "text-gray-500 hover:bg-gray-100",
                 ].join(" ")}
               >
                 {t}
@@ -135,7 +135,7 @@ export default function CoursesPage() {
             {visible.length > 6 && (
               <div className="flex justify-center gap-1 mt-8">
                 {[1, 2, 3].map((p) => (
-                  <button key={p} className={["w-8 h-8 rounded-full text-sm font-medium", p === 1 ? "bg-[#2DD4BF] text-[#1B2A4A]" : "text-gray-500 hover:bg-gray-100"].join(" ")}>
+                  <button key={p} className={["w-8 h-8 rounded-full text-sm font-medium", p === 1 ? "bg-[#2DD4BF] text-[var(--text-primary)]" : "text-gray-500 hover:bg-gray-100"].join(" ")}>
                     {p}
                   </button>
                 ))}
@@ -154,7 +154,7 @@ function EmptyState() {
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 px-16 py-14 flex flex-col items-center text-center max-w-md w-full">
         {/* Illustration */}
         <div className="relative mb-8">
-          <div className="w-28 h-28 rounded-full bg-[#E6FAF8] flex items-center justify-center">
+          <div className="w-28 h-28 rounded-full bg-[var(--accent-subtle)] flex items-center justify-center">
             <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
               <path d="M10 14a4 4 0 0 1 4-4h24a4 4 0 0 1 4 4v28a4 4 0 0 1-4 4H14a4 4 0 0 1-4-4V14z" stroke="#2DD4BF" strokeWidth="2"/>
               <path d="M18 20h16M18 27h10" stroke="#2DD4BF" strokeWidth="2" strokeLinecap="round"/>
@@ -166,14 +166,14 @@ function EmptyState() {
           <div className="absolute top-8 -left-3 w-2 h-2 rounded-full bg-[#2DD4BF] opacity-40"/>
         </div>
 
-        <h2 className="text-xl font-bold text-[#1B2A4A] mb-2">Let&apos;s start your first class</h2>
+        <h2 className="text-xl font-bold text-[var(--text-primary)] mb-2">Let&apos;s start your first class</h2>
         <p className="text-sm text-gray-500 mb-8 leading-relaxed">
           Create a course to begin grading assignments with HWAI Agent.
         </p>
 
         <Link
           href="/courses/new"
-          className="flex items-center gap-2 px-6 py-2.5 bg-[#2DD4BF] hover:bg-[#14B8A6] text-[#1B2A4A] font-medium rounded-full text-sm transition-colors"
+          className="flex items-center gap-2 px-6 py-2.5 bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)] font-medium rounded-full text-sm transition-colors"
         >
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
             <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
@@ -220,10 +220,10 @@ function CourseCard({ course, studentCount, allGraded, activeAssignments, isArch
       {/* Card body */}
       <div className="p-4">
         <div className="flex items-start justify-between mb-1">
-          <h3 className="font-bold text-[#1B2A4A] text-[15px] leading-snug">{course.name}</h3>
+          <h3 className="font-bold text-[var(--text-primary)] text-[15px] leading-snug">{course.name}</h3>
           {course.source === "manual" && !isArchived && (
             <div className="flex gap-2 text-xs ml-2 shrink-0">
-              <Link href={`/courses/${course.id}/settings`} className="text-[#0F766E] hover:underline font-medium">Edit</Link>
+              <Link href={`/courses/${course.id}/settings`} className="text-[var(--accent)] hover:underline font-medium">Edit</Link>
               <button onClick={onDelete} className="text-red-400 hover:underline font-medium">Delete</button>
             </div>
           )}
@@ -237,7 +237,7 @@ function CourseCard({ course, studentCount, allGraded, activeAssignments, isArch
         {isArchived ? (
           <button
             onClick={onRestore}
-            className="w-full text-xs font-medium py-1.5 rounded-lg bg-[#E0F7F4] hover:bg-[#2DD4BF] text-[#0F7B6C] hover:text-[#1B2A4A] transition-colors"
+            className="w-full text-xs font-medium py-1.5 rounded-lg bg-[var(--accent-subtle)] hover:bg-[#2DD4BF] text-[var(--accent)] hover:text-[#1B2A4A] transition-colors"
           >
             Restore
           </button>
@@ -248,7 +248,7 @@ function CourseCard({ course, studentCount, allGraded, activeAssignments, isArch
               {studentCount} Students
             </span>
             {allGraded ? (
-              <span className="flex items-center gap-1 text-[#0F766E] font-medium">
+              <span className="flex items-center gap-1 text-[var(--accent)] font-medium">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                 All Graded
               </span>

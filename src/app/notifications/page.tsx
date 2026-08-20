@@ -97,7 +97,7 @@ function NotifCard({
         );
       case "late_submission":
         return (
-          <button className="inline-flex items-center px-4 py-1.5 rounded-lg border border-[#0F766E] text-[#0F766E] text-xs font-medium hover:bg-[#0F766E]/5 transition-colors">
+          <button className="inline-flex items-center px-4 py-1.5 rounded-lg border border-[var(--accent)] text-[var(--accent)] text-xs font-medium hover:bg-[#0F766E]/5 transition-colors">
             Grade Now
           </button>
         );
@@ -106,7 +106,7 @@ function NotifCard({
           <>
             <button
               onClick={() => onAccept(notif.id)}
-              className="text-xs font-semibold text-[#0F766E] hover:text-[#0D6B63] transition-colors"
+              className="text-xs font-semibold text-[var(--accent)] hover:text-[#0D6B63] transition-colors"
             >
               Accept
             </button>
@@ -144,7 +144,7 @@ function NotifCard({
       {/* Content */}
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-3">
-          <p className="text-sm font-semibold text-[#1B2A4A] leading-snug">{notif.title}</p>
+          <p className="text-sm font-semibold text-[var(--text-primary)] leading-snug">{notif.title}</p>
           <div className="flex items-center gap-1.5 shrink-0 mt-0.5">
             <span className="text-xs text-gray-500 whitespace-nowrap">{formatNotifTime(notif.createdAt)}</span>
             {!notif.read && <span className="w-2 h-2 rounded-full bg-green-500 shrink-0" />}
@@ -155,7 +155,7 @@ function NotifCard({
           dangerouslySetInnerHTML={{
             __html: notif.body.replace(
               /\*\*(.+?)\*\*/g,
-              '<strong class="text-[#1B2A4A] font-semibold">$1</strong>'
+              '<strong class="text-[var(--text-primary)] font-semibold">$1</strong>'
             ),
           }}
         />
@@ -201,7 +201,7 @@ export default function NotificationsPage() {
   return (
     <AppShell>
         <main className="w-full max-w-2xl mx-auto px-8 py-8">
-          <h1 className="text-2xl font-bold text-[#1B2A4A] mb-6">Notifications</h1>
+          <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-6">Notifications</h1>
 
           {isEmpty ? (
             <div className="flex flex-col items-center justify-center py-24 text-gray-500">
