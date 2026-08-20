@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import AppShell from "@/components/AppShell";
+import { useTheme, type ThemePreference } from "@/components/ThemeProvider";
 
 // ─── Toggle ───────────────────────────────────────────────────────────────────
 
@@ -91,7 +92,12 @@ const THEME_PREVIEW: Record<Theme, React.ReactNode> = {
   ),
 };
 
+const PREF_TO_THEME: Record<ThemePreference, Theme> = { light: "Light", dark: "Dark", system: "System" };
+const THEME_TO_PREF: Record<Theme, ThemePreference> = { Light: "light", Dark: "dark", System: "system" };
+
 export default function SettingsPage() {
+  const { preference, applyPreference, savePreference, revertPreference } = useTheme();
+
   const originalRef = useRef({
     confidence: 85, feedback: "Encouraging" as FeedbackStyle,
     autoRelease: false, plagiarism: true, lateSubmit: true,
@@ -114,6 +120,13 @@ export default function SettingsPage() {
   const [teamsConnected, setTeamsConnected] = useState(false);
   const [saved, setSaved] = useState(false);
 
+  // Sync local theme state with ThemeProvider after it initialises from localStorage
+  useEffect(() => {
+    const t = PREF_TO_THEME[preference];
+    setTheme(t);
+    originalRef.current.theme = t;
+  }, [preference]);
+
   const orig = originalRef.current;
   const isDirty =
     confidence !== orig.confidence || feedback !== orig.feedback ||
@@ -122,13 +135,20 @@ export default function SettingsPage() {
     strictness !== orig.strictness || theme !== orig.theme ||
     notifAI !== orig.notifAI || notifSystem !== orig.notifSystem;
 
+  function handleThemeChange(t: Theme) {
+    setTheme(t);
+    applyPreference(THEME_TO_PREF[t]); // live preview
+  }
+
   function handleSave() {
+    savePreference(THEME_TO_PREF[theme]); // persist selected theme
     originalRef.current = { confidence, feedback, autoRelease, plagiarism, lateSubmit, autoFeedback, strictness, theme, notifAI, notifSystem, googleConnected, teamsConnected };
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   }
 
   function handleDiscard() {
+    revertPreference(); // revert theme to last saved
     const o = originalRef.current;
     setConfidence(o.confidence); setFeedback(o.feedback);
     setAutoRelease(o.autoRelease); setPlagiarism(o.plagiarism); setLateSubmit(o.lateSubmit);
@@ -238,7 +258,7 @@ export default function SettingsPage() {
                 {(["Light", "Dark", "System"] as Theme[]).map((t) => (
                   <button
                     key={t}
-                    onClick={() => setTheme(t)}
+                    onClick={() => handleThemeChange(t)}
                     className={[
                       "rounded-xl border-2 p-2 transition-colors",
                       theme === t ? "border-[var(--accent)]" : "border-gray-200 hover:border-gray-300",

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useTheme } from "./ThemeProvider";
 
 export default function Navbar() {
-  const { theme, toggleTheme } = useTheme();
+  const { effectiveTheme, toggleTheme } = useTheme();
 
   return (
     <nav className="sticky top-0 z-50 bg-[var(--bg-nav)] text-white h-14 flex items-center px-6 shrink-0">
@@ -29,10 +29,10 @@ export default function Navbar() {
         <button
           type="button"
           onClick={toggleTheme}
-          aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+          aria-label={effectiveTheme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
           className="w-8 h-8 flex items-center justify-center rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors"
         >
-          {theme === "dark" ? (
+          {effectiveTheme === "dark" ? (
             /* Sun icon */
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="5"/>

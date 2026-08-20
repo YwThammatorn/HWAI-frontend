@@ -1,10 +1,24 @@
 "use client";
 import { createContext, useContext, useLayoutEffect, useState } from "react";
 
-type Theme = "light" | "dark";
+export type ThemePreference = "light" | "dark" | "system";
+type EffectiveTheme = "light" | "dark";
 
-const ThemeContext = createContext<{ theme: Theme; toggleTheme: () => void }>({
-  theme: "light",
+interface ThemeContextValue {
+  preference: ThemePreference;
+  effectiveTheme: EffectiveTheme;
+  applyPreference: (p: ThemePreference) => void;
+  savePreference: (p: ThemePreference) => void;
+  revertPreference: () => void;
+  toggleTheme: () => void;
+}
+
+const ThemeContext = createContext<ThemeContextValue>({
+  preference: "light",
+  effectiveTheme: "light",
+  applyPreference: () => {},
+  savePreference: () => {},
+  revertPreference: () => {},
   toggleTheme: () => {},
 });
 
@@ -12,30 +26,54 @@ export function useTheme() {
   return useContext(ThemeContext);
 }
 
-export default function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>("light");
+function resolveEffective(pref: ThemePreference): EffectiveTheme {
+  if (pref === "system") {
+    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  }
+  return pref;
+}
 
-  // useLayoutEffect fires synchronously before the browser paints —
-  // setting data-theme here avoids both a visible flash and a hydration mismatch.
+function applyToDom(effective: EffectiveTheme) {
+  document.documentElement.setAttribute("data-theme", effective);
+}
+
+export default function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const [preference, setPreference] = useState<ThemePreference>("light");
+  const [effectiveTheme, setEffectiveTheme] = useState<EffectiveTheme>("light");
+
   useLayoutEffect(() => {
-    const stored = localStorage.getItem("hwai-theme") as Theme | null;
-    const preferred = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-    const initial = stored ?? preferred;
-    setTheme(initial);
-    document.documentElement.setAttribute("data-theme", initial);
+    // Default = "light" (not OS) if nothing stored yet
+    const stored = (localStorage.getItem("hwai-theme") as ThemePreference | null) ?? "light";
+    const effective = resolveEffective(stored);
+    setPreference(stored);
+    setEffectiveTheme(effective);
+    applyToDom(effective);
   }, []);
 
+  function applyPreference(p: ThemePreference) {
+    const effective = resolveEffective(p);
+    setPreference(p);
+    setEffectiveTheme(effective);
+    applyToDom(effective);
+  }
+
+  function savePreference(p: ThemePreference) {
+    applyPreference(p);
+    localStorage.setItem("hwai-theme", p);
+  }
+
+  function revertPreference() {
+    const stored = (localStorage.getItem("hwai-theme") as ThemePreference | null) ?? "light";
+    applyPreference(stored);
+  }
+
   function toggleTheme() {
-    setTheme((prev) => {
-      const next: Theme = prev === "light" ? "dark" : "light";
-      localStorage.setItem("hwai-theme", next);
-      document.documentElement.setAttribute("data-theme", next);
-      return next;
-    });
+    const next: EffectiveTheme = effectiveTheme === "light" ? "dark" : "light";
+    savePreference(next);
   }
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext.Provider value={{ preference, effectiveTheme, applyPreference, savePreference, revertPreference, toggleTheme }}>
       {children}
     </ThemeContext.Provider>
   );
