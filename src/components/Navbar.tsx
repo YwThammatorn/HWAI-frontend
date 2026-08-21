@@ -5,12 +5,15 @@ import { useRouter } from "next/navigation";
 import { useTheme } from "./ThemeProvider";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
+import { INITIAL_NOTIFS } from "@/lib/notifications";
 
 export default function Navbar() {
   const { effectiveTheme, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
   const { lang, toggleLang } = useLanguage();
   const router = useRouter();
+  const hasUnread = INITIAL_NOTIFS.some((n) => !n.read);
+  const initials = user?.name ? user.name.charAt(0).toUpperCase() : "?";
 
   function handleLogout() {
     logout();
@@ -74,19 +77,19 @@ export default function Navbar() {
           )}
         </button>
 
-        <Link href="/notifications" aria-label="Notifications" className="text-white/60 hover:text-white transition-colors">
+        <Link href="/notifications" aria-label="Notifications" className="relative text-white/60 hover:text-white transition-colors">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
             <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
           </svg>
+          {hasUnread && (
+            <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-red-500" />
+          )}
         </Link>
 
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-gray-300 overflow-hidden flex items-center justify-center">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="1.5">
-              <circle cx="12" cy="8" r="4"/>
-              <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
-            </svg>
+          <div className="w-8 h-8 rounded-full bg-[#2DD4BF] flex items-center justify-center shrink-0">
+            <span className="text-[#1B2A4A] text-xs font-bold leading-none">{initials}</span>
           </div>
           <span className="text-sm font-medium text-white/90">{user?.name ?? "—"}</span>
           <button

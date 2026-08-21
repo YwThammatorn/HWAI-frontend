@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import AppShell from "@/components/AppShell";
 import { useCourses } from "@/lib/courses";
@@ -16,6 +16,8 @@ export default function CoursesPage() {
   const { getAssignmentsByCourse, getSubmissionsByAssignment } = useAssignments();
   const [tab, setTab] = useState<"active" | "archived">("active");
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 6;
 
   const active = courses.filter((c) => c.status !== "archived");
   const archived = courses.filter((c) => c.status === "archived");
@@ -26,10 +28,32 @@ export default function CoursesPage() {
     }
   }, [archived.length, tab]);
 
+  useEffect(() => { setPage(1); }, [search, tab]);
+
   const pool = tab === "active" ? active : archived;
   const visible = search
     ? pool.filter((c) => c.name.toLowerCase().includes(search.toLowerCase()))
     : pool;
+
+  const totalPages = Math.ceil(visible.length / PAGE_SIZE);
+  const paginated = visible.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  const courseStats = useMemo(() => {
+    return courses.reduce<Record<string, { studentCount: number; allGraded: boolean; activeAssignments: number }>>((acc, c) => {
+      const assignments = getAssignmentsByCourse(c.id);
+      acc[c.id] = {
+        studentCount: getStudentsByCourse(c.id).length,
+        allGraded: assignments.length > 0 && assignments.every((a) => {
+          const subs = getSubmissionsByAssignment(a.id);
+          return subs.length > 0 && subs.every((s) => s.status === "graded");
+        }),
+        activeAssignments: assignments.filter((a) =>
+          getSubmissionsByAssignment(a.id).some((s) => s.status !== "graded")
+        ).length,
+      };
+      return acc;
+    }, {});
+  }, [courses, getStudentsByCourse, getAssignmentsByCourse, getSubmissionsByAssignment]);
 
   return (
     <AppShell>
@@ -104,24 +128,15 @@ export default function CoursesPage() {
         ) : (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {visible.map((course) => {
-                const studentCount = getStudentsByCourse(course.id).length;
-                const assignments = getAssignmentsByCourse(course.id);
-                const allGraded = assignments.length > 0 && assignments.every((a) => {
-                  const subs = getSubmissionsByAssignment(a.id);
-                  return subs.length > 0 && subs.every((s) => s.status === "graded");
-                });
-                const activeAssignments = assignments.filter((a) => {
-                  const subs = getSubmissionsByAssignment(a.id);
-                  return subs.some((s) => s.status !== "graded");
-                }).length;
+              {paginated.map((course) => {
+                const stats = courseStats[course.id] ?? { studentCount: 0, allGraded: false, activeAssignments: 0 };
                 return (
                   <CourseCard
                     key={course.id}
                     course={course}
-                    studentCount={studentCount}
-                    allGraded={allGraded}
-                    activeAssignments={activeAssignments}
+                    studentCount={stats.studentCount}
+                    allGraded={stats.allGraded}
+                    activeAssignments={stats.activeAssignments}
                     isArchived={tab === "archived"}
                     onRestore={() => updateCourse(course.id, { status: "active" })}
                     onDelete={() => {
@@ -133,14 +148,31 @@ export default function CoursesPage() {
                 );
               })}
             </div>
-            {/* Pagination placeholder */}
-            {visible.length > 6 && (
-              <div className="flex justify-center gap-1 mt-8">
-                {[1, 2, 3].map((p) => (
-                  <button key={p} className={["w-8 h-8 rounded-full text-sm font-medium", p === 1 ? "bg-[#2DD4BF] text-[var(--text-primary)]" : "text-gray-500 hover:bg-gray-100"].join(" ")}>
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center gap-1 mt-8">
+                <button
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="w-8 h-8 rounded-full text-sm font-medium text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => setPage(p)}
+                    className={["w-8 h-8 rounded-full text-sm font-medium transition-colors", p === page ? "bg-[#2DD4BF] text-[var(--text-primary)]" : "text-gray-500 hover:bg-gray-100"].join(" ")}
+                  >
                     {p}
                   </button>
                 ))}
+                <button
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                  className="w-8 h-8 rounded-full text-sm font-medium text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
               </div>
             )}
           </>

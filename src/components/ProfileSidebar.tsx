@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
 
 function NavItem({ label, href, icon, active }: { label: string; href: string; icon: React.ReactNode; active: boolean }) {
@@ -56,16 +56,8 @@ const SETTINGS_ICON = (
   </svg>
 );
 
-const NOTIF_ICON = (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-  </svg>
-);
-
 export default function ProfileSidebar() {
   const pathname = usePathname();
-  const router = useRouter();
   const { t } = useLanguage();
 
   const MAIN_NAV = [
@@ -75,9 +67,8 @@ export default function ProfileSidebar() {
   ];
 
   const ACCOUNT_NAV = [
-    { label: t("ข้อมูลส่วนตัว", "Information"), href: "/profile",       match: (p: string) => p === "/profile", icon: PROFILE_ICON },
-    { label: t("ตั้งค่า", "Settings"),           href: "/settings",      match: (p: string) => p === "/settings", icon: SETTINGS_ICON },
-    { label: t("การแจ้งเตือน", "Notifications"), href: "/notifications", match: (p: string) => p === "/notifications", icon: NOTIF_ICON },
+    { label: t("ข้อมูลส่วนตัว", "Information"), href: "/profile",  match: (p: string) => p === "/profile",  icon: PROFILE_ICON },
+    { label: t("ตั้งค่า", "Settings"),           href: "/settings", match: (p: string) => p === "/settings", icon: SETTINGS_ICON },
   ];
 
   return (
@@ -102,17 +93,6 @@ export default function ProfileSidebar() {
         ))}
       </nav>
 
-      <button
-        onClick={() => router.push("/")}
-        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-400 hover:text-red-300 hover:bg-white/8 transition-colors"
-      >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-          <polyline points="16 17 21 12 16 7" />
-          <line x1="21" y1="12" x2="9" y2="12" />
-        </svg>
-        {t("ออกจากระบบ", "Logout")}
-      </button>
     </aside>
   );
 }

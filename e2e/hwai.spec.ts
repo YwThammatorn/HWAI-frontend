@@ -12,6 +12,13 @@ async function withAuth(page: Page) {
   }, MOCK_USER);
 }
 
+/** Force English lang (no auth) — for login/register page tests */
+async function withLang(page: Page) {
+  await page.addInitScript(() => {
+    localStorage.setItem("hwai_lang", "en");
+  });
+}
+
 async function waitReady(page: Page, path: string) {
   await page.goto(`${BASE}${path}`);
   await page.waitForLoadState("networkidle");
@@ -306,6 +313,8 @@ test.describe("Auth Guard", () => {
 // ── 11. Login ─────────────────────────────────────────────────────────────────
 
 test.describe("Login", () => {
+  test.beforeEach(async ({ page }) => { await withLang(page); });
+
   test("page renders sign-in form and OAuth buttons", async ({ page }) => {
     await waitReady(page, "/login");
     await expect(page.getByRole("heading", { name: /welcome back/i })).toBeVisible();
@@ -324,12 +333,12 @@ test.describe("Login", () => {
     await expect(page).toHaveURL(/\/dashboard/);
   });
 
-  test("short password (< 4 chars) shows error", async ({ page }) => {
+  test("short password (< 8 chars) shows error", async ({ page }) => {
     await waitReady(page, "/login");
     await page.fill('input[type="email"]', "teacher@school.edu");
     await page.fill('input[type="password"]', "abc");
     await page.getByRole("button", { name: /sign in/i }).click();
-    await expect(page.locator("text=/at least 4/i")).toBeVisible();
+    await expect(page.locator("text=/at least 8/i")).toBeVisible();
   });
 
   test("register link navigates to /register", async ({ page }) => {
@@ -343,6 +352,8 @@ test.describe("Login", () => {
 // ── 12. Register ──────────────────────────────────────────────────────────────
 
 test.describe("Register", () => {
+  test.beforeEach(async ({ page }) => { await withLang(page); });
+
   test("page renders with role toggle and Create Account button", async ({ page }) => {
     await waitReady(page, "/register");
     await expect(page.getByRole("heading", { name: /get started with hwai/i })).toBeVisible();

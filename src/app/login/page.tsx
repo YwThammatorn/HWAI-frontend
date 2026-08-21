@@ -4,39 +4,8 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { useLanguage } from "@/context/LanguageContext";
 
-// ─── Left panel feature list (DEEP-style structured info) ─────────────────────
-const FEATURES = [
-  {
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-      </svg>
-    ),
-    label: "AI-powered rubric grading",
-  },
-  {
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-      </svg>
-    ),
-    label: "CLO / TABEE progress tracking",
-  },
-  {
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-        <circle cx="9" cy="7" r="4"/>
-        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-      </svg>
-    ),
-    label: "Collaborative course management",
-  },
-];
-
-// ─── HWAI logo ────────────────────────────────────────────────────────────────
 function HwaiLogo() {
   return (
     <div className="flex items-center gap-2.5">
@@ -56,6 +25,37 @@ function HwaiLogo() {
 export default function LoginPage() {
   const router = useRouter();
   const { user, login } = useAuth();
+  const { t } = useLanguage();
+
+  const FEATURES = [
+    {
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+        </svg>
+      ),
+      label: t("ตรวจงานด้วย AI ตาม Rubric", "AI-powered rubric grading"),
+    },
+    {
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+        </svg>
+      ),
+      label: t("ติดตาม CLO / TABEE", "CLO / TABEE progress tracking"),
+    },
+    {
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+      ),
+      label: t("จัดการรายวิชาร่วมกัน", "Collaborative course management"),
+    },
+  ];
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -72,16 +72,15 @@ export default function LoginPage() {
     setError("");
 
     if (!email.includes("@")) {
-      setError("Please enter a valid email address.");
+      setError(t("กรุณากรอกอีเมลที่ถูกต้อง", "Please enter a valid email address."));
       return;
     }
-    if (password.length < 4) {
-      setError("Password must be at least 4 characters.");
+    if (password.length < 8) {
+      setError(t("รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร", "Password must be at least 8 characters."));
       return;
     }
 
     setLoading(true);
-    // Mock: 400ms delay to simulate network
     await new Promise((r) => setTimeout(r, 400));
     const name = email.split("@")[0].replace(/[._]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
     login({ name, email, role: "teacher" });
@@ -90,23 +89,22 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex">
-      {/* ── Left panel — branding (DEEP-style structured layout) ── */}
+      {/* ── Left panel — branding ── */}
       <div className="hidden lg:flex lg:w-[42%] flex-col bg-[#1B2A4A] px-12 py-10">
-        {/* Logo */}
         <HwaiLogo />
 
-        {/* Tagline block */}
         <div className="mt-auto mb-auto">
           <h2 className="text-4xl font-extrabold text-white leading-tight mt-16">
-            Grading at the<br />
-            <span className="text-[#2DD4BF]">speed of thought.</span>
+            {t("ตรวจงานด้วย", "Grading at the")}<br />
+            <span className="text-[#2DD4BF]">{t("ความเร็วแห่งความคิด", "speed of thought.")}</span>
           </h2>
           <p className="mt-4 text-white/60 text-sm leading-relaxed max-w-xs">
-            Empower your classroom with AI-driven insights. Spend less time grading
-            and more time teaching.
+            {t(
+              "เสริมพลังห้องเรียนด้วย AI ตรวจงานอัตโนมัติ ใช้เวลาตรวจน้อยลง สอนมากขึ้น",
+              "Empower your classroom with AI-driven insights. Spend less time grading and more time teaching."
+            )}
           </p>
 
-          {/* Feature list — DEEP pattern: structured icon + label rows */}
           <div className="mt-8 flex flex-col gap-3">
             {FEATURES.map((f) => (
               <div key={f.label} className="flex items-center gap-3">
@@ -119,8 +117,9 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Copyright */}
-        <p className="text-white/30 text-xs">© 2026 HWAI Agent Project Group. All rights reserved.</p>
+        <p className="text-white/30 text-xs">
+          {t("© 2569 กลุ่มโครงการ HWAI Agent สงวนลิขสิทธิ์", "© 2026 HWAI Agent Project Group. All rights reserved.")}
+        </p>
       </div>
 
       {/* ── Right panel — form ── */}
@@ -141,14 +140,18 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <h1 className="text-3xl font-extrabold text-[var(--text-primary)]">Welcome back</h1>
-          <p className="mt-1.5 text-sm text-gray-500">Please enter your details to sign in.</p>
+          <h1 className="text-3xl font-extrabold text-[var(--text-primary)]">
+            {t("ยินดีต้อนรับกลับ", "Welcome back")}
+          </h1>
+          <p className="mt-1.5 text-sm text-gray-500">
+            {t("กรุณากรอกข้อมูลเพื่อเข้าสู่ระบบ", "Please enter your details to sign in.")}
+          </p>
 
           <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-5">
             {/* Email */}
             <div>
               <label className="block text-sm font-semibold text-[var(--text-primary)] mb-1.5">
-                Email Address
+                {t("อีเมลแอดเดรส", "Email Address")}
               </label>
               <div className="relative">
                 <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
@@ -171,15 +174,9 @@ export default function LoginPage() {
 
             {/* Password */}
             <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="text-sm font-semibold text-[var(--text-primary)]">Password</label>
-                <button
-                  type="button"
-                  className="text-xs text-[#0F766E] hover:underline font-medium"
-                >
-                  Forgot password?
-                </button>
-              </div>
+              <label className="block text-sm font-semibold text-[var(--text-primary)] mb-1.5">
+                {t("รหัสผ่าน", "Password")}
+              </label>
               <div className="relative">
                 <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -228,22 +225,24 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full py-3 rounded-xl bg-[#2DD4BF] text-[#1B2A4A] font-bold text-sm hover:bg-[#26bfac] transition-colors disabled:opacity-60"
             >
-              {loading ? "Signing in…" : "Sign in"}
+              {loading ? t("กำลังเข้าสู่ระบบ…", "Signing in…") : t("เข้าสู่ระบบ", "Sign in")}
             </button>
           </form>
 
           {/* OAuth divider */}
           <div className="my-6 flex items-center gap-3">
             <div className="flex-1 h-px bg-gray-200" />
-            <span className="text-xs text-gray-400 font-medium">Or continue with</span>
+            <span className="text-xs text-gray-400 font-medium">{t("หรือเข้าสู่ระบบด้วย", "Or continue with")}</span>
             <div className="flex-1 h-px bg-gray-200" />
           </div>
 
-          {/* OAuth buttons */}
+          {/* OAuth buttons — disabled until backend OAuth is ready */}
           <div className="grid grid-cols-2 gap-3">
             <button
               type="button"
-              className="flex items-center justify-center gap-2.5 py-2.5 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors text-sm font-medium text-[var(--text-primary)]"
+              disabled
+              title={t("เร็วๆ นี้", "Coming soon")}
+              className="flex items-center justify-center gap-2.5 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-[var(--text-primary)] opacity-50 cursor-not-allowed"
             >
               <svg width="18" height="18" viewBox="0 0 24 24">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -255,7 +254,9 @@ export default function LoginPage() {
             </button>
             <button
               type="button"
-              className="flex items-center justify-center gap-2.5 py-2.5 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors text-sm font-medium text-[var(--text-primary)]"
+              disabled
+              title={t("เร็วๆ นี้", "Coming soon")}
+              className="flex items-center justify-center gap-2.5 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-[var(--text-primary)] opacity-50 cursor-not-allowed"
             >
               <svg width="18" height="18" viewBox="0 0 23 23">
                 <rect x="1" y="1" width="10" height="10" fill="#F25022"/>
@@ -268,9 +269,9 @@ export default function LoginPage() {
           </div>
 
           <p className="mt-6 text-center text-sm text-gray-500">
-            Don&apos;t have an account?{" "}
+            {t("ยังไม่มีบัญชี?", "Don't have an account?")}{" "}
             <Link href="/register" className="text-[#0F766E] font-semibold hover:underline">
-              Sign Up
+              {t("สมัครสมาชิก", "Sign Up")}
             </Link>
           </p>
         </div>
