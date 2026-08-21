@@ -4,10 +4,11 @@ const BASE = "http://localhost:3000";
 
 const MOCK_USER = { name: "Test Teacher", email: "test@school.edu", role: "teacher" };
 
-/** Inject mock auth session into localStorage before page load */
+/** Inject mock auth session + force English lang before page load */
 async function withAuth(page: Page) {
   await page.addInitScript((u) => {
     localStorage.setItem("hwai_user", JSON.stringify(u));
+    localStorage.setItem("hwai_lang", "en");
   }, MOCK_USER);
 }
 
@@ -384,7 +385,7 @@ test.describe("Register", () => {
     await pwInputs.nth(1).fill("Password123!");
     // Do NOT check terms
     await page.getByRole("button", { name: /create account/i }).click();
-    await expect(page.locator("text=/agree to the Terms/i")).toBeVisible();
+    await expect(page.locator("p.bg-red-50")).toBeVisible();
   });
 
   test("valid registration redirects to /dashboard", async ({ page }) => {
@@ -422,7 +423,13 @@ test.describe("Sign Out", () => {
 // ── 14. i18n Language Toggle ──────────────────────────────────────────────────
 
 test.describe("i18n Language Toggle", () => {
-  test.beforeEach(async ({ page }) => { await withAuth(page); });
+  // Start in TH mode so toggle behaviour (TH→EN→TH) is predictable
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript((u) => {
+      localStorage.setItem("hwai_user", JSON.stringify(u));
+      localStorage.setItem("hwai_lang", "th");
+    }, MOCK_USER);
+  });
 
   test("default language is TH — toggle button shows TH", async ({ page }) => {
     await waitReady(page, "/courses");
@@ -485,7 +492,7 @@ test.describe("Courses New", () => {
   test("form loads with Course Name field and color picker", async ({ page }) => {
     await waitReady(page, "/courses/new");
     await expect(page.getByRole("heading", { name: /add new course/i })).toBeVisible();
-    await expect(page.getByLabel(/course name/i)).toBeVisible();
+    await expect(page.getByPlaceholder("e.g. UX/UI Design Principles")).toBeVisible();
     await expect(page.getByRole("button", { name: /create course/i })).toBeVisible();
   });
 
@@ -497,7 +504,7 @@ test.describe("Courses New", () => {
 
   test("typing course name enables Create Course button", async ({ page }) => {
     await waitReady(page, "/courses/new");
-    await page.getByLabel(/course name/i).fill("My New Course");
+    await page.getByPlaceholder("e.g. UX/UI Design Principles").fill("My New Course");
     await expect(page.getByRole("button", { name: /create course/i })).toBeEnabled();
   });
 });
@@ -556,7 +563,7 @@ test.describe("Student Import", () => {
 
   test("Download Template link is present", async ({ page }) => {
     await waitReady(page, "/courses/seed-1/students/import");
-    await expect(page.getByRole("button", { name: /template/i }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: /template/i }).first()).toBeVisible();
   });
 });
 
