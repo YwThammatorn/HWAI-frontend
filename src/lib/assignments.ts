@@ -41,9 +41,9 @@ export interface CriterionLevel {
 }
 
 export const DEFAULT_LEVELS: CriterionLevel[] = [
-  { label: "ดีเยี่ยม", description: "" },
-  { label: "ดี", description: "" },
-  { label: "ต้องปรับปรุง", description: "" },
+  { label: "Excellent", description: "" },
+  { label: "Good", description: "" },
+  { label: "Needs Improvement", description: "" },
 ];
 
 export interface RubricCriterion {
