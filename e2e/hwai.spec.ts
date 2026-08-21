@@ -598,3 +598,108 @@ test.describe("App Settings", () => {
     expect(before).not.toBe(after);
   });
 });
+
+// ── New Feature Tests ─────────────────────────────────────────────────────────
+
+/** Inject auth + English + 7 courses so pagination kicks in (PAGE_SIZE = 6) */
+async function withManyCourses(page: Page) {
+  await page.addInitScript(() => {
+    const now = "2026-01-01T00:00:00.000Z";
+    const courses = Array.from({ length: 7 }, (_, i) => ({
+      id: `pag-${i}`,
+      name: `Pagination Course ${i + 1}`,
+      description: "",
+      status: "active",
+      source: "manual",
+      coverColor: "#2DD4BF",
+      iconColor: "#2DD4BF",
+      createdAt: now,
+      updatedAt: now,
+    }));
+    localStorage.setItem("hwai_user", JSON.stringify({ name: "Test Teacher", email: "test@school.edu", role: "teacher" }));
+    localStorage.setItem("hwai_lang", "en");
+    localStorage.setItem("hwai_courses_v2", JSON.stringify(courses));
+  });
+}
+
+test.describe("Courses Pagination", () => {
+  test.beforeEach(async ({ page }) => { await withManyCourses(page); });
+
+  test("pagination controls appear when courses exceed page size", async ({ page }) => {
+    await waitReady(page, "/courses");
+    await expect(page.getByRole("button", { name: "2" })).toBeVisible();
+  });
+
+  test("page 1 shows exactly 6 course cards", async ({ page }) => {
+    await waitReady(page, "/courses");
+    await expect(page.locator(".grid h3")).toHaveCount(6);
+  });
+
+  test("clicking page 2 shows the remaining course", async ({ page }) => {
+    await waitReady(page, "/courses");
+    await page.getByRole("button", { name: "2" }).click();
+    await expect(page.getByText("Pagination Course 7")).toBeVisible();
+  });
+
+  test("prev button is disabled on page 1", async ({ page }) => {
+    await waitReady(page, "/courses");
+    const pagination = page.locator(".flex.justify-center.items-center.gap-1");
+    await expect(pagination.locator("button").first()).toBeDisabled();
+  });
+
+  test("next button is disabled on last page", async ({ page }) => {
+    await waitReady(page, "/courses");
+    await page.getByRole("button", { name: "2" }).click();
+    const pagination = page.locator(".flex.justify-center.items-center.gap-1");
+    await expect(pagination.locator("button").last()).toBeDisabled();
+  });
+});
+
+test.describe("Navbar UI", () => {
+  test.beforeEach(async ({ page }) => { await withAuth(page); });
+
+  test("avatar shows user initials", async ({ page }) => {
+    await waitReady(page, "/dashboard");
+    // MOCK_USER.name = "Test Teacher" → initials "T"
+    const avatar = page.locator('[class*="2DD4BF"].rounded-full span');
+    await expect(avatar).toBeVisible();
+    await expect(avatar).toHaveText("T");
+  });
+
+  test("unread notification badge is visible", async ({ page }) => {
+    await waitReady(page, "/dashboard");
+    // 3 notifications are unread in INITIAL_NOTIFS — badge should render
+    const badge = page.locator('a[aria-label="Notifications"] .bg-red-500');
+    await expect(badge).toBeVisible();
+  });
+});
+
+test.describe("Auth Pages Layout", () => {
+  test.beforeEach(async ({ page }) => { await withLang(page); });
+
+  test("login page fits in viewport without scrolling", async ({ page }) => {
+    await waitReady(page, "/login");
+    const scrollable = await page.evaluate(
+      () => document.documentElement.scrollHeight > window.innerHeight
+    );
+    expect(scrollable).toBe(false);
+  });
+
+  test("register page fits in viewport without scrolling", async ({ page }) => {
+    await waitReady(page, "/register");
+    const scrollable = await page.evaluate(
+      () => document.documentElement.scrollHeight > window.innerHeight
+    );
+    expect(scrollable).toBe(false);
+  });
+
+  test("login left panel shows branding tagline", async ({ page }) => {
+    await waitReady(page, "/login");
+    await expect(page.getByText(/grading at the/i)).toBeVisible();
+  });
+
+  test("register left panel shows branding tagline", async ({ page }) => {
+    await waitReady(page, "/register");
+    await expect(page.getByText(/grade smarter/i)).toBeVisible();
+  });
+});
