@@ -88,13 +88,13 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex">
+    <div className="h-screen flex overflow-hidden">
       {/* ── Left panel — branding ── */}
       <div className="hidden lg:flex lg:w-[42%] flex-col bg-[#1B2A4A] px-12 py-10">
         <HwaiLogo />
 
         <div className="mt-auto mb-auto">
-          <h2 className="text-4xl font-extrabold text-white leading-tight mt-16">
+          <h2 className="text-4xl font-extrabold text-white leading-tight">
             {t("ตรวจงานด้วย", "Grading at the")}<br />
             <span className="text-[#2DD4BF]">{t("ความเร็วแห่งความคิด", "speed of thought.")}</span>
           </h2>
@@ -123,7 +123,8 @@ export default function LoginPage() {
       </div>
 
       {/* ── Right panel — form ── */}
-      <div className="flex-1 flex items-center justify-center bg-white px-6 py-12">
+      <div className="flex-1 overflow-y-auto bg-white">
+        <div className="min-h-full flex items-center justify-center px-6 py-8">
         <div className="w-full max-w-[420px]">
           {/* Mobile logo */}
           <div className="lg:hidden mb-8 flex justify-center">
@@ -274,6 +275,7 @@ export default function LoginPage() {
               {t("สมัครสมาชิก", "Sign Up")}
             </Link>
           </p>
+        </div>
         </div>
       </div>
     </div>
