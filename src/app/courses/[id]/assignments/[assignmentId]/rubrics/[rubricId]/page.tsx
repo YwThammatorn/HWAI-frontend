@@ -1,19 +1,29 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import AppShell from "@/components/AppShell";
 import { useCourses } from "@/lib/courses";
-import { useAssignments, RubricCriterion, CriterionLevel, DEFAULT_LEVELS } from "@/lib/assignments";
+import { useAssignments, RubricCriterion, CriterionLevel } from "@/lib/assignments";
+import { useLanguage } from "@/context/LanguageContext";
 
-const CONFIRM_MSG = "การเปลี่ยนแปลงจะไม่ถูกบันทึก\nต้องการออกจากหน้านี้หรือไม่?";
+const LEVEL_LABEL_MAP: Record<string, string> = {
+  ดีเยี่ยม: "Excellent",
+  ดี: "Good",
+  ต้องปรับปรุง: "Needs Improvement",
+};
+
+function getDisplayLabel(label: string, lang: string): string {
+  if (lang === "en") return LEVEL_LABEL_MAP[label] ?? label;
+  return label;
+}
 
 interface CriterionDraft {
   id: string;
   name: string;
   description: string;
-  weight: string; // string for easy input editing
+  weight: string;
   levels: CriterionLevel[];
 }
 
@@ -23,7 +33,13 @@ function toDraft(c: RubricCriterion): CriterionDraft {
     name: c.name,
     description: c.description,
     weight: String(c.weight),
-    levels: c.levels?.length ? c.levels : [...DEFAULT_LEVELS],
+    levels: c.levels?.length
+      ? c.levels
+      : [
+          { label: "ดีเยี่ยม", description: "" },
+          { label: "ดี", description: "" },
+          { label: "ต้องปรับปรุง", description: "" },
+        ],
   };
 }
 
@@ -36,6 +52,7 @@ const LEVEL_COLORS = [
 export default function RubricEditorPage() {
   const { id, assignmentId, rubricId } = useParams<{ id: string; assignmentId: string; rubricId: string }>();
   const router = useRouter();
+  const { lang, t } = useLanguage();
   const { getCourse } = useCourses();
   const { getAssignment, getRubric, updateRubric } = useAssignments();
 
@@ -77,7 +94,11 @@ export default function RubricEditorPage() {
   }, [isDirty]);
 
   function navAway(to: string) {
-    if (isDirty && !window.confirm(CONFIRM_MSG)) return;
+    const msg = t(
+      "การเปลี่ยนแปลงจะไม่ถูกบันทึก\nต้องการออกจากหน้านี้หรือไม่?",
+      "Changes will not be saved.\nDo you want to leave this page?"
+    );
+    if (isDirty && !window.confirm(msg)) return;
     router.push(to);
   }
 
@@ -101,16 +122,22 @@ export default function RubricEditorPage() {
     if (!c) return;
     setGenerating((prev) => ({ ...prev, [cid]: true }));
     setTimeout(() => {
-      const n = c.name || "เกณฑ์นี้";
+      const n = c.name || t("เกณฑ์นี้", "this criterion");
       setCriteria((prev) =>
         prev.map((x) =>
           x.id !== cid ? x : {
             ...x,
-            levels: [
-              { label: x.levels[0]?.label ?? "ดีเยี่ยม", description: `แสดงความเข้าใจ ${n} ได้อย่างชัดเจนและครบถ้วน มีหลักฐานประกอบที่น่าเชื่อถือ` },
-              { label: x.levels[1]?.label ?? "ดี", description: `แสดง ${n} ได้ในระดับที่ยอมรับได้ แต่ยังมีบางส่วนที่ต้องปรับปรุง` },
-              { label: x.levels[2]?.label ?? "ต้องปรับปรุง", description: `${n} ยังไม่เพียงพอ จำเป็นต้องแก้ไขและพัฒนาเพิ่มเติมอย่างมีนัยสำคัญ` },
-            ],
+            levels: lang === "en"
+              ? [
+                  { label: x.levels[0]?.label ?? "ดีเยี่ยม", description: `Clearly demonstrates ${n.toLowerCase()} with strong evidence and meets all expectations.` },
+                  { label: x.levels[1]?.label ?? "ดี", description: `Demonstrates ${n.toLowerCase()} at an acceptable level but with some areas for improvement.` },
+                  { label: x.levels[2]?.label ?? "ต้องปรับปรุง", description: `${n} is insufficient and requires significant revision and development.` },
+                ]
+              : [
+                  { label: x.levels[0]?.label ?? "ดีเยี่ยม", description: `แสดงความเข้าใจ ${n} ได้อย่างชัดเจนและครบถ้วน มีหลักฐานประกอบที่น่าเชื่อถือ` },
+                  { label: x.levels[1]?.label ?? "ดี", description: `แสดง ${n} ได้ในระดับที่ยอมรับได้ แต่ยังมีบางส่วนที่ต้องปรับปรุง` },
+                  { label: x.levels[2]?.label ?? "ต้องปรับปรุง", description: `${n} ยังไม่เพียงพอ จำเป็นต้องแก้ไขและพัฒนาเพิ่มเติมอย่างมีนัยสำคัญ` },
+                ],
           }
         )
       );
@@ -124,12 +151,21 @@ export default function RubricEditorPage() {
     setAiSuggestions([]);
     setAiLoading(true);
     setTimeout(() => {
-      setAiSuggestions([
-        { name: "ความครบถ้วนของเนื้อหา", description: "ครอบคลุมประเด็นสำคัญทั้งหมดตามที่กำหนด", weight: 40 },
-        { name: "ความถูกต้องและแม่นยำ", description: "ข้อมูลและการวิเคราะห์มีความถูกต้องตามหลักวิชา", weight: 30 },
-        { name: "การนำเสนอและโครงสร้าง", description: "จัดเรียงเนื้อหาได้อย่างเป็นระบบและชัดเจน", weight: 20 },
-        { name: "ความคิดสร้างสรรค์", description: "แสดงความคิดริเริ่มและมุมมองเชิงวิเคราะห์", weight: 10 },
-      ]);
+      setAiSuggestions(
+        lang === "en"
+          ? [
+              { name: "Content Completeness", description: "Covers all key points as required", weight: 40 },
+              { name: "Accuracy", description: "Information and analysis are academically correct", weight: 30 },
+              { name: "Presentation & Structure", description: "Content organized systematically and clearly", weight: 20 },
+              { name: "Creativity", description: "Shows initiative and analytical perspective", weight: 10 },
+            ]
+          : [
+              { name: "ความครบถ้วนของเนื้อหา", description: "ครอบคลุมประเด็นสำคัญทั้งหมดตามที่กำหนด", weight: 40 },
+              { name: "ความถูกต้องและแม่นยำ", description: "ข้อมูลและการวิเคราะห์มีความถูกต้องตามหลักวิชา", weight: 30 },
+              { name: "การนำเสนอและโครงสร้าง", description: "จัดเรียงเนื้อหาได้อย่างเป็นระบบและชัดเจน", weight: 20 },
+              { name: "ความคิดสร้างสรรค์", description: "แสดงความคิดริเริ่มและมุมมองเชิงวิเคราะห์", weight: 10 },
+            ]
+      );
       setAiLoading(false);
     }, 1500);
   }
@@ -140,11 +176,17 @@ export default function RubricEditorPage() {
       name: s.name,
       description: s.description,
       weight: String(s.weight),
-      levels: [
-        { label: "ดีเยี่ยม", description: `แสดง${s.name}ได้อย่างยอดเยี่ยม` },
-        { label: "ดี", description: `แสดง${s.name}ได้ในระดับที่ดี` },
-        { label: "ต้องปรับปรุง", description: `${s.name}ยังต้องพัฒนาเพิ่มเติม` },
-      ],
+      levels: lang === "en"
+        ? [
+            { label: "ดีเยี่ยม", description: `Excellent ${s.name.toLowerCase()}` },
+            { label: "ดี", description: `Good ${s.name.toLowerCase()}` },
+            { label: "ต้องปรับปรุง", description: `${s.name} needs improvement` },
+          ]
+        : [
+            { label: "ดีเยี่ยม", description: `แสดง${s.name}ได้อย่างยอดเยี่ยม` },
+            { label: "ดี", description: `แสดง${s.name}ได้ในระดับที่ดี` },
+            { label: "ต้องปรับปรุง", description: `${s.name}ยังต้องพัฒนาเพิ่มเติม` },
+          ],
     }));
     setCriteria(newCriteria);
     setSaved(false);
@@ -154,17 +196,22 @@ export default function RubricEditorPage() {
   function addCriterion() {
     const newC: CriterionDraft = {
       id: crypto.randomUUID(),
-      name: `เกณฑ์ที่ ${criteria.length + 1}`,
+      name: t(`เกณฑ์ที่ ${criteria.length + 1}`, `Criterion ${criteria.length + 1}`),
       description: "",
       weight: "0",
-      levels: [...DEFAULT_LEVELS],
+      levels: [
+        { label: "ดีเยี่ยม", description: "" },
+        { label: "ดี", description: "" },
+        { label: "ต้องปรับปรุง", description: "" },
+      ],
     };
     setCriteria(prev => [...prev, newC]);
   }
 
   function removeCriterion(cid: string, name: string) {
     if (criteria.length <= 1) return;
-    if (!window.confirm(`ลบเกณฑ์ "${name}" ถาวร?`)) return;
+    const msg = t(`ลบเกณฑ์ "${name}" ถาวร?`, `Permanently remove criterion "${name}"?`);
+    if (!window.confirm(msg)) return;
     setCriteria(prev => prev.filter(c => c.id !== cid));
   }
 
@@ -172,7 +219,7 @@ export default function RubricEditorPage() {
     if (!weightOk) return;
     const finalized: RubricCriterion[] = criteria.map(c => ({
       id: c.id,
-      name: c.name.trim() || "ไม่มีชื่อ",
+      name: c.name.trim() || t("ไม่มีชื่อ", "Untitled"),
       description: c.description.trim(),
       weight: parseFloat(c.weight) || 0,
       maxPoints: Math.round((assignment?.maxPoints ?? 100) * ((parseFloat(c.weight) || 0) / 100)),
@@ -187,9 +234,9 @@ export default function RubricEditorPage() {
     return (
       <AppShell>
         <main className="flex-1 flex items-center justify-center text-gray-500 text-sm">
-          ไม่พบข้อมูล —{" "}
+          {t("ไม่พบข้อมูล", "Not found")} —{" "}
           <Link href={`/courses/${id}/assignments/${assignmentId}/edit`} className="text-[var(--accent)] ml-1 hover:underline">
-            กลับหน้าแก้ไขชิ้นงาน
+            {t("กลับหน้าแก้ไขชิ้นงาน", "Back to assignment")}
           </Link>
         </main>
       </AppShell>
@@ -202,7 +249,9 @@ export default function RubricEditorPage() {
 
         {/* Breadcrumb */}
         <div className="flex items-center gap-1.5 text-xs text-gray-500 mb-6 flex-wrap">
-          <Link href="/courses" className="hover:text-[var(--accent)] transition-colors">All Courses</Link>
+          <Link href="/courses" className="hover:text-[var(--accent)] transition-colors">
+            {t("วิชาทั้งหมด", "All Courses")}
+          </Link>
           <span>/</span>
           <Link href={`/courses/${id}/assignments`} className="hover:text-[var(--accent)] transition-colors">{course.name}</Link>
           <span>/</span>
@@ -216,8 +265,12 @@ export default function RubricEditorPage() {
         {/* Header */}
         <div className="flex items-start justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">กำหนดเกณฑ์การให้คะแนน</h1>
-            <p className="text-sm text-gray-500">ตั้งค่าเกณฑ์ที่ HWAI Agent จะใช้ในการตรวจงาน</p>
+            <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">
+              {t("กำหนดเกณฑ์การให้คะแนน", "Define Criteria")}
+            </h1>
+            <p className="text-sm text-gray-500">
+              {t("ตั้งค่าเกณฑ์ที่ HWAI Agent จะใช้ในการตรวจงาน", "Set up the grading rules for the HWAI Agent")}
+            </p>
           </div>
           <div className="flex items-center gap-3 shrink-0">
             <button
@@ -232,25 +285,27 @@ export default function RubricEditorPage() {
             <div className="w-px h-4 bg-gray-200" />
             <button
               disabled
-              title="ฟีเจอร์นี้จะพร้อมใช้งานเร็ว ๆ นี้"
+              title={t("ฟีเจอร์นี้จะพร้อมใช้งานเร็ว ๆ นี้", "This feature is coming soon")}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-300 cursor-not-allowed select-none"
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
               </svg>
-              Import Rubric
+              {t("นำเข้า Rubric", "Import Rubric")}
             </button>
           </div>
         </div>
 
         {/* Rubric name */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-5 py-4 mb-5">
-          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">ชื่อ Rubric</label>
+          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+            {t("ชื่อ Rubric", "Rubric Name")}
+          </label>
           <input
             value={rubricName}
             onChange={e => { setRubricName(e.target.value); setSaved(false); }}
             className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm font-medium text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
-            placeholder="ชื่อ Rubric"
+            placeholder={t("ชื่อ Rubric", "Rubric name")}
           />
         </div>
 
@@ -271,8 +326,11 @@ export default function RubricEditorPage() {
             )}
             <span>
               {weightOk
-                ? "น้ำหนักรวมครบ 100% พร้อมบันทึก"
-                : `น้ำหนักรวมปัจจุบัน ${totalWeight.toFixed(0)}% — ต้องรวมได้ 100% เพื่อบันทึก`}
+                ? t("น้ำหนักรวมครบ 100% พร้อมบันทึก", "Total weight is 100% — ready to save")
+                : t(
+                    `น้ำหนักรวมปัจจุบัน ${totalWeight.toFixed(0)}% — ต้องรวมได้ 100% เพื่อบันทึก`,
+                    `Current total weight is ${totalWeight.toFixed(0)}% — must equal 100% to save`
+                  )}
             </span>
           </div>
           <span className="font-mono text-base font-bold">{totalWeight.toFixed(0)} / 100%</span>
@@ -291,10 +349,12 @@ export default function RubricEditorPage() {
                     value={c.name}
                     onChange={e => updateCriterion(c.id, "name", e.target.value)}
                     className="flex-1 text-sm font-semibold text-[var(--text-primary)] bg-transparent border-0 outline-none focus:bg-gray-50 rounded-lg px-2 py-1 -ml-2 transition-colors placeholder:text-gray-300"
-                    placeholder="ชื่อเกณฑ์"
+                    placeholder={t("ชื่อเกณฑ์", "Criterion name")}
                   />
                   <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-xs text-gray-500 uppercase tracking-wider font-medium">น้ำหนัก</span>
+                    <span className="text-xs text-gray-500 uppercase tracking-wider font-medium">
+                      {t("น้ำหนัก", "Weight")}
+                    </span>
                     <div className="flex items-center gap-1">
                       <input
                         type="number"
@@ -323,13 +383,13 @@ export default function RubricEditorPage() {
                           <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
                         </svg>
                       )}
-                      Generate
+                      {t("สร้าง", "Generate")}
                     </button>
                   </div>
                   <button
                     onClick={() => removeCriterion(c.id, c.name)}
                     disabled={criteria.length <= 1}
-                    title="ลบเกณฑ์นี้"
+                    title={t("ลบเกณฑ์นี้", "Remove criterion")}
                     className="p-1.5 rounded-lg text-gray-300 hover:text-red-400 hover:bg-red-50 transition-colors disabled:opacity-20 disabled:cursor-not-allowed shrink-0"
                   >
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -341,12 +401,17 @@ export default function RubricEditorPage() {
 
                 {/* Description */}
                 <div className="px-5 py-4 border-b border-gray-50">
-                  <label className="block text-xs text-gray-500 mb-1.5">คำอธิบายสำหรับนักศึกษา</label>
+                  <label className="block text-xs text-gray-500 mb-1.5">
+                    {t("คำอธิบายสำหรับนักศึกษา", "Description for Student")}
+                  </label>
                   <textarea
                     value={c.description}
                     onChange={e => updateCriterion(c.id, "description", e.target.value)}
                     rows={2}
-                    placeholder="อธิบายสิ่งที่นักศึกษาต้องแสดงในเกณฑ์นี้..."
+                    placeholder={t(
+                      "อธิบายสิ่งที่นักศึกษาต้องแสดงในเกณฑ์นี้...",
+                      "Describe what students must demonstrate for this criterion..."
+                    )}
                     className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm text-[var(--text-primary)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors placeholder:text-gray-300"
                   />
                 </div>
@@ -359,13 +424,15 @@ export default function RubricEditorPage() {
                       <div key={li} className="px-5 py-4">
                         <div className="flex items-center gap-1.5 mb-2">
                           <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${col.dot}`} />
-                          <span className={`text-xs font-semibold ${col.label}`}>{lv.label}</span>
+                          <span className={`text-xs font-semibold ${col.label}`}>
+                            {getDisplayLabel(lv.label, lang)}
+                          </span>
                         </div>
                         <textarea
                           value={lv.description}
                           onChange={e => updateLevel(c.id, li, e.target.value)}
                           rows={2}
-                          placeholder="อธิบายลักษณะงาน..."
+                          placeholder={t("อธิบายลักษณะงาน...", "Describe work characteristics...")}
                           className="w-full text-xs text-gray-600 resize-none border-0 outline-none bg-transparent placeholder:text-gray-300 leading-relaxed"
                         />
                       </div>
@@ -385,7 +452,7 @@ export default function RubricEditorPage() {
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
             <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
           </svg>
-          เพิ่มเกณฑ์ย่อยใหม่
+          {t("เพิ่มเกณฑ์ย่อยใหม่", "Add New Criterion")}
         </button>
 
         {/* Footer actions */}
@@ -394,11 +461,13 @@ export default function RubricEditorPage() {
             onClick={() => navAway(`/courses/${id}/assignments/${assignmentId}/edit`)}
             className="px-5 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-500 hover:bg-gray-50 transition-colors"
           >
-            ยกเลิก
+            {t("ยกเลิก", "Discard")}
           </button>
           <div className="flex items-center gap-3">
             {!weightOk && (
-              <span className="text-xs text-amber-500">น้ำหนักรวมต้องเท่ากับ 100%</span>
+              <span className="text-xs text-amber-500">
+                {t("น้ำหนักรวมต้องเท่ากับ 100%", "Total weight must equal 100%")}
+              </span>
             )}
             <button
               onClick={handleSave}
@@ -416,9 +485,9 @@ export default function RubricEditorPage() {
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                     <polyline points="20 6 9 17 4 12"/>
                   </svg>
-                  บันทึกแล้ว
+                  {t("บันทึกแล้ว", "Saved!")}
                 </span>
-              ) : "บันทึก Rubric"}
+              ) : t("บันทึก Rubric", "Save Rubric")}
             </button>
           </div>
         </div>
@@ -452,14 +521,18 @@ export default function RubricEditorPage() {
                     </svg>
                   </div>
                   <div className="text-center">
-                    <p className="text-sm font-semibold text-[var(--text-primary)]">กำลังวิเคราะห์ชิ้นงาน...</p>
-                    <p className="text-xs text-gray-400 mt-1">AI กำลังสร้างเกณฑ์ที่เหมาะสม</p>
+                    <p className="text-sm font-semibold text-[var(--text-primary)]">
+                      {t("กำลังวิเคราะห์ชิ้นงาน...", "Analyzing assignment...")}
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      {t("AI กำลังสร้างเกณฑ์ที่เหมาะสม", "AI is generating suitable criteria")}
+                    </p>
                   </div>
                 </div>
               ) : (
                 <>
                   <p className="text-xs text-gray-400 mb-4">
-                    AI แนะนำเกณฑ์ต่อไปนี้สำหรับ{" "}
+                    {t("AI แนะนำเกณฑ์ต่อไปนี้สำหรับ", "AI suggests the following criteria for")}{" "}
                     <span className="font-medium text-[var(--text-primary)]">{assignment.name}</span>
                   </p>
                   <div className="space-y-2 mb-5">
@@ -481,13 +554,13 @@ export default function RubricEditorPage() {
                       onClick={() => setAiOpen(false)}
                       className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-500 hover:bg-gray-50 transition-colors"
                     >
-                      ยกเลิก
+                      {t("ยกเลิก", "Cancel")}
                     </button>
                     <button
                       onClick={applyAiSuggestions}
                       className="flex-1 py-2.5 rounded-xl bg-[#0F766E] hover:bg-[#0E7490] text-white text-sm font-semibold transition-colors"
                     >
-                      Apply Suggestions
+                      {t("ใช้คำแนะนำ", "Apply Suggestions")}
                     </button>
                   </div>
                 </>

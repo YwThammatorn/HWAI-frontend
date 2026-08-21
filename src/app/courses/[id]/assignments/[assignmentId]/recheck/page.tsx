@@ -6,6 +6,7 @@ import Link from "next/link";
 import AppShell from "@/components/AppShell";
 import { useCourses } from "@/lib/courses";
 import { useAssignments, RubricCriterion } from "@/lib/assignments";
+import { useLanguage } from "@/context/LanguageContext";
 
 function genFeedback(name: string, level: "high" | "low"): string {
   if (level === "high") {
@@ -26,6 +27,7 @@ export default function RecheckPage() {
   const { id, assignmentId } = useParams<{ id: string; assignmentId: string }>();
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { t, lang } = useLanguage();
   const subId = searchParams.get("sub") ?? "";
 
   const { getCourse } = useCourses();
@@ -63,12 +65,12 @@ export default function RecheckPage() {
     return (
       <AppShell>
         <main className="flex-1 flex items-center justify-center text-gray-500 text-sm">
-          ไม่พบข้อมูล —{" "}
+          {t("ไม่พบข้อมูล", "Not found")} —{" "}
           <Link
             href={`/courses/${id}/assignments/${assignmentId}/results`}
             className="text-[var(--accent)] ml-1 hover:underline"
           >
-            กลับหน้าผลลัพธ์
+            {t("กลับหน้าผลลัพธ์", "Back to results")}
           </Link>
         </main>
       </AppShell>
@@ -79,9 +81,11 @@ export default function RecheckPage() {
   const totalMax = scores.reduce((sum, s) => sum + s.maxPoints, 0) || assignment.maxPoints;
   const aiScore = submission.aiScore ?? 0;
   const aiPct = (aiScore / assignment.maxPoints) * 100;
-  const aiConfidence = aiPct >= 85 ? { label: "High", pct: 92, color: "#0F766E" }
-    : aiPct >= 65 ? { label: "Medium", pct: 74, color: "#B45309" }
-    : { label: "Low", pct: 48, color: "#DC2626" };
+  const aiConfidence = aiPct >= 85
+    ? { label: "High", labelTh: "สูง", pct: 92, color: "#0F766E" }
+    : aiPct >= 65
+    ? { label: "Medium", labelTh: "ปานกลาง", pct: 74, color: "#B45309" }
+    : { label: "Low", labelTh: "ต่ำ", pct: 48, color: "#DC2626" };
 
   function updateScore(cid: string, val: number) {
     setScores((prev) =>
@@ -125,7 +129,9 @@ export default function RecheckPage() {
         <div className="flex-1 min-w-0 flex flex-col bg-[var(--surface)] overflow-hidden">
           {/* Zoom toolbar */}
           <div className="flex items-center gap-3 px-5 py-2.5 bg-white border-b border-gray-100 shadow-sm">
-            <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">View:</span>
+            <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">
+              {t("มุมมอง", "View")}:
+            </span>
             <button
               onClick={() => setZoom((z) => Math.max(25, z - 25))}
               className="w-6 h-6 flex items-center justify-center rounded hover:bg-gray-100 text-gray-500 text-sm font-bold transition-colors"
@@ -143,7 +149,7 @@ export default function RecheckPage() {
             <button
               onClick={() => setZoom(100)}
               className="w-6 h-6 flex items-center justify-center rounded hover:bg-gray-100 text-gray-500 transition-colors"
-              title="Reset zoom"
+              title={t("รีเซ็ตการซูม", "Reset zoom")}
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/>
@@ -168,13 +174,13 @@ export default function RecheckPage() {
                 <div>
                   <p className="text-sm font-semibold text-[var(--text-primary)] mb-1">{submission.studentName}</p>
                   <p className="text-xs text-gray-400">
-                    Submitted{" "}
-                    {new Date(submission.submittedAt).toLocaleDateString("en-US", {
+                    {t("ส่งเมื่อ", "Submitted")}{" "}
+                    {new Date(submission.submittedAt).toLocaleDateString(lang === "th" ? "th-TH" : "en-US", {
                       month: "short", day: "numeric", hour: "2-digit", minute: "2-digit",
                     })}
                   </p>
                   <p className="text-xs text-gray-300 mt-3">
-                    File preview not available in sandbox mode
+                    {t("ไม่สามารถแสดงตัวอย่างไฟล์ในโหมดทดสอบ", "File preview not available in sandbox mode")}
                   </p>
                 </div>
               </div>
@@ -185,16 +191,18 @@ export default function RecheckPage() {
         {/* Right: grading panel */}
         <div className="w-80 shrink-0 flex flex-col border-l border-gray-100 bg-white overflow-y-auto">
           <div className="px-5 py-5 border-b border-gray-50">
-            <h2 className="text-base font-bold text-[var(--text-primary)] mb-3">Grading Review</h2>
+            <h2 className="text-base font-bold text-[var(--text-primary)] mb-3">
+              {t("ตรวจสอบการให้คะแนน", "Grading Review")}
+            </h2>
             {/* AI confidence */}
             <div className="flex items-center gap-2 mb-1">
               <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" className="text-[var(--accent)]">
                 <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
               </svg>
               <span className="text-xs font-medium text-[var(--text-primary)]">
-                AI Confidence:{" "}
+                {t("ความมั่นใจ AI", "AI Confidence")}:{" "}
                 <span style={{ color: aiConfidence.color }} className="font-semibold">
-                  {aiConfidence.label} ({aiConfidence.pct}%)
+                  {lang === "th" ? aiConfidence.labelTh : aiConfidence.label} ({aiConfidence.pct}%)
                 </span>
               </span>
             </div>
@@ -232,7 +240,9 @@ export default function RecheckPage() {
                       <span className="text-xs font-semibold text-[var(--text-primary)]">{c.name}</span>
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">
-                      <span className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">Score</span>
+                      <span className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">
+                        {t("คะแนน", "Score")}
+                      </span>
                       <input
                         type="number"
                         min={0}
@@ -247,13 +257,13 @@ export default function RecheckPage() {
 
                   {s.edited && (
                     <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded mb-2">
-                      Manually Edited
+                      {t("แก้ไขแล้ว", "Manually Edited")}
                     </span>
                   )}
 
                   <div className="mt-2">
                     <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">
-                      AI Feedback
+                      {t("ความคิดเห็น AI", "AI Feedback")}
                     </p>
                     <p className="text-xs text-gray-600 leading-relaxed">{s.aiFeedback}</p>
                   </div>
@@ -264,13 +274,13 @@ export default function RecheckPage() {
             {/* Comment */}
             <div className="rounded-xl border border-gray-100 p-4">
               <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">
-                Instructor Comment
+                {t("ความคิดเห็นอาจารย์", "Instructor Comment")}
               </p>
               <textarea
                 value={comment}
                 onChange={(e) => { setComment(e.target.value); setSaved(false); }}
                 rows={3}
-                placeholder="เพิ่มความคิดเห็นสำหรับนักศึกษา..."
+                placeholder={t("เพิ่มความคิดเห็นสำหรับนักศึกษา...", "Add a comment for the student...")}
                 className="w-full text-xs text-[var(--text-primary)] resize-none border-0 outline-none bg-transparent placeholder:text-gray-300 leading-relaxed"
               />
             </div>
@@ -278,7 +288,7 @@ export default function RecheckPage() {
             {/* Total */}
             <div className="rounded-xl bg-[var(--bg-nav)] p-4">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-white/60">Total Score</span>
+                <span className="text-xs font-semibold text-white/60">{t("คะแนนรวม", "Total Score")}</span>
                 <span className="text-xl font-bold text-white">
                   {totalScore}
                   <span className="text-sm font-normal text-white/50"> / {totalMax}</span>
@@ -297,13 +307,13 @@ export default function RecheckPage() {
                 <polyline points="1 4 1 10 7 10"/>
                 <path d="M3.51 15a9 9 0 1 0 .49-4.5"/>
               </svg>
-              Reset to Default
+              {t("คืนค่าเดิม", "Reset to Default")}
             </button>
             <button
               onClick={handleSave}
               className="flex-1 py-2.5 rounded-xl bg-[#0F766E] hover:bg-[#0E7490] text-white text-xs font-semibold transition-colors"
             >
-              {saved ? "✓ Saved!" : "Save Changes"}
+              {saved ? `✓ ${t("บันทึกแล้ว!", "Saved!")}` : t("บันทึกการเปลี่ยนแปลง", "Save Changes")}
             </button>
           </div>
         </div>

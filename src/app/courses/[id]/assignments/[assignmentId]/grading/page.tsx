@@ -1,10 +1,12 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import AppShell from "@/components/AppShell";
 import { useCourses } from "@/lib/courses";
 import { useAssignments } from "@/lib/assignments";
+import { useLanguage } from "@/context/LanguageContext";
 
 function StatCard({
   label, value, sub, icon, color,
@@ -27,9 +29,16 @@ function StatCard({
 }
 
 function CircleProgress({ pct }: { pct: number }) {
+  const [displayPct, setDisplayPct] = useState(0);
   const r = 80;
   const circ = 2 * Math.PI * r;
-  const dash = (pct / 100) * circ;
+  const dash = (displayPct / 100) * circ;
+
+  useEffect(() => {
+    const t = setTimeout(() => setDisplayPct(pct), 80);
+    return () => clearTimeout(t);
+  }, [pct]);
+
   return (
     <svg width="200" height="200" viewBox="0 0 200 200">
       <circle cx="100" cy="100" r={r} fill="none" stroke="#E5E7EB" strokeWidth="12" />
@@ -38,17 +47,17 @@ function CircleProgress({ pct }: { pct: number }) {
         fill="none" stroke="#0F766E" strokeWidth="12" strokeLinecap="round"
         strokeDasharray={`${dash.toFixed(2)} ${circ.toFixed(2)}`}
         transform="rotate(-90 100 100)"
-        style={{ transition: "stroke-dasharray 1s ease" }}
+        style={{ transition: "stroke-dasharray 1.2s cubic-bezier(0.23, 1, 0.32, 1)" }}
       />
       <text
         x="100" y="112"
         textAnchor="middle"
-        fill="#1B2A4A"
+        fill="var(--text-primary, #1B2A4A)"
         fontSize="38"
         fontWeight="700"
         fontFamily="ui-sans-serif, system-ui, sans-serif"
       >
-        {Math.round(pct)}%
+        {Math.round(displayPct)}%
       </text>
     </svg>
   );
@@ -56,6 +65,7 @@ function CircleProgress({ pct }: { pct: number }) {
 
 export default function GradingProgressPage() {
   const { id, assignmentId } = useParams<{ id: string; assignmentId: string }>();
+  const { t } = useLanguage();
   const { getCourse } = useCourses();
   const { getAssignment, getSubmissionsByAssignment } = useAssignments();
 
@@ -69,7 +79,7 @@ export default function GradingProgressPage() {
         <main className="flex-1 flex items-center justify-center text-gray-500 text-sm">
           ไม่พบข้อมูล —{" "}
           <Link href={`/courses/${id}/assignments`} className="text-[var(--accent)] ml-1 hover:underline">
-            กลับหน้างาน
+            {t("กลับหน้างาน", "Back to assignments")}
           </Link>
         </main>
       </AppShell>
@@ -92,7 +102,7 @@ export default function GradingProgressPage() {
       <main className="w-full max-w-[1100px] mx-auto px-8 py-8">
         {/* Breadcrumb */}
         <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-5 flex-wrap">
-          <Link href="/courses" className="hover:text-[var(--accent)] transition-colors">Courses</Link>
+          <Link href="/courses" className="hover:text-[var(--accent)] transition-colors">{t("รายวิชา", "Courses")}</Link>
           <span>/</span>
           <Link href={`/courses/${id}/assignments`} className="hover:text-[var(--accent)] transition-colors">
             {course.name}
@@ -105,7 +115,7 @@ export default function GradingProgressPage() {
             {assignment.name}
           </Link>
           <span>/</span>
-          <span className="text-[var(--text-primary)] font-medium">Grading</span>
+          <span className="text-[var(--text-primary)] font-medium">{t("ตรวจงาน", "Grading")}</span>
         </div>
 
         {/* Header */}
@@ -120,7 +130,7 @@ export default function GradingProgressPage() {
                 })}{" "}
                 at 11:59 PM
               </span>
-              <span className="font-medium text-[var(--accent)]">• Grading</span>
+              <span className="font-medium text-[var(--accent)]">• {t("ตรวจงาน", "Grading")}</span>
             </div>
           </div>
           <div className="flex items-center gap-3 shrink-0">
@@ -132,7 +142,7 @@ export default function GradingProgressPage() {
                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                 <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
               </svg>
-              Edit Assignment
+              {t("แก้ไขงาน", "Edit Assignment")}
             </Link>
             {isDone ? (
               <Link
@@ -143,14 +153,14 @@ export default function GradingProgressPage() {
                   <polyline points="9 11 12 14 22 4"/>
                   <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
                 </svg>
-                View Results
+                {t("ดูผลลัพธ์", "View Results")}
               </Link>
             ) : (
               <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#2DD4BF]/60 text-[var(--text-primary)] text-sm font-semibold select-none">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
                   <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
                 </svg>
-                Grading
+                {t("กำลังตรวจ", "Grading")}
               </span>
             )}
           </div>
@@ -159,9 +169,9 @@ export default function GradingProgressPage() {
         {/* Stats */}
         <div className="grid grid-cols-4 gap-4 mb-6">
           <StatCard
-            label="Processed"
+            label={t("ตรวจแล้ว", "Processed")}
             value={processed}
-            sub="completed"
+            sub={t("เสร็จสิ้น", "completed")}
             color="#059669"
             icon={
               <div className="w-7 h-7 rounded-full bg-emerald-100 flex items-center justify-center">
@@ -172,9 +182,9 @@ export default function GradingProgressPage() {
             }
           />
           <StatCard
-            label="Total Files"
+            label={t("ไฟล์ทั้งหมด", "Total Files")}
             value={total}
-            sub="submissions"
+            sub={t("ไฟล์ที่ส่ง", "submissions")}
             icon={
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="1.5">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -185,9 +195,9 @@ export default function GradingProgressPage() {
             }
           />
           <StatCard
-            label="Needs Review"
+            label={t("รอตรวจสอบ", "Needs Review")}
             value={needsReview}
-            sub="Pending"
+            sub={t("รอดำเนินการ", "Pending")}
             color="#D97706"
             icon={
               <div className="w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center">
@@ -200,9 +210,9 @@ export default function GradingProgressPage() {
             }
           />
           <StatCard
-            label="Avg. Score"
+            label={t("คะแนนเฉลี่ย", "Avg. Score")}
             value={avgScore !== null ? avgScore.toFixed(1) : "—"}
-            sub="so far"
+            sub={t("จนถึงขณะนี้", "so far")}
             icon={
               <svg width="20" height="20" viewBox="0 0 24 24" fill="#FCD34D" stroke="#F59E0B" strokeWidth="1.5">
                 <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
@@ -214,23 +224,23 @@ export default function GradingProgressPage() {
         {/* Progress card */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
           <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-2">
-            Overall Progress
+            {t("ความคืบหน้า", "Overall Progress")}
           </p>
           <div className="flex flex-col items-center justify-center py-8 gap-6">
             <CircleProgress pct={total > 0 ? pct : 0} />
             <div className="text-center">
               <p className="text-base font-semibold text-[var(--text-primary)]">
                 {total === 0
-                  ? "ยังไม่มีการส่งงาน"
+                  ? t("ยังไม่มีการส่งงาน", "No Submissions Yet")
                   : isDone
-                  ? "Grading Complete"
-                  : "Analyzing Submissions"}
+                  ? t("ตรวจเสร็จแล้ว", "Grading Complete")
+                  : t("กำลังวิเคราะห์งาน", "Analyzing Submissions")}
               </p>
               {!isDone && total > 0 && (
                 <p className="text-sm text-gray-400 mt-1">
-                  Estimated remaining time:{" "}
+                  {t("เวลาที่เหลือโดยประมาณ:", "Estimated remaining time:")}{" "}
                   <span className="text-[var(--accent)] font-medium">
-                    ~{Math.max(1, Math.round((total - processed) * 0.3))} mins
+                    ~{Math.max(1, Math.round((total - processed) * 0.3))} {t("นาที", "mins")}
                   </span>
                 </p>
               )}
@@ -239,7 +249,7 @@ export default function GradingProgressPage() {
                   href={`/courses/${id}/assignments/${assignmentId}/results`}
                   className="inline-flex items-center gap-2 mt-4 px-5 py-2.5 bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)] text-sm font-semibold rounded-xl transition-colors"
                 >
-                  View Results →
+                  {t("ดูผลลัพธ์", "View Results")} →
                 </Link>
               )}
             </div>

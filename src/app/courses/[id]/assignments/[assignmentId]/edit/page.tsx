@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -6,29 +6,33 @@ import Link from "next/link";
 import AppShell from "@/components/AppShell";
 import { useCourses } from "@/lib/courses";
 import { useAssignments, Assignment } from "@/lib/assignments";
-
-const CONFIRM_MSG = "การเปลี่ยนแปลงจะไม่ถูกบันทึก\nต้องการออกจากหน้านี้หรือไม่?";
-
-const FILE_TYPE_OPTIONS: { id: Assignment["fileTypes"][number]; label: string }[] = [
-  { id: "figma", label: "Figma" },
-  { id: "pdf", label: "PDF" },
-  { id: "image", label: "รูปภาพ" },
-];
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function EditAssignmentPage() {
   const { id, assignmentId } = useParams<{ id: string; assignmentId: string }>();
   const router = useRouter();
+  const { t } = useLanguage();
   const { getCourse } = useCourses();
   const {
     getAssignment, updateAssignment, removeAssignment,
     getRubricsByAssignment, addRubric, removeRubric,
   } = useAssignments();
 
+  const CONFIRM_MSG = t(
+    "การเปลี่ยนแปลงจะไม่ถูกบันทึก\nต้องการออกจากหน้านี้หรือไม่?",
+    "Unsaved changes will be lost.\nLeave this page?"
+  );
+
+  const FILE_TYPE_OPTIONS: { id: Assignment["fileTypes"][number]; label: string }[] = [
+    { id: "figma", label: "Figma" },
+    { id: "pdf", label: "PDF" },
+    { id: "image", label: t("รูปภาพ", "Image") },
+  ];
+
   const course = getCourse(id);
   const assignment = getAssignment(assignmentId);
   const linkedRubrics = getRubricsByAssignment(assignmentId);
 
-  // Main form state
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState("");
@@ -39,7 +43,6 @@ export default function EditAssignmentPage() {
   const [maxGroupSize, setMaxGroupSize] = useState("");
   const [saved, setSaved] = useState(false);
 
-  // Rubric creation state (live save — not part of form submit)
   const [showNewRubricForm, setShowNewRubricForm] = useState(false);
   const [newRubricName, setNewRubricName] = useState("");
 
@@ -107,8 +110,8 @@ export default function EditAssignmentPage() {
     router.push(to);
   }
 
-  function toggleFileType(t: Assignment["fileTypes"][number]) {
-    setFileTypes(prev => prev.includes(t) ? prev.filter(x => x !== t) : [...prev, t]);
+  function toggleFileType(ft: Assignment["fileTypes"][number]) {
+    setFileTypes(prev => prev.includes(ft) ? prev.filter(x => x !== ft) : [...prev, ft]);
   }
 
   function handleSubmissionTypeChange(type: "individual" | "group") {
@@ -133,7 +136,10 @@ export default function EditAssignmentPage() {
   }
 
   function handleDelete() {
-    if (!window.confirm(`ลบ "${assignment?.name}" ถาวร? ไม่สามารถกู้คืนได้`)) return;
+    if (!window.confirm(t(
+      `ลบ "${assignment?.name}" ถาวร? ไม่สามารถกู้คืนได้`,
+      `Permanently delete "${assignment?.name}"? Cannot be undone.`
+    ))) return;
     removeAssignment(assignmentId);
     router.push(`/courses/${id}/assignments`);
   }
@@ -149,7 +155,10 @@ export default function EditAssignmentPage() {
   }
 
   function handleDeleteRubric(rubricId: string, rubricName: string) {
-    if (!window.confirm(`ลบเกณฑ์ "${rubricName}" ถาวร? ไม่สามารถกู้คืนได้`)) return;
+    if (!window.confirm(t(
+      `ลบเกณฑ์ "${rubricName}" ถาวร? ไม่สามารถกู้คืนได้`,
+      `Delete rubric "${rubricName}" permanently? Cannot be undone.`
+    ))) return;
     removeRubric(rubricId);
     const current = getAssignment(assignmentId);
     if (current) updateAssignment(assignmentId, { rubricIds: current.rubricIds.filter(rid => rid !== rubricId) });
@@ -159,8 +168,10 @@ export default function EditAssignmentPage() {
     return (
       <AppShell>
         <main className="flex-1 flex items-center justify-center text-gray-500 text-sm">
-          ไม่พบข้อมูล —{" "}
-          <Link href={`/courses/${id}/assignments`} className="text-[var(--accent)] ml-1 hover:underline">กลับรายการชิ้นงาน</Link>
+          {t("ไม่พบข้อมูล", "Not found")} —{" "}
+          <Link href={`/courses/${id}/assignments`} className="text-[var(--accent)] ml-1 hover:underline">
+            {t("กลับรายการชิ้นงาน", "Back to assignments")}
+          </Link>
         </main>
       </AppShell>
     );
@@ -179,23 +190,23 @@ export default function EditAssignmentPage() {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
             <polyline points="15 18 9 12 15 6"/>
           </svg>
-          กลับหน้าชิ้นงาน
+          {t("กลับหน้าชิ้นงาน", "Back to assignment")}
         </button>
 
-        <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">แก้ไขชิ้นงาน</h1>
+        <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">{t("แก้ไขชิ้นงาน", "Edit Assignment")}</h1>
         <p className="text-sm text-gray-500 mb-8">
-          กำลังแก้ไข{" "}
+          {t("กำลังแก้ไข", "Editing")}{" "}
           <span className="font-semibold text-[var(--text-primary)]">{assignment.name}</span>{" "}
-          ในวิชา <span className="font-semibold text-[var(--text-primary)]">{course.name}</span>
+          {t("ในวิชา", "in")} <span className="font-semibold text-[var(--text-primary)]">{course.name}</span>
         </p>
 
         <form onSubmit={handleSave} className="space-y-5">
 
           {/* General Information */}
           <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-            <SectionHeader icon="info" label="ข้อมูลทั่วไป" />
+            <SectionHeader icon="info" label={t("ข้อมูลทั่วไป", "General Information")} />
             <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">
-              ชื่อชิ้นงาน <span className="text-red-400">*</span>
+              {t("ชื่อชิ้นงาน", "Assignment Name")} <span className="text-red-400">*</span>
             </label>
             <input
               value={name} onChange={(e) => setName(e.target.value)}
@@ -206,7 +217,7 @@ export default function EditAssignmentPage() {
 
           {/* Description */}
           <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-            <SectionHeader icon="doc" label="รายละเอียดชิ้นงาน" />
+            <SectionHeader icon="doc" label={t("รายละเอียดชิ้นงาน", "Description")} />
             <textarea
               value={description} onChange={(e) => setDescription(e.target.value)}
               rows={4}
@@ -216,11 +227,11 @@ export default function EditAssignmentPage() {
 
           {/* Details */}
           <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-            <SectionHeader icon="cal" label="กำหนดเวลาและคะแนน" />
+            <SectionHeader icon="cal" label={t("กำหนดเวลาและคะแนน", "Deadline & Score")} />
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">
-                  วันครบกำหนด <span className="text-red-400">*</span>
+                  {t("วันครบกำหนด", "Due Date")} <span className="text-red-400">*</span>
                 </label>
                 <div className="relative">
                   <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -235,7 +246,7 @@ export default function EditAssignmentPage() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">คะแนนเต็ม</label>
+                <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">{t("คะแนนเต็ม", "Max Score")}</label>
                 <div className="flex gap-1.5 mb-2 flex-wrap">
                   {[10, 15, 25, 100].map((p) => (
                     <button key={p} type="button" onClick={() => setMaxPoints(String(p))}
@@ -249,7 +260,7 @@ export default function EditAssignmentPage() {
                 <input
                   type="number" min="1" max="1000" value={maxPoints}
                   onChange={(e) => setMaxPoints(e.target.value)}
-                  placeholder="หรือพิมพ์เอง"
+                  placeholder={t("หรือพิมพ์เอง", "or type...")}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
                 />
               </div>
@@ -258,12 +269,12 @@ export default function EditAssignmentPage() {
 
           {/* Submission Settings */}
           <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-            <SectionHeader icon="upload" label="การรับและรูปแบบงาน" />
+            <SectionHeader icon="upload" label={t("การรับและรูปแบบงาน", "Submission Settings")} />
 
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-sm font-medium text-[var(--text-primary)]">รับไฟล์จากนักศึกษา</p>
-                <p className="text-xs text-gray-500 mt-0.5">ปิดถ้างานนี้ไม่ต้องอัปโหลดไฟล์</p>
+                <p className="text-sm font-medium text-[var(--text-primary)]">{t("รับไฟล์จากนักศึกษา", "Accept Files")}</p>
+                <p className="text-xs text-gray-500 mt-0.5">{t("ปิดถ้างานนี้ไม่ต้องอัปโหลดไฟล์", "Disable if no upload needed")}</p>
               </div>
               <button
                 type="button"
@@ -276,7 +287,7 @@ export default function EditAssignmentPage() {
 
             {acceptsFiles && (
               <div className="mb-5">
-                <label className="block text-xs font-medium text-gray-500 mb-2">ประเภทไฟล์ที่รับ</label>
+                <label className="block text-xs font-medium text-gray-500 mb-2">{t("ประเภทไฟล์ที่รับ", "Accepted File Types")}</label>
                 <div className="flex gap-2">
                   {FILE_TYPE_OPTIONS.map(({ id: fid, label }) => (
                     <button key={fid} type="button" onClick={() => toggleFileType(fid)}
@@ -289,46 +300,46 @@ export default function EditAssignmentPage() {
                   ))}
                 </div>
                 {fileTypes.length === 0 && (
-                  <p className="text-xs text-red-400 mt-1.5">เลือกประเภทไฟล์อย่างน้อย 1 ประเภท</p>
+                  <p className="text-xs text-red-400 mt-1.5">{t("เลือกประเภทไฟล์อย่างน้อย 1 ประเภท", "Select at least one file type")}</p>
                 )}
               </div>
             )}
 
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-2">รูปแบบการส่งงาน</label>
+              <label className="block text-xs font-medium text-gray-500 mb-2">{t("รูปแบบการส่งงาน", "Submission Type")}</label>
               <div className="inline-flex rounded-xl border border-gray-200 overflow-hidden">
-                {(["individual", "group"] as const).map((t) => (
-                  <button key={t} type="button" onClick={() => handleSubmissionTypeChange(t)}
+                {(["individual", "group"] as const).map((tp) => (
+                  <button key={tp} type="button" onClick={() => handleSubmissionTypeChange(tp)}
                     className={["px-4 py-2 text-sm font-medium transition-colors",
-                      submissionType === t ? "bg-[var(--bg-nav)] text-white" : "bg-white text-gray-500 hover:bg-gray-50"
+                      submissionType === tp ? "bg-[var(--bg-nav)] text-white" : "bg-white text-gray-500 hover:bg-gray-50"
                     ].join(" ")}>
-                    {t === "individual" ? "รายบุคคล" : "กลุ่ม"}
+                    {tp === "individual" ? t("รายบุคคล", "Individual") : t("กลุ่ม", "Group")}
                   </button>
                 ))}
               </div>
               {submissionType === "group" && (
                 <div className="mt-3 flex items-center gap-2">
-                  <label className="text-sm text-gray-500">สมาชิกต่อกลุ่มสูงสุด</label>
+                  <label className="text-sm text-gray-500">{t("สมาชิกต่อกลุ่มสูงสุด", "Max members per group")}</label>
                   <input
                     type="number" min="2" max="20"
                     value={maxGroupSize} onChange={e => setMaxGroupSize(e.target.value)}
-                    placeholder="เช่น 4"
+                    placeholder="4"
                     className="w-24 px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
                   />
-                  <span className="text-sm text-gray-500">คน</span>
+                  <span className="text-sm text-gray-500">{t("คน", "members")}</span>
                 </div>
               )}
             </div>
           </section>
 
-          {/* Rubric section — live save */}
+          {/* Rubric section */}
           <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2DD4BF" strokeWidth="2" strokeLinecap="round">
                   <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
                 </svg>
-                <h2 className="text-sm font-semibold text-[var(--text-primary)]">เกณฑ์การให้คะแนน (Rubric)</h2>
+                <h2 className="text-sm font-semibold text-[var(--text-primary)]">{t("เกณฑ์การให้คะแนน (Rubric)", "Grading Rubric")}</h2>
               </div>
               <button
                 type="button"
@@ -339,13 +350,13 @@ export default function EditAssignmentPage() {
                 <svg width="11" height="11" viewBox="0 0 16 16" fill="none">
                   <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
                 </svg>
-                สร้างเกณฑ์ใหม่
+                {t("สร้างเกณฑ์ใหม่", "New Rubric")}
               </button>
             </div>
 
             {linkedRubrics.length === 0 && !showNewRubricForm ? (
               <div className="text-center py-6 text-xs text-gray-500">
-                ยังไม่มีเกณฑ์การให้คะแนน — กด "สร้างเกณฑ์ใหม่" เพื่อเพิ่ม
+                {t('ยังไม่มีเกณฑ์การให้คะแนน — กด "สร้างเกณฑ์ใหม่" เพื่อเพิ่ม', 'No rubrics yet — click "New Rubric" to add one')}
               </div>
             ) : (
               <div className="space-y-2">
@@ -359,8 +370,8 @@ export default function EditAssignmentPage() {
                         <p className="text-sm font-medium text-[var(--text-primary)]">{rubric.name}</p>
                         <p className="text-xs text-gray-500 mt-0.5">
                           {rubric.criteria.length > 0
-                            ? `${rubric.criteria.length} เกณฑ์ย่อย · ${rubric.criteria.reduce((s, c) => s + c.maxPoints, 0)} คะแนนรวม`
-                            : "ยังไม่มีเกณฑ์ย่อย — เปิด Rubric Editor เพื่อเพิ่ม"}
+                            ? `${rubric.criteria.length} ${t("เกณฑ์ย่อย", "criteria")} · ${rubric.criteria.reduce((s, c) => s + c.maxPoints, 0)} ${t("คะแนนรวม", "total pts")}`
+                            : t("ยังไม่มีเกณฑ์ย่อย — เปิด Rubric Editor เพื่อเพิ่ม", "No criteria yet — open Rubric Editor to add")}
                         </p>
                       </div>
                     </div>
@@ -373,13 +384,13 @@ export default function EditAssignmentPage() {
                           <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                           <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                         </svg>
-                        แก้ไข Rubric
+                        {t("แก้ไข Rubric", "Edit Rubric")}
                       </Link>
                       <button
                         type="button"
                         onClick={() => handleDeleteRubric(rubric.id, rubric.name)}
                         className="p-1.5 rounded-lg hover:bg-red-50 text-gray-500 hover:text-red-500 transition-colors"
-                        title="ลบเกณฑ์"
+                        title={t("ลบเกณฑ์", "Delete rubric")}
                       >
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                           <polyline points="3 6 5 6 21 6"/>
@@ -394,7 +405,7 @@ export default function EditAssignmentPage() {
 
             {showNewRubricForm && (
               <div className="mt-3 p-4 rounded-xl bg-teal-50/50 border border-[var(--accent)]/20">
-                <label className="block text-xs font-medium text-gray-500 mb-2">ชื่อเกณฑ์</label>
+                <label className="block text-xs font-medium text-gray-500 mb-2">{t("ชื่อเกณฑ์", "Rubric Name")}</label>
                 <div className="flex gap-2">
                   <input
                     autoFocus
@@ -404,16 +415,16 @@ export default function EditAssignmentPage() {
                       if (e.key === "Enter") { e.preventDefault(); handleAddRubric(); }
                       if (e.key === "Escape") { setShowNewRubricForm(false); setNewRubricName(""); }
                     }}
-                    placeholder="เช่น User Research Rubric"
+                    placeholder="e.g. User Research Rubric"
                     className="flex-1 px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
                   />
                   <button type="button" onClick={handleAddRubric} disabled={!newRubricName.trim()}
                     className="px-3 py-2 rounded-xl bg-[#2DD4BF] text-[var(--text-primary)] text-sm font-medium hover:bg-[#14B8A6] disabled:opacity-40 transition-colors">
-                    บันทึก
+                    {t("บันทึก", "Save")}
                   </button>
                   <button type="button" onClick={() => { setShowNewRubricForm(false); setNewRubricName(""); }}
                     className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm text-gray-500 hover:bg-gray-50 transition-colors">
-                    ยกเลิก
+                    {t("ยกเลิก", "Cancel")}
                   </button>
                 </div>
               </div>
@@ -427,16 +438,18 @@ export default function EditAssignmentPage() {
               type="button" onClick={handleDelete}
               className="px-4 py-2 text-sm font-medium rounded-xl border border-red-200 text-red-500 hover:bg-red-50 transition-colors"
             >
-              ลบชิ้นงาน
+              {t("ลบชิ้นงาน", "Delete Assignment")}
             </button>
-            <p className="text-xs text-gray-500 mt-3">การลบชิ้นงานจะลบข้อมูลการส่งและผลการตรวจทั้งหมด ไม่สามารถกู้คืนได้</p>
+            <p className="text-xs text-gray-500 mt-3">
+              {t("การลบชิ้นงานจะลบข้อมูลการส่งและผลการตรวจทั้งหมด ไม่สามารถกู้คืนได้", "Deleting this assignment removes all submission and grading data permanently.")}
+            </p>
           </section>
 
           {/* Actions */}
           <div className="flex justify-end gap-3 pb-4">
             <button type="button" onClick={() => navAway(`/courses/${id}/assignments/${assignmentId}`)}
               className="px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
-              ยกเลิก
+              {t("ยกเลิก", "Cancel")}
             </button>
             <button
               type="submit" disabled={!isValid}
@@ -445,8 +458,8 @@ export default function EditAssignmentPage() {
               ].join(" ")}
             >
               {saved ? (
-                <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>บันทึกแล้ว</>
-              ) : "บันทึกการเปลี่ยนแปลง"}
+                <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>{t("บันทึกแล้ว", "Saved")}</>
+              ) : t("บันทึกการเปลี่ยนแปลง", "Save Changes")}
             </button>
           </div>
         </form>

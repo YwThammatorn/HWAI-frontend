@@ -5,6 +5,7 @@ import CLOProvider from "@/components/CLOProvider";
 import AssignmentProvider from "@/components/AssignmentProvider";
 import ThemeProvider from "@/components/ThemeProvider";
 import { AuthProvider } from "@/context/AuthContext";
+import { LanguageProvider } from "@/context/LanguageContext";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -17,6 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="th" className="h-full" suppressHydrationWarning>
       <body className="min-h-full flex flex-col">
         <ThemeProvider>
+          <LanguageProvider>
           <AuthProvider>
             <CourseProvider>
               <StudentProvider>
@@ -26,6 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </StudentProvider>
             </CourseProvider>
           </AuthProvider>
+          </LanguageProvider>
         </ThemeProvider>
       </body>
     </html>

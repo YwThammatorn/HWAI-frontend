@@ -5,13 +5,14 @@ import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import AppShell from "@/components/AppShell";
 import { useCourses, PRESET_COLORS } from "@/lib/courses";
-
-const CONFIRM_MSG = "การเปลี่ยนแปลงจะไม่ถูกบันทึก\nต้องการออกจากหน้านี้หรือไม่?";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function CourseSettingsPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const { t } = useLanguage();
   const { getCourse, updateCourse, removeCourse } = useCourses();
+  const CONFIRM_MSG = t("การเปลี่ยนแปลงจะไม่ถูกบันทึก\nต้องการออกจากหน้านี้หรือไม่?", "Unsaved changes.\nLeave this page?");
   const course = getCourse(id);
 
   const [name, setName] = useState("");
@@ -58,8 +59,8 @@ export default function CourseSettingsPage() {
     return (
       <AppShell>
         <main className="flex-1 flex items-center justify-center text-gray-500 text-sm">
-          ไม่พบรายวิชานี้ —{" "}
-          <Link href="/courses" className="text-[var(--accent)] ml-1 hover:underline">กลับไปหน้าหลัก</Link>
+          {t("ไม่พบรายวิชานี้", "Course not found")} —{" "}
+          <Link href="/courses" className="text-[var(--accent)] ml-1 hover:underline">{t("กลับไปหน้าหลัก", "Back to home")}</Link>
         </main>
       </AppShell>
     );
@@ -78,13 +79,13 @@ export default function CourseSettingsPage() {
   }
 
   function handleArchive() {
-    if (!confirm(`Archive "${course?.name}"? คุณสามารถ restore ได้ภายหลัง`)) return;
+    if (!confirm(t(`Archive "${course?.name}"? คุณสามารถ restore ได้ภายหลัง`, `Archive "${course?.name}"? You can restore it later.`))) return;
     updateCourse(id, { status: "archived" });
     router.push("/courses");
   }
 
   function handleDelete() {
-    if (!confirm(`ลบ "${course?.name}" ถาวร? ไม่สามารถกู้คืนได้`)) return;
+    if (!confirm(t(`ลบ "${course?.name}" ถาวร? ไม่สามารถกู้คืนได้`, `Permanently delete "${course?.name}"? Cannot be undone.`))) return;
     removeCourse(id);
     router.push("/courses");
   }
@@ -223,7 +224,7 @@ export default function CourseSettingsPage() {
                 Delete Permanently
               </button>
             </div>
-            <p className="text-xs text-gray-500 mt-3">Archive จะซ่อนรายวิชา — สามารถ restore ได้ภายหลัง. Delete จะลบถาวร</p>
+            <p className="text-xs text-gray-500 mt-3">{t("Archive จะซ่อนรายวิชา — สามารถ restore ได้ภายหลัง. Delete จะลบถาวร", "Archive hides the course — you can restore it later. Delete is permanent.")}</p>
           </section>
 
           {/* Actions */}

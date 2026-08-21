@@ -4,12 +4,14 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import AppShell from "@/components/AppShell";
 import { useCourses, PRESET_COLORS } from "@/lib/courses";
+import { useLanguage } from "@/context/LanguageContext";
 
-const CONFIRM_MSG = "à¸‚à¹‰à¸­à¸¡à¸¹à¸¥à¸—à¸µà¹ˆà¸à¸£à¸­à¸à¸ˆà¸°à¹„à¸¡à¹ˆà¸–à¸¹à¸à¸šà¸±à¸™à¸—à¸¶à¸\nà¸•à¹‰à¸­à¸‡à¸à¸²à¸£à¸­à¸­à¸à¸ˆà¸²à¸à¸«à¸™à¹‰à¸²à¸™à¸µà¹‰à¸«à¸£à¸·à¸­à¹„à¸¡à¹ˆ?";
 
 export default function NewCoursePage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const { addCourse } = useCourses();
+  const CONFIRM_MSG = t("ข้อมูลที่กรอกจะไม่ถูกบันทึก\nต้องการออกจากหน้านี้หรือไม่?", "Your input will not be saved.\nLeave this page?");
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");

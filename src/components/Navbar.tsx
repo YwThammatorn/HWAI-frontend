@@ -4,10 +4,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTheme } from "./ThemeProvider";
 import { useAuth } from "@/context/AuthContext";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function Navbar() {
   const { effectiveTheme, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
+  const { lang, toggleLang } = useLanguage();
   const router = useRouter();
 
   function handleLogout() {
@@ -34,6 +36,16 @@ export default function Navbar() {
 
       {/* Right side: theme toggle + bell + avatar */}
       <div className="flex items-center gap-3">
+        {/* Language toggle */}
+        <button
+          type="button"
+          onClick={toggleLang}
+          aria-label="Toggle language"
+          className="h-7 px-2.5 flex items-center justify-center rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors text-xs font-semibold tracking-wide border border-white/20 hover:border-white/40"
+        >
+          {lang === "th" ? "TH" : "EN"}
+        </button>
+
         {/* Theme toggle */}
         <button
           type="button"

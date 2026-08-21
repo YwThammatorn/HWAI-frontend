@@ -5,17 +5,19 @@ import { useParams, useRouter } from "next/navigation";
 import AppShell from "@/components/AppShell";
 import { useCourses } from "@/lib/courses";
 import { useCLOs, CLO } from "@/lib/clo";
+import { useLanguage } from "@/context/LanguageContext";
 
 const PLO_OPTIONS = ["PLO1", "PLO2", "PLO3", "PLO4", "PLO5"];
-
-const CONFIRM_LEAVE = "มีข้อมูลที่ยังไม่ได้บันทึก\nต้องการออกจากหน้านี้หรือไม่?";
-const CONFIRM_CANCEL = "การเปลี่ยนแปลงจะไม่ถูกบันทึก\nต้องการยกเลิกหรือไม่?";
 
 export default function CLOPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const { t } = useLanguage();
   const { getCourse } = useCourses();
   const { getCLOsByCourse, addCLO, updateCLO, removeCLO } = useCLOs();
+
+  const CONFIRM_LEAVE = t("มีข้อมูลที่ยังไม่ได้บันทึก\nต้องการออกจากหน้านี้หรือไม่?", "Unsaved changes.\nLeave this page?");
+  const CONFIRM_CANCEL = t("การเปลี่ยนแปลงจะไม่ถูกบันทึก\nต้องการยกเลิกหรือไม่?", "Changes will not be saved.\nCancel editing?");
 
   const course = getCourse(id);
   const clos = getCLOsByCourse(id);
@@ -79,7 +81,7 @@ export default function CLOPage() {
   }
 
   function handleDelete(clo: CLO) {
-    if (!window.confirm(`ลบ "${clo.code}" ถาวร? ไม่สามารถกู้คืนได้`)) return;
+    if (!window.confirm(t(`ลบ "${clo.code}" ถาวร? ไม่สามารถกู้คืนได้`, `Permanently delete "${clo.code}"? Cannot be undone.`))) return;
     removeCLO(clo.id);
   }
 
@@ -91,7 +93,7 @@ export default function CLOPage() {
     return (
       <AppShell>
         <main className="flex-1 flex items-center justify-center text-sm text-gray-500">
-          ไม่พบวิชา
+          {t("ไม่พบวิชา", "Course not found")}
         </main>
       </AppShell>
     );
@@ -112,13 +114,13 @@ export default function CLOPage() {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
             <polyline points="15 18 9 12 15 6"/>
           </svg>
-          กลับหน้าวิชา
+          {t("กลับหน้าวิชา", "Back to course")}
         </button>
 
         {/* Header */}
         <div className="flex items-start justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">ผลลัพธ์การเรียนรู้รายวิชา (CLO)</h1>
+            <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">{t("ผลลัพธ์การเรียนรู้รายวิชา (CLO)", "Course Learning Outcomes (CLO)")}</h1>
             <p className="text-sm text-gray-500">{course.name}</p>
           </div>
           <div className="flex items-center gap-2 mt-1">
@@ -130,7 +132,7 @@ export default function CLOPage() {
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
               </svg>
-              ให้ AI ช่วยร่าง
+              {t("ให้ AI ช่วยร่าง", "AI Draft")}
             </button>
             <button
               onClick={openAdd}
@@ -139,7 +141,7 @@ export default function CLOPage() {
               <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
                 <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
               </svg>
-              เพิ่ม CLO เอง
+              {t("เพิ่ม CLO เอง", "Add CLO")}
             </button>
           </div>
         </div>
@@ -150,7 +152,11 @@ export default function CLOPage() {
             <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
           </svg>
           <p className="text-xs text-blue-600 leading-relaxed">
-            <strong>PLO (Program Learning Outcome)</strong> คือผลลัพธ์การเรียนรู้ระดับหลักสูตร — CLO แต่ละข้อควรสนับสนุนอย่างน้อย 1 PLO เพื่อให้ระบบรายงาน CLO Attainment ได้ถูกต้อง
+            <strong>PLO (Program Learning Outcome)</strong>{" "}
+            {t(
+              "คือผลลัพธ์การเรียนรู้ระดับหลักสูตร — CLO แต่ละข้อควรสนับสนุนอย่างน้อย 1 PLO เพื่อให้ระบบรายงาน CLO Attainment ได้ถูกต้อง",
+              "are program-level learning outcomes — each CLO should support at least one PLO for accurate CLO Attainment reporting."
+            )}
           </p>
         </div>
 
@@ -164,8 +170,8 @@ export default function CLOPage() {
                 <line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="12" y2="16"/>
               </svg>
             </div>
-            <p className="text-sm font-medium text-gray-500 mb-1">ยังไม่มี CLO กำหนดไว้</p>
-            <p className="text-xs text-gray-500 mb-6">เพิ่ม CLO เพื่อวัดผลลัพธ์การเรียนรู้และ CLO Attainment ของนักศึกษา</p>
+            <p className="text-sm font-medium text-gray-500 mb-1">{t("ยังไม่มี CLO กำหนดไว้", "No CLOs defined yet")}</p>
+            <p className="text-xs text-gray-500 mb-6">{t("เพิ่ม CLO เพื่อวัดผลลัพธ์การเรียนรู้และ CLO Attainment ของนักศึกษา", "Add CLOs to measure student learning outcomes and CLO Attainment")}</p>
             <button
               onClick={openAdd}
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)] text-sm font-medium transition-colors"
@@ -173,7 +179,7 @@ export default function CLOPage() {
               <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
                 <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
               </svg>
-              เพิ่ม CLO แรก
+              {t("เพิ่ม CLO แรก", "Add First CLO")}
             </button>
           </div>
         ) : (
@@ -181,7 +187,7 @@ export default function CLOPage() {
 
             {/* Table header */}
             <div className="grid gap-0 border-b border-gray-100" style={{ gridTemplateColumns: "88px 1fr 148px 170px 76px" }}>
-              {["รหัส", "ข้อความ CLO", "PLO", "เกณฑ์ที่ผูก", ""].map((h, i) => (
+              {[t("รหัส", "Code"), t("ข้อความ CLO", "CLO Text"), "PLO", t("เกณฑ์ที่ผูก", "Linked Criteria"), ""].map((h, i) => (
                 <div key={i} className="px-4 py-3 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">{h}</div>
               ))}
             </div>
@@ -227,7 +233,7 @@ export default function CLOPage() {
                       <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
                       <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
                     </svg>
-                    ยังไม่มีเกณฑ์ผูก
+                    {t("ยังไม่มีเกณฑ์ผูก", "No linked criteria")}
                   </span>
                 </div>
 
@@ -237,7 +243,7 @@ export default function CLOPage() {
                     onClick={() => openEdit(clo)}
                     disabled={editingId === clo.id}
                     className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-[var(--text-primary)] transition-colors disabled:opacity-20"
-                    title="แก้ไข"
+                    title={t("แก้ไข", "Edit")}
                   >
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -247,7 +253,7 @@ export default function CLOPage() {
                   <button
                     onClick={() => handleDelete(clo)}
                     className="p-1.5 rounded-lg hover:bg-red-50 text-gray-500 hover:text-red-500 transition-colors"
-                    title="ลบ"
+                    title={t("ลบ", "Delete")}
                   >
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                       <polyline points="3 6 5 6 21 6"/>
@@ -262,12 +268,12 @@ export default function CLOPage() {
             {formMode !== "idle" && (
               <div className="border-t-2 border-[var(--accent)]/20 bg-teal-50/40 p-6">
                 <p className="text-xs font-semibold text-[#14B8A6] uppercase tracking-wider mb-4">
-                  {formMode === "add" ? "เพิ่ม CLO ใหม่" : `แก้ไข ${editingId ? clos.find(c => c.id === editingId)?.code : ""}`}
+                  {formMode === "add" ? t("เพิ่ม CLO ใหม่", "Add New CLO") : `${t("แก้ไข", "Edit")} ${editingId ? clos.find(c => c.id === editingId)?.code : ""}`}
                 </p>
                 <div className="grid gap-3 mb-3" style={{ gridTemplateColumns: "104px 1fr" }}>
                   <div>
                     <label className="block text-xs font-medium text-gray-500 mb-1.5">
-                      รหัส <span className="text-red-400">*</span>
+                      {t("รหัส", "Code")} <span className="text-red-400">*</span>
                     </label>
                     <input
                       value={formCode}
@@ -278,12 +284,12 @@ export default function CLOPage() {
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-gray-500 mb-1.5">
-                      ข้อความ CLO <span className="text-red-400">*</span>
+                      {t("ข้อความ CLO", "CLO Text")} <span className="text-red-400">*</span>
                     </label>
                     <textarea
                       value={formText}
                       onChange={e => setFormText(e.target.value)}
-                      placeholder="นักศึกษาสามารถ..."
+                      placeholder={t("นักศึกษาสามารถ...", "Students can...")}
                       rows={2}
                       className="w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] resize-none transition-colors"
                     />
@@ -291,7 +297,7 @@ export default function CLOPage() {
                 </div>
 
                 <div className="mb-5">
-                  <label className="block text-xs font-medium text-gray-500 mb-2">PLO ที่สนับสนุน</label>
+                  <label className="block text-xs font-medium text-gray-500 mb-2">{t("PLO ที่สนับสนุน", "Supporting PLOs")}</label>
                   <div className="flex gap-2 flex-wrap">
                     {PLO_OPTIONS.map(plo => (
                       <button
@@ -317,7 +323,7 @@ export default function CLOPage() {
                     onClick={cancelForm}
                     className="px-4 py-2 rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
                   >
-                    ยกเลิก
+                    {t("ยกเลิก", "Cancel")}
                   </button>
                   <button
                     type="button"
@@ -325,7 +331,7 @@ export default function CLOPage() {
                     disabled={!isFormValid}
                     className="px-4 py-2 rounded-xl bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)] text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                   >
-                    บันทึก
+                    {t("บันทึก", "Save")}
                   </button>
                 </div>
               </div>

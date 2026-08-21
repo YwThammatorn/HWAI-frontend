@@ -6,9 +6,11 @@ import AppShell from "@/components/AppShell";
 import { useCourses } from "@/lib/courses";
 import { useStudents } from "@/lib/students";
 import { useAssignments } from "@/lib/assignments";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function CourseDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const { t } = useLanguage();
   const { getCourse } = useCourses();
   const { getStudentsByCourse } = useStudents();
   const { getAssignmentsByCourse, getSubmissionsByAssignment } = useAssignments();
@@ -31,8 +33,8 @@ export default function CourseDetailPage() {
     return (
       <AppShell>
         <main className="flex-1 flex items-center justify-center text-gray-500 text-sm">
-          ไม่พบรายวิชานี้ —{" "}
-          <Link href="/courses" className="text-[var(--accent)] ml-1 hover:underline">กลับไปหน้าหลัก</Link>
+          {t("ไม่พบรายวิชานี้", "Course not found")} —{" "}
+          <Link href="/courses" className="text-[var(--accent)] ml-1 hover:underline">{t("กลับไปหน้าหลัก", "Back to home")}</Link>
         </main>
       </AppShell>
     );
@@ -145,8 +147,8 @@ export default function CourseDetailPage() {
                   <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                 </svg>
               </div>
-              <p className="text-sm font-medium text-gray-500 mb-1">ยังไม่มีรายชื่อนักศึกษา</p>
-              <p className="text-xs text-gray-500 mb-5">นำเข้ารายชื่อจากไฟล์ CSV เพื่อเริ่มต้น</p>
+              <p className="text-sm font-medium text-gray-500 mb-1">{t("ยังไม่มีรายชื่อนักศึกษา", "No students yet")}</p>
+              <p className="text-xs text-gray-500 mb-5">{t("นำเข้ารายชื่อจากไฟล์ CSV เพื่อเริ่มต้น", "Import a CSV file to get started")}</p>
               <Link
                 href={`/courses/${id}/students/import`}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)] text-sm font-medium rounded-xl transition-colors"
@@ -162,7 +164,7 @@ export default function CourseDetailPage() {
             /* Student list */
             <div>
               <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50">
-                <p className="text-sm text-gray-500">{students.length} นักศึกษา</p>
+                <p className="text-sm text-gray-500">{students.length} {t("นักศึกษา", "students")}</p>
                 <Link
                   href={`/courses/${id}/students/import`}
                   className="inline-flex items-center gap-1.5 text-xs text-[var(--accent)] hover:underline font-medium"
@@ -171,7 +173,7 @@ export default function CourseDetailPage() {
                     <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>
                     <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
                   </svg>
-                  Import เพิ่มเติม
+                  {t("Import เพิ่มเติม", "Import More")}
                 </Link>
               </div>
               <div className="overflow-x-auto">
@@ -179,9 +181,9 @@ export default function CourseDetailPage() {
                   <thead className="border-b border-gray-50">
                     <tr className="text-left text-xs text-gray-500 uppercase tracking-wider">
                       <th className="px-6 py-3 font-medium">#</th>
-                      <th className="px-6 py-3 font-medium">รหัสนักศึกษา</th>
-                      <th className="px-6 py-3 font-medium">ชื่อ</th>
-                      <th className="px-6 py-3 font-medium">นามสกุล</th>
+                      <th className="px-6 py-3 font-medium">{t("รหัสนักศึกษา", "Student ID")}</th>
+                      <th className="px-6 py-3 font-medium">{t("ชื่อ", "First Name")}</th>
+                      <th className="px-6 py-3 font-medium">{t("นามสกุล", "Last Name")}</th>
                       <th className="px-6 py-3 font-medium">Email</th>
                     </tr>
                   </thead>

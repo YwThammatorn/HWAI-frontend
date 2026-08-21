@@ -7,6 +7,7 @@ import AppShell from "@/components/AppShell";
 import { useCourses } from "@/lib/courses";
 import { useStudents } from "@/lib/students";
 import { useAssignments, Assignment, Submission } from "@/lib/assignments";
+import { useLanguage } from "@/context/LanguageContext";
 
 function fmtDate(dateStr: string) {
   return new Date(dateStr + "T00:00:00").toLocaleDateString("en-US", {
@@ -31,6 +32,7 @@ function rowStatus(a: Assignment, subs: Submission[], today: string) {
 export default function AssignmentsPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const { t } = useLanguage();
   const { getCourse, removeCourse } = useCourses();
   const { getStudentsByCourse } = useStudents();
   const { getAssignmentsByCourse, getSubmissionsByAssignment, removeAssignment } = useAssignments();
@@ -59,8 +61,8 @@ export default function AssignmentsPage() {
     return (
       <AppShell>
         <main className="flex-1 flex items-center justify-center text-gray-500 text-sm">
-          ไม่พบรายวิชานี้ —{" "}
-          <Link href="/courses" className="text-[var(--accent)] ml-1 hover:underline">กลับไปหน้าหลัก</Link>
+          {t("ไม่พบรายวิชานี้", "Course not found")} —{" "}
+          <Link href="/courses" className="text-[var(--accent)] ml-1 hover:underline">{t("กลับหน้าหลัก", "Back")}</Link>
         </main>
       </AppShell>
     );
@@ -89,7 +91,7 @@ export default function AssignmentsPage() {
   };
 
   function handleDelete() {
-    if (window.confirm(`ลบ "${course?.name}" ถาวร? ไม่สามารถกู้คืนได้`)) {
+    if (window.confirm(t(`ลบ "${course?.name}" ถาวร? ไม่สามารถกู้คืนได้`, `Permanently delete "${course?.name}"? This cannot be undone.`))) {
       removeCourse(id);
       router.push("/courses");
     }
@@ -97,7 +99,7 @@ export default function AssignmentsPage() {
 
   const statCards = [
     {
-      label: "Total Assignments",
+      label: t("งานทั้งหมด", "Total Assignments"),
       value: totalAssignments,
       iconBg: "bg-blue-100",
       icon: (
@@ -107,7 +109,7 @@ export default function AssignmentsPage() {
       ),
     },
     {
-      label: "Graded",
+      label: t("ตรวจแล้ว", "Graded"),
       value: graded,
       iconBg: "bg-green-100",
       icon: (
@@ -117,7 +119,7 @@ export default function AssignmentsPage() {
       ),
     },
     {
-      label: "Pending Review",
+      label: t("รอตรวจสอบ", "Pending Review"),
       value: pendingReview,
       iconBg: "bg-yellow-100",
       icon: (
@@ -127,7 +129,7 @@ export default function AssignmentsPage() {
       ),
     },
     {
-      label: "Overdue",
+      label: t("เลยกำหนด", "Overdue"),
       value: overdue,
       iconBg: "bg-red-100",
       icon: (
@@ -153,7 +155,7 @@ export default function AssignmentsPage() {
           <span>/</span>
           <Link href={`/courses/${id}`} className="hover:text-[var(--accent)] transition-colors">{course.name}</Link>
           <span>/</span>
-          <span className="text-[var(--accent)] font-medium">Assignments</span>
+          <span className="text-[var(--accent)] font-medium">{t("ชิ้นงาน", "Assignments")}</span>
         </div>
 
         {/* Course header */}
@@ -166,10 +168,10 @@ export default function AssignmentsPage() {
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
                 <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
               </svg>
-              <span>{students.length} Students</span>
+              <span>{students.length} {t("นักศึกษา", "Students")}</span>
               <span className="text-gray-300">|</span>
-              <Link href={`/courses/${id}/settings`} className="text-[var(--accent)] hover:underline font-medium">Edit</Link>
-              <button onClick={handleDelete} className="text-red-400 hover:underline font-medium">Delete this Course</button>
+              <Link href={`/courses/${id}/settings`} className="text-[var(--accent)] hover:underline font-medium">{t("แก้ไข", "Edit")}</Link>
+              <button onClick={handleDelete} className="text-red-400 hover:underline font-medium">{t("ลบรายวิชา", "Delete this Course")}</button>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -178,7 +180,7 @@ export default function AssignmentsPage() {
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
                 <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
               </svg>
-              Manage Collaborators
+              {t("จัดการผู้ร่วมงาน", "Manage Collaborators")}
             </button>
             <Link
               href={`/courses/${id}/assignments/new`}
@@ -187,7 +189,7 @@ export default function AssignmentsPage() {
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
                 <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
               </svg>
-              Create Assignment
+              {t("สร้างชิ้นงาน", "Create Assignment")}
             </Link>
           </div>
         </div>
@@ -210,10 +212,10 @@ export default function AssignmentsPage() {
         {/* Course description */}
         {course.description && (
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 mb-6">
-            <p className="text-xs text-gray-500 mb-1.5">Course Description</p>
+            <p className="text-xs text-gray-500 mb-1.5">{t("คำอธิบายรายวิชา", "Course Description")}</p>
             <div className="flex items-start justify-between gap-4">
               <p className="text-sm text-[var(--text-primary)] leading-relaxed">{course.description}</p>
-              <Link href={`/courses/${id}/settings`} className="text-[var(--accent)] text-sm hover:underline shrink-0">Edit</Link>
+              <Link href={`/courses/${id}/settings`} className="text-[var(--accent)] text-sm hover:underline shrink-0">{t("แก้ไข", "Edit")}</Link>
             </div>
           </div>
         )}
@@ -221,7 +223,7 @@ export default function AssignmentsPage() {
         {/* Assignments list */}
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
           <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-            <h2 className="font-bold text-[var(--text-primary)]">Active Assignments</h2>
+            <h2 className="font-bold text-[var(--text-primary)]">{t("ชิ้นงานที่ใช้งานอยู่", "Active Assignments")}</h2>
             <div className="flex items-center gap-2">
               <div className="relative">
                 <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -230,7 +232,7 @@ export default function AssignmentsPage() {
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search tasks..."
+                  placeholder={t("ค้นหาชิ้นงาน...", "Search tasks...")}
                   className="pl-8 pr-3 py-1.5 text-sm rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] w-48"
                 />
               </div>
@@ -245,7 +247,7 @@ export default function AssignmentsPage() {
           {visible.length === 0 ? (
             <div className="py-16 flex flex-col items-center justify-center text-center">
               {search ? (
-                <p className="text-gray-500 text-sm">ไม่พบชิ้นงานที่ตรงกับ &ldquo;{search}&rdquo;</p>
+                <p className="text-gray-500 text-sm">{t(`ไม่พบชิ้นงานที่ตรงกับ "${search}"`, `No results for "${search}"`)}</p>
               ) : (
                 <>
                   <div className="w-14 h-14 rounded-2xl bg-gray-50 flex items-center justify-center mb-3">
@@ -253,8 +255,8 @@ export default function AssignmentsPage() {
                       <rect x="5" y="2" width="14" height="20" rx="2"/><line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="11" x2="15" y2="11"/><line x1="9" y1="15" x2="13" y2="15"/>
                     </svg>
                   </div>
-                  <p className="text-sm font-medium text-gray-500 mb-1">ยังไม่มีชิ้นงาน</p>
-                  <p className="text-xs text-gray-500 mb-4">กด Create Assignment เพื่อเพิ่มชิ้นงานแรก</p>
+                  <p className="text-sm font-medium text-gray-500 mb-1">{t("ยังไม่มีชิ้นงาน", "No assignments yet")}</p>
+                  <p className="text-xs text-gray-500 mb-4">{t("กด Create Assignment เพื่อเพิ่มชิ้นงานแรก", "Click Create Assignment to add your first one")}</p>
                   <Link
                     href={`/courses/${id}/assignments/new`}
                     className="inline-flex items-center gap-2 px-4 py-2 bg-[#2DD4BF] hover:bg-[#14B8A6] text-[#1B2A4A] text-sm font-medium rounded-xl transition-colors"
@@ -262,7 +264,7 @@ export default function AssignmentsPage() {
                     <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
                       <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
                     </svg>
-                    Create Assignment
+                    {t("สร้างชิ้นงาน", "Create Assignment")}
                   </Link>
                 </>
               )}
@@ -289,8 +291,8 @@ export default function AssignmentsPage() {
                             <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
                           </svg>
                           <span className={`text-xs ${isOverdue ? "text-red-500" : "text-gray-500"}`}>
-                            {isOverdue ? "Overdue — " : ""}Due {fmtDate(a.dueDate)}
-                            {subs.length > 0 && ` • ${subs.length} Submissions`}
+                            {isOverdue ? `${t("เลยกำหนด", "Overdue")} — ` : ""}{t("กำหนดส่ง", "Due")} {fmtDate(a.dueDate)}
+                            {subs.length > 0 && ` • ${subs.length} ${t("งานที่ส่ง", "Submissions")}`}
                           </span>
                         </div>
                         <div className="flex items-center gap-1 mt-1.5 flex-wrap">
@@ -300,30 +302,30 @@ export default function AssignmentsPage() {
                                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
                                 <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                               </svg>
-                              กลุ่ม{a.maxGroupSize ? ` ≤ ${a.maxGroupSize} คน` : ""}
+                              {t("กลุ่ม", "Group")}{a.maxGroupSize ? ` ≤ ${a.maxGroupSize} ${t("คน", "members")}` : ""}
                             </span>
                           ) : (
                             <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-gray-50 text-gray-500 text-[10px] font-medium">
                               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
                               </svg>
-                              รายบุคคล
+                              {t("รายบุคคล", "Individual")}
                             </span>
                           )}
                           {(a.fileTypes ?? []).map(ft => (
                             <span key={ft} className="px-1.5 py-0.5 rounded-md bg-gray-100 text-gray-500 text-[10px] font-mono">
-                              {ft === "figma" ? "Figma" : ft === "pdf" ? "PDF" : "รูปภาพ"}
+                              {ft === "figma" ? "Figma" : ft === "pdf" ? "PDF" : t("รูปภาพ", "Image")}
                             </span>
                           ))}
                           {!(a.acceptsFiles ?? true) && (
-                            <span className="px-1.5 py-0.5 rounded-md bg-gray-50 text-gray-500 text-[10px]">ไม่รับไฟล์</span>
+                            <span className="px-1.5 py-0.5 rounded-md bg-gray-50 text-gray-500 text-[10px]">{t("ไม่รับไฟล์", "No files")}</span>
                           )}
                         </div>
                       </div>
                       <div className="flex items-center gap-3 shrink-0 ml-4">
                         {st.avg !== null && (
                           <span className="text-xs text-gray-500">
-                            Avg Score: <span className="font-semibold text-[var(--text-primary)]">{st.avg}%</span>
+                            {t("คะแนนเฉลี่ย:", "Avg Score:")} <span className="font-semibold text-[var(--text-primary)]">{st.avg}%</span>
                           </span>
                         )}
                         <span className={[
@@ -332,7 +334,11 @@ export default function AssignmentsPage() {
                           : st.type === "late" ? "bg-slate-700 text-white"
                           : "bg-red-100 text-red-700",
                         ].join(" ")}>
-                          {st.label}
+                          {st.type === "graded"
+                            ? t("ตรวจครบแล้ว", "All Graded")
+                            : st.type === "late"
+                            ? `${t("ส่งช้า", "Late")} (${subs.filter(s => s.status !== "graded").length})`
+                            : t("ยังไม่ตรวจ", "Not Graded")}
                         </span>
                         {/* ▼ dropdown menu */}
                         <div className="relative" ref={openMenu === a.id ? menuRef : undefined}>
@@ -355,12 +361,12 @@ export default function AssignmentsPage() {
                                   <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                                   <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                                 </svg>
-                                Edit
+                                {t("แก้ไข", "Edit")}
                               </Link>
                               <button
                                 onClick={() => {
                                   setOpenMenu(null);
-                                  if (window.confirm(`ลบ "${a.name}" ถาวร?`)) {
+                                  if (window.confirm(t(`ลบ "${a.name}" ถาวร?`, `Permanently delete "${a.name}"?`))) {
                                     removeAssignment(a.id);
                                   }
                                 }}
@@ -370,7 +376,7 @@ export default function AssignmentsPage() {
                                   <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
                                   <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
                                 </svg>
-                                Delete
+                                {t("ลบ", "Delete")}
                               </button>
                             </div>
                           )}
@@ -404,27 +410,27 @@ export default function AssignmentsPage() {
                               {a.description ? (
                                 <p className="text-xs text-gray-500 leading-relaxed mb-3 line-clamp-2">{a.description}</p>
                               ) : (
-                                <p className="text-xs text-gray-300 italic mb-3">ไม่มีคำอธิบาย</p>
+                                <p className="text-xs text-gray-300 italic mb-3">{t("ไม่มีคำอธิบาย", "No description")}</p>
                               )}
                               <div className="flex items-center gap-2 flex-wrap">
                                 <span className="flex items-center gap-1 text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">
                                   <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] inline-block"/>
-                                  Graded {graded}
+                                  {t("ตรวจแล้ว", "Graded")} {graded}
                                 </span>
                                 {needReview > 0 && (
                                   <span className="flex items-center gap-1 text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-medium">
                                     <span className="w-1.5 h-1.5 rounded-full bg-[#D97706] inline-block"/>
-                                    Need Review {needReview}
+                                    {t("รอตรวจสอบ", "Need Review")} {needReview}
                                   </span>
                                 )}
                                 {notGraded > 0 && (
                                   <span className="flex items-center gap-1 text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-medium">
                                     <span className="w-1.5 h-1.5 rounded-full bg-gray-400 inline-block"/>
-                                    Not Graded {notGraded}
+                                    {t("ยังไม่ตรวจ", "Not Graded")} {notGraded}
                                   </span>
                                 )}
                                 {subs.length === 0 && (
-                                  <span className="text-xs text-gray-300">ยังไม่มีการส่งงาน</span>
+                                  <span className="text-xs text-gray-300">{t("ยังไม่มีการส่งงาน", "No submissions yet")}</span>
                                 )}
                               </div>
                             </div>
@@ -438,14 +444,14 @@ export default function AssignmentsPage() {
                                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                                     <polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
                                   </svg>
-                                  Start Grading
+                                  {t("เริ่มตรวจงาน", "Start Grading")}
                                 </Link>
                               )}
                               <Link
                                 href={`/courses/${id}/assignments/${a.id}`}
                                 className="px-3 py-1.5 border border-gray-200 text-gray-600 text-xs font-medium rounded-lg hover:bg-white transition-colors"
                               >
-                                View Submissions
+                                {t("ดูงานที่ส่ง", "View Submissions")}
                               </Link>
                               <Link
                                 href={`/courses/${id}/assignments/${a.id}/edit`}

@@ -6,6 +6,7 @@ import Link from "next/link";
 import AppShell from "@/components/AppShell";
 import { useCourses } from "@/lib/courses";
 import { useAssignments, Submission } from "@/lib/assignments";
+import { useLanguage } from "@/context/LanguageContext";
 
 const AVATAR_COLORS = ["#4F46E5", "#7C3AED", "#BE185D", "#B45309", "#047857", "#0369A1", "#C2410C", "#0E7490"];
 
@@ -34,10 +35,11 @@ function fmtDateTime(iso: string) {
 }
 
 function StatusBadge({ status }: { status: Submission["status"] }) {
+  const { t } = useLanguage();
   const cfg = {
-    need_review: { label: "Need Review", className: "bg-purple-100 text-purple-700" },
-    not_graded:  { label: "Not Graded",  className: "bg-red-100 text-red-700" },
-    graded:      { label: "Graded",      className: "bg-green-100 text-green-700" },
+    need_review: { label: t("รอตรวจสอบ", "Need Review"), className: "bg-purple-100 text-purple-700" },
+    not_graded:  { label: t("ยังไม่ตรวจ", "Not Graded"),  className: "bg-red-100 text-red-700" },
+    graded:      { label: t("ตรวจแล้ว", "Graded"),      className: "bg-green-100 text-green-700" },
   }[status];
   return (
     <span className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium ${cfg.className}`}>
@@ -49,6 +51,7 @@ function StatusBadge({ status }: { status: Submission["status"] }) {
 
 export default function ViewAssignmentPage() {
   const { id, assignmentId } = useParams<{ id: string; assignmentId: string }>();
+  const { t, lang } = useLanguage();
   const { getCourse } = useCourses();
   const { getAssignment, getSubmissionsByAssignment } = useAssignments();
 
@@ -63,8 +66,8 @@ export default function ViewAssignmentPage() {
     return (
       <AppShell>
         <main className="flex-1 flex items-center justify-center text-gray-500 text-sm">
-          ไม่พบข้อมูล —{" "}
-          <Link href={`/courses/${id}/assignments`} className="text-[var(--accent)] ml-1 hover:underline">กลับไปรายการชิ้นงาน</Link>
+          {t("ไม่พบข้อมูล", "Not found")} —{" "}
+          <Link href={`/courses/${id}/assignments`} className="text-[var(--accent)] ml-1 hover:underline">{t("กลับรายการงาน", "Back to assignments")}</Link>
         </main>
       </AppShell>
     );
@@ -120,14 +123,14 @@ export default function ViewAssignmentPage() {
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2">
                 <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
               </svg>
-              <span className="text-gray-500">Due {fmtDate(assignment.dueDate)} at 11:59 PM</span>
+              <span className="text-gray-500">{t("กำหนดส่ง", "Due")} {fmtDate(assignment.dueDate)} {t("เวลา 23:59 น.", "at 11:59 PM")}</span>
               <span className="text-gray-300">·</span>
               {allGraded ? (
-                <span className="text-emerald-500 font-medium">All Graded</span>
+                <span className="text-emerald-500 font-medium">{t("ตรวจครบแล้ว", "All Graded")}</span>
               ) : isOverdue ? (
-                <span className="text-red-500 font-medium">Overdue</span>
+                <span className="text-red-500 font-medium">{t("เลยกำหนด", "Overdue")}</span>
               ) : (
-                <span className="text-orange-500 font-medium">Not Graded</span>
+                <span className="text-orange-500 font-medium">{t("ยังไม่ตรวจ", "Not Graded")}</span>
               )}
             </div>
           </div>
@@ -140,7 +143,7 @@ export default function ViewAssignmentPage() {
                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                 <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
               </svg>
-              Edit Assignment
+              {t("แก้ไขงาน", "Edit Assignment")}
             </Link>
             <Link
               href={allGraded
@@ -153,14 +156,14 @@ export default function ViewAssignmentPage() {
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                     <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
                   </svg>
-                  View Results
+                  {t("ดูผลลัพธ์", "View Results")}
                 </>
               ) : (
                 <>
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                     <polygon points="5 3 19 12 5 21 5 3"/>
                   </svg>
-                  Start Grading
+                  {t("เริ่มตรวจงาน", "Start Grading")}
                 </>
               )}
             </Link>
@@ -173,7 +176,7 @@ export default function ViewAssignmentPage() {
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2">
               <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
             </svg>
-            Assignment Submission Upload Link
+            {t("ลิงก์อัปโหลดงาน", "Assignment Submission Upload Link")}
           </div>
           <div className="flex-1 px-3 py-1.5 bg-gray-50 rounded-lg text-xs text-gray-500 font-mono truncate border border-gray-100">
             {uploadLink}
@@ -186,9 +189,9 @@ export default function ViewAssignmentPage() {
             ].join(" ")}
           >
             {copied ? (
-              <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>Copied</>
+              <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>{t("คัดลอกแล้ว", "Copied")}</>
             ) : (
-              <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy</>
+              <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>{t("คัดลอก", "Copy")}</>
             )}
           </button>
         </div>
@@ -202,7 +205,7 @@ export default function ViewAssignmentPage() {
                 <polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
               </svg>
             </div>
-            <p className="text-xs text-gray-500 mb-1">Submissions</p>
+            <p className="text-xs text-gray-500 mb-1">{t("งานที่ส่ง", "Submissions")}</p>
             <p className="text-2xl font-bold text-[var(--text-primary)]">
               {submissions.length} <span className="text-sm font-normal text-gray-500">/ {assignment.maxPoints}</span>
             </p>
@@ -213,7 +216,7 @@ export default function ViewAssignmentPage() {
               />
             </div>
             {submissions.length < assignment.maxPoints && (
-              <p className="text-xs text-gray-500 mt-1.5">{assignment.maxPoints - submissions.length} students pending</p>
+              <p className="text-xs text-gray-500 mt-1.5">{assignment.maxPoints - submissions.length} {t("คนยังไม่ส่ง", "students pending")}</p>
             )}
           </div>
           {/* Average Grade */}
@@ -223,11 +226,11 @@ export default function ViewAssignmentPage() {
                 <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
               </svg>
             </div>
-            <p className="text-xs text-gray-500 mb-1">Average Grade</p>
+            <p className="text-xs text-gray-500 mb-1">{t("คะแนนเฉลี่ย", "Average Grade")}</p>
             <p className="text-2xl font-bold text-[var(--text-primary)]">{submissions.length > 0 ? `${avgScore}%` : "0%"}</p>
             <p className="text-xs text-gray-500 mt-1.5 flex items-center gap-1">
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" strokeWidth="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-              AI Confidence: {submissions.length > 0 ? "High" : "None"}
+              {t("ความมั่นใจ AI:", "AI Confidence:")} {submissions.length > 0 ? t("สูง", "High") : t("ไม่มี", "None")}
             </p>
           </div>
           {/* Graded */}
@@ -237,12 +240,12 @@ export default function ViewAssignmentPage() {
                 <rect x="3" y="3" width="18" height="18" rx="2"/><polyline points="9 11 12 14 15 11"/>
               </svg>
             </div>
-            <p className="text-xs text-gray-500 mb-1">Graded</p>
-            <p className="text-2xl font-bold text-[var(--text-primary)]">{gradedCount} <span className="text-sm font-normal text-gray-500">papers</span></p>
+            <p className="text-xs text-gray-500 mb-1">{t("ตรวจแล้ว", "Graded")}</p>
+            <p className="text-2xl font-bold text-[var(--text-primary)]">{gradedCount} <span className="text-sm font-normal text-gray-500">{t("ฉบับ", "papers")}</span></p>
             <p className="text-xs text-gray-500 mt-1.5">
               {submissions.length - gradedCount > 0
-                ? `${submissions.length - gradedCount} not graded`
-                : submissions.length > 0 ? "All graded" : "No submissions"}
+                ? `${submissions.length - gradedCount} ${t("ยังไม่ตรวจ", "not graded")}`
+                : submissions.length > 0 ? t("ตรวจครบแล้ว", "All graded") : t("ยังไม่มีงาน", "No submissions")}
             </p>
           </div>
           {/* Rubric */}
@@ -253,29 +256,46 @@ export default function ViewAssignmentPage() {
                 <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
               </svg>
             </div>
-            <p className="text-xs text-gray-500 mb-1">Rubric</p>
-            <p className="text-2xl font-bold text-[var(--text-primary)]">
-              {assignment.rubricIds.length}
-              <span className="text-sm font-normal text-gray-500 ml-1">rubric</span>
-            </p>
-            <p className="text-xs text-gray-500 mt-1.5">
-              <Link
-                href={`/courses/${id}/assignments/${assignmentId}/edit`}
-                className="text-[var(--accent)] hover:underline"
-              >
-                {assignment.rubricIds.length > 0 ? "จัดการ Rubric" : "เพิ่ม Rubric"}
-              </Link>
-            </p>
+            <p className="text-xs text-gray-500 mb-1">{t("เกณฑ์การให้คะแนน", "Rubric")}</p>
+            {assignment.rubricIds.length > 0 ? (
+              <>
+                <p className="text-2xl font-bold text-[var(--text-primary)]">{t("ใช้งานอยู่", "Applied")}</p>
+                <div className="mt-2">
+                  <Link
+                    href={`/courses/${id}/assignments/${assignmentId}/edit`}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-[var(--accent)] text-xs text-[var(--accent)] font-medium hover:bg-teal-50 transition-colors"
+                  >
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                    {t("แก้ไข Rubric", "Edit Rubric")}
+                  </Link>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="text-2xl font-bold text-gray-300">{t("ไม่มี", "None")}</p>
+                <p className="text-xs text-gray-500 mt-1.5">
+                  <Link
+                    href={`/courses/${id}/assignments/${assignmentId}/edit`}
+                    className="text-[var(--accent)] hover:underline"
+                  >
+                    {t("เพิ่ม Rubric", "Add Rubric")}
+                  </Link>
+                </p>
+              </>
+            )}
           </div>
         </div>
 
         {/* Description */}
         {assignment.description && (
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 mb-5">
-            <p className="text-xs text-gray-500 mb-1.5">Assignment Description</p>
+            <p className="text-xs text-gray-500 mb-1.5">{t("คำอธิบายงาน", "Assignment Description")}</p>
             <div className="flex items-start justify-between gap-4">
               <p className="text-sm text-[var(--text-primary)] leading-relaxed">{assignment.description}</p>
-              <Link href={`/courses/${id}/assignments/${assignmentId}/edit`} className="text-[var(--accent)] text-sm hover:underline shrink-0">Edit</Link>
+              <Link href={`/courses/${id}/assignments/${assignmentId}/edit`} className="text-[var(--accent)] text-sm hover:underline shrink-0">{t("แก้ไข", "Edit")}</Link>
             </div>
           </div>
         )}
@@ -290,7 +310,7 @@ export default function ViewAssignmentPage() {
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search students..."
+                placeholder={t("ค้นหานักศึกษา...", "Search students...")}
                 className="pl-8 pr-3 py-1.5 text-sm rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] w-52"
               />
             </div>
@@ -298,7 +318,7 @@ export default function ViewAssignmentPage() {
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/>
               </svg>
-              Filter: All Status
+              {t("กรอง: ทั้งหมด", "Filter: All Status")}
             </button>
           </div>
 
@@ -310,7 +330,7 @@ export default function ViewAssignmentPage() {
                   <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                 </svg>
               </div>
-              <p className="text-sm text-gray-500">ยังไม่มีนักศึกษาส่งงาน</p>
+              <p className="text-sm text-gray-500">{t("ยังไม่มีนักศึกษาส่งงาน", "No submissions yet")}</p>
             </div>
           ) : (
             <>
@@ -318,16 +338,16 @@ export default function ViewAssignmentPage() {
                 <thead className="border-b border-gray-100">
                   <tr className="text-left text-xs text-gray-500 font-semibold">
                     <th className="px-5 py-3 w-8"><input type="checkbox" className="rounded border-gray-300" /></th>
-                    <th className="px-3 py-3">Student Name</th>
-                    <th className="px-3 py-3">Submitted</th>
+                    <th className="px-3 py-3">{t("ชื่อนักศึกษา", "Student Name")}</th>
+                    <th className="px-3 py-3">{t("ส่งเมื่อ", "Submitted")}</th>
                     <th className="px-3 py-3">
                       <span className="flex items-center gap-1">
-                        AI Score
+                        {t("คะแนน AI", "AI Score")}
                         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" strokeWidth="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
                       </span>
                     </th>
-                    <th className="px-3 py-3">Status</th>
-                    <th className="px-3 py-3">File</th>
+                    <th className="px-3 py-3">{t("สถานะ", "Status")}</th>
+                    <th className="px-3 py-3">{t("ไฟล์", "File")}</th>
                     <th className="px-3 py-3"></th>
                   </tr>
                 </thead>
@@ -375,7 +395,7 @@ export default function ViewAssignmentPage() {
                             href={`/courses/${id}/assignments/${assignmentId}/recheck?sub=${s.id}`}
                             className="text-xs text-[var(--accent)] hover:underline font-medium"
                           >
-                            {s.status === "need_review" ? "Review" : "Recheck"}
+                            {s.status === "need_review" ? t("ตรวจสอบ", "Review") : t("ขอตรวจใหม่", "Recheck")}
                           </Link>
                         )}
                       </td>
@@ -384,7 +404,7 @@ export default function ViewAssignmentPage() {
                 </tbody>
               </table>
               <div className="flex items-center justify-between px-5 py-3 text-xs text-gray-500 border-t border-gray-50">
-                <span>Showing <span className="font-medium text-[var(--text-primary)]">1–{visible.length}</span> of <span className="font-medium text-[var(--text-primary)]">{submissions.length}</span> submissions</span>
+                <span>{t("แสดง", "Showing")} <span className="font-medium text-[var(--text-primary)]">1–{visible.length}</span> {t("จาก", "of")} <span className="font-medium text-[var(--text-primary)]">{submissions.length}</span> {t("งาน", "submissions")}</span>
                 {submissions.length > 5 && (
                   <div className="flex gap-1">
                     {[1, 2, 3].map((p) => (

@@ -9,6 +9,7 @@ import {
   type Notif,
   type NotifType,
 } from "@/lib/notifications";
+import { useLanguage } from "@/context/LanguageContext";
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 
@@ -179,6 +180,7 @@ function GroupLabel({ label }: { label: string }) {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function NotificationsPage() {
+  const { t } = useLanguage();
   const [notifs, setNotifs] = useState<Notif[]>(INITIAL_NOTIFS);
 
   function dismiss(id: string) {
@@ -209,7 +211,7 @@ export default function NotificationsPage() {
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
                 <path d="M13.73 21a2 2 0 0 1-3.46 0" />
               </svg>
-              <p className="text-sm">ไม่มีการแจ้งเตือน</p>
+              <p className="text-sm">{t("ไม่มีการแจ้งเตือน", "No notifications")}</p>
             </div>
           ) : (
             <div className="max-w-2xl space-y-2">

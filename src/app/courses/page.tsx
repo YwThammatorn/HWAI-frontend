@@ -7,8 +7,10 @@ import { useCourses } from "@/lib/courses";
 import { useStudents } from "@/lib/students";
 import { useAssignments } from "@/lib/assignments";
 import type { Course } from "@/lib/courses";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function CoursesPage() {
+  const { t } = useLanguage();
   const { courses, updateCourse, removeCourse } = useCourses();
   const { getStudentsByCourse } = useStudents();
   const { getAssignmentsByCourse, getSubmissionsByAssignment } = useAssignments();
@@ -72,18 +74,18 @@ export default function CoursesPage() {
         {/* Tab filter â€” only show when there are archived */}
         {archived.length > 0 && (
           <div className="flex gap-1 mb-6">
-            {(["active", "archived"] as const).map((t) => (
+            {(["active", "archived"] as const).map((tabKey) => (
               <button
-                key={t}
-                onClick={() => setTab(t)}
+                key={tabKey}
+                onClick={() => setTab(tabKey)}
                 className={[
                   "px-4 py-1.5 rounded-lg text-sm font-medium capitalize transition-colors",
-                  tab === t ? "bg-[var(--bg-nav)] text-white" : "text-gray-500 hover:bg-gray-100",
+                  tab === tabKey ? "bg-[var(--bg-nav)] text-white" : "text-gray-500 hover:bg-gray-100",
                 ].join(" ")}
               >
-                {t}
-                <span className={["ml-1.5 text-xs px-1.5 py-0.5 rounded-full", tab === t ? "bg-white/20" : "bg-gray-200"].join(" ")}>
-                  {t === "active" ? active.length : archived.length}
+                {tabKey}
+                <span className={["ml-1.5 text-xs px-1.5 py-0.5 rounded-full", tab === tabKey ? "bg-white/20" : "bg-gray-200"].join(" ")}>
+                  {tabKey === "active" ? active.length : archived.length}
                 </span>
               </button>
             ))}
@@ -93,11 +95,11 @@ export default function CoursesPage() {
         {/* Content */}
         {visible.length === 0 ? (
           search ? (
-            <p className="text-center text-gray-500 text-sm py-20">à¹„à¸¡à¹ˆà¸žà¸šà¸£à¸²à¸¢à¸§à¸´à¸Šà¸²à¸—à¸µà¹ˆà¸•à¸£à¸‡à¸à¸±à¸š &ldquo;{search}&rdquo;</p>
+            <p className="text-center text-gray-500 text-sm py-20">{t("ไม่พบรายวิชาที่ตรงกับ", "No courses matching")} &ldquo;{search}&rdquo;</p>
           ) : tab === "active" ? (
             <EmptyState />
           ) : (
-            <p className="text-center text-gray-500 text-sm py-20">à¹„à¸¡à¹ˆà¸¡à¸µà¸£à¸²à¸¢à¸§à¸´à¸Šà¸²à¸—à¸µà¹ˆà¸–à¸¹à¸ archive</p>
+            <p className="text-center text-gray-500 text-sm py-20">{t("ไม่มีรายวิชาที่ถูก archive", "No archived courses")}</p>
           )
         ) : (
           <>
@@ -123,7 +125,7 @@ export default function CoursesPage() {
                     isArchived={tab === "archived"}
                     onRestore={() => updateCourse(course.id, { status: "active" })}
                     onDelete={() => {
-                      if (window.confirm(`à¸¥à¸š "${course.name}" à¸–à¸²à¸§à¸£?\nà¹„à¸¡à¹ˆà¸ªà¸²à¸¡à¸²à¸£à¸–à¸à¸¹à¹‰à¸„à¸·à¸™à¹„à¸”à¹‰`)) {
+                      if (window.confirm(t(`ลบ "${course.name}" ถาวร?\nไม่สามารถกู้คืนได้`, `Permanently delete "${course.name}"?\nCannot be undone.`))) {
                         removeCourse(course.id);
                       }
                     }}

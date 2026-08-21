@@ -6,6 +6,7 @@ import Link from "next/link";
 import AppShell from "@/components/AppShell";
 import { useCourses } from "@/lib/courses";
 import { useAssignments, Submission } from "@/lib/assignments";
+import { useLanguage } from "@/context/LanguageContext";
 
 const AVATAR_COLORS = ["#4F46E5", "#7C3AED", "#BE185D", "#B45309", "#047857", "#0369A1", "#C2410C", "#0E7490"];
 function avatarColor(name: string) { return AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length]; }
@@ -30,12 +31,12 @@ function gradeTextClass(l: string) {
 }
 function gradeClass(l: string) { return `${gradeBgClass(l)} ${gradeTextClass(l)}`; }
 
-function confidence(sub: Submission, max: number): { label: string; color: string; pct: number } {
+function confidence(sub: Submission, max: number): { label: string; labelTh: string; color: string; pct: number } {
   const score = sub.aiScore ?? 0;
   const pct = (score / max) * 100;
-  if (pct >= 85) return { label: "High", color: "#0F766E", pct: 92 };
-  if (pct >= 65) return { label: "Medium", color: "#B45309", pct: 72 };
-  return { label: "Review", color: "#DC2626", pct: 48 };
+  if (pct >= 85) return { label: "High", labelTh: "สูง", color: "#0F766E", pct: 92 };
+  if (pct >= 65) return { label: "Medium", labelTh: "ปานกลาง", color: "#B45309", pct: 72 };
+  return { label: "Review", labelTh: "ตรวจสอบ", color: "#DC2626", pct: 48 };
 }
 
 function StarRating({ value, onChange }: { value: number; onChange: (v: number) => void }) {
@@ -59,6 +60,7 @@ function StarRating({ value, onChange }: { value: number; onChange: (v: number) 
 
 export default function ResultsPage() {
   const { id, assignmentId } = useParams<{ id: string; assignmentId: string }>();
+  const { t, lang } = useLanguage();
   const { getCourse } = useCourses();
   const { getAssignment, getSubmissionsByAssignment } = useAssignments();
 
@@ -75,9 +77,9 @@ export default function ResultsPage() {
     return (
       <AppShell>
         <main className="flex-1 flex items-center justify-center text-gray-500 text-sm">
-          ไม่พบข้อมูล —{" "}
+          {t("ไม่พบข้อมูล", "Not found")} —{" "}
           <Link href={`/courses/${id}/assignments`} className="text-[var(--accent)] ml-1 hover:underline">
-            กลับหน้างาน
+            {t("กลับหน้างาน", "Back to assignments")}
           </Link>
         </main>
       </AppShell>
@@ -133,6 +135,68 @@ export default function ResultsPage() {
     URL.revokeObjectURL(url);
   }
 
+  const statCards = [
+    {
+      labelTh: "ตรวจแล้ว",
+      labelEn: "Processed",
+      value: allSubs.filter((s) => s.status === "graded").length,
+      subTh: "เสร็จสิ้น",
+      subEn: "completed",
+      color: "#059669",
+      icon: (
+        <div className="w-7 h-7 rounded-full bg-emerald-100 flex items-center justify-center">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.5" strokeLinecap="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>
+      ),
+    },
+    {
+      labelTh: "ไฟล์ทั้งหมด",
+      labelEn: "Total Files",
+      value: allSubs.length,
+      subTh: "ไฟล์ที่ส่ง",
+      subEn: "submissions",
+      color: "#1B2A4A",
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="1.5">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+        </svg>
+      ),
+    },
+    {
+      labelTh: "รอตรวจสอบ",
+      labelEn: "Needs Review",
+      value: allSubs.filter((s) => s.status === "need_review").length,
+      subTh: "รอดำเนินการ",
+      subEn: "Pending",
+      color: "#D97706",
+      icon: (
+        <div className="w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2" strokeLinecap="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+        </div>
+      ),
+    },
+    {
+      labelTh: "คะแนนเฉลี่ย",
+      labelEn: "Avg. Score",
+      value: avgScore !== null ? avgScore.toFixed(1) : "—",
+      subTh: "จนถึงขณะนี้",
+      subEn: "so far",
+      color: "#1B2A4A",
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="#FCD34D" stroke="#F59E0B" strokeWidth="1.5">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+      ),
+    },
+  ];
+
   return (
     <AppShell>
       <main className="w-full max-w-[1200px] mx-auto px-8 py-8">
@@ -144,19 +208,19 @@ export default function ResultsPage() {
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
             <polyline points="15 18 9 12 15 6"/>
           </svg>
-          Back to Assignments
+          {t("กลับหน้างาน", "Back to Assignments")}
         </Link>
 
         {/* Header */}
         <div className="flex items-start justify-between gap-4 mb-6">
           <div>
             <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">
-              Grading Result : {assignment.name}
+              {t("ผลการตรวจ", "Grading Result")} : {assignment.name}
             </h1>
             <p className="text-sm text-gray-400">
-              Graded on{" "}
-              {new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}{" "}
-              at 11:59 PM
+              {t("ตรวจเมื่อ", "Graded on")}{" "}
+              {new Date().toLocaleDateString(lang === "th" ? "th-TH" : "en-US", { month: "short", day: "numeric", year: "numeric" })}{" "}
+              {t("เวลา 23:59 น.", "at 11:59 PM")}
             </p>
           </div>
           <div className="flex items-center gap-3 shrink-0">
@@ -164,7 +228,7 @@ export default function ResultsPage() {
               href={`/courses/${id}/assignments`}
               className="px-4 py-2 rounded-xl border border-gray-200 text-sm text-gray-500 hover:bg-gray-50 transition-colors"
             >
-              Back to Course
+              {t("กลับรายวิชา", "Back to Course")}
             </Link>
             <button
               onClick={exportCSV}
@@ -175,74 +239,26 @@ export default function ResultsPage() {
                 <polyline points="7 10 12 15 17 10"/>
                 <line x1="12" y1="15" x2="12" y2="3"/>
               </svg>
-              Export Result
+              {t("ส่งออกผลลัพธ์", "Export Result")}
             </button>
           </div>
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-4 gap-4 mb-6">
-          {[
-            {
-              label: "Processed",
-              value: allSubs.filter((s) => s.status === "graded").length,
-              sub: "completed",
-              color: "#059669",
-              icon: (
-                <div className="w-7 h-7 rounded-full bg-emerald-100 flex items-center justify-center">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.5" strokeLinecap="round">
-                    <polyline points="20 6 9 17 4 12"/>
-                  </svg>
-                </div>
-              ),
-            },
-            {
-              label: "Total Files",
-              value: allSubs.length,
-              sub: "submissions",
-              color: "#1B2A4A",
-              icon: (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="1.5">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                  <polyline points="14 2 14 8 20 8"/>
-                </svg>
-              ),
-            },
-            {
-              label: "Needs Review",
-              value: allSubs.filter((s) => s.status === "need_review").length,
-              sub: "Pending",
-              color: "#D97706",
-              icon: (
-                <div className="w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2" strokeLinecap="round">
-                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-                    <line x1="12" y1="9" x2="12" y2="13"/>
-                    <line x1="12" y1="17" x2="12.01" y2="17"/>
-                  </svg>
-                </div>
-              ),
-            },
-            {
-              label: "Avg. Score",
-              value: avgScore !== null ? avgScore.toFixed(1) : "—",
-              sub: "so far",
-              color: "#1B2A4A",
-              icon: (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="#FCD34D" stroke="#F59E0B" strokeWidth="1.5">
-                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                </svg>
-              ),
-            },
-          ].map((s) => (
-            <div key={s.label} className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+          {statCards.map((s) => (
+            <div key={s.labelEn} className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
               <div className="flex items-start justify-between mb-3">
-                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">{s.label}</p>
+                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">
+                  {lang === "th" ? s.labelTh : s.labelEn}
+                </p>
                 {s.icon}
               </div>
               <p className="text-3xl font-bold" style={{ color: s.color }}>
                 {s.value}{" "}
-                <span className="text-sm font-normal text-gray-400">{s.sub}</span>
+                <span className="text-sm font-normal text-gray-400">
+                  {lang === "th" ? s.subTh : s.subEn}
+                </span>
               </p>
             </div>
           ))}
@@ -260,9 +276,13 @@ export default function ResultsPage() {
                     <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/>
                     <line x1="6" y1="20" x2="6" y2="14"/>
                   </svg>
-                  <h2 className="text-sm font-semibold text-[var(--text-primary)]">Grade Distribution</h2>
+                  <h2 className="text-sm font-semibold text-[var(--text-primary)]">
+                    {t("การกระจายเกรด", "Grade Distribution")}
+                  </h2>
                 </div>
-                <button className="text-xs text-[var(--accent)] hover:underline">View Details</button>
+                <button className="text-xs text-[var(--accent)] hover:underline">
+                  {t("ดูรายละเอียด", "View Details")}
+                </button>
               </div>
               <div className="flex items-end justify-around h-32 gap-3">
                 {["F", "D", "C", "B", "A"].map((letter) => {
@@ -287,7 +307,9 @@ export default function ResultsPage() {
             {/* Student results table */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
               <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50">
-                <h2 className="text-sm font-semibold text-[var(--text-primary)]">Student Results</h2>
+                <h2 className="text-sm font-semibold text-[var(--text-primary)]">
+                  {t("ผลลัพธ์นักศึกษา", "Student Results")}
+                </h2>
                 <div className="relative">
                   <svg
                     className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400"
@@ -298,7 +320,7 @@ export default function ResultsPage() {
                   <input
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Search student..."
+                    placeholder={t("ค้นหานักศึกษา...", "Search student...")}
                     className="pl-7 pr-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
                   />
                 </div>
@@ -306,16 +328,18 @@ export default function ResultsPage() {
 
               {filtered.length === 0 ? (
                 <div className="px-6 py-12 text-center text-sm text-gray-400">
-                  {search ? "ไม่พบนักศึกษาที่ค้นหา" : "ยังไม่มีการส่งงาน"}
+                  {search
+                    ? t("ไม่พบนักศึกษาที่ค้นหา", "No students found")
+                    : t("ยังไม่มีการส่งงาน", "No submissions yet")}
                 </div>
               ) : (
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="text-left text-[10px] font-semibold text-gray-400 uppercase tracking-wider border-b border-gray-50">
-                      <th className="px-6 py-3">Student Name</th>
-                      <th className="px-6 py-3">Score</th>
-                      <th className="px-6 py-3">Confidence</th>
-                      <th className="px-6 py-3">Action</th>
+                      <th className="px-6 py-3">{t("ชื่อนักศึกษา", "Student Name")}</th>
+                      <th className="px-6 py-3">{t("คะแนน", "Score")}</th>
+                      <th className="px-6 py-3">{t("ความมั่นใจ AI", "Confidence")}</th>
+                      <th className="px-6 py-3">{t("ดำเนินการ", "Action")}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-50">
@@ -350,7 +374,7 @@ export default function ResultsPage() {
                                 </span>
                               </div>
                             ) : (
-                              <span className="text-xs text-gray-400">Not graded</span>
+                              <span className="text-xs text-gray-400">{t("ยังไม่ได้ตรวจ", "Not graded")}</span>
                             )}
                           </td>
                           <td className="px-6 py-3">
@@ -363,7 +387,7 @@ export default function ResultsPage() {
                                   />
                                 </div>
                                 <span className="text-xs font-medium" style={{ color: conf.color }}>
-                                  {conf.label}
+                                  {lang === "th" ? conf.labelTh : conf.label}
                                 </span>
                               </div>
                             ) : (
@@ -378,13 +402,13 @@ export default function ResultsPage() {
                                     href={`/courses/${id}/assignments/${assignmentId}/recheck?sub=${s.id}`}
                                     className="text-xs text-amber-600 hover:underline font-medium"
                                   >
-                                    Review
+                                    {t("ตรวจสอบ", "Review")}
                                   </Link>
                                   <Link
                                     href={`/courses/${id}/assignments/${assignmentId}/recheck?sub=${s.id}`}
                                     className="px-3 py-1.5 rounded-lg bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)] text-xs font-semibold transition-colors"
                                   >
-                                    Recheck
+                                    {t("ขอให้ตรวจใหม่", "Recheck")}
                                   </Link>
                                 </>
                               ) : (
@@ -392,7 +416,7 @@ export default function ResultsPage() {
                                   href={`/courses/${id}/assignments/${assignmentId}/recheck?sub=${s.id}`}
                                   className="px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-500 hover:bg-gray-50 transition-colors"
                                 >
-                                  View Details
+                                  {t("ดูรายละเอียด", "View Details")}
                                 </Link>
                               )}
                             </div>
@@ -412,7 +436,7 @@ export default function ResultsPage() {
             {requiresAttention.length > 0 && (
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
                 <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-3">
-                  Requires Attention
+                  {t("ต้องตรวจสอบ", "Requires Attention")}
                 </p>
                 <div className="space-y-2">
                   {requiresAttention.map((s) => {
@@ -426,14 +450,14 @@ export default function ResultsPage() {
                         <div>
                           <p className="text-xs font-semibold text-[var(--text-primary)]">{s.studentName}</p>
                           <p className={`text-xs ${gradeTextClass(letter)}`}>
-                            Score: {score}/{max} ({letter})
+                            {t("คะแนน", "Score")}: {score}/{max} ({letter})
                           </p>
                         </div>
                         <Link
                           href={`/courses/${id}/assignments/${assignmentId}/recheck?sub=${s.id}`}
                           className="text-xs text-[var(--accent)] font-medium hover:underline shrink-0"
                         >
-                          View
+                          {t("ดู", "View")}
                         </Link>
                       </div>
                     );
@@ -446,12 +470,12 @@ export default function ResultsPage() {
             {topPerformer && (
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
                 <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-3">
-                  Top Performer
+                  {t("ผู้ที่ทำได้ดีที่สุด", "Top Performer")}
                 </p>
                 <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-100">
                   <p className="text-xs font-semibold text-[var(--text-primary)]">{topPerformer.studentName}</p>
                   <p className="text-xs text-emerald-700 font-medium mt-0.5">
-                    Score: {topPerformer.instructorScore ?? topPerformer.aiScore}/{max} (A+)
+                    {t("คะแนน", "Score")}: {topPerformer.instructorScore ?? topPerformer.aiScore}/{max} (A+)
                   </p>
                 </div>
               </div>
@@ -460,7 +484,7 @@ export default function ResultsPage() {
             {/* AI Feedback */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
               <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-4">
-                Provide AI Feedback
+                {t("ให้ Feedback AI", "Provide AI Feedback")}
               </p>
               <div className="flex justify-center mb-3">
                 <StarRating value={starRating} onChange={setStarRating} />
@@ -469,14 +493,14 @@ export default function ResultsPage() {
                 value={feedbackText}
                 onChange={(e) => setFeedbackText(e.target.value)}
                 rows={5}
-                placeholder="Share your feedback on the AI grading quality..."
+                placeholder={t("แชร์ความคิดเห็นเกี่ยวกับคุณภาพการตรวจของ AI...", "Share your feedback on the AI grading quality...")}
                 className="w-full px-3 py-2 text-xs border border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors text-[var(--text-primary)] placeholder:text-gray-300"
               />
               <button
                 onClick={() => { setFeedbackSent(true); setTimeout(() => setFeedbackSent(false), 3000); }}
                 className="w-full mt-3 py-2.5 rounded-xl bg-[#0F766E] hover:bg-[#0E7490] text-white text-xs font-semibold transition-colors"
               >
-                {feedbackSent ? "✓ Sent!" : "Feedback Grading"}
+                {feedbackSent ? `✓ ${t("ส่งแล้ว!", "Sent!")}` : t("ส่ง Feedback", "Feedback Grading")}
               </button>
             </div>
           </div>

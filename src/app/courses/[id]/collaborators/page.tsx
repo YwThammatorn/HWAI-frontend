@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import AppShell from "@/components/AppShell";
 import { useCourses } from "@/lib/courses";
+import { useLanguage } from "@/context/LanguageContext";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -139,6 +140,7 @@ function RowMenu({
 
 export default function CollaboratorsPage() {
   const { id } = useParams<{ id: string }>();
+  const { t } = useLanguage();
   const { getCourse } = useCourses();
   const course = getCourse(id);
 
@@ -223,7 +225,7 @@ export default function CollaboratorsPage() {
 
           {/* Rows */}
           {filtered.length === 0 ? (
-            <div className="px-6 py-10 text-center text-sm text-gray-500">ไม่พบผู้ร่วมงานที่ตรงกัน</div>
+            <div className="px-6 py-10 text-center text-sm text-gray-500">{t("ไม่พบผู้ร่วมงานที่ตรงกัน", "No matching collaborators found")}</div>
           ) : (
             <div className="divide-y divide-gray-50">
               {filtered.map((c) => (

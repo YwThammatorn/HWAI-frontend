@@ -6,6 +6,7 @@ import Link from "next/link";
 import AppShell from "@/components/AppShell";
 import { useCourses } from "@/lib/courses";
 import { useStudents } from "@/lib/students";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface ParsedRow {
   line: number;
@@ -37,9 +38,9 @@ function parseCSV(text: string): ParsedRow[] {
     const email = cols[3] ?? "";
 
     let error: string | undefined;
-    if (!studentId) error = "ไม่มีรหัสนักศึกษา";
-    else if (!firstName) error = "ไม่มีชื่อ";
-    else if (!lastName) error = "ไม่มีนามสกุล";
+    if (!studentId) error = "missing_id";
+    else if (!firstName) error = "missing_first";
+    else if (!lastName) error = "missing_last";
 
     return { line: i + (hasHeader ? 2 : 1), studentId, firstName, lastName, email, error };
   });
@@ -48,9 +49,18 @@ function parseCSV(text: string): ParsedRow[] {
 export default function ImportStudentsPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const { t } = useLanguage();
   const { getCourse } = useCourses();
   const { addStudents, getStudentsByCourse } = useStudents();
   const course = getCourse(id);
+
+  function translateError(code?: string) {
+    if (!code) return "";
+    if (code === "missing_id") return t("ไม่มีรหัสนักศึกษา", "Missing student ID");
+    if (code === "missing_first") return t("ไม่มีชื่อ", "Missing first name");
+    if (code === "missing_last") return t("ไม่มีนามสกุล", "Missing last name");
+    return code;
+  }
 
   const [step, setStep] = useState<"upload" | "preview" | "done">("upload");
   const [rows, setRows] = useState<ParsedRow[]>([]);
@@ -98,8 +108,8 @@ export default function ImportStudentsPage() {
     return (
       <AppShell>
         <main className="flex-1 flex items-center justify-center text-gray-500 text-sm">
-          ไม่พบรายวิชานี้ —{" "}
-          <Link href="/courses" className="text-[var(--accent)] ml-1 hover:underline">กลับไปหน้าหลัก</Link>
+          {t("ไม่พบรายวิชานี้", "Course not found")} —{" "}
+          <Link href="/courses" className="text-[var(--accent)] ml-1 hover:underline">{t("กลับไปหน้าหลัก", "Back to home")}</Link>
         </main>
       </AppShell>
     );
@@ -176,8 +186,8 @@ export default function ImportStudentsPage() {
                   </svg>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-[var(--text-primary)]">ดาวน์โหลด Template</p>
-                  <p className="text-xs text-gray-500">students-template.csv — รูปแบบที่ระบบรองรับ</p>
+                  <p className="text-sm font-medium text-[var(--text-primary)]">{t("ดาวน์โหลด Template", "Download Template")}</p>
+                  <p className="text-xs text-gray-500">students-template.csv — {t("รูปแบบที่ระบบรองรับ", "supported format")}</p>
                 </div>
               </div>
               <a
@@ -192,7 +202,7 @@ export default function ImportStudentsPage() {
 
             {/* Format hint */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">รูปแบบ CSV ที่รองรับ</p>
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">{t("รูปแบบ CSV ที่รองรับ", "Supported CSV Format")}</p>
               <div className="overflow-x-auto">
                 <table className="text-xs w-full">
                   <thead>
@@ -212,7 +222,7 @@ export default function ImportStudentsPage() {
                   </tbody>
                 </table>
               </div>
-              <p className="text-xs text-gray-500 mt-3">* email ไม่บังคับ — student_id, first_name, last_name จำเป็น</p>
+              <p className="text-xs text-gray-500 mt-3">{t("* email ไม่บังคับ — student_id, first_name, last_name จำเป็น", "* email is optional — student_id, first_name, last_name are required")}</p>
             </div>
 
             <div className="flex justify-end">
@@ -232,13 +242,13 @@ export default function ImportStudentsPage() {
                 <div className="flex items-center gap-1.5 text-sm">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2DD4BF" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                   <span className="font-semibold text-[var(--text-primary)]">{validRows.length}</span>
-                  <span className="text-gray-500">พร้อม import</span>
+                  <span className="text-gray-500">{t("พร้อม import", "ready to import")}</span>
                 </div>
                 {errorRows.length > 0 && (
                   <div className="flex items-center gap-1.5 text-sm">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                     <span className="font-semibold text-red-500">{errorRows.length}</span>
-                    <span className="text-gray-500">มีข้อผิดพลาด</span>
+                    <span className="text-gray-500">{t("มีข้อผิดพลาด", "with errors")}</span>
                   </div>
                 )}
               </div>
@@ -251,7 +261,7 @@ export default function ImportStudentsPage() {
                 <table className="w-full text-sm">
                   <thead className="border-b border-gray-100">
                     <tr className="text-left text-xs text-gray-500 uppercase tracking-wider">
-                      {["#", "รหัสนักศึกษา", "ชื่อ", "นามสกุล", "Email", "สถานะ"].map((h) => (
+                      {["#", t("รหัสนักศึกษา", "Student ID"), t("ชื่อ", "First Name"), t("นามสกุล", "Last Name"), "Email", t("สถานะ", "Status")].map((h) => (
                         <th key={h} className="px-5 py-3 font-medium">{h}</th>
                       ))}
                     </tr>
@@ -271,7 +281,7 @@ export default function ImportStudentsPage() {
                           {row.error ? (
                             <span className="inline-flex items-center gap-1 text-xs text-red-500">
                               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>
-                              {row.error}
+                              {translateError(row.error)}
                             </span>
                           ) : (
                             <span className="inline-flex items-center gap-1 text-xs text-[var(--accent)]">
@@ -290,7 +300,7 @@ export default function ImportStudentsPage() {
             {errorRows.length > 0 && (
               <p className="text-xs text-gray-500 flex items-center gap-1.5">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                แถวที่มีข้อผิดพลาดจะถูกข้ามไป — เฉพาะ {validRows.length} แถวที่ถูกต้องจะถูก import
+                {t(`แถวที่มีข้อผิดพลาดจะถูกข้ามไป — เฉพาะ ${validRows.length} แถวที่ถูกต้องจะถูก import`, `Rows with errors will be skipped — only ${validRows.length} valid rows will be imported`)}
               </p>
             )}
 
@@ -299,7 +309,7 @@ export default function ImportStudentsPage() {
                 onClick={() => { setStep("upload"); setRows([]); setFileName(""); }}
                 className="px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
               >
-                ← เลือกไฟล์ใหม่
+                {t("← เลือกไฟล์ใหม่", "← Choose another file")}
               </button>
               <div className="flex gap-3">
                 <Link href={`/courses/${id}`} className="px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
@@ -330,22 +340,25 @@ export default function ImportStudentsPage() {
                   <polyline points="20 6 9 17 4 12"/>
                 </svg>
               </div>
-              <h2 className="text-xl font-bold text-[var(--text-primary)] mb-2">Import สำเร็จ</h2>
+              <h2 className="text-xl font-bold text-[var(--text-primary)] mb-2">{t("Import สำเร็จ", "Import Complete")}</h2>
               <p className="text-sm text-gray-500 mb-8">
-                เพิ่ม <span className="font-semibold text-[var(--text-primary)]">{validRows.length} นักศึกษา</span> เข้า {course.name} เรียบร้อยแล้ว
+                {t(
+                  `เพิ่ม ${validRows.length} นักศึกษา เข้า ${course.name} เรียบร้อยแล้ว`,
+                  `Added ${validRows.length} students to ${course.name} successfully`
+                )}
               </p>
               <div className="flex gap-3">
                 <button
                   onClick={() => { setStep("upload"); setRows([]); setFileName(""); }}
                   className="px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
                 >
-                  Import เพิ่มเติม
+                  {t("Import เพิ่มเติม", "Import More")}
                 </button>
                 <Link
                   href={`/courses/${id}`}
                   className="px-5 py-2.5 rounded-xl bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)] text-sm font-medium transition-colors"
                 >
-                  กลับไปหน้า Course
+                  {t("กลับไปหน้า Course", "Back to Course")}
                 </Link>
               </div>
             </div>

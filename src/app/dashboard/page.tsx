@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import AppShell from "@/components/AppShell";
+import { useLanguage } from "@/context/LanguageContext";
 
 // ─── Mock data ────────────────────────────────────────────────────────────────
 
@@ -129,6 +130,7 @@ function UsageChart({ grading, plagiarism }: { grading: number[]; plagiarism: nu
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
+  const { t } = useLanguage();
   const [perfPeriod, setPerfPeriod] = useState<"This Semester" | "Last Semester" | "This Month">("This Semester");
   const [usagePeriod, setUsagePeriod] = useState<"This Month" | "Last 30 Days" | "Last Quarter">("This Month");
 
@@ -137,8 +139,12 @@ export default function DashboardPage() {
       <main className="w-full max-w-[1200px] mx-auto px-8 py-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-[var(--text-primary)]">Dashboard Overview</h1>
-          <p className="text-sm text-gray-500 mt-1">Welcome back, check your grading status, credits used and AI usage history from here</p>
+          <h1 className="text-2xl font-bold text-[var(--text-primary)]">
+            {t("ภาพรวมระบบ", "Dashboard Overview")}
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">
+            {t("ยินดีต้อนรับ — ตรวจสอบสถานะการตรวจงาน เครดิต และประวัติการใช้ AI ได้ที่นี่", "Welcome back, check your grading status, credits used and AI usage history from here")}
+          </p>
         </div>
 
         {/* ── Stat cards ── */}
@@ -146,7 +152,7 @@ export default function DashboardPage() {
           {/* Total Assignments */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
             <div className="flex items-start justify-between mb-3">
-              <p className="text-xs text-gray-500">Total Assignments</p>
+              <p className="text-xs text-gray-500">{t("งานทั้งหมด", "Total Assignments")}</p>
               <div className="w-8 h-8 rounded-lg bg-[var(--accent-subtle)] flex items-center justify-center">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="2" strokeLinecap="round">
                   <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
@@ -164,7 +170,7 @@ export default function DashboardPage() {
           {/* Pending Grades */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
             <div className="flex items-start justify-between mb-3">
-              <p className="text-xs text-gray-500">Pending Grades</p>
+              <p className="text-xs text-gray-500">{t("รอตรวจ", "Pending Grades")}</p>
               <div className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" strokeLinecap="round">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
@@ -173,13 +179,13 @@ export default function DashboardPage() {
               </div>
             </div>
             <p className="text-3xl font-extrabold text-[var(--text-primary)]">48</p>
-            <p className="text-xs text-red-500 mt-1.5 font-medium">! Urgent needs attention</p>
+            <p className="text-xs text-red-500 mt-1.5 font-medium">{t("! ต้องดำเนินการด่วน", "! Urgent needs attention")}</p>
           </div>
 
           {/* Avg. Class Score */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
             <div className="flex items-start justify-between mb-3">
-              <p className="text-xs text-gray-500">Avg. Class Score</p>
+              <p className="text-xs text-gray-500">{t("คะแนนเฉลี่ยชั้นเรียน", "Avg. Class Score")}</p>
               <div className="w-8 h-8 rounded-lg bg-[var(--accent-subtle)] flex items-center justify-center">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="2" strokeLinecap="round">
                   <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
@@ -196,7 +202,7 @@ export default function DashboardPage() {
           {/* AI Credits */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
             <div className="flex items-start justify-between mb-3">
-              <p className="text-xs text-gray-500">AI Credits</p>
+              <p className="text-xs text-gray-500">{t("เครดิต AI", "AI Credits")}</p>
               <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth="2" strokeLinecap="round">
                   <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
@@ -208,7 +214,7 @@ export default function DashboardPage() {
               <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
                 <div className="h-full bg-purple-400 rounded-full" style={{ width: "70%" }} />
               </div>
-              <p className="text-xs text-gray-500 mt-1">70% remaining for this month</p>
+              <p className="text-xs text-gray-500 mt-1">{t("เหลือ 70% สำหรับเดือนนี้", "70% remaining for this month")}</p>
             </div>
           </div>
         </div>
@@ -224,15 +230,15 @@ export default function DashboardPage() {
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="2" strokeLinecap="round">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
                 </svg>
-                <h2 className="text-sm font-bold text-[var(--text-primary)]">Recent Assignments</h2>
+                <h2 className="text-sm font-bold text-[var(--text-primary)]">{t("งานล่าสุด", "Recent Assignments")}</h2>
               </div>
               <table className="w-full text-sm">
                 <thead>
                   <tr className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-50">
-                    <th className="px-6 py-2.5">Course Name</th>
-                    <th className="px-4 py-2.5">Assignment</th>
-                    <th className="px-4 py-2.5">Status</th>
-                    <th className="px-4 py-2.5">Due Date</th>
+                    <th className="px-6 py-2.5">{t("ชื่อวิชา", "Course Name")}</th>
+                    <th className="px-4 py-2.5">{t("งาน", "Assignment")}</th>
+                    <th className="px-4 py-2.5">{t("สถานะ", "Status")}</th>
+                    <th className="px-4 py-2.5">{t("กำหนดส่ง", "Due Date")}</th>
                     <th className="px-4 py-2.5" />
                   </tr>
                 </thead>
@@ -260,7 +266,7 @@ export default function DashboardPage() {
                     <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/>
                     <line x1="6" y1="20" x2="6" y2="14"/>
                   </svg>
-                  Class Performance
+                  {t("ผลการเรียนชั้นเรียน", "Class Performance")}
                 </h2>
                 <div className="flex rounded-lg border border-gray-200 overflow-hidden text-xs">
                   {(["This Semester", "Last Semester", "This Month"] as const).map((p) => (
@@ -285,7 +291,7 @@ export default function DashboardPage() {
           <div className="flex flex-col gap-4">
             {/* Quick Actions */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-              <h2 className="text-sm font-bold text-[var(--text-primary)] mb-4">Quick Actions</h2>
+              <h2 className="text-sm font-bold text-[var(--text-primary)] mb-4">{t("ทำได้เลย", "Quick Actions")}</h2>
               <div className="grid grid-cols-2 gap-2">
                 {[
                   { label: "Add Course", href: "/courses/new", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg> },
@@ -307,7 +313,7 @@ export default function DashboardPage() {
 
             {/* Upcoming Deadlines */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-              <h2 className="text-sm font-bold text-[var(--text-primary)] mb-4">Upcoming Deadlines</h2>
+              <h2 className="text-sm font-bold text-[var(--text-primary)] mb-4">{t("กำหนดส่งที่กำลังมาถึง", "Upcoming Deadlines")}</h2>
               <div className="flex flex-col gap-3">
                 {DEADLINES.map((d) => (
                   <div key={d.title} className="flex items-start gap-3">
@@ -331,7 +337,7 @@ export default function DashboardPage() {
                   <path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/>
                   <path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/>
                 </svg>
-                Sync Platforms
+                {t("เชื่อมต่อแพลตฟอร์ม", "Sync Platforms")}
               </h2>
               {["Google Classroom", "Microsoft Teams"].map((p) => (
                 <button
@@ -356,7 +362,7 @@ export default function DashboardPage() {
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="2.5" strokeLinecap="round">
                 <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
               </svg>
-              <p className="text-xs text-gray-500">Total Credits Used</p>
+              <p className="text-xs text-gray-500">{t("เครดิตที่ใช้ทั้งหมด", "Total Credits Used")}</p>
             </div>
             <p className="text-4xl font-extrabold text-[var(--text-primary)]">3,750 <span className="text-base font-normal text-gray-300">/ 5,000</span></p>
             <p className="text-xs text-green-600 mt-2">↗ 12% more than last month</p>
@@ -366,10 +372,10 @@ export default function DashboardPage() {
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="2.5" strokeLinecap="round">
                 <polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
               </svg>
-              <p className="text-xs text-gray-500">Assignments Graded</p>
+              <p className="text-xs text-gray-500">{t("งานที่ตรวจแล้ว", "Assignments Graded")}</p>
             </div>
             <p className="text-4xl font-extrabold text-[var(--text-primary)]">248 <span className="text-base font-normal text-gray-300">papers</span></p>
-            <p className="text-xs text-gray-500 mt-2">Avg. 15 credits per paper</p>
+            <p className="text-xs text-gray-500 mt-2">{t("เฉลี่ย 15 เครดิตต่อกระดาษ", "Avg. 15 credits per paper")}</p>
           </div>
         </div>
 
@@ -377,8 +383,8 @@ export default function DashboardPage() {
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
           <div className="flex items-start justify-between mb-5">
             <div>
-              <h2 className="text-xl font-extrabold text-[var(--text-primary)]">AI Usage History</h2>
-              <p className="text-xs text-gray-500 mt-0.5">Track your grading activity and credit consumption.</p>
+              <h2 className="text-xl font-extrabold text-[var(--text-primary)]">{t("ประวัติการใช้ AI", "AI Usage History")}</h2>
+              <p className="text-xs text-gray-500 mt-0.5">{t("ติดตามกิจกรรมการตรวจงานและการใช้เครดิต", "Track your grading activity and credit consumption.")}</p>
             </div>
             <div className="flex rounded-lg border border-gray-200 overflow-hidden text-xs">
               {(["This Month", "Last 30 Days", "Last Quarter"] as const).map((p) => (
@@ -397,10 +403,10 @@ export default function DashboardPage() {
           </div>
 
           <div className="flex items-center justify-between mb-3">
-            <p className="text-sm font-semibold text-[var(--text-primary)]">Daily Credit Consumption</p>
+            <p className="text-sm font-semibold text-[var(--text-primary)]">{t("การใช้เครดิตรายวัน", "Daily Credit Consumption")}</p>
             <div className="flex items-center gap-4 text-xs text-gray-500">
-              <span className="flex items-center gap-1.5"><span className="w-3 h-1.5 rounded-full bg-[#2DD4BF] inline-block" /> Auto-Grading</span>
-              <span className="flex items-center gap-1.5"><span className="w-3 h-1.5 rounded-full bg-gray-300 inline-block" /> Plagiarism Check</span>
+              <span className="flex items-center gap-1.5"><span className="w-3 h-1.5 rounded-full bg-[#2DD4BF] inline-block" /> {t("ตรวจอัตโนมัติ", "Auto-Grading")}</span>
+              <span className="flex items-center gap-1.5"><span className="w-3 h-1.5 rounded-full bg-gray-300 inline-block" /> {t("ตรวจการคัดลอก", "Plagiarism Check")}</span>
             </div>
           </div>
           <UsageChart grading={USAGE_DATA_GRADING} plagiarism={USAGE_DATA_PLAGIARISM} />
