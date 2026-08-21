@@ -423,11 +423,11 @@ test.describe("Sign Out", () => {
 // ── 14. i18n Language Toggle ──────────────────────────────────────────────────
 
 test.describe("i18n Language Toggle", () => {
-  // Start in TH mode so toggle behaviour (TH→EN→TH) is predictable
+  // Don't set hwai_lang — fresh context starts empty, app defaults to "th".
+  // Setting it via addInitScript would re-run on reload and break the persist test.
   test.beforeEach(async ({ page }) => {
     await page.addInitScript((u) => {
       localStorage.setItem("hwai_user", JSON.stringify(u));
-      localStorage.setItem("hwai_lang", "th");
     }, MOCK_USER);
   });
 
@@ -563,7 +563,7 @@ test.describe("Student Import", () => {
 
   test("Download Template link is present", async ({ page }) => {
     await waitReady(page, "/courses/seed-1/students/import");
-    await expect(page.getByRole("link", { name: /template/i }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: /download/i }).first()).toBeVisible();
   });
 });
 
