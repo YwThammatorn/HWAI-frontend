@@ -2,12 +2,13 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 
-export type UserRole = "teacher" | "ta";
+export type UserRole = "teacher" | "ta" | "student" | "admin";
 
 export interface AuthUser {
   name: string;
   email: string;
   role: UserRole;
+  studentId?: string; // populated only for student role
 }
 
 interface AuthContextValue {

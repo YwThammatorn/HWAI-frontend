@@ -41,7 +41,7 @@ export default function CourseDetailPage() {
   }
 
   const sourceLabel: Record<string, string> = {
-    manual: "Manually Added",
+    manual: t("เพิ่มด้วยตนเอง", "Manually Added"),
     google: "Google Classroom",
     teams: "Microsoft Teams",
   };
@@ -51,7 +51,7 @@ export default function CourseDetailPage() {
       <main className="w-full max-w-[1200px] mx-auto px-8 py-8">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
-          <Link href="/courses" className="hover:text-[var(--accent)] transition-colors">All Courses</Link>
+          <Link href="/courses" className="hover:text-[var(--accent)] transition-colors">{t("รายวิชาทั้งหมด", "All Courses")}</Link>
           <span>/</span>
           <span className="text-[var(--text-primary)] font-medium">{course.name}</span>
         </div>
@@ -78,16 +78,16 @@ export default function CourseDetailPage() {
               <path d="M7 1v2M7 11v2M1 7h2M11 7h2M3.22 3.22l1.41 1.41M9.37 9.37l1.41 1.41M3.22 10.78l1.41-1.41M9.37 4.63l1.41-1.41" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
               <circle cx="7" cy="7" r="2" stroke="currentColor" strokeWidth="1.5"/>
             </svg>
-            Settings
+            {t("ตั้งค่า", "Settings")}
           </Link>
         </div>
 
         {/* Stats row */}
         <div className="grid grid-cols-3 gap-4 mb-6">
           {[
-            { label: "Students", value: `${students.length}` },
-            { label: "Assignments", value: `${assignments.length}` },
-            { label: "Grading Status", value: allGraded ? "All Graded" : `${activeAssignments} Active` },
+            { label: t("นักศึกษา", "Students"), value: `${students.length}` },
+            { label: t("ชิ้นงาน", "Assignments"), value: `${assignments.length}` },
+            { label: t("สถานะการตรวจ", "Grading Status"), value: allGraded ? t("ตรวจครบแล้ว", "All Graded") : `${activeAssignments} ${t("กำลังดำเนินการ", "Active")}` },
           ].map((s) => (
             <div key={s.label} className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
               <p className="text-xs text-gray-500 mb-1">{s.label}</p>
@@ -103,7 +103,7 @@ export default function CourseDetailPage() {
               href={`/courses/${id}/assignments`}
               className="py-3 px-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-[var(--accent)] transition-colors"
             >
-              Assignments
+              {t("ชิ้นงาน", "Assignments")}
               {assignments.length > 0 && (
                 <span className="ml-1.5 text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full">
                   {assignments.length}
@@ -117,7 +117,7 @@ export default function CourseDetailPage() {
               CLO
             </Link>
             <button className="py-3 px-4 text-sm font-medium border-b-2 border-[var(--accent)] text-[var(--accent)]">
-              Students
+              {t("นักศึกษา", "Students")}
               {students.length > 0 && (
                 <span className="ml-1.5 text-xs bg-[var(--accent-subtle)] text-[var(--accent)] px-1.5 py-0.5 rounded-full">
                   {students.length}
@@ -128,13 +128,13 @@ export default function CourseDetailPage() {
               href={`/courses/${id}/collaborators`}
               className="py-3 px-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-[var(--accent)] transition-colors"
             >
-              Collaborators
+              {t("ผู้ร่วมงาน", "Collaborators")}
             </Link>
             <Link
               href={`/courses/${id}/results`}
               className="py-3 px-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-[var(--accent)] transition-colors"
             >
-              Results
+              {t("ผลลัพธ์", "Results")}
             </Link>
           </div>
 
@@ -157,7 +157,7 @@ export default function CourseDetailPage() {
                   <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>
                   <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
                 </svg>
-                Import Students
+                {t("นำเข้านักศึกษา", "Import Students")}
               </Link>
             </div>
           ) : (

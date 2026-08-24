@@ -1,7 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
-  testDir: "./e2e",
+  testDir: ".",
+  testMatch: "**/*.spec.ts",
   fullyParallel: false,
   retries: 1,
   reporter: [["list"], ["html", { open: "never", outputFolder: "e2e-report" }]],

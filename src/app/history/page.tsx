@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import AppShell from "@/components/AppShell";
+import { useLanguage } from "@/context/LanguageContext";
 
 // ─── Types & Seed Data ────────────────────────────────────────────────────────
 
@@ -150,6 +151,7 @@ function CreditRing({ pct }: { pct: number }) {
 const PER_PAGE = 8;
 
 export default function HistoryPage() {
+  const { t } = useLanguage();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | GradingStatus>("all");
   const [page, setPage] = useState(1);
@@ -201,8 +203,8 @@ export default function HistoryPage() {
       <main className="max-w-5xl mx-auto px-8 py-8 w-full">
         {/* ── Page Title ── */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-[var(--text-primary)]">Grading History</h1>
-          <p className="text-sm text-gray-500 mt-1">Track your grading activity and credit consumption.</p>
+          <h1 className="text-2xl font-bold text-[var(--text-primary)]">{t("ประวัติการตรวจงาน", "Grading History")}</h1>
+          <p className="text-sm text-gray-500 mt-1">{t("ติดตามกิจกรรมการตรวจและการใช้ credit", "Track your grading activity and credit consumption.")}</p>
         </div>
 
         {/* ── Stat Cards ── */}
@@ -211,45 +213,45 @@ export default function HistoryPage() {
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
             <div className="flex items-center gap-2 text-[var(--accent)] mb-3">
               <IconBolt />
-              <span className="text-xs font-semibold tracking-wide uppercase text-gray-500">Total Credits Used</span>
+              <span className="text-xs font-semibold tracking-wide uppercase text-gray-500">{t("Credit ที่ใช้ไปทั้งหมด", "Total Credits Used")}</span>
             </div>
             <div className="flex items-end gap-2">
               <span className="text-3xl font-bold text-[var(--text-primary)] tabular-nums">{totalCreditsUsed.toLocaleString()}</span>
               <span className="text-sm text-gray-400 mb-1">/ {TOTAL_CREDIT_LIMIT.toLocaleString()}</span>
             </div>
-            <p className="text-xs text-[var(--accent)] mt-2 font-medium">↑ {usedPct}% of total limit used</p>
+            <p className="text-xs text-[var(--accent)] mt-2 font-medium">↑ {usedPct}% {t("ของ credit ทั้งหมดที่ใช้ไป", "of total limit used")}</p>
           </div>
 
           {/* Assignments Graded */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
             <div className="flex items-center gap-2 mb-3">
               <IconCheck />
-              <span className="text-xs font-semibold tracking-wide uppercase text-gray-500">Assignments Graded</span>
+              <span className="text-xs font-semibold tracking-wide uppercase text-gray-500">{t("งานที่ตรวจแล้ว", "Assignments Graded")}</span>
             </div>
             <div className="flex items-end gap-2">
               <span className="text-3xl font-bold text-[var(--text-primary)] tabular-nums">{totalPapersGraded}</span>
-              <span className="text-sm text-gray-400 mb-1">papers</span>
+              <span className="text-sm text-gray-400 mb-1">{t("ชิ้นงาน", "papers")}</span>
             </div>
-            <p className="text-xs text-gray-400 mt-2">Avg. {avgCostPerPaper} credits per paper</p>
+            <p className="text-xs text-gray-400 mt-2">{t("เฉลี่ย", "Avg.")} {avgCostPerPaper} {t("credit ต่อชิ้นงาน", "credits per paper")}</p>
           </div>
 
           {/* Remaining Balance — dark card */}
           <div className="bg-[var(--bg-nav)] rounded-2xl shadow-sm p-5 flex flex-col">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">Remaining Balance</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">{t("ยอด Credit คงเหลือ", "Remaining Balance")}</p>
                 <span className="text-3xl font-bold text-white tabular-nums">{remaining.toLocaleString()}</span>
                 <p className="text-xs text-gray-400 mt-2 leading-relaxed max-w-[140px]">
                   {remainingPct < 30
-                    ? "You are running low on credits for upcoming assignments."
-                    : "You have enough credits for upcoming assignments."}
+                    ? t("Credit ใกล้หมดแล้ว กรุณาเติมก่อนตรวจงาน", "You are running low on credits for upcoming assignments.")
+                    : t("มี Credit เพียงพอสำหรับการตรวจงาน", "You have enough credits for upcoming assignments.")}
                 </p>
               </div>
               <CreditRing pct={remainingPct} />
             </div>
             <button className="mt-4 flex items-center justify-center gap-1.5 w-full py-2 rounded-xl bg-[#2DD4BF] text-[var(--text-primary)] text-sm font-semibold hover:bg-[#14B8A6] transition-colors">
               <IconPlus />
-              Buy Credits
+              {t("เติม Credit", "Buy Credits")}
             </button>
           </div>
         </div>
@@ -258,7 +260,7 @@ export default function HistoryPage() {
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           {/* Table header / controls */}
           <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 flex-wrap gap-3">
-            <h2 className="text-base font-bold text-[var(--text-primary)]">Detailed Grading Log</h2>
+            <h2 className="text-base font-bold text-[var(--text-primary)]">{t("บันทึกการตรวจงาน", "Detailed Grading Log")}</h2>
             <div className="flex items-center gap-2">
               {/* Search */}
               <div className="relative">
@@ -267,7 +269,7 @@ export default function HistoryPage() {
                 </span>
                 <input
                   type="text"
-                  placeholder="Search activity..."
+                  placeholder={t("ค้นหา...", "Search activity...")}
                   value={search}
                   onChange={(e) => handleSearch(e.target.value)}
                   className="pl-8 pr-3 py-1.5 text-sm rounded-xl border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#2DD4BF]/40 focus:border-[#2DD4BF] w-48"
@@ -280,9 +282,9 @@ export default function HistoryPage() {
                 onChange={(e) => handleStatusFilter(e.target.value as typeof statusFilter)}
                 className="text-xs px-3 py-1.5 rounded-xl border border-gray-200 bg-gray-50 text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#2DD4BF]/40 cursor-pointer"
               >
-                <option value="all">All Status</option>
-                <option value="completed">Completed</option>
-                <option value="failed">Failed</option>
+                <option value="all">{t("ทุกสถานะ", "All Status")}</option>
+                <option value="completed">{t("สำเร็จ", "Completed")}</option>
+                <option value="failed">{t("ล้มเหลว", "Failed")}</option>
               </select>
 
               {/* Export */}
@@ -301,13 +303,13 @@ export default function HistoryPage() {
             <table className="w-full min-w-[700px]">
               <thead>
                 <tr className="border-b border-gray-100">
-                  <th className="text-left text-[10.5px] font-semibold uppercase tracking-wider text-gray-400 px-5 py-3 whitespace-nowrap">Date & Time</th>
-                  <th className="text-left text-[10.5px] font-semibold uppercase tracking-wider text-gray-400 px-4 py-3">Assignment</th>
-                  <th className="text-left text-[10.5px] font-semibold uppercase tracking-wider text-gray-400 px-4 py-3">Course</th>
-                  <th className="text-right text-[10.5px] font-semibold uppercase tracking-wider text-gray-400 px-4 py-3">Count</th>
-                  <th className="text-right text-[10.5px] font-semibold uppercase tracking-wider text-gray-400 px-4 py-3">Cost</th>
-                  <th className="text-left text-[10.5px] font-semibold uppercase tracking-wider text-gray-400 px-4 py-3">Status</th>
-                  <th className="text-left text-[10.5px] font-semibold uppercase tracking-wider text-gray-400 px-4 py-3">Grader</th>
+                  <th className="text-left text-[10.5px] font-semibold uppercase tracking-wider text-gray-400 px-5 py-3 whitespace-nowrap">{t("วันที่ & เวลา", "Date & Time")}</th>
+                  <th className="text-left text-[10.5px] font-semibold uppercase tracking-wider text-gray-400 px-4 py-3">{t("ชิ้นงาน", "Assignment")}</th>
+                  <th className="text-left text-[10.5px] font-semibold uppercase tracking-wider text-gray-400 px-4 py-3">{t("รายวิชา", "Course")}</th>
+                  <th className="text-right text-[10.5px] font-semibold uppercase tracking-wider text-gray-400 px-4 py-3">{t("จำนวน", "Count")}</th>
+                  <th className="text-right text-[10.5px] font-semibold uppercase tracking-wider text-gray-400 px-4 py-3">{t("ค่าใช้จ่าย", "Cost")}</th>
+                  <th className="text-left text-[10.5px] font-semibold uppercase tracking-wider text-gray-400 px-4 py-3">{t("สถานะ", "Status")}</th>
+                  <th className="text-left text-[10.5px] font-semibold uppercase tracking-wider text-gray-400 px-4 py-3">{t("ผู้ตรวจ", "Grader")}</th>
                   <th className="px-3 py-3" />
                 </tr>
               </thead>
@@ -315,7 +317,7 @@ export default function HistoryPage() {
                 {visible.length === 0 ? (
                   <tr>
                     <td colSpan={8} className="py-16 text-center text-sm text-gray-400">
-                      No grading sessions match your search.
+                      {t("ไม่พบประวัติการตรวจที่ตรงกัน", "No grading sessions match your search.")}
                     </td>
                   </tr>
                 ) : (
@@ -349,12 +351,12 @@ export default function HistoryPage() {
                         {session.status === "completed" ? (
                           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                            Completed
+                            {t("สำเร็จ", "Completed")}
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-red-50 text-red-600">
                             <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
-                            Failed
+                            {t("ล้มเหลว", "Failed")}
                           </span>
                         )}
                       </td>
@@ -374,7 +376,7 @@ export default function HistoryPage() {
           {/* Pagination */}
           <div className="flex items-center justify-between px-5 py-3.5 border-t border-gray-100">
             <p className="text-xs text-gray-400">
-              Showing {filtered.length === 0 ? 0 : (safeePage - 1) * PER_PAGE + 1}–{Math.min(safeePage * PER_PAGE, filtered.length)} of {filtered.length} results
+              {t("แสดง", "Showing")} {filtered.length === 0 ? 0 : (safeePage - 1) * PER_PAGE + 1}–{Math.min(safeePage * PER_PAGE, filtered.length)} {t("จาก", "of")} {filtered.length} {t("รายการ", "results")}
             </p>
             <div className="flex items-center gap-1">
               <button

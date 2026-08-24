@@ -5,6 +5,7 @@ import Link from "next/link";
 import AppShell from "@/components/AppShell";
 import { useCourses } from "@/lib/courses";
 import { useAssignments } from "@/lib/assignments";
+import { useLanguage } from "@/context/LanguageContext";
 
 function gradeLetter(score: number, max: number): string {
   const pct = (score / max) * 100;
@@ -24,6 +25,7 @@ function gradeClass(letter: string): string {
 
 export default function CourseResultsPage() {
   const { id } = useParams<{ id: string }>();
+  const { t } = useLanguage();
   const { getCourse } = useCourses();
   const { getAssignmentsByCourse, getSubmissionsByAssignment } = useAssignments();
 
@@ -34,8 +36,8 @@ export default function CourseResultsPage() {
     return (
       <AppShell>
         <main className="flex-1 flex items-center justify-center text-gray-500 text-sm">
-          ไม่พบรายวิชา —{" "}
-          <Link href="/courses" className="text-[var(--accent)] ml-1 hover:underline">กลับหน้าหลัก</Link>
+          {t("ไม่พบรายวิชา", "Course not found")} —{" "}
+          <Link href="/courses" className="text-[var(--accent)] ml-1 hover:underline">{t("กลับหน้าหลัก", "Back")}</Link>
         </main>
       </AppShell>
     );
@@ -46,14 +48,14 @@ export default function CourseResultsPage() {
       <main className="w-full max-w-[900px] mx-auto px-8 py-8">
         {/* Breadcrumb */}
         <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-5 flex-wrap">
-          <Link href="/courses" className="hover:text-[var(--accent)] transition-colors">Courses</Link>
+          <Link href="/courses" className="hover:text-[var(--accent)] transition-colors">{t("รายวิชา", "Courses")}</Link>
           <span>/</span>
           <Link href={`/courses/${id}`} className="hover:text-[var(--accent)] transition-colors">{course.name}</Link>
           <span>/</span>
-          <span className="text-[var(--text-primary)] font-medium">Results</span>
+          <span className="text-[var(--text-primary)] font-medium">{t("ผลลัพธ์", "Results")}</span>
         </div>
 
-        <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">Grading Results</h1>
+        <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">{t("ผลการตรวจงาน", "Grading Results")}</h1>
         <p className="text-sm text-gray-400 mb-8">{course.name}</p>
 
         {assignments.length === 0 ? (
@@ -63,8 +65,8 @@ export default function CourseResultsPage() {
                 <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
               </svg>
             </div>
-            <p className="text-sm font-medium text-gray-500">ยังไม่มีชิ้นงาน</p>
-            <p className="text-xs text-gray-400 mt-1">สร้างชิ้นงานก่อนเพื่อดูผลลัพธ์</p>
+            <p className="text-sm font-medium text-gray-500">{t("ยังไม่มีชิ้นงาน", "No assignments yet")}</p>
+            <p className="text-xs text-gray-400 mt-1">{t("สร้างชิ้นงานก่อนเพื่อดูผลลัพธ์", "Create assignments first to view results")}</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -91,26 +93,26 @@ export default function CourseResultsPage() {
                       <h3 className="text-sm font-semibold text-[var(--text-primary)] truncate">{a.name}</h3>
                       {total === 0 ? (
                         <span className="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-400 font-medium shrink-0">
-                          No submissions
+                          {t("ยังไม่มีงานส่ง", "No submissions")}
                         </span>
                       ) : allDone ? (
                         <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-medium shrink-0">
-                          Complete
+                          {t("เสร็จสิ้น", "Complete")}
                         </span>
                       ) : (
                         <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium shrink-0">
-                          In Progress
+                          {t("กำลังดำเนินการ", "In Progress")}
                         </span>
                       )}
                     </div>
                     <div className="flex items-center gap-4 text-xs text-gray-400">
-                      <span>{graded}/{total} graded</span>
+                      <span>{graded}/{total} {t("ตรวจแล้ว", "graded")}</span>
                       {needsReview > 0 && (
-                        <span className="text-amber-600">{needsReview} needs review</span>
+                        <span className="text-amber-600">{needsReview} {t("รอตรวจสอบ", "needs review")}</span>
                       )}
                       {avg !== null && avgLetter && (
                         <span>
-                          Avg:{" "}
+                          {t("เฉลี่ย:", "Avg:")}{" "}
                           <span className="font-semibold text-[var(--text-primary)]">{avg.toFixed(1)}</span>
                           {" "}
                           <span
@@ -139,14 +141,14 @@ export default function CourseResultsPage() {
                         href={`/courses/${id}/assignments/${a.id}/results`}
                         className="px-3 py-2 rounded-lg bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)] text-xs font-semibold transition-colors"
                       >
-                        View Results
+                        {t("ดูผลลัพธ์", "View Results")}
                       </Link>
                     ) : (
                       <Link
                         href={`/courses/${id}/assignments/${a.id}/grading`}
                         className="px-3 py-2 rounded-lg border border-gray-200 text-xs text-gray-500 hover:bg-gray-50 transition-colors"
                       >
-                        View Progress
+                        {t("ดูความคืบหน้า", "View Progress")}
                       </Link>
                     )}
                   </div>

@@ -1,12 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import AppShell from "@/components/AppShell";
 import { useCourses } from "@/lib/courses";
-import { useAssignments } from "@/lib/assignments";
+import { useAssignments, Submission } from "@/lib/assignments";
 import { useLanguage } from "@/context/LanguageContext";
+
+// ── Stat card ─────────────────────────────────────────────────────────────
 
 function StatCard({
   label, value, sub, icon, color,
@@ -28,6 +30,8 @@ function StatCard({
   );
 }
 
+// ── Circle progress ────────────────────────────────────────────────────────
+
 function CircleProgress({ pct }: { pct: number }) {
   const [displayPct, setDisplayPct] = useState(0);
   const r = 80;
@@ -35,8 +39,8 @@ function CircleProgress({ pct }: { pct: number }) {
   const dash = (displayPct / 100) * circ;
 
   useEffect(() => {
-    const t = setTimeout(() => setDisplayPct(pct), 80);
-    return () => clearTimeout(t);
+    const timer = setTimeout(() => setDisplayPct(pct), 80);
+    return () => clearTimeout(timer);
   }, [pct]);
 
   return (
@@ -49,25 +53,289 @@ function CircleProgress({ pct }: { pct: number }) {
         transform="rotate(-90 100 100)"
         style={{ transition: "stroke-dasharray 1.2s cubic-bezier(0.23, 1, 0.32, 1)" }}
       />
-      <text
-        x="100" y="112"
-        textAnchor="middle"
-        fill="var(--text-primary, #1B2A4A)"
-        fontSize="38"
-        fontWeight="700"
-        fontFamily="ui-sans-serif, system-ui, sans-serif"
-      >
+      <text x="100" y="112" textAnchor="middle" fill="var(--text-primary, #1B2A4A)"
+        fontSize="38" fontWeight="700" fontFamily="ui-sans-serif, system-ui, sans-serif">
         {Math.round(displayPct)}%
       </text>
     </svg>
   );
 }
 
+// ── Grade adjustment row ───────────────────────────────────────────────────
+
+interface RowState {
+  instructorScore: string; // controlled input — string to allow empty
+  regrading: boolean;
+}
+
+function GradeRow({
+  sub,
+  maxPoints,
+  rowState,
+  onChange,
+  onRegrade,
+}: {
+  sub: Submission;
+  maxPoints: number;
+  rowState: RowState;
+  onChange: (val: string) => void;
+  onRegrade: () => void;
+}) {
+  const { t } = useLanguage();
+
+  const parsedInstructor = rowState.instructorScore === "" ? null : parseFloat(rowState.instructorScore);
+  const isModified =
+    parsedInstructor !== null &&
+    !isNaN(parsedInstructor) &&
+    parsedInstructor !== sub.aiScore;
+
+  const STATUS_MAP = {
+    not_graded: { label: t("ยังไม่ได้ตรวจ", "Not graded"), cls: "bg-gray-100 text-gray-500" },
+    need_review: { label: t("รอตรวจสอบ", "Needs review"), cls: "bg-amber-100 text-amber-700" },
+    graded: { label: t("ตรวจแล้ว", "Graded"), cls: "bg-green-100 text-green-700" },
+  };
+  const statusInfo = STATUS_MAP[sub.status];
+
+  return (
+    <tr className={`border-b border-gray-100 last:border-0 transition-colors ${isModified ? "bg-amber-50" : "hover:bg-gray-50"}`}>
+      {/* Student */}
+      <td className="px-4 py-3">
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-full bg-[#2DD4BF]/20 text-[#0F766E] text-[10px] font-bold flex items-center justify-center shrink-0 select-none" aria-hidden="true">
+            {sub.studentName.split(" ").map((w) => w[0] ?? "").slice(0, 2).join("").toUpperCase()}
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-[var(--text-primary)] truncate">{sub.studentName}</p>
+            <p className="text-xs text-gray-400 truncate">{sub.email}</p>
+          </div>
+        </div>
+      </td>
+
+      {/* Submitted at */}
+      <td className="px-4 py-3 text-xs text-gray-400 whitespace-nowrap">
+        {new Date(sub.submittedAt).toLocaleDateString("th-TH", { day: "numeric", month: "short" })}
+      </td>
+
+      {/* AI Score */}
+      <td className="px-4 py-3 text-sm tabular-nums">
+        {sub.aiScore !== null ? (
+          <span className={isModified ? "text-gray-400 line-through" : "text-[var(--text-primary)] font-semibold"}>
+            {sub.aiScore}
+          </span>
+        ) : (
+          <span className="text-gray-300">—</span>
+        )}
+        <span className="text-gray-300 text-xs">/{maxPoints}</span>
+      </td>
+
+      {/* Instructor score input */}
+      <td className="px-4 py-3">
+        <div className="flex items-center gap-1.5">
+          <input
+            type="number"
+            min={0}
+            max={maxPoints}
+            step={0.5}
+            value={rowState.instructorScore}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={sub.aiScore !== null ? String(sub.aiScore) : "—"}
+            aria-label={t(`คะแนนอาจารย์ของ ${sub.studentName}`, `Instructor score for ${sub.studentName}`)}
+            className={`w-20 h-8 rounded-lg border text-sm text-center tabular-nums focus:outline-none focus:ring-2 focus:ring-[#2DD4BF] transition-colors ${
+              isModified
+                ? "border-amber-300 bg-amber-50 text-amber-700 font-semibold"
+                : "border-gray-200 bg-white text-[var(--text-primary)]"
+            }`}
+          />
+          {isModified && (
+            <span className="text-[10px] font-bold text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded whitespace-nowrap">
+              {t("แก้ไขแล้ว", "Edited")}
+            </span>
+          )}
+        </div>
+      </td>
+
+      {/* Status */}
+      <td className="px-4 py-3">
+        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold ${statusInfo.cls}`}>
+          {statusInfo.label}
+        </span>
+      </td>
+
+      {/* Re-grade button */}
+      <td className="px-4 py-3">
+        <button
+          onClick={onRegrade}
+          disabled={rowState.regrading}
+          aria-label={t(`Re-grade ${sub.studentName}`, `Re-grade ${sub.studentName}`)}
+          className="flex items-center gap-1.5 h-7 px-2.5 rounded-lg border border-gray-200 text-xs font-medium text-gray-500 hover:border-[#2DD4BF] hover:text-[#0F766E] hover:bg-[#2DD4BF]/5 active:scale-[0.97] disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2DD4BF] transition-all"
+        >
+          {rowState.regrading ? (
+            <svg className="animate-spin" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+              <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+            </svg>
+          ) : (
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+              <polyline points="1 4 1 10 7 10"/>
+              <path d="M3.51 15a9 9 0 1 0 .49-4.56"/>
+            </svg>
+          )}
+          {t("Re-grade", "Re-grade")}
+        </button>
+      </td>
+    </tr>
+  );
+}
+
+// ── Grade adjustment table ─────────────────────────────────────────────────
+
+function GradeAdjustmentTable({
+  submissions,
+  maxPoints,
+  onSaveAll,
+}: {
+  submissions: Submission[];
+  maxPoints: number;
+  onSaveAll: (changes: Record<string, number | null>) => void;
+}) {
+  const { t } = useLanguage();
+
+  const [rowStates, setRowStates] = useState<Record<string, RowState>>(() =>
+    Object.fromEntries(
+      submissions.map((s) => [
+        s.id,
+        {
+          instructorScore: s.instructorScore !== null ? String(s.instructorScore) : "",
+          regrading: false,
+        },
+      ])
+    )
+  );
+
+  const [saving, setSaving] = useState(false);
+  const [savedMsg, setSavedMsg] = useState(false);
+
+  const modifiedCount = useMemo(() => {
+    return submissions.filter((sub) => {
+      const val = rowStates[sub.id]?.instructorScore ?? "";
+      const parsed = val === "" ? null : parseFloat(val);
+      return parsed !== null && !isNaN(parsed) && parsed !== sub.aiScore;
+    }).length;
+  }, [rowStates, submissions]);
+
+  function updateRow(id: string, val: string) {
+    // Clamp to [0, maxPoints]
+    const parsed = parseFloat(val);
+    let clamped = val;
+    if (!isNaN(parsed)) clamped = String(Math.min(maxPoints, Math.max(0, parsed)));
+    setRowStates((prev) => ({ ...prev, [id]: { ...prev[id], instructorScore: clamped } }));
+  }
+
+  async function handleRegrade(subId: string) {
+    setRowStates((prev) => ({ ...prev, [subId]: { ...prev[subId], regrading: true } }));
+    await new Promise((r) => setTimeout(r, 1500));
+    // Mock: regenerate score within ±15% of maxPoints
+    const newScore = Math.round(maxPoints * (0.55 + Math.random() * 0.4));
+    setRowStates((prev) => ({
+      ...prev,
+      [subId]: { instructorScore: "", regrading: false },
+    }));
+    onSaveAll({ [subId]: newScore }); // immediately persist new aiScore mock
+  }
+
+  function handleSaveAll() {
+    setSaving(true);
+    const changes: Record<string, number | null> = {};
+    submissions.forEach((sub) => {
+      const val = rowStates[sub.id]?.instructorScore ?? "";
+      const parsed = val === "" ? null : parseFloat(val);
+      if (parsed !== null && !isNaN(parsed) && parsed !== sub.aiScore) {
+        changes[sub.id] = parsed;
+      }
+    });
+    onSaveAll(changes);
+    setSaving(false);
+    setSavedMsg(true);
+    setTimeout(() => setSavedMsg(false), 3000);
+  }
+
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm mt-6 overflow-hidden">
+      {/* Section header */}
+      <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+        <div>
+          <h2 className="text-sm font-bold text-[var(--text-primary)]">{t("ปรับคะแนน", "Grade Adjustment")}</h2>
+          <p className="text-xs text-gray-400 mt-0.5">
+            {t(
+              `${submissions.length} คน — พิมพ์ "คะแนนอาจารย์" เพื่อ override AI หรือกด Re-grade เพื่อให้ AI ตรวจใหม่`,
+              `${submissions.length} submission(s) — type an instructor score to override AI, or Re-grade to re-run AI`
+            )}
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          {savedMsg && (
+            <span role="status" className="text-xs font-semibold text-green-700 bg-green-50 border border-green-100 rounded-lg px-3 py-1.5">
+              {t("บันทึกแล้ว ✓", "Saved ✓")}
+            </span>
+          )}
+          <button
+            onClick={handleSaveAll}
+            disabled={modifiedCount === 0 || saving}
+            className="flex items-center gap-1.5 h-9 px-4 rounded-xl bg-[#0F766E] text-white text-sm font-semibold hover:bg-[#0d6660] active:scale-[0.97] disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2DD4BF] transition-colors"
+          >
+            {saving ? (
+              t("กำลังบันทึก…", "Saving…")
+            ) : modifiedCount > 0 ? (
+              t(`บันทึก ${modifiedCount} รายการ`, `Save ${modifiedCount} change(s)`)
+            ) : (
+              t("บันทึกทั้งหมด", "Save All")
+            )}
+          </button>
+        </div>
+      </div>
+
+      {submissions.length === 0 ? (
+        <div className="py-12 text-center text-sm text-gray-400">
+          {t("ยังไม่มีการส่งงาน", "No submissions yet")}
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[700px]">
+            <thead>
+              <tr className="bg-gray-50 border-b border-gray-100">
+                <th scope="col" className="px-4 py-2.5 text-left text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{t("นักศึกษา", "Student")}</th>
+                <th scope="col" className="px-4 py-2.5 text-left text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{t("วันที่ส่ง", "Submitted")}</th>
+                <th scope="col" className="px-4 py-2.5 text-left text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{t("คะแนน AI", "AI Score")}</th>
+                <th scope="col" className="px-4 py-2.5 text-left text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{t("คะแนนอาจารย์", "Instructor Score")}</th>
+                <th scope="col" className="px-4 py-2.5 text-left text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{t("สถานะ", "Status")}</th>
+                <th scope="col" className="px-4 py-2.5 w-28"><span className="sr-only">{t("Re-grade", "Re-grade")}</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              {submissions.map((sub) => (
+                <GradeRow
+                  key={sub.id}
+                  sub={sub}
+                  maxPoints={maxPoints}
+                  rowState={rowStates[sub.id] ?? { instructorScore: "", regrading: false }}
+                  onChange={(val) => updateRow(sub.id, val)}
+                  onRegrade={() => handleRegrade(sub.id)}
+                />
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Main page ──────────────────────────────────────────────────────────────
+
 export default function GradingProgressPage() {
   const { id, assignmentId } = useParams<{ id: string; assignmentId: string }>();
   const { t } = useLanguage();
   const { getCourse } = useCourses();
-  const { getAssignment, getSubmissionsByAssignment } = useAssignments();
+  const { getAssignment, getSubmissionsByAssignment, updateSubmission } = useAssignments();
 
   const course = getCourse(id);
   const assignment = getAssignment(assignmentId);
@@ -97,6 +365,25 @@ export default function GradingProgressPage() {
   const pct = total > 0 ? (processed / total) * 100 : 0;
   const isDone = total > 0 && processed === total;
 
+  function handleSaveChanges(changes: Record<string, number | null>) {
+    Object.entries(changes).forEach(([subId, score]) => {
+      if (score !== null) {
+        // instructorScore override
+        updateSubmission(subId, {
+          instructorScore: score,
+          status: "graded",
+        });
+      } else {
+        // re-grade: update aiScore, reset instructorScore
+        updateSubmission(subId, {
+          aiScore: changes[subId] ?? null,
+          instructorScore: null,
+          status: "graded",
+        });
+      }
+    });
+  }
+
   return (
     <AppShell>
       <main className="w-full max-w-[1100px] mx-auto px-8 py-8">
@@ -104,16 +391,9 @@ export default function GradingProgressPage() {
         <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-5 flex-wrap">
           <Link href="/courses" className="hover:text-[var(--accent)] transition-colors">{t("รายวิชา", "Courses")}</Link>
           <span>/</span>
-          <Link href={`/courses/${id}/assignments`} className="hover:text-[var(--accent)] transition-colors">
-            {course.name}
-          </Link>
+          <Link href={`/courses/${id}/assignments`} className="hover:text-[var(--accent)] transition-colors">{course.name}</Link>
           <span>/</span>
-          <Link
-            href={`/courses/${id}/assignments/${assignmentId}`}
-            className="hover:text-[var(--accent)] transition-colors"
-          >
-            {assignment.name}
-          </Link>
+          <Link href={`/courses/${id}/assignments/${assignmentId}`} className="hover:text-[var(--accent)] transition-colors">{assignment.name}</Link>
           <span>/</span>
           <span className="text-[var(--text-primary)] font-medium">{t("ตรวจงาน", "Grading")}</span>
         </div>
@@ -221,7 +501,7 @@ export default function GradingProgressPage() {
           />
         </div>
 
-        {/* Progress card */}
+        {/* Progress circle */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
           <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-2">
             {t("ความคืบหน้า", "Overall Progress")}
@@ -255,6 +535,13 @@ export default function GradingProgressPage() {
             </div>
           </div>
         </div>
+
+        {/* Grade Adjustment table */}
+        <GradeAdjustmentTable
+          submissions={submissions}
+          maxPoints={assignment.maxPoints}
+          onSaveAll={handleSaveChanges}
+        />
       </main>
     </AppShell>
   );

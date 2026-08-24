@@ -9,6 +9,7 @@ export interface Student {
   firstName: string;
   lastName: string;
   email: string;
+  cohort?: string; // e.g. "CE69"
 }
 
 export interface StudentContextValue {

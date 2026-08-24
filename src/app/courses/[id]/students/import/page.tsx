@@ -120,17 +120,17 @@ export default function ImportStudentsPage() {
       <main className="w-full max-w-[860px] mx-auto px-8 py-8">
         {/* Breadcrumb */}
         <div className="flex items-center gap-1.5 text-sm text-gray-500 mb-6">
-          <Link href="/courses" className="hover:text-[var(--accent)] transition-colors">All Courses</Link>
+          <Link href="/courses" className="hover:text-[var(--accent)] transition-colors">{t("รายวิชาทั้งหมด", "All Courses")}</Link>
           <span>/</span>
           <Link href={`/courses/${id}`} className="hover:text-[var(--accent)] transition-colors">{course.name}</Link>
           <span>/</span>
-          <span className="text-[var(--text-primary)] font-medium">Import Students</span>
+          <span className="text-[var(--text-primary)] font-medium">{t("นำเข้านักศึกษา", "Import Students")}</span>
         </div>
 
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-[var(--text-primary)]">Import Students</h1>
+          <h1 className="text-2xl font-bold text-[var(--text-primary)]">{t("นำเข้านักศึกษา", "Import Students")}</h1>
           <p className="mt-1 text-sm text-gray-500">
-            Upload a CSV file to enroll students in <span className="font-medium text-[var(--text-primary)]">{course.name}</span>
+            {t("อัปโหลดไฟล์ CSV เพื่อเพิ่มนักศึกษาใน", "Upload a CSV file to enroll students in")} <span className="font-medium text-[var(--text-primary)]">{course.name}</span>
           </p>
         </div>
 
@@ -158,13 +158,13 @@ export default function ImportStudentsPage() {
                 </svg>
               </div>
               <div className="text-center">
-                <p className="text-sm font-medium text-[var(--text-primary)]">Drag and drop your file here</p>
+                <p className="text-sm font-medium text-[var(--text-primary)]">{t("ลากและวางไฟล์ที่นี่", "Drag and drop your file here")}</p>
                 <p className="text-sm text-gray-500 mt-0.5">
-                  or{" "}
-                  <span className="text-[var(--accent)] font-medium">browse your computer</span>
+                  {t("หรือ", "or")}{" "}
+                  <span className="text-[var(--accent)] font-medium">{t("เลือกจากคอมพิวเตอร์", "browse your computer")}</span>
                 </p>
               </div>
-              <p className="text-xs text-gray-300 uppercase tracking-wide">Supports .csv • UTF-8 encoding</p>
+              <p className="text-xs text-gray-300 uppercase tracking-wide">{t("รองรับ .csv • UTF-8", "Supports .csv • UTF-8 encoding")}</p>
               <input
                 ref={fileRef}
                 type="file"
@@ -196,7 +196,7 @@ export default function ImportStudentsPage() {
                 className="px-4 py-2 text-sm font-medium rounded-xl border border-[var(--accent)] text-[var(--accent)] hover:bg-[var(--accent-subtle)] transition-colors"
                 onClick={(e) => e.stopPropagation()}
               >
-                Download
+                {t("ดาวน์โหลด", "Download")}
               </a>
             </div>
 
@@ -227,7 +227,7 @@ export default function ImportStudentsPage() {
 
             <div className="flex justify-end">
               <Link href={`/courses/${id}`} className="px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
-                Cancel
+                {t("ยกเลิก", "Cancel")}
               </Link>
             </div>
           </div>
@@ -313,7 +313,7 @@ export default function ImportStudentsPage() {
               </button>
               <div className="flex gap-3">
                 <Link href={`/courses/${id}`} className="px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
-                  Cancel
+                  {t("ยกเลิก", "Cancel")}
                 </Link>
                 <button
                   onClick={handleImport}
@@ -324,7 +324,7 @@ export default function ImportStudentsPage() {
                     <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>
                     <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
                   </svg>
-                  Import {validRows.length} Students
+                  {t(`นำเข้า ${validRows.length} นักศึกษา`, `Import ${validRows.length} Students`)}
                 </button>
               </div>
             </div>

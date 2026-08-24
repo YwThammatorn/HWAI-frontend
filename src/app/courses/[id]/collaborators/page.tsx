@@ -76,15 +76,16 @@ function Avatar({ initials, bg }: { initials: string; bg: string }) {
 }
 
 function StatusBadge({ status }: { status: CollabStatus }) {
+  const { t } = useLanguage();
   return status === "Active" ? (
     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700">
       <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-      Active
+      {t("ออนไลน์", "Active")}
     </span>
   ) : (
     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-purple-50 text-purple-700">
       <span className="w-1.5 h-1.5 rounded-full bg-purple-500" />
-      Offline
+      {t("ออฟไลน์", "Offline")}
     </span>
   );
 }
@@ -109,6 +110,7 @@ function RowMenu({
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
+  const { t } = useLanguage();
   if (isOwner) return <div className="w-8" />;
 
   return (
@@ -128,7 +130,7 @@ function RowMenu({
             onClick={() => { onRemove(collabId); setOpen(false); }}
             className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50 transition-colors"
           >
-            Remove
+            {t("ลบออก", "Remove")}
           </button>
         </div>
       )}
@@ -170,8 +172,8 @@ export default function CollaboratorsPage() {
     return (
       <AppShell>
         <main className="flex-1 flex items-center justify-center text-gray-500 text-sm">
-          ไม่พบรายวิชานี้ —{" "}
-          <Link href="/courses" className="text-[var(--accent)] ml-1 hover:underline">กลับไปหน้าหลัก</Link>
+          {t("ไม่พบรายวิชานี้", "Course not found")} —{" "}
+          <Link href="/courses" className="text-[var(--accent)] ml-1 hover:underline">{t("กลับไปหน้าหลัก", "Back to home")}</Link>
         </main>
       </AppShell>
     );
@@ -190,13 +192,13 @@ export default function CollaboratorsPage() {
           <span>/</span>
           <Link href={`/courses/${id}`} className="hover:text-[var(--accent)] transition-colors">{course.name}</Link>
           <span>/</span>
-          <span className="text-[var(--accent)] font-medium">Collaborators</span>
+          <span className="text-[var(--accent)] font-medium">{t("ผู้ร่วมงาน", "Collaborators")}</span>
         </div>
 
         {/* Title */}
-        <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">Collaborators Management</h1>
+        <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">{t("จัดการผู้ร่วมงาน", "Collaborators Management")}</h1>
         <p className="text-sm text-gray-500 mb-8">
-          Manage teachers and teaching assistants for <strong className="text-[var(--text-primary)]">{course.name}</strong>.
+          {t("จัดการอาจารย์และผู้ช่วยสอนสำหรับ", "Manage teachers and teaching assistants for")} <strong className="text-[var(--text-primary)]">{course.name}</strong>.
         </p>
 
         {/* Course Team card */}
@@ -204,9 +206,9 @@ export default function CollaboratorsPage() {
           {/* Card header */}
           <div className="flex items-start justify-between gap-4 px-6 pt-5 pb-4 border-b border-gray-50">
             <div>
-              <h2 className="text-base font-bold text-[var(--text-primary)]">Course Team</h2>
+              <h2 className="text-base font-bold text-[var(--text-primary)]">{t("ทีมรายวิชา", "Course Team")}</h2>
               <p className="text-sm text-gray-500 mt-0.5">
-                A list of all collaborators with administrative or grading access to this course.
+                {t("รายชื่อผู้ร่วมงานทั้งหมดที่มีสิทธิ์จัดการหรือตรวจงาน", "A list of all collaborators with administrative or grading access to this course.")}
               </p>
             </div>
             <div className="relative shrink-0">
@@ -215,7 +217,7 @@ export default function CollaboratorsPage() {
               </svg>
               <input
                 type="text"
-                placeholder="Search by name or email"
+                placeholder={t("ค้นหาชื่อหรืออีเมล", "Search by name or email")}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-8 pr-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors w-56"
@@ -255,13 +257,13 @@ export default function CollaboratorsPage() {
           {/* Card footer */}
           <div className="flex items-center justify-between px-6 py-3 border-t border-gray-50">
             <p className="text-xs text-gray-500">
-              Showing <strong className="text-[var(--text-primary)]">{filtered.length}</strong> collaborator{filtered.length !== 1 ? "s" : ""}
+              {t("แสดง", "Showing")} <strong className="text-[var(--text-primary)]">{filtered.length}</strong> {t("ผู้ร่วมงาน", filtered.length !== 1 ? "collaborators" : "collaborator")}
             </p>
             <p className="text-xs text-gray-500 flex items-center gap-1">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
               </svg>
-              Admins can manage roles in Settings
+              {t("ผู้ดูแลระบบสามารถจัดการสิทธิ์ได้ในการตั้งค่า", "Admins can manage roles in Settings")}
             </p>
           </div>
         </div>
@@ -270,9 +272,9 @@ export default function CollaboratorsPage() {
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm">
           <div className="flex items-start justify-between gap-6 px-6 py-5">
             <div className="flex-1">
-              <h2 className="text-base font-bold text-[var(--text-primary)] mb-1">Invite Code</h2>
+              <h2 className="text-base font-bold text-[var(--text-primary)] mb-1">{t("รหัสเชิญ", "Invite Code")}</h2>
               <p className="text-sm text-gray-500 leading-relaxed max-w-sm">
-                Share this code to allow TAs to request access to this course. Requests will need your approval.
+                {t("แชร์รหัสนี้เพื่อให้ผู้ช่วยสอนขอเข้าร่วม คำขอต้องได้รับการอนุมัติจากคุณ", "Share this code to allow TAs to request access to this course. Requests will need your approval.")}
               </p>
             </div>
 
@@ -292,14 +294,14 @@ export default function CollaboratorsPage() {
                 {copied ? (
                   <>
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-                    Copied
+                    {t("คัดลอกแล้ว", "Copied")}
                   </>
                 ) : (
                   <>
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                       <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
                     </svg>
-                    Copy
+                    {t("คัดลอก", "Copy")}
                   </>
                 )}
               </button>
@@ -307,7 +309,7 @@ export default function CollaboratorsPage() {
                 onClick={() => setInviteCode(generateCode())}
                 className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium border border-gray-200 text-[var(--text-primary)] hover:bg-gray-50 transition-colors"
               >
-                Regenerate
+                {t("สร้างใหม่", "Regenerate")}
               </button>
             </div>
           </div>

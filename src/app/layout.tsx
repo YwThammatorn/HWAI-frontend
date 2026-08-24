@@ -6,6 +6,8 @@ import AssignmentProvider from "@/components/AssignmentProvider";
 import ThemeProvider from "@/components/ThemeProvider";
 import { AuthProvider } from "@/context/AuthContext";
 import { LanguageProvider } from "@/context/LanguageContext";
+import CohortStudentProvider from "@/context/CohortStudentContext";
+import ManagedTeacherProvider from "@/context/ManagedTeacherContext";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -20,13 +22,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider>
           <LanguageProvider>
           <AuthProvider>
-            <CourseProvider>
-              <StudentProvider>
-                <CLOProvider>
-                  <AssignmentProvider>{children}</AssignmentProvider>
-                </CLOProvider>
-              </StudentProvider>
-            </CourseProvider>
+            <CohortStudentProvider>
+              <ManagedTeacherProvider>
+                <CourseProvider>
+                  <StudentProvider>
+                    <CLOProvider>
+                      <AssignmentProvider>{children}</AssignmentProvider>
+                    </CLOProvider>
+                  </StudentProvider>
+                </CourseProvider>
+              </ManagedTeacherProvider>
+            </CohortStudentProvider>
           </AuthProvider>
           </LanguageProvider>
         </ThemeProvider>
