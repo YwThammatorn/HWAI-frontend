@@ -16,10 +16,14 @@
   --bg-card:       #FFFFFF;
   --surface:       #F1F5F9;
   --border:        #E2E8F0;
+  /* Aliases used by shell/card components */
+  --bg-surface:    #FFFFFF;
+  --bg-subtle:     #F1F5F9;
+  --border-subtle: #E2E8F0;
   --bg-nav:        #1B2A4A;
   --text-primary:  #1B2A4A;
   --text-secondary:#475569;
-  --text-muted:    #94A3B8;
+  --text-muted:    #607080;  /* slate-ish — 4.77:1 on #F5F6FA, passes WCAG AA */
   --accent:        #0F766E;
   --accent-bright: #2DD4BF;
   --accent-subtle: #E6FAF8;
@@ -30,10 +34,14 @@
   --bg-card:       #182030;
   --surface:       #1E2A3C;
   --border:        #263244;
+  /* Aliases used by shell/card components */
+  --bg-surface:    #182030;
+  --bg-subtle:     #1E2A3C;
+  --border-subtle: #263244;
   --bg-nav:        #0B1220;
   --text-primary:  #E2EAF4;
   --text-secondary:#8B9EB5;
-  --text-muted:    #4A5A70;
+  --text-muted:    #7890A8;  /* slate-400-ish — 4.8:1 on #182030, passes WCAG AA */
   --accent:        #2DD4BF;
   --accent-bright: #2DD4BF;
   --accent-subtle: #0D3230;
@@ -45,8 +53,14 @@ body {
   font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
 }
 
-/* ── Dark mode Tailwind class overrides ────────────────────────────────────── */
+/* ── Tailwind class overrides (all modes) ──────────────────────────────────── */
 /* Rules outside @layer beat Tailwind's @layer utilities — no !important needed */
+/* Remap gray-400/500 to semantic tokens so all instances pass WCAG AA in light mode */
+.text-gray-400 { color: var(--text-muted); }
+.text-gray-500 { color: var(--text-secondary); }
+.placeholder\:text-gray-400::placeholder { color: var(--text-muted); }
+
+/* ── Dark mode Tailwind class overrides ────────────────────────────────────── */
 
 /* Backgrounds */
 [data-theme="dark"] .bg-white              { background-color: var(--bg-card); }
@@ -153,9 +167,10 @@ body {
 [data-theme="dark"] .border-blue-100    { border-color: var(--border); }
 [data-theme="dark"] .border-purple-200  { border-color: var(--border); }
 
-/* Teal buttons: dark navy text works in both light and dark modes */
-/* (bg-[#2DD4BF] + text-[var(--text-primary)] fails in dark: #E2EAF4 on #2DD4BF = 1.56:1 ❌) */
+/* Teal/orange buttons: dark navy text works in both light and dark modes */
+/* bg-[#2DD4BF] with text-white fails dark mode; bg-[#F97316] with text-white = 2.8:1 on orange ❌ */
 .bg-\[\#2DD4BF\] { color: #1B2A4A; }
+.bg-\[\#F97316\] { color: #1B2A4A; }  /* 5.16:1 on #F97316, passes WCAG AA */
 
 /* Input dark mode */
 [data-theme="dark"] input,
