@@ -48,43 +48,55 @@ export default function StudentCoursesPage() {
             description={t("อาจารย์จะเพิ่มคุณเข้าในรายวิชาเมื่อลงทะเบียนแล้ว", "Your instructor will enroll you in courses")}
           />
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {enrolledCourses.map((course) => {
               const assignments = getAssignmentsByCourse(course.id);
               return (
                 <Link
                   key={course.id}
                   href={`/student/courses/${course.id}/classwork`}
-                  className="group rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F97316]"
+                  className="group bg-[var(--bg-surface)] rounded-2xl shadow-sm border border-[var(--border-subtle)] overflow-hidden hover:shadow-md transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F97316]"
                 >
-                  {/* Banner */}
-                  <div
-                    className="h-24 flex items-end p-4"
-                    style={{ background: `linear-gradient(135deg, ${course.coverColor}cc, ${course.coverColor})` }}
-                  >
-                    <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-white font-bold text-lg">
-                      {course.name.charAt(0).toUpperCase()}
+                  {/* Banner — solid color, book icon (matches teacher) */}
+                  <div className="relative h-28" style={{ background: course.coverColor }}>
+                    <div className="absolute bottom-3 left-3 w-9 h-9 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                      </svg>
                     </div>
                   </div>
 
-                  {/* Body */}
+                  {/* Card body */}
                   <div className="p-4">
-                    <h2 className="text-sm font-bold text-[var(--text-primary)] group-hover:text-[#C2410C] transition-colors line-clamp-2">{course.name}</h2>
+                    <h3 className="font-bold text-[var(--text-primary)] text-[15px] leading-snug mb-1 group-hover:text-[#C2410C] transition-colors">
+                      {course.name}
+                    </h3>
                     {course.description && (
-                      <p className="text-xs text-[var(--text-muted)] mt-1 line-clamp-2">{course.description}</p>
+                      <p className="text-xs text-[var(--text-muted)] line-clamp-1">{course.description}</p>
                     )}
-                    <div className="mt-3 flex items-center gap-3 text-xs text-[var(--text-muted)]">
+
+                    <div className="flex items-center justify-between text-xs text-[var(--text-muted)] border-t border-[var(--border-subtle)] pt-3 mt-3">
                       <span className="flex items-center gap-1">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
                           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                          <polyline points="14 2 14 8 20 8"/>
                         </svg>
-                        {t(`${assignments.length} งาน`, `${assignments.length} assignment(s)`)}
+                        {assignments.length} {t("งาน", "assignment(s)")}
                       </span>
-                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${
-                        course.status === "active" ? "bg-green-50 text-green-700" : "bg-gray-100 text-gray-500"
-                      }`}>
-                        {course.status === "active" ? t("เปิดสอน", "Active") : t("เก็บถาวร", "Archived")}
-                      </span>
+                      {course.status === "active" ? (
+                        <span className="flex items-center gap-1 text-[#F97316]">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                            <line x1="16" y1="2" x2="16" y2="6"/>
+                            <line x1="8" y1="2" x2="8" y2="6"/>
+                            <line x1="3" y1="10" x2="21" y2="10"/>
+                          </svg>
+                          {t("เปิดสอน", "Active")}
+                        </span>
+                      ) : (
+                        <span className="text-[var(--text-muted)]">{t("เก็บถาวร", "Archived")}</span>
+                      )}
                     </div>
                   </div>
                 </Link>
