@@ -358,7 +358,6 @@ export default function AdminTeachersPage() {
             </table>
           </div>
         )}
-      </div>
 
       <AddTeacherDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
 

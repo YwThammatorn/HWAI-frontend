@@ -66,6 +66,7 @@ export default function StudentClassworkDetailPage() {
     : t("ส่งงาน", "Submit");
 
   return (
+    <>
     <div className="p-6 max-w-4xl">
         {/* Breadcrumb */}
         <div className="flex items-center gap-1.5 text-xs text-[var(--text-muted)] mb-5 flex-wrap">
@@ -223,6 +224,6 @@ export default function StudentClassworkDetailPage() {
           </div>
         </>
       )}
-    </div>
+    </>
   );
 }
