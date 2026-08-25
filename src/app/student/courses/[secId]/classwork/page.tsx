@@ -3,7 +3,6 @@
 import { useMemo } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import StudentShell from "@/components/StudentShell";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
 import { useCourses } from "@/lib/courses";
@@ -137,15 +136,12 @@ export default function StudentClassworkPage() {
 
   if (!course) {
     return (
-      <StudentShell>
-        <div className="p-6 text-sm text-[var(--text-muted)]">{t("ไม่พบรายวิชา", "Course not found")}</div>
-      </StudentShell>
+      <div className="p-6 text-sm text-[var(--text-muted)]">{t("ไม่พบรายวิชา", "Course not found")}</div>
     );
   }
 
   return (
-    <StudentShell>
-      <div className="p-6 max-w-3xl">
+    <div className="p-6 max-w-3xl">
         {/* Course banner */}
         <div
           className="rounded-2xl p-5 mb-6 flex items-center gap-4"
@@ -217,7 +213,6 @@ export default function StudentClassworkPage() {
             </section>
           </div>
         )}
-      </div>
-    </StudentShell>
+    </div>
   );
 }

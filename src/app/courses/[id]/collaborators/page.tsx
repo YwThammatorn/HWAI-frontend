@@ -118,7 +118,7 @@ function RowMenu({
       <button
         onClick={() => setOpen((o) => !o)}
         className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-500 hover:text-gray-600 hover:bg-gray-100 transition-colors"
-        aria-label="More options"
+        aria-label={t("ตัวเลือกเพิ่มเติม", "More options")}
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
           <circle cx="12" cy="5" r="1.5" /><circle cx="12" cy="12" r="1.5" /><circle cx="12" cy="19" r="1.5" />
@@ -150,6 +150,15 @@ export default function CollaboratorsPage() {
   const [search, setSearch] = useState("");
   const [inviteCode, setInviteCode] = useState("CVD1FT");
   const [copied, setCopied] = useState(false);
+
+  const ROLE_LABELS: Record<string, string> = {
+    Teacher:             t("อาจารย์", "Teacher"),
+    "Teaching Assistant": t("ผู้ช่วยสอน", "Teaching Assistant"),
+  };
+  const PERM_LABELS: Record<string, string> = {
+    "Full Access":      t("เข้าถึงได้ทั้งหมด", "Full Access"),
+    "Can grade & edit": t("ตรวจและแก้ไขได้", "Can grade & edit"),
+  };
 
   const filtered = collabs.filter(
     (c) =>
@@ -240,8 +249,8 @@ export default function CollaboratorsPage() {
                   </div>
 
                   <div className="text-right shrink-0">
-                    <p className="text-sm font-semibold text-[var(--text-primary)]">{c.role}</p>
-                    <p className="text-xs text-gray-500">{c.permissions}</p>
+                    <p className="text-sm font-semibold text-[var(--text-primary)]">{ROLE_LABELS[c.role] ?? c.role}</p>
+                    <p className="text-xs text-gray-500">{PERM_LABELS[c.permissions] ?? c.permissions}</p>
                   </div>
 
                   <div className="w-24 flex justify-end">

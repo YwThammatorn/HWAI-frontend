@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import AdminShell from "@/components/AdminShell";
 import { useLanguage } from "@/context/LanguageContext";
 import { useCourses, Course } from "@/lib/courses";
 import { useManagedTeachers } from "@/lib/managed-teachers";
@@ -218,8 +217,7 @@ export default function AdminCoursesPage() {
   const archivedCourses = courses.filter((c) => c.status === "archived");
 
   return (
-    <AdminShell>
-      <div className="p-6 max-w-4xl">
+    <div className="p-6 max-w-4xl">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-[var(--text-primary)]">{t("จัดการรายวิชา", "Course Management")}</h1>
           <p className="mt-0.5 text-sm text-[var(--text-muted)]">
@@ -265,7 +263,6 @@ export default function AdminCoursesPage() {
             )}
           </div>
         )}
-      </div>
-    </AdminShell>
+    </div>
   );
 }

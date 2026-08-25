@@ -77,6 +77,7 @@ function NotifCard({
   onAccept: (id: string) => void;
   onDecline: (id: string) => void;
 }) {
+  const { t } = useLanguage();
   const icon = ICON_CONFIG[notif.type];
 
   const actions: React.ReactNode = (() => {
@@ -85,21 +86,21 @@ function NotifCard({
         return (
           <>
             <button className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-[#0F766E] text-white text-xs font-medium hover:bg-[#0D6B63] transition-colors">
-              View Results
+              {t("ดูผลลัพธ์", "View Results")}
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
             </button>
             <button
               onClick={() => onDismiss(notif.id)}
               className="text-xs text-gray-500 hover:text-gray-600 transition-colors px-1"
             >
-              Dismiss
+              {t("ปิด", "Dismiss")}
             </button>
           </>
         );
       case "late_submission":
         return (
           <button className="inline-flex items-center px-4 py-1.5 rounded-lg border border-[var(--accent)] text-[var(--accent)] text-xs font-medium hover:bg-[#0F766E]/5 transition-colors">
-            Grade Now
+            {t("ตรวจงาน", "Grade Now")}
           </button>
         );
       case "ta_invitation":
@@ -109,20 +110,20 @@ function NotifCard({
               onClick={() => onAccept(notif.id)}
               className="text-xs font-semibold text-[var(--accent)] hover:text-[#0D6B63] transition-colors"
             >
-              Accept
+              {t("ยอมรับ", "Accept")}
             </button>
             <button
               onClick={() => onDecline(notif.id)}
               className="text-xs font-semibold text-red-500 hover:text-red-600 transition-colors"
             >
-              Decline
+              {t("ปฏิเสธ", "Decline")}
             </button>
           </>
         );
       case "plagiarism_alert":
         return (
           <button className="inline-flex items-center px-4 py-1.5 rounded-lg border border-gray-200 text-gray-600 text-xs font-medium hover:bg-gray-50 transition-colors">
-            View Detail
+            {t("ดูรายละเอียด", "View Detail")}
           </button>
         );
       default:
@@ -203,7 +204,7 @@ export default function NotificationsPage() {
   return (
     <AppShell>
         <main className="w-full max-w-2xl mx-auto px-8 py-8">
-          <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-6">Notifications</h1>
+          <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-6">{t("การแจ้งเตือน", "Notifications")}</h1>
 
           {isEmpty ? (
             <div className="flex flex-col items-center justify-center py-24 text-gray-500">
@@ -217,7 +218,7 @@ export default function NotificationsPage() {
             <div className="max-w-2xl space-y-2">
               {today.length > 0 && (
                 <>
-                  <GroupLabel label="Today" />
+                  <GroupLabel label={t("วันนี้", "Today")} />
                   {today.map((n) => (
                     <NotifCard key={n.id} notif={n} onDismiss={dismiss} onAccept={accept} onDecline={decline} />
                   ))}
@@ -226,7 +227,7 @@ export default function NotificationsPage() {
 
               {yesterday.length > 0 && (
                 <>
-                  <GroupLabel label="Yesterday" />
+                  <GroupLabel label={t("เมื่อวาน", "Yesterday")} />
                   {yesterday.map((n) => (
                     <NotifCard key={n.id} notif={n} onDismiss={dismiss} onAccept={accept} onDecline={decline} />
                   ))}
@@ -235,7 +236,7 @@ export default function NotificationsPage() {
 
               {older.length > 0 && (
                 <>
-                  <GroupLabel label="Older" />
+                  <GroupLabel label={t("ก่อนหน้า", "Older")} />
                   {older.map((n) => (
                     <NotifCard key={n.id} notif={n} onDismiss={dismiss} onAccept={accept} onDecline={decline} />
                   ))}

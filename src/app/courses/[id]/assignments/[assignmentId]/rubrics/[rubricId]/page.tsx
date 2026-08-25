@@ -280,7 +280,7 @@ export default function RubricEditorPage() {
               <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
                 <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
               </svg>
-              AI Rubric Assistant
+              {t("AI ช่วยสร้างเกณฑ์", "AI Rubric Assistant")}
             </button>
             <div className="w-px h-4 bg-gray-200" />
             <button
@@ -503,7 +503,7 @@ export default function RubricEditorPage() {
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="#0F766E">
                   <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
                 </svg>
-                <h3 className="text-base font-bold text-[var(--text-primary)]">AI Rubric Assistant</h3>
+                <h3 className="text-base font-bold text-[var(--text-primary)]">{t("AI ช่วยสร้างเกณฑ์", "AI Rubric Assistant")}</h3>
               </div>
               <button onClick={() => setAiOpen(false)} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2.5" strokeLinecap="round">

@@ -2,7 +2,6 @@
 
 import { useMemo } from "react";
 import Link from "next/link";
-import StudentShell from "@/components/StudentShell";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
 import { useStudents } from "@/lib/students";
@@ -54,8 +53,7 @@ export default function StudentHome() {
   }, [enrolledCourses, getAssignmentsByCourse, getSubmissionsByAssignment, user]);
 
   return (
-    <StudentShell>
-      <div className="p-6 max-w-3xl">
+    <div className="p-6 max-w-3xl">
         <h1 className="text-2xl font-bold text-[var(--text-primary)]">
           {t(`สวัสดี, ${firstName}`, `Hi, ${firstName}`)} 👋
         </h1>
@@ -149,7 +147,6 @@ export default function StudentHome() {
             </div>
           )}
         </div>
-      </div>
-    </StudentShell>
+    </div>
   );
 }

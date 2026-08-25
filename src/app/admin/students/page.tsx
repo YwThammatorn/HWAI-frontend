@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import AdminShell from "@/components/AdminShell";
 import { useLanguage } from "@/context/LanguageContext";
 import { useCohortStudents, CohortStudent } from "@/lib/cohort-students";
 
@@ -384,8 +383,7 @@ export default function AdminStudentsPage() {
   const COHORT_LABEL = t("cohort ทั้งหมด", "All cohorts");
 
   return (
-    <AdminShell>
-      <div className="p-6 max-w-5xl">
+    <div className="p-6 max-w-5xl">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold text-[var(--text-primary)]">{t("จัดการนักศึกษา", "Student Management")}</h1>
@@ -512,7 +510,6 @@ export default function AdminStudentsPage() {
             </div>
           </>
         )}
-      </div>
 
       <ImportDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
 
@@ -552,6 +549,6 @@ export default function AdminStudentsPage() {
           </div>
         </>
       )}
-    </AdminShell>
+    </div>
   );
 }

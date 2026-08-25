@@ -415,7 +415,7 @@ export default function EditAssignmentPage() {
                       if (e.key === "Enter") { e.preventDefault(); handleAddRubric(); }
                       if (e.key === "Escape") { setShowNewRubricForm(false); setNewRubricName(""); }
                     }}
-                    placeholder="e.g. User Research Rubric"
+                    placeholder={t("เช่น เกณฑ์การวิจัยผู้ใช้", "e.g. User Research Rubric")}
                     className="flex-1 px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
                   />
                   <button type="button" onClick={handleAddRubric} disabled={!newRubricName.trim()}
@@ -433,7 +433,7 @@ export default function EditAssignmentPage() {
 
           {/* Danger Zone */}
           <section className="bg-white rounded-2xl border border-red-100 shadow-sm p-6">
-            <h2 className="text-sm font-semibold text-red-500 uppercase tracking-wider mb-4">Danger Zone</h2>
+            <h2 className="text-sm font-semibold text-red-500 uppercase tracking-wider mb-4">{t("โซนอันตราย", "Danger Zone")}</h2>
             <button
               type="button" onClick={handleDelete}
               className="px-4 py-2 text-sm font-medium rounded-xl border border-red-200 text-red-500 hover:bg-red-50 transition-colors"

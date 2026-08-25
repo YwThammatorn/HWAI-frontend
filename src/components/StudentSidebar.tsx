@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
+import { useNavCollapse } from "@/hooks/useNavCollapse";
 
 interface CourseLink {
   secId: string;
@@ -21,7 +21,9 @@ export default function StudentSidebar({ courses = [] }: StudentSidebarProps) {
   // derive active course from pathname
   const courseMatch = pathname.match(/\/student\/courses\/([^/]+)/);
   const activeCourseId = courseMatch ? courseMatch[1] : null;
-  const [coursesOpen, setCoursesOpen] = useState(activeCourseId != null || pathname.startsWith("/student/courses"));
+  const { isOpen, toggle } = useNavCollapse(
+    activeCourseId != null || pathname.startsWith("/student/courses") ? ["courses"] : []
+  );
 
   function isActive(href: string, exact = false) {
     if (exact) return pathname === href;
@@ -85,8 +87,8 @@ export default function StudentSidebar({ courses = [] }: StudentSidebarProps) {
           {/* Courses accordion */}
           <li>
             <button
-              onClick={() => setCoursesOpen(!coursesOpen)}
-              aria-expanded={coursesOpen}
+              onClick={() => toggle("courses")}
+              aria-expanded={isOpen("courses")}
               aria-controls="student-courses-menu"
               className={[
                 "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors min-h-[44px]",
@@ -103,14 +105,14 @@ export default function StudentSidebar({ courses = [] }: StudentSidebarProps) {
                 </svg>
               </span>
               <span className="flex-1 text-left">{t("รายวิชา", "Courses")}</span>
-              <span aria-hidden="true" className={`transition-transform duration-200 ${coursesOpen ? "rotate-180" : ""}`}>
+              <span aria-hidden="true" className={`transition-transform duration-200 ${isOpen("courses") ? "rotate-180" : ""}`}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                   <polyline points="6 9 12 15 18 9"/>
                 </svg>
               </span>
             </button>
 
-            {coursesOpen && (
+            {isOpen("courses") && (
               <ul id="student-courses-menu" role="list" className="mt-0.5 flex flex-col gap-0.5 pl-3">
                 {/* Top-level course list link */}
                 <li>

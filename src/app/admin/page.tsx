@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import AdminShell from "@/components/AdminShell";
 import { useLanguage } from "@/context/LanguageContext";
 import { useManagedTeachers } from "@/lib/managed-teachers";
 import { useCohortStudents } from "@/lib/cohort-students";
@@ -81,8 +80,7 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <AdminShell>
-      <div className="p-6 max-w-4xl">
+    <div className="p-6 max-w-4xl">
         <h1 className="text-2xl font-bold text-[var(--text-primary)]">{t("หน้าหลัก", "Dashboard")}</h1>
         <p className="mt-1 text-sm text-[var(--text-muted)]">{t("ภาพรวมระบบ HWAI Agent", "HWAI Agent system overview")}</p>
 
@@ -119,7 +117,6 @@ export default function AdminDashboard() {
             </ul>
           </div>
         )}
-      </div>
-    </AdminShell>
+    </div>
   );
 }

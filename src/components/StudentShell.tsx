@@ -28,7 +28,9 @@ export default function StudentShell({ children }: { children: React.ReactNode }
 
   useEffect(() => {
     if (!user) { router.replace("/login"); return; }
-    if (user.role !== "student") router.replace("/login");
+    if (user.role === "teacher" || user.role === "ta") router.replace("/dashboard");
+    else if (user.role === "admin") router.replace("/admin");
+    else if (user.role !== "student") router.replace("/login");
   }, [user, router]);
 
   if (!user || user.role !== "student") return null;

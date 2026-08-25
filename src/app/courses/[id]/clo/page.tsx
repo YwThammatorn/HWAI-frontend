@@ -126,7 +126,7 @@ export default function CLOPage() {
           <div className="flex items-center gap-2 mt-1">
             <button
               disabled
-              title="ฟีเจอร์นี้จะพร้อมใช้งานเร็ว ๆ นี้"
+              title={t("ฟีเจอร์นี้จะพร้อมใช้งานเร็ว ๆ นี้", "This feature is coming soon")}
               className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-gray-200 text-xs font-medium text-gray-300 cursor-not-allowed select-none"
             >
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">

@@ -113,7 +113,7 @@ export default function NewAssignmentPage() {
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. User Research Report"
+              placeholder={t("เช่น รายงานการวิจัยผู้ใช้", "e.g. User Research Report")}
               className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
               required
             />

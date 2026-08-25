@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import StudentShell from "@/components/StudentShell";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
 import { useCourses } from "@/lib/courses";
@@ -29,9 +28,7 @@ export default function StudentClassworkDetailPage() {
 
   if (!course || !assignment) {
     return (
-      <StudentShell>
-        <div className="p-6 text-sm text-[var(--text-muted)]">{t("ไม่พบข้อมูล", "Not found")}</div>
-      </StudentShell>
+      <div className="p-6 text-sm text-[var(--text-muted)]">{t("ไม่พบข้อมูล", "Not found")}</div>
     );
   }
 
@@ -69,8 +66,7 @@ export default function StudentClassworkDetailPage() {
     : t("ส่งงาน", "Submit");
 
   return (
-    <StudentShell>
-      <div className="p-6 max-w-4xl">
+    <div className="p-6 max-w-4xl">
         {/* Breadcrumb */}
         <div className="flex items-center gap-1.5 text-xs text-[var(--text-muted)] mb-5 flex-wrap">
           <Link href={`/student/courses/${secId}/classwork`} className="hover:text-[var(--text-primary)] transition-colors">
@@ -227,6 +223,6 @@ export default function StudentClassworkDetailPage() {
           </div>
         </>
       )}
-    </StudentShell>
+    </div>
   );
 }

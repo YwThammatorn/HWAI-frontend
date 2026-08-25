@@ -1,14 +1,12 @@
 "use client";
 
-import StudentShell from "@/components/StudentShell";
 import { useLanguage } from "@/context/LanguageContext";
 
 export default function StudentAnnouncementsPage() {
   const { t } = useLanguage();
 
   return (
-    <StudentShell>
-      <div className="p-6 max-w-3xl">
+    <div className="p-6 max-w-3xl">
         <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-6">{t("ประกาศ", "Announcements")}</h1>
         <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--border-subtle)] bg-[var(--bg-surface)] py-20 px-8 text-center">
           <div className="w-12 h-12 rounded-full bg-[#F97316]/10 flex items-center justify-center mb-3">
@@ -19,7 +17,6 @@ export default function StudentAnnouncementsPage() {
           <p className="text-sm font-semibold text-[var(--text-primary)]">{t("ยังไม่มีประกาศ", "No announcements yet")}</p>
           <p className="text-xs text-[var(--text-muted)] mt-1">{t("อาจารย์จะโพสต์ประกาศสำคัญที่นี่", "Your instructor will post important announcements here")}</p>
         </div>
-      </div>
-    </StudentShell>
+    </div>
   );
 }

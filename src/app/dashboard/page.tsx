@@ -28,14 +28,15 @@ const USAGE_DATA_PLAGIARISM = [0, 40, 30, 60, 50, 0, 0, 80, 70, 50, 0, 0, 100, 9
 // ─── Status badge ─────────────────────────────────────────────────────────────
 
 function StatusBadge({ status }: { status: string }) {
-  const cfg: Record<string, string> = {
-    "Not Graded": "bg-red-100 text-red-600",
-    "All Graded": "bg-green-100 text-green-700",
+  const { t } = useLanguage();
+  const cfg: Record<string, { cls: string; label: string }> = {
+    "Not Graded": { cls: "bg-red-100 text-red-600",    label: t("ยังไม่ตรวจ", "Not Graded") },
+    "All Graded": { cls: "bg-green-100 text-green-700", label: t("ตรวจแล้ว", "All Graded") },
   };
-  const base = cfg[status] ?? "bg-orange-100 text-orange-700";
+  const item = cfg[status];
   return (
-    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${base}`}>
-      {status}
+    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${item?.cls ?? "bg-orange-100 text-orange-700"}`}>
+      {item?.label ?? status}
     </span>
   );
 }
@@ -129,10 +130,30 @@ function UsageChart({ grading, plagiarism }: { grading: number[]; plagiarism: nu
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
+type PerfPeriod = "this_semester" | "last_semester" | "this_month";
+type UsagePeriod = "this_month" | "last_30_days" | "last_quarter";
+
 export default function DashboardPage() {
   const { t } = useLanguage();
-  const [perfPeriod, setPerfPeriod] = useState<"This Semester" | "Last Semester" | "This Month">("This Semester");
-  const [usagePeriod, setUsagePeriod] = useState<"This Month" | "Last 30 Days" | "Last Quarter">("This Month");
+  const [perfPeriod, setPerfPeriod] = useState<PerfPeriod>("this_semester");
+  const [usagePeriod, setUsagePeriod] = useState<UsagePeriod>("this_month");
+
+  const PERF_PERIODS: { key: PerfPeriod; label: string }[] = [
+    { key: "this_semester",  label: t("ภาคนี้", "This Semester") },
+    { key: "last_semester",  label: t("ภาคที่แล้ว", "Last Semester") },
+    { key: "this_month",     label: t("เดือนนี้", "This Month") },
+  ];
+  const USAGE_PERIODS: { key: UsagePeriod; label: string }[] = [
+    { key: "this_month",   label: t("เดือนนี้", "This Month") },
+    { key: "last_30_days", label: t("30 วันที่แล้ว", "Last 30 Days") },
+    { key: "last_quarter", label: t("ไตรมาสที่แล้ว", "Last Quarter") },
+  ];
+  const QUICK_ACTIONS = [
+    { label: t("เพิ่มรายวิชา", "Add Course"),    href: "/courses/new", bgClass: "bg-[var(--accent-subtle)]", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg> },
+    { label: t("ไปที่รายวิชา", "Go to Courses"), href: "/courses",     bgClass: "bg-[var(--accent-subtle)]", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="2" strokeLinecap="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg> },
+    { label: t("ตั้งค่า", "View Settings"),       href: "/settings",   bgClass: "bg-[var(--accent-subtle)]", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 9"/></svg> },
+    { label: t("ออกจากระบบ", "Logout"),           href: "/",           bgClass: "bg-red-50",                 icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" strokeLinecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> },
+  ];
 
   return (
     <AppShell>
@@ -163,7 +184,7 @@ export default function DashboardPage() {
             <p className="text-3xl font-extrabold text-[var(--text-primary)]">54</p>
             <p className="text-xs text-green-600 mt-1.5 flex items-center gap-0.5">
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><polyline points="18 15 12 9 6 15"/></svg>
-              12% from last semester
+              {t("12% จากภาคที่แล้ว", "12% from last semester")}
             </p>
           </div>
 
@@ -195,7 +216,7 @@ export default function DashboardPage() {
             <p className="text-3xl font-extrabold text-[var(--text-primary)]">84.2%</p>
             <p className="text-xs text-green-600 mt-1.5 flex items-center gap-0.5">
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><polyline points="18 15 12 9 6 15"/></svg>
-              2.4% improvement
+              {t("ปรับปรุง 2.4%", "2.4% improvement")}
             </p>
           </div>
 
@@ -269,16 +290,16 @@ export default function DashboardPage() {
                   {t("ผลการเรียนชั้นเรียน", "Class Performance")}
                 </h2>
                 <div className="flex rounded-lg border border-gray-200 overflow-hidden text-xs">
-                  {(["This Semester", "Last Semester", "This Month"] as const).map((p) => (
+                  {PERF_PERIODS.map(({ key, label }) => (
                     <button
-                      key={p}
-                      onClick={() => setPerfPeriod(p)}
+                      key={key}
+                      onClick={() => setPerfPeriod(key)}
                       className={[
                         "px-3 py-1.5 font-medium transition-colors",
-                        perfPeriod === p ? "bg-[var(--bg-nav)] text-white" : "text-gray-500 hover:text-gray-600",
+                        perfPeriod === key ? "bg-[var(--bg-nav)] text-white" : "text-gray-500 hover:text-gray-600",
                       ].join(" ")}
                     >
-                      {p}
+                      {label}
                     </button>
                   ))}
                 </div>
@@ -293,16 +314,11 @@ export default function DashboardPage() {
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
               <h2 className="text-sm font-bold text-[var(--text-primary)] mb-4">{t("ทำได้เลย", "Quick Actions")}</h2>
               <div className="grid grid-cols-2 gap-2">
-                {[
-                  { label: "Add Course", href: "/courses/new", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg> },
-                  { label: "Go to Courses", href: "/courses", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="2" strokeLinecap="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg> },
-                  { label: "View Setting", href: "/settings", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9"/></svg>, bgClass: "bg-[var(--accent-subtle)]" },
-                  { label: "Logout", href: "/", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" strokeLinecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>, bgClass: "bg-red-50" },
-                ].map((a) => (
+                {QUICK_ACTIONS.map((a) => (
                   <Link
-                    key={a.label}
+                    key={a.href}
                     href={a.href}
-                    className={`flex flex-col items-center gap-2 p-3 rounded-xl ${a.bgClass ?? "bg-[var(--accent-subtle)]"} hover:opacity-80 transition-opacity`}
+                    className={`flex flex-col items-center gap-2 p-3 rounded-xl ${a.bgClass} hover:opacity-80 transition-opacity`}
                   >
                     {a.icon}
                     <span className="text-xs font-medium text-[var(--text-primary)] text-center leading-tight">{a.label}</span>
@@ -365,7 +381,7 @@ export default function DashboardPage() {
               <p className="text-xs text-gray-500">{t("เครดิตที่ใช้ทั้งหมด", "Total Credits Used")}</p>
             </div>
             <p className="text-4xl font-extrabold text-[var(--text-primary)]">3,750 <span className="text-base font-normal text-gray-300">/ 5,000</span></p>
-            <p className="text-xs text-green-600 mt-2">↗ 12% more than last month</p>
+            <p className="text-xs text-green-600 mt-2">{t("↗ 12% มากกว่าเดือนที่แล้ว", "↗ 12% more than last month")}</p>
           </div>
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
             <div className="flex items-center gap-2 mb-2">
@@ -374,7 +390,7 @@ export default function DashboardPage() {
               </svg>
               <p className="text-xs text-gray-500">{t("งานที่ตรวจแล้ว", "Assignments Graded")}</p>
             </div>
-            <p className="text-4xl font-extrabold text-[var(--text-primary)]">248 <span className="text-base font-normal text-gray-300">papers</span></p>
+            <p className="text-4xl font-extrabold text-[var(--text-primary)]">248 <span className="text-base font-normal text-gray-300">{t("งาน", "papers")}</span></p>
             <p className="text-xs text-gray-500 mt-2">{t("เฉลี่ย 15 เครดิตต่อกระดาษ", "Avg. 15 credits per paper")}</p>
           </div>
         </div>
@@ -387,16 +403,16 @@ export default function DashboardPage() {
               <p className="text-xs text-gray-500 mt-0.5">{t("ติดตามกิจกรรมการตรวจงานและการใช้เครดิต", "Track your grading activity and credit consumption.")}</p>
             </div>
             <div className="flex rounded-lg border border-gray-200 overflow-hidden text-xs">
-              {(["This Month", "Last 30 Days", "Last Quarter"] as const).map((p) => (
+              {USAGE_PERIODS.map(({ key, label }) => (
                 <button
-                  key={p}
-                  onClick={() => setUsagePeriod(p)}
+                  key={key}
+                  onClick={() => setUsagePeriod(key)}
                   className={[
                     "px-3 py-1.5 font-medium transition-colors",
-                    usagePeriod === p ? "bg-[#2DD4BF] text-[var(--text-primary)]" : "text-gray-500 hover:text-gray-600",
+                    usagePeriod === key ? "bg-[#2DD4BF] text-[var(--text-primary)]" : "text-gray-500 hover:text-gray-600",
                   ].join(" ")}
                 >
-                  {p}
+                  {label}
                 </button>
               ))}
             </div>

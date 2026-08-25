@@ -58,35 +58,35 @@ export default function NewCoursePage() {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
             <polyline points="15 18 9 12 15 6"/>
           </svg>
-          Back to All Courses
+          {t("กลับไปรายวิชา", "Back to All Courses")}
         </button>
 
-        <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-6">Add New Course</h1>
+        <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-6">{t("เพิ่มรายวิชาใหม่", "Add New Course")}</h1>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* General Information */}
           <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-5">General Information</h2>
+            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-5">{t("ข้อมูลทั่วไป", "General Information")}</h2>
 
             <div className="mb-4">
               <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">
-                Course Name <span className="text-red-400">*</span>
+                {t("ชื่อรายวิชา", "Course Name")} <span className="text-red-400">*</span>
               </label>
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. UX/UI Design Principles"
+                placeholder={t("เช่น หลักการออกแบบ UX/UI", "e.g. UX/UI Design Principles")}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">Course Description</label>
+              <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">{t("คำอธิบายรายวิชา", "Course Description")}</label>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Brief description of the course..."
+                placeholder={t("คำอธิบายสั้นๆ เกี่ยวกับรายวิชา...", "Brief description of the course...")}
                 rows={3}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] resize-none transition-colors"
               />
@@ -95,25 +95,25 @@ export default function NewCoursePage() {
 
           {/* Course Visuals */}
           <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-5">Course Visuals</h2>
+            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-5">{t("รูปแบบรายวิชา", "Course Visuals")}</h2>
 
             <div className="grid grid-cols-[1fr_auto_1fr] gap-6 items-start">
               {/* Upload Icon */}
               <div>
-                <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">Upload Icon Image</label>
+                <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">{t("อัปโหลดไอคอน", "Upload Icon Image")}</label>
                 <div className="border-2 border-dashed border-gray-200 rounded-xl h-32 flex flex-col items-center justify-center gap-2 text-gray-500 hover:border-[var(--accent)] hover:text-[var(--accent)] cursor-pointer transition-colors">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                     <rect x="3" y="3" width="18" height="18" rx="3"/>
                     <circle cx="8.5" cy="8.5" r="1.5"/>
                     <polyline points="21 15 16 10 5 21"/>
                   </svg>
-                  <span className="text-xs">Click to upload</span>
+                  <span className="text-xs">{t("คลิกเพื่ออัปโหลด", "Click to upload")}</span>
                 </div>
               </div>
 
               {/* Color Picker */}
               <div className="flex flex-col items-center">
-                <label className="block text-sm font-medium text-[var(--text-primary)] mb-2 self-start">Cover Color</label>
+                <label className="block text-sm font-medium text-[var(--text-primary)] mb-2 self-start">{t("สีปก", "Cover Color")}</label>
                 <div className="w-16 h-16 rounded-xl mb-3 shadow" style={{ background: coverColor }} />
                 <div className="grid grid-cols-4 gap-1.5">
                   {PRESET_COLORS.map((c) => (
@@ -134,21 +134,21 @@ export default function NewCoursePage() {
 
               {/* Upload Cover */}
               <div>
-                <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">Upload Cover Image</label>
+                <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">{t("อัปโหลดภาพปก", "Upload Cover Image")}</label>
                 <div className="border-2 border-dashed border-gray-200 rounded-xl h-32 flex flex-col items-center justify-center gap-2 text-gray-500 hover:border-[var(--accent)] hover:text-[var(--accent)] cursor-pointer transition-colors">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                     <polyline points="17 8 12 3 7 8"/>
                     <line x1="12" y1="3" x2="12" y2="15"/>
                   </svg>
-                  <span className="text-xs">Click to upload</span>
+                  <span className="text-xs">{t("คลิกเพื่ออัปโหลด", "Click to upload")}</span>
                 </div>
               </div>
             </div>
 
             {/* Live preview */}
             <div className="mt-5">
-              <p className="text-xs text-gray-500 mb-2">Preview</p>
+              <p className="text-xs text-gray-500 mb-2">{t("ตัวอย่าง", "Preview")}</p>
               <div className="w-48 rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
                 <div className="h-20 relative" style={{ background: coverColor }}>
                   <div className="absolute bottom-2 left-2 w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center">
@@ -158,8 +158,8 @@ export default function NewCoursePage() {
                   </div>
                 </div>
                 <div className="bg-white p-3">
-                  <p className="text-xs font-bold text-[var(--text-primary)] truncate">{name || "Course Name"}</p>
-                  <p className="text-[10px] text-gray-500 mt-0.5">Manually Added</p>
+                  <p className="text-xs font-bold text-[var(--text-primary)] truncate">{name || t("ชื่อรายวิชา", "Course Name")}</p>
+                  <p className="text-[10px] text-gray-500 mt-0.5">{t("เพิ่มเอง", "Manually Added")}</p>
                 </div>
               </div>
             </div>
@@ -172,7 +172,7 @@ export default function NewCoursePage() {
               onClick={() => navAway("/courses")}
               className="px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
             >
-              Cancel
+              {t("ยกเลิก", "Cancel")}
             </button>
             <button
               type="submit"
@@ -182,7 +182,7 @@ export default function NewCoursePage() {
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
                 <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
               </svg>
-              Create Course
+              {t("สร้างรายวิชา", "Create Course")}
             </button>
           </div>
         </form>

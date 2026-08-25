@@ -2,7 +2,6 @@
 
 import { useMemo } from "react";
 import Link from "next/link";
-import StudentShell from "@/components/StudentShell";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
 import { useStudents } from "@/lib/students";
@@ -28,8 +27,7 @@ export default function StudentCoursesPage() {
   }, [students, user?.studentId, getCourse]);
 
   return (
-    <StudentShell>
-      <div className="p-6 max-w-4xl">
+    <div className="p-6 max-w-4xl">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-[var(--text-primary)]">{t("รายวิชาของฉัน", "My Courses")}</h1>
           <p className="mt-0.5 text-sm text-[var(--text-muted)]">
@@ -93,7 +91,6 @@ export default function StudentCoursesPage() {
             })}
           </div>
         )}
-      </div>
-    </StudentShell>
+    </div>
   );
 }

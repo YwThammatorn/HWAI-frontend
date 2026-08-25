@@ -374,19 +374,9 @@ export default function LoginPage() {
             </>
           )}
 
-          {roleMode !== "admin" && (
+          {roleMode === "student" && (
             <p className="mt-6 text-center text-sm text-gray-500">
-              {roleMode === "student"
-                ? t("ไม่พบรหัสนักศึกษา? ติดต่ออาจารย์ผู้สอน", "Can't find your ID? Contact your instructor.")
-                : (
-                  <>
-                    {t("ยังไม่มีบัญชี?", "Don't have an account?")}{" "}
-                    <Link href="/register" className="text-[#0F766E] font-semibold hover:underline">
-                      {t("สมัครสมาชิก", "Sign Up")}
-                    </Link>
-                  </>
-                )
-              }
+              {t("ไม่พบรหัสนักศึกษา? ติดต่ออาจารย์ผู้สอน", "Can't find your ID? Contact your instructor.")}
             </p>
           )}
         </div>

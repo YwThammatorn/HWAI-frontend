@@ -85,7 +85,7 @@ export default function AssignmentsPage() {
     : assignments;
 
   const sourceLabel: Record<string, string> = {
-    manual: "Manually Added",
+    manual: t("เพิ่มเอง", "Manually Added"),
     google: "Google Classroom",
     teams: "Microsoft Teams",
   };
@@ -457,7 +457,7 @@ export default function AssignmentsPage() {
                                 href={`/courses/${id}/assignments/${a.id}/edit`}
                                 className="px-3 py-1.5 border border-gray-200 text-gray-600 text-xs font-medium rounded-lg hover:bg-white transition-colors"
                               >
-                                Edit
+                                {t("แก้ไข", "Edit")}
                               </Link>
                             </div>
                           </div>
@@ -469,7 +469,7 @@ export default function AssignmentsPage() {
               })}
               {visible.length > 0 && (
                 <div className="flex items-center justify-between px-5 py-3 text-xs text-gray-500">
-                  <span>Showing <span className="font-medium text-[var(--text-primary)]">1–{visible.length}</span> of <span className="font-medium text-[var(--text-primary)]">{visible.length}</span> assignments</span>
+                  <span>{t("แสดง", "Showing")} <span className="font-medium text-[var(--text-primary)]">1–{visible.length}</span> {t("จาก", "of")} <span className="font-medium text-[var(--text-primary)]">{visible.length}</span> {t("งาน", "assignments")}</span>
                   {visible.length > 5 && (
                     <div className="flex gap-1">
                       {[1, 2, 3].map((p) => (

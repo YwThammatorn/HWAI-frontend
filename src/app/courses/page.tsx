@@ -61,9 +61,9 @@ export default function CoursesPage() {
         {/* Header */}
         <div className="flex items-end justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-[var(--text-primary)]">All Courses</h1>
+            <h1 className="text-3xl font-bold text-[var(--text-primary)]">{t("รายวิชาทั้งหมด", "All Courses")}</h1>
             <p className="mt-1 text-sm text-gray-500">
-              Manage your classes, assignments, and student progress from here.
+              {t("จัดการรายวิชา งาน และความคืบหน้าของนักศึกษาจากที่นี่", "Manage your classes, assignments, and student progress from here.")}
             </p>
           </div>
 
@@ -77,7 +77,7 @@ export default function CoursesPage() {
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search courses..."
+                  placeholder={t("ค้นหารายวิชา", "Search courses...")}
                   className="pl-9 pr-4 py-2 text-sm rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] w-56"
                 />
               </div>
@@ -89,7 +89,7 @@ export default function CoursesPage() {
                 <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
                   <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
                 </svg>
-                Add Course
+                {t("เพิ่มรายวิชา", "Add Course")}
               </Link>
             </div>
           )}
@@ -103,11 +103,11 @@ export default function CoursesPage() {
                 key={tabKey}
                 onClick={() => setTab(tabKey)}
                 className={[
-                  "px-4 py-1.5 rounded-lg text-sm font-medium capitalize transition-colors",
+                  "px-4 py-1.5 rounded-lg text-sm font-medium transition-colors",
                   tab === tabKey ? "bg-[var(--bg-nav)] text-white" : "text-gray-500 hover:bg-gray-100",
                 ].join(" ")}
               >
-                {tabKey}
+                {tabKey === "active" ? t("ใช้งานอยู่", "Active") : t("เก็บถาวร", "Archived")}
                 <span className={["ml-1.5 text-xs px-1.5 py-0.5 rounded-full", tab === tabKey ? "bg-white/20" : "bg-gray-200"].join(" ")}>
                   {tabKey === "active" ? active.length : archived.length}
                 </span>
@@ -183,6 +183,7 @@ export default function CoursesPage() {
 }
 
 function EmptyState() {
+  const { t } = useLanguage();
   return (
     <div className="flex items-center justify-center py-16">
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 px-16 py-14 flex flex-col items-center text-center max-w-md w-full">
@@ -200,9 +201,9 @@ function EmptyState() {
           <div className="absolute top-8 -left-3 w-2 h-2 rounded-full bg-[#2DD4BF] opacity-40"/>
         </div>
 
-        <h2 className="text-xl font-bold text-[var(--text-primary)] mb-2">Let&apos;s start your first class</h2>
+        <h2 className="text-xl font-bold text-[var(--text-primary)] mb-2">{t("เริ่มสร้างรายวิชาแรกของคุณ", "Let's start your first class")}</h2>
         <p className="text-sm text-gray-500 mb-8 leading-relaxed">
-          Create a course to begin grading assignments with HWAI Agent.
+          {t("สร้างรายวิชาเพื่อเริ่มตรวจงานด้วย HWAI Agent", "Create a course to begin grading assignments with HWAI Agent.")}
         </p>
 
         <Link
@@ -212,7 +213,7 @@ function EmptyState() {
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
             <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
           </svg>
-          Add Your First Course
+          {t("เพิ่มรายวิชาแรก", "Add Your First Course")}
         </Link>
       </div>
     </div>
@@ -228,8 +229,9 @@ function CourseCard({ course, studentCount, allGraded, activeAssignments, isArch
   onRestore: () => void;
   onDelete: () => void;
 }) {
+  const { t } = useLanguage();
   const sourceLabel: Record<string, { label: string; dot: string }> = {
-    manual: { label: "Manually Added", dot: "" },
+    manual: { label: t("เพิ่มเอง", "Manually Added"), dot: "" },
     google: { label: "Google Classroom", dot: "#34D399" },
     teams: { label: "Microsoft Teams", dot: "#60A5FA" },
   };
@@ -246,7 +248,7 @@ function CourseCard({ course, studentCount, allGraded, activeAssignments, isArch
         </div>
         {isArchived && (
           <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-            <span className="text-white text-xs font-medium bg-black/40 px-2 py-1 rounded-full">Archived</span>
+            <span className="text-white text-xs font-medium bg-black/40 px-2 py-1 rounded-full">{t("เก็บถาวร", "Archived")}</span>
           </div>
         )}
       </Link>
@@ -257,8 +259,8 @@ function CourseCard({ course, studentCount, allGraded, activeAssignments, isArch
           <h3 className="font-bold text-[var(--text-primary)] text-[15px] leading-snug">{course.name}</h3>
           {course.source === "manual" && !isArchived && (
             <div className="flex gap-2 text-xs ml-2 shrink-0">
-              <Link href={`/courses/${course.id}/settings`} className="text-[var(--accent)] hover:underline font-medium">Edit</Link>
-              <button onClick={onDelete} className="text-red-400 hover:underline font-medium">Delete</button>
+              <Link href={`/courses/${course.id}/settings`} className="text-[var(--accent)] hover:underline font-medium">{t("แก้ไข", "Edit")}</Link>
+              <button onClick={onDelete} className="text-red-400 hover:underline font-medium">{t("ลบ", "Delete")}</button>
             </div>
           )}
         </div>
@@ -273,23 +275,23 @@ function CourseCard({ course, studentCount, allGraded, activeAssignments, isArch
             onClick={onRestore}
             className="w-full text-xs font-medium py-1.5 rounded-lg bg-[var(--accent-subtle)] hover:bg-[#2DD4BF] text-[var(--accent)] hover:text-[#1B2A4A] transition-colors"
           >
-            Restore
+            {t("คืนค่า", "Restore")}
           </button>
         ) : (
           <div className="flex items-center justify-between text-xs text-gray-500 border-t border-gray-50 pt-3">
             <span className="flex items-center gap-1">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-              {studentCount} Students
+              {studentCount} {t("นักศึกษา", "Students")}
             </span>
             {allGraded ? (
               <span className="flex items-center gap-1 text-[var(--accent)] font-medium">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                All Graded
+                {t("ตรวจแล้วทั้งหมด", "All Graded")}
               </span>
             ) : (
               <span className="flex items-center gap-1 text-orange-500">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                {activeAssignments} Active
+                {activeAssignments} {t("งานรอตรวจ", "Active")}
               </span>
             )}
           </div>

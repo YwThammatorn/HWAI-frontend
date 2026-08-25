@@ -184,7 +184,7 @@ export default function CourseDetailPage() {
                       <th className="px-6 py-3 font-medium">{t("รหัสนักศึกษา", "Student ID")}</th>
                       <th className="px-6 py-3 font-medium">{t("ชื่อ", "First Name")}</th>
                       <th className="px-6 py-3 font-medium">{t("นามสกุล", "Last Name")}</th>
-                      <th className="px-6 py-3 font-medium">Email</th>
+                      <th className="px-6 py-3 font-medium">{t("อีเมล", "Email")}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-50">

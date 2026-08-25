@@ -345,7 +345,7 @@ export default function GradingProgressPage() {
     return (
       <AppShell>
         <main className="flex-1 flex items-center justify-center text-gray-500 text-sm">
-          ไม่พบข้อมูล —{" "}
+          {t("ไม่พบข้อมูล", "Not found")} —{" "}
           <Link href={`/courses/${id}/assignments`} className="text-[var(--accent)] ml-1 hover:underline">
             {t("กลับหน้างาน", "Back to assignments")}
           </Link>
@@ -404,11 +404,11 @@ export default function GradingProgressPage() {
             <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">{assignment.name}</h1>
             <div className="flex items-center gap-3 text-sm text-gray-400">
               <span>
-                Due{" "}
+                {t("ส่งภายใน", "Due")}{" "}
                 {new Date(assignment.dueDate + "T00:00:00").toLocaleDateString("en-US", {
                   month: "short", day: "numeric", year: "numeric",
                 })}{" "}
-                at 11:59 PM
+                {t("เวลา 23:59 น.", "at 11:59 PM")}
               </span>
               <span className="font-medium text-[var(--accent)]">• {t("ตรวจงาน", "Grading")}</span>
             </div>

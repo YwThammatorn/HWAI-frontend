@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import AdminShell from "@/components/AdminShell";
 import { useLanguage } from "@/context/LanguageContext";
 import { useManagedTeachers, ManagedTeacher } from "@/lib/managed-teachers";
 
@@ -265,8 +264,7 @@ export default function AdminTeachersPage() {
   };
 
   return (
-    <AdminShell>
-      <div className="p-6 max-w-4xl">
+    <div className="p-6 max-w-4xl">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold text-[var(--text-primary)]">{t("จัดการอาจารย์", "Teacher Management")}</h1>
@@ -371,6 +369,6 @@ export default function AdminTeachersPage() {
           onCancel={() => setDeletingId(null)}
         />
       )}
-    </AdminShell>
+    </div>
   );
 }
