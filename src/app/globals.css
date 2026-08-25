@@ -7,7 +7,7 @@
   --color-hwai-bg: #F7F9FC;
   --color-hwai-bg-app: #F3F4F6;
   --color-hwai-card: #FFFFFF;
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Lexend", "Prompt", ui-sans-serif, system-ui, sans-serif;
 }
 
 /* ── Semantic color tokens ─────────────────────────────────────────────────── */
@@ -50,7 +50,7 @@
 body {
   background: var(--bg-app);
   color: var(--text-primary);
-  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+  font-family: "Lexend", "Prompt", ui-sans-serif, system-ui, sans-serif;
 }
 
 /* ── Tailwind class overrides (all modes) ──────────────────────────────────── */
