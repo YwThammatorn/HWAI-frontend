@@ -55,10 +55,10 @@ export default function StudentCoursesPage() {
                 <Link
                   key={course.id}
                   href={`/student/courses/${course.id}/classwork`}
-                  className="group bg-[var(--bg-surface)] rounded-2xl shadow-sm border border-[var(--border-subtle)] overflow-hidden hover:shadow-md transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F97316]"
+                  className="group flex flex-col bg-[var(--bg-surface)] rounded-2xl shadow-sm border border-[var(--border-subtle)] overflow-hidden hover:shadow-md transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F97316]"
                 >
                   {/* Banner — solid color, book icon (matches teacher) */}
-                  <div className="relative h-28" style={{ background: course.coverColor }}>
+                  <div className="relative h-28 shrink-0" style={{ background: course.coverColor }}>
                     <div className="absolute bottom-3 left-3 w-9 h-9 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
                         <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
@@ -67,14 +67,16 @@ export default function StudentCoursesPage() {
                     </div>
                   </div>
 
-                  {/* Card body */}
-                  <div className="p-4">
-                    <h3 className="font-bold text-[var(--text-primary)] text-[15px] leading-snug mb-1 group-hover:text-[#C2410C] transition-colors">
-                      {course.name}
-                    </h3>
-                    {course.description && (
-                      <p className="text-xs text-[var(--text-muted)] line-clamp-1">{course.description}</p>
-                    )}
+                  {/* Card body — flex column so footer pins to bottom */}
+                  <div className="flex flex-col flex-1 p-4">
+                    <div className="flex-1">
+                      <h3 className="font-bold text-[var(--text-primary)] text-[15px] leading-snug mb-1 line-clamp-2 group-hover:text-[#C2410C] transition-colors">
+                        {course.name}
+                      </h3>
+                      {course.description && (
+                        <p className="text-xs text-[var(--text-muted)] line-clamp-2">{course.description}</p>
+                      )}
+                    </div>
 
                     <div className="flex items-center justify-between text-xs text-[var(--text-muted)] border-t border-[var(--border-subtle)] pt-3 mt-3">
                       <span className="flex items-center gap-1">

@@ -235,9 +235,9 @@ function CourseCard({ course, studentCount, allGraded, activeAssignments, isArch
   const src = sourceLabel[course.source] ?? { label: course.source, dot: "" };
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
+    <div className="flex flex-col bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
       {/* Colored banner */}
-      <Link href={isArchived ? "#" : `/courses/${course.id}`} className="block relative h-28" style={{ background: course.coverColor }}>
+      <Link href={isArchived ? "#" : `/courses/${course.id}`} className="block relative h-28 shrink-0" style={{ background: course.coverColor }}>
         <div className="absolute bottom-3 left-3 w-9 h-9 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
             <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
@@ -250,32 +250,34 @@ function CourseCard({ course, studentCount, allGraded, activeAssignments, isArch
         )}
       </Link>
 
-      {/* Card body */}
-      <div className="p-4">
-        <div className="flex items-start justify-between mb-1">
-          <h3 className="font-bold text-[var(--text-primary)] text-[15px] leading-snug">{course.name}</h3>
-          {course.source === "manual" && !isArchived && (
-            <div className="flex gap-2 text-xs ml-2 shrink-0">
-              <Link href={`/courses/${course.id}/settings`} className="text-[var(--accent)] hover:underline font-medium">{t("แก้ไข", "Edit")}</Link>
-              <button onClick={onDelete} className="text-red-400 hover:underline font-medium">{t("ลบ", "Delete")}</button>
-            </div>
-          )}
-        </div>
+      {/* Card body — flex column so footer pins to bottom */}
+      <div className="flex flex-col flex-1 p-4">
+        <div className="flex-1">
+          <div className="flex items-start justify-between mb-1">
+            <h3 className="font-bold text-[var(--text-primary)] text-[15px] leading-snug line-clamp-2">{course.name}</h3>
+            {course.source === "manual" && !isArchived && (
+              <div className="flex gap-2 text-xs ml-2 shrink-0">
+                <Link href={`/courses/${course.id}/settings`} className="text-[var(--accent)] hover:underline font-medium">{t("แก้ไข", "Edit")}</Link>
+                <button onClick={onDelete} className="text-red-400 hover:underline font-medium">{t("ลบ", "Delete")}</button>
+              </div>
+            )}
+          </div>
 
-        <div className="flex items-center gap-1.5 mb-3">
-          {src.dot && <span className="w-2 h-2 rounded-full inline-block" style={{ background: src.dot }} />}
-          <span className="text-xs text-gray-500">{src.label}</span>
+          <div className="flex items-center gap-1.5">
+            {src.dot && <span className="w-2 h-2 rounded-full inline-block" style={{ background: src.dot }} />}
+            <span className="text-xs text-gray-500">{src.label}</span>
+          </div>
         </div>
 
         {isArchived ? (
           <button
             onClick={onRestore}
-            className="w-full text-xs font-medium py-1.5 rounded-lg bg-[var(--accent-subtle)] hover:bg-[#2DD4BF] text-[var(--accent)] hover:text-[#1B2A4A] transition-colors"
+            className="mt-3 w-full text-xs font-medium py-1.5 rounded-lg bg-[var(--accent-subtle)] hover:bg-[#2DD4BF] text-[var(--accent)] hover:text-[#1B2A4A] transition-colors"
           >
             {t("คืนค่า", "Restore")}
           </button>
         ) : (
-          <div className="flex items-center justify-between text-xs text-gray-500 border-t border-gray-50 pt-3">
+          <div className="flex items-center justify-between text-xs text-gray-500 border-t border-gray-50 pt-3 mt-3">
             <span className="flex items-center gap-1">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
               {studentCount} {t("นักศึกษา", "Students")}
