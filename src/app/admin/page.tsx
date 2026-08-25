@@ -5,6 +5,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { useManagedTeachers } from "@/lib/managed-teachers";
 import { useCohortStudents } from "@/lib/cohort-students";
 import { useCourses } from "@/lib/courses";
+import PageHeader from "@/components/PageHeader";
 
 function CheckIcon({ done }: { done: boolean }) {
   return done ? (
@@ -81,8 +82,10 @@ export default function AdminDashboard() {
 
   return (
     <div className="p-6 max-w-4xl">
-        <h1 className="text-2xl font-bold text-[var(--text-primary)]">{t("หน้าหลัก", "Dashboard")}</h1>
-        <p className="mt-1 text-sm text-[var(--text-muted)]">{t("ภาพรวมระบบ HWAI Agent", "HWAI Agent system overview")}</p>
+        <PageHeader
+          title={t("หน้าหลัก", "Dashboard")}
+          description={t("ภาพรวมระบบ HWAI Agent", "HWAI Agent system overview")}
+        />
 
         {/* Stat cards */}
         <div className="mt-6 grid grid-cols-3 gap-4">

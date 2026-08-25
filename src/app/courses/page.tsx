@@ -8,6 +8,7 @@ import { useStudents } from "@/lib/students";
 import { useAssignments } from "@/lib/assignments";
 import type { Course } from "@/lib/courses";
 import { useLanguage } from "@/context/LanguageContext";
+import SearchInput from "@/components/SearchInput";
 
 export default function CoursesPage() {
   const { t } = useLanguage();
@@ -70,17 +71,13 @@ export default function CoursesPage() {
           {active.length > 0 && (
             <div className="flex items-center gap-3">
               {/* Search */}
-              <div className="relative">
-                <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-                </svg>
-                <input
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder={t("ค้นหารายวิชา", "Search courses...")}
-                  className="pl-9 pr-4 py-2 text-sm rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] w-56"
-                />
-              </div>
+              <SearchInput
+                value={search}
+                onChange={setSearch}
+                placeholder={t("ค้นหารายวิชา", "Search courses...")}
+                ariaLabel={t("ค้นหารายวิชา", "Search courses")}
+                className="w-56"
+              />
               {/* Add Course */}
               <Link
                 href="/courses/new"

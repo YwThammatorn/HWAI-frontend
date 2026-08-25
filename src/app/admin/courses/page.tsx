@@ -4,6 +4,9 @@ import { useState } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import { useCourses, Course } from "@/lib/courses";
 import { useManagedTeachers } from "@/lib/managed-teachers";
+import { getInitials } from "@/lib/utils";
+import EmptyState from "@/components/EmptyState";
+import PageHeader from "@/components/PageHeader";
 import { useCohortStudents } from "@/lib/cohort-students";
 import { useStudents } from "@/lib/students";
 
@@ -79,7 +82,7 @@ function CourseAssignPanel({ course }: { course: Course }) {
                     className="w-4 h-4 accent-[#0F766E] cursor-pointer"
                   />
                   <div className="w-7 h-7 rounded-full bg-[#2DD4BF]/20 flex items-center justify-center text-[#0F766E] text-[10px] font-bold shrink-0 select-none" aria-hidden="true">
-                    {teacher.name.split(" ").map((w) => w[0] ?? "").slice(0, 2).join("").toUpperCase()}
+                    {getInitials(teacher.name)}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-[var(--text-primary)] truncate">{teacher.name}</p>
@@ -218,24 +221,23 @@ export default function AdminCoursesPage() {
 
   return (
     <div className="p-6 max-w-4xl">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-[var(--text-primary)]">{t("จัดการรายวิชา", "Course Management")}</h1>
-          <p className="mt-0.5 text-sm text-[var(--text-muted)]">
-            {t("Assign อาจารย์และนำเข้านักศึกษาให้แต่ละรายวิชา", "Assign teachers and enroll students for each course")}
-          </p>
-        </div>
+        <PageHeader
+          title={t("จัดการรายวิชา", "Course Management")}
+          description={t("Assign อาจารย์และนำเข้านักศึกษาให้แต่ละรายวิชา", "Assign teachers and enroll students for each course")}
+        />
 
         {courses.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--border-subtle)] bg-[var(--bg-surface)] py-16 px-8 text-center">
-            <div className="w-12 h-12 rounded-full bg-[#2DD4BF]/10 flex items-center justify-center mb-3">
+          <EmptyState
+            iconColor="#2DD4BF"
+            icon={
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
                 <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
                 <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
               </svg>
-            </div>
-            <p className="text-sm font-semibold text-[var(--text-primary)]">{t("ยังไม่มีรายวิชาในระบบ", "No courses yet")}</p>
-            <p className="text-xs text-[var(--text-muted)] mt-1">{t("สร้างรายวิชาจากหน้าหลักของ Teacher portal ก่อน", "Create courses from the Teacher portal first")}</p>
-          </div>
+            }
+            title={t("ยังไม่มีรายวิชาในระบบ", "No courses yet")}
+            description={t("สร้างรายวิชาจากหน้าหลักของ Teacher portal ก่อน", "Create courses from the Teacher portal first")}
+          />
         ) : (
           <div className="flex flex-col gap-6">
             {/* Active */}

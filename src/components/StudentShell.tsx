@@ -9,6 +9,7 @@ import { useTheme } from "./ThemeProvider";
 import { useStudents } from "@/lib/students";
 import { useCourses } from "@/lib/courses";
 import StudentSidebar from "./StudentSidebar";
+import { getInitials } from "@/lib/utils";
 
 export default function StudentShell({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuth();
@@ -39,12 +40,7 @@ export default function StudentShell({ children }: { children: React.ReactNode }
   if (!user || user.role !== "student") return null;
 
   const firstName = user.name.split(" ")[0] ?? user.name;
-  const initials = user.name
-    .split(" ")
-    .map((w) => w[0] ?? "")
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
+  const initials = getInitials(user.name);
 
   return (
     <div className="h-screen flex flex-col bg-[var(--bg-app)]">

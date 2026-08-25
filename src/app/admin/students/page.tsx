@@ -3,6 +3,9 @@
 import { useState, useRef, useEffect } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import { useCohortStudents, CohortStudent } from "@/lib/cohort-students";
+import EmptyState from "@/components/EmptyState";
+import PageHeader from "@/components/PageHeader";
+import SearchInput from "@/components/SearchInput";
 
 // ---- CSV parsing ----
 
@@ -384,61 +387,56 @@ export default function AdminStudentsPage() {
 
   return (
     <div className="p-6 max-w-5xl">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-[var(--text-primary)]">{t("จัดการนักศึกษา", "Student Management")}</h1>
-            <p className="mt-0.5 text-sm text-[var(--text-muted)]">
-              {t(`นักศึกษาทั้งหมด ${cohortStudents.length} คน`, `${cohortStudents.length} student(s) in cohort`)}
-            </p>
-          </div>
-          <button
-            onClick={() => setDrawerOpen(true)}
-            className="flex items-center gap-2 h-10 px-4 rounded-xl bg-[#0F766E] text-white text-sm font-semibold hover:bg-[#0d6660] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2DD4BF] transition-colors"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-              <polyline points="17 8 12 3 7 8"/>
-              <line x1="12" y1="3" x2="12" y2="15"/>
-            </svg>
-            {t("นำเข้า CSV", "Import CSV")}
-          </button>
-        </div>
+        <PageHeader
+          title={t("จัดการนักศึกษา", "Student Management")}
+          description={t(`นักศึกษาทั้งหมด ${cohortStudents.length} คน`, `${cohortStudents.length} student(s) in cohort`)}
+          action={
+            <button
+              onClick={() => setDrawerOpen(true)}
+              className="flex items-center gap-2 h-10 px-4 rounded-xl bg-[#0F766E] text-white text-sm font-semibold hover:bg-[#0d6660] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2DD4BF] transition-colors"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+              {t("นำเข้า CSV", "Import CSV")}
+            </button>
+          }
+        />
 
         {cohortStudents.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--border-subtle)] bg-[var(--bg-surface)] py-16 px-8 text-center">
-            <div className="w-12 h-12 rounded-full bg-[#2DD4BF]/10 flex items-center justify-center mb-3">
+          <EmptyState
+            iconColor="#2DD4BF"
+            icon={
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
                 <circle cx="9" cy="7" r="4"/>
                 <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
               </svg>
-            </div>
-            <p className="text-sm font-semibold text-[var(--text-primary)]">{t("ยังไม่มีนักศึกษาในระบบ", "No students yet")}</p>
-            <p className="text-xs text-[var(--text-muted)] mt-1 mb-4">{t("นำเข้าจากไฟล์ CSV เพื่อเพิ่มนักศึกษาทั้งรุ่น", "Import a CSV file to add cohort students")}</p>
-            <button
-              onClick={() => setDrawerOpen(true)}
-              className="h-9 px-4 rounded-xl bg-[#0F766E] text-white text-sm font-semibold hover:bg-[#0d6660] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2DD4BF] transition-colors"
-            >
-              {t("นำเข้า CSV", "Import CSV")}
-            </button>
-          </div>
+            }
+            title={t("ยังไม่มีนักศึกษาในระบบ", "No students yet")}
+            description={t("นำเข้าจากไฟล์ CSV เพื่อเพิ่มนักศึกษาทั้งรุ่น", "Import a CSV file to add cohort students")}
+            action={
+              <button
+                onClick={() => setDrawerOpen(true)}
+                className="h-9 px-4 rounded-xl bg-[#0F766E] text-white text-sm font-semibold hover:bg-[#0d6660] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2DD4BF] transition-colors"
+              >
+                {t("นำเข้า CSV", "Import CSV")}
+              </button>
+            }
+          />
         ) : (
           <>
             {/* Filters */}
             <div className="flex gap-3 mb-4">
-              <div className="relative flex-1 max-w-xs">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" aria-hidden="true">
-                  <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                </svg>
-                <input
-                  type="search"
-                  placeholder={t("ค้นหา…", "Search…")}
-                  aria-label={t("ค้นหานักศึกษา", "Search students")}
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="w-full h-9 pl-8 pr-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[#2DD4BF]"
-                />
-              </div>
+              <SearchInput
+                value={search}
+                onChange={setSearch}
+                placeholder={t("ค้นหา…", "Search…")}
+                ariaLabel={t("ค้นหานักศึกษา", "Search students")}
+                className="flex-1 max-w-xs"
+              />
               {cohorts.length > 0 && (
                 <select
                   value={cohortFilter}

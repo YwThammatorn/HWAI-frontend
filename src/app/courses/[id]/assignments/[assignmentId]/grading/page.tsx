@@ -7,6 +7,7 @@ import AppShell from "@/components/AppShell";
 import { useCourses } from "@/lib/courses";
 import { useAssignments, Submission } from "@/lib/assignments";
 import { useLanguage } from "@/context/LanguageContext";
+import { getInitials } from "@/lib/utils";
 
 // ── Stat card ─────────────────────────────────────────────────────────────
 
@@ -102,7 +103,7 @@ function GradeRow({
       <td className="px-4 py-3">
         <div className="flex items-center gap-2.5">
           <div className="w-7 h-7 rounded-full bg-[#2DD4BF]/20 text-[#0F766E] text-[10px] font-bold flex items-center justify-center shrink-0 select-none" aria-hidden="true">
-            {sub.studentName.split(" ").map((w) => w[0] ?? "").slice(0, 2).join("").toUpperCase()}
+            {getInitials(sub.studentName)}
           </div>
           <div className="min-w-0">
             <p className="text-sm font-medium text-[var(--text-primary)] truncate">{sub.studentName}</p>

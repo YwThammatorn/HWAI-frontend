@@ -7,6 +7,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { useTheme } from "./ThemeProvider";
 import AdminSidebar from "./AdminSidebar";
+import { getInitials } from "@/lib/utils";
 
 export default function AdminShell({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuth();
@@ -23,12 +24,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
 
   if (!user || user.role !== "admin") return null;
 
-  const initials = user.name
-    .split(" ")
-    .map((w) => w[0] ?? "")
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
+  const initials = getInitials(user.name);
 
   return (
     <div className="h-screen flex flex-col bg-[var(--bg-app)]">

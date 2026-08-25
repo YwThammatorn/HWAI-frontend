@@ -7,6 +7,8 @@ import { useAuth } from "@/context/AuthContext";
 import { useStudents } from "@/lib/students";
 import { useCourses } from "@/lib/courses";
 import { useAssignments } from "@/lib/assignments";
+import EmptyState from "@/components/EmptyState";
+import PageHeader from "@/components/PageHeader";
 
 export default function StudentCoursesPage() {
   const { t } = useLanguage();
@@ -28,24 +30,23 @@ export default function StudentCoursesPage() {
 
   return (
     <div className="p-6 max-w-4xl">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-[var(--text-primary)]">{t("รายวิชาของฉัน", "My Courses")}</h1>
-          <p className="mt-0.5 text-sm text-[var(--text-muted)]">
-            {t(`ลงทะเบียน ${enrolledCourses.length} รายวิชา`, `Enrolled in ${enrolledCourses.length} course(s)`)}
-          </p>
-        </div>
+        <PageHeader
+          title={t("รายวิชาของฉัน", "My Courses")}
+          description={t(`ลงทะเบียน ${enrolledCourses.length} รายวิชา`, `Enrolled in ${enrolledCourses.length} course(s)`)}
+        />
 
         {enrolledCourses.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--border-subtle)] bg-[var(--bg-surface)] py-16 px-8 text-center">
-            <div className="w-12 h-12 rounded-full bg-[#F97316]/10 flex items-center justify-center mb-3">
+          <EmptyState
+            iconColor="#F97316"
+            icon={
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
                 <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
                 <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
               </svg>
-            </div>
-            <p className="text-sm font-semibold text-[var(--text-primary)]">{t("ยังไม่มีรายวิชา", "No courses yet")}</p>
-            <p className="text-xs text-[var(--text-muted)] mt-1">{t("อาจารย์จะเพิ่มคุณเข้าในรายวิชาเมื่อลงทะเบียนแล้ว", "Your instructor will enroll you in courses")}</p>
-          </div>
+            }
+            title={t("ยังไม่มีรายวิชา", "No courses yet")}
+            description={t("อาจารย์จะเพิ่มคุณเข้าในรายวิชาเมื่อลงทะเบียนแล้ว", "Your instructor will enroll you in courses")}
+          />
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {enrolledCourses.map((course) => {

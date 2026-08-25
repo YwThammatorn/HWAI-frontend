@@ -3,6 +3,9 @@
 import { useState, useEffect, useRef } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import { useManagedTeachers, ManagedTeacher } from "@/lib/managed-teachers";
+import { getInitials } from "@/lib/utils";
+import EmptyState from "@/components/EmptyState";
+import PageHeader from "@/components/PageHeader";
 
 function AddTeacherDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t } = useLanguage();
@@ -265,42 +268,43 @@ export default function AdminTeachersPage() {
 
   return (
     <div className="p-6 max-w-4xl">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-[var(--text-primary)]">{t("จัดการอาจารย์", "Teacher Management")}</h1>
-            <p className="mt-0.5 text-sm text-[var(--text-muted)]">
-              {t(`อาจารย์ทั้งหมด ${teachers.length} คน`, `${teachers.length} teacher(s) in system`)}
-            </p>
-          </div>
-          <button
-            onClick={() => setDrawerOpen(true)}
-            className="flex items-center gap-2 h-10 px-4 rounded-xl bg-[#0F766E] text-white text-sm font-semibold hover:bg-[#0d6660] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2DD4BF] transition-colors"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>
-            {t("เพิ่มอาจารย์", "Add Teacher")}
-          </button>
-        </div>
+        <PageHeader
+          title={t("จัดการอาจารย์", "Teacher Management")}
+          description={t(`อาจารย์ทั้งหมด ${teachers.length} คน`, `${teachers.length} teacher(s) in system`)}
+          action={
+            <button
+              onClick={() => setDrawerOpen(true)}
+              className="flex items-center gap-2 h-10 px-4 rounded-xl bg-[#0F766E] text-white text-sm font-semibold hover:bg-[#0d6660] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2DD4BF] transition-colors"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              {t("เพิ่มอาจารย์", "Add Teacher")}
+            </button>
+          }
+        />
 
         {teachers.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--border-subtle)] bg-[var(--bg-surface)] py-16 px-8 text-center">
-            <div className="w-12 h-12 rounded-full bg-[#2DD4BF]/10 flex items-center justify-center mb-3">
+          <EmptyState
+            iconColor="#2DD4BF"
+            icon={
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
                 <circle cx="9" cy="7" r="4"/>
                 <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
               </svg>
-            </div>
-            <p className="text-sm font-semibold text-[var(--text-primary)]">{t("ยังไม่มีอาจารย์ในระบบ", "No teachers yet")}</p>
-            <p className="text-xs text-[var(--text-muted)] mt-1 mb-4">{t("เพิ่มอาจารย์คนแรกเพื่อเริ่มต้น", "Add the first teacher to get started")}</p>
-            <button
-              onClick={() => setDrawerOpen(true)}
-              className="h-9 px-4 rounded-xl bg-[#0F766E] text-white text-sm font-semibold hover:bg-[#0d6660] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2DD4BF] transition-colors"
-            >
-              {t("เพิ่มอาจารย์", "Add Teacher")}
-            </button>
-          </div>
+            }
+            title={t("ยังไม่มีอาจารย์ในระบบ", "No teachers yet")}
+            description={t("เพิ่มอาจารย์คนแรกเพื่อเริ่มต้น", "Add the first teacher to get started")}
+            action={
+              <button
+                onClick={() => setDrawerOpen(true)}
+                className="h-9 px-4 rounded-xl bg-[#0F766E] text-white text-sm font-semibold hover:bg-[#0d6660] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2DD4BF] transition-colors"
+              >
+                {t("เพิ่มอาจารย์", "Add Teacher")}
+              </button>
+            }
+          />
         ) : (
           <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] overflow-hidden">
             <table className="w-full text-sm" role="table">
@@ -322,7 +326,7 @@ export default function AdminTeachersPage() {
                     <td className="px-4 py-3 font-medium text-[var(--text-primary)]">
                       <div className="flex items-center gap-2.5">
                         <div className="w-8 h-8 rounded-full bg-[#2DD4BF]/20 flex items-center justify-center text-[#0F766E] text-xs font-bold shrink-0 select-none" aria-hidden="true">
-                          {teacher.name.split(" ").map((w) => w[0] ?? "").slice(0, 2).join("").toUpperCase()}
+                          {getInitials(teacher.name)}
                         </div>
                         {teacher.name}
                       </div>
