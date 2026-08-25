@@ -76,24 +76,6 @@ export default function AdminSidebar() {
       aria-label={t("เมนูผู้ดูแลระบบ", "Admin navigation")}
       className="w-56 shrink-0 h-full flex flex-col bg-[var(--bg-surface)] border-r border-[var(--border-subtle)]"
     >
-      {/* Logo strip */}
-      <div className="h-14 flex items-center px-5 border-b border-[var(--border-subtle)] shrink-0">
-        <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg bg-[#2DD4BF] flex items-center justify-center shrink-0">
-            <svg width="14" height="14" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-              <rect x="2" y="2" width="6" height="6" rx="1" fill="white" fillOpacity="0.9"/>
-              <rect x="10" y="2" width="6" height="6" rx="1" fill="white" fillOpacity="0.9"/>
-              <rect x="2" y="10" width="6" height="6" rx="1" fill="white" fillOpacity="0.9"/>
-              <rect x="10" y="10" width="6" height="6" rx="1" fill="white" fillOpacity="0.6"/>
-            </svg>
-          </div>
-          <div>
-            <p className="text-xs font-bold text-[var(--text-primary)] leading-none">HWAI Admin</p>
-            <p className="text-[10px] text-[var(--text-muted)] leading-none mt-0.5">{t("ผู้ดูแลระบบ", "Administrator")}</p>
-          </div>
-        </div>
-      </div>
-
       {/* Nav items */}
       <nav className="flex-1 overflow-y-auto px-3 py-4">
         <ul role="list" className="flex flex-col gap-0.5">
