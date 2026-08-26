@@ -167,6 +167,12 @@ export default function CollaboratorsPage() {
   );
 
   function remove(id: string) {
+    const target = collabs.find((c) => c.id === id);
+    const msg = t(
+      `ลบ "${target?.name ?? ""}" ออกจาก course นี้?`,
+      `Remove "${target?.name ?? ""}" from this course?`
+    );
+    if (!window.confirm(msg)) return;
     setCollabs((prev) => prev.filter((c) => c.id !== id));
   }
 

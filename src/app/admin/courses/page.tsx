@@ -221,6 +221,10 @@ function CourseAssignPanel({ course }: { course: Course }) {
   const [pickerSearch, setPickerSearch] = useState("");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
+  // Confirm state for destructive student actions
+  const [pendingRemoveStudent, setPendingRemoveStudent] = useState<Student | null>(null);
+  const [pendingRemoveCohort, setPendingRemoveCohort] = useState(false);
+
   const enrolledStudentIds = new Set(enrolledStudents.map((s) => s.studentId));
   const allCohortStudents = cohorts.flatMap((c) => getStudentsByCohort(c));
   const availableStudents = allCohortStudents.filter((s) => !enrolledStudentIds.has(s.studentId));
@@ -278,8 +282,14 @@ function CourseAssignPanel({ course }: { course: Course }) {
     if (!selectedCohort) return;
     const toRemove = enrolledStudents.filter((s) => s.cohort === selectedCohort);
     if (toRemove.length === 0) { showMsg(t("ไม่มีนักศึกษาจาก cohort นี้ใน course", `No students from ${selectedCohort}`), "warn"); return; }
+    setPendingRemoveCohort(true);
+  }
+
+  function confirmRemoveCohort() {
+    const toRemove = enrolledStudents.filter((s) => s.cohort === selectedCohort);
     toRemove.forEach((s) => removeStudent(s.id));
     showMsg(t(`ลบ ${toRemove.length} คน (${selectedCohort}) ออกแล้ว`, `Removed ${toRemove.length} from ${selectedCohort}`));
+    setPendingRemoveCohort(false);
   }
 
   const filteredStudents = studentSearch
@@ -293,6 +303,7 @@ function CourseAssignPanel({ course }: { course: Course }) {
   const TEACHER_ROLE_LABEL: Record<"teacher" | "ta", string> = { teacher: t("อาจารย์", "Teacher"), ta: "TA" };
 
   return (
+    <>
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-[var(--bg-app)] rounded-b-2xl border-t border-[var(--border-subtle)]">
 
       {/* Left: Teacher assignment */}
@@ -430,7 +441,7 @@ function CourseAssignPanel({ course }: { course: Course }) {
         ) : (
           <div className="max-h-44 overflow-y-auto rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] py-1">
             {filteredStudents.map((s) => (
-              <StudentListItem key={s.id} student={s} onRemove={() => removeStudent(s.id)} />
+              <StudentListItem key={s.id} student={s} onRemove={() => setPendingRemoveStudent(s)} />
             ))}
           </div>
         )}
@@ -480,6 +491,37 @@ function CourseAssignPanel({ course }: { course: Course }) {
         </div>
       </div>
     </div>
+
+    {/* Confirm: remove individual student */}
+    {pendingRemoveStudent && (
+      <ConfirmDialog
+        title={t("ลบนักศึกษาออกจาก course?", "Remove student from course?")}
+        description={t(
+          `"${pendingRemoveStudent.firstName} ${pendingRemoveStudent.lastName}" จะถูกลบออกจาก course นี้`,
+          `"${pendingRemoveStudent.firstName} ${pendingRemoveStudent.lastName}" will be removed from this course`
+        )}
+        confirmLabel={t("ลบออก", "Remove")}
+        danger={true}
+        onConfirm={() => { removeStudent(pendingRemoveStudent.id); setPendingRemoveStudent(null); }}
+        onCancel={() => setPendingRemoveStudent(null)}
+      />
+    )}
+
+    {/* Confirm: remove entire cohort */}
+    {pendingRemoveCohort && selectedCohort && (
+      <ConfirmDialog
+        title={t("ลบนักศึกษาทั้ง cohort?", "Remove entire cohort?")}
+        description={t(
+          `นักศึกษาจาก ${selectedCohort} ทั้งหมด ${enrolledStudents.filter((s) => s.cohort === selectedCohort).length} คน จะถูกลบออกจาก course นี้`,
+          `All ${enrolledStudents.filter((s) => s.cohort === selectedCohort).length} students from ${selectedCohort} will be removed from this course`
+        )}
+        confirmLabel={t("ลบทั้ง cohort", "Remove Cohort")}
+        danger={true}
+        onConfirm={confirmRemoveCohort}
+        onCancel={() => setPendingRemoveCohort(false)}
+      />
+    )}
+    </>
   );
 }
 
