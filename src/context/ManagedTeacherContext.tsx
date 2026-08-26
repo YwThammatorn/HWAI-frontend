@@ -32,6 +32,12 @@ export default function ManagedTeacherProvider({ children }: { children: React.R
     return teacher;
   }
 
+  function importTeachers(data: Omit<ManagedTeacher, "id" | "courseIds">[]): ManagedTeacher[] {
+    const newTeachers = data.map((d) => ({ ...d, id: uuid(), courseIds: [] as string[] }));
+    persist([...teachers, ...newTeachers]);
+    return newTeachers;
+  }
+
   function updateTeacher(id: string, data: Partial<Omit<ManagedTeacher, "id">>) {
     persist(teachers.map((t) => (t.id === id ? { ...t, ...data } : t)));
   }
@@ -73,6 +79,7 @@ export default function ManagedTeacherProvider({ children }: { children: React.R
       value={{
         teachers,
         addTeacher,
+        importTeachers,
         updateTeacher,
         removeTeacher,
         getTeacher,

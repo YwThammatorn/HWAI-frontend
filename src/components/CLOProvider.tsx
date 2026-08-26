@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { CLOContext, CLO } from "@/lib/clo";
 
 const LS_CLOS = "hwai_clos_v1";
@@ -52,13 +52,7 @@ function loadData<T>(key: string, fallback: T[]): T[] {
 }
 
 export default function CLOProvider({ children }: { children: React.ReactNode }) {
-  const [clos, setClos] = useState<CLO[]>([]);
-  const [ready, setReady] = useState(false);
-
-  useEffect(() => {
-    setClos(loadData<CLO>(LS_CLOS, SEED_CLOS));
-    setReady(true);
-  }, []);
+  const [clos, setClos] = useState<CLO[]>(() => loadData<CLO>(LS_CLOS, SEED_CLOS));
 
   const persist = useCallback((next: CLO[]) => {
     setClos(next);
@@ -84,8 +78,6 @@ export default function CLOProvider({ children }: { children: React.ReactNode })
 
   const getCLOsByCourse = useCallback((courseId: string) =>
     clos.filter(c => c.courseId === courseId), [clos]);
-
-  if (!ready) return null;
 
   return (
     <CLOContext.Provider value={{ clos, addCLO, updateCLO, removeCLO, getCLO, getCLOsByCourse }}>

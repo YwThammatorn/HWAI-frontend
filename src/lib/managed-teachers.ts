@@ -13,6 +13,7 @@ export interface ManagedTeacher {
 export interface ManagedTeacherContextValue {
   teachers: ManagedTeacher[];
   addTeacher: (data: Omit<ManagedTeacher, "id" | "courseIds">) => ManagedTeacher;
+  importTeachers: (data: Omit<ManagedTeacher, "id" | "courseIds">[]) => ManagedTeacher[];
   updateTeacher: (id: string, data: Partial<Omit<ManagedTeacher, "id">>) => void;
   removeTeacher: (id: string) => void;
   getTeacher: (id: string) => ManagedTeacher | undefined;

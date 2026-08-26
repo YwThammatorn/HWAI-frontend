@@ -7,7 +7,7 @@
   --color-hwai-bg: #F7F9FC;
   --color-hwai-bg-app: #F3F4F6;
   --color-hwai-card: #FFFFFF;
-  --font-sans: "Lexend", "Prompt", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-lexend), var(--font-prompt), ui-sans-serif, system-ui, sans-serif;
 }
 
 /* ── Semantic color tokens ─────────────────────────────────────────────────── */

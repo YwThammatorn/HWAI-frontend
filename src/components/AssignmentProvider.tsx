@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { AssignmentContext, Assignment, Submission, Rubric, DEFAULT_LEVELS } from "@/lib/assignments";
 
 const LS_ASSIGNMENTS = "hwai_assignments_v1";
@@ -110,23 +110,20 @@ const ASSIGNMENT_DEFAULTS = {
 };
 
 export default function AssignmentProvider({ children }: { children: React.ReactNode }) {
-  const [assignments, setAssignments] = useState<Assignment[]>([]);
-  const [submissions, setSubmissions] = useState<Submission[]>([]);
-  const [rubrics, setRubrics] = useState<Rubric[]>([]);
-  const [ready, setReady] = useState(false);
-
-  useEffect(() => {
+  const [assignments, setAssignments] = useState<Assignment[]>(() => {
     const rawA = loadData<Assignment>(LS_ASSIGNMENTS, SEED_ASSIGNMENTS);
-    setAssignments(rawA.map(a => ({ ...ASSIGNMENT_DEFAULTS, ...a })));
-    setSubmissions(loadData<Submission>(LS_SUBMISSIONS, SEED_SUBMISSIONS));
+    return rawA.map(a => ({ ...ASSIGNMENT_DEFAULTS, ...a }));
+  });
+  const [submissions, setSubmissions] = useState<Submission[]>(() =>
+    loadData<Submission>(LS_SUBMISSIONS, SEED_SUBMISSIONS)
+  );
+  const [rubrics, setRubrics] = useState<Rubric[]>(() => {
     const rawR = loadData<Rubric>(LS_RUBRICS, SEED_RUBRICS);
-    // migrate old criteria that lack levels
-    setRubrics(rawR.map(r => ({
+    return rawR.map(r => ({
       ...r,
       criteria: r.criteria.map(c => ({ ...c, levels: c.levels ?? DEFAULT_LEVELS })),
-    })));
-    setReady(true);
-  }, []);
+    }));
+  });
 
   const persistA = useCallback((next: Assignment[]) => {
     setAssignments(next);
@@ -201,8 +198,6 @@ export default function AssignmentProvider({ children }: { children: React.React
 
   const getRubricsByAssignment = useCallback((assignmentId: string) =>
     rubrics.filter(r => r.assignmentId === assignmentId), [rubrics]);
-
-  if (!ready) return null;
 
   return (
     <AssignmentContext.Provider value={{

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { StudentContext, Student } from "@/lib/students";
 
 const LS_KEY = "hwai_students_v1";
@@ -14,13 +14,7 @@ function load(): Student[] {
 }
 
 export default function StudentProvider({ children }: { children: React.ReactNode }) {
-  const [students, setStudents] = useState<Student[]>([]);
-  const [ready, setReady] = useState(false);
-
-  useEffect(() => {
-    setStudents(load());
-    setReady(true);
-  }, []);
+  const [students, setStudents] = useState<Student[]>(() => load());
 
   const persist = useCallback((next: Student[]) => {
     setStudents(next);
@@ -48,8 +42,6 @@ export default function StudentProvider({ children }: { children: React.ReactNod
     (courseId: string) => students.filter((s) => s.courseId === courseId),
     [students]
   );
-
-  if (!ready) return null;
 
   return (
     <StudentContext.Provider value={{ students, addStudents, removeStudent, getStudentsByCourse }}>

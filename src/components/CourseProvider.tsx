@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { CourseContext, Course, SEED_COURSES } from "@/lib/courses";
 
 const LS_KEY = "hwai_courses_v2";
@@ -17,13 +17,7 @@ function loadFromStorage(): Course[] {
 }
 
 export default function CourseProvider({ children }: { children: React.ReactNode }) {
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [ready, setReady] = useState(false);
-
-  useEffect(() => {
-    setCourses(loadFromStorage());
-    setReady(true);
-  }, []);
+  const [courses, setCourses] = useState<Course[]>(() => loadFromStorage());
 
   const persist = useCallback((next: Course[]) => {
     setCourses(next);
@@ -65,8 +59,6 @@ export default function CourseProvider({ children }: { children: React.ReactNode
     (id: string) => courses.find((c) => c.id === id),
     [courses]
   );
-
-  if (!ready) return null;
 
   return (
     <CourseContext.Provider value={{ courses, addCourse, updateCourse, removeCourse, getCourse }}>

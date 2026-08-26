@@ -6,6 +6,7 @@ import Link from "next/link";
 import AppShell from "@/components/AppShell";
 import { useCourses } from "@/lib/courses";
 import { useAssignments, Submission } from "@/lib/assignments";
+import { useStudents } from "@/lib/students";
 import { useLanguage } from "@/context/LanguageContext";
 
 const AVATAR_COLORS = ["#4F46E5", "#7C3AED", "#BE185D", "#B45309", "#047857", "#0369A1", "#C2410C", "#0E7490"];
@@ -54,6 +55,7 @@ export default function ViewAssignmentPage() {
   const { t, lang } = useLanguage();
   const { getCourse } = useCourses();
   const { getAssignment, getSubmissionsByAssignment } = useAssignments();
+  const { getStudentsByCourse } = useStudents();
 
   const [search, setSearch] = useState("");
   const [copied, setCopied] = useState(false);
@@ -61,6 +63,7 @@ export default function ViewAssignmentPage() {
   const course = getCourse(id);
   const assignment = getAssignment(assignmentId);
   const submissions = getSubmissionsByAssignment(assignmentId);
+  const enrolledCount = getStudentsByCourse(id).length;
 
   if (!course || !assignment) {
     return (
@@ -207,16 +210,25 @@ export default function ViewAssignmentPage() {
             </div>
             <p className="text-xs text-gray-500 mb-1">{t("งานที่ส่ง", "Submissions")}</p>
             <p className="text-2xl font-bold text-[var(--text-primary)]">
-              {submissions.length} <span className="text-sm font-normal text-gray-500">/ {assignment.maxPoints}</span>
+              {submissions.length}
+              <span className="text-sm font-normal text-gray-500">
+                {enrolledCount > 0 ? ` / ${enrolledCount}` : ""}
+              </span>
             </p>
-            <div className="mt-2 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-[#2DD4BF] rounded-full"
-                style={{ width: `${Math.min((submissions.length / assignment.maxPoints) * 100, 100)}%` }}
-              />
-            </div>
-            {submissions.length < assignment.maxPoints && (
-              <p className="text-xs text-gray-500 mt-1.5">{assignment.maxPoints - submissions.length} {t("คนยังไม่ส่ง", "students pending")}</p>
+            {enrolledCount > 0 ? (
+              <>
+                <div className="mt-2 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-[#2DD4BF] rounded-full"
+                    style={{ width: `${Math.min((submissions.length / enrolledCount) * 100, 100)}%` }}
+                  />
+                </div>
+                {submissions.length < enrolledCount && (
+                  <p className="text-xs text-gray-500 mt-1.5">{enrolledCount - submissions.length} {t("คนยังไม่ส่ง", "students pending")}</p>
+                )}
+              </>
+            ) : (
+              <p className="text-xs text-gray-400 mt-1.5">{t("ยังไม่มีนักศึกษาใน course นี้", "No students enrolled")}</p>
             )}
           </div>
           {/* Average Grade */}
