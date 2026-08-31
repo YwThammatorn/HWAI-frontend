@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -130,8 +130,8 @@ export default function ProfileSidebar() {
   const { t } = useLanguage();
   const { getCourse } = useCourses();
 
-  // Detect active course from teacher routes /courses/[id]/...
-  const courseMatch = pathname.match(/^\/courses\/([^/]+)/);
+  // Detect active course from teacher routes /teacher/courses/[id]/...
+  const courseMatch = pathname.match(/^\/teacher\/courses\/([^/]+)/);
   const activeCourseId = courseMatch?.[1] ?? null;
   const activeCourse = activeCourseId ? getCourse(activeCourseId) : null;
 
@@ -141,25 +141,25 @@ export default function ProfileSidebar() {
   }
 
   const MAIN_NAV = [
-    { label: t("แดชบอร์ด", "Dashboard"), href: "/dashboard", active: pathname === "/dashboard",       icon: DASHBOARD_ICON },
-    { label: t("รายวิชา", "Courses"),     href: "/courses",   active: pathname.startsWith("/courses"), icon: COURSES_ICON   },
-    { label: t("ประวัติ", "History"),     href: "/history",   active: pathname === "/history",         icon: HISTORY_ICON   },
+    { label: t("แดชบอร์ด", "Dashboard"), href: "/teacher/dashboard", active: pathname === "/teacher/dashboard",       icon: DASHBOARD_ICON },
+    { label: t("รายวิชา", "Courses"),     href: "/teacher/courses",   active: pathname.startsWith("/teacher/courses"), icon: COURSES_ICON   },
+    { label: t("ประวัติ", "History"),     href: "/teacher/history",   active: pathname === "/teacher/history",         icon: HISTORY_ICON   },
   ];
 
   const ACCOUNT_NAV = [
-    { label: t("ข้อมูลส่วนตัว", "Information"), href: "/profile",  active: pathname === "/profile",  icon: PROFILE_ICON  },
-    { label: t("ตั้งค่า", "Settings"),           href: "/settings", active: pathname === "/settings", icon: SETTINGS_ICON },
+    { label: t("ข้อมูลส่วนตัว", "Information"), href: "/teacher/profile",  active: pathname === "/teacher/profile",  icon: PROFILE_ICON  },
+    { label: t("ตั้งค่า", "Settings"),           href: "/teacher/settings", active: pathname === "/teacher/settings", icon: SETTINGS_ICON },
   ];
 
   // Per-course sub-navigation (only shown when inside /courses/[id]/...)
   const COURSE_NAV = activeCourseId
     ? [
-        { label: t("ภาพรวม", "Overview"),        href: `/courses/${activeCourseId}`,               active: isAt(`/courses/${activeCourseId}`, true), icon: OVERVIEW_ICON       },
-        { label: t("งาน/การบ้าน", "Assignments"), href: `/courses/${activeCourseId}/assignments`,   active: isAt(`/courses/${activeCourseId}/assignments`),   icon: ASSIGNMENTS_ICON   },
-        { label: t("ผลการเรียน", "Results"),      href: `/courses/${activeCourseId}/results`,       active: isAt(`/courses/${activeCourseId}/results`),       icon: RESULTS_ICON        },
-        { label: t("CLO", "CLO"),                 href: `/courses/${activeCourseId}/clo`,           active: isAt(`/courses/${activeCourseId}/clo`),           icon: CLO_ICON            },
-        { label: t("ผู้ร่วมสอน", "Collaborators"), href: `/courses/${activeCourseId}/collaborators`, active: isAt(`/courses/${activeCourseId}/collaborators`), icon: COLLABORATORS_ICON  },
-        { label: t("ตั้งค่าวิชา", "Settings"),   href: `/courses/${activeCourseId}/settings`,      active: isAt(`/courses/${activeCourseId}/settings`),      icon: COURSE_SETTINGS_ICON},
+        { label: t("ภาพรวม", "Overview"),        href: `/teacher/courses/${activeCourseId}`,               active: isAt(`/teacher/courses/${activeCourseId}`, true), icon: OVERVIEW_ICON       },
+        { label: t("งาน/การบ้าน", "Assignments"), href: `/teacher/courses/${activeCourseId}/assignments`,   active: isAt(`/teacher/courses/${activeCourseId}/assignments`),   icon: ASSIGNMENTS_ICON   },
+        { label: t("ผลการเรียน", "Results"),      href: `/teacher/courses/${activeCourseId}/results`,       active: isAt(`/teacher/courses/${activeCourseId}/results`),       icon: RESULTS_ICON        },
+        { label: t("CLO", "CLO"),                 href: `/teacher/courses/${activeCourseId}/clo`,           active: isAt(`/teacher/courses/${activeCourseId}/clo`),           icon: CLO_ICON            },
+        { label: t("ผู้ร่วมสอน", "Collaborators"), href: `/teacher/courses/${activeCourseId}/collaborators`, active: isAt(`/teacher/courses/${activeCourseId}/collaborators`), icon: COLLABORATORS_ICON  },
+        { label: t("ตั้งค่าวิชา", "Settings"),   href: `/teacher/courses/${activeCourseId}/settings`,      active: isAt(`/teacher/courses/${activeCourseId}/settings`),      icon: COURSE_SETTINGS_ICON},
       ]
     : [];
 

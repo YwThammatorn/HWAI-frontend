@@ -15,7 +15,11 @@ export default function ManagedTeacherProvider({ children }: { children: React.R
   useEffect(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) setTeachers(JSON.parse(stored));
+      if (stored) {
+        type Stored = Omit<ManagedTeacher, "status"> & { status?: "active" | "suspended" };
+        const parsed = JSON.parse(stored) as Stored[];
+        setTeachers(parsed.map((tc) => ({ ...tc, status: tc.status ?? "active" })));
+      }
     } catch {
       // ignore corrupt storage
     }
@@ -26,14 +30,14 @@ export default function ManagedTeacherProvider({ children }: { children: React.R
     localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
   }
 
-  function addTeacher(data: Omit<ManagedTeacher, "id" | "courseIds">): ManagedTeacher {
-    const teacher: ManagedTeacher = { ...data, id: uuid(), courseIds: [] };
+  function addTeacher(data: Omit<ManagedTeacher, "id" | "courseIds" | "status">): ManagedTeacher {
+    const teacher: ManagedTeacher = { ...data, id: uuid(), courseIds: [], status: "active" };
     persist([...teachers, teacher]);
     return teacher;
   }
 
-  function importTeachers(data: Omit<ManagedTeacher, "id" | "courseIds">[]): ManagedTeacher[] {
-    const newTeachers = data.map((d) => ({ ...d, id: uuid(), courseIds: [] as string[] }));
+  function importTeachers(data: Omit<ManagedTeacher, "id" | "courseIds" | "status">[]): ManagedTeacher[] {
+    const newTeachers = data.map((d) => ({ ...d, id: uuid(), courseIds: [] as string[], status: "active" as const }));
     persist([...teachers, ...newTeachers]);
     return newTeachers;
   }
@@ -44,6 +48,14 @@ export default function ManagedTeacherProvider({ children }: { children: React.R
 
   function removeTeacher(id: string) {
     persist(teachers.filter((t) => t.id !== id));
+  }
+
+  function suspendTeacher(id: string) {
+    persist(teachers.map((t) => (t.id === id ? { ...t, status: "suspended" as const } : t)));
+  }
+
+  function reactivateTeacher(id: string) {
+    persist(teachers.map((t) => (t.id === id ? { ...t, status: "active" as const } : t)));
   }
 
   function getTeacher(id: string) {
@@ -82,6 +94,8 @@ export default function ManagedTeacherProvider({ children }: { children: React.R
         importTeachers,
         updateTeacher,
         removeTeacher,
+        suspendTeacher,
+        reactivateTeacher,
         getTeacher,
         assignToCourse,
         unassignFromCourse,

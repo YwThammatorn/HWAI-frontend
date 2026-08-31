@@ -10,12 +10,14 @@ export interface CohortStudent {
   email: string;
   cohort: string;   // e.g. "CE69"
   program: string;  // e.g. "CE"
+  taAssignments?: string[]; // courseIds where this student is TA
 }
 
 export interface CohortStudentContextValue {
   cohortStudents: CohortStudent[];
   addCohortStudents: (incoming: Omit<CohortStudent, "id">[]) => void;
   removeCohortStudent: (id: string) => void;
+  updateTaAssignments: (id: string, courseIds: string[]) => void;
   findByStudentId: (studentId: string) => CohortStudent | undefined;
   getCohorts: () => string[];
   getStudentsByCohort: (cohort: string) => CohortStudent[];

@@ -9,10 +9,11 @@ import { useTheme } from "./ThemeProvider";
 import { useStudents } from "@/lib/students";
 import { useCourses } from "@/lib/courses";
 import StudentSidebar from "./StudentSidebar";
+import RoleSwitcher from "./RoleSwitcher";
 import { getInitials } from "@/lib/utils";
 
 export default function StudentShell({ children }: { children: React.ReactNode }) {
-  const { user, logout } = useAuth();
+  const { user, effectiveRole, logout } = useAuth();
   const router = useRouter();
   const { t, lang, toggleLang } = useLanguage();
   const { effectiveTheme, toggleTheme } = useTheme();
@@ -32,12 +33,12 @@ export default function StudentShell({ children }: { children: React.ReactNode }
 
   useEffect(() => {
     if (!user) { router.replace("/login"); return; }
-    if (user.role === "teacher" || user.role === "ta") router.replace("/dashboard");
-    else if (user.role === "admin") router.replace("/admin");
-    else if (user.role !== "student") router.replace("/login");
-  }, [user, router]);
+    if (effectiveRole === "teacher" || effectiveRole === "ta") router.replace("/teacher/dashboard");
+    else if (effectiveRole === "admin") router.replace("/admin");
+    else if (effectiveRole !== "student") router.replace("/login");
+  }, [user, effectiveRole, router]);
 
-  if (!user || user.role !== "student") return null;
+  if (!user || effectiveRole !== "student") return null;
 
   const firstName = user.name.split(" ")[0] ?? user.name;
   const initials = getInitials(user.name);
@@ -70,6 +71,8 @@ export default function StudentShell({ children }: { children: React.ReactNode }
         <div className="flex-1" />
 
         <div className="flex items-center gap-3">
+          <RoleSwitcher />
+
           {/* Language toggle */}
           <button
             type="button"

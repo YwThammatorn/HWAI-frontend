@@ -38,6 +38,10 @@ export default function CohortStudentProvider({ children }: { children: React.Re
     persist(cohortStudents.filter((s) => s.id !== id));
   }
 
+  function updateTaAssignments(id: string, courseIds: string[]) {
+    persist(cohortStudents.map((s) => s.id === id ? { ...s, taAssignments: courseIds } : s));
+  }
+
   function findByStudentId(studentId: string) {
     return cohortStudents.find((s) => s.studentId === studentId);
   }
@@ -56,6 +60,7 @@ export default function CohortStudentProvider({ children }: { children: React.Re
         cohortStudents,
         addCohortStudents,
         removeCohortStudent,
+        updateTaAssignments,
         findByStudentId,
         getCohorts,
         getStudentsByCohort,

@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import AppShell from "@/components/AppShell";
 
 export default function NotFound() {
@@ -62,7 +62,7 @@ export default function NotFound() {
               It might have been moved, deleted, or simply never existed in our curriculum.
             </p>
             <Link
-              href="/dashboard"
+              href="/teacher/dashboard"
               className="inline-flex items-center gap-2.5 mt-8 px-7 py-3.5 bg-[#0F766E] hover:bg-[#0D6B63] text-white font-semibold rounded-2xl transition-colors"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">

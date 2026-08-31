@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -102,7 +102,7 @@ export default function RegisterPage() {
   const strength = passwordStrength(password);
 
   useEffect(() => {
-    if (user) router.replace("/dashboard");
+    if (user) router.replace("/teacher/dashboard");
   }, [user, router]);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -118,7 +118,7 @@ export default function RegisterPage() {
     setLoading(true);
     await new Promise((r) => setTimeout(r, 500));
     login({ name: name.trim(), email, role });
-    router.replace("/dashboard");
+    router.replace("/teacher/dashboard");
   }
 
   const eyeIcon = (show: boolean, onToggle: () => void) => (

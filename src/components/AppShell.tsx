@@ -6,16 +6,16 @@ import Navbar from "./Navbar";
 import ProfileSidebar from "./ProfileSidebar";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth();
+  const { user, effectiveRole } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
     if (!user) { router.replace("/login"); return; }
-    if (user.role === "admin") router.replace("/admin");
-    else if (user.role === "student") router.replace("/student");
-  }, [user, router]);
+    if (effectiveRole === "admin") router.replace("/admin");
+    else if (effectiveRole === "student") router.replace("/student");
+  }, [user, effectiveRole, router]);
 
-  if (!user || user.role === "admin" || user.role === "student") return null;
+  if (!user || !effectiveRole || effectiveRole === "admin" || effectiveRole === "student") return null;
 
   return (
     <div className="h-screen flex flex-col bg-[var(--bg-app)]">

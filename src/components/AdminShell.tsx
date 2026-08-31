@@ -7,22 +7,23 @@ import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { useTheme } from "./ThemeProvider";
 import AdminSidebar from "./AdminSidebar";
+import RoleSwitcher from "./RoleSwitcher";
 import { getInitials } from "@/lib/utils";
 
 export default function AdminShell({ children }: { children: React.ReactNode }) {
-  const { user, logout } = useAuth();
+  const { user, effectiveRole, logout } = useAuth();
   const router = useRouter();
   const { t, lang, toggleLang } = useLanguage();
   const { effectiveTheme, toggleTheme } = useTheme();
 
   useEffect(() => {
     if (!user) { router.replace("/login"); return; }
-    if (user.role !== "admin") {
-      router.replace(user.role === "student" ? "/student" : "/dashboard");
+    if (effectiveRole !== "admin") {
+      router.replace(effectiveRole === "student" ? "/student" : "/teacher/dashboard");
     }
-  }, [user, router]);
+  }, [user, effectiveRole, router]);
 
-  if (!user || user.role !== "admin") return null;
+  if (!user || effectiveRole !== "admin") return null;
 
   const initials = getInitials(user.name);
 
@@ -54,6 +55,8 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
         <div className="flex-1" />
 
         <div className="flex items-center gap-3">
+          <RoleSwitcher />
+
           {/* Language toggle */}
           <button
             type="button"

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -12,7 +12,7 @@ export default function RootPage() {
     if (!user) { router.replace("/login"); return; }
     if (user.role === "admin") router.replace("/admin");
     else if (user.role === "student") router.replace("/student");
-    else router.replace("/dashboard");
+    else router.replace("/teacher/dashboard");
   }, [user, router]);
 
   return null;

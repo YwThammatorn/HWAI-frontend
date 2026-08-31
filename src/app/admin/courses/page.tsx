@@ -6,7 +6,7 @@ import { useCourses, Course, PRESET_COLORS } from "@/lib/courses";
 import { useManagedTeachers } from "@/lib/managed-teachers";
 import { getInitials } from "@/lib/utils";
 import EmptyState from "@/components/EmptyState";
-import PageHeader from "@/components/PageHeader";
+import StatCard from "@/components/StatCard";
 import { useCohortStudents } from "@/lib/cohort-students";
 import { useStudents, Student } from "@/lib/students";
 
@@ -675,22 +675,68 @@ export default function AdminCoursesPage() {
     : null;
 
   return (
-    <div className="p-6 max-w-4xl">
-      <PageHeader
-        title={t("จัดการรายวิชา", "Course Management")}
-        description={t("สร้างรายวิชา, Assign อาจารย์ และจัดการนักศึกษาแต่ละ course", "Create courses, assign teachers and manage students")}
-        action={
-          <button
-            onClick={() => { setEditTarget(undefined); setDrawerMode("create"); }}
-            className="flex items-center gap-2 h-9 px-4 rounded-xl bg-[#0F766E] text-white text-sm font-semibold hover:bg-[#0d6660] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2DD4BF] transition-colors"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+    <div className="p-6 w-full">
+      {/* Page heading */}
+      <div className="flex items-start justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-[var(--text-primary)] tracking-tight">
+            {t("จัดการรายวิชา", "Course Management")}
+          </h1>
+          <p className="mt-1 text-sm text-[var(--text-muted)]">
+            {t("สร้างรายวิชา, Assign อาจารย์ และจัดการนักศึกษาแต่ละ course", "Create courses, assign teachers and manage students")}
+          </p>
+        </div>
+        <button
+          onClick={() => { setEditTarget(undefined); setDrawerMode("create"); }}
+          className="flex items-center gap-2 h-10 px-4 rounded-xl bg-[#0F766E] text-white text-sm font-semibold hover:bg-[#0d6660] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2DD4BF] transition-colors shrink-0"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          {t("สร้างรายวิชา", "New Course")}
+        </button>
+      </div>
+
+      {/* Stat cards */}
+      <div className="flex gap-4 mb-6">
+        <StatCard
+          label={t("รายวิชาทั้งหมด", "Total Courses")}
+          value={courses.length}
+          color="#0F766E"
+          bg="rgba(15,118,110,0.1)"
+          icon={
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
             </svg>
-            {t("สร้างรายวิชา", "New Course")}
-          </button>
-        }
-      />
+          }
+        />
+        <StatCard
+          label={t("เปิดสอน", "Active")}
+          value={activeCourses.length}
+          color="#2563EB"
+          bg="rgba(37,99,235,0.1)"
+          icon={
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
+              <polyline points="9 11 12 14 22 4"/>
+              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+            </svg>
+          }
+        />
+        <StatCard
+          label={t("เก็บถาวร", "Archived")}
+          value={archivedCourses.length}
+          color="#92400E"
+          bg="rgba(146,64,14,0.1)"
+          icon={
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
+              <polyline points="21 8 21 21 3 21 3 8"/>
+              <rect x="1" y="3" width="22" height="5"/>
+              <line x1="10" y1="12" x2="14" y2="12"/>
+            </svg>
+          }
+        />
+      </div>
 
       {courses.length === 0 ? (
         <EmptyState

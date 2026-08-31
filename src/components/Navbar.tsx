@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -6,6 +6,7 @@ import { useTheme } from "./ThemeProvider";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { INITIAL_NOTIFS } from "@/lib/notifications";
+import RoleSwitcher from "./RoleSwitcher";
 
 export default function Navbar() {
   const { effectiveTheme, toggleTheme } = useTheme();
@@ -23,7 +24,7 @@ export default function Navbar() {
   return (
     <nav className="sticky top-0 z-50 bg-[var(--bg-nav)] text-white h-14 flex items-center px-6 shrink-0">
       {/* Logo */}
-      <Link href="/dashboard" className="flex items-center gap-2 mr-8">
+      <Link href="/teacher/dashboard" className="flex items-center gap-2 mr-8">
         <div className="w-8 h-8 rounded-lg bg-[#2DD4BF] flex items-center justify-center shrink-0">
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
             <rect x="2" y="2" width="6" height="6" rx="1" fill="white" fillOpacity="0.9"/>
@@ -37,8 +38,9 @@ export default function Navbar() {
 
       <div className="flex-1" />
 
-      {/* Right side: theme toggle + bell + avatar */}
+      {/* Right side: role switcher + theme toggle + bell + avatar */}
       <div className="flex items-center gap-3">
+        <RoleSwitcher />
         {/* Language toggle */}
         <button
           type="button"
@@ -77,7 +79,7 @@ export default function Navbar() {
           )}
         </button>
 
-        <Link href="/notifications" aria-label="Notifications" className="relative text-white/60 hover:text-white transition-colors">
+        <Link href="/teacher/notifications" aria-label="Notifications" className="relative text-white/60 hover:text-white transition-colors">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
             <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
