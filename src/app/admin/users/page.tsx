@@ -193,8 +193,8 @@ function ImportTeacherDrawer({ open, onClose }: { open: boolean; onClose: () => 
               <div className="flex items-center gap-2 text-sm">
                 <span className="font-medium text-[var(--text-primary)]">{fileName}</span>
                 <span className="text-[var(--text-muted)]">—</span>
-                <span className="text-green-600 font-medium">{t(`ใหม่ ${newRows.length}`, `New: ${newRows.length}`)}</span>
-                {dupRows.length > 0 && <span className="text-amber-600">{t(`ซ้ำ ${dupRows.length}`, `Dup: ${dupRows.length}`)}</span>}
+                <span className="text-green-700 font-medium">{t(`ใหม่ ${newRows.length}`, `New: ${newRows.length}`)}</span>
+                {dupRows.length > 0 && <span className="text-amber-700">{t(`ซ้ำ ${dupRows.length}`, `Dup: ${dupRows.length}`)}</span>}
                 {errorRows.length > 0 && <span className="text-red-600">{t(`ผิด ${errorRows.length}`, `Err: ${errorRows.length}`)}</span>}
               </div>
               <div className="rounded-xl border border-[var(--border-subtle)] overflow-hidden">
@@ -224,9 +224,9 @@ function ImportTeacherDrawer({ open, onClose }: { open: boolean; onClose: () => 
                               {row.error ? (
                                 <span className="text-red-600">{teacherRowErrorLabel(row.error)}</span>
                               ) : isDup ? (
-                                <span className="text-amber-600">{t("มีแล้ว", "Exists")}</span>
+                                <span className="text-amber-700">{t("มีแล้ว", "Exists")}</span>
                               ) : (
-                                <span className="text-green-600">{t("ใหม่", "New")}</span>
+                                <span className="text-green-700">{t("ใหม่", "New")}</span>
                               )}
                             </td>
                           </tr>
@@ -467,7 +467,7 @@ function ConfirmSuspendTeacherDialog({ teacher, onConfirm, onCancel }: {
               {t("สามารถเปิดใช้งานคืนได้ภายหลัง", "You can reactivate them later.")}
             </p>
             {teacher.courseIds.length > 0 && (
-              <p className="text-xs text-amber-600 mt-0.5">
+              <p className="text-xs text-amber-700 mt-0.5">
                 {t(`อาจารย์นี้ถูก assign ใน ${teacher.courseIds.length} รายวิชา`,
                    `This teacher is assigned to ${teacher.courseIds.length} course(s)`)}
               </p>
@@ -480,7 +480,7 @@ function ConfirmSuspendTeacherDialog({ teacher, onConfirm, onCancel }: {
             {t("ยกเลิก", "Cancel")}
           </button>
           <button onClick={onConfirm}
-            className="flex-1 h-9 rounded-xl bg-amber-500 text-white text-sm font-semibold hover:bg-amber-600 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 transition-colors">
+            className="flex-1 h-9 rounded-xl bg-amber-700 text-white text-sm font-semibold hover:bg-amber-800 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 transition-colors">
             {t("ระงับ", "Suspend")}
           </button>
         </div>
@@ -632,7 +632,7 @@ function ImportStudentDrawer({ open, onClose }: { open: boolean; onClose: () => 
             <div className="flex flex-col gap-3">
               <div className="flex items-center gap-2 text-sm">
                 <span className="font-medium text-[var(--text-primary)]">{fileName}</span>
-                <span className="text-green-600 font-medium">{t(`ใหม่ ${validRows.length}`, `New: ${validRows.length}`)}</span>
+                <span className="text-green-700 font-medium">{t(`ใหม่ ${validRows.length}`, `New: ${validRows.length}`)}</span>
               </div>
               <div className="rounded-xl border border-[var(--border-subtle)] overflow-hidden">
                 <div className="overflow-x-auto max-h-72">
@@ -657,7 +657,7 @@ function ImportStudentDrawer({ open, onClose }: { open: boolean; onClose: () => 
                             {row.error ? (
                               <span className="text-red-600 font-medium">{studentRowErrorLabel(row.error)}</span>
                             ) : (
-                              <span className="text-green-600">✓</span>
+                              <span className="text-green-700">✓</span>
                             )}
                           </td>
                         </tr>
@@ -880,7 +880,7 @@ function TeachersTab() {
                       </div>
                       {teacher.name}
                       {teacher.status === "suspended" && (
-                        <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-700">
+                        <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-800">
                           {t("ระงับ", "Suspended")}
                         </span>
                       )}
@@ -906,7 +906,7 @@ function TeachersTab() {
                       {teacher.status === "suspended" ? (
                         <button onClick={() => reactivateTeacher(teacher.id)}
                           aria-label={t(`เปิดใช้งาน ${teacher.name}`, `Reactivate ${teacher.name}`)}
-                          className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-green-600 hover:bg-green-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-400 transition-colors">
+                          className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-green-700 hover:bg-green-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-400 transition-colors">
                           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
                             <polyline points="20 6 9 17 4 12"/>
                           </svg>
@@ -914,7 +914,7 @@ function TeachersTab() {
                       ) : (
                         <button onClick={() => setSuspendingId(teacher.id)}
                           aria-label={t(`ระงับ ${teacher.name}`, `Suspend ${teacher.name}`)}
-                          className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-amber-600 hover:bg-amber-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 transition-colors">
+                          className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-amber-700 hover:bg-amber-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 transition-colors">
                           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
                             <circle cx="12" cy="12" r="10"/>
                             <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
