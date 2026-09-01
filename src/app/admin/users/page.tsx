@@ -872,7 +872,8 @@ function TeachersTab() {
               {filteredTeachers.map((teacher, i) => (
                 <tr key={teacher.id}
                   className={`border-b border-[var(--border-subtle)] last:border-0 hover:bg-[var(--bg-subtle)] transition-colors ${i % 2 === 1 ? "bg-[var(--bg-app)]" : ""}${teacher.status === "suspended" ? " opacity-60" : ""}`}>
-                  <td className="px-4 py-3 font-medium text-[var(--text-primary)]">
+                  <td className="px-4 py-3 font-medium text-[var(--text-primary)]"
+                    style={{ borderLeft: `3px solid ${teacher.role === "teacher" ? "#2DD4BF" : "#A78BFA"}` }}>
                     <div className="flex items-center gap-2.5">
                       <div className="w-8 h-8 rounded-full bg-[#2DD4BF]/20 flex items-center justify-center text-[#0F766E] text-xs font-bold shrink-0 select-none" aria-hidden="true">
                         {getInitials(teacher.name)}
@@ -1220,7 +1221,8 @@ function StudentsTab() {
                           className={`border-b border-[var(--border-subtle)] cursor-pointer transition-colors ${isExpanded ? "bg-indigo-50/60" : i % 2 === 1 ? "bg-[var(--bg-app)] hover:bg-[var(--bg-subtle)]" : "hover:bg-[var(--bg-subtle)]"}`}
                           aria-expanded={isExpanded}
                         >
-                          <td className="px-4 py-3 font-mono text-xs text-[var(--text-primary)]">{student.studentId}</td>
+                          <td className="px-4 py-3 font-mono text-xs text-[var(--text-primary)]"
+                            style={{ borderLeft: `3px solid ${isTa ? "#A78BFA" : "#6366F1"}` }}>{student.studentId}</td>
                           <td className="px-4 py-3 font-medium text-[var(--text-primary)]">{student.firstName} {student.lastName}</td>
                           <td className="px-4 py-3 text-[var(--text-secondary)]">{student.email}</td>
                           <td className="px-4 py-3">
@@ -1326,8 +1328,8 @@ export default function AdminUsersPage() {
 
   return (
     <div className="p-6 w-full">
-      {/* Page heading */}
-      <div className="mb-6">
+      {/* Page heading — 3px teal left strip anchors the section */}
+      <div className="mb-6 pl-4" style={{ borderLeft: "3px solid #2DD4BF" }}>
         <h1 className="text-2xl font-bold text-[var(--text-primary)] tracking-tight">
           {t("จัดการผู้ใช้", "User Management")}
         </h1>
