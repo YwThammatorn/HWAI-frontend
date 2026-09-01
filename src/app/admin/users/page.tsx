@@ -1292,7 +1292,7 @@ function StudentsTab() {
                 {t("ยกเลิก", "Cancel")}
               </button>
               <button onClick={() => { removeCohortStudent(deletingId!); setDeletingId(null); }}
-                className="flex-1 h-9 rounded-xl bg-red-600 text-white text-sm font-semibold hover:bg-red-700 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 transition-colors">
+                className="flex-1 h-9 rounded-xl border border-red-300 bg-red-50 text-red-700 text-sm font-semibold hover:bg-red-100 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300 transition-colors">
                 {t("ลบ", "Delete")}
               </button>
             </div>
