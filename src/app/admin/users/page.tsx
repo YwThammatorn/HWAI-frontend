@@ -82,7 +82,7 @@ function parseTeacherCsv(raw: string): TeacherParseResult {
 
 function ImportTeacherDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t } = useLanguage();
-  const { addTeacher, teachers } = useManagedTeachers();
+  const { importTeachers, teachers } = useManagedTeachers();
   const fileRef = useRef<HTMLInputElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const [parseResult, setParseResult] = useState<TeacherParseResult | null>(null);
@@ -111,7 +111,7 @@ function ImportTeacherDrawer({ open, onClose }: { open: boolean; onClose: () => 
   function handleImport() {
     if (!newRows.length) return;
     setImporting(true);
-    newRows.forEach((row) => addTeacher({ name: row.name, email: row.email.toLowerCase(), role: row.role }));
+    importTeachers(newRows.map((row) => ({ name: row.name, email: row.email.toLowerCase(), role: row.role })));
     setImporting(false);
     setDone(true);
   }
@@ -1192,8 +1192,9 @@ function StudentsTab() {
           )}
 
           <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] overflow-hidden">
+            <div className="overflow-y-auto max-h-[calc(100vh-380px)]">
             <table className="w-full text-sm">
-              <thead>
+              <thead className="sticky top-0 z-10">
                 <tr className="border-b border-[var(--border-subtle)] bg-[var(--bg-app)]">
                   <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("รหัส", "Student ID")}</th>
                   <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("ชื่อ-นามสกุล", "Name")}</th>
@@ -1265,6 +1266,7 @@ function StudentsTab() {
                 )}
               </tbody>
             </table>
+            </div>
           </div>
         </>
       )}

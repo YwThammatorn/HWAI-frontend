@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import { useCourses, Course, PRESET_COLORS } from "@/lib/courses";
 import { useManagedTeachers } from "@/lib/managed-teachers";
@@ -28,8 +28,28 @@ function CourseDrawer({
   const [description, setDescription] = useState(course?.description ?? "");
   const [coverColor, setCoverColor] = useState(course?.coverColor ?? PRESET_COLORS[0]);
   const nameRef = useRef<HTMLInputElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { nameRef.current?.focus(); }, []);
+
+  const handleClose = useCallback(() => onClose(), [onClose]);
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) { if (e.key === "Escape") handleClose(); }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [handleClose]);
+
+  function handleFocusTrap(e: React.KeyboardEvent<HTMLDivElement>) {
+    if (e.key !== "Tab" || !dialogRef.current) return;
+    const focusable = Array.from(dialogRef.current.querySelectorAll<HTMLElement>(
+      'button:not([disabled]),[href],input:not([disabled]):not([tabindex="-1"]),select,textarea,[tabindex]:not([tabindex="-1"])'
+    ));
+    if (focusable.length === 0) return;
+    const first = focusable[0]; const last = focusable[focusable.length - 1];
+    if (e.shiftKey) { if (document.activeElement === first) { last.focus(); e.preventDefault(); } }
+    else { if (document.activeElement === last) { first.focus(); e.preventDefault(); } }
+  }
 
   function handleSave() {
     const trimmed = name.trim();
@@ -47,9 +67,14 @@ function CourseDrawer({
       {/* backdrop */}
       <div className="flex-1 bg-black/40" onClick={onClose} aria-hidden="true" />
       {/* panel */}
-      <div className="w-full max-w-md bg-[var(--bg-surface)] flex flex-col shadow-2xl">
+      <div
+        ref={dialogRef}
+        role="dialog" aria-modal="true" aria-labelledby="course-drawer-title"
+        className="w-full max-w-md bg-[var(--bg-surface)] flex flex-col shadow-2xl"
+        onKeyDown={handleFocusTrap}
+      >
         <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border-subtle)]">
-          <h2 className="text-base font-bold text-[var(--text-primary)]">
+          <h2 id="course-drawer-title" className="text-base font-bold text-[var(--text-primary)]">
             {mode === "create" ? t("สร้างรายวิชาใหม่", "New Course") : t("แก้ไขรายวิชา", "Edit Course")}
           </h2>
           <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[var(--bg-subtle)] text-[var(--text-muted)] transition-colors" aria-label={t("ปิด", "Close")}>
@@ -215,6 +240,7 @@ function CourseAssignPanel({ course }: { course: Course }) {
   const [enrolling, setEnrolling] = useState(false);
   const [msg, setMsg] = useState<{ text: string; type: "ok" | "warn" }>({ text: "", type: "ok" });
   const [studentSearch, setStudentSearch] = useState("");
+  const [teacherSearch, setTeacherSearch] = useState("");
 
   // Individual picker state
   const [showPicker, setShowPicker] = useState(false);
@@ -302,35 +328,89 @@ function CourseAssignPanel({ course }: { course: Course }) {
 
   const TEACHER_ROLE_LABEL: Record<"teacher" | "ta", string> = { teacher: t("อาจารย์", "Teacher"), ta: "TA" };
 
+  const sortedTeachers = [
+    ...teachers.filter((tc) => assignedTeachers.some((a) => a.id === tc.id)),
+    ...teachers.filter((tc) => !assignedTeachers.some((a) => a.id === tc.id)),
+  ];
+  const filteredTeachers = teacherSearch
+    ? sortedTeachers.filter((tc) => tc.name.toLowerCase().includes(teacherSearch.toLowerCase()) || tc.email?.toLowerCase().includes(teacherSearch.toLowerCase()))
+    : sortedTeachers;
+
   return (
     <>
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-[var(--bg-app)] rounded-b-2xl border-t border-[var(--border-subtle)]">
 
       {/* Left: Teacher assignment */}
       <div className="flex flex-col gap-2">
-        <p className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">{t("อาจารย์ผู้สอน", "Teaching Staff")}</p>
+        <div className="flex items-center gap-2">
+          <p className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">{t("อาจารย์ผู้สอน", "Teaching Staff")}</p>
+          {assignedTeachers.length > 0 && (
+            <span className="text-[10px] font-bold text-[#0F766E] bg-[#2DD4BF]/15 px-1.5 py-0.5 rounded-full tabular-nums">
+              {assignedTeachers.length}
+            </span>
+          )}
+        </div>
         {teachers.length === 0 ? (
           <p className="text-xs text-[var(--text-muted)]">{t("ยังไม่มีอาจารย์ในระบบ — ไปเพิ่มที่หน้าจัดการอาจารย์", "No teachers yet — add them first")}</p>
         ) : (
-          <div className="flex flex-col gap-1">
-            {teachers.map((teacher) => {
-              const assigned = assignedTeachers.some((a) => a.id === teacher.id);
-              return (
-                <label key={teacher.id} className="flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer hover:bg-[var(--bg-subtle)] transition-colors">
-                  <input type="checkbox" checked={assigned} onChange={() => toggleTeacher(teacher.id, assigned)} className="w-4 h-4 accent-[#0F766E] cursor-pointer" />
-                  <div className="w-7 h-7 rounded-full bg-[#2DD4BF]/20 flex items-center justify-center text-[#0F766E] text-[10px] font-bold shrink-0 select-none" aria-hidden="true">
-                    {getInitials(teacher.name)}
+          <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] overflow-hidden">
+            {/* Search bar */}
+            <div className="flex items-center gap-2 px-3 py-2 border-b border-[var(--border-subtle)]">
+              <svg className="text-[var(--text-muted)] shrink-0" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+              </svg>
+              <input
+                value={teacherSearch}
+                onChange={(e) => setTeacherSearch(e.target.value)}
+                placeholder={t("ค้นหาอาจารย์...", "Search teachers...")}
+                className="flex-1 text-xs bg-transparent text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none"
+              />
+              {teacherSearch && (
+                <button onClick={() => setTeacherSearch("")} className="text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                </button>
+              )}
+            </div>
+            {/* List */}
+            <div className="max-h-[200px] overflow-y-auto">
+              {filteredTeachers.length === 0 ? (
+                <p className="text-xs text-[var(--text-muted)] px-3 py-3">{t("ไม่พบอาจารย์ที่ค้นหา", "No match found")}</p>
+              ) : filteredTeachers.map((teacher, idx, arr) => {
+                const assigned = assignedTeachers.some((a) => a.id === teacher.id);
+                const prevAssigned = idx > 0 && assignedTeachers.some((a) => a.id === arr[idx - 1].id);
+                const isDivider = !teacherSearch && idx > 0 && !assigned && prevAssigned && assignedTeachers.length > 0;
+                return (
+                  <div key={teacher.id}>
+                    {isDivider && <div className="mx-3 my-0.5 border-t border-[var(--border-subtle)]" />}
+                    <label className={`flex items-center gap-3 px-3 py-2.5 cursor-pointer transition-colors ${assigned ? "bg-[#2DD4BF]/5 hover:bg-[#2DD4BF]/10" : "hover:bg-[var(--bg-subtle)]"}`}>
+                      <input
+                        type="checkbox"
+                        checked={assigned}
+                        onChange={() => toggleTeacher(teacher.id, assigned)}
+                        className="w-4 h-4 accent-[#0F766E] cursor-pointer shrink-0"
+                      />
+                      <div
+                        className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 select-none transition-colors ${assigned ? "bg-[#0F766E] text-white" : "bg-[#2DD4BF]/20 text-[#0F766E]"}`}
+                        aria-hidden="true"
+                      >
+                        {getInitials(teacher.name)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className={`text-sm font-medium truncate ${assigned ? "text-[var(--text-primary)]" : "text-[var(--text-secondary)]"}`}>{teacher.name}</p>
+                        <p className="text-[11px] text-[var(--text-muted)]">{TEACHER_ROLE_LABEL[teacher.role]}</p>
+                      </div>
+                      {assigned && (
+                        <svg className="text-[#0F766E] shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                      )}
+                    </label>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-[var(--text-primary)] truncate">{teacher.name}</p>
-                    <p className="text-xs text-[var(--text-muted)]">{TEACHER_ROLE_LABEL[teacher.role]}</p>
-                  </div>
-                  {assigned && (
-                    <span className="text-xs font-semibold text-[#0F766E] bg-[#2DD4BF]/10 px-2 py-0.5 rounded-full shrink-0">Assigned</span>
-                  )}
-                </label>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         )}
       </div>
@@ -678,7 +758,7 @@ export default function AdminCoursesPage() {
     <div className="p-6 w-full">
       {/* Page heading */}
       <div className="flex items-start justify-between mb-6">
-        <div>
+        <div className="pl-4" style={{ borderLeft: "3px solid #2DD4BF" }}>
           <h1 className="text-2xl font-bold text-[var(--text-primary)] tracking-tight">
             {t("จัดการรายวิชา", "Course Management")}
           </h1>

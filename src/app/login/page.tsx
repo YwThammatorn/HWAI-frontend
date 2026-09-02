@@ -32,7 +32,7 @@ function detectRole(email: string): UserRole {
 
 export default function LoginPage() {
   const router = useRouter();
-  const { user, login } = useAuth();
+  const { user, login, logout } = useAuth();
   const { t } = useLanguage();
   const { findByStudentId } = useCohortStudents();
 
@@ -325,7 +325,7 @@ export default function LoginPage() {
                     <button
                       key={role}
                       type="button"
-                      onClick={() => login({ name, email: devEmail, role, ...(studentId ? { studentId } : {}) })}
+                      onClick={() => { logout(); login({ name, email: devEmail, role, ...(studentId ? { studentId } : {}) }); }}
                       className="py-2 rounded-lg text-xs font-semibold border border-amber-300 bg-white text-amber-700 hover:bg-amber-100 dark:bg-amber-900/20 dark:border-amber-700/60 dark:text-amber-300 dark:hover:bg-amber-900/40 transition-colors"
                     >
                       {label}
