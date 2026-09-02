@@ -307,6 +307,33 @@ export default function LoginPage() {
                 Microsoft
               </button>
             </div>
+
+            {/* ── DEV BYPASS — only in development build ── */}
+            {process.env.NODE_ENV === "development" && (
+              <div className="mt-6 rounded-xl border border-dashed border-amber-300 bg-amber-50 dark:border-amber-700/50 dark:bg-amber-900/10 p-4">
+                <p className="text-[10px] font-bold tracking-widest uppercase text-amber-600 dark:text-amber-400 mb-3">
+                  Dev Bypass
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  {(
+                    [
+                      { role: "admin" as UserRole, label: "Admin", email: "admin@kmitl.ac.th", name: "Dev Admin" },
+                      { role: "teacher" as UserRole, label: "Teacher", email: "teacher@kmitl.ac.th", name: "Dev Teacher" },
+                      { role: "student" as UserRole, label: "Student", email: "64070501@kmitl.ac.th", name: "Dev Student", studentId: "64070501" },
+                    ] satisfies Array<{ role: UserRole; label: string; email: string; name: string; studentId?: string }>
+                  ).map(({ role, label, email: devEmail, name, studentId }) => (
+                    <button
+                      key={role}
+                      type="button"
+                      onClick={() => login({ name, email: devEmail, role, ...(studentId ? { studentId } : {}) })}
+                      className="py-2 rounded-lg text-xs font-semibold border border-amber-300 bg-white text-amber-700 hover:bg-amber-100 dark:bg-amber-900/20 dark:border-amber-700/60 dark:text-amber-300 dark:hover:bg-amber-900/40 transition-colors"
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

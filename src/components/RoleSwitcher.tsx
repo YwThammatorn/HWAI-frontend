@@ -1,142 +1,119 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth, UserRole } from "@/context/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
+import type { UserRole } from "@/context/AuthContext";
 
-const PORTALS: Record<UserRole, string> = {
+const ROLE_ROUTE: Record<UserRole, string> = {
+  admin:   "/admin",
   teacher: "/teacher/dashboard",
-  ta: "/teacher/dashboard",
+  ta:      "/teacher/dashboard",
   student: "/student",
-  admin: "/admin",
 };
 
-const ALL_ROLES: UserRole[] = ["teacher", "ta", "student", "admin"];
+const ROLE_LABELS: Record<UserRole, { th: string; en: string; color: string; bg: string }> = {
+  admin:   { th: "แอดมิน", en: "Admin",   color: "#2DD4BF", bg: "rgba(45,212,191,.15)" },
+  teacher: { th: "อาจารย์", en: "Teacher", color: "#93C5FD", bg: "rgba(37,99,235,.15)" },
+  ta:      { th: "TA",      en: "TA",      color: "#C4B5FD", bg: "rgba(124,58,237,.15)" },
+  student: { th: "นักศึกษา", en: "Student", color: "#6EE7B7", bg: "rgba(5,150,105,.15)" },
+};
+
+const SWITCHABLE: UserRole[] = ["admin", "teacher", "ta", "student"];
 
 export default function RoleSwitcher() {
-  const { user, viewAs, effectiveRole, setViewAs } = useAuth();
-  const { t } = useLanguage();
+  const { user, viewAs, setViewAs, effectiveRole } = useAuth();
+  const { lang } = useLanguage();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-
-  const roleLabel = (role: UserRole): string => {
-    const map: Record<UserRole, string> = {
-      teacher: t("อาจารย์", "Teacher"),
-      ta: "TA",
-      student: t("นักศึกษา", "Student"),
-      admin: "Admin",
-    };
-    return map[role];
-  };
+  const isDev = process.env.NODE_ENV === "development";
 
   useEffect(() => {
     if (!open) return;
-    function onDown(e: MouseEvent) {
-      if (!ref.current?.contains(e.target as Node)) setOpen(false);
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
     }
-    document.addEventListener("mousedown", onDown);
-    return () => document.removeEventListener("mousedown", onDown);
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
   }, [open]);
 
-  if (!user || !effectiveRole) return null;
+  if (!user) return null;
 
-  const isOverriding = viewAs !== null;
+  const displayRole = effectiveRole ?? user.role;
+  const meta = ROLE_LABELS[displayRole];
 
-  function switchTo(role: UserRole) {
-    setOpen(false);
-    setViewAs(role === user!.role ? null : role);
-    router.push(PORTALS[role]);
-  }
-
-  function clearBypass() {
-    setViewAs(null);
-    router.push(PORTALS[user!.role]);
+  if (!isDev) {
+    return (
+      <span
+        className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+        style={{ color: meta.color, background: meta.bg }}
+      >
+        {lang === "th" ? meta.th : meta.en}
+      </span>
+    );
   }
 
   return (
-    <div ref={ref} className="relative flex items-center gap-1.5">
-      {/* Back-to-real-role button (only when bypassing) */}
-      {isOverriding && (
-        <button
-          type="button"
-          onClick={clearBypass}
-          className="h-7 px-2.5 flex items-center gap-1 rounded-lg text-[11px] font-semibold bg-amber-400/15 text-amber-300 hover:bg-amber-400/25 border border-amber-400/30 transition-colors"
-        >
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-            <polyline points="15 18 9 12 15 6"/>
-          </svg>
-          {roleLabel(user.role)}
-        </button>
-      )}
-
-      {/* Current role pill / dropdown trigger */}
+    <div ref={ref} className="relative">
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-haspopup="listbox"
-        aria-expanded={open}
-        className={[
-          "h-7 px-2.5 flex items-center gap-1.5 rounded-lg text-[11px] font-semibold border transition-colors",
-          isOverriding
-            ? "bg-amber-400/15 text-amber-300 border-amber-400/30 hover:bg-amber-400/25"
-            : "text-white/65 border-white/20 hover:text-white hover:bg-white/10 hover:border-white/35",
-        ].join(" ")}
+        onClick={() => setOpen((o) => !o)}
+        aria-label="Switch role (dev)"
+        title="Dev: switch role"
+        className="flex items-center gap-1.5 px-2 py-0.5 rounded-full border border-dashed text-[10px] font-bold transition-colors hover:opacity-80"
+        style={{
+          color: meta.color,
+          background: meta.bg,
+          borderColor: meta.color + "80",
+        }}
       >
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-          <circle cx="12" cy="8" r="4"/>
-          <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
-        </svg>
-        {roleLabel(effectiveRole)}
-        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-          <polyline points="6 9 12 15 18 9"/>
+        {lang === "th" ? meta.th : meta.en}
+        {viewAs && (
+          <span className="opacity-60 font-normal">view</span>
+        )}
+        <svg width="8" height="8" viewBox="0 0 10 10" fill="currentColor" style={{ opacity: .6 }}>
+          <path d="M5 7L1 3h8L5 7z"/>
         </svg>
       </button>
 
-      {/* Dropdown */}
       {open && (
-        <div
-          role="listbox"
-          className="absolute top-full right-0 mt-1.5 z-[200] min-w-[148px] rounded-xl overflow-hidden border border-white/10 bg-[#1B2A4A] shadow-2xl"
-        >
-          <p className="px-3 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-widest text-white/35">
-            {t("สลับ role", "Switch role")}
-          </p>
-          {ALL_ROLES.map((role) => {
-            const isActive = effectiveRole === role;
-            const isReal = user.role === role;
+        <div className="absolute right-0 top-full mt-1.5 w-36 rounded-xl border border-white/10 bg-[#0D1628] shadow-xl z-50 py-1 overflow-hidden">
+          <p className="text-[9px] font-bold tracking-widest uppercase text-white/30 px-3 pt-2 pb-1">View as</p>
+          {SWITCHABLE.map((r) => {
+            const m = ROLE_LABELS[r];
+            const isActive = displayRole === r;
             return (
               <button
-                key={role}
-                role="option"
-                aria-selected={isActive}
+                key={r}
                 type="button"
-                onClick={() => switchTo(role)}
-                className={[
-                  "w-full px-3 py-2 flex items-center justify-between gap-2 text-xs font-medium transition-colors",
-                  isActive
-                    ? "bg-white/10 text-white"
-                    : "text-white/60 hover:bg-white/[0.06] hover:text-white",
-                ].join(" ")}
+                onClick={() => {
+                  const next = r === user.role ? null : r;
+                  setViewAs(next);
+                  setOpen(false);
+                  router.push(ROLE_ROUTE[r]);
+                }}
+                className="w-full text-left px-3 py-1.5 text-xs font-medium flex items-center gap-2 transition-colors hover:bg-white/5"
+                style={{ color: isActive ? m.color : "#64748B" }}
               >
-                <span>{roleLabel(role)}</span>
-                <span className="flex items-center gap-1.5 shrink-0">
-                  {isReal && (
-                    <span className="text-[9px] font-semibold uppercase tracking-wider text-white/30 bg-white/10 px-1.5 py-0.5 rounded">
-                      {t("จริง", "real")}
-                    </span>
-                  )}
-                  {isActive && (
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-                      <polyline points="20 6 9 17 4 12"/>
-                    </svg>
-                  )}
-                </span>
+                {isActive && (
+                  <svg width="8" height="8" viewBox="0 0 10 10" fill="currentColor"><circle cx="5" cy="5" r="4"/></svg>
+                )}
+                {!isActive && <span className="w-2" />}
+                {lang === "th" ? m.th : m.en}
               </button>
             );
           })}
-          <div className="h-1.5" />
+          {viewAs && (
+            <button
+              type="button"
+              onClick={() => { setViewAs(null); setOpen(false); router.push(ROLE_ROUTE[user.role]); }}
+              className="w-full text-left px-3 py-1.5 text-[10px] text-white/30 hover:text-white/60 transition-colors border-t border-white/5 mt-1"
+            >
+              Reset to {lang === "th" ? ROLE_LABELS[user.role].th : ROLE_LABELS[user.role].en}
+            </button>
+          )}
         </div>
       )}
     </div>
