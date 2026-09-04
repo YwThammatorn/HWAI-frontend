@@ -243,7 +243,7 @@ export default function ImportStudentsPage() {
                 {errorRows.length > 0 && (
                   <div className="flex items-center gap-1.5 text-sm">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                    <span className="font-semibold text-red-500">{errorRows.length}</span>
+                    <span className="font-semibold text-[var(--s-err-text)]">{errorRows.length}</span>
                     <span className="text-gray-500">{t("มีข้อผิดพลาด", "with errors")}</span>
                   </div>
                 )}
@@ -266,16 +266,16 @@ export default function ImportStudentsPage() {
                     {rows.map((row) => (
                       <tr
                         key={row.line}
-                        className={row.error ? "bg-red-50/60" : "hover:bg-gray-50/50"}
+                        className={row.error ? "bg-[var(--s-err-bg)]" : "hover:bg-gray-50/50"}
                       >
                         <td className="px-5 py-3 text-gray-300 text-xs">{row.line}</td>
-                        <td className="px-5 py-3 font-mono text-xs text-gray-600">{row.studentId || <span className="text-red-300">—</span>}</td>
-                        <td className="px-5 py-3 text-[var(--text-primary)]">{row.firstName || <span className="text-red-300">—</span>}</td>
-                        <td className="px-5 py-3 text-[var(--text-primary)]">{row.lastName || <span className="text-red-300">—</span>}</td>
+                        <td className="px-5 py-3 font-mono text-xs text-gray-600">{row.studentId || <span className="text-[var(--s-err-text)]">—</span>}</td>
+                        <td className="px-5 py-3 text-[var(--text-primary)]">{row.firstName || <span className="text-[var(--s-err-text)]">—</span>}</td>
+                        <td className="px-5 py-3 text-[var(--text-primary)]">{row.lastName || <span className="text-[var(--s-err-text)]">—</span>}</td>
                         <td className="px-5 py-3 text-gray-500 text-xs">{row.email || "—"}</td>
                         <td className="px-5 py-3">
                           {row.error ? (
-                            <span className="inline-flex items-center gap-1 text-xs text-red-500">
+                            <span className="inline-flex items-center gap-1 text-xs text-[var(--s-err-text)]">
                               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>
                               {translateError(row.error)}
                             </span>
@@ -314,7 +314,7 @@ export default function ImportStudentsPage() {
                 <button
                   onClick={handleImport}
                   disabled={validRows.length === 0 || importing}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#2DD4BF] hover:bg-[#14B8A6] disabled:opacity-40 disabled:cursor-not-allowed text-[var(--text-primary)] text-sm font-medium transition-colors"
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] disabled:opacity-40 disabled:cursor-not-allowed text-[var(--accent-solid-text)] text-sm font-medium transition-colors"
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                     <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>
@@ -352,7 +352,7 @@ export default function ImportStudentsPage() {
                 </button>
                 <Link
                   href={`/teacher/courses/${id}`}
-                  className="px-5 py-2.5 rounded-xl bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)] text-sm font-medium transition-colors"
+                  className="px-5 py-2.5 rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-medium transition-colors"
                 >
                   {t("กลับไปหน้า Course", "Back to Course")}
                 </Link>

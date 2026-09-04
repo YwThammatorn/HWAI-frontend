@@ -132,7 +132,7 @@ export default function CLOPage() {
             </button>
             <button
               onClick={openAdd}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)] text-sm font-medium transition-colors"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-medium transition-colors"
             >
               <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
                 <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
@@ -170,7 +170,7 @@ export default function CLOPage() {
             <p className="text-xs text-gray-500 mb-6">{t("เพิ่ม CLO เพื่อวัดผลลัพธ์การเรียนรู้และ CLO Attainment ของนักศึกษา", "Add CLOs to measure student learning outcomes and CLO Attainment")}</p>
             <button
               onClick={openAdd}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)] text-sm font-medium transition-colors"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-medium transition-colors"
             >
               <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
                 <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
@@ -248,7 +248,7 @@ export default function CLOPage() {
                   </button>
                   <button
                     onClick={() => handleDelete(clo)}
-                    className="p-1.5 rounded-lg hover:bg-red-50 text-gray-500 hover:text-red-500 transition-colors"
+                    className="p-1.5 rounded-lg hover:bg-[var(--s-err-bg)] text-gray-500 hover:text-[var(--s-err-text)] transition-colors"
                     title={t("ลบ", "Delete")}
                   >
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -269,7 +269,7 @@ export default function CLOPage() {
                 <div className="grid gap-3 mb-3" style={{ gridTemplateColumns: "104px 1fr" }}>
                   <div>
                     <label className="block text-xs font-medium text-gray-500 mb-1.5">
-                      {t("รหัส", "Code")} <span className="text-red-400">*</span>
+                      {t("รหัส", "Code")} <span className="text-[var(--s-err-text)]">*</span>
                     </label>
                     <input
                       value={formCode}
@@ -280,7 +280,7 @@ export default function CLOPage() {
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-gray-500 mb-1.5">
-                      {t("ข้อความ CLO", "CLO Text")} <span className="text-red-400">*</span>
+                      {t("ข้อความ CLO", "CLO Text")} <span className="text-[var(--s-err-text)]">*</span>
                     </label>
                     <textarea
                       value={formText}
@@ -325,7 +325,7 @@ export default function CLOPage() {
                     type="button"
                     onClick={handleSave}
                     disabled={!isFormValid}
-                    className="px-4 py-2 rounded-xl bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)] text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="px-4 py-2 rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     {t("บันทึก", "Save")}
                   </button>

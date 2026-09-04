@@ -79,7 +79,7 @@ export default function CoursesPage() {
               {/* Add Course */}
               <Link
                 href="/teacher/courses/new"
-                className="flex items-center gap-2 px-4 py-2 bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)] font-medium rounded-xl text-sm transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] font-medium rounded-xl text-sm transition-colors"
               >
                 <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
                   <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
@@ -156,7 +156,7 @@ export default function CoursesPage() {
                   <button
                     key={p}
                     onClick={() => setPage(p)}
-                    className={["w-8 h-8 rounded-full text-sm font-medium transition-colors", p === page ? "bg-[#2DD4BF] text-[var(--text-primary)]" : "text-gray-500 hover:bg-gray-100"].join(" ")}
+                    className={["w-8 h-8 rounded-full text-sm font-medium transition-colors", p === page ? "bg-[var(--accent-solid)] text-[var(--accent-solid-text)]" : "text-gray-500 hover:bg-gray-100"].join(" ")}
                   >
                     {p}
                   </button>
@@ -202,7 +202,7 @@ function EmptyState() {
 
         <Link
           href="/teacher/courses/new"
-          className="flex items-center gap-2 px-6 py-2.5 bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)] font-medium rounded-full text-sm transition-colors"
+          className="flex items-center gap-2 px-6 py-2.5 bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] font-medium rounded-full text-sm transition-colors"
         >
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
             <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
@@ -255,7 +255,7 @@ function CourseCard({ course, studentCount, allGraded, activeAssignments, isArch
             {course.source === "manual" && !isArchived && (
               <div className="flex gap-2 text-xs ml-2 shrink-0">
                 <Link href={`/teacher/courses/${course.id}/settings`} className="text-[var(--accent)] hover:underline font-medium">{t("แก้ไข", "Edit")}</Link>
-                <button onClick={onDelete} className="text-red-400 hover:underline font-medium">{t("ลบ", "Delete")}</button>
+                <button onClick={onDelete} className="text-[var(--s-err-text)] hover:underline font-medium">{t("ลบ", "Delete")}</button>
               </div>
             )}
           </div>

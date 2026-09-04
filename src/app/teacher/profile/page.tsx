@@ -134,7 +134,7 @@ export default function ProfilePage() {
                   <button onClick={cancelEdit} className="px-4 py-2 text-sm border border-gray-200 rounded-xl text-gray-500 hover:bg-gray-50 transition-colors">
                     {t("ยกเลิก", "Cancel")}
                   </button>
-                  <button onClick={saveEdit} className="px-4 py-2 text-sm bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)] font-semibold rounded-xl transition-colors">
+                  <button onClick={saveEdit} className="px-4 py-2 text-sm bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] font-semibold rounded-xl transition-colors">
                     {t("บันทึก", "Save")}
                   </button>
                 </div>
@@ -187,7 +187,7 @@ export default function ProfilePage() {
                 />
               </div>
             </div>
-            {pwError && <p className="text-xs text-red-500">{pwError}</p>}
+            {pwError && <p className="text-xs text-[var(--s-err-text)]">{pwError}</p>}
             {pwSaved && <p className="text-xs text-green-600">{t("อัปเดตรหัสผ่านเรียบร้อย", "Password updated successfully.")}</p>}
             <div className="flex justify-end">
               <button
@@ -201,10 +201,10 @@ export default function ProfilePage() {
         </div>
 
         {/* Danger Zone */}
-        <div className="bg-red-50 rounded-2xl border border-red-100 px-6 py-5 flex items-center justify-between">
+        <div className="bg-[var(--s-err-bg)] rounded-2xl border border-[var(--s-err-bd)] px-6 py-5 flex items-center justify-between">
           <div>
-            <h2 className="text-base font-bold text-red-600">{t("โซนอันตราย", "Danger Zone")}</h2>
-            <p className="text-xs text-red-400 mt-0.5">{t("เมื่อลบบัญชีแล้วจะไม่สามารถกู้คืนได้ โปรดแน่ใจก่อนดำเนินการ", "Once you delete your account, there is no going back. Please be certain.")}</p>
+            <h2 className="text-base font-bold text-[var(--s-err-text)]">{t("โซนอันตราย", "Danger Zone")}</h2>
+            <p className="text-xs text-[var(--s-err-text)] mt-0.5">{t("เมื่อลบบัญชีแล้วจะไม่สามารถกู้คืนได้ โปรดแน่ใจก่อนดำเนินการ", "Once you delete your account, there is no going back. Please be certain.")}</p>
           </div>
           <button
             onClick={() => {
@@ -213,7 +213,7 @@ export default function ProfilePage() {
                 router.replace("/login");
               }
             }}
-            className="px-5 py-2.5 bg-red-500 hover:bg-red-600 text-white text-sm font-semibold rounded-xl transition-colors"
+            className="px-5 py-2.5 bg-[var(--danger-solid)] hover:bg-[var(--danger-solid-hover)] text-[var(--danger-solid-text)] text-sm font-semibold rounded-xl transition-colors"
           >
             {t("ลบบัญชี", "Delete Account")}
           </button>

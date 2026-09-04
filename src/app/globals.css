@@ -10,41 +10,110 @@
   --font-sans: var(--font-lexend), var(--font-prompt), ui-sans-serif, system-ui, sans-serif;
 }
 
-/* ── Semantic color tokens ─────────────────────────────────────────────────── */
+/* ── Semantic color tokens — "Slate Morning" (see DESIGN.md) ────────────────── */
+/*
+   Existing token NAMES are kept unchanged (23+ files consume --accent,
+   --accent-subtle, --surface, --bg-nav directly) — only values move, plus
+   new tokens are added alongside. Do not rename without a full grep first.
+
+   --accent already plays the role DESIGN.md calls "accent-solid" (dark
+   teal, safe as text/border — used as text-[var(--accent)] all over
+   /teacher). It is NOT the soft ambient token from the Slate Morning
+   artifact — that role now lives in --accent-bright, which was unused
+   before this change and is safe to repoint freely.
+*/
 :root {
-  --bg-app:        #F5F6FA;
+  --bg-app:        #EEF2F7;
   --bg-card:       #FFFFFF;
-  --surface:       #F1F5F9;
-  --border:        #E2E8F0;
+  --surface:       #E4ECF3;
+  --border:        #C8D6E0;
   /* Aliases used by shell/card components */
   --bg-surface:    #FFFFFF;
-  --bg-subtle:     #F1F5F9;
-  --border-subtle: #E2E8F0;
-  --bg-nav:        #1B2A4A;
-  --text-primary:  #1B2A4A;
-  --text-secondary:#475569;
-  --text-muted:    #607080;  /* slate-ish — 4.77:1 on #F5F6FA, passes WCAG AA */
-  --accent:        #0F766E;
-  --accent-bright: #2DD4BF;
-  --accent-subtle: #E6FAF8;
+  --bg-subtle:     #E4ECF3;
+  --border-subtle: #E0E8F0;   /* was identical to --border (no hierarchy) — now visually distinct */
+  --bg-nav:        #1A2D45;
+  --text-primary:  #1A2D45;
+  --text-secondary:#4A6478;
+  --text-muted:    #607080;  /* unchanged — 4.42:1 on --bg-card, passes WCAG AA */
+  --accent:        #0F766E;  /* unchanged — already the safe text/border teal, 5.48:1 on white */
+  --accent-bright: #4EA8A0;  /* NEW role: soft ambient teal — strips, badge bg, focus ring. NEVER as text (2.79:1, fails AA) */
+  --accent-subtle: #DFF0EE;
+
+  /* Primary button fill — distinct from --accent so existing text/border usage is untouched */
+  --accent-solid:       #0F766E;
+  --accent-solid-hover: #0D6259;
+  --accent-solid-text:  #FFFFFF;
+
+  /* Nav sidebar — always-dark surface, needs its own always-legible text pair */
+  --nav-text:       #D4EEF0;
+  --nav-text-muted: #A8BCCE;
+  --nav-active-bg:  rgba(78,168,160,.18);
+
+  --disabled-bg:     #EEF1F5;
+  --disabled-text:   #A0AEBC;
+  --disabled-border: #D4DCE4;
+
+  /* Status — replaces raw Tailwind red/green/amber/blue with navy-temperature-matched pairs */
+  --s-ok-bg:   #E8F4ED; --s-ok-text:   #1A6645; --s-ok-bd:   #B8DCC8;
+  --s-warn-bg: #FDF3E3; --s-warn-text: #7A5010; --s-warn-bd: #EDD8A0;
+  --s-err-bg:  #FCEEF0; --s-err-text:  #8C2535; --s-err-bd:  #DDB0B8;
+  --s-info-bg: #E8EEF8; --s-info-text: #2B4D8C; --s-info-bd: #B0C4E0;
+
+  /* Destructive solid — confirm-dialog final action only, never a row-level button */
+  --danger-solid:       #C43A4A;
+  --danger-solid-hover: #AE3240;
+  --danger-solid-text:  #FFFFFF;
+
+  /* Role badges — Teacher reuses --accent, Student reuses --s-info-*; TA is new
+     and NOT yet run through a real contrast checker (see DESIGN.md §2) */
+  --role-ta-bg:     #EEEAF7;
+  --role-ta-text:   #5B4E96;
+  --role-ta-border: #CFC5E8;
 }
 
 [data-theme="dark"] {
-  --bg-app:        #0F1623;
-  --bg-card:       #182030;
-  --surface:       #1E2A3C;
-  --border:        #263244;
+  --bg-app:        #0D1820;
+  --bg-card:       #162232;
+  --surface:       #1E2E40;
+  --border:        #2A3F54;
   /* Aliases used by shell/card components */
-  --bg-surface:    #182030;
-  --bg-subtle:     #1E2A3C;
-  --border-subtle: #263244;
-  --bg-nav:        #0B1220;
-  --text-primary:  #E2EAF4;
-  --text-secondary:#8B9EB5;
-  --text-muted:    #7890A8;  /* slate-400-ish — 4.8:1 on #182030, passes WCAG AA */
-  --accent:        #2DD4BF;
-  --accent-bright: #2DD4BF;
-  --accent-subtle: #0D3230;
+  --bg-surface:    #162232;
+  --bg-subtle:     #1E2E40;
+  --border-subtle: #1C2938;
+  --bg-nav:        #0A1218;
+  --text-primary:  #D4E4F0;
+  --text-secondary:#7A9AB2;
+  --text-muted:    #7090A8;  /* 4.84:1 on --bg-card, passes WCAG AA */
+  --accent:        #4EA8A0;  /* softened from #2DD4BF — still 5.68:1 as text on dark --bg-card */
+  --accent-bright: #4EA8A0;
+  --accent-subtle: #123A38;
+
+  /* NOT the same hex as light mode — #0F766E only hits 2.93:1 against this
+     dark --bg-card, below the 3:1 floor for UI-component separation */
+  --accent-solid:       #12817A;
+  --accent-solid-hover: #17968D;
+  --accent-solid-text:  #FFFFFF;
+
+  --nav-text:       #D4EEF0;
+  --nav-text-muted: #A8BCCE;
+  --nav-active-bg:  rgba(78,168,160,.18);
+
+  --disabled-bg:     #1A2634;
+  --disabled-text:   #4A6070;
+  --disabled-border: #263444;
+
+  --s-ok-bg:   #0D2E1E; --s-ok-text:   #5CC490; --s-ok-bd:   #1A4A32;
+  --s-warn-bg: #2A1E08; --s-warn-text: #D4A04A; --s-warn-bd: #4A3010;
+  --s-err-bg:  #2A0E14; --s-err-text:  #E07080; --s-err-bd:  #4A1A22;
+  --s-info-bg: #0D1E3A; --s-info-text: #7AB0E8; --s-info-bd: #1A3060;
+
+  --danger-solid:       #C43A4A;
+  --danger-solid-hover: #D14A5A;
+  --danger-solid-text:  #FFFFFF;
+
+  --role-ta-bg:     #211C3A;
+  --role-ta-text:   #B8A8E8;
+  --role-ta-border: #3A2F5C;
 }
 
 body {

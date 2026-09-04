@@ -108,7 +108,7 @@ export default function CourseSettingsPage() {
 
             <div className="mb-4">
               <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">
-                {t("ชื่อรายวิชา", "Course Name")} <span className="text-red-400">*</span>
+                {t("ชื่อรายวิชา", "Course Name")} <span className="text-[var(--s-err-text)]">*</span>
               </label>
               <input
                 value={name}
@@ -202,8 +202,8 @@ export default function CourseSettingsPage() {
           </section>
 
           {/* Danger Zone */}
-          <section className="bg-white rounded-2xl border border-red-100 shadow-sm p-6">
-            <h2 className="text-sm font-semibold text-red-500 uppercase tracking-wider mb-4">{t("โซนอันตราย", "Danger Zone")}</h2>
+          <section className="bg-white rounded-2xl border border-[var(--s-err-bd)] shadow-sm p-6">
+            <h2 className="text-sm font-semibold text-[var(--s-err-text)] uppercase tracking-wider mb-4">{t("โซนอันตราย", "Danger Zone")}</h2>
             <div className="flex gap-3">
               <button
                 type="button"
@@ -215,7 +215,7 @@ export default function CourseSettingsPage() {
               <button
                 type="button"
                 onClick={handleDelete}
-                className="px-4 py-2 text-sm font-medium rounded-xl border border-red-200 text-red-500 hover:bg-red-50 transition-colors"
+                className="px-4 py-2 text-sm font-medium rounded-xl border border-[var(--s-err-bd)] text-[var(--s-err-text)] hover:bg-[var(--s-err-bg)] transition-colors"
               >
                 {t("ลบถาวร", "Delete Permanently")}
               </button>
@@ -237,7 +237,7 @@ export default function CourseSettingsPage() {
               disabled={!isValid}
               className={[
                 "flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-colors",
-                saved ? "bg-emerald-500 text-white" : "bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)] disabled:opacity-40 disabled:cursor-not-allowed",
+                saved ? "bg-emerald-500 text-white" : "bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] disabled:opacity-40 disabled:cursor-not-allowed",
               ].join(" ")}
             >
               {saved ? (

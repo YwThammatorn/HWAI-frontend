@@ -101,11 +101,11 @@ export default function StudentClassworkDetailPage() {
                     <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
                     <line x1="3" y1="10" x2="21" y2="10"/>
                   </svg>
-                  <span className={isPast && !mySubmission ? "text-red-500 font-semibold" : ""}>
+                  <span className={isPast && !mySubmission ? "text-[var(--s-err-text)] font-semibold" : ""}>
                     {t("กำหนดส่ง:", "Due:")} {due.toLocaleDateString("th-TH", { day: "numeric", month: "long", year: "numeric" })}
                   </span>
                   {isPast && !mySubmission && (
-                    <span className="text-[10px] font-bold text-red-500 bg-red-50 px-1.5 py-0.5 rounded-full">
+                    <span className="text-[10px] font-bold text-[var(--s-err-text)] bg-[var(--s-err-bg)] px-1.5 py-0.5 rounded-full">
                       {t("เกินกำหนด", "Overdue")}
                     </span>
                   )}
@@ -178,7 +178,7 @@ export default function StudentClassworkDetailPage() {
                 </button>
               )}
               {isPast && !mySubmission && (
-                <p className="text-xs text-red-500 text-center">{t("เกินกำหนดแล้ว ไม่สามารถส่งได้", "Past due — submission closed")}</p>
+                <p className="text-xs text-[var(--s-err-text)] text-center">{t("เกินกำหนดแล้ว ไม่สามารถส่งได้", "Past due — submission closed")}</p>
               )}
             </div>
           </div>

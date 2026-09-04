@@ -106,7 +106,7 @@ export default function NewAssignmentPage() {
           <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
             <SectionHeader icon="info" label={t("ข้อมูลทั่วไป", "General Information")} />
             <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">
-              {t("ชื่อชิ้นงาน", "Assignment Name")} <span className="text-red-400">*</span>
+              {t("ชื่อชิ้นงาน", "Assignment Name")} <span className="text-[var(--s-err-text)]">*</span>
             </label>
             <input
               value={name}
@@ -135,7 +135,7 @@ export default function NewAssignmentPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">
-                  {t("วันครบกำหนด", "Due Date")} <span className="text-red-400">*</span>
+                  {t("วันครบกำหนด", "Due Date")} <span className="text-[var(--s-err-text)]">*</span>
                 </label>
                 <div className="relative">
                   <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -155,7 +155,7 @@ export default function NewAssignmentPage() {
                   {[10, 15, 25, 100].map((p) => (
                     <button key={p} type="button" onClick={() => setMaxPoints(String(p))}
                       className={["px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors",
-                        maxPoints === String(p) ? "bg-[#2DD4BF] text-[var(--text-primary)] border-[var(--accent)]" : "border-gray-200 text-gray-500 hover:border-[var(--accent)] hover:text-[var(--accent)]"
+                        maxPoints === String(p) ? "bg-[var(--accent-solid)] text-[var(--accent-solid-text)] border-[var(--accent)]" : "border-gray-200 text-gray-500 hover:border-[var(--accent)] hover:text-[var(--accent)]"
                       ].join(" ")}>
                       {p}
                     </button>
@@ -216,7 +216,7 @@ export default function NewAssignmentPage() {
                   ))}
                 </div>
                 {fileTypes.length === 0 && (
-                  <p className="text-xs text-red-400 mt-1.5">{t("เลือกประเภทไฟล์อย่างน้อย 1 ประเภท", "Select at least one file type")}</p>
+                  <p className="text-xs text-[var(--s-err-text)] mt-1.5">{t("เลือกประเภทไฟล์อย่างน้อย 1 ประเภท", "Select at least one file type")}</p>
                 )}
               </div>
             )}
@@ -283,7 +283,7 @@ export default function NewAssignmentPage() {
             <button
               type="submit"
               disabled={!isValid}
-              className="flex items-center gap-2 px-5 py-2.5 bg-[#2DD4BF] hover:bg-[#14B8A6] disabled:opacity-40 disabled:cursor-not-allowed text-[var(--text-primary)] text-sm font-medium rounded-xl transition-colors"
+              className="flex items-center gap-2 px-5 py-2.5 bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] disabled:opacity-40 disabled:cursor-not-allowed text-[var(--accent-solid-text)] text-sm font-medium rounded-xl transition-colors"
             >
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
                 <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>

@@ -84,11 +84,11 @@ export default function StudentHome() {
                       <p className="text-xs text-[var(--text-muted)]">{item.courseName}</p>
                     </div>
                     <div className="shrink-0 text-right">
-                      <p className={`text-xs font-semibold ${isUrgent ? "text-red-500" : "text-[var(--text-muted)]"}`}>
+                      <p className={`text-xs font-semibold ${isUrgent ? "text-[var(--s-err-text)]" : "text-[var(--text-muted)]"}`}>
                         {due.toLocaleDateString("th-TH", { day: "numeric", month: "short" })}
                       </p>
                       {isUrgent && (
-                        <p className="text-[10px] text-red-400">
+                        <p className="text-[10px] text-[var(--s-err-text)]">
                           {item.hoursLeft < 24
                             ? t("< 24 ชม.", "< 24h left")
                             : t("< 2 วัน", "< 2 days")}

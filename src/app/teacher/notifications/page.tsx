@@ -113,7 +113,7 @@ function NotifCard({
             </button>
             <button
               onClick={() => onDecline(notif.id)}
-              className="text-xs font-semibold text-red-500 hover:text-red-600 transition-colors"
+              className="text-xs font-semibold text-[var(--s-err-text)] hover:opacity-80 transition-colors"
             >
               {t("ปฏิเสธ", "Decline")}
             </button>

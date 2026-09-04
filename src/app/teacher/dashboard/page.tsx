@@ -29,7 +29,7 @@ const USAGE_DATA_PLAGIARISM = [0, 40, 30, 60, 50, 0, 0, 80, 70, 50, 0, 0, 100, 9
 function StatusBadge({ status }: { status: string }) {
   const { t } = useLanguage();
   const cfg: Record<string, { cls: string; label: string }> = {
-    "Not Graded": { cls: "bg-red-100 text-red-600",    label: t("ยังไม่ตรวจ", "Not Graded") },
+    "Not Graded": { cls: "bg-[var(--s-err-bg)] text-[var(--s-err-text)]",    label: t("ยังไม่ตรวจ", "Not Graded") },
     "All Graded": { cls: "bg-green-100 text-green-700", label: t("ตรวจแล้ว", "All Graded") },
   };
   const item = cfg[status];
@@ -151,7 +151,7 @@ export default function DashboardPage() {
     { label: t("เพิ่มรายวิชา", "Add Course"),    href: "/teacher/courses/new", bgClass: "bg-[var(--accent-subtle)]", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg> },
     { label: t("ไปที่รายวิชา", "Go to Courses"), href: "/teacher/courses",     bgClass: "bg-[var(--accent-subtle)]", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="2" strokeLinecap="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg> },
     { label: t("ตั้งค่า", "View Settings"),       href: "/teacher/settings",   bgClass: "bg-[var(--accent-subtle)]", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 9"/></svg> },
-    { label: t("ออกจากระบบ", "Logout"),           href: "/",           bgClass: "bg-red-50",                 icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" strokeLinecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> },
+    { label: t("ออกจากระบบ", "Logout"),           href: "/",           bgClass: "bg-[var(--s-err-bg)]",                 icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" strokeLinecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> },
   ];
 
   return (
@@ -190,7 +190,7 @@ export default function DashboardPage() {
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
             <div className="flex items-start justify-between mb-3">
               <p className="text-xs text-gray-500">{t("รอตรวจ", "Pending Grades")}</p>
-              <div className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-[var(--s-err-bg)] flex items-center justify-center">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" strokeLinecap="round">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
                   <line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>
@@ -198,7 +198,7 @@ export default function DashboardPage() {
               </div>
             </div>
             <p className="text-3xl font-extrabold text-[var(--text-primary)]">48</p>
-            <p className="text-xs text-red-500 mt-1.5 font-medium">{t("! ต้องดำเนินการด่วน", "! Urgent needs attention")}</p>
+            <p className="text-xs text-[var(--s-err-text)] mt-1.5 font-medium">{t("! ต้องดำเนินการด่วน", "! Urgent needs attention")}</p>
           </div>
 
           {/* Avg. Class Score */}
@@ -407,7 +407,7 @@ export default function DashboardPage() {
                   onClick={() => setUsagePeriod(key)}
                   className={[
                     "px-3 py-1.5 font-medium transition-colors",
-                    usagePeriod === key ? "bg-[#2DD4BF] text-[var(--text-primary)]" : "text-gray-500 hover:text-gray-600",
+                    usagePeriod === key ? "bg-[var(--accent-solid)] text-[var(--accent-solid-text)]" : "text-gray-500 hover:text-gray-600",
                   ].join(" ")}
                 >
                   {label}

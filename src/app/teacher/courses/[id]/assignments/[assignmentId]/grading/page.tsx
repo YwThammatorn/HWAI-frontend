@@ -424,7 +424,7 @@ export default function GradingProgressPage() {
             {isDone ? (
               <Link
                 href={`/teacher/courses/${id}/assignments/${assignmentId}/results`}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)] text-sm font-semibold transition-colors"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-semibold transition-colors"
               >
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                   <polyline points="9 11 12 14 22 4"/>
@@ -524,7 +524,7 @@ export default function GradingProgressPage() {
               {isDone && (
                 <Link
                   href={`/teacher/courses/${id}/assignments/${assignmentId}/results`}
-                  className="inline-flex items-center gap-2 mt-4 px-5 py-2.5 bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)] text-sm font-semibold rounded-xl transition-colors"
+                  className="inline-flex items-center gap-2 mt-4 px-5 py-2.5 bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-semibold rounded-xl transition-colors"
                 >
                   {t("ดูผลลัพธ์", "View Results")} →
                 </Link>

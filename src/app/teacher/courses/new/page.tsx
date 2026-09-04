@@ -68,7 +68,7 @@ export default function NewCoursePage() {
 
             <div className="mb-4">
               <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">
-                {t("ชื่อรายวิชา", "Course Name")} <span className="text-red-400">*</span>
+                {t("ชื่อรายวิชา", "Course Name")} <span className="text-[var(--s-err-text)]">*</span>
               </label>
               <input
                 value={name}
@@ -175,7 +175,7 @@ export default function NewCoursePage() {
             <button
               type="submit"
               disabled={!isValid}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#2DD4BF] hover:bg-[#14B8A6] disabled:opacity-40 disabled:cursor-not-allowed text-[var(--text-primary)] text-sm font-medium transition-colors"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] disabled:opacity-40 disabled:cursor-not-allowed text-[var(--accent-solid-text)] text-sm font-medium transition-colors"
             >
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
                 <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>

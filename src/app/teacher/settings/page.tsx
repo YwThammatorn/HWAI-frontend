@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useRef, useEffect } from "react";
 import { useTheme, type ThemePreference } from "@/components/ThemeProvider";
@@ -309,7 +309,7 @@ export default function SettingsPage() {
               {/* Google Classroom */}
               <div className="border border-gray-100 rounded-xl p-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center text-base">🎓</div>
+                  <div className="w-8 h-8 rounded-lg bg-[var(--s-err-bg)] flex items-center justify-center text-base">🎓</div>
                   <p className="font-semibold text-sm text-[var(--text-primary)]">Google Classroom</p>
                 </div>
                 <p className="text-xs text-gray-500 mb-3 leading-relaxed">{t("ซิงค์ชั้นเรียน งาน และเกรดกับ Google Classroom โดยตรง", "Sync classes, assignments, and grades directly with your Google Classroom courses.")}</p>
@@ -322,7 +322,7 @@ export default function SettingsPage() {
                     onClick={() => setGoogleConnected((v) => !v)}
                     className={googleConnected
                       ? "text-xs font-medium px-3 py-1.5 border border-gray-200 rounded-lg text-[var(--text-primary)] hover:bg-gray-50 transition-colors"
-                      : "text-xs font-semibold px-3 py-1.5 bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)] rounded-lg transition-colors"
+                      : "text-xs font-semibold px-3 py-1.5 bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] rounded-lg transition-colors"
                     }
                   >
                     {googleConnected ? t("จัดการการซิงค์", "Manage Sync") : t("เชื่อมต่อ", "Connect")}
@@ -345,7 +345,7 @@ export default function SettingsPage() {
                     onClick={() => setTeamsConnected((v) => !v)}
                     className={teamsConnected
                       ? "text-xs font-medium px-3 py-1.5 border border-gray-200 rounded-lg text-[var(--text-primary)] hover:bg-gray-50 transition-colors"
-                      : "text-xs font-semibold px-3 py-1.5 bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)] rounded-lg transition-colors"
+                      : "text-xs font-semibold px-3 py-1.5 bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] rounded-lg transition-colors"
                     }
                   >
                     {teamsConnected ? t("จัดการการซิงค์", "Manage Sync") : t("เชื่อมต่อ", "Connect")}
@@ -356,14 +356,14 @@ export default function SettingsPage() {
           </Section>
 
           {/* Danger Zone */}
-          <div className="bg-red-50 rounded-2xl border border-red-100 px-6 py-4 flex items-center justify-between mb-5">
+          <div className="bg-[var(--s-err-bg)] rounded-2xl border border-[var(--s-err-bd)] px-6 py-4 flex items-center justify-between mb-5">
             <div>
-              <h2 className="text-sm font-bold text-red-600">{t("โซนอันตราย", "Danger Zone")}</h2>
-              <p className="text-xs text-red-400 mt-0.5">{t("การดำเนินการที่ไม่สามารถย้อนกลับได้ โปรดระวัง", "Irreversible actions. Be careful.")}</p>
+              <h2 className="text-sm font-bold text-[var(--s-err-text)]">{t("โซนอันตราย", "Danger Zone")}</h2>
+              <p className="text-xs text-[var(--s-err-text)] mt-0.5">{t("การดำเนินการที่ไม่สามารถย้อนกลับได้ โปรดระวัง", "Irreversible actions. Be careful.")}</p>
             </div>
             <button
               onClick={() => confirm(t("รีเซ็ตการตั้งค่าทั้งหมดเป็นค่าเริ่มต้น?", "Reset all settings to default?")) && handleDiscard()}
-              className="px-4 py-2 text-sm font-medium border border-red-200 text-red-500 rounded-xl hover:bg-red-100 transition-colors"
+              className="px-4 py-2 text-sm font-medium border border-[var(--s-err-bd)] text-[var(--s-err-text)] rounded-xl hover:bg-[var(--s-err-bg)] transition-colors"
             >
               {t("รีเซ็ตการตั้งค่าทั้งหมด", "Reset All Settings")}
             </button>
@@ -389,7 +389,7 @@ export default function SettingsPage() {
               onClick={handleSave}
               className={[
                 "px-5 py-2.5 text-sm font-semibold rounded-xl transition-colors",
-                saved ? "bg-emerald-500 text-white" : "bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)]",
+                saved ? "bg-emerald-500 text-white" : "bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)]",
               ].join(" ")}
             >
               {saved ? t("บันทึกแล้ว ✓", "Saved ✓") : t("บันทึกการเปลี่ยนแปลง", "Save Changes")}

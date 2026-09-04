@@ -23,10 +23,10 @@ function gradeLetter(score: number, max: number): string {
 }
 
 function gradeBgClass(l: string) {
-  return ({ A:"bg-green-100",B:"bg-blue-100",C:"bg-yellow-100",D:"bg-orange-100",F:"bg-red-100" }[l]??"bg-gray-100");
+  return ({ A:"bg-green-100",B:"bg-blue-100",C:"bg-yellow-100",D:"bg-orange-100",F:"bg-[var(--s-err-bg)]" }[l]??"bg-gray-100");
 }
 function gradeTextClass(l: string) {
-  return ({ A:"text-green-700",B:"text-blue-700",C:"text-yellow-700",D:"text-orange-700",F:"text-red-700" }[l]??"text-gray-500");
+  return ({ A:"text-green-700",B:"text-blue-700",C:"text-yellow-700",D:"text-orange-700",F:"text-[var(--s-err-text)]" }[l]??"text-gray-500");
 }
 function gradeClass(l: string) { return `${gradeBgClass(l)} ${gradeTextClass(l)}`; }
 
@@ -228,7 +228,7 @@ export default function ResultsPage() {
             </Link>
             <button
               onClick={exportCSV}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)] text-sm font-semibold transition-colors"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-semibold transition-colors"
             >
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -402,7 +402,7 @@ export default function ResultsPage() {
                                   </Link>
                                   <Link
                                     href={`/teacher/courses/${id}/assignments/${assignmentId}/recheck?sub=${s.id}`}
-                                    className="px-3 py-1.5 rounded-lg bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)] text-xs font-semibold transition-colors"
+                                    className="px-3 py-1.5 rounded-lg bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-xs font-semibold transition-colors"
                                   >
                                     {t("ขอให้ตรวจใหม่", "Recheck")}
                                   </Link>
@@ -441,7 +441,7 @@ export default function ResultsPage() {
                     return (
                       <div
                         key={s.id}
-                        className="flex items-center justify-between p-3 rounded-xl bg-red-50 border border-red-100"
+                        className="flex items-center justify-between p-3 rounded-xl bg-[var(--s-err-bg)] border border-[var(--s-err-bd)]"
                       >
                         <div>
                           <p className="text-xs font-semibold text-[var(--text-primary)]">{s.studentName}</p>

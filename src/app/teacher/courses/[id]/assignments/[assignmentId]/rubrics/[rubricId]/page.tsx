@@ -45,7 +45,7 @@ function toDraft(c: RubricCriterion): CriterionDraft {
 const LEVEL_COLORS = [
   { border: "border-green-200", bg: "bg-green-50", label: "text-green-600", dot: "bg-green-500" },
   { border: "border-amber-200", bg: "bg-amber-50", label: "text-amber-600", dot: "bg-amber-400" },
-  { border: "border-red-200", bg: "bg-red-50", label: "text-red-500", dot: "bg-red-400" },
+  { border: "border-[var(--s-err-bd)]", bg: "bg-[var(--s-err-bg)]", label: "text-[var(--s-err-text)]", dot: "bg-[var(--s-err-text)]" },
 ];
 
 export default function RubricEditorPage() {
@@ -387,7 +387,7 @@ export default function RubricEditorPage() {
                     onClick={() => removeCriterion(c.id, c.name)}
                     disabled={criteria.length <= 1}
                     title={t("ลบเกณฑ์นี้", "Remove criterion")}
-                    className="p-1.5 rounded-lg text-gray-300 hover:text-red-400 hover:bg-red-50 transition-colors disabled:opacity-20 disabled:cursor-not-allowed shrink-0"
+                    className="p-1.5 rounded-lg text-gray-300 hover:text-[var(--s-err-text)] hover:bg-[var(--s-err-bg)] transition-colors disabled:opacity-20 disabled:cursor-not-allowed shrink-0"
                   >
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                       <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
@@ -473,7 +473,7 @@ export default function RubricEditorPage() {
                 saved
                   ? "bg-green-500 text-white"
                   : weightOk
-                    ? "bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)] shadow-sm shadow-teal-200"
+                    ? "bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] shadow-sm shadow-teal-200"
                     : "bg-gray-100 text-gray-300 cursor-not-allowed"
               }`}
             >

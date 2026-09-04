@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -356,14 +356,14 @@ export default function RegisterPage() {
 
             {/* Error */}
             {error && (
-              <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>
+              <p className="text-sm text-[var(--s-err-text)] bg-[var(--s-err-bg)] px-3 py-2 rounded-lg">{error}</p>
             )}
 
             {/* Submit */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 rounded-xl bg-[#2DD4BF] text-[#1B2A4A] font-bold text-sm hover:bg-[#26bfac] transition-colors disabled:opacity-60"
+              className="w-full py-3 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] font-bold text-sm hover:bg-[var(--accent-solid-hover)] transition-colors disabled:opacity-60"
             >
               {loading ? t("กำลังสร้างบัญชี…", "Creating account…") : t("สร้างบัญชี", "Create Account")}
             </button>

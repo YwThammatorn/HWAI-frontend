@@ -38,12 +38,12 @@ function StatusBadge({ status }: { status: Submission["status"] }) {
   const { t } = useLanguage();
   const cfg = {
     need_review: { label: t("รอตรวจสอบ", "Need Review"), className: "bg-purple-100 text-purple-700" },
-    not_graded:  { label: t("ยังไม่ตรวจ", "Not Graded"),  className: "bg-red-100 text-red-700" },
+    not_graded:  { label: t("ยังไม่ตรวจ", "Not Graded"),  className: "bg-[var(--s-err-bg)] text-[var(--s-err-text)]" },
     graded:      { label: t("ตรวจแล้ว", "Graded"),      className: "bg-green-100 text-green-700" },
   }[status];
   return (
     <span className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium ${cfg.className}`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${status === "need_review" ? "bg-purple-400" : status === "not_graded" ? "bg-red-400" : "bg-green-400"}`} />
+      <span className={`w-1.5 h-1.5 rounded-full ${status === "need_review" ? "bg-purple-400" : status === "not_graded" ? "bg-[var(--s-err-text)]" : "bg-green-400"}`} />
       {cfg.label}
     </span>
   );
@@ -127,7 +127,7 @@ export default function ViewAssignmentPage() {
               {allGraded ? (
                 <span className="text-emerald-500 font-medium">{t("ตรวจครบแล้ว", "All Graded")}</span>
               ) : isOverdue ? (
-                <span className="text-red-500 font-medium">{t("เลยกำหนด", "Overdue")}</span>
+                <span className="text-[var(--s-err-text)] font-medium">{t("เลยกำหนด", "Overdue")}</span>
               ) : (
                 <span className="text-orange-500 font-medium">{t("ยังไม่ตรวจ", "Not Graded")}</span>
               )}
@@ -148,7 +148,7 @@ export default function ViewAssignmentPage() {
               href={allGraded
                 ? `/teacher/courses/${id}/assignments/${assignmentId}/results`
                 : `/teacher/courses/${id}/assignments/${assignmentId}/grading`}
-              className="flex items-center gap-2 px-4 py-2 bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)] text-sm font-medium rounded-xl transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-medium rounded-xl transition-colors"
             >
               {allGraded ? (
                 <>
@@ -418,7 +418,7 @@ export default function ViewAssignmentPage() {
                     {[1, 2, 3].map((p) => (
                       <button key={p} className={[
                         "w-7 h-7 rounded-full text-xs font-medium",
-                        p === 1 ? "bg-[#2DD4BF] text-[var(--text-primary)]" : "text-gray-500 hover:bg-gray-100",
+                        p === 1 ? "bg-[var(--accent-solid)] text-[var(--accent-solid-text)]" : "text-gray-500 hover:bg-gray-100",
                       ].join(" ")}>{p}</button>
                     ))}
                   </div>

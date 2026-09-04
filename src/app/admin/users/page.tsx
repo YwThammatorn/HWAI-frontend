@@ -195,7 +195,7 @@ function ImportTeacherDrawer({ open, onClose }: { open: boolean; onClose: () => 
                 <span className="text-[var(--text-muted)]">—</span>
                 <span className="text-green-700 font-medium">{t(`ใหม่ ${newRows.length}`, `New: ${newRows.length}`)}</span>
                 {dupRows.length > 0 && <span className="text-amber-700">{t(`ซ้ำ ${dupRows.length}`, `Dup: ${dupRows.length}`)}</span>}
-                {errorRows.length > 0 && <span className="text-red-600">{t(`ผิด ${errorRows.length}`, `Err: ${errorRows.length}`)}</span>}
+                {errorRows.length > 0 && <span className="text-[var(--s-err-text)]">{t(`ผิด ${errorRows.length}`, `Err: ${errorRows.length}`)}</span>}
               </div>
               <div className="rounded-xl border border-[var(--border-subtle)] overflow-hidden">
                 <div className="overflow-x-auto max-h-72">
@@ -212,7 +212,7 @@ function ImportTeacherDrawer({ open, onClose }: { open: boolean; onClose: () => 
                       {parseResult.rows.map((row, idx) => {
                         const isDup = !row.error && existingEmails.has(row.email.toLowerCase());
                         return (
-                          <tr key={idx} className={`border-t border-[var(--border-subtle)] ${row.error ? "bg-red-50/50" : isDup ? "bg-amber-50/50" : ""}`}>
+                          <tr key={idx} className={`border-t border-[var(--border-subtle)] ${row.error ? "bg-[var(--s-err-bg)]" : isDup ? "bg-amber-50/50" : ""}`}>
                             <td className="px-3 py-2 text-[var(--text-primary)] max-w-[120px] truncate">{row.name || <span className="text-[var(--text-muted)] italic">—</span>}</td>
                             <td className="px-3 py-2 text-[var(--text-secondary)] max-w-[140px] truncate">{row.email || <span className="text-[var(--text-muted)] italic">—</span>}</td>
                             <td className="px-3 py-2">
@@ -222,7 +222,7 @@ function ImportTeacherDrawer({ open, onClose }: { open: boolean; onClose: () => 
                             </td>
                             <td className="px-3 py-2">
                               {row.error ? (
-                                <span className="text-red-600">{teacherRowErrorLabel(row.error)}</span>
+                                <span className="text-[var(--s-err-text)]">{teacherRowErrorLabel(row.error)}</span>
                               ) : isDup ? (
                                 <span className="text-amber-700">{t("มีแล้ว", "Exists")}</span>
                               ) : (
@@ -371,7 +371,7 @@ function TeacherDrawer({ open, onClose, mode, teacher }: {
         <form onSubmit={handleSubmit} noValidate className="flex flex-col flex-1 gap-5 px-5 py-5 overflow-y-auto">
           <div className="flex flex-col gap-1.5">
             <label htmlFor="teacher-name" className="text-sm font-medium text-[var(--text-primary)]">
-              {t("ชื่อ-นามสกุล", "Full Name")} <span aria-hidden="true" className="text-red-500">*</span>
+              {t("ชื่อ-นามสกุล", "Full Name")} <span aria-hidden="true" className="text-[var(--s-err-text)]">*</span>
             </label>
             <input id="teacher-name" type="text" value={name}
               onChange={(e) => { setName(e.target.value); setErrors((p) => ({ ...p, name: undefined })); }}
@@ -379,11 +379,11 @@ function TeacherDrawer({ open, onClose, mode, teacher }: {
               aria-describedby={errors.name ? "teacher-name-err" : undefined}
               aria-invalid={!!errors.name} aria-required="true" autoFocus
               className="h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-app)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[#2DD4BF]" />
-            {errors.name && <p id="teacher-name-err" role="alert" className="text-xs text-red-500">{errors.name}</p>}
+            {errors.name && <p id="teacher-name-err" role="alert" className="text-xs text-[var(--s-err-text)]">{errors.name}</p>}
           </div>
           <div className="flex flex-col gap-1.5">
             <label htmlFor="teacher-email" className="text-sm font-medium text-[var(--text-primary)]">
-              {t("อีเมล", "Email")} <span aria-hidden="true" className="text-red-500">*</span>
+              {t("อีเมล", "Email")} <span aria-hidden="true" className="text-[var(--s-err-text)]">*</span>
             </label>
             <input id="teacher-email" type="email" value={email}
               onChange={(e) => { setEmail(e.target.value); setErrors((p) => ({ ...p, email: undefined })); }}
@@ -391,7 +391,7 @@ function TeacherDrawer({ open, onClose, mode, teacher }: {
               aria-describedby={errors.email ? "teacher-email-err" : undefined}
               aria-invalid={!!errors.email} aria-required="true"
               className="h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-app)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[#2DD4BF]" />
-            {errors.email && <p id="teacher-email-err" role="alert" className="text-xs text-red-500">{errors.email}</p>}
+            {errors.email && <p id="teacher-email-err" role="alert" className="text-xs text-[var(--s-err-text)]">{errors.email}</p>}
           </div>
           <div className="flex flex-col gap-1.5">
             <label htmlFor="teacher-role" className="text-sm font-medium text-[var(--text-primary)]">{t("ตำแหน่ง", "Role")}</label>
@@ -648,14 +648,14 @@ function ImportStudentDrawer({ open, onClose }: { open: boolean; onClose: () => 
                     </thead>
                     <tbody>
                       {parseResult.rows.slice(0, 30).map((row, idx) => (
-                        <tr key={idx} className={`border-t border-[var(--border-subtle)] ${row.error ? "bg-red-50" : ""}`}>
+                        <tr key={idx} className={`border-t border-[var(--border-subtle)] ${row.error ? "bg-[var(--s-err-bg)]" : ""}`}>
                           <td className="px-3 py-1.5 text-[var(--text-primary)] font-mono">{row.studentId || "—"}</td>
                           <td className="px-3 py-1.5 text-[var(--text-primary)]">{row.firstName || "—"}</td>
                           <td className="px-3 py-1.5 text-[var(--text-primary)]">{row.lastName || "—"}</td>
                           <td className="px-3 py-1.5 text-[var(--text-muted)]">{row.cohort || "—"}</td>
                           <td className="px-3 py-1.5">
                             {row.error ? (
-                              <span className="text-red-600 font-medium">{studentRowErrorLabel(row.error)}</span>
+                              <span className="text-[var(--s-err-text)] font-medium">{studentRowErrorLabel(row.error)}</span>
                             ) : (
                               <span className="text-green-700">✓</span>
                             )}
@@ -1035,49 +1035,49 @@ function AddStudentDrawer({ open, onClose }: { open: boolean; onClose: () => voi
         </div>
         <form onSubmit={handleSubmit} noValidate className="flex flex-col flex-1 gap-4 px-5 py-5 overflow-y-auto">
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="sid" className={labelClass}>{t("รหัสนักศึกษา", "Student ID")} <span aria-hidden="true" className="text-red-500">*</span></label>
+            <label htmlFor="sid" className={labelClass}>{t("รหัสนักศึกษา", "Student ID")} <span aria-hidden="true" className="text-[var(--s-err-text)]">*</span></label>
             <input id="sid" type="text" value={studentId} autoFocus
               onChange={(e) => { setStudentId(e.target.value); setErrors((p) => ({ ...p, studentId: "" })); }}
               placeholder="64070501" aria-invalid={!!errors.studentId} className={fieldClass} />
-            {errors.studentId && <p role="alert" className="text-xs text-red-500">{errors.studentId}</p>}
+            {errors.studentId && <p role="alert" className="text-xs text-[var(--s-err-text)]">{errors.studentId}</p>}
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="sfn" className={labelClass}>{t("ชื่อ", "First Name")} <span aria-hidden="true" className="text-red-500">*</span></label>
+              <label htmlFor="sfn" className={labelClass}>{t("ชื่อ", "First Name")} <span aria-hidden="true" className="text-[var(--s-err-text)]">*</span></label>
               <input id="sfn" type="text" value={firstName}
                 onChange={(e) => { setFirstName(e.target.value); setErrors((p) => ({ ...p, firstName: "" })); }}
                 placeholder={t("สมชาย", "John")} aria-invalid={!!errors.firstName} className={fieldClass} />
-              {errors.firstName && <p role="alert" className="text-xs text-red-500">{errors.firstName}</p>}
+              {errors.firstName && <p role="alert" className="text-xs text-[var(--s-err-text)]">{errors.firstName}</p>}
             </div>
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="sln" className={labelClass}>{t("นามสกุล", "Last Name")} <span aria-hidden="true" className="text-red-500">*</span></label>
+              <label htmlFor="sln" className={labelClass}>{t("นามสกุล", "Last Name")} <span aria-hidden="true" className="text-[var(--s-err-text)]">*</span></label>
               <input id="sln" type="text" value={lastName}
                 onChange={(e) => { setLastName(e.target.value); setErrors((p) => ({ ...p, lastName: "" })); }}
                 placeholder={t("ใจดี", "Smith")} aria-invalid={!!errors.lastName} className={fieldClass} />
-              {errors.lastName && <p role="alert" className="text-xs text-red-500">{errors.lastName}</p>}
+              {errors.lastName && <p role="alert" className="text-xs text-[var(--s-err-text)]">{errors.lastName}</p>}
             </div>
           </div>
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="semail" className={labelClass}>{t("อีเมล", "Email")} <span aria-hidden="true" className="text-red-500">*</span></label>
+            <label htmlFor="semail" className={labelClass}>{t("อีเมล", "Email")} <span aria-hidden="true" className="text-[var(--s-err-text)]">*</span></label>
             <input id="semail" type="email" value={email}
               onChange={(e) => { setEmail(e.target.value); setErrors((p) => ({ ...p, email: "" })); }}
               placeholder="64070501@kmitl.ac.th" aria-invalid={!!errors.email} className={fieldClass} />
-            {errors.email && <p role="alert" className="text-xs text-red-500">{errors.email}</p>}
+            {errors.email && <p role="alert" className="text-xs text-[var(--s-err-text)]">{errors.email}</p>}
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="scohort" className={labelClass}>{t("cohort", "Cohort")} <span aria-hidden="true" className="text-red-500">*</span></label>
+              <label htmlFor="scohort" className={labelClass}>{t("cohort", "Cohort")} <span aria-hidden="true" className="text-[var(--s-err-text)]">*</span></label>
               <input id="scohort" type="text" value={cohort}
                 onChange={(e) => { setCohort(e.target.value); setErrors((p) => ({ ...p, cohort: "" })); }}
                 placeholder="CE69" aria-invalid={!!errors.cohort} className={fieldClass} />
-              {errors.cohort && <p role="alert" className="text-xs text-red-500">{errors.cohort}</p>}
+              {errors.cohort && <p role="alert" className="text-xs text-[var(--s-err-text)]">{errors.cohort}</p>}
             </div>
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="sprogram" className={labelClass}>{t("สาขา", "Program")} <span aria-hidden="true" className="text-red-500">*</span></label>
+              <label htmlFor="sprogram" className={labelClass}>{t("สาขา", "Program")} <span aria-hidden="true" className="text-[var(--s-err-text)]">*</span></label>
               <input id="sprogram" type="text" value={program}
                 onChange={(e) => { setProgram(e.target.value); setErrors((p) => ({ ...p, program: "" })); }}
                 placeholder="CE" aria-invalid={!!errors.program} className={fieldClass} />
-              {errors.program && <p role="alert" className="text-xs text-red-500">{errors.program}</p>}
+              {errors.program && <p role="alert" className="text-xs text-[var(--s-err-text)]">{errors.program}</p>}
             </div>
           </div>
           <div className="mt-auto flex gap-2">
@@ -1248,7 +1248,7 @@ function StudentsTab() {
                             <button
                               onClick={() => setDeletingId(student.id)}
                               aria-label={t(`ลบ ${student.firstName} ${student.lastName}`, `Delete ${student.firstName} ${student.lastName}`)}
-                              className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-red-600 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 transition-colors"
+                              className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--s-err-text)] hover:bg-[var(--s-err-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--s-err-bd)] transition-colors"
                             >
                               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
                                 <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>
@@ -1294,7 +1294,7 @@ function StudentsTab() {
                 {t("ยกเลิก", "Cancel")}
               </button>
               <button onClick={() => { removeCohortStudent(deletingId!); setDeletingId(null); }}
-                className="flex-1 h-9 rounded-xl border border-red-300 bg-red-50 text-red-700 text-sm font-semibold hover:bg-red-100 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300 transition-colors">
+                className="flex-1 h-9 rounded-xl border border-[var(--s-err-bd)] bg-[var(--s-err-bg)] text-[var(--s-err-text)] text-sm font-semibold hover:bg-[var(--s-err-bg)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--s-err-bd)] transition-colors">
                 {t("ลบ", "Delete")}
               </button>
             </div>

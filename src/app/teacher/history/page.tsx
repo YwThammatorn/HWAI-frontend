@@ -247,7 +247,7 @@ export default function HistoryPage() {
               </div>
               <CreditRing pct={remainingPct} />
             </div>
-            <button className="mt-4 flex items-center justify-center gap-1.5 w-full py-2 rounded-xl bg-[#2DD4BF] text-[var(--text-primary)] text-sm font-semibold hover:bg-[#14B8A6] transition-colors">
+            <button className="mt-4 flex items-center justify-center gap-1.5 w-full py-2 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[#14B8A6] transition-colors">
               <IconPlus />
               {t("เติม Credit", "Buy Credits")}
             </button>
@@ -341,19 +341,19 @@ export default function HistoryPage() {
                         <span className="text-sm font-medium text-[var(--text-primary)]">{session.count}</span>
                       </td>
                       <td className="px-4 py-3.5 text-right tabular-nums">
-                        <span className={`text-sm font-medium ${session.status === "failed" ? "text-gray-400" : "text-red-500"}`}>
+                        <span className={`text-sm font-medium ${session.status === "failed" ? "text-gray-400" : "text-[var(--s-err-text)]"}`}>
                           {session.status === "failed" ? "—" : `-${session.cost} Cr`}
                         </span>
                       </td>
                       <td className="px-4 py-3.5">
                         {session.status === "completed" ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-[var(--s-ok-bg)] text-[var(--s-ok-text)]">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[var(--s-ok-text)]" />
                             {t("สำเร็จ", "Completed")}
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-red-50 text-red-600">
-                            <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-[var(--s-err-bg)] text-[var(--s-err-text)]">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[var(--s-err-text)]" />
                             {t("ล้มเหลว", "Failed")}
                           </span>
                         )}
@@ -394,7 +394,7 @@ export default function HistoryPage() {
                     className={[
                       "w-7 h-7 flex items-center justify-center rounded-lg text-xs font-medium transition-colors",
                       n === safeePage
-                        ? "bg-[#2DD4BF] text-[var(--text-primary)] font-semibold"
+                        ? "bg-[var(--accent-solid)] text-[var(--accent-solid-text)] font-semibold"
                         : "text-gray-500 hover:bg-gray-100",
                     ].join(" ")}
                   >

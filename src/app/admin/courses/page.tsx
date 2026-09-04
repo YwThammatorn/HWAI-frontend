@@ -88,7 +88,7 @@ function CourseDrawer({
           {/* Name */}
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-semibold text-[var(--text-muted)]">
-              {t("ชื่อรายวิชา", "Course Name")} <span className="text-red-500">*</span>
+              {t("ชื่อรายวิชา", "Course Name")} <span className="text-[var(--s-err-text)]">*</span>
             </label>
             <input
               ref={nameRef}
@@ -141,7 +141,7 @@ function CourseDrawer({
           <button
             onClick={handleSave}
             disabled={!name.trim()}
-            className="h-9 px-5 rounded-xl bg-[#0F766E] text-white text-sm font-semibold hover:bg-[#0d6660] disabled:opacity-40 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2DD4BF] transition-colors"
+            className="h-9 px-5 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] disabled:opacity-40 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
           >
             {mode === "create" ? t("สร้างรายวิชา", "Create Course") : t("บันทึก", "Save")}
           </button>
@@ -182,7 +182,7 @@ function ConfirmDialog({
           </button>
           <button
             onClick={onConfirm}
-            className={`h-9 px-5 rounded-xl text-sm font-semibold transition-colors ${danger ? "bg-red-600 text-white hover:bg-red-700" : "bg-[#0F766E] text-white hover:bg-[#0d6660]"}`}
+            className={`h-9 px-5 rounded-xl text-sm font-semibold transition-colors ${danger ? "bg-[var(--danger-solid)] text-[var(--danger-solid-text)] hover:bg-[var(--danger-solid-hover)]" : "bg-[var(--accent-solid)] text-[var(--accent-solid-text)] hover:bg-[var(--accent-solid-hover)]"}`}
           >
             {confirmLabel}
           </button>
@@ -214,7 +214,7 @@ function StudentListItem({ student, onRemove }: { student: Student; onRemove: ()
       )}
       <button
         onClick={onRemove}
-        className="w-6 h-6 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-red-500 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all shrink-0"
+        className="w-6 h-6 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--s-err-text)] hover:bg-[var(--s-err-bg)] opacity-0 group-hover:opacity-100 transition-all shrink-0"
         aria-label={`Remove ${student.firstName}`}
       >
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
@@ -439,7 +439,7 @@ function CourseAssignPanel({ course }: { course: Course }) {
             )}
             <button
               onClick={() => { setShowPicker((v) => !v); setPickerSearch(""); setSelectedIds(new Set()); }}
-              className={`h-7 px-2.5 rounded-lg text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2DD4BF] ${showPicker ? "bg-[#2DD4BF]/15 text-[#0F766E]" : "bg-[#0F766E] text-white hover:bg-[#0d6660]"}`}
+              className={`h-7 px-2.5 rounded-lg text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2DD4BF] ${showPicker ? "bg-[#2DD4BF]/15 text-[#0F766E]" : "bg-[var(--accent-solid)] text-[var(--accent-solid-text)] hover:bg-[var(--accent-solid-hover)]"}`}
             >
               {showPicker ? t("ปิด", "Close") : t("+ รายบุคคล", "+ Individual")}
             </button>
@@ -556,7 +556,7 @@ function CourseAssignPanel({ course }: { course: Course }) {
                   onClick={handleRemoveCohort}
                   disabled={!selectedCohort}
                   title={t("ลบนักศึกษาทั้ง cohort ออกจาก course นี้", "Remove entire cohort from this course")}
-                  className="h-8 px-3 rounded-xl border border-[var(--border-subtle)] text-xs font-semibold text-red-600 hover:bg-red-50 active:scale-[0.97] disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 transition-colors whitespace-nowrap"
+                  className="h-8 px-3 rounded-xl border border-[var(--border-subtle)] text-xs font-semibold text-[var(--s-err-text)] hover:bg-[var(--s-err-bg)] active:scale-[0.97] disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--s-err-bd)] transition-colors whitespace-nowrap"
                 >
                   {t("ลบ cohort", "Remove")}
                 </button>
@@ -689,7 +689,7 @@ function CourseRow({
             <button
               onClick={() => onAction({ type: "delete", course })}
               title={t("ลบรายวิชา", "Delete course")}
-              className="w-7 h-7 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-red-600 hover:bg-red-50 transition-colors"
+              className="w-7 h-7 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--s-err-text)] hover:bg-[var(--s-err-bg)] transition-colors"
             >
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>

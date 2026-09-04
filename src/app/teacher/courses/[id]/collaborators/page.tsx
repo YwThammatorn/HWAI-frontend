@@ -127,7 +127,7 @@ function RowMenu({
         <div className="absolute right-0 top-9 z-20 bg-white border border-gray-100 rounded-xl shadow-lg py-1 w-36">
           <button
             onClick={() => { onRemove(collabId); setOpen(false); }}
-            className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50 transition-colors"
+            className="w-full text-left px-4 py-2 text-sm text-[var(--s-err-text)] hover:bg-[var(--s-err-bg)] transition-colors"
           >
             {t("ลบออก", "Remove")}
           </button>

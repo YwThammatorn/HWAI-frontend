@@ -28,7 +28,7 @@ const STATUS_CONFIG: Record<WorkStatus, { label: string; labelEn: string; cls: s
   not_submitted: { label: "ยังไม่ส่ง", labelEn: "Not submitted", cls: "bg-blue-50 text-blue-700" },
   submitted: { label: "ส่งแล้ว", labelEn: "Submitted", cls: "bg-gray-100 text-gray-600" },
   graded: { label: "มีคะแนนแล้ว", labelEn: "Graded", cls: "bg-green-50 text-green-700" },
-  late: { label: "เกินกำหนด", labelEn: "Late", cls: "bg-red-50 text-red-600" },
+  late: { label: "เกินกำหนด", labelEn: "Late", cls: "bg-[var(--s-err-bg)] text-[var(--s-err-text)]" },
 };
 
 // ── Assignment card ────────────────────────────────────────────────────────
@@ -71,7 +71,7 @@ function ClassworkCard({
         <div className="flex items-center gap-2 mt-1 flex-wrap">
           <span className="text-xs text-[var(--text-muted)]">
             {t("กำหนดส่ง:", "Due:")} {" "}
-            <span className={isUrgent ? "font-semibold text-red-500" : ""}>
+            <span className={isUrgent ? "font-semibold text-[var(--s-err-text)]" : ""}>
               {due.toLocaleDateString("th-TH", { day: "numeric", month: "short" })}
             </span>
           </span>
@@ -83,7 +83,7 @@ function ClassworkCard({
             {assignment.submissionType === "group" ? t("กลุ่ม", "Group") : t("เดี่ยว", "Individual")}
           </span>
           {isUrgent && (
-            <span className="text-[10px] font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded-full">
+            <span className="text-[10px] font-bold text-[var(--s-err-text)] bg-[var(--s-err-bg)] px-2 py-0.5 rounded-full">
               {t("ใกล้ครบกำหนด!", "Due soon!")}
             </span>
           )}
@@ -176,7 +176,7 @@ export default function StudentClassworkPage() {
             {/* Due today */}
             {dueToday.length > 0 && (
               <section>
-                <h2 className="text-xs font-semibold uppercase tracking-wider text-red-500 mb-3">
+                <h2 className="text-xs font-semibold uppercase tracking-wider text-[var(--s-err-text)] mb-3">
                   {t(`ส่งวันนี้ (${dueToday.length})`, `Due today (${dueToday.length})`)}
                 </h2>
                 <div className="flex flex-col gap-2">

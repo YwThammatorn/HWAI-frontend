@@ -202,7 +202,7 @@ export default function EditAssignmentPage() {
           <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
             <SectionHeader icon="info" label={t("ข้อมูลทั่วไป", "General Information")} />
             <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">
-              {t("ชื่อชิ้นงาน", "Assignment Name")} <span className="text-red-400">*</span>
+              {t("ชื่อชิ้นงาน", "Assignment Name")} <span className="text-[var(--s-err-text)]">*</span>
             </label>
             <input
               value={name} onChange={(e) => setName(e.target.value)}
@@ -227,7 +227,7 @@ export default function EditAssignmentPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">
-                  {t("วันครบกำหนด", "Due Date")} <span className="text-red-400">*</span>
+                  {t("วันครบกำหนด", "Due Date")} <span className="text-[var(--s-err-text)]">*</span>
                 </label>
                 <div className="relative">
                   <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -247,7 +247,7 @@ export default function EditAssignmentPage() {
                   {[10, 15, 25, 100].map((p) => (
                     <button key={p} type="button" onClick={() => setMaxPoints(String(p))}
                       className={["px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors",
-                        maxPoints === String(p) ? "bg-[#2DD4BF] text-[var(--text-primary)] border-[var(--accent)]" : "border-gray-200 text-gray-500 hover:border-[var(--accent)] hover:text-[var(--accent)]"
+                        maxPoints === String(p) ? "bg-[var(--accent-solid)] text-[var(--accent-solid-text)] border-[var(--accent)]" : "border-gray-200 text-gray-500 hover:border-[var(--accent)] hover:text-[var(--accent)]"
                       ].join(" ")}>
                       {p}
                     </button>
@@ -296,7 +296,7 @@ export default function EditAssignmentPage() {
                   ))}
                 </div>
                 {fileTypes.length === 0 && (
-                  <p className="text-xs text-red-400 mt-1.5">{t("เลือกประเภทไฟล์อย่างน้อย 1 ประเภท", "Select at least one file type")}</p>
+                  <p className="text-xs text-[var(--s-err-text)] mt-1.5">{t("เลือกประเภทไฟล์อย่างน้อย 1 ประเภท", "Select at least one file type")}</p>
                 )}
               </div>
             )}
@@ -385,7 +385,7 @@ export default function EditAssignmentPage() {
                       <button
                         type="button"
                         onClick={() => handleDeleteRubric(rubric.id, rubric.name)}
-                        className="p-1.5 rounded-lg hover:bg-red-50 text-gray-500 hover:text-red-500 transition-colors"
+                        className="p-1.5 rounded-lg hover:bg-[var(--s-err-bg)] text-gray-500 hover:text-[var(--s-err-text)] transition-colors"
                         title={t("ลบเกณฑ์", "Delete rubric")}
                       >
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -415,7 +415,7 @@ export default function EditAssignmentPage() {
                     className="flex-1 px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
                   />
                   <button type="button" onClick={handleAddRubric} disabled={!newRubricName.trim()}
-                    className="px-3 py-2 rounded-xl bg-[#2DD4BF] text-[var(--text-primary)] text-sm font-medium hover:bg-[#14B8A6] disabled:opacity-40 transition-colors">
+                    className="px-3 py-2 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-medium hover:bg-[#14B8A6] disabled:opacity-40 transition-colors">
                     {t("บันทึก", "Save")}
                   </button>
                   <button type="button" onClick={() => { setShowNewRubricForm(false); setNewRubricName(""); }}
@@ -428,11 +428,11 @@ export default function EditAssignmentPage() {
           </section>
 
           {/* Danger Zone */}
-          <section className="bg-white rounded-2xl border border-red-100 shadow-sm p-6">
-            <h2 className="text-sm font-semibold text-red-500 uppercase tracking-wider mb-4">{t("โซนอันตราย", "Danger Zone")}</h2>
+          <section className="bg-white rounded-2xl border border-[var(--s-err-bd)] shadow-sm p-6">
+            <h2 className="text-sm font-semibold text-[var(--s-err-text)] uppercase tracking-wider mb-4">{t("โซนอันตราย", "Danger Zone")}</h2>
             <button
               type="button" onClick={handleDelete}
-              className="px-4 py-2 text-sm font-medium rounded-xl border border-red-200 text-red-500 hover:bg-red-50 transition-colors"
+              className="px-4 py-2 text-sm font-medium rounded-xl border border-[var(--s-err-bd)] text-[var(--s-err-text)] hover:bg-[var(--s-err-bg)] transition-colors"
             >
               {t("ลบชิ้นงาน", "Delete Assignment")}
             </button>
@@ -450,7 +450,7 @@ export default function EditAssignmentPage() {
             <button
               type="submit" disabled={!isValid}
               className={["flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-colors",
-                saved ? "bg-emerald-500 text-white" : "bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)] disabled:opacity-40 disabled:cursor-not-allowed"
+                saved ? "bg-emerald-500 text-white" : "bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] disabled:opacity-40 disabled:cursor-not-allowed"
               ].join(" ")}
             >
               {saved ? (

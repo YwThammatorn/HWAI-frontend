@@ -18,7 +18,7 @@ function gradeLetter(score: number, max: number): string {
 function gradeClass(letter: string): string {
   return (
     { A: "bg-green-100 text-green-700", B: "bg-blue-100 text-blue-700", C: "bg-yellow-100 text-yellow-700",
-      D: "bg-orange-100 text-orange-700", F: "bg-red-100 text-red-700" }[letter] ?? "bg-gray-100 text-gray-500"
+      D: "bg-orange-100 text-orange-700", F: "bg-[var(--s-err-bg)] text-[var(--s-err-text)]" }[letter] ?? "bg-gray-100 text-gray-500"
   );
 }
 
@@ -135,7 +135,7 @@ export default function CourseResultsPage() {
                     {total === 0 ? null : allDone ? (
                       <Link
                         href={`/teacher/courses/${id}/assignments/${a.id}/results`}
-                        className="px-3 py-2 rounded-lg bg-[#2DD4BF] hover:bg-[#14B8A6] text-[var(--text-primary)] text-xs font-semibold transition-colors"
+                        className="px-3 py-2 rounded-lg bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-xs font-semibold transition-colors"
                       >
                         {t("ดูผลลัพธ์", "View Results")}
                       </Link>

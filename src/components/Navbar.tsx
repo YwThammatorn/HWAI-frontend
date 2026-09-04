@@ -85,7 +85,7 @@ export default function Navbar() {
             <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
           </svg>
           {hasUnread && (
-            <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-red-500" />
+            <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-[var(--danger-solid)]" />
           )}
         </Link>
 
