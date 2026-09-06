@@ -74,7 +74,7 @@ test.describe("P2 — Teacher Grade Adjustment", () => {
 
   test("grading page loads with AI scores shown", async ({ page }) => {
     await seedGrading(page);
-    await page.goto(`${BASE}/courses/c-p2/assignments/a-p2/grading`);
+    await page.goto(`${BASE}/teacher/courses/c-p2/assignments/a-p2/grading`);
     await page.waitForLoadState("networkidle");
     // AI scores displayed in greyed cells
     await expect(page.getByText("72")).toBeVisible();
@@ -83,7 +83,7 @@ test.describe("P2 — Teacher Grade Adjustment", () => {
 
   test("instructor score input accepts a number", async ({ page }) => {
     await seedGrading(page);
-    await page.goto(`${BASE}/courses/c-p2/assignments/a-p2/grading`);
+    await page.goto(`${BASE}/teacher/courses/c-p2/assignments/a-p2/grading`);
     await page.waitForLoadState("networkidle");
     // Find the first instructor score input and enter a value
     const inputs = page.locator("input[type='number']");
@@ -93,7 +93,7 @@ test.describe("P2 — Teacher Grade Adjustment", () => {
 
   test("row highlights amber after instructor score differs from AI score", async ({ page }) => {
     await seedGrading(page);
-    await page.goto(`${BASE}/courses/c-p2/assignments/a-p2/grading`);
+    await page.goto(`${BASE}/teacher/courses/c-p2/assignments/a-p2/grading`);
     await page.waitForLoadState("networkidle");
     const inputs = page.locator("input[type='number']");
     await inputs.first().fill("85");
@@ -103,7 +103,7 @@ test.describe("P2 — Teacher Grade Adjustment", () => {
 
   test("Save button is disabled when no changes made", async ({ page }) => {
     await seedGrading(page);
-    await page.goto(`${BASE}/courses/c-p2/assignments/a-p2/grading`);
+    await page.goto(`${BASE}/teacher/courses/c-p2/assignments/a-p2/grading`);
     await page.waitForLoadState("networkidle");
     // Save button disabled initially (no instructorScore edits)
     const saveBtn = page.getByRole("button", { name: /บันทึก|Save/i }).last();
@@ -112,7 +112,7 @@ test.describe("P2 — Teacher Grade Adjustment", () => {
 
   test("Save button enables after editing instructor score", async ({ page }) => {
     await seedGrading(page);
-    await page.goto(`${BASE}/courses/c-p2/assignments/a-p2/grading`);
+    await page.goto(`${BASE}/teacher/courses/c-p2/assignments/a-p2/grading`);
     await page.waitForLoadState("networkidle");
     const inputs = page.locator("input[type='number']");
     await inputs.first().fill("90");
@@ -122,7 +122,7 @@ test.describe("P2 — Teacher Grade Adjustment", () => {
 
   test("clicking Save shows success confirmation", async ({ page }) => {
     await seedGrading(page);
-    await page.goto(`${BASE}/courses/c-p2/assignments/a-p2/grading`);
+    await page.goto(`${BASE}/teacher/courses/c-p2/assignments/a-p2/grading`);
     await page.waitForLoadState("networkidle");
     const inputs = page.locator("input[type='number']");
     await inputs.first().fill("90");
@@ -134,7 +134,7 @@ test.describe("P2 — Teacher Grade Adjustment", () => {
 
   test("Re-grade button shows spinner then updates score", async ({ page }) => {
     await seedGrading(page);
-    await page.goto(`${BASE}/courses/c-p2/assignments/a-p2/grading`);
+    await page.goto(`${BASE}/teacher/courses/c-p2/assignments/a-p2/grading`);
     await page.waitForLoadState("networkidle");
     // Find re-grade button in first row
     const regradeBtn = page.getByRole("button", { name: /re.grade|ตรวจใหม่/i }).first();
@@ -148,7 +148,7 @@ test.describe("P2 — Teacher Grade Adjustment", () => {
 
   test("instructor score is clamped to maxPoints (100)", async ({ page }) => {
     await seedGrading(page);
-    await page.goto(`${BASE}/courses/c-p2/assignments/a-p2/grading`);
+    await page.goto(`${BASE}/teacher/courses/c-p2/assignments/a-p2/grading`);
     await page.waitForLoadState("networkidle");
     const inputs = page.locator("input[type='number']");
     await expect(inputs.first()).toHaveAttribute("max", "100");

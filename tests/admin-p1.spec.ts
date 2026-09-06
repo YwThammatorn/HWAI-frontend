@@ -134,11 +134,15 @@ const COURSE_1: CourseSeed = {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test.describe("P1a — Admin Teachers (/admin/teachers)", () => {
-  test("page loads with Teacher Management heading", async ({ page }) => {
+  // /admin/teachers redirects to the combined /admin/users page (Teachers tab
+  // is the default view there) — Teacher and Student management were merged
+  // into one page with pill tabs; there's no longer a standalone "Teacher
+  // Management" heading, just "User Management" shared by both tabs.
+  test("page loads with User Management heading", async ({ page }) => {
     await seedPage(page);
     await gotoPage(page, "/admin/teachers");
     await expect(page.getByRole("heading", { level: 1 })).toContainText(
-      "Teacher Management"
+      "User Management"
     );
   });
 
@@ -187,21 +191,26 @@ test.describe("P1a — Admin Teachers (/admin/teachers)", () => {
     await expect(page.locator("td").getByText("TA")).toBeVisible();
   });
 
-  test("delete button opens confirm dialog and confirming removes teacher", async ({
+  test("suspend button opens confirm dialog and confirming marks teacher Suspended", async ({
     page,
   }) => {
+    // Teacher removal is a reversible Suspend, not a hard delete (Sprint 3
+    // decision: "Delete → Suspend", see project_hwai_reviewer_feedback memory) —
+    // the row stays in the table with a "Suspended" badge and a Reactivate
+    // button, it does not disappear to the empty state.
     await seedPage(page, { teachers: [TEACHER_1] });
     await gotoPage(page, "/admin/teachers");
     await expect(page.getByText("Dr. Smith")).toBeVisible();
-    // Delete button aria-label: "Delete Dr. Smith" (English mode)
-    await page.getByRole("button", { name: "Delete Dr. Smith" }).click();
+    // Suspend button aria-label: "Suspend Dr. Smith" (English mode)
+    await page.getByRole("button", { name: "Suspend Dr. Smith" }).click();
     const alertDialog = page.getByRole("alertdialog");
     await expect(alertDialog).toBeVisible();
-    await expect(alertDialog).toContainText("Confirm Delete");
-    await alertDialog.getByRole("button", { name: "Delete" }).click();
-    // Teacher removed → back to empty state
-    await expect(page.getByText("Dr. Smith")).not.toBeVisible();
-    await expect(page.getByText("No teachers yet")).toBeVisible();
+    await expect(alertDialog).toContainText("Confirm Suspend");
+    await alertDialog.getByRole("button", { name: "Suspend" }).click();
+    // Teacher stays visible, now flagged Suspended, with a Reactivate action
+    await expect(page.getByText("Dr. Smith")).toBeVisible();
+    await expect(page.getByText("Suspended")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Reactivate Dr. Smith" })).toBeVisible();
   });
 
   test("validation: submitting with empty name shows Name is required", async ({
@@ -233,23 +242,31 @@ test.describe("P1a — Admin Teachers (/admin/teachers)", () => {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test.describe("P1b — Admin Students (/admin/students)", () => {
-  test("page loads with Student Management heading", async ({ page }) => {
+  // /admin/students also redirects to /admin/users, which defaults to the
+  // Teachers tab — every test here must click the "Students" pill tab first.
+  async function openStudentsTab(page: Page) {
+    await page.getByRole("tab", { name: /^Students/ }).click();
+  }
+
+  test("page loads with User Management heading", async ({ page }) => {
     await seedPage(page);
     await gotoPage(page, "/admin/students");
     await expect(page.getByRole("heading", { level: 1 })).toContainText(
-      "Student Management"
+      "User Management"
     );
   });
 
   test("shows empty state when no students exist", async ({ page }) => {
     await seedPage(page);
     await gotoPage(page, "/admin/students");
+    await openStudentsTab(page);
     await expect(page.getByText("No students yet")).toBeVisible();
   });
 
   test("seeded student appears in table", async ({ page }) => {
     await seedPage(page, { students: [STUDENT_1] });
     await gotoPage(page, "/admin/students");
+    await openStudentsTab(page);
     // exact: true avoids matching the email cell (s64070501@email.kmitl.ac.th)
     await expect(page.getByText("64070501", { exact: true })).toBeVisible();
     // Table renders firstName + " " + lastName in one cell
@@ -259,6 +276,7 @@ test.describe("P1b — Admin Students (/admin/students)", () => {
   test("search input filters table by studentId", async ({ page }) => {
     await seedPage(page, { students: [STUDENT_1, STUDENT_2] });
     await gotoPage(page, "/admin/students");
+    await openStudentsTab(page);
     // Both visible initially
     await expect(page.getByText("64070501", { exact: true })).toBeVisible();
     await expect(page.getByText("64070502", { exact: true })).toBeVisible();
@@ -271,8 +289,10 @@ test.describe("P1b — Admin Students (/admin/students)", () => {
   test("cohort filter dropdown shows cohorts present in data", async ({ page }) => {
     await seedPage(page, { students: [STUDENT_1, STUDENT_2] });
     await gotoPage(page, "/admin/students");
-    // aria-label: "Filter by cohort" (English)
-    const select = page.getByRole("combobox", { name: "Filter by cohort" });
+    await openStudentsTab(page);
+    // The cohort <select> has no accessible name of its own (no aria-label) —
+    // it's the only <select> visible on the Students tab with no dialog open.
+    const select = page.locator("select");
     await expect(select).toBeVisible();
     await expect(select.locator("option[value='CE69']")).toHaveCount(1);
     await expect(select.locator("option[value='CE68']")).toHaveCount(1);
@@ -281,8 +301,10 @@ test.describe("P1b — Admin Students (/admin/students)", () => {
   test("delete student → confirm dialog → confirmed → student removed", async ({
     page,
   }) => {
+    // Student deletion is still a real hard delete (unlike teacher Suspend).
     await seedPage(page, { students: [STUDENT_1] });
     await gotoPage(page, "/admin/students");
+    await openStudentsTab(page);
     await expect(page.getByText("64070501", { exact: true })).toBeVisible();
     // aria-label: "Delete สมชาย ใจดี" (English prefix, Thai name)
     await page.getByRole("button", { name: /Delete สมชาย ใจดี/i }).click();
@@ -346,14 +368,14 @@ test.describe("P1c — Admin Courses (/admin/courses)", () => {
     await expect(checkbox).not.toBeChecked();
   });
 
-  test("checking teacher checkbox shows Assigned badge", async ({ page }) => {
+  test("checking teacher checkbox marks them assigned", async ({ page }) => {
+    // Assignment is now shown via a checkmark icon next to the row (no text
+    // "Assigned" badge exists anymore) — checked state is the real signal.
     await seedPage(page, { courses: [COURSE_1], teachers: [TEACHER_1] });
     await gotoPage(page, "/admin/courses");
     await page.getByRole("button", { name: /Software Engineering/ }).click();
     const checkbox = page.getByRole("checkbox", { name: /Dr\. Smith/ });
     await checkbox.click();
     await expect(checkbox).toBeChecked();
-    // Assigned badge appears next to the teacher entry
-    await expect(page.getByText("Assigned")).toBeVisible();
   });
 });

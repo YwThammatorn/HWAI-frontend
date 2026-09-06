@@ -36,51 +36,54 @@ async function waitReady(page: Page, path: string) {
   await page.waitForLoadState("networkidle");
 }
 
-// ── 1. Role Tabs UI ──────────────────────────────────────────────────────────
+// ── 1. Single-form login UI ──────────────────────────────────────────────────
+// Rewritten 5/9/2569 — the login page used to have separate Admin/Teacher/Student
+// tabs (role chosen up front), but was redesigned to a single email+password form
+// that auto-detects role from the email prefix (numeric → student, contains
+// "admin" → admin, else teacher — see detectRole() in src/app/login/page.tsx).
+// No role="tab" elements exist on this page anymore.
 
-test.describe("Login Page — Role Tab UI", () => {
+test.describe("Login Page — Single Form (role auto-detected from email)", () => {
   test.beforeEach(async ({ page }) => { await withLang(page); });
 
-  test("teacher tab is selected by default", async ({ page }) => {
+  test("renders one login form with no role tabs", async ({ page }) => {
     await waitReady(page, "/login");
-    const teacherTab = page.getByRole("tab", { name: /teacher/i });
-    await expect(teacherTab).toHaveAttribute("aria-selected", "true");
+    await expect(page.locator('input[type="email"]')).toHaveCount(1);
+    await expect(page.locator('input[type="password"]')).toHaveCount(1);
+    await expect(page.getByRole("tab")).toHaveCount(0);
   });
 
-  test("student tab shows studentId field, not email field", async ({ page }) => {
+  test("email field enforces valid format via native HTML5 constraint", async ({ page }) => {
+    // The app also has a custom "please enter a valid email" JS check, but it's
+    // unreachable through normal interaction: the input is type="email" +
+    // required, so the browser's own constraint validation blocks form
+    // submission (and the React onSubmit handler) before our JS ever runs for
+    // a value with no "@". This test verifies the actual enforcement mechanism.
     await waitReady(page, "/login");
-    await page.getByRole("tab", { name: /^student$/i }).click();
-    // Student ID input should be visible
-    await expect(page.getByPlaceholder("64070501")).toBeVisible();
-    // Email input should NOT be visible (it's conditionally rendered)
-    await expect(page.locator('input[type="email"]')).not.toBeVisible();
-  });
-
-  test("admin tab shows email field with admin@school.edu placeholder", async ({ page }) => {
-    await waitReady(page, "/login");
-    await page.getByRole("tab", { name: /admin/i }).click();
-    await expect(page.getByPlaceholder("admin@school.edu")).toBeVisible();
+    const emailInput = page.locator('input[type="email"]');
+    await expect(emailInput).toHaveAttribute("required", "");
+    await emailInput.fill("not-an-email");
+    const isValid = await emailInput.evaluate((el: HTMLInputElement) => el.checkValidity());
+    expect(isValid).toBe(false);
   });
 });
 
-// ── 2. Login Flows ───────────────────────────────────────────────────────────
+// ── 2. Login Flows — role detected from email prefix ─────────────────────────
 
 test.describe("Login Flows", () => {
-  test("teacher login with valid credentials redirects to /dashboard", async ({ page }) => {
+  test("teacher-looking email redirects to /teacher/dashboard", async ({ page }) => {
     await withLang(page);
     await waitReady(page, "/login");
-    // Teacher tab is default — fill email + password
     await page.fill('input[type="email"]', "teacher@school.edu");
     await page.fill('input[type="password"]', "password123");
     await page.getByRole("button", { name: /sign in/i }).click();
-    await page.waitForURL(/\/dashboard/, { timeout: 8000 });
-    await expect(page).toHaveURL(/\/dashboard/);
+    await page.waitForURL(/\/teacher\/dashboard/, { timeout: 8000 });
+    await expect(page).toHaveURL(/\/teacher\/dashboard/);
   });
 
-  test("admin login with valid credentials redirects to /admin", async ({ page }) => {
+  test("admin-looking email redirects to /admin", async ({ page }) => {
     await withLang(page);
     await waitReady(page, "/login");
-    await page.getByRole("tab", { name: /admin/i }).click();
     await page.fill('input[type="email"]', "admin@school.edu");
     await page.fill('input[type="password"]', "password123");
     await page.getByRole("button", { name: /sign in/i }).click();
@@ -88,11 +91,10 @@ test.describe("Login Flows", () => {
     await expect(page).toHaveURL(/\/admin/);
   });
 
-  test("student login with unknown studentId shows error", async ({ page }) => {
+  test("numeric-prefix email with unknown studentId shows error", async ({ page }) => {
     await withLang(page);
     await waitReady(page, "/login");
-    await page.getByRole("tab", { name: /^student$/i }).click();
-    await page.getByPlaceholder("64070501").fill("99999999");
+    await page.fill('input[type="email"]', "99999999@school.edu");
     await page.fill('input[type="password"]', "pass1");
     await page.getByRole("button", { name: /sign in/i }).click();
     // Error <p role="alert"> — scoped to the <p> element to avoid strict-mode conflict
@@ -100,11 +102,10 @@ test.describe("Login Flows", () => {
     await expect(page.locator('p[role="alert"]')).toContainText(/not found/i, { timeout: 5000 });
   });
 
-  test("student login with seeded CohortStudent redirects to /student", async ({ page }) => {
+  test("numeric-prefix email matching a seeded CohortStudent redirects to /student", async ({ page }) => {
     await withLangAndStudent(page);
     await waitReady(page, "/login");
-    await page.getByRole("tab", { name: /^student$/i }).click();
-    await page.getByPlaceholder("64070501").fill("64070501");
+    await page.fill('input[type="email"]', "64070501@school.edu");
     await page.fill('input[type="password"]', "pass1");
     await page.getByRole("button", { name: /sign in/i }).click();
     await page.waitForURL(/\/student/, { timeout: 8000 });
