@@ -147,7 +147,7 @@ export default function ImportStudentsPage() {
               onClick={() => fileRef.current?.click()}
             >
               <div className="w-14 h-14 rounded-full bg-[var(--accent-subtle)] flex items-center justify-center">
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2DD4BF" strokeWidth="1.8" strokeLinecap="round">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--accent-bright)" strokeWidth="1.8" strokeLinecap="round">
                   <polyline points="16 16 12 12 8 16"/>
                   <line x1="12" y1="12" x2="12" y2="21"/>
                   <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
@@ -174,7 +174,7 @@ export default function ImportStudentsPage() {
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl bg-[var(--accent-subtle)] flex items-center justify-center">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2DD4BF" strokeWidth="2" strokeLinecap="round">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-bright)" strokeWidth="2" strokeLinecap="round">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                     <polyline points="14 2 14 8 20 8"/>
                     <line x1="12" y1="18" x2="12" y2="12"/>
@@ -236,7 +236,7 @@ export default function ImportStudentsPage() {
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-1.5 text-sm">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2DD4BF" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-bright)" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                   <span className="font-semibold text-[var(--text-primary)]">{validRows.length}</span>
                   <span className="text-gray-500">{t("พร้อม import", "ready to import")}</span>
                 </div>
@@ -332,7 +332,7 @@ export default function ImportStudentsPage() {
           <div className="flex items-center justify-center py-16">
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-16 py-14 flex flex-col items-center text-center max-w-md w-full">
               <div className="w-16 h-16 rounded-full bg-[var(--accent-subtle)] flex items-center justify-center mb-6">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2DD4BF" strokeWidth="2.5" strokeLinecap="round">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent-bright)" strokeWidth="2.5" strokeLinecap="round">
                   <polyline points="20 6 9 17 4 12"/>
                 </svg>
               </div>

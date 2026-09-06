@@ -133,7 +133,7 @@ function CreditRing({ pct }: { pct: number }) {
       <circle cx="26" cy="26" r={r} fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="5" />
       <circle
         cx="26" cy="26" r={r} fill="none"
-        stroke="#2DD4BF" strokeWidth="5"
+        stroke="var(--accent-bright)" strokeWidth="5"
         strokeDasharray={circ} strokeDashoffset={offset}
         strokeLinecap="round"
         transform="rotate(-90 26 26)"
@@ -247,7 +247,7 @@ export default function HistoryPage() {
               </div>
               <CreditRing pct={remainingPct} />
             </div>
-            <button className="mt-4 flex items-center justify-center gap-1.5 w-full py-2 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[#14B8A6] transition-colors">
+            <button className="mt-4 flex items-center justify-center gap-1.5 w-full py-2 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] transition-colors">
               <IconPlus />
               {t("เติม Credit", "Buy Credits")}
             </button>
@@ -270,7 +270,7 @@ export default function HistoryPage() {
                   placeholder={t("ค้นหา...", "Search activity...")}
                   value={search}
                   onChange={(e) => handleSearch(e.target.value)}
-                  className="pl-8 pr-3 py-1.5 text-sm rounded-xl border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#2DD4BF]/40 focus:border-[#2DD4BF] w-48"
+                  className="pl-8 pr-3 py-1.5 text-sm rounded-xl border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]/40 focus:border-[var(--accent-bright)] w-48"
                 />
               </div>
 
@@ -278,7 +278,7 @@ export default function HistoryPage() {
               <select
                 value={statusFilter}
                 onChange={(e) => handleStatusFilter(e.target.value as typeof statusFilter)}
-                className="text-xs px-3 py-1.5 rounded-xl border border-gray-200 bg-gray-50 text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#2DD4BF]/40 cursor-pointer"
+                className="text-xs px-3 py-1.5 rounded-xl border border-gray-200 bg-gray-50 text-gray-600 focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]/40 cursor-pointer"
               >
                 <option value="all">{t("ทุกสถานะ", "All Status")}</option>
                 <option value="completed">{t("สำเร็จ", "Completed")}</option>

@@ -159,7 +159,7 @@ export default function RegisterPage() {
           <div className="mt-8 flex flex-col gap-5">
             {FEATURES.map((f) => (
               <div key={f.title} className="flex items-start gap-3.5">
-                <div className="w-9 h-9 rounded-lg bg-[#2DD4BF]/15 flex items-center justify-center shrink-0 text-[#2DD4BF] mt-0.5">
+                <div className="w-9 h-9 rounded-lg bg-[var(--accent-bright)]/15 flex items-center justify-center shrink-0 text-[#2DD4BF] mt-0.5">
                   {f.icon}
                 </div>
                 <div>
@@ -215,7 +215,7 @@ export default function RegisterPage() {
                     className={[
                       "py-2.5 rounded-xl border text-sm font-semibold transition-all",
                       role === r
-                        ? "border-[#2DD4BF] bg-[#E6FAF8] text-[#0F766E]"
+                        ? "border-[var(--accent-bright)] bg-[#E6FAF8] text-[var(--accent)]"
                         : "border-gray-200 text-gray-500 hover:border-gray-300",
                     ].join(" ")}
                   >
@@ -242,7 +242,7 @@ export default function RegisterPage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder={t("เช่น สมชาย ใจดี", "e.g. Jane Doe")}
-                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm text-[var(--text-primary)] placeholder-gray-400 bg-white focus:outline-none focus:border-[#2DD4BF] focus:ring-2 focus:ring-[#2DD4BF]/20 transition-colors"
+                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm text-[var(--text-primary)] placeholder-gray-400 bg-white focus:outline-none focus:border-[var(--accent-bright)] focus:ring-2 focus:ring-[var(--accent-bright)]/20 transition-colors"
                 />
               </div>
             </div>
@@ -265,7 +265,7 @@ export default function RegisterPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="jane@university.edu"
                   autoComplete="email"
-                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm text-[var(--text-primary)] placeholder-gray-400 bg-white focus:outline-none focus:border-[#2DD4BF] focus:ring-2 focus:ring-[#2DD4BF]/20 transition-colors"
+                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm text-[var(--text-primary)] placeholder-gray-400 bg-white focus:outline-none focus:border-[var(--accent-bright)] focus:ring-2 focus:ring-[var(--accent-bright)]/20 transition-colors"
                 />
               </div>
             </div>
@@ -288,7 +288,7 @@ export default function RegisterPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder={t("อย่างน้อย 8 ตัวอักษร", "Min. 8 characters")}
                   autoComplete="new-password"
-                  className="w-full pl-10 pr-11 py-3 rounded-xl border border-gray-200 text-sm text-[var(--text-primary)] placeholder-gray-400 bg-white focus:outline-none focus:border-[#2DD4BF] focus:ring-2 focus:ring-[#2DD4BF]/20 transition-colors"
+                  className="w-full pl-10 pr-11 py-3 rounded-xl border border-gray-200 text-sm text-[var(--text-primary)] placeholder-gray-400 bg-white focus:outline-none focus:border-[var(--accent-bright)] focus:ring-2 focus:ring-[var(--accent-bright)]/20 transition-colors"
                 />
                 {eyeIcon(showPw, () => setShowPw(!showPw))}
               </div>
@@ -328,7 +328,7 @@ export default function RegisterPage() {
                   onChange={(e) => setConfirm(e.target.value)}
                   placeholder={t("อย่างน้อย 8 ตัวอักษร", "Min. 8 characters")}
                   autoComplete="new-password"
-                  className="w-full pl-10 pr-11 py-3 rounded-xl border border-gray-200 text-sm text-[var(--text-primary)] placeholder-gray-400 bg-white focus:outline-none focus:border-[#2DD4BF] focus:ring-2 focus:ring-[#2DD4BF]/20 transition-colors"
+                  className="w-full pl-10 pr-11 py-3 rounded-xl border border-gray-200 text-sm text-[var(--text-primary)] placeholder-gray-400 bg-white focus:outline-none focus:border-[var(--accent-bright)] focus:ring-2 focus:ring-[var(--accent-bright)]/20 transition-colors"
                 />
                 {eyeIcon(showConfirm, () => setShowConfirm(!showConfirm))}
               </div>
@@ -340,15 +340,15 @@ export default function RegisterPage() {
                 type="checkbox"
                 checked={agreed}
                 onChange={(e) => setAgreed(e.target.checked)}
-                className="mt-0.5 w-4 h-4 rounded border-gray-300 text-[#2DD4BF] focus:ring-[#2DD4BF]/30"
+                className="mt-0.5 w-4 h-4 rounded border-gray-300 text-[var(--accent-bright)] focus:ring-[var(--accent-bright)]/30"
               />
               <span className="text-sm text-gray-500 leading-relaxed">
                 {t("ฉันยอมรับ", "I agree to the")}{" "}
-                <a href="#" onClick={(e) => e.preventDefault()} title={t("เร็วๆ นี้", "Coming soon")} className="text-[#0F766E] font-medium hover:underline">
+                <a href="#" onClick={(e) => e.preventDefault()} title={t("เร็วๆ นี้", "Coming soon")} className="text-[var(--accent)] font-medium hover:underline">
                   {t("ข้อกำหนดการใช้บริการ", "Terms of Service")}
                 </a>
                 {" "}{t("และ", "and")}{" "}
-                <a href="#" onClick={(e) => e.preventDefault()} title={t("เร็วๆ นี้", "Coming soon")} className="text-[#0F766E] font-medium hover:underline">
+                <a href="#" onClick={(e) => e.preventDefault()} title={t("เร็วๆ นี้", "Coming soon")} className="text-[var(--accent)] font-medium hover:underline">
                   {t("นโยบายความเป็นส่วนตัว", "Privacy Policy")}
                 </a>
               </span>
@@ -408,7 +408,7 @@ export default function RegisterPage() {
 
           <p className="mt-5 text-center text-sm text-gray-500">
             {t("มีบัญชีอยู่แล้ว?", "Already have an account?")}{" "}
-            <Link href="/login" className="text-[#0F766E] font-semibold hover:underline">
+            <Link href="/login" className="text-[var(--accent)] font-semibold hover:underline">
               {t("เข้าสู่ระบบ", "Sign in")}
             </Link>
           </p>

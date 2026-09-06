@@ -17,9 +17,9 @@ const ICON_CONFIG: Record<
   { bg: string; el: React.ReactNode }
 > = {
   ai_grading_complete: {
-    bg: "bg-[#2DD4BF]/15",
+    bg: "bg-[var(--accent-bright)]/15",
     el: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="2.5" strokeLinecap="round">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinecap="round">
         <polyline points="20 6 9 17 4 12" />
       </svg>
     ),
@@ -54,9 +54,9 @@ const ICON_CONFIG: Record<
     ),
   },
   joining_approved: {
-    bg: "bg-[#2DD4BF]/15",
+    bg: "bg-[var(--accent-bright)]/15",
     el: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="2.5" strokeLinecap="round">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinecap="round">
         <polyline points="20 6 9 17 4 12" />
       </svg>
     ),
@@ -84,7 +84,7 @@ function NotifCard({
       case "ai_grading_complete":
         return (
           <>
-            <button className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-[#0F766E] text-white text-xs font-medium hover:bg-[#0D6B63] transition-colors">
+            <button className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-xs font-medium hover:bg-[var(--accent-solid-hover)] transition-colors">
               {t("ดูผลลัพธ์", "View Results")}
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
             </button>
@@ -98,7 +98,7 @@ function NotifCard({
         );
       case "late_submission":
         return (
-          <button className="inline-flex items-center px-4 py-1.5 rounded-lg border border-[var(--accent)] text-[var(--accent)] text-xs font-medium hover:bg-[#0F766E]/5 transition-colors">
+          <button className="inline-flex items-center px-4 py-1.5 rounded-lg border border-[var(--accent)] text-[var(--accent)] text-xs font-medium hover:bg-[var(--accent)]/5 transition-colors">
             {t("ตรวจงาน", "Grade Now")}
           </button>
         );
@@ -107,7 +107,7 @@ function NotifCard({
           <>
             <button
               onClick={() => onAccept(notif.id)}
-              className="text-xs font-semibold text-[var(--accent)] hover:text-[#0D6B63] transition-colors"
+              className="text-xs font-semibold text-[var(--accent)] hover:text-[var(--accent-solid-hover)] transition-colors"
             >
               {t("ยอมรับ", "Accept")}
             </button>

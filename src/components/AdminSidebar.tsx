@@ -67,6 +67,18 @@ export default function AdminSidebar() {
       labelEn: "Courses",
       label: t("จัดการรายวิชา", "Courses"),
     },
+    {
+      href: "/admin/curriculum",
+      exact: false,
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+          <path d="M22 10v6M2 10l10-5 10 5-10 5-10-5z"/>
+          <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+        </svg>
+      ),
+      labelEn: "Curriculum",
+      label: t("จัดการหลักสูตร", "Curriculum"),
+    },
   ];
 
   function isActive(href: string, exact: boolean) {
@@ -93,16 +105,23 @@ export default function AdminSidebar() {
                   href={item.href}
                   aria-current={active ? "page" : undefined}
                   title={collapsed ? item.label : undefined}
+                  // Text color set via inline style rather than a Tailwind arbitrary
+                  // class (text-[var(--accent)]) — that class intermittently resolved to
+                  // --accent-bright's value instead during dev-server testing when both
+                  // vars were referenced on this element (possibly just Turbopack/HMR
+                  // staleness, not confirmed as a real Tailwind bug). Inline style sidesteps
+                  // it either way and verified correct in both themes after a hard reload.
+                  style={active ? { color: "var(--accent)" } : undefined}
                   className={[
                     "flex items-center gap-3 rounded-xl text-sm font-medium transition-colors min-h-[44px]",
-                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2DD4BF] focus-visible:ring-offset-1",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] focus-visible:ring-offset-1",
                     collapsed ? "justify-center px-0" : "px-3",
                     active
-                      ? "bg-[#2DD4BF]/15 text-[#0F766E] border-l-2 border-[#2DD4BF]"
+                      ? "bg-[var(--accent-bright)]/15 border-l-2 border-[var(--accent-bright)]"
                       : "text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)]",
                   ].join(" ")}
                 >
-                  <span className={active ? "text-[#0F766E]" : "text-[var(--text-muted)]"}>
+                  <span className={active ? "text-[var(--accent)]" : "text-[var(--text-muted)]"}>
                     {item.icon}
                   </span>
                   {!collapsed && item.label}
@@ -121,7 +140,7 @@ export default function AdminSidebar() {
           aria-label={collapsed ? t("ขยาย sidebar", "Expand sidebar") : t("ย่อ sidebar", "Collapse sidebar")}
           className={[
             "w-full min-h-[40px] flex items-center rounded-xl text-[var(--text-muted)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)] transition-colors",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2DD4BF]",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]",
             collapsed ? "justify-center px-0" : "gap-2 px-3",
           ].join(" ")}
         >

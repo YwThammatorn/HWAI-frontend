@@ -268,7 +268,7 @@ export default function ResultsPage() {
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-2">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="2" strokeLinecap="round">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round">
                     <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/>
                     <line x1="6" y1="20" x2="6" y2="14"/>
                   </svg>
@@ -494,7 +494,7 @@ export default function ResultsPage() {
               />
               <button
                 onClick={() => { setFeedbackSent(true); setTimeout(() => setFeedbackSent(false), 3000); }}
-                className="w-full mt-3 py-2.5 rounded-xl bg-[#0F766E] hover:bg-[#0E7490] text-white text-xs font-semibold transition-colors"
+                className="w-full mt-3 py-2.5 rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-xs font-semibold transition-colors"
               >
                 {feedbackSent ? `✓ ${t("ส่งแล้ว!", "Sent!")}` : t("ส่ง Feedback", "Feedback Grading")}
               </button>

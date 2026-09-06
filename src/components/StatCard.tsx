@@ -16,7 +16,7 @@ export default function StatCard({ label, value, color, bg, icon, onClick }: Sta
       role={onClick ? "button" : undefined}
       tabIndex={onClick ? 0 : undefined}
       onKeyDown={onClick ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick(); } } : undefined}
-      className={`flex-1 min-w-0 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-5 py-4 flex items-center gap-4 transition-colors${onClick ? " cursor-pointer hover:border-[#2DD4BF]/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2DD4BF]" : ""}`}
+      className={`flex-1 min-w-0 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-5 py-4 flex items-center gap-4 transition-colors${onClick ? " cursor-pointer hover:border-[var(--accent-bright)]/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]" : ""}`}
       style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.04)" }}
     >
       <div

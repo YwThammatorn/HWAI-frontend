@@ -8,6 +8,7 @@ import { useAssignments } from "@/lib/assignments";
 import type { Course } from "@/lib/courses";
 import { useLanguage } from "@/context/LanguageContext";
 import SearchInput from "@/components/SearchInput";
+import Pagination from "@/components/Pagination";
 
 export default function CoursesPage() {
   const { t } = useLanguage();
@@ -143,33 +144,7 @@ export default function CoursesPage() {
                 );
               })}
             </div>
-            {totalPages > 1 && (
-              <div className="flex justify-center items-center gap-1 mt-8">
-                <button
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                  className="w-8 h-8 rounded-full text-sm font-medium text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center"
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
-                </button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                  <button
-                    key={p}
-                    onClick={() => setPage(p)}
-                    className={["w-8 h-8 rounded-full text-sm font-medium transition-colors", p === page ? "bg-[var(--accent-solid)] text-[var(--accent-solid-text)]" : "text-gray-500 hover:bg-gray-100"].join(" ")}
-                  >
-                    {p}
-                  </button>
-                ))}
-                <button
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={page === totalPages}
-                  className="w-8 h-8 rounded-full text-sm font-medium text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center"
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
-                </button>
-              </div>
-            )}
+            <Pagination page={page} totalPages={totalPages} onChange={setPage} />
           </>
         )}
       </main>
@@ -185,14 +160,14 @@ function EmptyState() {
         <div className="relative mb-8">
           <div className="w-28 h-28 rounded-full bg-[var(--accent-subtle)] flex items-center justify-center">
             <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
-              <path d="M10 14a4 4 0 0 1 4-4h24a4 4 0 0 1 4 4v28a4 4 0 0 1-4 4H14a4 4 0 0 1-4-4V14z" stroke="#2DD4BF" strokeWidth="2"/>
-              <path d="M18 20h16M18 27h10" stroke="#2DD4BF" strokeWidth="2" strokeLinecap="round"/>
-              <path d="M18 34h6" stroke="#2DD4BF" strokeWidth="2" strokeLinecap="round"/>
+              <path d="M10 14a4 4 0 0 1 4-4h24a4 4 0 0 1 4 4v28a4 4 0 0 1-4 4H14a4 4 0 0 1-4-4V14z" stroke="var(--accent-bright)" strokeWidth="2"/>
+              <path d="M18 20h16M18 27h10" stroke="var(--accent-bright)" strokeWidth="2" strokeLinecap="round"/>
+              <path d="M18 34h6" stroke="var(--accent-bright)" strokeWidth="2" strokeLinecap="round"/>
             </svg>
           </div>
-          <div className="absolute top-1 right-0 w-3 h-3 rounded-full bg-[#2DD4BF] opacity-60"/>
+          <div className="absolute top-1 right-0 w-3 h-3 rounded-full bg-[var(--accent-bright)] opacity-60"/>
           <div className="absolute bottom-2 left-0 w-2 h-2 rounded-full bg-gray-300"/>
-          <div className="absolute top-8 -left-3 w-2 h-2 rounded-full bg-[#2DD4BF] opacity-40"/>
+          <div className="absolute top-8 -left-3 w-2 h-2 rounded-full bg-[var(--accent-bright)] opacity-40"/>
         </div>
 
         <h2 className="text-xl font-bold text-[var(--text-primary)] mb-2">{t("เริ่มสร้างรายวิชาแรกของคุณ", "Let's start your first class")}</h2>
@@ -269,7 +244,7 @@ function CourseCard({ course, studentCount, allGraded, activeAssignments, isArch
         {isArchived ? (
           <button
             onClick={onRestore}
-            className="mt-3 w-full text-xs font-medium py-1.5 rounded-lg bg-[var(--accent-subtle)] hover:bg-[#2DD4BF] text-[var(--accent)] hover:text-[#1B2A4A] transition-colors"
+            className="mt-3 w-full text-xs font-medium py-1.5 rounded-lg bg-[var(--accent-subtle)] hover:bg-[var(--accent-solid)] text-[var(--accent)] hover:text-[var(--accent-solid-text)] transition-colors"
           >
             {t("คืนค่า", "Restore")}
           </button>

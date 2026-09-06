@@ -6,8 +6,8 @@ export default function ComingSoon({ title }: { title: string }) {
       <main className="flex-1 flex flex-col items-center justify-center text-center gap-4">
         <div className="w-16 h-16 rounded-2xl bg-[#E0F7F4] flex items-center justify-center mb-2">
           <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-            <path d="M16 6v10l6 3" stroke="#2DD4BF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-            <circle cx="16" cy="16" r="11" stroke="#2DD4BF" strokeWidth="2.5"/>
+            <path d="M16 6v10l6 3" stroke="var(--accent-bright)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <circle cx="16" cy="16" r="11" stroke="var(--accent-bright)" strokeWidth="2.5"/>
           </svg>
         </div>
         <h1 className="text-xl font-bold text-[#0F2137]">{title}</h1>

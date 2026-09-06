@@ -96,7 +96,7 @@ function CourseDrawer({
               onChange={(e) => setName(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSave()}
               placeholder={t("เช่น UX/UI Design", "e.g. UX/UI Design")}
-              className="h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[#2DD4BF]"
+              className="h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
             />
           </div>
 
@@ -108,7 +108,7 @@ function CourseDrawer({
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
               placeholder={t("อธิบายรายวิชาโดยย่อ (ไม่บังคับ)", "Brief description (optional)")}
-              className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] resize-none focus:outline-none focus:ring-2 focus:ring-[#2DD4BF]"
+              className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
             />
           </div>
 
@@ -120,8 +120,8 @@ function CourseDrawer({
                 <button
                   key={c}
                   onClick={() => setCoverColor(c)}
-                  className="w-9 h-9 rounded-xl transition-transform active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2DD4BF]"
-                  style={{ background: c, outline: c === coverColor ? "3px solid #2DD4BF" : "none", outlineOffset: "2px" }}
+                  className="w-9 h-9 rounded-xl transition-transform active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]"
+                  style={{ background: c, outline: c === coverColor ? "3px solid var(--accent-bright)" : "none", outlineOffset: "2px" }}
                   aria-label={c}
                   aria-pressed={c === coverColor}
                 />
@@ -200,7 +200,7 @@ function StudentListItem({ student, onRemove }: { student: Student; onRemove: ()
 
   return (
     <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-[var(--bg-subtle)] group transition-colors">
-      <div className="w-7 h-7 rounded-full bg-[#2DD4BF]/20 text-[#0F766E] text-[10px] font-bold flex items-center justify-center shrink-0 select-none">
+      <div className="w-7 h-7 rounded-full bg-[var(--accent-bright)]/20 text-[var(--accent)] text-[10px] font-bold flex items-center justify-center shrink-0 select-none">
         {initials(student)}
       </div>
       <div className="flex-1 min-w-0">
@@ -345,7 +345,7 @@ function CourseAssignPanel({ course }: { course: Course }) {
         <div className="flex items-center gap-2">
           <p className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">{t("อาจารย์ผู้สอน", "Teaching Staff")}</p>
           {assignedTeachers.length > 0 && (
-            <span className="text-[10px] font-bold text-[#0F766E] bg-[#2DD4BF]/15 px-1.5 py-0.5 rounded-full tabular-nums">
+            <span className="text-[10px] font-bold text-[var(--accent)] bg-[var(--accent-bright)]/15 px-1.5 py-0.5 rounded-full tabular-nums">
               {assignedTeachers.length}
             </span>
           )}
@@ -384,15 +384,15 @@ function CourseAssignPanel({ course }: { course: Course }) {
                 return (
                   <div key={teacher.id}>
                     {isDivider && <div className="mx-3 my-0.5 border-t border-[var(--border-subtle)]" />}
-                    <label className={`flex items-center gap-3 px-3 py-2.5 cursor-pointer transition-colors ${assigned ? "bg-[#2DD4BF]/5 hover:bg-[#2DD4BF]/10" : "hover:bg-[var(--bg-subtle)]"}`}>
+                    <label className={`flex items-center gap-3 px-3 py-2.5 cursor-pointer transition-colors ${assigned ? "bg-[var(--accent-bright)]/5 hover:bg-[var(--accent-bright)]/10" : "hover:bg-[var(--bg-subtle)]"}`}>
                       <input
                         type="checkbox"
                         checked={assigned}
                         onChange={() => toggleTeacher(teacher.id, assigned)}
-                        className="w-4 h-4 accent-[#0F766E] cursor-pointer shrink-0"
+                        className="w-4 h-4 accent-[var(--accent)] cursor-pointer shrink-0"
                       />
                       <div
-                        className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 select-none transition-colors ${assigned ? "bg-[#0F766E] text-white" : "bg-[#2DD4BF]/20 text-[#0F766E]"}`}
+                        className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 select-none transition-colors ${assigned ? "bg-[var(--accent-solid)] text-[var(--accent-solid-text)]" : "bg-[var(--accent-bright)]/20 text-[var(--accent)]"}`}
                         aria-hidden="true"
                       >
                         {getInitials(teacher.name)}
@@ -402,7 +402,7 @@ function CourseAssignPanel({ course }: { course: Course }) {
                         <p className="text-[11px] text-[var(--text-muted)]">{TEACHER_ROLE_LABEL[teacher.role]}</p>
                       </div>
                       {assigned && (
-                        <svg className="text-[#0F766E] shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <svg className="text-[var(--accent)] shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                           <polyline points="20 6 9 17 4 12"/>
                         </svg>
                       )}
@@ -421,7 +421,7 @@ function CourseAssignPanel({ course }: { course: Course }) {
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <p className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">{t("นักศึกษา", "Students")}</p>
-            <span className="text-xs font-bold text-[#0F766E] tabular-nums bg-[#2DD4BF]/10 px-2 py-0.5 rounded-full">{enrolledStudents.length}</span>
+            <span className="text-xs font-bold text-[var(--accent)] tabular-nums bg-[var(--accent-bright)]/10 px-2 py-0.5 rounded-full">{enrolledStudents.length}</span>
           </div>
           <div className="flex items-center gap-2">
             {enrolledStudents.length > 0 && (
@@ -433,13 +433,13 @@ function CourseAssignPanel({ course }: { course: Course }) {
                   value={studentSearch}
                   onChange={(e) => setStudentSearch(e.target.value)}
                   placeholder={t("ค้นหา...", "Search...")}
-                  className="h-7 pl-7 pr-3 text-xs rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-1 focus:ring-[#2DD4BF] w-28"
+                  className="h-7 pl-7 pr-3 text-xs rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-bright)] w-28"
                 />
               </div>
             )}
             <button
               onClick={() => { setShowPicker((v) => !v); setPickerSearch(""); setSelectedIds(new Set()); }}
-              className={`h-7 px-2.5 rounded-lg text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2DD4BF] ${showPicker ? "bg-[#2DD4BF]/15 text-[#0F766E]" : "bg-[var(--accent-solid)] text-[var(--accent-solid-text)] hover:bg-[var(--accent-solid-hover)]"}`}
+              className={`h-7 px-2.5 rounded-lg text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] ${showPicker ? "bg-[var(--accent-bright)]/15 text-[var(--accent)]" : "bg-[var(--accent-solid)] text-[var(--accent-solid-text)] hover:bg-[var(--accent-solid-hover)]"}`}
             >
               {showPicker ? t("ปิด", "Close") : t("+ รายบุคคล", "+ Individual")}
             </button>
@@ -448,7 +448,7 @@ function CourseAssignPanel({ course }: { course: Course }) {
 
         {/* Individual picker */}
         {showPicker && (
-          <div className="rounded-xl border border-[#2DD4BF]/30 bg-[var(--bg-surface)] overflow-hidden">
+          <div className="rounded-xl border border-[var(--accent-bright)]/30 bg-[var(--bg-surface)] overflow-hidden">
             {/* Picker search */}
             <div className="p-2 border-b border-[var(--border-subtle)]">
               <div className="relative">
@@ -474,14 +474,14 @@ function CourseAssignPanel({ course }: { course: Course }) {
                 {filteredAvailable.map((s) => {
                   const checked = selectedIds.has(s.studentId);
                   return (
-                    <label key={s.studentId} className={`flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-[var(--bg-subtle)] transition-colors ${checked ? "bg-[#2DD4BF]/5" : ""}`}>
+                    <label key={s.studentId} className={`flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-[var(--bg-subtle)] transition-colors ${checked ? "bg-[var(--accent-bright)]/5" : ""}`}>
                       <input
                         type="checkbox"
                         checked={checked}
                         onChange={() => toggleSelectStudent(s.studentId)}
-                        className="w-3.5 h-3.5 accent-[#0F766E] cursor-pointer shrink-0"
+                        className="w-3.5 h-3.5 accent-[var(--accent)] cursor-pointer shrink-0"
                       />
-                      <div className="w-6 h-6 rounded-full bg-[#2DD4BF]/20 text-[#0F766E] text-[9px] font-bold flex items-center justify-center shrink-0 select-none" aria-hidden="true">
+                      <div className="w-6 h-6 rounded-full bg-[var(--accent-bright)]/20 text-[var(--accent)] text-[9px] font-bold flex items-center justify-center shrink-0 select-none" aria-hidden="true">
                         {getInitials(`${s.firstName} ${s.lastName}`)}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -504,7 +504,7 @@ function CourseAssignPanel({ course }: { course: Course }) {
                 <button
                   onClick={handleAddSelected}
                   disabled={selectedIds.size === 0}
-                  className="h-7 px-3 rounded-lg bg-[#0F766E] text-white text-xs font-semibold hover:bg-[#0d6660] active:scale-[0.97] disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2DD4BF] transition-colors"
+                  className="h-7 px-3 rounded-lg bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-xs font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
                 >
                   {t(`+ เพิ่ม${selectedIds.size > 0 ? ` ${selectedIds.size} คน` : ""}`, `+ Add${selectedIds.size > 0 ? ` ${selectedIds.size}` : ""}`)}
                 </button>
@@ -537,7 +537,7 @@ function CourseAssignPanel({ course }: { course: Course }) {
                 <select
                   value={selectedCohort}
                   onChange={(e) => { setSelectedCohort(e.target.value); setMsg({ text: "", type: "ok" }); }}
-                  className="flex-1 h-8 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-2.5 text-xs text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#2DD4BF]"
+                  className="flex-1 h-8 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-2.5 text-xs text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
                 >
                   <option value="">{t("เลือก cohort…", "Select cohort…")}</option>
                   {cohorts.map((c) => (
@@ -548,7 +548,7 @@ function CourseAssignPanel({ course }: { course: Course }) {
                   onClick={handleEnroll}
                   disabled={!selectedCohort || enrolling}
                   title={t("นำเข้านักศึกษาจาก cohort ที่เลือก", "Enroll selected cohort")}
-                  className="h-8 px-3 rounded-xl bg-[#0F766E] text-white text-xs font-semibold hover:bg-[#0d6660] active:scale-[0.97] disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2DD4BF] transition-colors whitespace-nowrap"
+                  className="h-8 px-3 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-xs font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors whitespace-nowrap"
                 >
                   {enrolling ? "…" : t("+ นำเข้า", "+ Enroll")}
                 </button>
@@ -636,7 +636,7 @@ function CourseRow({
           onClick={() => setExpanded((v) => !v)}
           aria-expanded={expanded}
           aria-controls={`course-panel-${course.id}`}
-          className="flex items-center gap-3 flex-1 min-w-0 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2DD4BF] focus-visible:rounded-lg"
+          className="flex items-center gap-3 flex-1 min-w-0 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] focus-visible:rounded-lg"
         >
           <div className="w-9 h-9 rounded-xl shrink-0 flex items-center justify-center text-white font-bold text-xs" style={{ background: course.coverColor }} aria-hidden="true">
             {course.name.charAt(0).toUpperCase()}
@@ -664,7 +664,7 @@ function CourseRow({
             <button
               onClick={() => onEdit(course)}
               title={t("แก้ไขรายวิชา", "Edit course")}
-              className="w-7 h-7 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[#0F766E] hover:bg-[#2DD4BF]/10 transition-colors"
+              className="w-7 h-7 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--accent)] hover:bg-[var(--accent-bright)]/10 transition-colors"
             >
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -758,7 +758,7 @@ export default function AdminCoursesPage() {
     <div className="p-6 w-full">
       {/* Page heading */}
       <div className="flex items-start justify-between mb-6">
-        <div className="pl-4" style={{ borderLeft: "3px solid #2DD4BF" }}>
+        <div className="pl-4" style={{ borderLeft: "3px solid var(--accent-bright)" }}>
           <h1 className="text-2xl font-bold text-[var(--text-primary)] tracking-tight">
             {t("จัดการรายวิชา", "Course Management")}
           </h1>
@@ -768,7 +768,7 @@ export default function AdminCoursesPage() {
         </div>
         <button
           onClick={() => { setEditTarget(undefined); setDrawerMode("create"); }}
-          className="flex items-center gap-2 h-10 px-4 rounded-xl bg-[#0F766E] text-white text-sm font-semibold hover:bg-[#0d6660] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2DD4BF] transition-colors shrink-0"
+          className="flex items-center gap-2 h-10 px-4 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors shrink-0"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
             <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
@@ -782,8 +782,8 @@ export default function AdminCoursesPage() {
         <StatCard
           label={t("รายวิชาทั้งหมด", "Total Courses")}
           value={courses.length}
-          color="#0F766E"
-          bg="rgba(15,118,110,0.1)"
+          color="var(--accent)"
+          bg="var(--accent-subtle)"
           icon={
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
               <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
@@ -820,9 +820,9 @@ export default function AdminCoursesPage() {
 
       {courses.length === 0 ? (
         <EmptyState
-          iconColor="#2DD4BF"
+          iconColor="var(--accent-bright)"
           icon={
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
               <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
               <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
             </svg>
@@ -832,7 +832,7 @@ export default function AdminCoursesPage() {
           action={
             <button
               onClick={() => { setEditTarget(undefined); setDrawerMode("create"); }}
-              className="flex items-center gap-2 h-9 px-4 rounded-xl bg-[#0F766E] text-white text-sm font-semibold hover:bg-[#0d6660] transition-colors"
+              className="flex items-center gap-2 h-9 px-4 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] transition-colors"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                 <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>

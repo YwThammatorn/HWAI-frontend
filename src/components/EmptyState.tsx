@@ -4,7 +4,7 @@ import React from "react";
 
 interface EmptyStateProps {
   icon: React.ReactNode;
-  /** Hex color used for the icon background circle (10% opacity applied automatically) */
+  /** Any valid CSS color (hex or var(--token)) for the icon background circle (10% opacity applied automatically) */
   iconColor?: string;
   title: string;
   description?: string;
@@ -22,7 +22,9 @@ export default function EmptyState({
     <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--border-subtle)] bg-[var(--bg-surface)] py-16 px-8 text-center">
       <div
         className="w-12 h-12 rounded-full flex items-center justify-center mb-3"
-        style={{ backgroundColor: `${iconColor}1a` }}
+        // color-mix works for both raw hex and var(--token) — the old `${iconColor}1a`
+        // hex-alpha-suffix trick silently broke for any non-hex (e.g. token) value.
+        style={{ backgroundColor: `color-mix(in srgb, ${iconColor} 10%, transparent)` }}
       >
         {icon}
       </div>

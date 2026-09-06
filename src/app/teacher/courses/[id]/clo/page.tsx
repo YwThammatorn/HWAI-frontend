@@ -201,7 +201,7 @@ export default function CLOPage() {
               >
                 {/* Code */}
                 <div className="px-4">
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-lg bg-teal-50 text-[#14B8A6] text-xs font-bold font-mono">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-lg bg-teal-50 text-[var(--accent)] text-xs font-bold font-mono">
                     {clo.code}
                   </span>
                 </div>
@@ -263,7 +263,7 @@ export default function CLOPage() {
             {/* Inline form panel */}
             {formMode !== "idle" && (
               <div className="border-t-2 border-[var(--accent)]/20 bg-teal-50/40 p-6">
-                <p className="text-xs font-semibold text-[#14B8A6] uppercase tracking-wider mb-4">
+                <p className="text-xs font-semibold text-[var(--accent)] uppercase tracking-wider mb-4">
                   {formMode === "add" ? t("เพิ่ม CLO ใหม่", "Add New CLO") : `${t("แก้ไข", "Edit")} ${editingId ? clos.find(c => c.id === editingId)?.code : ""}`}
                 </p>
                 <div className="grid gap-3 mb-3" style={{ gridTemplateColumns: "104px 1fr" }}>

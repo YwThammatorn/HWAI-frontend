@@ -148,7 +148,7 @@ export default function LoginPage() {
           <div className="mt-8 flex flex-col gap-3">
             {FEATURES.map((f) => (
               <div key={f.id} className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-[#2DD4BF]/15 flex items-center justify-center shrink-0 text-[#2DD4BF]">
+                <div className="w-8 h-8 rounded-lg bg-[var(--accent-bright)]/15 flex items-center justify-center shrink-0 text-[#2DD4BF]">
                   {f.icon}
                 </div>
                 <span className="text-white/80 text-sm font-medium">{f.label}</span>
@@ -207,7 +207,7 @@ export default function LoginPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@kmitl.ac.th"
                     autoComplete="email"
-                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm text-[var(--text-primary)] placeholder-gray-400 bg-white dark:bg-[var(--bg-card)] focus:outline-none focus:border-[#2DD4BF] focus:ring-2 focus:ring-[#2DD4BF]/20 transition-colors"
+                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm text-[var(--text-primary)] placeholder-gray-400 bg-white dark:bg-[var(--bg-card)] focus:outline-none focus:border-[var(--accent-bright)] focus:ring-2 focus:ring-[var(--accent-bright)]/20 transition-colors"
                     required
                   />
                 </div>
@@ -231,14 +231,14 @@ export default function LoginPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
                     autoComplete="current-password"
-                    className="w-full pl-10 pr-11 py-3 rounded-xl border border-gray-200 text-sm text-[var(--text-primary)] placeholder-gray-400 bg-white dark:bg-[var(--bg-card)] focus:outline-none focus:border-[#2DD4BF] focus:ring-2 focus:ring-[#2DD4BF]/20 transition-colors"
+                    className="w-full pl-10 pr-11 py-3 rounded-xl border border-gray-200 text-sm text-[var(--text-primary)] placeholder-gray-400 bg-white dark:bg-[var(--bg-card)] focus:outline-none focus:border-[var(--accent-bright)] focus:ring-2 focus:ring-[var(--accent-bright)]/20 transition-colors"
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowPw(!showPw)}
                     aria-label={showPw ? t("ซ่อนรหัสผ่าน", "Hide password") : t("แสดงรหัสผ่าน", "Show password")}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2DD4BF] rounded"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] rounded"
                   >
                     {showPw ? (
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -265,7 +265,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] font-bold text-sm hover:bg-[var(--accent-solid-hover)] active:scale-[0.98] transition-colors disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#2DD4BF]"
+                className="w-full py-3 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] font-bold text-sm hover:bg-[var(--accent-solid-hover)] active:scale-[0.98] transition-colors disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--accent-bright)]"
               >
                 {loading ? t("กำลังเข้าสู่ระบบ…", "Signing in…") : t("เข้าสู่ระบบ", "Sign in")}
               </button>

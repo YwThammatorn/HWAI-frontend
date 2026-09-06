@@ -124,7 +124,7 @@ export default function CourseResultsPage() {
                     {total > 0 && (
                       <div className="mt-2 h-1 rounded-full bg-gray-100 overflow-hidden">
                         <div
-                          className="h-full rounded-full bg-[#0F766E] transition-all"
+                          className="h-full rounded-full bg-[var(--accent-bright)] transition-all"
                           style={{ width: `${(graded / total) * 100}%` }}
                         />
                       </div>

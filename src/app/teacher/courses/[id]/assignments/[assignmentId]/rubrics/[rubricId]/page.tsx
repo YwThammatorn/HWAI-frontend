@@ -497,7 +497,7 @@ export default function RubricEditorPage() {
           <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden">
             <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
               <div className="flex items-center gap-2">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="#0F766E">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--accent)">
                   <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
                 </svg>
                 <h3 className="text-base font-bold text-[var(--text-primary)]">{t("AI ช่วยสร้างเกณฑ์", "AI Rubric Assistant")}</h3>
@@ -513,7 +513,7 @@ export default function RubricEditorPage() {
               {aiLoading ? (
                 <div className="flex flex-col items-center py-10 gap-4">
                   <div className="w-12 h-12 rounded-full bg-teal-50 flex items-center justify-center">
-                    <svg className="animate-spin" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="2">
+                    <svg className="animate-spin" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2">
                       <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
                     </svg>
                   </div>
@@ -535,7 +535,7 @@ export default function RubricEditorPage() {
                   <div className="space-y-2 mb-5">
                     {aiSuggestions.map((s, i) => (
                       <div key={i} className="flex items-center gap-3 px-4 py-3 rounded-xl bg-teal-50/50 border border-teal-100">
-                        <div className="w-6 h-6 rounded-full bg-[#0F766E] flex items-center justify-center shrink-0">
+                        <div className="w-6 h-6 rounded-full bg-[var(--accent-solid)] flex items-center justify-center shrink-0">
                           <span className="text-white text-[10px] font-bold">{i + 1}</span>
                         </div>
                         <div className="flex-1 min-w-0">
@@ -555,7 +555,7 @@ export default function RubricEditorPage() {
                     </button>
                     <button
                       onClick={applyAiSuggestions}
-                      className="flex-1 py-2.5 rounded-xl bg-[#0F766E] hover:bg-[#0E7490] text-white text-sm font-semibold transition-colors"
+                      className="flex-1 py-2.5 rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-semibold transition-colors"
                     >
                       {t("ใช้คำแนะนำ", "Apply Suggestions")}
                     </button>

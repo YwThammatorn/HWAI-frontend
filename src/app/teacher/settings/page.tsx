@@ -16,7 +16,7 @@ function Toggle({ checked, onChange, label }: { checked: boolean; onChange: () =
       onClick={onChange}
       className={[
         "relative w-11 h-6 rounded-full transition-colors shrink-0",
-        checked ? "bg-[var(--accent)]" : "bg-gray-200",
+        checked ? "bg-[var(--accent)]" : "bg-[var(--border-subtle)]",
       ].join(" ")}
     >
       <span

@@ -14,7 +14,7 @@ const RECENT_ASSIGNMENTS = [
 
 const DEADLINES = [
   { month: "OCT", day: "25", title: "Literature Review", sub: "English 101 • 11:59 PM", color: "bg-orange-500" },
-  { month: "OCT", day: "28", title: "Final Project Proposal", sub: "Computer Science • 5:00 PM", color: "bg-[#0F766E]" },
+  { month: "OCT", day: "28", title: "Final Project Proposal", sub: "Computer Science • 5:00 PM", color: "bg-[var(--accent)]" },
   { month: "NOV", day: "02", title: "Mid-term Exam", sub: "Chemistry Lab • 9:00 AM", color: "bg-[var(--bg-nav)]" },
 ];
 
@@ -42,7 +42,7 @@ function StatusBadge({ status }: { status: string }) {
 
 // ─── Line chart ───────────────────────────────────────────────────────────────
 
-function LineChart({ data, labels, color = "#0F766E" }: { data: number[]; labels: string[]; color?: string }) {
+function LineChart({ data, labels, color = "var(--accent)" }: { data: number[]; labels: string[]; color?: string }) {
   const W = 480; const H = 160;
   const pad = { t: 16, b: 28, l: 30, r: 16 };
   const cw = W - pad.l - pad.r;
@@ -113,7 +113,7 @@ function UsageChart({ grading, plagiarism }: { grading: number[]; plagiarism: nu
         const pH = (plagiarism[i] / maxVal) * ch;
         return (
           <g key={i}>
-            <rect x={x + gap / 2} y={pad.t + ch - gH} width={barW} height={gH} rx="2" fill="#2DD4BF" fillOpacity="0.8" />
+            <rect x={x + gap / 2} y={pad.t + ch - gH} width={barW} height={gH} rx="2" fill="var(--accent-bright)" fillOpacity="0.8" />
             <rect x={x + gap / 2 + barW + 1} y={pad.t + ch - pH} width={barW * 0.7} height={pH} rx="2" fill="#CBD5E1" />
           </g>
         );
@@ -148,9 +148,9 @@ export default function DashboardPage() {
     { key: "last_quarter", label: t("ไตรมาสที่แล้ว", "Last Quarter") },
   ];
   const QUICK_ACTIONS = [
-    { label: t("เพิ่มรายวิชา", "Add Course"),    href: "/teacher/courses/new", bgClass: "bg-[var(--accent-subtle)]", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg> },
-    { label: t("ไปที่รายวิชา", "Go to Courses"), href: "/teacher/courses",     bgClass: "bg-[var(--accent-subtle)]", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="2" strokeLinecap="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg> },
-    { label: t("ตั้งค่า", "View Settings"),       href: "/teacher/settings",   bgClass: "bg-[var(--accent-subtle)]", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 9"/></svg> },
+    { label: t("เพิ่มรายวิชา", "Add Course"),    href: "/teacher/courses/new", bgClass: "bg-[var(--accent-subtle)]", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg> },
+    { label: t("ไปที่รายวิชา", "Go to Courses"), href: "/teacher/courses",     bgClass: "bg-[var(--accent-subtle)]", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg> },
+    { label: t("ตั้งค่า", "View Settings"),       href: "/teacher/settings",   bgClass: "bg-[var(--accent-subtle)]", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 9"/></svg> },
     { label: t("ออกจากระบบ", "Logout"),           href: "/",           bgClass: "bg-[var(--s-err-bg)]",                 icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" strokeLinecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> },
   ];
 
@@ -173,7 +173,7 @@ export default function DashboardPage() {
             <div className="flex items-start justify-between mb-3">
               <p className="text-xs text-gray-500">{t("งานทั้งหมด", "Total Assignments")}</p>
               <div className="w-8 h-8 rounded-lg bg-[var(--accent-subtle)] flex items-center justify-center">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="2" strokeLinecap="round">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round">
                   <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
                   <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                 </svg>
@@ -206,7 +206,7 @@ export default function DashboardPage() {
             <div className="flex items-start justify-between mb-3">
               <p className="text-xs text-gray-500">{t("คะแนนเฉลี่ยชั้นเรียน", "Avg. Class Score")}</p>
               <div className="w-8 h-8 rounded-lg bg-[var(--accent-subtle)] flex items-center justify-center">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="2" strokeLinecap="round">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round">
                   <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
                 </svg>
               </div>
@@ -246,7 +246,7 @@ export default function DashboardPage() {
             {/* Recent Assignments */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm">
               <div className="flex items-center gap-2 px-6 pt-5 pb-4 border-b border-gray-50">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="2" strokeLinecap="round">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
                 </svg>
                 <h2 className="text-sm font-bold text-[var(--text-primary)]">{t("งานล่าสุด", "Recent Assignments")}</h2>
@@ -281,7 +281,7 @@ export default function DashboardPage() {
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-sm font-bold text-[var(--text-primary)] flex items-center gap-2">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="2" strokeLinecap="round">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round">
                     <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/>
                     <line x1="6" y1="20" x2="6" y2="14"/>
                   </svg>
@@ -347,7 +347,7 @@ export default function DashboardPage() {
             {/* Sync Platforms */}
             <div className="bg-[var(--bg-nav)] rounded-2xl p-5">
               <h2 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2DD4BF" strokeWidth="2" strokeLinecap="round">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-bright)" strokeWidth="2" strokeLinecap="round">
                   <path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/>
                   <path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/>
                 </svg>
@@ -373,7 +373,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-2 gap-5 mb-5">
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
             <div className="flex items-center gap-2 mb-2">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="2.5" strokeLinecap="round">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinecap="round">
                 <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
               </svg>
               <p className="text-xs text-gray-500">{t("เครดิตที่ใช้ทั้งหมด", "Total Credits Used")}</p>
@@ -383,7 +383,7 @@ export default function DashboardPage() {
           </div>
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
             <div className="flex items-center gap-2 mb-2">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="2.5" strokeLinecap="round">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinecap="round">
                 <polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
               </svg>
               <p className="text-xs text-gray-500">{t("งานที่ตรวจแล้ว", "Assignments Graded")}</p>
@@ -419,7 +419,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between mb-3">
             <p className="text-sm font-semibold text-[var(--text-primary)]">{t("การใช้เครดิตรายวัน", "Daily Credit Consumption")}</p>
             <div className="flex items-center gap-4 text-xs text-gray-500">
-              <span className="flex items-center gap-1.5"><span className="w-3 h-1.5 rounded-full bg-[#2DD4BF] inline-block" /> {t("ตรวจอัตโนมัติ", "Auto-Grading")}</span>
+              <span className="flex items-center gap-1.5"><span className="w-3 h-1.5 rounded-full bg-[var(--accent-bright)] inline-block" /> {t("ตรวจอัตโนมัติ", "Auto-Grading")}</span>
               <span className="flex items-center gap-1.5"><span className="w-3 h-1.5 rounded-full bg-gray-300 inline-block" /> {t("ตรวจการคัดลอก", "Plagiarism Check")}</span>
             </div>
           </div>

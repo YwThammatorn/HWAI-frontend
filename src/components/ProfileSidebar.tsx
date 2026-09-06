@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -24,9 +24,9 @@ function NavItem({
       aria-current={active ? "page" : undefined}
       className={[
         "flex items-center gap-3 rounded-xl font-medium transition-colors min-h-[44px]",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2DD4BF] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--bg-nav)]",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--bg-nav)]",
         small ? "px-3 py-1.5 text-xs" : "px-3 py-2.5 text-sm",
-        active ? "bg-[#2DD4BF]/20 text-[#2DD4BF]" : "text-white/55 hover:text-white hover:bg-white/8",
+        active ? "bg-[var(--accent-bright)]/20 text-[var(--accent-bright)]" : "text-white/55 hover:text-white hover:bg-white/8",
       ].join(" ")}
     >
       {icon}
@@ -118,6 +118,13 @@ const COLLABORATORS_ICON = (
   </svg>
 );
 
+const GRADING_SPLIT_ICON = (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M9 11l3 3L22 4" />
+    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+  </svg>
+);
+
 const COURSE_SETTINGS_ICON = (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
     <circle cx="12" cy="12" r="3" />
@@ -159,6 +166,7 @@ export default function ProfileSidebar() {
         { label: t("ผลการเรียน", "Results"),      href: `/teacher/courses/${activeCourseId}/results`,       active: isAt(`/teacher/courses/${activeCourseId}/results`),       icon: RESULTS_ICON        },
         { label: t("CLO", "CLO"),                 href: `/teacher/courses/${activeCourseId}/clo`,           active: isAt(`/teacher/courses/${activeCourseId}/clo`),           icon: CLO_ICON            },
         { label: t("ผู้ร่วมสอน", "Collaborators"), href: `/teacher/courses/${activeCourseId}/collaborators`, active: isAt(`/teacher/courses/${activeCourseId}/collaborators`), icon: COLLABORATORS_ICON  },
+        { label: t("แบ่งงานตรวจ", "Grading Split"), href: `/teacher/courses/${activeCourseId}/grading-split`, active: isAt(`/teacher/courses/${activeCourseId}/grading-split`), icon: GRADING_SPLIT_ICON },
         { label: t("ตั้งค่าวิชา", "Settings"),   href: `/teacher/courses/${activeCourseId}/settings`,      active: isAt(`/teacher/courses/${activeCourseId}/settings`),      icon: COURSE_SETTINGS_ICON},
       ]
     : [];

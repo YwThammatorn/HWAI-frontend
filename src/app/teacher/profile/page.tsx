@@ -92,7 +92,7 @@ export default function ProfilePage() {
             {/* Avatar row */}
             <div className="flex items-center gap-4 mb-6">
               <div className="w-16 h-16 rounded-full bg-[var(--accent-subtle)] flex items-center justify-center overflow-hidden">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="1.5">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5">
                   <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
                 </svg>
               </div>

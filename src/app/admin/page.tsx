@@ -61,8 +61,8 @@ export default function AdminDashboard() {
       value: teacherCount,
       labelTh: "อาจารย์ในระบบ",
       labelEn: "Teachers",
-      color: "text-[#0F766E]",
-      bg: "bg-[#2DD4BF]/10",
+      color: "text-[var(--accent)]",
+      bg: "bg-[var(--accent-bright)]/10",
     },
     {
       value: studentCount,
@@ -111,7 +111,7 @@ export default function AdminDashboard() {
                   {step.done ? (
                     <span className="text-sm text-[var(--text-muted)] line-through">{t(step.labelTh, step.labelEn)}</span>
                   ) : (
-                    <Link href={step.href} className="text-sm text-[var(--text-primary)] underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2DD4BF] rounded">
+                    <Link href={step.href} className="text-sm text-[var(--text-primary)] underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] rounded">
                       {t(step.labelTh, step.labelEn)}
                     </Link>
                   )}

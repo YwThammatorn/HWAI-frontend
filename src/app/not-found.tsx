@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import AppShell from "@/components/AppShell";
 
 export default function NotFound() {
@@ -12,7 +12,7 @@ export default function NotFound() {
             {/* Background blob */}
             <div className="absolute inset-4 rounded-3xl bg-white shadow-md" />
             {/* Decorative teal blob behind */}
-            <div className="absolute top-6 left-6 w-40 h-40 rounded-3xl bg-[#2DD4BF]/10" />
+            <div className="absolute top-6 left-6 w-40 h-40 rounded-3xl bg-[var(--accent-bright)]/10" />
 
             {/* Robot SVG */}
             <svg width="160" height="180" viewBox="0 0 160 180" fill="none" className="relative z-10">
@@ -34,7 +34,7 @@ export default function NotFound() {
               <circle cx="98" cy="84" r="5" fill="#0F766E"/>
 
               {/* Mouth / line */}
-              <path d="M65 104 Q80 110 95 104" stroke="#2DD4BF" strokeWidth="3" strokeLinecap="round" fill="none"/>
+              <path d="M65 104 Q80 110 95 104" stroke="var(--accent-bright)" strokeWidth="3" strokeLinecap="round" fill="none"/>
 
               {/* Small connector left */}
               <rect x="22" y="70" width="16" height="26" rx="5" fill="#1B2A4A"/>
@@ -63,7 +63,7 @@ export default function NotFound() {
             </p>
             <Link
               href="/teacher/dashboard"
-              className="inline-flex items-center gap-2.5 mt-8 px-7 py-3.5 bg-[#0F766E] hover:bg-[#0D6B63] text-white font-semibold rounded-2xl transition-colors"
+              className="inline-flex items-center gap-2.5 mt-8 px-7 py-3.5 bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] font-semibold rounded-2xl transition-colors"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                 <line x1="19" y1="12" x2="5" y2="12"/>

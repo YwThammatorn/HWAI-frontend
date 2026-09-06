@@ -48,7 +48,7 @@ function CircleProgress({ pct }: { pct: number }) {
       <circle cx="100" cy="100" r={r} fill="none" stroke="#E5E7EB" strokeWidth="12" />
       <circle
         cx="100" cy="100" r={r}
-        fill="none" stroke="#0F766E" strokeWidth="12" strokeLinecap="round"
+        fill="none" stroke="var(--accent)" strokeWidth="12" strokeLinecap="round"
         strokeDasharray={`${dash.toFixed(2)} ${circ.toFixed(2)}`}
         transform="rotate(-90 100 100)"
         style={{ transition: "stroke-dasharray 1.2s cubic-bezier(0.23, 1, 0.32, 1)" }}
@@ -101,7 +101,7 @@ function GradeRow({
       {/* Student */}
       <td className="px-4 py-3">
         <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-full bg-[#2DD4BF]/20 text-[#0F766E] text-[10px] font-bold flex items-center justify-center shrink-0 select-none" aria-hidden="true">
+          <div className="w-7 h-7 rounded-full bg-[var(--accent-bright)]/20 text-[var(--accent)] text-[10px] font-bold flex items-center justify-center shrink-0 select-none" aria-hidden="true">
             {getInitials(sub.studentName)}
           </div>
           <div className="min-w-0">
@@ -140,7 +140,7 @@ function GradeRow({
             onChange={(e) => onChange(e.target.value)}
             placeholder={sub.aiScore !== null ? String(sub.aiScore) : "—"}
             aria-label={t(`คะแนนอาจารย์ของ ${sub.studentName}`, `Instructor score for ${sub.studentName}`)}
-            className={`w-20 h-8 rounded-lg border text-sm text-center tabular-nums focus:outline-none focus:ring-2 focus:ring-[#2DD4BF] transition-colors ${
+            className={`w-20 h-8 rounded-lg border text-sm text-center tabular-nums focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)] transition-colors ${
               isModified
                 ? "border-amber-300 bg-amber-50 text-amber-700 font-semibold"
                 : "border-gray-200 bg-white text-[var(--text-primary)]"
@@ -167,7 +167,7 @@ function GradeRow({
           onClick={onRegrade}
           disabled={rowState.regrading}
           aria-label={t(`Re-grade ${sub.studentName}`, `Re-grade ${sub.studentName}`)}
-          className="flex items-center gap-1.5 h-7 px-2.5 rounded-lg border border-gray-200 text-xs font-medium text-gray-500 hover:border-[#2DD4BF] hover:text-[#0F766E] hover:bg-[#2DD4BF]/5 active:scale-[0.97] disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2DD4BF] transition-all"
+          className="flex items-center gap-1.5 h-7 px-2.5 rounded-lg border border-gray-200 text-xs font-medium text-gray-500 hover:border-[var(--accent-bright)] hover:text-[var(--accent)] hover:bg-[var(--accent-bright)]/5 active:scale-[0.97] disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-all"
         >
           {rowState.regrading ? (
             <svg className="animate-spin" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
@@ -280,7 +280,7 @@ function GradeAdjustmentTable({
           <button
             onClick={handleSaveAll}
             disabled={modifiedCount === 0 || saving}
-            className="flex items-center gap-1.5 h-9 px-4 rounded-xl bg-[#0F766E] text-white text-sm font-semibold hover:bg-[#0d6660] active:scale-[0.97] disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2DD4BF] transition-colors"
+            className="flex items-center gap-1.5 h-9 px-4 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
           >
             {saving ? (
               t("กำลังบันทึก…", "Saving…")
@@ -433,7 +433,7 @@ export default function GradingProgressPage() {
                 {t("ดูผลลัพธ์", "View Results")}
               </Link>
             ) : (
-              <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#2DD4BF]/60 text-[var(--text-primary)] text-sm font-semibold select-none">
+              <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[var(--accent-bright)]/60 text-[var(--text-primary)] text-sm font-semibold select-none">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
                   <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
                 </svg>

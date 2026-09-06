@@ -200,7 +200,7 @@ export default function ViewAssignmentPage() {
           {/* Submissions */}
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 relative overflow-hidden">
             <div className="absolute top-3 right-3 opacity-10">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#2DD4BF" strokeWidth="1.5">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent-bright)" strokeWidth="1.5">
                 <polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
               </svg>
             </div>
@@ -215,7 +215,7 @@ export default function ViewAssignmentPage() {
               <>
                 <div className="mt-2 h-1.5 bg-gray-100 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-[#2DD4BF] rounded-full"
+                    className="h-full bg-[var(--accent-bright)] rounded-full"
                     style={{ width: `${Math.min((submissions.length / enrolledCount) * 100, 100)}%` }}
                   />
                 </div>
@@ -259,7 +259,7 @@ export default function ViewAssignmentPage() {
           {/* Rubric */}
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 relative overflow-hidden">
             <div className="absolute top-3 right-3 opacity-10">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#2DD4BF" strokeWidth="1.5">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent-bright)" strokeWidth="1.5">
                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                 <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
               </svg>
@@ -383,7 +383,7 @@ export default function ViewAssignmentPage() {
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-medium text-[var(--text-primary)]">{s.aiScore}%</span>
                             <div className="w-20 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                              <div className="h-full bg-[#2DD4BF] rounded-full" style={{ width: `${s.aiScore}%` }} />
+                              <div className="h-full bg-[var(--accent-bright)] rounded-full" style={{ width: `${s.aiScore}%` }} />
                             </div>
                           </div>
                         ) : (
