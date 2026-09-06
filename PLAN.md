@@ -1,0 +1,176 @@
+# HWAI — Data Model Reconciliation Plan
+
+Tracks the work triggered by the professor's 31/8/2569 review comment (*"ยังไม่ต้องวาดจอเพิ่ม"* — fix the data model before drawing more screens) plus the 4/9/2569 meeting requirements. See memory: `project-hwai-reviewer-feedback`, `project-hwai-meeting-20260904`.
+
+**Rule for this plan:** don't start a phase before the previous one's exit criteria are met. The whole point of this plan is that model mistakes are cheap to fix on paper and expensive to fix in code — skipping ahead defeats it.
+
+---
+
+## Phase 1 — Entity model draft (decision, not code) — ✅ DONE 4/9/2569
+
+**Goal:** a written entity shape (Account, Enrollment, Section, CurriculumVersion, SectionRole, GradingAssignment, CourseTemplate) that resolves the two real conflicts found in the current codebase:
+- `CohortStudent` (institution-wide) vs `Student` (per-course) are two disconnected records for the same person
+- `CohortStudent.taAssignments` bolts TA-role onto the student record instead of a proper Section-scoped role
+
+**Output:** drafted in-conversation 4/9/2569, not yet saved as its own file — the shapes live in this plan's Phase 1 section below for reference until Phase 2 turns them into the ER diagram.
+
+**Open items carried forward (not blocking, decide before Phase 4 code):**
+- [ ] Q1: StudentGroup scoped per-Assignment or per-Section? (leaning per-Assignment)
+- [ ] Q2: GradingAssignment "custom" mode — a saved rule set once, or ad hoc TA pick-up? (leaning saved rule)
+
+**Exit criteria:** ✅ user has seen the draft and the two open questions; proceeding to Phase 2 with recommended answers unless corrected. ✅ Scenario-validated against reviewer Q1-10 + meeting decisions — see `docs/phase1-model-validation.md` (7/8 scenarios pass clean, 1 needs a form-validation rule not a model change, 1 real scope gap found and folded into Phase 4 above).
+
+### Entities (reference copy)
+
+```ts
+interface Account {
+  id: string; name: string; email: string;
+  studentId?: string;
+  cohort?: string;                  // "CE69" — raw admitted batch label
+  curriculumVersionId?: string;     // FK, student accounts only
+  status: "active" | "inactive";    // account-level, shared by teacher/student
+  isAdmin: boolean;                 // global flag, not section-scoped
+}
+
+interface CurriculumVersion {
+  id: string; program: "CECS" | "CEI" | "CE"; label: string;
+  effectiveFrom: number; effectiveTo?: number;
+}
+
+interface CourseTemplate {
+  id: string; curriculumVersionId: string; code: string; name: string; description?: string;
+}
+
+interface Section {
+  id: string; courseTemplateId: string;
+  academicYear: number; term: 1 | 2 | "summer"; sectionNumber: string;
+  status: "active" | "archived" | "draft";
+  gradingSource: "ta" | "ai" | "blind";
+  publishMode: "auto" | "manual";
+}
+
+interface Enrollment {
+  id: string; accountId: string; sectionId: string;
+  sequenceNumber: number;
+  enrollmentStatus: "enrolled" | "withdrawn" | "added-midterm";
+}
+
+interface SectionRole {
+  id: string; accountId: string; sectionId: string;
+  role: "teacher" | "ta" | "co-teacher";
+  permissions?: { canManageRoster: false; canEditSettings: false; canPublishScores: boolean }; // TA override only
+}
+
+interface GradingAssignment {
+  id: string; sectionId: string; taAccountId: string;
+  scope:
+    | { type: "week"; weekNumbers: number[] }
+    | { type: "group"; studentGroupIds: string[] }
+    | { type: "all" }
+    | { type: "custom"; submissionIds: string[] };
+}
+```
+
+---
+
+## Phase 2 — ER Diagram + LIST PAGE MVP (the professor's actual 3 deliverables)
+
+**Goal:** one reviewer-facing document (not three loose artifacts) containing:
+1. The 10-question answer set (already drafted this session)
+2. LIST PAGE MVP — every existing screen marked MVP/later + a written reason for each cut
+3. ER Diagram — boxes and lines from the Phase 1 entity list, scoped to reviewer issues 1.1 (Section) and 1.2 (Role)
+
+**Steps:**
+- [x] Draw ER diagram (inline SVG, theme-aware) from the confirmed Phase 1 shapes — validated against Phase 1 entities in `docs/phase2-validation.md` Check 2, passes
+- [x] Pull LIST PAGE MVP into `docs/phase2-list-page-mvp.md` — first draft built from memory missed 10+ real routes (register, full assignment lifecycle, profile/settings); fixed by cross-checking `find src/app -name page.tsx` directly. See `docs/phase2-validation.md` Check 1.
+- [ ] Resolve the still-open student email format question (`s.jai@student` vs `รหัสนักศึกษา@email`) — drafted a recommendation (`รหัสนักศึกษา@kmitl.ac.th`), not yet confirmed by professor
+- [x] Package all three (Q&A + LIST PAGE MVP + ER diagram) into one send-able document — rebuilt from the corrected `docs/phase2-list-page-mvp.md` (36 real routes, not the 24-route stale draft): https://claude.ai/code/artifact/db453ec9-e759-478f-80e3-abf20971b45a
+
+**Exit criteria:** ✅ one document exists that could be sent to the professor as-is. Still pending: professor's confirmation on student email format (recommendation is in the doc, doesn't block sending).
+
+---
+
+## Phase 3 — Gate: professor review — ⚠ SKIPPED BY EXPLICIT USER DECISION 5/9/2569
+
+External checkpoint, no work item — send the Phase 2 document, wait for sign-off or corrections before Phase 4.
+
+**Exit criteria:** professor has responded (approved, or gave corrections to fold back into Phase 1's model).
+
+**Status: not met.** User instructed to proceed to Phase 4 without waiting for professor sign-off, after being told explicitly what this phase involves and the risk (the professor's own stated reason for this whole plan — "แก้ตอนนี้ยังถูก แก้ตอนเขียนโค้ดไปแล้วครึ่งเทอมจะแพงมาก" — is that model corrections after code exists are expensive). Recorded here so it's not silently forgotten: **if the professor responds later with corrections to the Section/Role/CurriculumVersion model, Phase 4's code will need rework.** This was a known, named tradeoff at the time, not an oversight.
+
+---
+
+## Phase 4 — Code migration
+
+**Goal:** the live app's data layer matches the confirmed Phase 1 model.
+
+**⚠ Started 5/9/2569 without Phase 3 sign-off** — explicit user decision, see Phase 3 section above for the recorded risk.
+
+**Stage A — data layer (types + providers) — ✅ DONE 5/9/2569:**
+- [x] `Course` (`src/lib/courses.ts`) — added `code`, `courseTemplateId`, `academicYear`, `term`, `sectionNumber`, `gradingSource`, `publishMode` as new optional fields. **Not** a Course/Section split — see `docs/phase1-model-validation.md` retraction for why a hard split was scoped out (28+ consuming files; denormalizing Section fields onto the existing `Course` entity that everything already imports was far lower-risk than restructuring it).
+- [x] `CohortStudent` — added `status`, `curriculumVersionId`. `taAssignments` kept (marked `@deprecated`, not removed) — `admin/users/page.tsx` still reads it and has no replacement UI yet.
+- [x] `Student` — added `sequenceNumber`, `enrollmentStatus`. **Found and fixed a real bug**: `StudentProvider.addStudents` replaced the whole roster on every CSV import instead of appending — silently deleted existing students on a second import. Verified fixed via scripted two-batch import test (sequence 1→2→3 across imports, first batch preserved, second batch tagged `added-midterm`).
+- [x] New entities created with full Context + Provider + localStorage, wired into `layout.tsx`: `CurriculumVersion` + `CourseTemplate` (`src/lib/curriculum.ts`), `SectionRole` (`src/lib/section-roles.ts`, includes `defaultPermissionsFor()` encoding meeting decision #4 — TA restricted, co-teacher full access), `GradingAssignment` (`src/lib/grading-assignments.ts`, all 4 scope variants typed).
+- [x] `CLO`, `Rubric`, `Assignment`, `Submission` — turned out to **already have complete shared types** (`src/lib/clo.ts`, `src/lib/assignments.ts`) — the Phase 1 validation claim that they didn't was wrong, retracted in `docs/phase1-model-validation.md`. No work needed here.
+- [x] Verified: `npx tsc --noEmit` clean, dev server boots with no errors, smoke-tested login/courses/import pages.
+
+**Stage B — ✅ DONE 5/9/2569** (started and finished same day; localStorage-migration item below is explicitly not-applicable yet, not outstanding work):
+- [x] Curriculum management screen (`/admin/curriculum`) — first UI to read/write `CurriculumVersion`/`CourseTemplate`. Create/edit/delete `CurriculumVersion` (program CECS/CEI/CE, label, effective-year range) via Drawer + ConfirmDialog, matching `admin/courses/page.tsx` structural patterns (accent-strip header, StatCard row, EmptyState, accordion row list). Each curriculum row expands to an accordion panel listing its `CourseTemplate`s (code/name/description CRUD via a second Drawer). Delete confirm dialog on a `CurriculumVersion` warns with the live cascade count of course templates that will be deleted with it. Nav entry added to `AdminSidebar.tsx` ("จัดการหลักสูตร", after Courses). Verified live in-browser: create → stat cards update → accordion expand → add course template → template count updates → localStorage persists both collections → cascade-delete warning shows correct template count → dark mode renders correctly on all new components. `npx tsc --noEmit` clean.
+- [x] `AuthUser.role` → `SectionRole.hasPermission()` enforcement — wired 5/9/2569. The real gap wasn't just "nothing calls hasPermission" — `AuthUser` (the login session) never carried an id linking it to a `CohortStudent`/`ManagedTeacher` record at all, so there was no `accountId` to even check permissions *for*. Added `src/lib/current-account.ts` (`useCurrentAccountId()`) which resolves the logged-in session to an account id by matching email against `teachers`/`cohortStudents` (student sessions match via `studentId`). When no match is found (e.g. a dev-bypass session with no corresponding account row — the common case in this demo), it returns `null` and both gated screens **fail open** rather than lock the screen down — this is a localStorage-only demo auth model, not a real backend, so an unidentifiable session shouldn't be treated as "definitely unauthorized." Wired into both Stage B mutation screens: `collaborators/page.tsx` gates "Add Collaborator" and each row's Remove menu on `canManageRoster`; `grading-split/page.tsx` gates "Add Split" and each row's Edit/Remove on `canEditSettings` (grading-split configuration reads as course-settings-adjacent, not roster management). Verified live: seeded a `ManagedTeacher` with `role:"ta"` + a `SectionRole` matching the dev-bypass session's email → both "Add" buttons correctly disappeared; switched that same account's `SectionRole` to `"co-teacher"` (full access) → both buttons reappeared. Full Playwright suite re-run after this change to confirm zero regressions from the new fail-open gating.
+- [x] Section-role assignment screen — rebuilt `teacher/courses/[id]/collaborators/page.tsx` (previously 100% mock data, `INITIAL_COLLABS` hardcoded array with fake online/offline status) to read/write real `SectionRole` records. Primary teacher row(s) still come from `ManagedTeacher.courseIds` (admin-assigned, immutable here — matches the meeting's "admin scope is narrow" decision). "+ เพิ่มผู้ร่วมงาน" drawer lets the teacher add a TA (searches `CohortStudent`) or Co-Teacher (searches `ManagedTeacher`, excluding existing primaries/co-teachers) — each creates a `SectionRole` row scoped to `courseId`. Row remove calls `removeSectionRole`. Permission summary per row reads `defaultPermissionsFor(role)`. **Bug found + fixed during verification**: co-teacher name resolution first looked up the account in `getTeachersByCourse(courseId)` (admin-assigned primaries only) instead of the full `teachers` list — a co-teacher added via this screen (who by definition isn't in that admin-assigned list) rendered as a bare id ("t2") with a "?" avatar. Fixed by resolving against `teachers` directly. Verified live: added TA + co-teacher, confirmed correct names/permissions render, confirmed `hwai_section_roles_v1` persists both rows, confirmed remove works. The `admin/users` TA-toggle UI (`StudentTaExpandRow`, still reading/writing the deprecated `taAssignments`) was deliberately **not** touched this pass — it's a ~6-call-site feature embedded in a 1300+ line file that needs its own dedicated read/removal pass, not a rushed edit; it is now safe to remove since this screen is its replacement, but that removal is a separate follow-up (see Phase 5 or next Stage B session).
+- [x] Grading-split config screen — new page `teacher/courses/[id]/grading-split/page.tsx`, nav entry added to `ProfileSidebar.tsx`'s per-course `COURSE_NAV` (after Collaborators). Lists `GradingAssignment` rows for the course (TA name resolved via `CohortStudent`, scope description per variant), with a create/edit Drawer. TA candidates are drawn from `SectionRole` entries with `role: "ta"` for this course (empty-state links to the Collaborators screen if there are none yet). Of the 4 `GradingAssignmentScope` variants: **week** (chip-based week-number picker) and **all** (grade everything) are fully built since they need no other entity; **custom** is fully built as a real submission picker (pick an assignment from the course via `getAssignmentsByCourse`, check off specific submissions via `getSubmissionsByAssignment`) — not a placeholder. **group** is deliberately left disabled with an explanatory tooltip ("pending the student-group data model decision") rather than faked, because `StudentGroupIds` has no real entity behind it yet — that's Phase 1's still-open Q1 (per-Assignment vs per-Section group scope), a modeling decision this pass isn't authorized to invent. Verified live: created a week-3 split for a seeded TA, confirmed row renders with resolved name + "สัปดาห์ 3", confirmed `hwai_grading_assignments_v1` persists the scope object correctly, confirmed edit pre-fills existing week chips, confirmed remove works. `npx tsc --noEmit` clean.
+- [x] `Course.courseTemplateId` — `teacher/courses/new/page.tsx` now has an optional "หลักสูตรและภาคการศึกษา" (Curriculum & Term) section: cascading CurriculumVersion → CourseTemplate selects (only shown when at least one active curriculum version exists, so the plain create flow is unchanged for anyone without curricula set up yet), plus academicYear/term/sectionNumber fields — since a CourseTemplate pick without a year/term is an incomplete Section per the Phase 1 model, not just the one field named in this checklist. Selecting a template denormalizes its `code` onto the new `Course`, matching the `code?` field's own doc comment ("denormalized from CourseTemplate when one is linked"). Added an exported `Term` type to `lib/courses.ts` (was an inline union) so the form and the `Course` interface share one definition. Verified live: selected "CE — CE 2569" → template dropdown populated with its course(s) → picked one → filled year/term/section → created → confirmed in localStorage that `courseTemplateId`, `code`, `academicYear`, `term`, `sectionNumber` all landed correctly on the new `Course` record. `npx tsc --noEmit` clean.
+- [x] Removed the deprecated `admin/users.tsx` TA-toggle UI (`StudentTaExpandRow`, the click-to-expand row, the TA left-border color coding, the TA text badge, and the `taCount` stat card) now that the Collaborators screen is its proven replacement. Fully deleted `CohortStudent.taAssignments` and `updateTaAssignments` too (confirmed zero remaining references anywhere in `src`/`e2e`/`tests` before removing) — completing the `@deprecated` comment's own stated condition ("ลบออกเมื่อ SectionRole UI มาแทนที่ครบแล้วเท่านั้น"). The vacated "Status" table column (previously overloaded to show the TA badge) was **repurposed, not deleted** — it now displays the real `CohortStudent.status` (active/inactive) field added in Stage A, which had no UI anywhere until now. This directly closes the baseline gap flagged in `docs/website-test-flow.md` Flow 5.3 ("เช็คว่ามีปุ่ม suspend/status หรือไม่... ตอนนี้คาดว่ายังไม่มี") — read-only display of existing data, no new toggle/mutation added (that would be a separate feature, not cleanup). `COL_COUNT` stayed at 6 (column repurposed, not removed); the stat-card row dropped from 3 to 2 (Teachers/Students only — TA is a per-course `SectionRole` concept now, not a global account attribute this page should count). Verified live: seeded one active + one inactive student, confirmed the Status column shows "ปกติ"/"พ้นสภาพ" correctly instead of the old TA badge. `npx tsc --noEmit` clean.
+- [ ] localStorage migration for existing demo data — not needed yet since Stage A only *added* optional fields; will matter once Stage B UI starts writing the new required-in-spirit fields
+- [x] `/code-review` pass (high effort, 8 finder angles + verify) on the 3 new Stage B screens — 10 findings, 7 real correctness bugs fixed, 1 architectural gap flagged (see below), 1 duplication flagged for later, 1 refuted (intentional decision, not a bug). Fixed: (1) grading-split's TA lookup only checked `cohortStudents`, missing the documented `ManagedTeacher.id` case for `taAccountId` — same bug class already fixed once for co-teachers in collaborators.tsx but missed here, now fixed with a shared `resolveTaCandidates`/`resolveTaName` pair in that file; (2) the Co-Teacher picker in collaborators.tsx didn't filter by `ManagedTeacher.role`, so a TA-role account could be granted full co-teacher permissions — now filtered to `role === "teacher"` only; (3) `getTeachersByCourse` rows were unconditionally labeled "Primary Teacher / Full access" even for an admin-assigned TA-role account — now labeled honestly per `tc.role`; (4) hardcoded Thai `"ยกเลิก"` in `admin/curriculum/page.tsx`'s `ConfirmDialog` bypassed the i18n rule — now uses `t()`; (5) an orphaned co-teacher `SectionRole` (referenced `ManagedTeacher` removed elsewhere) rendered a raw UUID as the person's name instead of being filtered out like the equivalent TA case — now filtered; (6) grading-split's `isValid` never accepted `scopeType: "group"`, so any existing group-scoped `GradingAssignment` (data created outside this UI) could never be resaved once opened for edit — Edit is now disabled on group-scoped rows with an explanatory tooltip, consistent with "By Group" already being disabled at creation; (7) the "already added" search filters in the Add Collaborator drawer didn't match on email unlike the candidate filters, producing false "no match" results. **Not fixed this pass** (real, but scoped out): `SectionRole.hasPermission()` still isn't called anywhere — mutations are gated only by page-reachability, not actual permission (this is the very next checklist item below); drawer focus-trap/dialog-shell boilerplate is duplicated across 5 components (flagged for a future `/simplify` pass, not urgent). Full suite re-run after all fixes: 129/129 passed (127 clean + 2 flaky-then-passed-on-retry, same as any normal Playwright run — not a regression). `npx tsc --noEmit` clean throughout.
+
+**Exit criteria: ✅ MET 5/9/2569 — full suite is green, 129/129 passed, 0 failures.** *(Re-confirmed after every subsequent Stage B change this same day — permission enforcement, `courseTemplateId` wiring, and the deprecated TA-code removal each got their own full-suite run; the final one came back 129/129 clean with no flaky retries at all.)*
+
+*(History, for context: the "57/57 passed" figure recorded after Stage A only ever covered `e2e/hwai.spec.ts` — the repo actually has 4 spec files (`e2e/hwai.spec.ts`, `tests/admin-p1.spec.ts`, `tests/auth-role-tabs.spec.ts`, `tests/teacher-p2.spec.ts`, `tests/student-p3.spec.ts`). Running the full suite after Stage B surfaced 73 failures. Verified via `git stash` + re-run against the last commit that all 73 were **pre-existing, present before any Phase 4 work** — not a Stage A/B regression. Root-caused and fixed all 73 (user instruction: "แก้ๆ"), three distinct causes:*
+1. *Bulk of failures (~55 tests, `e2e/hwai.spec.ts` + `tests/teacher-p2.spec.ts`): tests navigated to bare paths (`/dashboard`, `/courses`, `/courses/seed-1/...`) from before a routing refactor added the `/teacher` prefix to every teacher-scoped route. Fixed by prefixing every affected `page.goto`/`waitReady` call with `/teacher`.*
+2. *`tests/auth-role-tabs.spec.ts` (6 tests): written for an old tab-based login UI (`role="tab"` Admin/Teacher/Student switcher) that was redesigned into a single email+password form with role auto-detected from the email prefix. Rewrote the whole file to test the real current login flow.*
+3. *`tests/admin-p1.spec.ts` (9 tests): `/admin/teachers` and `/admin/students` are now thin redirect stubs to the combined `/admin/users` page (Teacher/Student pill tabs) — heading text changed to "User Management", Student-tab assertions need an explicit tab click first, teacher deletion is now a reversible "Suspend" (not a hard delete, per the Sprint 3 "Delete → Suspend" decision) with different dialog copy/button labels, and the course-assignment "Assigned" text badge was replaced by a checkmark icon (checkbox-checked state is the real signal now). Fixed each assertion to match current behavior.*
+4. *4 stragglers surfaced only after fixing the above (previously masked because the tests never got far enough to reach them): a `.first()` locator ambiguity between the page's `<h1>` and the sidebar's truncated course-name label; two Slate Morning token migrations that broke hardcoded-class selectors (`bg-red-50`→`--s-err-bg`, `bg-red-500`→`--danger-solid`); and one test asserting a custom "invalid email" JS message that's actually unreachable in a real browser because the `<input type="email" required>` field's native HTML5 constraint validation blocks form submission first — rewrote that test to assert the real enforcement mechanism instead.*
+*One test was also intentionally changed in behavior, not just fixed: "register link navigates to /register" tested a self-registration link that no longer exists on `/login` (removed as part of the "admin creates accounts" scope decision, see meeting notes) — replaced with a test asserting that link's absence, since resurrecting it would contradict a recorded product decision. Full narrative and every root-cause investigation step: `docs/website-test-flow.md` "Playwright E2E Suite — Stage B".*
+
+---
+
+## Phase 5 — Resume deferred backlog
+
+Now safe to do — the role/section model is real, so this work doesn't have to guess at colors or permissions anymore.
+
+- [x] Sidebar active-states (`AdminSidebar.tsx`) — migrated the active-nav-item highlight (`bg-[#2DD4BF]/15 text-[#0F766E] border-l-2 border-[#2DD4BF]`) and both focus rings to `--accent-bright`/`--accent`. **Hit a real rendering gotcha along the way**: the active link's text color, set via the Tailwind arbitrary class `text-[var(--accent)]`, intermittently computed to `--accent-bright`'s value instead whenever `--accent-bright` was also referenced (via `border`/`bg`) on the same element — an identical class on an isolated child `<span>` resolved correctly, and a hard reload also cleared it, so this reads as Turbopack/HMR staleness rather than a confirmed Tailwind bug, but wasn't fully root-caused. Worked around by setting that one color via inline `style={{color: "var(--accent)"}}` instead, verified correct in both themes after a hard reload. **Lesson for next session**: if a token-migrated color looks wrong only sometimes, try a hard reload before assuming the CSS is broken.
+- [x] Toggle switches — `teacher/settings/page.tsx`'s `Toggle` component had its checked-state already tokenized (`bg-[var(--accent)]`) but its unchecked state was a plain `bg-gray-200`, invisible/wrong in dark mode. Switched to `bg-[var(--border-subtle)]`, matching the same off-state pattern already used elsewhere in the app (e.g. the old `StudentTaExpandRow` toggle before it was removed).
+- [x] Pagination pills — covered by the new shared `Pagination.tsx` above; both the new admin/users usage and the pre-existing courses-page usage are fully tokenized now.
+- [x] Logo marks (Navbar, AdminShell, login/register) — evaluated per the design-system memory's own note that this needs per-instance judgment, not a 1:1 swap. Decision: **leave as fixed brand color** (`#2DD4BF`), not migrated to a theme-swapping token. A brand mark is conventionally a stable identity color across themes (the same reasoning that already applies to `--danger-solid`), and all four usages sit on a permanently-dark surface (nav bar, shell header, or the login/register dark side-panel) where the fixed bright teal already reads correctly in both app themes — there's no actual contrast problem to fix here.
+- [x] Focus rings and badge/tint backgrounds elsewhere in the app — **full-scale pass, done 6/9/2569** (previously deferred as "too large for one pass"; user explicitly asked to go full-scale). Migrated ~250+ hardcoded-teal instances (`#2DD4BF`/`#0F766E`) across the whole app via categorized PowerShell literal-replace passes, each followed by a mandatory re-grep verification sweep (bulk replacements repeatedly missed stragglers where an inserted class, e.g. a `hover:` variant, broke an exact-substring match — caught and patched individually every time): focus rings (`ring-[...]` → `--accent-bright`), ambient tints (`bg-[...]/N` → `--accent-bright`), decisive text/borders (`text-[...]`/`border-[...]` → `--accent`), solid buttons (`bg-[...] text-white` → `--accent-solid`/`--accent-solid-text`), toggle off-states, SVG progress-bar fills and strokes, and native-checkbox `accent-[...]` utilities. Touched ~25 files including `PillTabBar.tsx`, `AdminSidebar.tsx`, `ProfileSidebar.tsx`, `collaborators/page.tsx`, `grading-split/page.tsx`, `admin/curriculum/page.tsx`, `admin/users/page.tsx`, `admin/courses/page.tsx`, and most of the teacher assignment/grading/dashboard screens. **Bug found and fixed proactively** (before any regression manifested, right after migrating `EmptyState`'s `iconColor` prop to `var()` values): `EmptyState.tsx` computed its icon-circle background via a hex-alpha-suffix string trick (`` `${iconColor}1a` ``) that only produces a valid color for a literal 6-digit hex string — silently breaks (invalid CSS, dropped by the browser) for a `var(--token)` value. Fixed to `color-mix(in srgb, ${iconColor} 10%, transparent)`, which works for both. **Deliberately excluded** (with reasoning, not oversight): `RoleSwitcher.tsx` (dev-only floating widget, has the identical hex-suffix bug pattern but low value vs. risk of touching it); logo marks (already decided in the bullet above); per-course/seed arbitrary colors in `lib/courses.ts` (`PRESET_COLORS`, `SEED_COURSES` — legitimate color-picker options, not semantic accent usage); decorative per-role avatar fills (`Avatar bg="#7C3AED"` etc. for TA/Teacher/Co-teacher — consistent with the existing avatar-color policy); `admin/curriculum/page.tsx`'s `PROGRAM_COLOR` map (CECS/CEI/CE per-program identity colors, same category as avatars); and the confidence-level "High/Medium/Review" 3-tier color scale in `recheck/page.tsx`/`results/page.tsx` (a self-contained categorical status scale sitting next to an already-unmigrated grade-color scale — not a stray accent reference, redesigning it to semantic status tokens would be a separate scope). Verified: `npx tsc --noEmit` clean, full Playwright E2E suite run, spot-checked light+dark mode live in-browser on `/admin/users` and `/admin/courses` with no visual regressions.
+- [x] Role badge colors (TA/Student) — the `--role-ta-*`/`--s-info-*` tokens already existed in `globals.css` (from the earlier design-system pass) but were never wired to any component, and `--role-ta-*` was flagged as "not yet run through a real contrast checker." Computed WCAG contrast by hand before trusting it: `--role-ta-text` on `--role-ta-bg` is 5.97:1 light / 7.40:1 dark — both comfortably pass AA (4.5:1). Migrated every genuine role-badge usage (TA tab highlight + badge in `admin/users.tsx`'s Teachers table, the TA/Co-Teacher tab + role-label colors in `collaborators/page.tsx`, the TA-selected picker row in `grading-split/page.tsx`, and the "Students" StatCard in `admin/users.tsx`) to the tokens — verified both light and dark mode resolve to the exact defined hex via computed-style inspection in-browser. **Deliberately left alone**: solid avatar-circle fills (`background: "#7C3AED"` etc.) — those are decorative per-person-type accent colors with no dedicated "solid" role token defined, same treatment as Teacher's navy/Co-teacher's teal avatars; and the Teacher-role half of `admin/users.tsx`'s existing teal (`#2DD4BF`/`#0F766E`) badges, which is the separate, larger "color-token migration remainder" item below, not specifically named by this bullet. `npx tsc --noEmit` clean.
+- [x] Pagination on `/admin/users` — both Teachers and Students tabs (10/page), plus a new shared `src/components/Pagination.tsx` extracted from `teacher/courses/page.tsx`'s existing inline pagination markup (same page also had its own hardcoded `text-gray-500`/`hover:bg-gray-100` that silently broke in dark mode — fixed as part of the extraction by routing through `--text-muted`/`--bg-subtle` tokens instead). Verified live: seeded 13 students → page 1 shows 10 → page 2 shows the remaining 3.
+- [x] Inactive-tab color (`PillTabBar.tsx`, used by the Teachers/Students pill tabs) — this was a **real, hand-verified WCAG failure**, not just a stale aesthetic complaint: `--text-muted` on this bar's own `--bg-subtle` background computes to 4.26:1 (light) / 4.11:1 (dark), both under the 4.5:1 AA minimum (these two tokens had only ever been checked against `--bg-card`, per their own inline comments, never against `--bg-subtle`). Switched inactive-tab text (both the label and the count badge) to `--text-secondary`, which computes to 5.19:1 / 4.67:1 against the same background — passes both themes. No visual regression: `--text-secondary` is one step darker/lighter than `--text-muted` in the same neutral family, not a hue change.
+- [ ] Import button clarity, row spacing, overall theme softness — evaluated Import CSV's current styling (bordered secondary button with icon+label+hover state) and judged it already adequate; the original complaint likely predates that treatment. Row spacing / "theme softness" are subjective calls with no concrete failure to fix (unlike the tab-contrast one above, which had a real number) — leaving these deferred rather than making unrequested visual changes without a specific target to verify against.
+- [x] `GradingAssignment` UI — **the screen itself was already built in Stage B** (this bullet predates that work and was stale). What Stage B's build did *not* include: the S5 overlap validation (`docs/phase1-model-validation.md`) — "teacher shouldn't be able to save a config that leaves a week uncovered or double-assigned." Built 5/9/2569: the create/edit drawer now computes every OTHER week-scoped `GradingAssignment` on the course (excluding the one being edited, so self-edits don't false-positive against their own weeks) and (a) shows a proactive "สัปดาห์ที่มีคนตรวจแล้ว: 1 (ชื่อ TA), 2 (ชื่อ TA)..." hint before the teacher even tries a week number, and (b) hard-blocks adding a week that's already claimed, with an inline error naming which TA has it. Gap detection (weeks nobody covers) was **deliberately not built** — doing that meaningfully would require a "total weeks in term" field that doesn't exist anywhere in the model, and inventing one wasn't asked for; overlap (the actual "double-assignment" failure mode S5 named) is the concrete, buildable half of that scenario. Verified live: TA1 given weeks 1-4, tried giving TA2 week 3 → blocked with "สัปดาห์ 3 ถูกมอบให้ [TA1] ไปแล้ว" → gave TA2 week 5 instead → saved fine → reopened TA1's own edit → confirmed only week 5 (the other TA's) shows in the "already assigned" hint, not TA1's own 1-4. `npx tsc --noEmit` clean.
+
+**Exit criteria:** backlog items closed or explicitly re-deferred with a reason (matching the LIST PAGE MVP discipline from Phase 2).
+
+---
+
+## Website test flow (baseline, separate from paper validation) — ✅ RUN 4-5/9/2569
+
+`docs/phase1-model-validation.md` and `docs/phase2-validation.md` validate the *documents* (entity model, ER diagram, LIST PAGE MVP) on paper — they don't touch the running app. `docs/website-test-flow.md` is different: an actual click-through test flow for the live website. Ran it against the dev server — full results in that file.
+
+**No real bugs found.** First pass suspected a persistence bug in the Grading page (teacher score overrides appearing to not save) — re-verification found this was a **false positive caused by the test tooling itself** (the Browser automation's click wasn't landing on the button that session, not an app defect). Confirmed via direct `localStorage` inspection and a DOM-level `.click()` that the actual persistence logic (`AssignmentProvider.tsx`) works correctly — score override wrote to storage and the Results page average recalculated correctly (84.0 → 85.4). No code change needed for this.
+
+## Ongoing (every phase)
+
+- `/work-log` after each meaningful commit
+- `/consolidate-memory` when memory files start overlapping or going stale (9 files as of 4/9/2569 — getting close)
+
+---
+
+## Progress log
+
+| Date | Phase | What happened |
+|---|---|---|
+| 4/9/2569 | 1 | Entity model drafted, self-reviewed, 2 open questions flagged |
+| 4/9/2569 | 2 | ER diagram + LIST PAGE MVP drafted; first LIST PAGE MVP draft missed 10+ real routes (built from memory instead of the actual file tree) — caught and fixed via `docs/phase2-validation.md`. Combined artifact rebuilt from the corrected 36-route list and republished. **Phase 2 content complete** — ready to send to professor (Phase 3 gate), pending only the non-blocking email-format confirmation. |
+| 5/9/2569 | 2→3 | Ran `docs/website-test-flow.md`, suspected a persistence bug in Grading, re-verified rigorously (direct localStorage checks + DOM-level click, bypassing the session's flaky Browser automation) and confirmed it was a false positive — no code changes needed. **Phase 2 fully closed. Phase 3 now active** — the reviewer document is ready to send; sending itself is a manual step for the user (this session has no channel to the professor). |
