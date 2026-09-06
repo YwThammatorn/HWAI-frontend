@@ -23,12 +23,19 @@ export default function StudentProvider({ children }: { children: React.ReactNod
 
   const addStudents = useCallback(
     (courseId: string, incoming: Omit<Student, "id" | "courseId">[]) => {
+      // Append to the existing roster for this section — do not replace it.
+      // sequenceNumber continues from the current roster size (มติที่ประชุม
+      // 4/9/2569: คนใหม่ที่เพิ่มกลางเทอมได้เลขต่อท้าย ไม่ renumber ของเดิม).
+      const existingInCourse = students.filter((s) => s.courseId === courseId);
+      let nextSeq = existingInCourse.length + 1;
       const next: Student[] = incoming.map((s) => ({
         ...s,
         id: crypto.randomUUID(),
         courseId,
+        sequenceNumber: s.sequenceNumber ?? nextSeq++,
+        enrollmentStatus: s.enrollmentStatus ?? (existingInCourse.length > 0 ? "added-midterm" : "enrolled"),
       }));
-      persist([...students.filter((s) => s.courseId !== courseId), ...next]);
+      persist([...students, ...next]);
     },
     [students, persist]
   );

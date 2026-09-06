@@ -4,7 +4,22 @@ import { createContext, useContext } from "react";
 
 export type CourseStatus = "active" | "archived";
 export type CourseSource = "manual" | "google" | "teams";
+export type GradingSource = "ta" | "ai" | "blind";
+export type PublishMode = "auto" | "manual";
+export type Term = 1 | 2 | "summer";
 
+/**
+ * `Course` is, in practice, section-shaped: it represents one offering of a
+ * subject in one term, not the abstract subject itself. The fields below
+ * (courseTemplateId, academicYear, term, sectionNumber, gradingSource,
+ * publishMode) are the Section concept from PLAN.md Phase 1, added directly
+ * onto the entity that 28+ files already consume rather than as a separate
+ * split type — see docs/phase1-model-validation.md and PLAN.md Phase 4 for
+ * why a hard Course/Section split was scoped out of this pass. All new
+ * fields are optional so existing records and call sites keep working;
+ * populate them going forward via the (not yet built) section-aware
+ * create/edit UI.
+ */
 export interface Course {
   id: string;
   name: string;
@@ -15,6 +30,17 @@ export interface Course {
   iconColor: string;
   createdAt: string;
   updatedAt: string;
+  /** รหัสวิชา — denormalized from CourseTemplate when one is linked */
+  code?: string;
+  /** FK → CourseTemplate (src/lib/curriculum.ts) — which abstract subject this section is an offering of */
+  courseTemplateId?: string;
+  academicYear?: number;
+  term?: Term;
+  sectionNumber?: string;
+  /** อาจารย์เลือกต่อ section ว่าใช้คะแนนจาก TA, AI, หรือ blind test (มติที่ประชุม 4/9/2569) */
+  gradingSource?: GradingSource;
+  /** ประกาศคะแนนอัตโนมัติ หรือรอ approve — ตั้งค่าต่อ section (มติที่ประชุม 4/9/2569 decision #2) */
+  publishMode?: PublishMode;
 }
 
 export const PRESET_COLORS = [

@@ -9,6 +9,9 @@ import { AuthProvider } from "@/context/AuthContext";
 import { LanguageProvider } from "@/context/LanguageContext";
 import CohortStudentProvider from "@/context/CohortStudentContext";
 import ManagedTeacherProvider from "@/context/ManagedTeacherContext";
+import CurriculumProvider from "@/components/CurriculumProvider";
+import SectionRoleProvider from "@/components/SectionRoleProvider";
+import GradingAssignmentProvider from "@/components/GradingAssignmentProvider";
 import "./globals.css";
 
 const lexend = Lexend({
@@ -40,13 +43,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <AuthProvider>
             <CohortStudentProvider>
               <ManagedTeacherProvider>
-                <CourseProvider>
-                  <StudentProvider>
-                    <CLOProvider>
-                      <AssignmentProvider>{children}</AssignmentProvider>
-                    </CLOProvider>
-                  </StudentProvider>
-                </CourseProvider>
+                <CurriculumProvider>
+                  <SectionRoleProvider>
+                    <GradingAssignmentProvider>
+                      <CourseProvider>
+                        <StudentProvider>
+                          <CLOProvider>
+                            <AssignmentProvider>{children}</AssignmentProvider>
+                          </CLOProvider>
+                        </StudentProvider>
+                      </CourseProvider>
+                    </GradingAssignmentProvider>
+                  </SectionRoleProvider>
+                </CurriculumProvider>
               </ManagedTeacherProvider>
             </CohortStudentProvider>
           </AuthProvider>

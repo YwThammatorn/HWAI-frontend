@@ -2,14 +2,22 @@
 
 import { createContext, useContext } from "react";
 
+export type EnrollmentStatus = "enrolled" | "withdrawn" | "added-midterm";
+
 export interface Student {
   id: string;
-  courseId: string;
+  courseId: string; // conceptually a Section id now that Course carries section fields — see lib/courses.ts
   studentId: string;
   firstName: string;
   lastName: string;
   email: string;
   cohort?: string; // e.g. "CE69"
+  /** ลำดับนักศึกษาในวิชานี้ (มติที่ประชุม 4/9/2569) — คนใหม่ที่เพิ่มกลางเทอมได้เลขต่อท้าย
+   *  ไม่ recompute ของเดิมเมื่อมีคนออก. Optional เพราะ record เก่ายังไม่มีค่านี้. */
+  sequenceNumber?: number;
+  /** สถานะการลงทะเบียนต่อวิชา — แยกจาก CohortStudent.status ซึ่งเป็น account-level
+   *  (มติที่ประชุม 4/9/2569 decision #1) */
+  enrollmentStatus?: EnrollmentStatus;
 }
 
 export interface StudentContextValue {

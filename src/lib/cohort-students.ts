@@ -2,6 +2,8 @@
 
 import { createContext, useContext } from "react";
 
+export type AccountStatus = "active" | "inactive";
+
 export interface CohortStudent {
   id: string;
   studentId: string; // institutional ID e.g. "64070501"
@@ -10,14 +12,20 @@ export interface CohortStudent {
   email: string;
   cohort: string;   // e.g. "CE69"
   program: string;  // e.g. "CE"
-  taAssignments?: string[]; // courseIds where this student is TA
+  /** Account-level status per meeting decision #1 (4/9/2569) — reflects
+   *  พ้นสภาพ/ลาออก/จบ, separate from per-section enrollment status.
+   *  Defaults to "active" for existing records without this field. */
+  status?: AccountStatus;
+  /** FK → CurriculumVersion (see src/lib/curriculum.ts). Not yet enforced
+   *  anywhere — added so the field exists ahead of the /admin/curriculum
+   *  screen that will let admins actually assign it. */
+  curriculumVersionId?: string;
 }
 
 export interface CohortStudentContextValue {
   cohortStudents: CohortStudent[];
   addCohortStudents: (incoming: Omit<CohortStudent, "id">[]) => void;
   removeCohortStudent: (id: string) => void;
-  updateTaAssignments: (id: string, courseIds: string[]) => void;
   findByStudentId: (studentId: string) => CohortStudent | undefined;
   getCohorts: () => string[];
   getStudentsByCohort: (cohort: string) => CohortStudent[];
