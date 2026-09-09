@@ -99,7 +99,7 @@ export default function ViewAssignmentPage() {
     : submissions;
 
   return (
-      <main className="w-full max-w-[1200px] mx-auto px-8 py-8">
+      <main className="w-full px-8 py-8">
 
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">

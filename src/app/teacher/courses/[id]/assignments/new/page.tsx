@@ -11,7 +11,7 @@ export default function NewAssignmentPage() {
   const router = useRouter();
   const { t } = useLanguage();
   const { getCourse } = useCourses();
-  const { addAssignment } = useAssignments();
+  const { addAssignment, addRubric, updateAssignment } = useAssignments();
 
   const CONFIRM_MSG = t(
     "ข้อมูลที่กรอกจะไม่ถูกบันทึก\nต้องการออกจากหน้านี้หรือไม่?",
@@ -76,7 +76,16 @@ export default function NewAssignmentPage() {
       maxGroupSize: submissionType === "group" && maxGroupSize ? parseInt(maxGroupSize) : null,
       rubricIds: [],
     });
-    router.push(`/teacher/courses/${id}/assignments/${a.id}`);
+    // Land the teacher straight in the rubric editor for this assignment
+    // (meeting 26/8/2569 — create + rubric in one continuous flow, following
+    // DEEP-QA's "เพิ่มกิจกรรมการประเมิน" pattern; see [[project-hwai-meeting-20260826]]).
+    const rubric = addRubric({
+      assignmentId: a.id,
+      name: t("เกณฑ์การให้คะแนน", "Grading Rubric"),
+      criteria: [],
+    });
+    updateAssignment(a.id, { rubricIds: [rubric.id] });
+    router.push(`/teacher/courses/${id}/assignments/${a.id}/rubrics/${rubric.id}`);
   }
 
   const isValid = name.trim().length > 0 && dueDate !== "" && (!acceptsFiles || fileTypes.length > 0);
@@ -265,8 +274,8 @@ export default function NewAssignmentPage() {
             <p className="text-xs text-amber-700 leading-relaxed">
               <strong>{t("เกณฑ์การให้คะแนน (Rubric)", "Grading Rubric")}</strong> —{" "}
               {t(
-                "สามารถเพิ่มและจัดการ Rubric ได้ในหน้าแก้ไขชิ้นงาน หลังจากบันทึกชิ้นงานนี้แล้ว",
-                "You can add and manage rubrics on the assignment edit page after saving."
+                "หลังกดสร้างชิ้นงาน ระบบจะพาไปตั้งเกณฑ์การให้คะแนนต่อทันที",
+                "After you create this assignment, you'll go straight into setting up its grading rubric."
               )}
             </p>
           </div>

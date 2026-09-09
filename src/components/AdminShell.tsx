@@ -19,7 +19,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   useEffect(() => {
     if (!user) { router.replace("/login"); return; }
     if (effectiveRole !== "admin") {
-      router.replace(effectiveRole === "student" ? "/student" : "/teacher/dashboard");
+      router.replace(effectiveRole === "student" ? "/student" : "/teacher/courses");
     }
   }, [user, effectiveRole, router]);
 
@@ -131,7 +131,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
       {/* Body */}
       <div className="flex flex-1 overflow-hidden">
         <AdminSidebar />
-        <main id="admin-main" className="flex-1 min-w-0 overflow-y-auto">
+        <main id="admin-main" className="flex-1 min-w-0 overflow-y-auto [scrollbar-gutter:stable]">
           {children}
         </main>
       </div>

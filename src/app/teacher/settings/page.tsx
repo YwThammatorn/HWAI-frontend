@@ -173,7 +173,7 @@ export default function SettingsPage() {
 
   return (
     <>
-      <main className="px-10 py-8 max-w-3xl mx-auto pb-28">
+      <main className="px-10 py-8 max-w-3xl mx-auto w-full pb-28">
 
           {/* Header */}
           <div className="mb-6">

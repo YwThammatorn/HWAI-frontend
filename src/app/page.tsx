@@ -12,7 +12,7 @@ export default function RootPage() {
     if (!user) { router.replace("/login"); return; }
     if (user.role === "admin") router.replace("/admin");
     else if (user.role === "student") router.replace("/student");
-    else router.replace("/teacher/dashboard");
+    else router.replace("/teacher/courses");
   }, [user, router]);
 
   return null;

@@ -383,7 +383,7 @@ export default function GradingProgressPage() {
   }
 
   return (
-      <main className="w-full max-w-[1100px] mx-auto px-8 py-8">
+      <main className="w-full px-8 py-8">
         {/* Breadcrumb */}
         <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-5 flex-wrap">
           <Link href="/teacher/courses" className="hover:text-[var(--accent)] transition-colors">{t("รายวิชา", "Courses")}</Link>

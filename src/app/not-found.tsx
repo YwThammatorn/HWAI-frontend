@@ -62,7 +62,7 @@ export default function NotFound() {
               It might have been moved, deleted, or simply never existed in our curriculum.
             </p>
             <Link
-              href="/teacher/dashboard"
+              href="/teacher/courses"
               className="inline-flex items-center gap-2.5 mt-8 px-7 py-3.5 bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] font-semibold rounded-2xl transition-colors"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">

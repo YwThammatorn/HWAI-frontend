@@ -65,7 +65,7 @@ export default function ProfilePage() {
   }
 
   return (
-      <main className="px-10 py-8 max-w-3xl mx-auto">
+      <main className="px-10 py-8 max-w-3xl mx-auto w-full">
 
         {/* Profile Information */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm mb-5">

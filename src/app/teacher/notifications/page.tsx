@@ -201,7 +201,7 @@ export default function NotificationsPage() {
   const isEmpty = notifs.length === 0;
 
   return (
-        <main className="w-full max-w-2xl mx-auto px-8 py-8">
+        <main className="w-full px-8 py-8">
           <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-6">{t("การแจ้งเตือน", "Notifications")}</h1>
 
           {isEmpty ? (

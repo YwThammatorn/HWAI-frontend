@@ -198,7 +198,7 @@ export default function HistoryPage() {
   })();
 
   return (
-      <main className="max-w-5xl mx-auto px-8 py-8 w-full">
+      <main className="w-full px-8 py-8">
         {/* ── Page Title ── */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-[var(--text-primary)]">{t("ประวัติการตรวจงาน", "Grading History")}</h1>

@@ -24,7 +24,7 @@ export default function Navbar() {
   return (
     <nav className="sticky top-0 z-50 bg-[var(--bg-nav)] text-white h-14 flex items-center px-6 shrink-0">
       {/* Logo */}
-      <Link href="/teacher/dashboard" className="flex items-center gap-2 mr-8">
+      <Link href="/teacher/courses" className="flex items-center gap-2 mr-8">
         <div className="w-8 h-8 rounded-lg bg-[#2DD4BF] flex items-center justify-center shrink-0">
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
             <rect x="2" y="2" width="6" height="6" rx="1" fill="white" fillOpacity="0.9"/>

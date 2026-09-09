@@ -39,7 +39,7 @@ export default function StudentSidebar({ courses = [] }: StudentSidebarProps) {
   return (
     <aside
       aria-label={t("เมนูนักศึกษา", "Student navigation")}
-      className="w-56 shrink-0 h-full flex flex-col bg-[var(--bg-surface)] border-r border-[var(--border-subtle)]"
+      className="w-56 shrink-0 h-full flex flex-col bg-[var(--sidebar-bg)]"
     >
       <nav className="flex-1 overflow-y-auto px-3 py-4">
         <ul role="list" className="flex flex-col gap-0.5">
@@ -50,18 +50,16 @@ export default function StudentSidebar({ courses = [] }: StudentSidebarProps) {
               aria-current={isActive("/student", true) ? "page" : undefined}
               className={[
                 "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors min-h-[44px]",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F97316] focus-visible:ring-offset-1",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--sidebar-bg)]",
                 isActive("/student", true)
-                  ? "bg-[#F97316]/15 text-[#9A3412] border-l-2 border-[#F97316]"
-                  : "text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)]",
+                  ? "bg-[var(--accent-bright)]/20 text-[var(--nav-active-text)]"
+                  : "text-white/55 hover:text-white hover:bg-white/8",
               ].join(" ")}
             >
-              <span className={isActive("/student", true) ? "text-[#9A3412]" : "text-[var(--text-muted)]"} aria-hidden="true">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                  <polyline points="9 22 9 12 15 12 15 22"/>
-                </svg>
-              </span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+              </svg>
               {t("หน้าหลัก", "Home")}
             </Link>
           </li>
@@ -74,18 +72,16 @@ export default function StudentSidebar({ courses = [] }: StudentSidebarProps) {
               aria-controls="student-courses-menu"
               className={[
                 "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors min-h-[44px]",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F97316] focus-visible:ring-offset-1",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--sidebar-bg)]",
                 pathname.startsWith("/student/courses")
-                  ? "text-[#9A3412] bg-[#F97316]/10"
-                  : "text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)]",
+                  ? "bg-[var(--accent-bright)]/20 text-[var(--nav-active-text)]"
+                  : "text-white/55 hover:text-white hover:bg-white/8",
               ].join(" ")}
             >
-              <span className={pathname.startsWith("/student/courses") ? "text-[#9A3412]" : "text-[var(--text-muted)]"} aria-hidden="true">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-                </svg>
-              </span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+              </svg>
               <span className="flex-1 text-left">{t("รายวิชา", "Courses")}</span>
               <span aria-hidden="true" className={`transition-transform duration-200 ${isOpen("courses") ? "rotate-180" : ""}`}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -103,10 +99,10 @@ export default function StudentSidebar({ courses = [] }: StudentSidebarProps) {
                     aria-current={isActive("/student/courses", true) ? "page" : undefined}
                     className={[
                       "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors min-h-[36px]",
-                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F97316]",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]",
                       isActive("/student/courses", true)
-                        ? "text-[#9A3412] bg-[#F97316]/10"
-                        : "text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-subtle)]",
+                        ? "bg-[var(--accent-bright)]/20 text-[var(--nav-active-text)]"
+                        : "text-white/55 hover:text-white hover:bg-white/8",
                     ].join(" ")}
                   >
                     {t("รายวิชาทั้งหมด", "All Courses")}
@@ -117,7 +113,7 @@ export default function StudentSidebar({ courses = [] }: StudentSidebarProps) {
                 {activeCourseId && (
                   <>
                     <li className="px-3 pt-2 pb-1">
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-white/55">
                         {courses.find((c) => c.secId === activeCourseId)?.name ?? t("รายวิชานี้", "This Course")}
                       </span>
                     </li>
@@ -131,10 +127,10 @@ export default function StudentSidebar({ courses = [] }: StudentSidebarProps) {
                             aria-current={active ? "page" : undefined}
                             className={[
                               "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors min-h-[36px]",
-                              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F97316]",
+                              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]",
                               active
-                                ? "text-[#9A3412] bg-[#F97316]/10 border-l-2 border-[#F97316] ml-1"
-                                : "text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-subtle)]",
+                                ? "bg-[var(--accent-bright)]/20 text-[var(--nav-active-text)]"
+                                : "text-white/55 hover:text-white hover:bg-white/8",
                             ].join(" ")}
                           >
                             {t(sub.labelTh, sub.labelEn)}
@@ -155,20 +151,18 @@ export default function StudentSidebar({ courses = [] }: StudentSidebarProps) {
               aria-current={isActive("/student/calendar") ? "page" : undefined}
               className={[
                 "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors min-h-[44px]",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F97316] focus-visible:ring-offset-1",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--sidebar-bg)]",
                 isActive("/student/calendar")
-                  ? "bg-[#F97316]/15 text-[#9A3412] border-l-2 border-[#F97316]"
-                  : "text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)]",
+                  ? "bg-[var(--accent-bright)]/20 text-[var(--nav-active-text)]"
+                  : "text-white/55 hover:text-white hover:bg-white/8",
               ].join(" ")}
             >
-              <span className={isActive("/student/calendar") ? "text-[#9A3412]" : "text-[var(--text-muted)]"} aria-hidden="true">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                  <line x1="16" y1="2" x2="16" y2="6"/>
-                  <line x1="8" y1="2" x2="8" y2="6"/>
-                  <line x1="3" y1="10" x2="21" y2="10"/>
-                </svg>
-              </span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
               {t("ปฏิทิน", "Calendar")}
             </Link>
           </li>

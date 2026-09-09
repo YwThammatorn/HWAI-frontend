@@ -41,7 +41,7 @@ export default function CourseResultsPage() {
   }
 
   return (
-      <main className="w-full max-w-[900px] mx-auto px-8 py-8">
+      <main className="w-full px-8 py-8">
         {/* Breadcrumb */}
         <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-5 flex-wrap">
           <Link href="/teacher/courses" className="hover:text-[var(--accent)] transition-colors">{t("รายวิชา", "Courses")}</Link>
@@ -124,7 +124,7 @@ export default function CourseResultsPage() {
                     {total > 0 && (
                       <div className="mt-2 h-1 rounded-full bg-gray-100 overflow-hidden">
                         <div
-                          className="h-full rounded-full bg-[var(--accent-bright)] transition-all"
+                          className="h-full rounded-full bg-[var(--accent-bright)]"
                           style={{ width: `${(graded / total) * 100}%` }}
                         />
                       </div>

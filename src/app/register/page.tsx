@@ -102,7 +102,7 @@ export default function RegisterPage() {
   const strength = passwordStrength(password);
 
   useEffect(() => {
-    if (user) router.replace("/teacher/dashboard");
+    if (user) router.replace("/teacher/courses");
   }, [user, router]);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -118,7 +118,7 @@ export default function RegisterPage() {
     setLoading(true);
     await new Promise((r) => setTimeout(r, 500));
     login({ name: name.trim(), email, role });
-    router.replace("/teacher/dashboard");
+    router.replace("/teacher/courses");
   }
 
   const eyeIcon = (show: boolean, onToggle: () => void) => (

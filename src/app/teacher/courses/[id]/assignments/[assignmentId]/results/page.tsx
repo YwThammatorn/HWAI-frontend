@@ -195,7 +195,7 @@ export default function ResultsPage() {
   ];
 
   return (
-      <main className="w-full max-w-[1200px] mx-auto px-8 py-8">
+      <main className="w-full px-8 py-8">
         {/* Back link */}
         <Link
           href={`/teacher/courses/${id}/assignments/${assignmentId}`}

@@ -44,7 +44,7 @@ export default function CourseDetailPage() {
   };
 
   return (
-      <main className="w-full max-w-[1200px] mx-auto px-8 py-8">
+      <main className="w-full px-8 py-8">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
           <Link href="/teacher/courses" className="hover:text-[var(--accent)] transition-colors">{t("รายวิชาทั้งหมด", "All Courses")}</Link>
@@ -131,6 +131,12 @@ export default function CourseDetailPage() {
               className="py-3 px-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-[var(--accent)] transition-colors"
             >
               {t("ผลลัพธ์", "Results")}
+            </Link>
+            <Link
+              href={`/teacher/courses/${id}/grading-split`}
+              className="py-3 px-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-[var(--accent)] transition-colors"
+            >
+              {t("แบ่งงานตรวจ", "Grading Split")}
             </Link>
           </div>
 

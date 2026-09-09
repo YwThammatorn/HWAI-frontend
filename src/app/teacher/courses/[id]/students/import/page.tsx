@@ -113,7 +113,7 @@ export default function ImportStudentsPage() {
   }
 
   return (
-      <main className="w-full max-w-[860px] mx-auto px-8 py-8">
+      <main className="w-full px-8 py-8">
         {/* Breadcrumb */}
         <div className="flex items-center gap-1.5 text-sm text-gray-500 mb-6">
           <Link href="/teacher/courses" className="hover:text-[var(--accent)] transition-colors">{t("รายวิชาทั้งหมด", "All Courses")}</Link>

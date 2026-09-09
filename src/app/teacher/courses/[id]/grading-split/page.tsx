@@ -512,7 +512,7 @@ export default function GradingSplitPage() {
   }
 
   return (
-    <main className="w-full max-w-[900px] mx-auto px-8 py-8">
+    <main className="w-full px-8 py-8">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-[var(--text-muted)] mb-6">
         <Link href="/teacher/courses" className="hover:text-[var(--accent)] transition-colors">

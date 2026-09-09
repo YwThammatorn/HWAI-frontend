@@ -155,7 +155,7 @@ export default function DashboardPage() {
   ];
 
   return (
-      <main className="w-full max-w-[1200px] mx-auto px-8 py-8">
+      <main className="w-full px-8 py-8">
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-[var(--text-primary)]">

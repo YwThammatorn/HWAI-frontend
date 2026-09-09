@@ -100,7 +100,7 @@ export default function CLOPage() {
   const showEmpty = clos.length === 0 && formMode === "idle";
 
   return (
-      <main className="w-full max-w-[860px] mx-auto px-8 py-10">
+      <main className="w-full px-8 py-10">
 
         {/* Back */}
         <button

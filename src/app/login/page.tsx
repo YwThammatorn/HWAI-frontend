@@ -79,7 +79,7 @@ export default function LoginPage() {
     if (!user) return;
     if (user.role === "admin") router.replace("/admin");
     else if (user.role === "student") router.replace("/student");
-    else router.replace("/teacher/dashboard");
+    else router.replace("/teacher/courses");
   }, [user, router]);
 
   async function handleSubmit(e: React.FormEvent) {

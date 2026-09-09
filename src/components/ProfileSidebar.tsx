@@ -24,9 +24,9 @@ function NavItem({
       aria-current={active ? "page" : undefined}
       className={[
         "flex items-center gap-3 rounded-xl font-medium transition-colors min-h-[44px]",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--bg-nav)]",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--sidebar-bg)]",
         small ? "px-3 py-1.5 text-xs" : "px-3 py-2.5 text-sm",
-        active ? "bg-[var(--accent-bright)]/20 text-[var(--accent-bright)]" : "text-white/55 hover:text-white hover:bg-white/8",
+        active ? "bg-[var(--accent-bright)]/20 text-[var(--nav-active-text)]" : "text-white/55 hover:text-white hover:bg-white/8",
       ].join(" ")}
     >
       {icon}
@@ -132,6 +132,12 @@ const COURSE_SETTINGS_ICON = (
   </svg>
 );
 
+// Restored 8/9/2569 at user's request after the flat/AdminSidebar-style rewrite
+// earlier this session — the actual layout-shift bug (scrollbar-gutter, see
+// AppShell.tsx/AdminShell.tsx/StudentShell.tsx) was unrelated to this
+// per-course section, so there's no reason not to have quick per-course links
+// here again. MAIN_NAV keeps the Courses-first order from making /teacher/courses
+// the landing page — see [[project-hwai-meeting-20260826]].
 export default function ProfileSidebar() {
   const pathname = usePathname();
   const { t } = useLanguage();
@@ -148,9 +154,9 @@ export default function ProfileSidebar() {
   }
 
   const MAIN_NAV = [
-    { label: t("แดชบอร์ด", "Dashboard"), href: "/teacher/dashboard", active: pathname === "/teacher/dashboard",       icon: DASHBOARD_ICON },
     { label: t("รายวิชา", "Courses"),     href: "/teacher/courses",   active: pathname.startsWith("/teacher/courses"), icon: COURSES_ICON   },
     { label: t("ประวัติ", "History"),     href: "/teacher/history",   active: pathname === "/teacher/history",         icon: HISTORY_ICON   },
+    { label: t("แดชบอร์ด", "Dashboard"), href: "/teacher/dashboard", active: pathname === "/teacher/dashboard",       icon: DASHBOARD_ICON },
   ];
 
   const ACCOUNT_NAV = [
@@ -174,7 +180,7 @@ export default function ProfileSidebar() {
   return (
     <aside
       aria-label={t("เมนูผู้สอน", "Teacher navigation")}
-      className="w-52 bg-[var(--bg-nav)] shrink-0 flex flex-col py-6 px-3 overflow-y-auto"
+      className="w-52 bg-[var(--sidebar-bg)] shrink-0 flex flex-col py-6 px-3 overflow-y-auto"
     >
       <p className="text-white/55 text-[10px] font-semibold uppercase tracking-widest px-3 mb-2">
         {t("หลัก", "Main")}

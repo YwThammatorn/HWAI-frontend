@@ -33,7 +33,7 @@ export default function StudentShell({ children }: { children: React.ReactNode }
 
   useEffect(() => {
     if (!user) { router.replace("/login"); return; }
-    if (effectiveRole === "teacher" || effectiveRole === "ta") router.replace("/teacher/dashboard");
+    if (effectiveRole === "teacher" || effectiveRole === "ta") router.replace("/teacher/courses");
     else if (effectiveRole === "admin") router.replace("/admin");
     else if (effectiveRole !== "student") router.replace("/login");
   }, [user, effectiveRole, router]);
@@ -57,7 +57,7 @@ export default function StudentShell({ children }: { children: React.ReactNode }
       <header className="h-14 shrink-0 flex items-center px-6 bg-[var(--bg-nav)] text-white">
         {/* Logo */}
         <Link href="/student" className="flex items-center gap-2 mr-8">
-          <div className="w-8 h-8 rounded-lg bg-[#F97316] flex items-center justify-center shrink-0">
+          <div className="w-8 h-8 rounded-lg bg-[#2DD4BF] flex items-center justify-center shrink-0">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
               <rect x="2" y="2" width="6" height="6" rx="1" fill="white" fillOpacity="0.9"/>
               <rect x="10" y="2" width="6" height="6" rx="1" fill="white" fillOpacity="0.9"/>
@@ -111,8 +111,8 @@ export default function StudentShell({ children }: { children: React.ReactNode }
 
           {/* Avatar + name + logout */}
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-[#F97316] flex items-center justify-center shrink-0">
-              <span className="text-white text-xs font-bold leading-none">{initials}</span>
+            <div className="w-8 h-8 rounded-full bg-[#2DD4BF] flex items-center justify-center shrink-0">
+              <span className="text-[#1B2A4A] text-xs font-bold leading-none">{initials}</span>
             </div>
             <span className="text-sm font-medium text-white/90">{user.name}</span>
             <button
@@ -135,7 +135,7 @@ export default function StudentShell({ children }: { children: React.ReactNode }
       {/* Body */}
       <div className="flex flex-1 overflow-hidden">
         <StudentSidebar courses={enrolledCourses} />
-        <main id="student-main" className="flex-1 min-w-0 overflow-y-auto">
+        <main id="student-main" className="flex-1 min-w-0 overflow-y-auto [scrollbar-gutter:stable]">
           {children}
         </main>
       </div>
