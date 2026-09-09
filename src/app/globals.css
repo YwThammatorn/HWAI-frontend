@@ -8,6 +8,43 @@
   --color-hwai-bg-app: #F3F4F6;
   --color-hwai-card: #FFFFFF;
   --font-sans: var(--font-lexend), var(--font-prompt), ui-sans-serif, system-ui, sans-serif;
+
+  /* Spacing scale shifted up ~12.5% to match the type-scale bump below —
+     UI chrome (button/input padding, badge padding, table-cell padding,
+     gaps, avatar/icon-badge sizes, nav item padding) was sized around the
+     OLD smaller text and read as cramped once text grew. Tailwind v4
+     derives every numeric spacing utility (p-/px-/py-/m-/gap-/w-/h- on the
+     numeric scale/inset/translate/size-) from this single base unit via
+     calc(--spacing * N), so one token bump reflows all of them together —
+     same rationale as the type-scale block below: no component touched,
+     every existing relative size relationship (space-2 still smaller than
+     space-4) preserved exactly. Default is 0.25rem (4px); 4.5px matches
+     roughly the same ~12-14% growth applied to text.
+     Deliberately NOT touched: literal SVG width="N"/height="N" icon glyph
+     sizes (not part of this scale, and too heterogeneous — decorative
+     status dots at 6px, illustrations at 80-180px, functional icons at
+     14-22px — to bump safely with one rule). See [[project-hwai-design-system]]. */
+  --spacing: 4.5px;
+
+  /* Type scale shifted up one full step (advisor feedback: body text too
+     small). text-sm (the dominant body-text class throughout the app) was
+     14px — under the 16px "comfortable reading" floor most style guides
+     recommend (Material, Apple HIG, WCAG). Rather than bulk-editing every
+     text-sm call site (risking missed spots / inconsistency), every tier
+     is remapped to what the NEXT tier up used to render as — text-xs takes
+     old text-sm's size, text-sm takes old text-base's, etc. This preserves
+     every existing relative size relationship exactly (nothing that used
+     to read as "smaller than X" stops being smaller than X), so no
+     component needed to change, and the floor moves from 12px to 14px.
+     Old Tailwind defaults, for reference: xs 12/16 sm 14/20 base 16/24
+     lg 18/28 xl 20/28 2xl 24/32 3xl 30/36 4xl 36/40 (size/line-height, px). */
+  --text-xs: 0.875rem;      --text-xs--line-height: 1.25rem;   /* 14/20 */
+  --text-sm: 1rem;          --text-sm--line-height: 1.5rem;    /* 16/24 */
+  --text-base: 1.125rem;    --text-base--line-height: 1.75rem; /* 18/28 */
+  --text-lg: 1.25rem;       --text-lg--line-height: 1.75rem;   /* 20/28 */
+  --text-xl: 1.5rem;        --text-xl--line-height: 2rem;      /* 24/32 */
+  --text-2xl: 1.875rem;     --text-2xl--line-height: 2.25rem;  /* 30/36 */
+  --text-3xl: 2.25rem;      --text-3xl--line-height: 2.5rem;   /* 36/40 */
 }
 
 /* ── Semantic color tokens — "Slate Morning" (see DESIGN.md) ────────────────── */
@@ -32,6 +69,25 @@
   --bg-subtle:     #E4ECF3;
   --border-subtle: #E0E8F0;   /* was identical to --border (no hierarchy) — now visually distinct */
   --bg-nav:        #1A2D45;
+
+  /* Shared portal-sidebar theme (9/9/2569) — NOT --bg-nav. --bg-nav turned out
+     to be reused as a general-purpose "navy" accent across ~15 other places
+     (Navbar, AdminShell/StudentShell headers, dashboard cards, tab
+     active-states, buttons) that the user never asked to change — repointing
+     it would have reskinned half the teacher portal by accident. --sidebar-bg
+     started as ProfileSidebar.tsx-only (one of 3 candidate colors, see the
+     sidebar-palette artifact this session) and was then extended to
+     AdminSidebar.tsx/StudentSidebar.tsx too — both were plain white and the
+     user asked to make all 3 portal sidebars match Teacher's dark theme,
+     replacing Student's hardcoded #F97316 orange active-state in the process.
+     --nav-active-text is a matching fix: the sidebar's active-tab text sat on
+     --accent-bright (used everywhere else in the app, verified fine against
+     ITS usual backgrounds) — but --accent-bright/20 blended over this new,
+     lighter sidebar-bg only hit ~3.85:1, under WCAG AA's 4.5:1. Lightened to a
+     paler teal (same hue) that clears 4.5:1 against the actual composited
+     background, not just the flat sidebar color. */
+  --sidebar-bg:        #243C5A;
+  --nav-active-text:   #99D2CC;
   --text-primary:  #1A2D45;
   --text-secondary:#4A6478;
   --text-muted:    #607080;  /* unchanged — 4.42:1 on --bg-card, passes WCAG AA */
@@ -81,6 +137,10 @@
   --bg-subtle:     #1E2E40;
   --border-subtle: #1C2938;
   --bg-nav:        #0A1218;
+  /* Dark mode keeps its existing (already much darker) sidebar look —
+     the 3 candidate colors were only ever proposed for light mode. */
+  --sidebar-bg:        #0A1218;
+  --nav-active-text:   #4EA8A0;
   --text-primary:  #D4E4F0;
   --text-secondary:#7A9AB2;
   --text-muted:    #7090A8;  /* 4.84:1 on --bg-card, passes WCAG AA */
