@@ -71,14 +71,14 @@ test.describe("Login Page — Single Form (role auto-detected from email)", () =
 // ── 2. Login Flows — role detected from email prefix ─────────────────────────
 
 test.describe("Login Flows", () => {
-  test("teacher-looking email redirects to /teacher/dashboard", async ({ page }) => {
+  test("teacher-looking email redirects to /teacher/courses", async ({ page }) => {
     await withLang(page);
     await waitReady(page, "/login");
     await page.fill('input[type="email"]', "teacher@school.edu");
     await page.fill('input[type="password"]', "password123");
     await page.getByRole("button", { name: /sign in/i }).click();
-    await page.waitForURL(/\/teacher\/dashboard/, { timeout: 8000 });
-    await expect(page).toHaveURL(/\/teacher\/dashboard/);
+    await page.waitForURL(/\/teacher\/courses/, { timeout: 8000 });
+    await expect(page).toHaveURL(/\/teacher\/courses/);
   });
 
   test("admin-looking email redirects to /admin", async ({ page }) => {

@@ -191,26 +191,27 @@ test.describe("P1a — Admin Teachers (/admin/teachers)", () => {
     await expect(page.locator("td").getByText("TA")).toBeVisible();
   });
 
-  test("suspend button opens confirm dialog and confirming marks teacher Suspended", async ({
+  test("deactivate button opens confirm dialog and confirming marks teacher Inactive", async ({
     page,
   }) => {
-    // Teacher removal is a reversible Suspend, not a hard delete (Sprint 3
-    // decision: "Delete → Suspend", see project_hwai_reviewer_feedback memory) —
-    // the row stays in the table with a "Suspended" badge and a Reactivate
+    // Teacher removal is a reversible Deactivate, not a hard delete (Sprint 3
+    // "Delete → Suspend" decision, renamed 9/9/2569 to the same active/inactive
+    // vocabulary as student status — see project_hwai_design_system memory) —
+    // the row stays in the table with an "Inactive" badge and an Activate
     // button, it does not disappear to the empty state.
     await seedPage(page, { teachers: [TEACHER_1] });
     await gotoPage(page, "/admin/teachers");
     await expect(page.getByText("Dr. Smith")).toBeVisible();
-    // Suspend button aria-label: "Suspend Dr. Smith" (English mode)
-    await page.getByRole("button", { name: "Suspend Dr. Smith" }).click();
+    // Deactivate button aria-label: "Deactivate Dr. Smith" (English mode)
+    await page.getByRole("button", { name: "Deactivate Dr. Smith" }).click();
     const alertDialog = page.getByRole("alertdialog");
     await expect(alertDialog).toBeVisible();
-    await expect(alertDialog).toContainText("Confirm Suspend");
-    await alertDialog.getByRole("button", { name: "Suspend" }).click();
-    // Teacher stays visible, now flagged Suspended, with a Reactivate action
+    await expect(alertDialog).toContainText("Confirm Deactivate");
+    await alertDialog.getByRole("button", { name: "Deactivate" }).click();
+    // Teacher stays visible, now flagged Inactive, with an Activate action
     await expect(page.getByText("Dr. Smith")).toBeVisible();
-    await expect(page.getByText("Suspended")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Reactivate Dr. Smith" })).toBeVisible();
+    await expect(page.getByText("Inactive")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Activate Dr. Smith" })).toBeVisible();
   });
 
   test("validation: submitting with empty name shows Name is required", async ({
@@ -290,9 +291,9 @@ test.describe("P1b — Admin Students (/admin/students)", () => {
     await seedPage(page, { students: [STUDENT_1, STUDENT_2] });
     await gotoPage(page, "/admin/students");
     await openStudentsTab(page);
-    // The cohort <select> has no accessible name of its own (no aria-label) —
-    // it's the only <select> visible on the Students tab with no dialog open.
-    const select = page.locator("select");
+    // A second <select> (program/curriculum filter) was added 9/9/2569, so the
+    // cohort select now needs its own accessible name to stay locatable.
+    const select = page.getByLabel("Filter by cohort");
     await expect(select).toBeVisible();
     await expect(select.locator("option[value='CE69']")).toHaveCount(1);
     await expect(select.locator("option[value='CE68']")).toHaveCount(1);

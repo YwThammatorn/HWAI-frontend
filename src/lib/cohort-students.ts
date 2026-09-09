@@ -25,6 +25,7 @@ export interface CohortStudent {
 export interface CohortStudentContextValue {
   cohortStudents: CohortStudent[];
   addCohortStudents: (incoming: Omit<CohortStudent, "id">[]) => void;
+  updateCohortStudent: (id: string, data: Partial<Omit<CohortStudent, "id">>) => void;
   removeCohortStudent: (id: string) => void;
   findByStudentId: (studentId: string) => CohortStudent | undefined;
   getCohorts: () => string[];

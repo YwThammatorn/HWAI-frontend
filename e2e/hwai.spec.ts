@@ -306,11 +306,11 @@ test.describe("Auth Guard", () => {
     await expect(page).toHaveURL(/\/login/);
   });
 
-  test("already-logged-in user visiting /login is redirected to /dashboard", async ({ page }) => {
+  test("already-logged-in user visiting /login is redirected to /courses", async ({ page }) => {
     await withAuth(page);
     await waitReady(page, "/login");
-    await page.waitForURL(/\/teacher\/dashboard/, { timeout: 5000 });
-    await expect(page).toHaveURL(/\/teacher\/dashboard/);
+    await page.waitForURL(/\/teacher\/courses/, { timeout: 5000 });
+    await expect(page).toHaveURL(/\/teacher\/courses/);
   });
 });
 
@@ -332,13 +332,13 @@ test.describe("Login", () => {
     await expect(page.getByRole("button", { name: /microsoft/i })).toBeVisible();
   });
 
-  test("valid credentials redirect to /teacher/dashboard", async ({ page }) => {
+  test("valid credentials redirect to /teacher/courses", async ({ page }) => {
     await waitReady(page, "/login");
     await page.fill('input[type="email"]', "teacher@school.edu");
     await page.fill('input[type="password"]', "password123");
     await page.getByRole("button", { name: /sign in/i }).click();
-    await page.waitForURL(/\/teacher\/dashboard/, { timeout: 5000 });
-    await expect(page).toHaveURL(/\/teacher\/dashboard/);
+    await page.waitForURL(/\/teacher\/courses/, { timeout: 5000 });
+    await expect(page).toHaveURL(/\/teacher\/courses/);
   });
 
   test("short password (< 8 chars) shows error", async ({ page }) => {
@@ -412,7 +412,7 @@ test.describe("Register", () => {
     await expect(page.getByText(/please agree to the terms/i)).toBeVisible();
   });
 
-  test("valid registration redirects to /dashboard", async ({ page }) => {
+  test("valid registration redirects to /courses", async ({ page }) => {
     await waitReady(page, "/register");
     await page.fill('input[type="text"]', "Jane Doe");
     await page.fill('input[type="email"]', "jane@school.edu");
@@ -421,8 +421,8 @@ test.describe("Register", () => {
     await pwInputs.nth(1).fill("Password123!");
     await page.locator('input[type="checkbox"]').check();
     await page.getByRole("button", { name: /create account/i }).click();
-    await page.waitForURL(/\/dashboard/, { timeout: 5000 });
-    await expect(page).toHaveURL(/\/dashboard/);
+    await page.waitForURL(/\/courses/, { timeout: 5000 });
+    await expect(page).toHaveURL(/\/courses/);
   });
 });
 

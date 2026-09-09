@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import { useManagedTeachers, ManagedTeacher } from "@/lib/managed-teachers";
-import { useCohortStudents } from "@/lib/cohort-students";
+import { useCohortStudents, CohortStudent } from "@/lib/cohort-students";
 import { getInitials } from "@/lib/utils";
 import EmptyState from "@/components/EmptyState";
 import SearchInput from "@/components/SearchInput";
@@ -278,26 +278,23 @@ function ImportTeacherDrawer({ open, onClose }: { open: boolean; onClose: () => 
 // TEACHERS — Add/Edit Drawer
 // ═══════════════════════════════════════════════════════════════
 
-function TeacherDrawer({ open, onClose, mode, teacher }: {
-  open: boolean; onClose: () => void; mode: "create" | "edit"; teacher?: ManagedTeacher;
+function TeacherDrawer({ open, onClose }: {
+  open: boolean; onClose: () => void;
 }) {
   const { t } = useLanguage();
-  const { addTeacher, updateTeacher, teachers } = useManagedTeachers();
-  const [name, setName] = useState(teacher?.name ?? "");
-  const [email, setEmail] = useState(teacher?.email ?? "");
-  const [role, setRole] = useState<"teacher" | "ta">(teacher?.role ?? "teacher");
+  const { addTeacher, teachers } = useManagedTeachers();
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState<"teacher" | "ta">("teacher");
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{ name?: string; email?: string }>({});
   const dialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (open) {
-      setName(teacher?.name ?? "");
-      setEmail(teacher?.email ?? "");
-      setRole(teacher?.role ?? "teacher");
-      setErrors({});
+      setName(""); setEmail(""); setRole("teacher"); setErrors({});
     }
-  }, [open, teacher]);
+  }, [open]);
 
   function validate() {
     const e: typeof errors = {};
@@ -310,7 +307,7 @@ function TeacherDrawer({ open, onClose, mode, teacher }: {
       if (!normalized.endsWith("@kmitl.ac.th"))
         e.email = t("อีเมลต้องเป็น @kmitl.ac.th", "Email must be @kmitl.ac.th");
       else {
-        const duplicate = teachers.some((tc) => tc.email === normalized && tc.id !== teacher?.id);
+        const duplicate = teachers.some((tc) => tc.email === normalized);
         if (duplicate) e.email = t("อีเมลนี้มีในระบบแล้ว", "This email already exists");
       }
     }
@@ -322,11 +319,7 @@ function TeacherDrawer({ open, onClose, mode, teacher }: {
     const errs = validate();
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
     setLoading(true);
-    if (mode === "edit" && teacher) {
-      updateTeacher(teacher.id, { name: name.trim(), email: email.trim().toLowerCase(), role });
-    } else {
-      addTeacher({ name: name.trim(), email: email.trim().toLowerCase(), role });
-    }
+    addTeacher({ name: name.trim(), email: email.trim().toLowerCase(), role });
     setLoading(false);
     onClose();
   }
@@ -351,7 +344,7 @@ function TeacherDrawer({ open, onClose, mode, teacher }: {
   }
 
   if (!open) return null;
-  const title = mode === "edit" ? t("แก้ไขข้อมูลอาจารย์", "Edit Teacher") : t("เพิ่มอาจารย์", "Add Teacher");
+  const title = t("เพิ่มอาจารย์", "Add Teacher");
 
   return (
     <>
@@ -408,7 +401,7 @@ function TeacherDrawer({ open, onClose, mode, teacher }: {
             </button>
             <button type="submit" disabled={loading}
               className="flex-1 h-10 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors">
-              {loading ? t("กำลังบันทึก…", "Saving…") : mode === "edit" ? t("บันทึก", "Save Changes") : t("เพิ่มอาจารย์", "Add Teacher")}
+              {loading ? t("กำลังบันทึก…", "Saving…") : t("เพิ่มอาจารย์", "Add Teacher")}
             </button>
           </div>
         </form>
@@ -418,10 +411,10 @@ function TeacherDrawer({ open, onClose, mode, teacher }: {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// TEACHERS — Confirm Suspend
+// TEACHERS — Confirm Deactivate
 // ═══════════════════════════════════════════════════════════════
 
-function ConfirmSuspendTeacherDialog({ teacher, onConfirm, onCancel }: {
+function ConfirmDeactivateTeacherDialog({ teacher, onConfirm, onCancel }: {
   teacher: ManagedTeacher; onConfirm: () => void; onCancel: () => void;
 }) {
   const { t } = useLanguage();
@@ -459,12 +452,12 @@ function ConfirmSuspendTeacherDialog({ teacher, onConfirm, onCancel }: {
             </svg>
           </div>
           <div>
-            <h3 id="delete-teacher-dialog-title" className="text-sm font-bold text-[var(--text-primary)]">{t("ยืนยันการระงับ", "Confirm Suspend")}</h3>
+            <h3 id="delete-teacher-dialog-title" className="text-sm font-bold text-[var(--text-primary)]">{t("ยืนยันการปิดใช้งาน", "Confirm Deactivate")}</h3>
             <p className="text-xs text-[var(--text-muted)] mt-0.5">
-              {t(`ระงับการใช้งาน "${teacher.name}"?`, `Suspend "${teacher.name}"?`)}
+              {t(`ปิดใช้งาน "${teacher.name}"?`, `Deactivate "${teacher.name}"?`)}
             </p>
             <p className="text-xs text-[var(--text-muted)] mt-0.5">
-              {t("สามารถเปิดใช้งานคืนได้ภายหลัง", "You can reactivate them later.")}
+              {t("สามารถเปิดใช้งานคืนได้ภายหลัง", "You can activate them again later.")}
             </p>
             {teacher.courseIds.length > 0 && (
               <p className="text-xs text-amber-700 mt-0.5">
@@ -481,7 +474,7 @@ function ConfirmSuspendTeacherDialog({ teacher, onConfirm, onCancel }: {
           </button>
           <button onClick={onConfirm}
             className="flex-1 h-9 rounded-xl bg-amber-700 text-white text-sm font-semibold hover:bg-amber-800 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 transition-colors">
-            {t("ระงับ", "Suspend")}
+            {t("ปิดใช้งาน", "Deactivate")}
           </button>
         </div>
       </div>
@@ -493,7 +486,20 @@ function ConfirmSuspendTeacherDialog({ teacher, onConfirm, onCancel }: {
 // STUDENTS — CSV parsing
 // ═══════════════════════════════════════════════════════════════
 
-type StudentRowError = { type: "missing_fields"; fields: string[] } | { type: "invalid_email" };
+type StudentRowError =
+  | { type: "missing_fields"; fields: string[] }
+  | { type: "invalid_email" }
+  | { type: "invalid_student_id" }
+  | { type: "email_mismatch" };
+
+// Confirmed format (reviewer feedback item 1.4, closed 9/9/2569): student
+// email is always the 8-digit student ID followed by @kmitl.ac.th — not a
+// free-choice address like teachers get. Kept as two separate fields (not
+// auto-derived) since edit mode may be touching a legacy record.
+const STUDENT_ID_RE = /^\d{8}$/;
+function expectedStudentEmail(studentId: string) {
+  return `${studentId}@kmitl.ac.th`;
+}
 
 interface ParsedStudentRow {
   studentId: string; firstName: string; lastName: string;
@@ -523,7 +529,9 @@ function parseStudentCsv(raw: string): StudentParseResult {
     };
     const missing = REQUIRED_STUDENT_COLS.filter((k) => !row[k]);
     if (missing.length > 0) row.error = { type: "missing_fields", fields: [...missing] };
+    else if (!STUDENT_ID_RE.test(row.studentId)) row.error = { type: "invalid_student_id" };
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(row.email)) row.error = { type: "invalid_email" };
+    else if (row.email.toLowerCase() !== expectedStudentEmail(row.studentId)) row.error = { type: "email_mismatch" };
     return row;
   });
   return { rows, totalErrors: rows.filter((r) => r.error).length };
@@ -590,6 +598,8 @@ function ImportStudentDrawer({ open, onClose }: { open: boolean; onClose: () => 
 
   function studentRowErrorLabel(err: StudentRowError) {
     if (err.type === "missing_fields") return t(`ขาด: ${err.fields.join(", ")}`, `Missing: ${err.fields.join(", ")}`);
+    if (err.type === "invalid_student_id") return t("รหัสนักศึกษาต้องเป็นตัวเลข 8 หลัก", "Student ID must be 8 digits");
+    if (err.type === "email_mismatch") return t("อีเมลต้องเป็น รหัสนักศึกษา@kmitl.ac.th", "Email must be studentID@kmitl.ac.th");
     return t("อีเมลไม่ถูกต้อง", "Invalid email");
   }
 
@@ -714,14 +724,58 @@ function ImportStudentDrawer({ open, onClose }: { open: boolean; onClose: () => 
 
 function TeachersTab() {
   const { t } = useLanguage();
-  const { teachers, suspendTeacher, reactivateTeacher } = useManagedTeachers();
+  const { teachers, updateTeacher, deactivateTeacher, activateTeacher } = useManagedTeachers();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
-  const [suspendingId, setSuspendingId] = useState<string | null>(null);
-  const [editingTeacher, setEditingTeacher] = useState<ManagedTeacher | undefined>(undefined);
+  const [deactivatingId, setDeactivatingId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 10;
+
+  // Inline row edit (row's own Name/Email/Role cells become inputs)
+  const [editingRowId, setEditingRowId] = useState<string | null>(null);
+  const [draftName, setDraftName] = useState("");
+  const [draftEmail, setDraftEmail] = useState("");
+  const [draftRole, setDraftRole] = useState<"teacher" | "ta">("teacher");
+  const [draftErrors, setDraftErrors] = useState<{ name?: string; email?: string }>({});
+
+  function startEdit(teacher: ManagedTeacher) {
+    setEditingRowId(teacher.id);
+    setDraftName(teacher.name);
+    setDraftEmail(teacher.email);
+    setDraftRole(teacher.role);
+    setDraftErrors({});
+  }
+
+  function cancelEdit() {
+    setEditingRowId(null);
+    setDraftErrors({});
+  }
+
+  function validateEdit() {
+    const e: typeof draftErrors = {};
+    if (!draftName.trim()) e.name = t("กรุณากรอกชื่อ", "Name is required");
+    if (!draftEmail.trim()) e.email = t("กรุณากรอกอีเมล", "Email is required");
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(draftEmail.trim()))
+      e.email = t("รูปแบบอีเมลไม่ถูกต้อง", "Invalid email format");
+    else {
+      const normalized = draftEmail.trim().toLowerCase();
+      if (!normalized.endsWith("@kmitl.ac.th"))
+        e.email = t("อีเมลต้องเป็น @kmitl.ac.th", "Email must be @kmitl.ac.th");
+      else {
+        const duplicate = teachers.some((tc) => tc.email === normalized && tc.id !== editingRowId);
+        if (duplicate) e.email = t("อีเมลนี้มีในระบบแล้ว", "This email already exists");
+      }
+    }
+    return e;
+  }
+
+  function saveEdit() {
+    const errs = validateEdit();
+    if (Object.keys(errs).length > 0) { setDraftErrors(errs); return; }
+    updateTeacher(editingRowId!, { name: draftName.trim(), email: draftEmail.trim().toLowerCase(), role: draftRole });
+    setEditingRowId(null);
+  }
 
   const filteredTeachers = teachers.filter((tp) => {
     const q = search.toLowerCase();
@@ -731,7 +785,7 @@ function TeachersTab() {
   const totalPages = Math.ceil(filteredTeachers.length / PAGE_SIZE);
   const pagedTeachers = filteredTeachers.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  const suspendingTeacher = teachers.find((tp) => tp.id === suspendingId);
+  const deactivatingTeacher = teachers.find((tp) => tp.id === deactivatingId);
 
   const ROLE_LABELS: Record<"teacher" | "ta", string> = {
     teacher: t("อาจารย์", "Teacher"),
@@ -746,7 +800,7 @@ function TeachersTab() {
           <SearchInput value={search} onChange={setSearch} placeholder={t("ค้นหาอาจารย์...", "Search teachers...")} />
         </div>
         <button onClick={() => setImportOpen(true)}
-          className="flex items-center gap-2 h-10 px-4 rounded-xl border border-[var(--border-subtle)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors shrink-0">
+          className="flex items-center gap-2 h-10 px-4 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] shadow-sm text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:border-[var(--accent-bright)] hover:text-[var(--text-primary)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors shrink-0">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
             <polyline points="14 2 14 8 20 8"/>
@@ -754,7 +808,7 @@ function TeachersTab() {
           </svg>
           {t("นำเข้า CSV", "Import CSV")}
         </button>
-        <button onClick={() => { setEditingTeacher(undefined); setDrawerOpen(true); }}
+        <button onClick={() => setDrawerOpen(true)}
           className="flex items-center gap-2 h-10 px-4 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors shrink-0">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
             <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
@@ -776,7 +830,7 @@ function TeachersTab() {
           title={t("ยังไม่มีอาจารย์ในระบบ", "No teachers yet")}
           description={t("เพิ่มอาจารย์คนแรกเพื่อเริ่มต้น", "Add the first teacher to get started")}
           action={
-            <button onClick={() => { setEditingTeacher(undefined); setDrawerOpen(true); }}
+            <button onClick={() => setDrawerOpen(true)}
               className="h-9 px-4 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors">
               {t("เพิ่มอาจารย์", "Add Teacher")}
             </button>
@@ -784,87 +838,143 @@ function TeachersTab() {
         />
       ) : (
         <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] overflow-hidden">
-          <table className="w-full text-sm" role="table">
+          <table className="w-full text-sm table-fixed" role="table">
+            <colgroup>
+              <col className="w-[28%]" />
+              <col className="w-[34%]" />
+              <col className="w-[100px]" />
+              <col className="w-[120px]" />
+              <col className="w-24" />
+            </colgroup>
             <thead>
               <tr className="border-b border-[var(--border-subtle)] bg-[var(--bg-app)]">
-                <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("ชื่อ", "Name")}</th>
-                <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("อีเมล", "Email")}</th>
-                <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("ตำแหน่ง", "Role")}</th>
-                <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("รายวิชา", "Courses")}</th>
-                <th scope="col" className="px-4 py-3 w-24"><span className="sr-only">{t("การจัดการ", "Actions")}</span></th>
+                <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("ชื่อ", "Name")}</th>
+                <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("อีเมล", "Email")}</th>
+                <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("ตำแหน่ง", "Role")}</th>
+                <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("สถานะ", "Status")}</th>
+                <th scope="col" className="px-4 py-1 w-24"><span className="sr-only">{t("การจัดการ", "Actions")}</span></th>
               </tr>
             </thead>
             <tbody>
-              {pagedTeachers.map((teacher, i) => (
+              {pagedTeachers.map((teacher, i) => {
+                const teacherInactive = teacher.status === "inactive";
+                const isEditing = editingRowId === teacher.id;
+                const inputClass = "h-8 w-full rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-app)] px-2 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]";
+                return (
                 <tr key={teacher.id}
-                  className={`border-b border-[var(--border-subtle)] last:border-0 hover:bg-[var(--bg-subtle)] transition-colors ${i % 2 === 1 ? "bg-[var(--bg-app)]" : ""}${teacher.status === "suspended" ? " opacity-60" : ""}`}>
-                  <td className="px-4 py-3 font-medium text-[var(--text-primary)]"
+                  className={`border-b border-[var(--border-subtle)] last:border-0 hover:bg-[var(--bg-subtle)] transition-colors ${i % 2 === 1 ? "bg-[var(--bg-app)]" : ""}`}>
+                  <td className="px-4 py-1 font-medium text-[var(--text-primary)]"
                     style={{ borderLeft: `3px solid ${teacher.role === "teacher" ? "var(--accent-bright)" : "var(--role-ta-border)"}` }}>
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-full bg-[var(--accent-bright)]/20 flex items-center justify-center text-[var(--accent)] text-xs font-bold shrink-0 select-none" aria-hidden="true">
-                        {getInitials(teacher.name)}
+                    {isEditing ? (
+                      <div>
+                        <input value={draftName} onChange={(e) => { setDraftName(e.target.value); setDraftErrors((p) => ({ ...p, name: undefined })); }}
+                          aria-label={t("ชื่อ", "Name")} aria-invalid={!!draftErrors.name} autoFocus className={inputClass} />
+                        {draftErrors.name && <p role="alert" className="text-[10px] text-[var(--s-err-text)] mt-0.5">{draftErrors.name}</p>}
                       </div>
-                      {teacher.name}
-                      {teacher.status === "suspended" && (
-                        <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-800">
-                          {t("ระงับ", "Suspended")}
-                        </span>
-                      )}
-                    </div>
+                    ) : (
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="w-8 h-8 rounded-full bg-[var(--accent-bright)]/20 flex items-center justify-center text-[var(--accent)] text-xs font-bold shrink-0 select-none" aria-hidden="true">
+                          {getInitials(teacher.name)}
+                        </div>
+                        <span className="truncate">{teacher.name}</span>
+                      </div>
+                    )}
                   </td>
-                  <td className="px-4 py-3 text-[var(--text-secondary)]">{teacher.email}</td>
-                  <td className="px-4 py-3">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${teacher.role === "teacher" ? "bg-[var(--accent-bright)]/10 text-[var(--accent)]" : "bg-[var(--role-ta-bg)] text-[var(--role-ta-text)]"}`}>
-                      {ROLE_LABELS[teacher.role]}
+                  <td className="px-4 py-1 text-[var(--text-secondary)] truncate">
+                    {isEditing ? (
+                      <div>
+                        <input value={draftEmail} onChange={(e) => { setDraftEmail(e.target.value); setDraftErrors((p) => ({ ...p, email: undefined })); }}
+                          aria-label={t("อีเมล", "Email")} aria-invalid={!!draftErrors.email} className={inputClass} />
+                        {draftErrors.email && <p role="alert" className="text-[10px] text-[var(--s-err-text)] mt-0.5">{draftErrors.email}</p>}
+                      </div>
+                    ) : teacher.email}
+                  </td>
+                  <td className="px-4 py-1">
+                    {isEditing ? (
+                      <select value={draftRole} onChange={(e) => setDraftRole(e.target.value as "teacher" | "ta")}
+                        aria-label={t("ตำแหน่ง", "Role")} className={inputClass}>
+                        <option value="teacher">{t("อาจารย์", "Teacher")}</option>
+                        <option value="ta">{t("ผู้ช่วยสอน", "TA")}</option>
+                      </select>
+                    ) : (
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap ${teacher.role === "teacher" ? "bg-[var(--accent-bright)]/10 text-[var(--accent)]" : "bg-[var(--role-ta-bg)] text-[var(--role-ta-text)]"}`}>
+                        {ROLE_LABELS[teacher.role]}
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-4 py-1">
+                    <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap ${teacherInactive ? "bg-[var(--bg-subtle)] text-[var(--text-muted)]" : "bg-[var(--s-ok-bg)] text-[var(--s-ok-text)]"}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${teacherInactive ? "bg-[var(--text-muted)]" : "bg-[var(--s-ok-text)]"}`} />
+                      {teacherInactive ? t("ปิดใช้งาน", "Inactive") : t("ใช้งานอยู่", "Active")}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-[var(--text-muted)] tabular-nums">{teacher.courseIds.length}</td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-1">
                     <div className="flex items-center gap-1">
-                      <button onClick={() => { setEditingTeacher(teacher); setDrawerOpen(true); }}
-                        aria-label={t(`แก้ไข ${teacher.name}`, `Edit ${teacher.name}`)}
-                        className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--accent)] hover:bg-[var(--accent-bright)]/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                        </svg>
-                      </button>
-                      {teacher.status === "suspended" ? (
-                        <button onClick={() => reactivateTeacher(teacher.id)}
-                          aria-label={t(`เปิดใช้งาน ${teacher.name}`, `Reactivate ${teacher.name}`)}
-                          className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-green-700 hover:bg-green-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-400 transition-colors">
-                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-                            <polyline points="20 6 9 17 4 12"/>
-                          </svg>
-                        </button>
+                      {isEditing ? (
+                        <>
+                          <button onClick={saveEdit}
+                            aria-label={t("บันทึก", "Save")}
+                            className="min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-green-700 hover:bg-green-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-400 transition-colors">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+                              <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                          </button>
+                          <button onClick={cancelEdit}
+                            aria-label={t("ยกเลิก", "Cancel")}
+                            className="min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--s-err-text)] hover:bg-[var(--s-err-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--s-err-bd)] transition-colors">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                            </svg>
+                          </button>
+                        </>
                       ) : (
-                        <button onClick={() => setSuspendingId(teacher.id)}
-                          aria-label={t(`ระงับ ${teacher.name}`, `Suspend ${teacher.name}`)}
-                          className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-amber-700 hover:bg-amber-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 transition-colors">
-                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                            <circle cx="12" cy="12" r="10"/>
-                            <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
-                          </svg>
-                        </button>
+                        <>
+                          <button onClick={() => startEdit(teacher)}
+                            aria-label={t(`แก้ไข ${teacher.name}`, `Edit ${teacher.name}`)}
+                            className="min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--accent)] hover:bg-[var(--accent-bright)]/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                            </svg>
+                          </button>
+                          {teacher.status === "inactive" ? (
+                            <button onClick={() => activateTeacher(teacher.id)}
+                              aria-label={t(`เปิดใช้งาน ${teacher.name}`, `Activate ${teacher.name}`)}
+                              className="min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-green-700 hover:bg-green-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-400 transition-colors">
+                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+                                <polyline points="20 6 9 17 4 12"/>
+                              </svg>
+                            </button>
+                          ) : (
+                            <button onClick={() => setDeactivatingId(teacher.id)}
+                              aria-label={t(`ปิดใช้งาน ${teacher.name}`, `Deactivate ${teacher.name}`)}
+                              className="min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-amber-700 hover:bg-amber-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 transition-colors">
+                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                                <circle cx="12" cy="12" r="10"/>
+                                <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+                              </svg>
+                            </button>
+                          )}
+                        </>
                       )}
                     </div>
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         </div>
       )}
       <Pagination page={page} totalPages={totalPages} onChange={setPage} />
 
-      <TeacherDrawer open={drawerOpen} mode={editingTeacher ? "edit" : "create"} teacher={editingTeacher}
-        onClose={() => { setDrawerOpen(false); setEditingTeacher(undefined); }} />
+      <TeacherDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
       <ImportTeacherDrawer open={importOpen} onClose={() => setImportOpen(false)} />
-      {suspendingTeacher && (
-        <ConfirmSuspendTeacherDialog
-          teacher={suspendingTeacher}
-          onConfirm={() => { suspendTeacher(suspendingId!); setSuspendingId(null); }}
-          onCancel={() => setSuspendingId(null)}
+      {deactivatingTeacher && (
+        <ConfirmDeactivateTeacherDialog
+          teacher={deactivatingTeacher}
+          onConfirm={() => { deactivateTeacher(deactivatingId!); setDeactivatingId(null); }}
+          onCancel={() => setDeactivatingId(null)}
         />
       )}
     </div>
@@ -875,7 +985,9 @@ function TeachersTab() {
 // STUDENTS — Add Single Drawer
 // ═══════════════════════════════════════════════════════════════
 
-function AddStudentDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
+function StudentDrawer({ open, onClose }: {
+  open: boolean; onClose: () => void;
+}) {
   const { t } = useLanguage();
   const { addCohortStudents, findByStudentId } = useCohortStudents();
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -917,11 +1029,14 @@ function AddStudentDrawer({ open, onClose }: { open: boolean; onClose: () => voi
   function validate() {
     const e: Record<string, string> = {};
     if (!studentId.trim()) e.studentId = t("กรุณากรอกรหัสนักศึกษา", "Student ID is required");
+    else if (!STUDENT_ID_RE.test(studentId.trim())) e.studentId = t("รหัสนักศึกษาต้องเป็นตัวเลข 8 หลัก", "Student ID must be 8 digits");
     else if (findByStudentId(studentId.trim())) e.studentId = t("รหัสนี้มีในระบบแล้ว", "Student ID already exists");
     if (!firstName.trim()) e.firstName = t("กรุณากรอกชื่อ", "First name is required");
     if (!lastName.trim()) e.lastName = t("กรุณากรอกนามสกุล", "Last name is required");
     if (!email.trim()) e.email = t("กรุณากรอกอีเมล", "Email is required");
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) e.email = t("รูปแบบอีเมลไม่ถูกต้อง", "Invalid email format");
+    else if (STUDENT_ID_RE.test(studentId.trim()) && email.trim().toLowerCase() !== expectedStudentEmail(studentId.trim()))
+      e.email = t("อีเมลต้องเป็น รหัสนักศึกษา@kmitl.ac.th", "Email must be studentID@kmitl.ac.th");
     if (!cohort.trim()) e.cohort = t("กรุณากรอก cohort", "Cohort is required");
     if (!program.trim()) e.program = t("กรุณากรอกสาขา", "Program is required");
     return e;
@@ -1029,29 +1144,92 @@ function AddStudentDrawer({ open, onClose }: { open: boolean; onClose: () => voi
 
 function StudentsTab() {
   const { t } = useLanguage();
-  const { cohortStudents, removeCohortStudent } = useCohortStudents();
+  const { cohortStudents, updateCohortStudent, removeCohortStudent, findByStudentId } = useCohortStudents();
   const [importOpen, setImportOpen] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deactivatingId, setDeactivatingId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [cohortFilter, setCohortFilter] = useState("all");
+  const [programFilter, setProgramFilter] = useState("all");
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 10;
 
+  // Inline row edit
+  const [editingRowId, setEditingRowId] = useState<string | null>(null);
+  const [draftStudentId, setDraftStudentId] = useState("");
+  const [draftFirstName, setDraftFirstName] = useState("");
+  const [draftLastName, setDraftLastName] = useState("");
+  const [draftEmail, setDraftEmail] = useState("");
+  const [draftCohort, setDraftCohort] = useState("");
+  const [draftProgram, setDraftProgram] = useState("");
+  const [draftErrors, setDraftErrors] = useState<Record<string, string>>({});
+
+  function startEdit(student: CohortStudent) {
+    setEditingRowId(student.id);
+    setDraftStudentId(student.studentId);
+    setDraftFirstName(student.firstName);
+    setDraftLastName(student.lastName);
+    setDraftEmail(student.email);
+    setDraftCohort(student.cohort);
+    setDraftProgram(student.program);
+    setDraftErrors({});
+  }
+
+  function cancelEdit() {
+    setEditingRowId(null);
+    setDraftErrors({});
+  }
+
+  function validateEdit() {
+    const e: Record<string, string> = {};
+    if (!draftStudentId.trim()) e.studentId = t("กรุณากรอกรหัสนักศึกษา", "Student ID is required");
+    else if (!STUDENT_ID_RE.test(draftStudentId.trim())) e.studentId = t("รหัสนักศึกษาต้องเป็นตัวเลข 8 หลัก", "Student ID must be 8 digits");
+    else {
+      const dup = findByStudentId(draftStudentId.trim());
+      if (dup && dup.id !== editingRowId) e.studentId = t("รหัสนี้มีในระบบแล้ว", "Student ID already exists");
+    }
+    if (!draftFirstName.trim()) e.firstName = t("กรุณากรอกชื่อ", "First name is required");
+    if (!draftLastName.trim()) e.lastName = t("กรุณากรอกนามสกุล", "Last name is required");
+    if (!draftEmail.trim()) e.email = t("กรุณากรอกอีเมล", "Email is required");
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(draftEmail.trim())) e.email = t("รูปแบบอีเมลไม่ถูกต้อง", "Invalid email format");
+    else if (STUDENT_ID_RE.test(draftStudentId.trim()) && draftEmail.trim().toLowerCase() !== expectedStudentEmail(draftStudentId.trim()))
+      e.email = t("อีเมลต้องเป็น รหัสนักศึกษา@kmitl.ac.th", "Email must be studentID@kmitl.ac.th");
+    if (!draftCohort.trim()) e.cohort = t("กรุณากรอก cohort", "Cohort is required");
+    if (!draftProgram.trim()) e.program = t("กรุณากรอกสาขา", "Program is required");
+    return e;
+  }
+
+  function saveEdit() {
+    const errs = validateEdit();
+    if (Object.keys(errs).length > 0) { setDraftErrors(errs); return; }
+    updateCohortStudent(editingRowId!, {
+      studentId: draftStudentId.trim(), firstName: draftFirstName.trim(), lastName: draftLastName.trim(),
+      email: draftEmail.trim().toLowerCase(), cohort: draftCohort.trim(), program: draftProgram.trim(),
+    });
+    setEditingRowId(null);
+  }
+
   const cohorts = [...new Set(cohortStudents.map((s) => s.cohort))].sort();
+  // Free-text field, not FK-enforced yet (see CohortStudent.program) — derive
+  // options from what's actually in the data instead of hardcoding CECS/CEI/CE,
+  // so the filter never hides a program someone typed slightly differently.
+  const programs = [...new Set(cohortStudents.map((s) => s.program).filter(Boolean))].sort();
 
   const filtered = cohortStudents.filter((s) => {
     const matchCohort = cohortFilter === "all" || s.cohort === cohortFilter;
+    const matchProgram = programFilter === "all" || s.program === programFilter;
     const q = search.toLowerCase();
     const matchSearch = !q || s.studentId.includes(q) || s.firstName.toLowerCase().includes(q) ||
       s.lastName.toLowerCase().includes(q) || s.email.toLowerCase().includes(q);
-    return matchCohort && matchSearch;
+    return matchCohort && matchProgram && matchSearch;
   });
-  useEffect(() => { setPage(1); }, [search, cohortFilter]);
+  useEffect(() => { setPage(1); }, [search, cohortFilter, programFilter]);
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const deletingStudent = cohortStudents.find((s) => s.id === deletingId);
+  const deactivatingStudent = cohortStudents.find((s) => s.id === deactivatingId);
 
   useEffect(() => {
     if (!deletingId) return;
@@ -1059,6 +1237,14 @@ function StudentsTab() {
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [deletingId]);
+
+  function activateStudent(id: string) {
+    updateCohortStudent(id, { status: "active" });
+  }
+  function deactivateStudent(id: string) {
+    updateCohortStudent(id, { status: "inactive" });
+    setDeactivatingId(null);
+  }
 
   const COHORT_LABEL = t("cohort ทั้งหมด", "All cohorts");
   const COL_COUNT = 6;
@@ -1072,13 +1258,22 @@ function StudentsTab() {
         </div>
         {cohorts.length > 0 && (
           <select value={cohortFilter} onChange={(e) => setCohortFilter(e.target.value)}
+            aria-label={t("กรองตาม cohort", "Filter by cohort")}
             className="h-10 pl-3 pr-8 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)] transition-colors shrink-0">
             <option value="all">{COHORT_LABEL}</option>
             {cohorts.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
         )}
+        {programs.length > 0 && (
+          <select value={programFilter} onChange={(e) => setProgramFilter(e.target.value)}
+            aria-label={t("กรองตามหลักสูตร", "Filter by program")}
+            className="h-10 pl-3 pr-8 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)] transition-colors shrink-0">
+            <option value="all">{t("หลักสูตรทั้งหมด", "All programs")}</option>
+            {programs.map((p) => <option key={p} value={p}>{p}</option>)}
+          </select>
+        )}
         <button onClick={() => setImportOpen(true)}
-          className="flex items-center gap-2 h-10 px-4 rounded-xl border border-[var(--border-subtle)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors shrink-0">
+          className="flex items-center gap-2 h-10 px-4 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] shadow-sm text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:border-[var(--accent-bright)] hover:text-[var(--text-primary)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors shrink-0">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
             <polyline points="17 8 12 3 7 8"/>
@@ -1124,15 +1319,23 @@ function StudentsTab() {
 
           <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] overflow-hidden">
             <div className="overflow-y-auto max-h-[calc(100vh-380px)]">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm table-fixed">
+              <colgroup>
+                <col className="w-[90px]" />
+                <col className="w-[22%]" />
+                <col className="w-[28%]" />
+                <col className="w-[150px]" />
+                <col className="w-[120px]" />
+                <col className="w-24" />
+              </colgroup>
               <thead className="sticky top-0 z-10">
                 <tr className="border-b border-[var(--border-subtle)] bg-[var(--bg-app)]">
-                  <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("รหัส", "Student ID")}</th>
-                  <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("ชื่อ-นามสกุล", "Name")}</th>
-                  <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("อีเมล", "Email")}</th>
-                  <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("cohort / สาขา", "Cohort / Program")}</th>
-                  <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("สถานะ", "Status")}</th>
-                  <th scope="col" className="px-4 py-3 w-12"><span className="sr-only">{t("ลบ", "Delete")}</span></th>
+                  <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("รหัส", "Student ID")}</th>
+                  <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("ชื่อ-นามสกุล", "Name")}</th>
+                  <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("อีเมล", "Email")}</th>
+                  <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("cohort / สาขา", "Cohort / Program")}</th>
+                  <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("สถานะ", "Status")}</th>
+                  <th scope="col" className="px-4 py-1 w-24"><span className="sr-only">{t("การจัดการ", "Actions")}</span></th>
                 </tr>
               </thead>
               <tbody>
@@ -1145,37 +1348,134 @@ function StudentsTab() {
                 ) : (
                   paged.map((student, i) => {
                     const isInactive = student.status === "inactive";
+                    const isEditing = editingRowId === student.id;
+                    const inputClass = "h-7 w-full rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-app)] px-1.5 text-xs text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]";
                     return (
                       <tr
                         key={student.id}
                         className={`border-b border-[var(--border-subtle)] transition-colors ${i % 2 === 1 ? "bg-[var(--bg-app)] hover:bg-[var(--bg-subtle)]" : "hover:bg-[var(--bg-subtle)]"}`}
                       >
-                        <td className="px-4 py-3 font-mono text-xs text-[var(--text-primary)]">{student.studentId}</td>
-                        <td className="px-4 py-3 font-medium text-[var(--text-primary)]">{student.firstName} {student.lastName}</td>
-                        <td className="px-4 py-3 text-[var(--text-secondary)]">{student.email}</td>
-                        <td className="px-4 py-3">
-                          <span className="inline-flex items-center gap-1.5">
-                            <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700">{student.cohort}</span>
-                            <span className="text-xs text-[var(--text-muted)]">{student.program}</span>
-                          </span>
+                        <td className="px-4 py-1 font-mono text-xs text-[var(--text-primary)] truncate">
+                          {isEditing ? (
+                            <div>
+                              <input value={draftStudentId} onChange={(e) => { setDraftStudentId(e.target.value); setDraftErrors((p) => ({ ...p, studentId: "" })); }}
+                                aria-label={t("รหัสนักศึกษา", "Student ID")} autoFocus className={`${inputClass} font-mono`} />
+                              {draftErrors.studentId && <p role="alert" className="text-[10px] text-[var(--s-err-text)] mt-0.5">{draftErrors.studentId}</p>}
+                            </div>
+                          ) : student.studentId}
                         </td>
-                        <td className="px-4 py-3">
-                          <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold ${isInactive ? "bg-[var(--bg-subtle)] text-[var(--text-muted)]" : "bg-[var(--s-ok-bg)] text-[var(--s-ok-text)]"}`}>
+                        <td className="px-4 py-1 font-medium text-[var(--text-primary)] truncate">
+                          {isEditing ? (
+                            <div className="flex flex-col gap-1">
+                              <input value={draftFirstName} onChange={(e) => { setDraftFirstName(e.target.value); setDraftErrors((p) => ({ ...p, firstName: "" })); }}
+                                aria-label={t("ชื่อ", "First name")} className={inputClass} />
+                              <input value={draftLastName} onChange={(e) => { setDraftLastName(e.target.value); setDraftErrors((p) => ({ ...p, lastName: "" })); }}
+                                aria-label={t("นามสกุล", "Last name")} className={inputClass} />
+                              {(draftErrors.firstName || draftErrors.lastName) && <p role="alert" className="text-[10px] text-[var(--s-err-text)]">{draftErrors.firstName || draftErrors.lastName}</p>}
+                            </div>
+                          ) : `${student.firstName} ${student.lastName}`}
+                        </td>
+                        <td className="px-4 py-1 text-[var(--text-secondary)] truncate">
+                          {isEditing ? (
+                            <div>
+                              <input value={draftEmail} onChange={(e) => { setDraftEmail(e.target.value); setDraftErrors((p) => ({ ...p, email: "" })); }}
+                                aria-label={t("อีเมล", "Email")} className={inputClass} />
+                              {draftErrors.email && <p role="alert" className="text-[10px] text-[var(--s-err-text)] mt-0.5">{draftErrors.email}</p>}
+                            </div>
+                          ) : student.email}
+                        </td>
+                        <td className="px-4 py-1">
+                          {isEditing ? (
+                            <div className="flex flex-col gap-1">
+                              <input value={draftCohort} onChange={(e) => { setDraftCohort(e.target.value); setDraftErrors((p) => ({ ...p, cohort: "" })); }}
+                                aria-label={t("cohort", "Cohort")} className={inputClass} />
+                              <input value={draftProgram} onChange={(e) => { setDraftProgram(e.target.value); setDraftErrors((p) => ({ ...p, program: "" })); }}
+                                aria-label={t("สาขา", "Program")} className={inputClass} />
+                              {(draftErrors.cohort || draftErrors.program) && <p role="alert" className="text-[10px] text-[var(--s-err-text)]">{draftErrors.cohort || draftErrors.program}</p>}
+                            </div>
+                          ) : (
+                            <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+                              <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700">{student.cohort}</span>
+                              <span className="text-xs text-[var(--text-muted)]">{student.program}</span>
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-4 py-1">
+                          <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap ${isInactive ? "bg-[var(--bg-subtle)] text-[var(--text-muted)]" : "bg-[var(--s-ok-bg)] text-[var(--s-ok-text)]"}`}>
                             <span className={`w-1.5 h-1.5 rounded-full ${isInactive ? "bg-[var(--text-muted)]" : "bg-[var(--s-ok-text)]"}`} />
                             {isInactive ? t("พ้นสภาพ", "Inactive") : t("ปกติ", "Active")}
                           </span>
                         </td>
-                        <td className="px-4 py-3">
-                          <button
-                            onClick={() => setDeletingId(student.id)}
-                            aria-label={t(`ลบ ${student.firstName} ${student.lastName}`, `Delete ${student.firstName} ${student.lastName}`)}
-                            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--s-err-text)] hover:bg-[var(--s-err-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--s-err-bd)] transition-colors"
-                          >
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                              <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>
-                              <path d="M10 11v6m4-6v6"/><path d="M9 6V4h6v2"/>
-                            </svg>
-                          </button>
+                        <td className="px-4 py-1">
+                          <div className="flex items-center gap-1">
+                            {isEditing ? (
+                              <>
+                                <button
+                                  onClick={saveEdit}
+                                  aria-label={t("บันทึก", "Save")}
+                                  className="min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-green-700 hover:bg-green-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-400 transition-colors"
+                                >
+                                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                  </svg>
+                                </button>
+                                <button
+                                  onClick={cancelEdit}
+                                  aria-label={t("ยกเลิก", "Cancel")}
+                                  className="min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--s-err-text)] hover:bg-[var(--s-err-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--s-err-bd)] transition-colors"
+                                >
+                                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                                  </svg>
+                                </button>
+                              </>
+                            ) : (
+                              <>
+                            <button
+                              onClick={() => startEdit(student)}
+                              aria-label={t(`แก้ไข ${student.firstName} ${student.lastName}`, `Edit ${student.firstName} ${student.lastName}`)}
+                              className="min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--accent)] hover:bg-[var(--accent-bright)]/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
+                            >
+                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                              </svg>
+                            </button>
+                            {isInactive ? (
+                              <button
+                                onClick={() => activateStudent(student.id)}
+                                aria-label={t(`เปิดใช้งาน ${student.firstName} ${student.lastName}`, `Activate ${student.firstName} ${student.lastName}`)}
+                                className="min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-green-700 hover:bg-green-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-400 transition-colors"
+                              >
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+                                  <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => setDeactivatingId(student.id)}
+                                aria-label={t(`ปิดใช้งาน ${student.firstName} ${student.lastName}`, `Deactivate ${student.firstName} ${student.lastName}`)}
+                                className="min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-amber-700 hover:bg-amber-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 transition-colors"
+                              >
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                                  <circle cx="12" cy="12" r="10"/>
+                                  <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+                                </svg>
+                              </button>
+                            )}
+                            <button
+                              onClick={() => setDeletingId(student.id)}
+                              aria-label={t(`ลบ ${student.firstName} ${student.lastName}`, `Delete ${student.firstName} ${student.lastName}`)}
+                              className="min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--s-err-text)] hover:bg-[var(--s-err-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--s-err-bd)] transition-colors"
+                            >
+                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                                <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>
+                                <path d="M10 11v6m4-6v6"/><path d="M9 6V4h6v2"/>
+                              </svg>
+                            </button>
+                              </>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     );
@@ -1190,7 +1490,7 @@ function StudentsTab() {
       )}
 
       <ImportStudentDrawer open={importOpen} onClose={() => setImportOpen(false)} />
-      <AddStudentDrawer open={addOpen} onClose={() => setAddOpen(false)} />
+      <StudentDrawer open={addOpen} onClose={() => setAddOpen(false)} />
 
       {deletingStudent && (
         <>
@@ -1214,6 +1514,43 @@ function StudentsTab() {
               <button onClick={() => { removeCohortStudent(deletingId!); setDeletingId(null); }}
                 className="flex-1 h-9 rounded-xl border border-[var(--s-err-bd)] bg-[var(--s-err-bg)] text-[var(--s-err-text)] text-sm font-semibold hover:bg-[var(--s-err-bg)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--s-err-bd)] transition-colors">
                 {t("ลบ", "Delete")}
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+
+      {deactivatingStudent && (
+        <>
+          <div className="fixed inset-0 bg-black/40 z-30" onClick={() => setDeactivatingId(null)} aria-hidden="true" />
+          <div role="alertdialog" aria-modal="true" aria-labelledby="deactivate-student-title"
+            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-40 w-full max-w-sm bg-[var(--bg-surface)] rounded-2xl shadow-2xl border border-[var(--border-subtle)] p-6 flex flex-col gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center shrink-0">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+                </svg>
+              </div>
+              <div>
+                <h3 id="deactivate-student-title" className="text-sm font-bold text-[var(--text-primary)]">{t("ยืนยันการปิดใช้งาน", "Confirm Deactivate")}</h3>
+                <p className="text-xs text-[var(--text-muted)] mt-0.5">
+                  {t(`ปิดใช้งาน "${deactivatingStudent.firstName} ${deactivatingStudent.lastName}" (${deactivatingStudent.studentId})?`,
+                     `Deactivate "${deactivatingStudent.firstName} ${deactivatingStudent.lastName}" (${deactivatingStudent.studentId})?`)}
+                </p>
+                <p className="text-xs text-[var(--text-muted)] mt-0.5">
+                  {t("สามารถเปิดใช้งานคืนได้ภายหลัง", "You can activate them again later.")}
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={() => setDeactivatingId(null)} autoFocus
+                className="flex-1 h-9 rounded-xl border border-[var(--border-subtle)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors">
+                {t("ยกเลิก", "Cancel")}
+              </button>
+              <button onClick={() => deactivateStudent(deactivatingId!)}
+                className="flex-1 h-9 rounded-xl bg-amber-700 text-white text-sm font-semibold hover:bg-amber-800 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 transition-colors">
+                {t("ปิดใช้งาน", "Deactivate")}
               </button>
             </div>
           </div>

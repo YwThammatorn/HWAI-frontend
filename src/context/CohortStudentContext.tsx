@@ -34,6 +34,10 @@ export default function CohortStudentProvider({ children }: { children: React.Re
     persist(next);
   }
 
+  function updateCohortStudent(id: string, data: Partial<Omit<CohortStudent, "id">>) {
+    persist(cohortStudents.map((s) => (s.id === id ? { ...s, ...data } : s)));
+  }
+
   function removeCohortStudent(id: string) {
     persist(cohortStudents.filter((s) => s.id !== id));
   }
@@ -55,6 +59,7 @@ export default function CohortStudentProvider({ children }: { children: React.Re
       value={{
         cohortStudents,
         addCohortStudents,
+        updateCohortStudent,
         removeCohortStudent,
         findByStudentId,
         getCohorts,
