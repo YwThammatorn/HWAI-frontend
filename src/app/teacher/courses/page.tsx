@@ -9,10 +9,11 @@ import type { Course } from "@/lib/courses";
 import { useLanguage } from "@/context/LanguageContext";
 import SearchInput from "@/components/SearchInput";
 import Pagination from "@/components/Pagination";
+import { CourseIcon } from "@/components/CourseIcon";
 
 export default function CoursesPage() {
   const { t } = useLanguage();
-  const { courses, updateCourse, removeCourse } = useCourses();
+  const { courses, updateCourse } = useCourses();
   const { getStudentsByCourse } = useStudents();
   const { getAssignmentsByCourse, getSubmissionsByAssignment } = useAssignments();
   const [tab, setTab] = useState<"active" | "archived">("active");
@@ -57,11 +58,11 @@ export default function CoursesPage() {
   }, [courses, getStudentsByCourse, getAssignmentsByCourse, getSubmissionsByAssignment]);
 
   return (
-      <main className="w-full max-w-[1200px] mx-auto px-8 py-8">
+      <main className="w-full px-8 py-8">
         {/* Header */}
         <div className="flex items-end justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-[var(--text-primary)]">{t("รายวิชาทั้งหมด", "All Courses")}</h1>
+            <h1 className="text-3xl font-bold text-[var(--text-primary)]">{t("รายวิชาของฉัน", "My Courses")}</h1>
             <p className="mt-1 text-sm text-gray-500">
               {t("จัดการรายวิชา งาน และความคืบหน้าของนักศึกษาจากที่นี่", "Manage your classes, assignments, and student progress from here.")}
             </p>
@@ -91,7 +92,7 @@ export default function CoursesPage() {
           )}
         </div>
 
-        {/* Tab filter â€” only show when there are archived */}
+        {/* Tab filter — only show when there are archived */}
         {archived.length > 0 && (
           <div className="flex gap-1 mb-6">
             {(["active", "archived"] as const).map((tabKey) => (
@@ -135,11 +136,6 @@ export default function CoursesPage() {
                     activeAssignments={stats.activeAssignments}
                     isArchived={tab === "archived"}
                     onRestore={() => updateCourse(course.id, { status: "active" })}
-                    onDelete={() => {
-                      if (window.confirm(t(`ลบ "${course.name}" ถาวร?\nไม่สามารถกู้คืนได้`, `Permanently delete "${course.name}"?\nCannot be undone.`))) {
-                        removeCourse(course.id);
-                      }
-                    }}
                   />
                 );
               })}
@@ -189,14 +185,13 @@ function EmptyState() {
   );
 }
 
-function CourseCard({ course, studentCount, allGraded, activeAssignments, isArchived, onRestore, onDelete }: {
+function CourseCard({ course, studentCount, allGraded, activeAssignments, isArchived, onRestore }: {
   course: Course;
   studentCount: number;
   allGraded: boolean;
   activeAssignments: number;
   isArchived: boolean;
   onRestore: () => void;
-  onDelete: () => void;
 }) {
   const { t } = useLanguage();
   const sourceLabel: Record<string, { label: string; dot: string }> = {
@@ -206,14 +201,17 @@ function CourseCard({ course, studentCount, allGraded, activeAssignments, isArch
   };
   const src = sourceLabel[course.source] ?? { label: course.source, dot: "" };
 
+  const codeLabel = course.code
+    ? course.sectionNumber ? `${course.code} · ${t("กลุ่ม", "Sec.")} ${course.sectionNumber}` : course.code
+    : src.label;
+  const termLabel = course.academicYear && course.term ? `${course.term}/${course.academicYear}` : "—";
+
   return (
     <div className="flex flex-col bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
-      {/* Colored banner */}
-      <Link href={isArchived ? "#" : `/teacher/courses/${course.id}`} className="block relative h-28 shrink-0" style={{ background: course.coverColor }}>
+      {/* Cover — color + configurable icon */}
+      <Link href={isArchived ? "#" : `/teacher/courses/${course.id}`} className="block relative h-24 shrink-0" style={{ background: course.coverColor }}>
         <div className="absolute bottom-3 left-3 w-9 h-9 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
-            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-          </svg>
+          <CourseIcon iconKey={course.icon} size={18} className="text-white" />
         </div>
         {isArchived && (
           <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
@@ -225,19 +223,19 @@ function CourseCard({ course, studentCount, allGraded, activeAssignments, isArch
       {/* Card body — flex column so footer pins to bottom */}
       <div className="flex flex-col flex-1 p-4">
         <div className="flex-1">
-          <div className="flex items-start justify-between mb-1">
-            <h3 className="font-bold text-[var(--text-primary)] text-[15px] leading-snug line-clamp-2">{course.name}</h3>
-            {course.source === "manual" && !isArchived && (
-              <div className="flex gap-2 text-xs ml-2 shrink-0">
-                <Link href={`/teacher/courses/${course.id}/settings`} className="text-[var(--accent)] hover:underline font-medium">{t("แก้ไข", "Edit")}</Link>
-                <button onClick={onDelete} className="text-[var(--s-err-text)] hover:underline font-medium">{t("ลบ", "Delete")}</button>
-              </div>
-            )}
-          </div>
+          <h3 className="font-bold text-[var(--text-primary)] text-[15px] leading-snug line-clamp-2 mb-2">{course.name}</h3>
 
-          <div className="flex items-center gap-1.5">
-            {src.dot && <span className="w-2 h-2 rounded-full inline-block" style={{ background: src.dot }} />}
-            <span className="text-xs text-gray-500">{src.label}</span>
+          {/* DEEP-QA-style two-column meta row — always shown for a consistent card shape;
+              falls back to the source label / an em-dash when a course has no CourseTemplate link */}
+          <div className="grid grid-cols-2 gap-3 pb-3 border-b border-gray-50">
+            <div className="min-w-0">
+              <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-0.5">{t("รหัสวิชา", "Code")}</p>
+              <p className="text-xs font-semibold text-[var(--text-primary)] truncate">{codeLabel}</p>
+            </div>
+            <div className="min-w-0">
+              <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-0.5">{t("ภาคเรียนที่", "Term")}</p>
+              <p className="text-xs font-semibold text-[var(--accent)] truncate">{termLabel}</p>
+            </div>
           </div>
         </div>
 

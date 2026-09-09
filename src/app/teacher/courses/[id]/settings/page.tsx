@@ -3,8 +3,9 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import { useCourses, PRESET_COLORS } from "@/lib/courses";
+import { useCourses, PRESET_COLORS, type GradingSource, type PublishMode } from "@/lib/courses";
 import { useLanguage } from "@/context/LanguageContext";
+import { CourseIcon, COURSE_ICON_KEYS, type CourseIconKey } from "@/components/CourseIcon";
 
 export default function CourseSettingsPage() {
   const { id } = useParams<{ id: string }>();
@@ -17,8 +18,11 @@ export default function CourseSettingsPage() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [coverColor, setCoverColor] = useState(PRESET_COLORS[0]);
+  const [icon, setIcon] = useState<CourseIconKey>("book");
+  const [gradingSource, setGradingSource] = useState<GradingSource>("ta");
+  const [publishMode, setPublishMode] = useState<PublishMode>("manual");
   const [saved, setSaved] = useState(false);
-  const originalRef = useRef({ name: "", description: "", coverColor: "" });
+  const originalRef = useRef({ name: "", description: "", coverColor: "", icon: "book" as CourseIconKey, gradingSource: "ta" as GradingSource, publishMode: "manual" as PublishMode });
 
   useEffect(() => {
     if (course) {
@@ -26,10 +30,16 @@ export default function CourseSettingsPage() {
         name: course.name,
         description: course.description ?? "",
         coverColor: course.coverColor ?? PRESET_COLORS[0],
+        icon: course.icon ?? ("book" as CourseIconKey),
+        gradingSource: course.gradingSource ?? ("ta" as GradingSource),
+        publishMode: course.publishMode ?? ("manual" as PublishMode),
       };
       setName(orig.name);
       setDescription(orig.description);
       setCoverColor(orig.coverColor);
+      setIcon(orig.icon);
+      setGradingSource(orig.gradingSource);
+      setPublishMode(orig.publishMode);
       originalRef.current = orig;
     }
   }, [course?.id]);
@@ -38,7 +48,10 @@ export default function CourseSettingsPage() {
     !saved && (
       name !== originalRef.current.name ||
       description !== originalRef.current.description ||
-      coverColor !== originalRef.current.coverColor
+      coverColor !== originalRef.current.coverColor ||
+      icon !== originalRef.current.icon ||
+      gradingSource !== originalRef.current.gradingSource ||
+      publishMode !== originalRef.current.publishMode
     );
 
   useEffect(() => {
@@ -70,6 +83,9 @@ export default function CourseSettingsPage() {
       description: description.trim(),
       coverColor,
       iconColor: coverColor,
+      icon,
+      gradingSource,
+      publishMode,
     });
     setSaved(true);
     setTimeout(() => router.push(`/teacher/courses/${id}`), 800);
@@ -134,16 +150,30 @@ export default function CourseSettingsPage() {
             <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-5">{t("รูปแบบรายวิชา", "Course Visuals")}</h2>
 
             <div className="grid grid-cols-[1fr_auto_1fr] gap-6 items-start">
-              {/* Upload Icon */}
-              <div>
-                <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">{t("อัปโหลดไอคอน", "Upload Icon Image")}</label>
-                <div className="border-2 border-dashed border-gray-200 rounded-xl h-32 flex flex-col items-center justify-center gap-2 text-gray-500 hover:border-[var(--accent)] hover:text-[var(--accent)] cursor-pointer transition-colors">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <rect x="3" y="3" width="18" height="18" rx="3"/>
-                    <circle cx="8.5" cy="8.5" r="1.5"/>
-                    <polyline points="21 15 16 10 5 21"/>
-                  </svg>
-                  <span className="text-xs">{t("คลิกเพื่ออัปโหลด", "Click to upload")}</span>
+              {/* Icon Picker */}
+              <div className="flex flex-col items-center">
+                <label className="block text-sm font-medium text-[var(--text-primary)] mb-2 self-start">{t("ไอคอน", "Icon")}</label>
+                <div className="w-16 h-16 rounded-xl mb-3 shadow flex items-center justify-center" style={{ background: coverColor }}>
+                  <CourseIcon iconKey={icon} size={26} className="text-white" />
+                </div>
+                <div className="grid grid-cols-4 gap-1.5">
+                  {COURSE_ICON_KEYS.map((k) => (
+                    <button
+                      type="button"
+                      key={k}
+                      onClick={() => setIcon(k)}
+                      aria-label={k}
+                      aria-pressed={icon === k}
+                      className={[
+                        "w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all",
+                        icon === k
+                          ? "border-[#1B2A4A] text-[var(--text-primary)] scale-110"
+                          : "border-transparent text-gray-400 hover:text-[var(--text-primary)]",
+                      ].join(" ")}
+                    >
+                      <CourseIcon iconKey={k} size={15} />
+                    </button>
+                  ))}
                 </div>
               </div>
 
@@ -188,15 +218,71 @@ export default function CourseSettingsPage() {
               <div className="w-48 rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
                 <div className="h-20 relative" style={{ background: coverColor }}>
                   <div className="absolute bottom-2 left-2 w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
-                      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-                    </svg>
+                    <CourseIcon iconKey={icon} size={14} className="text-white" />
                   </div>
                 </div>
                 <div className="bg-white p-3">
                   <p className="text-xs font-bold text-[var(--text-primary)] truncate">{name || t("ชื่อรายวิชา", "Course Name")}</p>
                   <p className="text-[10px] text-gray-500 mt-0.5">{t("เพิ่มด้วยตนเอง", "Manually Added")}</p>
                 </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Grading & Publishing */}
+          <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-5">{t("การตรวจและประกาศคะแนน", "Grading & Publishing")}</h2>
+
+            <div className="mb-5">
+              <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">{t("แหล่งคะแนน", "Grading Source")}</label>
+              <p className="text-xs text-gray-500 mb-2.5">{t("เลือกว่าคะแนนของวิชานี้มาจากใครเป็นหลัก", "Choose who grades submissions in this section by default.")}</p>
+              <div className="grid grid-cols-3 gap-2">
+                {([
+                  { key: "ta" as GradingSource, label: t("TA ตรวจ", "TA-graded") },
+                  { key: "ai" as GradingSource, label: t("AI ตรวจ", "AI-graded") },
+                  { key: "blind" as GradingSource, label: t("Blind Test", "Blind Test") },
+                ]).map((opt) => (
+                  <button
+                    type="button"
+                    key={opt.key}
+                    onClick={() => setGradingSource(opt.key)}
+                    aria-pressed={gradingSource === opt.key}
+                    className={[
+                      "px-3 py-2.5 rounded-xl border text-sm font-medium transition-colors",
+                      gradingSource === opt.key
+                        ? "border-[var(--accent)] bg-[var(--accent-subtle)] text-[var(--accent)]"
+                        : "border-gray-200 text-gray-500 hover:bg-gray-50",
+                    ].join(" ")}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">{t("การประกาศคะแนน", "Publishing")}</label>
+              <p className="text-xs text-gray-500 mb-2.5">{t("ประกาศคะแนนให้นักศึกษาเห็นทันทีหลังตรวจเสร็จ หรือรอให้อาจารย์กด approve ก่อน", "Show scores to students right after grading, or hold them until you approve.")}</p>
+              <div className="grid grid-cols-2 gap-2">
+                {([
+                  { key: "auto" as PublishMode, label: t("ประกาศอัตโนมัติ", "Auto-publish") },
+                  { key: "manual" as PublishMode, label: t("รอ Approve", "Wait for approval") },
+                ]).map((opt) => (
+                  <button
+                    type="button"
+                    key={opt.key}
+                    onClick={() => setPublishMode(opt.key)}
+                    aria-pressed={publishMode === opt.key}
+                    className={[
+                      "px-3 py-2.5 rounded-xl border text-sm font-medium transition-colors",
+                      publishMode === opt.key
+                        ? "border-[var(--accent)] bg-[var(--accent-subtle)] text-[var(--accent)]"
+                        : "border-gray-200 text-gray-500 hover:bg-gray-50",
+                    ].join(" ")}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
               </div>
             </div>
           </section>

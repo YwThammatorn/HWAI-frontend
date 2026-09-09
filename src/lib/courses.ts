@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext } from "react";
+import type { CourseIconKey } from "@/components/CourseIcon";
 
 export type CourseStatus = "active" | "archived";
 export type CourseSource = "manual" | "google" | "teams";
@@ -28,6 +29,8 @@ export interface Course {
   source: CourseSource;
   coverColor: string;
   iconColor: string;
+  /** Which glyph to show on the course card's identity strip — optional, falls back to "book" */
+  icon?: CourseIconKey;
   createdAt: string;
   updatedAt: string;
   /** รหัสวิชา — denormalized from CourseTemplate when one is linked */

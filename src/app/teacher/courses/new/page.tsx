@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useCourses, PRESET_COLORS, Term } from "@/lib/courses";
 import { useCurriculum } from "@/lib/curriculum";
 import { useLanguage } from "@/context/LanguageContext";
+import { CourseIcon, COURSE_ICON_KEYS, type CourseIconKey } from "@/components/CourseIcon";
 
 
 export default function NewCoursePage() {
@@ -17,6 +18,7 @@ export default function NewCoursePage() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [coverColor, setCoverColor] = useState(PRESET_COLORS[0]);
+  const [icon, setIcon] = useState<CourseIconKey>("book");
 
   const activeCurriculumVersions = curriculumVersions.filter((v) => v.effectiveTo === undefined);
   const [curriculumVersionId, setCurriculumVersionId] = useState("");
@@ -36,6 +38,7 @@ export default function NewCoursePage() {
     name.trim() !== "" ||
     description.trim() !== "" ||
     coverColor !== PRESET_COLORS[0] ||
+    icon !== "book" ||
     courseTemplateId !== "" ||
     sectionNumber.trim() !== "";
 
@@ -63,6 +66,7 @@ export default function NewCoursePage() {
       source: "manual",
       coverColor,
       iconColor: coverColor,
+      icon,
       ...(selectedTemplate && { courseTemplateId: selectedTemplate.id, code: selectedTemplate.code }),
       ...(year !== undefined && !isNaN(year) && { academicYear: year }),
       ...(term !== "" && { term }),
@@ -192,16 +196,30 @@ export default function NewCoursePage() {
             <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-5">{t("รูปแบบรายวิชา", "Course Visuals")}</h2>
 
             <div className="grid grid-cols-[1fr_auto_1fr] gap-6 items-start">
-              {/* Upload Icon */}
-              <div>
-                <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">{t("อัปโหลดไอคอน", "Upload Icon Image")}</label>
-                <div className="border-2 border-dashed border-gray-200 rounded-xl h-32 flex flex-col items-center justify-center gap-2 text-gray-500 hover:border-[var(--accent)] hover:text-[var(--accent)] cursor-pointer transition-colors">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <rect x="3" y="3" width="18" height="18" rx="3"/>
-                    <circle cx="8.5" cy="8.5" r="1.5"/>
-                    <polyline points="21 15 16 10 5 21"/>
-                  </svg>
-                  <span className="text-xs">{t("คลิกเพื่ออัปโหลด", "Click to upload")}</span>
+              {/* Icon Picker */}
+              <div className="flex flex-col items-center">
+                <label className="block text-sm font-medium text-[var(--text-primary)] mb-2 self-start">{t("ไอคอน", "Icon")}</label>
+                <div className="w-16 h-16 rounded-xl mb-3 shadow flex items-center justify-center" style={{ background: coverColor }}>
+                  <CourseIcon iconKey={icon} size={26} className="text-white" />
+                </div>
+                <div className="grid grid-cols-4 gap-1.5">
+                  {COURSE_ICON_KEYS.map((k) => (
+                    <button
+                      type="button"
+                      key={k}
+                      onClick={() => setIcon(k)}
+                      aria-label={k}
+                      aria-pressed={icon === k}
+                      className={[
+                        "w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all",
+                        icon === k
+                          ? "border-[#1B2A4A] text-[var(--text-primary)] scale-110"
+                          : "border-transparent text-gray-400 hover:text-[var(--text-primary)]",
+                      ].join(" ")}
+                    >
+                      <CourseIcon iconKey={k} size={15} />
+                    </button>
+                  ))}
                 </div>
               </div>
 
@@ -246,9 +264,7 @@ export default function NewCoursePage() {
               <div className="w-48 rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
                 <div className="h-20 relative" style={{ background: coverColor }}>
                   <div className="absolute bottom-2 left-2 w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
-                      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-                    </svg>
+                    <CourseIcon iconKey={icon} size={14} className="text-white" />
                   </div>
                 </div>
                 <div className="bg-white p-3">
