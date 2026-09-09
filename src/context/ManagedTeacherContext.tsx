@@ -16,9 +16,11 @@ export default function ManagedTeacherProvider({ children }: { children: React.R
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
-        type Stored = Omit<ManagedTeacher, "status"> & { status?: "active" | "suspended" };
+        // "suspended" is the pre-9/9/2569 value — migrate any persisted demo
+        // data on load so old localStorage doesn't resurrect the retired term.
+        type Stored = Omit<ManagedTeacher, "status"> & { status?: "active" | "inactive" | "suspended" };
         const parsed = JSON.parse(stored) as Stored[];
-        setTeachers(parsed.map((tc) => ({ ...tc, status: tc.status ?? "active" })));
+        setTeachers(parsed.map((tc) => ({ ...tc, status: tc.status === "suspended" ? "inactive" : (tc.status ?? "active") })));
       }
     } catch {
       // ignore corrupt storage
@@ -50,11 +52,11 @@ export default function ManagedTeacherProvider({ children }: { children: React.R
     persist(teachers.filter((t) => t.id !== id));
   }
 
-  function suspendTeacher(id: string) {
-    persist(teachers.map((t) => (t.id === id ? { ...t, status: "suspended" as const } : t)));
+  function deactivateTeacher(id: string) {
+    persist(teachers.map((t) => (t.id === id ? { ...t, status: "inactive" as const } : t)));
   }
 
-  function reactivateTeacher(id: string) {
+  function activateTeacher(id: string) {
     persist(teachers.map((t) => (t.id === id ? { ...t, status: "active" as const } : t)));
   }
 
@@ -94,8 +96,8 @@ export default function ManagedTeacherProvider({ children }: { children: React.R
         importTeachers,
         updateTeacher,
         removeTeacher,
-        suspendTeacher,
-        reactivateTeacher,
+        deactivateTeacher,
+        activateTeacher,
         getTeacher,
         assignToCourse,
         unassignFromCourse,

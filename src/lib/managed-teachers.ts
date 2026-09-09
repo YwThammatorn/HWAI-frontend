@@ -7,7 +7,11 @@ export interface ManagedTeacher {
   name: string;
   email: string;
   role: "teacher" | "ta";
-  status: "active" | "suspended";
+  /** Account-level status — same active/inactive concept as CohortStudent.status
+   *  (meeting decision 4/9/2569 #1). Was "active"|"suspended"; renamed 9/9/2569
+   *  so the teacher and student status models use one shared vocabulary. The
+   *  mechanic itself (reversible, confirm-dialog-gated) is unchanged. */
+  status: "active" | "inactive";
   courseIds: string[]; // courses Admin assigned this teacher to
 }
 
@@ -17,8 +21,8 @@ export interface ManagedTeacherContextValue {
   importTeachers: (data: Omit<ManagedTeacher, "id" | "courseIds" | "status">[]) => ManagedTeacher[];
   updateTeacher: (id: string, data: Partial<Omit<ManagedTeacher, "id">>) => void;
   removeTeacher: (id: string) => void;
-  suspendTeacher: (id: string) => void;
-  reactivateTeacher: (id: string) => void;
+  deactivateTeacher: (id: string) => void;
+  activateTeacher: (id: string) => void;
   getTeacher: (id: string) => ManagedTeacher | undefined;
   assignToCourse: (teacherId: string, courseId: string) => void;
   unassignFromCourse: (teacherId: string, courseId: string) => void;

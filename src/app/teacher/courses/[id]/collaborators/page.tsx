@@ -145,7 +145,7 @@ function AddCollaboratorDrawer({
     if (tc.role !== "teacher") return false;
     if (primaryTeacherIds.has(tc.id)) return false;
     if (existingCoTeacherIds.has(tc.id)) return false;
-    if (tc.status === "suspended") return false;
+    if (tc.status === "inactive") return false;
     if (!q) return true;
     return tc.name.toLowerCase().includes(q) || tc.email.toLowerCase().includes(q);
   });
@@ -429,7 +429,7 @@ export default function CollaboratorsPage() {
   }
 
   return (
-    <main className="w-full max-w-[900px] mx-auto px-8 py-8">
+    <main className="w-full px-8 py-8">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-[var(--text-muted)] mb-6">
         <Link href="/teacher/courses" className="hover:text-[var(--accent)] transition-colors">
