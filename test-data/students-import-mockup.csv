@@ -1,0 +1,10 @@
+studentId,firstName,lastName,email,cohort,program
+67010101,ณัฐวุฒิ,ศรีสุข,67010101@kmitl.ac.th,CE67,CE
+67010102,พิมพ์ชนก,แก้วมณี,67010102@kmitl.ac.th,CE67,CECS
+67010103,ธนพล,รุ่งเรือง,67010103@kmitl.ac.th,CE67,CEI
+68020101,ภูริช,วงศ์สวัสดิ์,68020101@kmitl.ac.th,CE68,CE
+68020102,ชนากานต์,ทองดี,68020102@kmitl.ac.th,CE68,CECS
+68020103,ศศิวิมล,พลกล้า,68020103@kmitl.ac.th,CE68,CEI
+69070101,สมชาย,ใจดี,69070101@kmitl.ac.th,CE69,CE
+69070102,สุดา,วงษ์สา,69070102@kmitl.ac.th,CE69,CECS
+69070103,อนุชา,ปานเพชร,69070103@kmitl.ac.th,CE69,CEI

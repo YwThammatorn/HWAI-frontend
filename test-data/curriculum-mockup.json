@@ -1,0 +1,24 @@
+{
+  "curriculumVersions": [
+    { "id": "cv-ce-2554", "program": "CE", "label": "วิศวกรรมคอมพิวเตอร์ (หลักสูตรปรับปรุง 2554)", "effectiveFrom": 2554, "effectiveTo": 2558 },
+    { "id": "cv-ce-2559", "program": "CE", "label": "วิศวกรรมคอมพิวเตอร์ (หลักสูตรปรับปรุง 2559)", "effectiveFrom": 2559, "effectiveTo": 2563 },
+    { "id": "cv-ce-2564", "program": "CE", "label": "วิศวกรรมคอมพิวเตอร์ (หลักสูตรปรับปรุง 2564)", "effectiveFrom": 2564, "effectiveTo": 2568 },
+    { "id": "cv-ce-2569", "program": "CE", "label": "วิศวกรรมคอมพิวเตอร์ (หลักสูตรปรับปรุง 2569)", "effectiveFrom": 2569 },
+    { "id": "cv-cecs-2560", "program": "CECS", "label": "วิศวกรรมคอมพิวเตอร์และวิทยาการคอมพิวเตอร์ (หลักสูตรปรับปรุง 2560)", "effectiveFrom": 2560, "effectiveTo": 2564 },
+    { "id": "cv-cecs-2565", "program": "CECS", "label": "วิศวกรรมคอมพิวเตอร์และวิทยาการคอมพิวเตอร์ (หลักสูตรปรับปรุง 2565)", "effectiveFrom": 2565 },
+    { "id": "cv-cei-2558", "program": "CEI", "label": "Computer Engineering International Program (Revised 2558)", "effectiveFrom": 2558, "effectiveTo": 2562 },
+    { "id": "cv-cei-2563", "program": "CEI", "label": "Computer Engineering International Program (Revised 2563)", "effectiveFrom": 2563, "effectiveTo": 2567 },
+    { "id": "cv-cei-2568", "program": "CEI", "label": "Computer Engineering International Program (Revised 2568)", "effectiveFrom": 2568 }
+  ],
+  "courseTemplates": [
+    { "id": "ct-ux-1", "curriculumVersionId": "cv-ce-2554",   "code": "01076351", "name": "การปฏิสัมพันธ์ระหว่างมนุษย์และคอมพิวเตอร์", "description": "Human-Computer Interaction" },
+    { "id": "ct-ux-2", "curriculumVersionId": "cv-ce-2559",   "code": "01076351", "name": "การปฏิสัมพันธ์ระหว่างมนุษย์และคอมพิวเตอร์", "description": "Human-Computer Interaction" },
+    { "id": "ct-ux-3", "curriculumVersionId": "cv-ce-2564",   "code": "01076355", "name": "การออกแบบประสบการณ์และส่วนติดต่อผู้ใช้", "description": "User Experience and User Interface Design" },
+    { "id": "ct-ux-4", "curriculumVersionId": "cv-ce-2569",   "code": "01076355", "name": "การออกแบบประสบการณ์และส่วนติดต่อผู้ใช้", "description": "User Experience and User Interface Design" },
+    { "id": "ct-ux-5", "curriculumVersionId": "cv-cecs-2560", "code": "01077351", "name": "การปฏิสัมพันธ์ระหว่างมนุษย์และคอมพิวเตอร์", "description": "Human-Computer Interaction" },
+    { "id": "ct-ux-6", "curriculumVersionId": "cv-cecs-2565", "code": "01077355", "name": "การออกแบบประสบการณ์ผู้ใช้และส่วนติดต่อผู้ใช้", "description": "UX/UI Design" },
+    { "id": "ct-ux-7", "curriculumVersionId": "cv-cei-2558",  "code": "01078351", "name": "Human-Computer Interaction", "description": "" },
+    { "id": "ct-ux-8", "curriculumVersionId": "cv-cei-2563",  "code": "01078351", "name": "Human-Computer Interaction", "description": "" },
+    { "id": "ct-ux-9", "curriculumVersionId": "cv-cei-2568",  "code": "01078355", "name": "User Experience and User Interface Design", "description": "" }
+  ]
+}
