@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { AssignmentContext, Assignment, Submission, Rubric, DEFAULT_LEVELS } from "@/lib/assignments";
 
 const LS_ASSIGNMENTS = "hwai_assignments_v1";
@@ -94,7 +94,6 @@ const SEED_SUBMISSIONS: Submission[] = [
 ];
 
 function loadData<T>(key: string, fallback: T[]): T[] {
-  if (typeof window === "undefined") return [];
   try {
     const raw = localStorage.getItem(key);
     return raw ? (JSON.parse(raw) as T[]) : fallback;
@@ -110,52 +109,72 @@ const ASSIGNMENT_DEFAULTS = {
 };
 
 export default function AssignmentProvider({ children }: { children: React.ReactNode }) {
-  const [assignments, setAssignments] = useState<Assignment[]>(() => {
+  // Starts empty on both server and the client's first hydration render —
+  // see CourseProvider.tsx for why (hydration-mismatch fix, [[project-hwai-meeting-20260826]]).
+  // This was the data behind the "content keeps shifting" bug specifically:
+  // the results page's progress bar has a `transition-all` on a width
+  // derived from assignments/submissions counts, so the post-mismatch
+  // correction wasn't just a mismatch — it visibly animated.
+  const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [rubrics, setRubrics] = useState<Rubric[]>([]);
+
+  useEffect(() => {
     const rawA = loadData<Assignment>(LS_ASSIGNMENTS, SEED_ASSIGNMENTS);
-    return rawA.map(a => ({ ...ASSIGNMENT_DEFAULTS, ...a }));
-  });
-  const [submissions, setSubmissions] = useState<Submission[]>(() =>
-    loadData<Submission>(LS_SUBMISSIONS, SEED_SUBMISSIONS)
-  );
-  const [rubrics, setRubrics] = useState<Rubric[]>(() => {
+    setAssignments(rawA.map(a => ({ ...ASSIGNMENT_DEFAULTS, ...a })));
+    setSubmissions(loadData<Submission>(LS_SUBMISSIONS, SEED_SUBMISSIONS));
     const rawR = loadData<Rubric>(LS_RUBRICS, SEED_RUBRICS);
-    return rawR.map(r => ({
+    setRubrics(rawR.map(r => ({
       ...r,
       criteria: r.criteria.map(c => ({ ...c, levels: c.levels ?? DEFAULT_LEVELS })),
-    }));
-  });
-
-  const persistA = useCallback((next: Assignment[]) => {
-    setAssignments(next);
-    localStorage.setItem(LS_ASSIGNMENTS, JSON.stringify(next));
+    })));
   }, []);
 
-  const persistS = useCallback((next: Submission[]) => {
-    setSubmissions(next);
-    localStorage.setItem(LS_SUBMISSIONS, JSON.stringify(next));
+  // Accepts a functional updater (like setState) so callers that chain
+  // add-then-update on the same record in one synchronous handler (e.g.
+  // addAssignment() immediately followed by updateAssignment() on its own
+  // return value) always see the latest state, not a stale render closure —
+  // see [[project-hwai-meeting-20260826]] for the bug this was fixing.
+  const persistA = useCallback((updater: Assignment[] | ((prev: Assignment[]) => Assignment[])) => {
+    setAssignments(prev => {
+      const next = typeof updater === "function" ? updater(prev) : updater;
+      localStorage.setItem(LS_ASSIGNMENTS, JSON.stringify(next));
+      return next;
+    });
   }, []);
 
-  const persistR = useCallback((next: Rubric[]) => {
-    setRubrics(next);
-    localStorage.setItem(LS_RUBRICS, JSON.stringify(next));
+  const persistS = useCallback((updater: Submission[] | ((prev: Submission[]) => Submission[])) => {
+    setSubmissions(prev => {
+      const next = typeof updater === "function" ? updater(prev) : updater;
+      localStorage.setItem(LS_SUBMISSIONS, JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
+  const persistR = useCallback((updater: Rubric[] | ((prev: Rubric[]) => Rubric[])) => {
+    setRubrics(prev => {
+      const next = typeof updater === "function" ? updater(prev) : updater;
+      localStorage.setItem(LS_RUBRICS, JSON.stringify(next));
+      return next;
+    });
   }, []);
 
   const addAssignment = useCallback((data: Omit<Assignment, "id" | "createdAt" | "updatedAt">): Assignment => {
     const now = new Date().toISOString();
     const a: Assignment = { ...data, id: crypto.randomUUID(), createdAt: now, updatedAt: now };
-    persistA([...assignments, a]);
+    persistA(prev => [...prev, a]);
     return a;
-  }, [assignments, persistA]);
+  }, [persistA]);
 
   const updateAssignment = useCallback((id: string, data: Partial<Omit<Assignment, "id" | "courseId" | "createdAt" | "updatedAt">>) => {
-    persistA(assignments.map(a => a.id === id ? { ...a, ...data, updatedAt: new Date().toISOString() } : a));
-  }, [assignments, persistA]);
+    persistA(prev => prev.map(a => a.id === id ? { ...a, ...data, updatedAt: new Date().toISOString() } : a));
+  }, [persistA]);
 
   const removeAssignment = useCallback((id: string) => {
-    persistA(assignments.filter(a => a.id !== id));
-    persistS(submissions.filter(s => s.assignmentId !== id)); // cascade
-    persistR(rubrics.filter(r => r.assignmentId !== id)); // cascade
-  }, [assignments, submissions, rubrics, persistA, persistS, persistR]);
+    persistA(prev => prev.filter(a => a.id !== id));
+    persistS(prev => prev.filter(s => s.assignmentId !== id)); // cascade
+    persistR(prev => prev.filter(r => r.assignmentId !== id)); // cascade
+  }, [persistA, persistS, persistR]);
 
   const getAssignment = useCallback((id: string) => assignments.find(a => a.id === id), [assignments]);
 
@@ -165,16 +184,16 @@ export default function AssignmentProvider({ children }: { children: React.React
   const addSubmission = useCallback((data: Omit<Submission, "id" | "updatedAt">): Submission => {
     const now = new Date().toISOString();
     const s: Submission = { ...data, id: crypto.randomUUID(), updatedAt: now };
-    persistS([...submissions, s]);
+    persistS(prev => [...prev, s]);
     return s;
-  }, [submissions, persistS]);
+  }, [persistS]);
 
   const updateSubmission = useCallback((
     id: string,
     data: Partial<Pick<Submission, "aiScore" | "instructorScore" | "instructorComment" | "status" | "fileUrl">>
   ) => {
-    persistS(submissions.map(s => s.id === id ? { ...s, ...data, updatedAt: new Date().toISOString() } : s));
-  }, [submissions, persistS]);
+    persistS(prev => prev.map(s => s.id === id ? { ...s, ...data, updatedAt: new Date().toISOString() } : s));
+  }, [persistS]);
 
   const getSubmissionsByAssignment = useCallback((assignmentId: string) =>
     submissions.filter(s => s.assignmentId === assignmentId), [submissions]);
@@ -182,17 +201,17 @@ export default function AssignmentProvider({ children }: { children: React.React
   const addRubric = useCallback((data: Omit<Rubric, "id" | "createdAt" | "updatedAt">): Rubric => {
     const now = new Date().toISOString();
     const r: Rubric = { ...data, id: crypto.randomUUID(), createdAt: now, updatedAt: now };
-    persistR([...rubrics, r]);
+    persistR(prev => [...prev, r]);
     return r;
-  }, [rubrics, persistR]);
+  }, [persistR]);
 
   const updateRubric = useCallback((id: string, data: Partial<Omit<Rubric, "id" | "assignmentId" | "createdAt" | "updatedAt">>) => {
-    persistR(rubrics.map(r => r.id === id ? { ...r, ...data, updatedAt: new Date().toISOString() } : r));
-  }, [rubrics, persistR]);
+    persistR(prev => prev.map(r => r.id === id ? { ...r, ...data, updatedAt: new Date().toISOString() } : r));
+  }, [persistR]);
 
   const removeRubric = useCallback((id: string) => {
-    persistR(rubrics.filter(r => r.id !== id));
-  }, [rubrics, persistR]);
+    persistR(prev => prev.filter(r => r.id !== id));
+  }, [persistR]);
 
   const getRubric = useCallback((id: string) => rubrics.find(r => r.id === id), [rubrics]);
 

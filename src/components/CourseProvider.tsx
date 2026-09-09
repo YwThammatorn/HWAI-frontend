@@ -1,23 +1,29 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { CourseContext, Course, SEED_COURSES } from "@/lib/courses";
 
 const LS_KEY = "hwai_courses_v2";
 
-function loadFromStorage(): Course[] {
-  if (typeof window === "undefined") return SEED_COURSES;
-  try {
-    const raw = localStorage.getItem(LS_KEY);
-    if (!raw) return SEED_COURSES;
-    return JSON.parse(raw) as Course[];
-  } catch {
-    return SEED_COURSES;
-  }
-}
-
 export default function CourseProvider({ children }: { children: React.ReactNode }) {
-  const [courses, setCourses] = useState<Course[]>(() => loadFromStorage());
+  // Starts empty on both server and the client's first hydration render —
+  // reading localStorage during the initial render (the old pattern) made
+  // SSR always render 0 items while client hydration read real/seed data,
+  // a guaranteed hydration mismatch that surfaced as visible content
+  // popping/shifting into place on every page load (worse wherever a
+  // data-derived width also had a CSS transition). Real data loads in this
+  // effect instead, which runs before AppShell's own auth-gate opens, so in
+  // practice it's not visible. See [[project-hwai-meeting-20260826]].
+  const [courses, setCourses] = useState<Course[]>([]);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(LS_KEY);
+      setCourses(raw ? (JSON.parse(raw) as Course[]) : SEED_COURSES);
+    } catch {
+      setCourses(SEED_COURSES);
+    }
+  }, []);
 
   const persist = useCallback((next: Course[]) => {
     setCourses(next);

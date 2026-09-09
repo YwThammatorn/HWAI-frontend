@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { CLOContext, CLO } from "@/lib/clo";
 
 const LS_CLOS = "hwai_clos_v1";
@@ -44,7 +44,6 @@ const SEED_CLOS: CLO[] = [
 ];
 
 function loadData<T>(key: string, fallback: T[]): T[] {
-  if (typeof window === "undefined") return [];
   try {
     const raw = localStorage.getItem(key);
     return raw ? (JSON.parse(raw) as T[]) : fallback;
@@ -52,7 +51,13 @@ function loadData<T>(key: string, fallback: T[]): T[] {
 }
 
 export default function CLOProvider({ children }: { children: React.ReactNode }) {
-  const [clos, setClos] = useState<CLO[]>(() => loadData<CLO>(LS_CLOS, SEED_CLOS));
+  // See CourseProvider.tsx for why this starts empty and loads in an effect
+  // instead of during the initial render (hydration-mismatch fix, [[project-hwai-meeting-20260826]]).
+  const [clos, setClos] = useState<CLO[]>([]);
+
+  useEffect(() => {
+    setClos(loadData<CLO>(LS_CLOS, SEED_CLOS));
+  }, []);
 
   const persist = useCallback((next: CLO[]) => {
     setClos(next);

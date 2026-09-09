@@ -1,20 +1,21 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { GradingAssignmentContext, GradingAssignment } from "@/lib/grading-assignments";
 
 const LS_KEY = "hwai_grading_assignments_v1";
 
-function load(): GradingAssignment[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(LS_KEY);
-    return raw ? (JSON.parse(raw) as GradingAssignment[]) : [];
-  } catch { return []; }
-}
-
 export default function GradingAssignmentProvider({ children }: { children: React.ReactNode }) {
-  const [gradingAssignments, setGradingAssignments] = useState<GradingAssignment[]>(() => load());
+  // See CourseProvider.tsx for why this starts empty and loads in an effect
+  // instead of during the initial render (hydration-mismatch fix, [[project-hwai-meeting-20260826]]).
+  const [gradingAssignments, setGradingAssignments] = useState<GradingAssignment[]>([]);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(LS_KEY);
+      if (raw) setGradingAssignments(JSON.parse(raw) as GradingAssignment[]);
+    } catch {}
+  }, []);
 
   const persist = useCallback((next: GradingAssignment[]) => {
     setGradingAssignments(next);

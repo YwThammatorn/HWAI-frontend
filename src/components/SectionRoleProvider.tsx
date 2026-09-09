@@ -1,20 +1,21 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { SectionRoleContext, SectionRole, SectionRolePermissions, defaultPermissionsFor } from "@/lib/section-roles";
 
 const LS_KEY = "hwai_section_roles_v1";
 
-function load(): SectionRole[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(LS_KEY);
-    return raw ? (JSON.parse(raw) as SectionRole[]) : [];
-  } catch { return []; }
-}
-
 export default function SectionRoleProvider({ children }: { children: React.ReactNode }) {
-  const [sectionRoles, setSectionRoles] = useState<SectionRole[]>(() => load());
+  // See CourseProvider.tsx for why this starts empty and loads in an effect
+  // instead of during the initial render (hydration-mismatch fix, [[project-hwai-meeting-20260826]]).
+  const [sectionRoles, setSectionRoles] = useState<SectionRole[]>([]);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(LS_KEY);
+      if (raw) setSectionRoles(JSON.parse(raw) as SectionRole[]);
+    } catch {}
+  }, []);
 
   const persist = useCallback((next: SectionRole[]) => {
     setSectionRoles(next);

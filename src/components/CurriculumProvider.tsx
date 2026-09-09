@@ -1,13 +1,12 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { CurriculumContext, CurriculumVersion, CourseTemplate } from "@/lib/curriculum";
 
 const LS_VERSIONS = "hwai_curriculum_versions_v1";
 const LS_TEMPLATES = "hwai_course_templates_v1";
 
 function load<T>(key: string): T[] {
-  if (typeof window === "undefined") return [];
   try {
     const raw = localStorage.getItem(key);
     return raw ? (JSON.parse(raw) as T[]) : [];
@@ -15,8 +14,15 @@ function load<T>(key: string): T[] {
 }
 
 export default function CurriculumProvider({ children }: { children: React.ReactNode }) {
-  const [curriculumVersions, setCurriculumVersions] = useState<CurriculumVersion[]>(() => load(LS_VERSIONS));
-  const [courseTemplates, setCourseTemplates] = useState<CourseTemplate[]>(() => load(LS_TEMPLATES));
+  // See CourseProvider.tsx for why these start empty and load in an effect
+  // instead of during the initial render (hydration-mismatch fix, [[project-hwai-meeting-20260826]]).
+  const [curriculumVersions, setCurriculumVersions] = useState<CurriculumVersion[]>([]);
+  const [courseTemplates, setCourseTemplates] = useState<CourseTemplate[]>([]);
+
+  useEffect(() => {
+    setCurriculumVersions(load(LS_VERSIONS));
+    setCourseTemplates(load(LS_TEMPLATES));
+  }, []);
 
   const persistVersions = useCallback((next: CurriculumVersion[]) => {
     setCurriculumVersions(next);

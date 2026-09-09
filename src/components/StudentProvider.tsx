@@ -1,20 +1,21 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { StudentContext, Student } from "@/lib/students";
 
 const LS_KEY = "hwai_students_v1";
 
-function load(): Student[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(LS_KEY);
-    return raw ? (JSON.parse(raw) as Student[]) : [];
-  } catch { return []; }
-}
-
 export default function StudentProvider({ children }: { children: React.ReactNode }) {
-  const [students, setStudents] = useState<Student[]>(() => load());
+  // See CourseProvider.tsx for why this starts empty and loads in an effect
+  // instead of during the initial render (hydration-mismatch fix, [[project-hwai-meeting-20260826]]).
+  const [students, setStudents] = useState<Student[]>([]);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(LS_KEY);
+      if (raw) setStudents(JSON.parse(raw) as Student[]);
+    } catch {}
+  }, []);
 
   const persist = useCallback((next: Student[]) => {
     setStudents(next);
