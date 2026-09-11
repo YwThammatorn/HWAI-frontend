@@ -265,7 +265,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] font-bold text-sm hover:bg-[var(--accent-solid-hover)] active:scale-[0.98] transition-colors disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--accent-bright)]"
+                className="w-full py-3 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] font-bold text-sm hover:bg-[var(--accent-solid-hover)] active:scale-[0.98] transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--accent-bright)]"
               >
                 {loading ? t("กำลังเข้าสู่ระบบ…", "Signing in…") : t("เข้าสู่ระบบ", "Sign in")}
               </button>

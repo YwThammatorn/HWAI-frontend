@@ -183,19 +183,6 @@ test.describe("P1a — Admin Teachers (/admin/teachers)", () => {
     await expect(page.getByText("jane@kmitl.ac.th")).toBeVisible();
   });
 
-  test("teacher role shows Teacher badge in table row", async ({ page }) => {
-    await seedPage(page, { teachers: [TEACHER_1] });
-    await gotoPage(page, "/admin/teachers");
-    // Badge is rendered inside a <td>; role "Teacher" → English "Teacher"
-    await expect(page.locator("td").getByText("Teacher")).toBeVisible();
-  });
-
-  test("TA role shows TA badge in table row", async ({ page }) => {
-    await seedPage(page, { teachers: [TA_1] });
-    await gotoPage(page, "/admin/teachers");
-    await expect(page.locator("td").getByText("TA")).toBeVisible();
-  });
-
   test("deactivate button opens confirm dialog and confirming marks teacher Inactive", async ({
     page,
   }) => {

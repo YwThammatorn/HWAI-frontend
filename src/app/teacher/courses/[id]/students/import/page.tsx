@@ -314,7 +314,7 @@ export default function ImportStudentsPage() {
                 <button
                   onClick={handleImport}
                   disabled={validRows.length === 0 || importing}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] disabled:opacity-40 disabled:cursor-not-allowed text-[var(--accent-solid-text)] text-sm font-medium transition-colors"
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] disabled:opacity-50 disabled:cursor-not-allowed text-[var(--accent-solid-text)] text-sm font-medium transition-colors"
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                     <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>

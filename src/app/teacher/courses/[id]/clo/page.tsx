@@ -238,7 +238,7 @@ export default function CLOPage() {
                   <button
                     onClick={() => openEdit(clo)}
                     disabled={editingId === clo.id}
-                    className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-[var(--text-primary)] transition-colors disabled:opacity-20"
+                    className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-[var(--text-primary)] transition-colors disabled:opacity-50"
                     title={t("แก้ไข", "Edit")}
                   >
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -325,7 +325,7 @@ export default function CLOPage() {
                     type="button"
                     onClick={handleSave}
                     disabled={!isFormValid}
-                    className="px-4 py-2 rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="px-4 py-2 rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {t("บันทึก", "Save")}
                   </button>

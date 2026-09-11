@@ -224,7 +224,7 @@ function CourseDrawer({
           <button
             onClick={handleSave}
             disabled={!name.trim()}
-            className="h-9 px-5 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] disabled:opacity-40 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
+            className="h-9 px-5 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] disabled:opacity-50 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
           >
             {mode === "create" ? t("สร้างรายวิชา", "Create Course") : t("บันทึก", "Save")}
           </button>
@@ -587,7 +587,7 @@ function CourseAssignPanel({ course }: { course: Course }) {
                 <button
                   onClick={handleAddSelected}
                   disabled={selectedIds.size === 0}
-                  className="h-7 px-3 rounded-lg bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-xs font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
+                  className="h-7 px-3 rounded-lg bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-xs font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
                 >
                   {t(`+ เพิ่ม${selectedIds.size > 0 ? ` ${selectedIds.size} คน` : ""}`, `+ Add${selectedIds.size > 0 ? ` ${selectedIds.size}` : ""}`)}
                 </button>
@@ -631,7 +631,7 @@ function CourseAssignPanel({ course }: { course: Course }) {
                   onClick={handleEnroll}
                   disabled={!selectedCohort || enrolling}
                   title={t("นำเข้านักศึกษาจาก cohort ที่เลือก", "Enroll selected cohort")}
-                  className="h-8 px-3 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-xs font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors whitespace-nowrap"
+                  className="h-8 px-3 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-xs font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors whitespace-nowrap"
                 >
                   {enrolling ? "…" : t("+ นำเข้า", "+ Enroll")}
                 </button>
@@ -639,7 +639,7 @@ function CourseAssignPanel({ course }: { course: Course }) {
                   onClick={handleRemoveCohort}
                   disabled={!selectedCohort}
                   title={t("ลบนักศึกษาทั้ง cohort ออกจาก course นี้", "Remove entire cohort from this course")}
-                  className="h-8 px-3 rounded-xl border border-[var(--border-subtle)] text-xs font-semibold text-[var(--s-err-text)] hover:bg-[var(--s-err-bg)] active:scale-[0.97] disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--s-err-bd)] transition-colors whitespace-nowrap"
+                  className="h-8 px-3 rounded-xl border border-[var(--border-subtle)] text-xs font-semibold text-[var(--s-err-text)] hover:bg-[var(--s-err-bg)] active:scale-[0.97] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--s-err-bd)] transition-colors whitespace-nowrap"
                 >
                   {t("ลบ cohort", "Remove")}
                 </button>

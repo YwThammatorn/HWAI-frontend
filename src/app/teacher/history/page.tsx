@@ -380,7 +380,7 @@ export default function HistoryPage() {
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={safeePage === 1}
-                className="w-7 h-7 flex items-center justify-center rounded-lg text-xs text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                className="w-7 h-7 flex items-center justify-center rounded-lg text-xs text-gray-500 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 ‹
               </button>
@@ -405,7 +405,7 @@ export default function HistoryPage() {
               <button
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={safeePage === totalPages}
-                className="w-7 h-7 flex items-center justify-center rounded-lg text-xs text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                className="w-7 h-7 flex items-center justify-center rounded-lg text-xs text-gray-500 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 ›
               </button>

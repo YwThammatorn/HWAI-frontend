@@ -371,7 +371,7 @@ export default function RubricEditorPage() {
                     <button
                       onClick={() => generateLevels(c.id)}
                       disabled={generating[c.id]}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-teal-50 border border-teal-200 text-xs text-[var(--accent)] font-medium hover:bg-teal-100 transition-colors disabled:opacity-60"
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-teal-50 border border-teal-200 text-xs text-[var(--accent)] font-medium hover:bg-teal-100 transition-colors disabled:opacity-50"
                     >
                       {generating[c.id] ? (
                         <svg className="animate-spin" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
@@ -387,7 +387,7 @@ export default function RubricEditorPage() {
                     onClick={() => removeCriterion(c.id, c.name)}
                     disabled={criteria.length <= 1}
                     title={t("ลบเกณฑ์นี้", "Remove criterion")}
-                    className="p-1.5 rounded-lg text-gray-300 hover:text-[var(--s-err-text)] hover:bg-[var(--s-err-bg)] transition-colors disabled:opacity-20 disabled:cursor-not-allowed shrink-0"
+                    className="p-1.5 rounded-lg text-gray-300 hover:text-[var(--s-err-text)] hover:bg-[var(--s-err-bg)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
                   >
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                       <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>

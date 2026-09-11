@@ -46,9 +46,25 @@ export interface Course {
   publishMode?: PublishMode;
 }
 
+// "Slate Morning" course-cover palette (10/9/2569) — replaces the old raw
+// Tailwind-candy set (bright #2DD4BF/#F472B6/#FBBF24/etc.) which clashed with
+// the app's muted navy+teal identity. Each value is either reused directly
+// from an existing design-system token (so a course cover never introduces
+// a color unseen elsewhere in the app) or a new hue calibrated to the same
+// muted/darkened mood — no color here is a raw saturated primary.
 export const PRESET_COLORS = [
-  "#2DD4BF", "#1B2A4A", "#F472B6", "#FBBF24", "#A78BFA", "#92400E",
-  "#34D399", "#9CA3AF", "#C084FC", "#F97316", "#38BDF8", "#EF4444",
+  "#0F766E", // teal — --accent-solid
+  "#1A2D45", // navy — --text-primary / --bg-nav
+  "#2B4D8C", // steel blue — --s-info-text
+  "#5B4E96", // muted purple — --role-ta-text
+  "#6B4FA0", // plum
+  "#3F7A5C", // sage green
+  "#92400E", // brown
+  "#B5541F", // terracotta
+  "#A97719", // muted gold
+  "#B14C6B", // dusty rose
+  "#4A6478", // slate gray — --text-secondary
+  "#C43A4A", // brick red — --danger-solid
 ];
 
 export const SEED_COURSES: Course[] = [

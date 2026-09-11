@@ -68,6 +68,23 @@
   --bg-surface:    #FFFFFF;
   --bg-subtle:     #E4ECF3;
   --border-subtle: #E0E8F0;   /* was identical to --border (no hierarchy) — now visually distinct */
+  /* Table zebra-stripe (10/9/2569, round 2): --bg-app on white was only a
+     17/13/8 RGB delta — too weak to read as a stripe (user: "สีมันกลืนกัน").
+     First fix used --bg-subtle (generic cool gray); user then asked for a
+     shade "คล้าย navbar/sidenav แต่สีอ่อนมาก" — a pale tint pulled from the
+     sidebar navy itself, not an unrelated gray. Values below are
+     color-mix(in srgb, var(--sidebar-bg) 12%/20%, var(--bg-surface)) baked
+     to static hex — live-toggling the theme attribute with a runtime
+     color-mix(var(), ...) showed a stale color in testing (unconfirmed
+     whether that's a real engine issue or a test-tooling artifact; not
+     worth the risk either way). Every other token in this file is static
+     hex per theme block already, so this just matches convention. Dark theme
+     keeps the already-tested --bg-subtle/-hover pair (mixing toward dark
+     theme's near-black sidebar would make stripes darker, the wrong
+     direction for dark-mode visibility). */
+  --bg-subtle-hover: #D6E1EC;
+  --bg-stripe:       #E5E8EB;
+  --bg-stripe-hover: #D3D8DE;
   --bg-nav:        #1A2D45;
 
   /* Shared portal-sidebar theme (9/9/2569) — NOT --bg-nav. --bg-nav turned out
@@ -136,6 +153,9 @@
   --bg-surface:    #162232;
   --bg-subtle:     #1E2E40;
   --border-subtle: #1C2938;
+  --bg-subtle-hover: #27394E;
+  --bg-stripe:       #1E2E40;
+  --bg-stripe-hover: #27394E;
   --bg-nav:        #0A1218;
   /* Dark mode keeps its existing (already much darker) sidebar look —
      the 3 candidate colors were only ever proposed for light mode. */

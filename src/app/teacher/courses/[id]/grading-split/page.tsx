@@ -378,7 +378,7 @@ function GradingAssignmentDrawer({
           <button
             onClick={handleSave}
             disabled={!isValid}
-            className="h-9 px-5 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] disabled:opacity-40 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
+            className="h-9 px-5 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] disabled:opacity-50 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
           >
             {mode === "create" ? t("เพิ่มการแบ่งงาน", "Add Split") : t("บันทึก", "Save")}
           </button>
@@ -445,7 +445,7 @@ function GradingAssignmentRow({
           onClick={onEdit}
           disabled={isGroupScoped}
           title={isGroupScoped ? t("แก้ไขแบบกลุ่มยังไม่รองรับในหน้านี้", "Group-scoped splits can't be edited here yet") : t("แก้ไข", "Edit")}
-          className="w-8 h-8 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--accent)] hover:bg-[var(--accent-bright)]/10 disabled:opacity-30 disabled:hover:bg-transparent disabled:cursor-not-allowed transition-colors"
+          className="w-8 h-8 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--accent)] hover:bg-[var(--accent-bright)]/10 disabled:opacity-50 disabled:hover:bg-transparent disabled:cursor-not-allowed transition-colors"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>

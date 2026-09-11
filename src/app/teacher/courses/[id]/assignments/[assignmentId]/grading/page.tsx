@@ -167,7 +167,7 @@ function GradeRow({
           onClick={onRegrade}
           disabled={rowState.regrading}
           aria-label={t(`Re-grade ${sub.studentName}`, `Re-grade ${sub.studentName}`)}
-          className="flex items-center gap-1.5 h-7 px-2.5 rounded-lg border border-gray-200 text-xs font-medium text-gray-500 hover:border-[var(--accent-bright)] hover:text-[var(--accent)] hover:bg-[var(--accent-bright)]/5 active:scale-[0.97] disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-all"
+          className="flex items-center gap-1.5 h-7 px-2.5 rounded-lg border border-gray-200 text-xs font-medium text-gray-500 hover:border-[var(--accent-bright)] hover:text-[var(--accent)] hover:bg-[var(--accent-bright)]/5 active:scale-[0.97] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-all"
         >
           {rowState.regrading ? (
             <svg className="animate-spin" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
@@ -280,7 +280,7 @@ function GradeAdjustmentTable({
           <button
             onClick={handleSaveAll}
             disabled={modifiedCount === 0 || saving}
-            className="flex items-center gap-1.5 h-9 px-4 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
+            className="flex items-center gap-1.5 h-9 px-4 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
           >
             {saving ? (
               t("กำลังบันทึก…", "Saving…")

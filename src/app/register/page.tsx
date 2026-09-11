@@ -363,7 +363,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] font-bold text-sm hover:bg-[var(--accent-solid-hover)] transition-colors disabled:opacity-60"
+              className="w-full py-3 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] font-bold text-sm hover:bg-[var(--accent-solid-hover)] transition-colors disabled:opacity-50"
             >
               {loading ? t("กำลังสร้างบัญชี…", "Creating account…") : t("สร้างบัญชี", "Create Account")}
             </button>

@@ -341,7 +341,7 @@ export default function EditAssignmentPage() {
                 type="button"
                 onClick={() => { setShowNewRubricForm(true); setNewRubricName(""); }}
                 disabled={showNewRubricForm}
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-[var(--accent)] text-[var(--accent)] text-xs font-medium hover:bg-teal-50 transition-colors disabled:opacity-40"
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-[var(--accent)] text-[var(--accent)] text-xs font-medium hover:bg-teal-50 transition-colors disabled:opacity-50"
               >
                 <svg width="11" height="11" viewBox="0 0 16 16" fill="none">
                   <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
@@ -415,7 +415,7 @@ export default function EditAssignmentPage() {
                     className="flex-1 px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
                   />
                   <button type="button" onClick={handleAddRubric} disabled={!newRubricName.trim()}
-                    className="px-3 py-2 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-medium hover:bg-[var(--accent-solid-hover)] disabled:opacity-40 transition-colors">
+                    className="px-3 py-2 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-medium hover:bg-[var(--accent-solid-hover)] disabled:opacity-50 transition-colors">
                     {t("บันทึก", "Save")}
                   </button>
                   <button type="button" onClick={() => { setShowNewRubricForm(false); setNewRubricName(""); }}
@@ -450,7 +450,7 @@ export default function EditAssignmentPage() {
             <button
               type="submit" disabled={!isValid}
               className={["flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-colors",
-                saved ? "bg-emerald-500 text-white" : "bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] disabled:opacity-40 disabled:cursor-not-allowed"
+                saved ? "bg-emerald-500 text-white" : "bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] disabled:opacity-50 disabled:cursor-not-allowed"
               ].join(" ")}
             >
               {saved ? (

@@ -14,7 +14,7 @@ export default function Pagination({ page, totalPages, onChange }: PaginationPro
       <button
         onClick={() => onChange(Math.max(1, page - 1))}
         disabled={page === 1}
-        className="w-8 h-8 rounded-full text-sm font-medium text-[var(--text-muted)] hover:bg-[var(--bg-subtle)] disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
+        className="w-8 h-8 rounded-full text-sm font-medium text-[var(--text-muted)] hover:bg-[var(--bg-subtle)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
       </button>
@@ -31,7 +31,7 @@ export default function Pagination({ page, totalPages, onChange }: PaginationPro
       <button
         onClick={() => onChange(Math.min(totalPages, page + 1))}
         disabled={page === totalPages}
-        className="w-8 h-8 rounded-full text-sm font-medium text-[var(--text-muted)] hover:bg-[var(--bg-subtle)] disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
+        className="w-8 h-8 rounded-full text-sm font-medium text-[var(--text-muted)] hover:bg-[var(--bg-subtle)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
       </button>

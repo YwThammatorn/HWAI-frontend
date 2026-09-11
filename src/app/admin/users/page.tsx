@@ -227,7 +227,7 @@ function ImportTeacherDrawer({ open, onClose }: { open: boolean; onClose: () => 
               <div className="rounded-xl border border-[var(--border-subtle)] overflow-hidden">
                 <div className="overflow-x-auto max-h-72">
                   <table className="w-full text-xs">
-                    <thead className="bg-[var(--bg-app)] sticky top-0">
+                    <thead className="bg-[var(--bg-subtle)] sticky top-0">
                       <tr>
                         <th className="px-3 py-2 text-left font-semibold text-[var(--text-muted)]">{t("ชื่อ", "Name")}</th>
                         <th className="px-3 py-2 text-left font-semibold text-[var(--text-muted)]">{t("อีเมล", "Email")}</th>
@@ -291,7 +291,7 @@ function ImportTeacherDrawer({ open, onClose }: { open: boolean; onClose: () => 
           </button>
           {parseResult && !done && (
             <button onClick={handleImport} disabled={newRows.length === 0 || importing}
-              className="flex-1 h-10 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors">
+              className="flex-1 h-10 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors">
               {importing ? t("กำลังนำเข้า…", "Importing…") : t(`+ นำเข้า ${newRows.length} คน`, `+ Import ${newRows.length}`)}
             </button>
           )}
@@ -769,7 +769,7 @@ function ImportStudentDrawer({ open, onClose }: { open: boolean; onClose: () => 
               <div className="rounded-xl border border-[var(--border-subtle)] overflow-hidden">
                 <div className="overflow-x-auto max-h-72">
                   <table className="w-full text-xs">
-                    <thead className="bg-[var(--bg-app)] sticky top-0">
+                    <thead className="bg-[var(--bg-subtle)] sticky top-0">
                       <tr>
                         <th className="px-3 py-2 text-left font-semibold text-[var(--text-muted)]">{t("รหัส", "ID")}</th>
                         <th className="px-3 py-2 text-left font-semibold text-[var(--text-muted)]">{t("ชื่อ", "First")}</th>
@@ -913,11 +913,6 @@ function TeachersTab() {
   const deactivatingTeacher = teachers.find((tp) => tp.id === deactivatingId);
   const deletingTeacher = teachers.find((tp) => tp.id === deletingId);
 
-  const ROLE_LABELS: Record<"teacher" | "ta", string> = {
-    teacher: t("อาจารย์", "Teacher"),
-    ta: t("ผู้ช่วยสอน", "TA"),
-  };
-
   return (
     <div>
       {/* Action bar */}
@@ -967,30 +962,28 @@ function TeachersTab() {
           <table className="w-full text-sm table-fixed" role="table">
             <colgroup>
               <col className="w-[76px]" />
-              <col className="w-[26%]" />
-              <col className="w-[30%]" />
-              <col className="w-[100px]" />
+              <col className="w-[32%]" />
+              <col className="w-[36%]" />
               <col className="w-[120px]" />
               <col className="w-24" />
             </colgroup>
             <thead>
-              <tr className="border-b border-[var(--border-subtle)] bg-[var(--bg-app)]">
+              <tr className="border-b border-[var(--border-subtle)]">
                 <th scope="col" className="px-3 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("ยศ", "Title")}</th>
                 <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("ชื่อ", "Name")}</th>
                 <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("อีเมล", "Email")}</th>
-                <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("ตำแหน่ง", "Role")}</th>
                 <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("สถานะ", "Status")}</th>
                 <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("การจัดการ", "Actions")}</th>
               </tr>
             </thead>
             <tbody>
-              {pagedTeachers.map((teacher, i) => {
+              {pagedTeachers.map((teacher) => {
                 const teacherInactive = teacher.status === "inactive";
                 const isEditing = editingRowId === teacher.id;
                 const inputClass = "h-8 w-full rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-app)] px-2 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]";
                 return (
                 <tr key={teacher.id}
-                  className={`border-b border-[var(--border-subtle)] last:border-0 hover:bg-[var(--bg-subtle)] transition-colors ${i % 2 === 1 ? "bg-[var(--bg-app)]" : ""}`}>
+                  className="border-b border-[var(--border-subtle)] last:border-0 transition-colors hover:bg-[var(--bg-subtle)]">
                   <td className="px-3 py-1 text-[var(--text-secondary)]">
                     {isEditing ? (
                       <input value={draftTitle} onChange={(e) => setDraftTitle(e.target.value)}
@@ -1023,19 +1016,6 @@ function TeachersTab() {
                         {draftErrors.email && <p role="alert" className="text-[10px] text-[var(--s-err-text)] mt-0.5">{draftErrors.email}</p>}
                       </div>
                     ) : teacher.email}
-                  </td>
-                  <td className="px-4 py-1">
-                    {isEditing ? (
-                      <select value={draftRole} onChange={(e) => setDraftRole(e.target.value as "teacher" | "ta")}
-                        aria-label={t("ตำแหน่ง", "Role")} className={inputClass}>
-                        <option value="teacher">{t("อาจารย์", "Teacher")}</option>
-                        <option value="ta">{t("ผู้ช่วยสอน", "TA")}</option>
-                      </select>
-                    ) : (
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap ${teacher.role === "teacher" ? "bg-[var(--accent-bright)]/10 text-[var(--accent)]" : "bg-[var(--role-ta-bg)] text-[var(--role-ta-text)]"}`}>
-                        {ROLE_LABELS[teacher.role]}
-                      </span>
-                    )}
                   </td>
                   <td className="px-4 py-1">
                     <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap ${teacherInactive ? "bg-[var(--bg-subtle)] text-[var(--text-muted)]" : "bg-[var(--s-ok-bg)] text-[var(--s-ok-text)]"}`}>
@@ -1301,7 +1281,7 @@ function StudentsTab() {
   const [deactivatingId, setDeactivatingId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [cohortFilter, setCohortFilter] = useState("all");
-  const [programFilter, setProgramFilter] = useState("all");
+  const [programFilter, setProgramFilter] = useState("CE");
   const [sortOrder, setSortOrder] = useState<"none" | "name-asc" | "name-desc">("none");
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 10;
@@ -1376,7 +1356,7 @@ function StudentsTab() {
 
   const filtered = cohortStudents.filter((s) => {
     const matchCohort = cohortFilter === "all" || s.cohort === cohortFilter;
-    const matchProgram = programFilter === "all" || s.program === programFilter;
+    const matchProgram = s.program === programFilter;
     const q = search.toLowerCase();
     const matchSearch = !q || s.studentId.includes(q) || s.firstName.toLowerCase().includes(q) ||
       s.lastName.toLowerCase().includes(q) || s.email.toLowerCase().includes(q);
@@ -1432,7 +1412,6 @@ function StudentsTab() {
           <select value={programFilter} onChange={(e) => setProgramFilter(e.target.value)}
             aria-label={t("กรองตามหลักสูตร", "Filter by program")}
             className="h-10 pl-3 pr-8 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)] transition-colors shrink-0">
-            <option value="all">{t("หลักสูตรทั้งหมด", "All programs")}</option>
             {programs.map((p) => <option key={p} value={p}>{PROGRAM_LABEL[p] ?? p}</option>)}
           </select>
         )}
@@ -1482,12 +1461,6 @@ function StudentsTab() {
         />
       ) : (
         <>
-          {filtered.length !== cohortStudents.length && (
-            <p className="text-sm text-[var(--text-muted)] mb-3">
-              {t(`แสดง ${filtered.length}/${cohortStudents.length}`, `Showing ${filtered.length}/${cohortStudents.length}`)}
-            </p>
-          )}
-
           <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] overflow-hidden">
             <div className="overflow-y-auto max-h-[calc(100vh-380px)]">
             <table className="w-full text-sm table-fixed">
@@ -1501,7 +1474,7 @@ function StudentsTab() {
                 <col className="w-24" />
               </colgroup>
               <thead className="sticky top-0 z-10">
-                <tr className="border-b border-[var(--border-subtle)] bg-[var(--bg-app)]">
+                <tr className="border-b border-[var(--border-subtle)]">
                   <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("รหัส", "Student ID")}</th>
                   <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("ชื่อ-นามสกุล", "Name")}</th>
                   <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("อีเมล", "Email")}</th>
@@ -1519,14 +1492,14 @@ function StudentsTab() {
                     </td>
                   </tr>
                 ) : (
-                  paged.map((student, i) => {
+                  paged.map((student) => {
                     const isInactive = student.status === "inactive";
                     const isEditing = editingRowId === student.id;
                     const inputClass = "h-7 w-full rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-app)] px-1.5 text-xs text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]";
                     return (
                       <tr
                         key={student.id}
-                        className={`border-b border-[var(--border-subtle)] transition-colors ${i % 2 === 1 ? "bg-[var(--bg-app)] hover:bg-[var(--bg-subtle)]" : "hover:bg-[var(--bg-subtle)]"}`}
+                        className="border-b border-[var(--border-subtle)] transition-colors hover:bg-[var(--bg-subtle)]"
                       >
                         <td className="px-4 py-1 text-xs text-[var(--text-primary)] tabular-nums truncate">
                           {isEditing ? (
@@ -1664,6 +1637,11 @@ function StudentsTab() {
             </table>
             </div>
           </div>
+          {filtered.length !== cohortStudents.length && (
+            <p className="text-sm text-[var(--text-muted)] mt-3">
+              {t(`แสดง ${filtered.length}/${cohortStudents.length}`, `Showing ${filtered.length}/${cohortStudents.length}`)}
+            </p>
+          )}
           <Pagination page={page} totalPages={totalPages} onChange={setPage} />
         </>
       )}

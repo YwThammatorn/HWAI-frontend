@@ -352,7 +352,7 @@ export default function CourseSettingsPage() {
               disabled={!isValid}
               className={[
                 "flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-colors",
-                saved ? "bg-emerald-500 text-white" : "bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] disabled:opacity-40 disabled:cursor-not-allowed",
+                saved ? "bg-emerald-500 text-white" : "bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] disabled:opacity-50 disabled:cursor-not-allowed",
               ].join(" ")}
             >
               {saved ? (
