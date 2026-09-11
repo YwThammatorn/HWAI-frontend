@@ -2,7 +2,8 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useLanguage } from "@/context/LanguageContext";
-import { useCourses, Course, PRESET_COLORS } from "@/lib/courses";
+import { useCourses, Course, PRESET_COLORS, Term } from "@/lib/courses";
+import { useCurriculum } from "@/lib/curriculum";
 import { useManagedTeachers } from "@/lib/managed-teachers";
 import { getInitials } from "@/lib/utils";
 import EmptyState from "@/components/EmptyState";
@@ -23,12 +24,28 @@ function CourseDrawer({
 }) {
   const { t } = useLanguage();
   const { addCourse, updateCourse } = useCourses();
+  const { curriculumVersions, courseTemplates, getCourseTemplatesByCurriculum } = useCurriculum();
 
   const [name, setName] = useState(course?.name ?? "");
   const [description, setDescription] = useState(course?.description ?? "");
   const [coverColor, setCoverColor] = useState(course?.coverColor ?? PRESET_COLORS[0]);
   const nameRef = useRef<HTMLInputElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
+
+  const activeCurriculumVersions = curriculumVersions.filter((v) => v.effectiveTo === undefined);
+  const existingTemplate = course?.courseTemplateId ? courseTemplates.find((ct) => ct.id === course.courseTemplateId) : undefined;
+  const [curriculumVersionId, setCurriculumVersionId] = useState(existingTemplate?.curriculumVersionId ?? "");
+  const [courseTemplateId, setCourseTemplateId] = useState(course?.courseTemplateId ?? "");
+  const courseTemplateOptions = curriculumVersionId ? getCourseTemplatesByCurriculum(curriculumVersionId) : [];
+  const currentAcademicYear = new Date().getFullYear() + 543;
+  const [academicYear, setAcademicYear] = useState(String(course?.academicYear ?? currentAcademicYear));
+  const [term, setTerm] = useState<Term | "">(course?.term ?? "");
+  const [sectionNumber, setSectionNumber] = useState(course?.sectionNumber ?? "");
+
+  function handleCurriculumChange(id: string) {
+    setCurriculumVersionId(id);
+    setCourseTemplateId(""); // selected template belonged to the old curriculum's list
+  }
 
   useEffect(() => { nameRef.current?.focus(); }, []);
 
@@ -54,10 +71,18 @@ function CourseDrawer({
   function handleSave() {
     const trimmed = name.trim();
     if (!trimmed) return;
+    const selectedTemplate = courseTemplateOptions.find((ct) => ct.id === courseTemplateId);
+    const year = academicYear.trim() === "" ? undefined : parseInt(academicYear, 10);
+    const sectionFields = {
+      ...(selectedTemplate && { courseTemplateId: selectedTemplate.id, code: selectedTemplate.code }),
+      ...(year !== undefined && !isNaN(year) && { academicYear: year }),
+      ...(term !== "" && { term }),
+      ...(sectionNumber.trim() !== "" && { sectionNumber: sectionNumber.trim() }),
+    };
     if (mode === "create") {
-      addCourse({ name: trimmed, description, coverColor, iconColor: coverColor, status: "active", source: "manual" });
+      addCourse({ name: trimmed, description, coverColor, iconColor: coverColor, status: "active", source: "manual", ...sectionFields });
     } else if (course) {
-      updateCourse(course.id, { name: trimmed, description, coverColor, iconColor: coverColor });
+      updateCourse(course.id, { name: trimmed, description, coverColor, iconColor: coverColor, ...sectionFields });
     }
     onClose();
   }
@@ -111,6 +136,64 @@ function CourseDrawer({
               className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
             />
           </div>
+
+          {/* Curriculum / Section linking — optional, only useful once curricula exist */}
+          {activeCurriculumVersions.length > 0 && (
+            <div className="flex flex-col gap-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-3.5">
+              <div>
+                <p className="text-xs font-semibold text-[var(--text-muted)]">{t("หลักสูตรและภาคการศึกษา", "Curriculum & Term")}</p>
+                <p className="text-[11px] text-[var(--text-muted)] mt-0.5">{t("ไม่บังคับ — ผูกวิชานี้เข้ากับหลักสูตรที่มีอยู่", "Optional — link this course to a curriculum's course template")}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <select
+                  value={curriculumVersionId}
+                  onChange={(e) => handleCurriculumChange(e.target.value)}
+                  className="h-9 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-2.5 text-xs text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
+                >
+                  <option value="">{t("ไม่ระบุหลักสูตร", "No curriculum")}</option>
+                  {activeCurriculumVersions.map((v) => (
+                    <option key={v.id} value={v.id}>{v.program} — {v.label}</option>
+                  ))}
+                </select>
+                <select
+                  value={courseTemplateId}
+                  onChange={(e) => setCourseTemplateId(e.target.value)}
+                  disabled={!curriculumVersionId}
+                  className="h-9 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-2.5 text-xs text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)] disabled:opacity-50"
+                >
+                  <option value="">{curriculumVersionId ? t("ไม่ระบุวิชา", "No template") : t("เลือกหลักสูตรก่อน", "Pick curriculum first")}</option>
+                  {courseTemplateOptions.map((ct) => (
+                    <option key={ct.id} value={ct.id}>{ct.code} — {ct.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                <input
+                  type="number"
+                  value={academicYear}
+                  onChange={(e) => setAcademicYear(e.target.value)}
+                  placeholder={t("ปี", "Year")}
+                  className="h-9 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-2.5 text-xs tabular-nums text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
+                />
+                <select
+                  value={term}
+                  onChange={(e) => setTerm(e.target.value === "" ? "" : e.target.value === "summer" ? "summer" : (Number(e.target.value) as 1 | 2))}
+                  className="h-9 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-2.5 text-xs text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
+                >
+                  <option value="">{t("เทอม", "Term")}</option>
+                  <option value="1">{t("เทอม 1", "Term 1")}</option>
+                  <option value="2">{t("เทอม 2", "Term 2")}</option>
+                  <option value="summer">{t("ภาคฤดูร้อน", "Summer")}</option>
+                </select>
+                <input
+                  value={sectionNumber}
+                  onChange={(e) => setSectionNumber(e.target.value)}
+                  placeholder={t("Section", "Section")}
+                  className="h-9 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-2.5 text-xs text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
+                />
+              </div>
+            </div>
+          )}
 
           {/* Color picker */}
           <div className="flex flex-col gap-2">
@@ -642,7 +725,14 @@ function CourseRow({
             {course.name.charAt(0).toUpperCase()}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-[var(--text-primary)] truncate">{course.name}</p>
+            <div className="flex items-center gap-1.5 min-w-0">
+              <p className="text-sm font-semibold text-[var(--text-primary)] truncate">{course.name}</p>
+              {course.code && (
+                <span className="text-[10px] font-semibold tabular-nums px-1.5 py-0.5 rounded-md bg-[var(--accent-bright)]/15 text-[var(--accent)] shrink-0">
+                  {course.code}{course.sectionNumber ? ` · Sec ${course.sectionNumber}` : ""}
+                </span>
+              )}
+            </div>
             <p className="text-xs text-[var(--text-muted)] mt-0.5 truncate">
               {assignedTeachers.length > 0 ? assignedTeachers.map((tc) => tc.name).join(", ") : t("ยังไม่มีอาจารย์ assigned", "No teachers assigned")}
             </p>

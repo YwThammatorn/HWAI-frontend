@@ -34,6 +34,7 @@ export interface SectionRoleContextValue {
   sectionRoles: SectionRole[];
   addSectionRole: (data: Omit<SectionRole, "id" | "permissions">) => SectionRole;
   removeSectionRole: (id: string) => void;
+  removeRolesByAccount: (accountId: string) => void;
   getRolesBySection: (courseId: string) => SectionRole[];
   getRolesByAccount: (accountId: string) => SectionRole[];
   hasPermission: (accountId: string, courseId: string, permission: keyof SectionRolePermissions) => boolean;

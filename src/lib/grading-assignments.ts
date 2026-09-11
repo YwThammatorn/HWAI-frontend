@@ -20,6 +20,7 @@ export interface GradingAssignmentContextValue {
   addGradingAssignment: (data: Omit<GradingAssignment, "id">) => GradingAssignment;
   updateGradingAssignment: (id: string, data: Partial<Omit<GradingAssignment, "id" | "courseId">>) => void;
   removeGradingAssignment: (id: string) => void;
+  removeAssignmentsByTa: (taAccountId: string) => void;
   getAssignmentsBySection: (courseId: string) => GradingAssignment[];
   getAssignmentsByTa: (taAccountId: string) => GradingAssignment[];
 }

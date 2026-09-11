@@ -234,7 +234,7 @@ function AddCollaboratorDrawer({
                   <Avatar initials={initialsOf(`${s.firstName} ${s.lastName}`)} bg="#7C3AED" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-[var(--text-primary)] truncate">{s.firstName} {s.lastName}</p>
-                    <p className="text-[11px] text-[var(--text-muted)] font-mono truncate">{s.studentId}</p>
+                    <p className="text-[11px] text-[var(--text-muted)] tabular-nums truncate">{s.studentId}</p>
                   </div>
                   <span className="text-[11px] font-semibold text-[var(--role-ta-text)] shrink-0">{t("เพิ่มแล้ว", "Added")}</span>
                 </div>
@@ -251,7 +251,7 @@ function AddCollaboratorDrawer({
                     <Avatar initials={initialsOf(`${s.firstName} ${s.lastName}`)} bg="#9CA3AF" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-[var(--text-primary)] truncate">{s.firstName} {s.lastName}</p>
-                      <p className="text-[11px] text-[var(--text-muted)] font-mono truncate">{s.studentId} · {s.email}</p>
+                      <p className="text-[11px] text-[var(--text-muted)] tabular-nums truncate">{s.studentId} · {s.email}</p>
                     </div>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-[var(--text-muted)] shrink-0">
                       <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>

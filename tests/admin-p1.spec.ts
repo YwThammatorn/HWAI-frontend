@@ -83,7 +83,12 @@ async function gotoPage(page: Page, path: string) {
 
 const TEACHER_1: TeacherSeed = {
   id: "t-1",
-  name: "Dr. Smith",
+  // Deliberately not title-prefixed ("Dr. Smith") — 10/9/2569 split teacher
+  // title into its own field, and a name starting with a recognized prefix
+  // like "Dr." gets that prefix stripped into `title` on load. This fixture
+  // is about the deactivate/checkbox flows, not title-splitting, so keep it
+  // plain to avoid coupling the two.
+  name: "John Smith",
   email: "smith@kmitl.ac.th",
   role: "teacher",
   courseIds: [],
@@ -201,17 +206,17 @@ test.describe("P1a — Admin Teachers (/admin/teachers)", () => {
     // button, it does not disappear to the empty state.
     await seedPage(page, { teachers: [TEACHER_1] });
     await gotoPage(page, "/admin/teachers");
-    await expect(page.getByText("Dr. Smith")).toBeVisible();
-    // Deactivate button aria-label: "Deactivate Dr. Smith" (English mode)
-    await page.getByRole("button", { name: "Deactivate Dr. Smith" }).click();
+    await expect(page.getByText("John Smith")).toBeVisible();
+    // Deactivate button aria-label: "Deactivate John Smith" (English mode)
+    await page.getByRole("button", { name: "Deactivate John Smith" }).click();
     const alertDialog = page.getByRole("alertdialog");
     await expect(alertDialog).toBeVisible();
     await expect(alertDialog).toContainText("Confirm Deactivate");
     await alertDialog.getByRole("button", { name: "Deactivate" }).click();
     // Teacher stays visible, now flagged Inactive, with an Activate action
-    await expect(page.getByText("Dr. Smith")).toBeVisible();
+    await expect(page.getByText("John Smith")).toBeVisible();
     await expect(page.getByText("Inactive")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Activate Dr. Smith" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Activate John Smith" })).toBeVisible();
   });
 
   test("validation: submitting with empty name shows Name is required", async ({
@@ -363,8 +368,8 @@ test.describe("P1c — Admin Courses (/admin/courses)", () => {
     await seedPage(page, { courses: [COURSE_1], teachers: [TEACHER_1] });
     await gotoPage(page, "/admin/courses");
     await page.getByRole("button", { name: /Software Engineering/ }).click();
-    // Checkbox aria-label: "Dr. Smith (Teacher)"
-    const checkbox = page.getByRole("checkbox", { name: /Dr\. Smith/ });
+    // Checkbox aria-label: "John Smith (Teacher)"
+    const checkbox = page.getByRole("checkbox", { name: /John Smith/ });
     await expect(checkbox).toBeVisible();
     await expect(checkbox).not.toBeChecked();
   });
@@ -375,7 +380,7 @@ test.describe("P1c — Admin Courses (/admin/courses)", () => {
     await seedPage(page, { courses: [COURSE_1], teachers: [TEACHER_1] });
     await gotoPage(page, "/admin/courses");
     await page.getByRole("button", { name: /Software Engineering/ }).click();
-    const checkbox = page.getByRole("checkbox", { name: /Dr\. Smith/ });
+    const checkbox = page.getByRole("checkbox", { name: /John Smith/ });
     await checkbox.click();
     await expect(checkbox).toBeChecked();
   });

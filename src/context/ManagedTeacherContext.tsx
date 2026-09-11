@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ManagedTeacherContext, ManagedTeacher } from "@/lib/managed-teachers";
+import { ManagedTeacherContext, ManagedTeacher, splitTeacherTitle } from "@/lib/managed-teachers";
+import { useSectionRoles } from "@/lib/section-roles";
+import { useGradingAssignments } from "@/lib/grading-assignments";
 
 const STORAGE_KEY = "hwai_managed_teachers_v1";
 
@@ -11,6 +13,8 @@ function uuid() {
 
 export default function ManagedTeacherProvider({ children }: { children: React.ReactNode }) {
   const [teachers, setTeachers] = useState<ManagedTeacher[]>([]);
+  const { removeRolesByAccount } = useSectionRoles();
+  const { removeAssignmentsByTa } = useGradingAssignments();
 
   useEffect(() => {
     try {
@@ -20,7 +24,12 @@ export default function ManagedTeacherProvider({ children }: { children: React.R
         // data on load so old localStorage doesn't resurrect the retired term.
         type Stored = Omit<ManagedTeacher, "status"> & { status?: "active" | "inactive" | "suspended" };
         const parsed = JSON.parse(stored) as Stored[];
-        setTeachers(parsed.map((tc) => ({ ...tc, status: tc.status === "suspended" ? "inactive" : (tc.status ?? "active") })));
+        setTeachers(parsed.map((tc) => {
+          // 10/9/2569: title used to be baked into `name` ("ผศ.สมศักดิ์ ...").
+          // Split it out on load so old data gets the new separate field too.
+          const { title, name } = tc.title ? { title: tc.title, name: tc.name } : splitTeacherTitle(tc.name);
+          return { ...tc, title, name, status: tc.status === "suspended" ? "inactive" : (tc.status ?? "active") };
+        }));
       }
     } catch {
       // ignore corrupt storage
@@ -50,6 +59,8 @@ export default function ManagedTeacherProvider({ children }: { children: React.R
 
   function removeTeacher(id: string) {
     persist(teachers.filter((t) => t.id !== id));
+    removeRolesByAccount(id); // cascade
+    removeAssignmentsByTa(id); // cascade
   }
 
   function deactivateTeacher(id: string) {

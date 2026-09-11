@@ -1,0 +1,41 @@
+HWAI Agent - Mock Data Seed Commands
+=====================================
+
+วิธีใช้:
+1. รัน npm run dev แล้วเปิด http://localhost:3000
+2. กด F12 เปิด DevTools -> แท็บ Console
+3. Copy คำสั่งด้านล่าง (ทำ Curriculum ก่อน Courses จะได้ลิงก์ตรงกัน) วางแล้ว Enter
+4. หน้าจะ reload อัตโนมัติ
+
+---
+
+[1] Curriculum + รายวิชาในหลักสูตร (9 หลักสูตร, 51 วิชา)
+
+fetch('/mock-data/curriculum-mockup.json').then(r=>r.json()).then(d=>{localStorage.setItem('hwai_curriculum_versions_v1', JSON.stringify(d.curriculumVersions)); localStorage.setItem('hwai_course_templates_v1', JSON.stringify(d.courseTemplates)); location.reload();});
+
+---
+
+[2] รายวิชาที่เปิดสอน (6 วิชา, ลิงก์กับหลักสูตรด้านบน)
+
+fetch('/mock-data/courses-mockup.json').then(r=>r.json()).then(d=>{localStorage.setItem('hwai_courses_v2', JSON.stringify(d)); location.reload();});
+
+---
+
+[3] อาจารย์ / นักศึกษา - ไม่ต้องใช้ console
+
+ไปที่ /admin/users -> กด "นำเข้า CSV" -> เลือกไฟล์:
+  - test-data/teachers_sample.csv   (อาจารย์)
+  - test-data/students_sample.csv   (นักศึกษา)
+
+---
+
+[4] ล้างข้อมูลทั้งหมด (ถ้าอยากเริ่มใหม่)
+
+['hwai_user','hwai_managed_teachers_v1','hwai_cohort_students_v1','hwai_courses_v2','hwai_curriculum_versions_v1','hwai_course_templates_v1'].forEach(k=>localStorage.removeItem(k)); location.reload();
+
+---
+
+หมายเหตุ:
+- ไฟล์ json ต้นทางอยู่ใน public/mock-data/ (courses-mockup.json, curriculum-mockup.json)
+  ถ้าแก้ข้อมูล mock ให้แก้ที่ test-data/*.json ก่อน แล้ว copy ทับไฟล์ใน public/mock-data/ ด้วย
+- คำสั่งพวกนี้ทำงานเฉพาะตอน dev server รันอยู่ (npm run dev) เพราะ fetch ไปที่ localhost

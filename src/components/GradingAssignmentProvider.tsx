@@ -36,6 +36,10 @@ export default function GradingAssignmentProvider({ children }: { children: Reac
     persist(gradingAssignments.filter(g => g.id !== id));
   }, [gradingAssignments, persist]);
 
+  const removeAssignmentsByTa = useCallback((taAccountId: string) => {
+    persist(gradingAssignments.filter(g => g.taAccountId !== taAccountId));
+  }, [gradingAssignments, persist]);
+
   const getAssignmentsBySection = useCallback((courseId: string) =>
     gradingAssignments.filter(g => g.courseId === courseId), [gradingAssignments]);
 
@@ -44,7 +48,7 @@ export default function GradingAssignmentProvider({ children }: { children: Reac
 
   return (
     <GradingAssignmentContext.Provider value={{
-      gradingAssignments, addGradingAssignment, updateGradingAssignment, removeGradingAssignment,
+      gradingAssignments, addGradingAssignment, updateGradingAssignment, removeGradingAssignment, removeAssignmentsByTa,
       getAssignmentsBySection, getAssignmentsByTa,
     }}>
       {children}

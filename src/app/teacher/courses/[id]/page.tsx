@@ -193,7 +193,7 @@ export default function CourseDetailPage() {
                     {students.map((s, i) => (
                       <tr key={s.id} className="hover:bg-gray-50/50">
                         <td className="px-6 py-3 text-gray-300 text-xs">{i + 1}</td>
-                        <td className="px-6 py-3 font-mono text-xs text-gray-500">{s.studentId}</td>
+                        <td className="px-6 py-3 tabular-nums text-xs text-gray-500">{s.studentId}</td>
                         <td className="px-6 py-3 text-[var(--text-primary)]">{s.firstName}</td>
                         <td className="px-6 py-3 text-[var(--text-primary)]">{s.lastName}</td>
                         <td className="px-6 py-3 text-gray-500 text-xs">{s.email || "—"}</td>

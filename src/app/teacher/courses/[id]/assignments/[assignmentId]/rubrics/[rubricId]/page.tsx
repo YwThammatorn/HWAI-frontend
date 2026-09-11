@@ -473,7 +473,7 @@ export default function RubricEditorPage() {
                 saved
                   ? "bg-green-500 text-white"
                   : weightOk
-                    ? "bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] shadow-sm shadow-teal-200"
+                    ? "bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)]"
                     : "bg-gray-100 text-gray-300 cursor-not-allowed"
               }`}
             >

@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { CohortStudentContext, CohortStudent } from "@/lib/cohort-students";
+import { useSectionRoles } from "@/lib/section-roles";
+import { useGradingAssignments } from "@/lib/grading-assignments";
 
 const STORAGE_KEY = "hwai_cohort_students_v1";
 
@@ -11,6 +13,8 @@ function uuid() {
 
 export default function CohortStudentProvider({ children }: { children: React.ReactNode }) {
   const [cohortStudents, setCohortStudents] = useState<CohortStudent[]>([]);
+  const { removeRolesByAccount } = useSectionRoles();
+  const { removeAssignmentsByTa } = useGradingAssignments();
 
   useEffect(() => {
     try {
@@ -40,6 +44,8 @@ export default function CohortStudentProvider({ children }: { children: React.Re
 
   function removeCohortStudent(id: string) {
     persist(cohortStudents.filter((s) => s.id !== id));
+    removeRolesByAccount(id); // cascade
+    removeAssignmentsByTa(id); // cascade
   }
 
   function findByStudentId(studentId: string) {

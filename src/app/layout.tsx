@@ -41,11 +41,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider>
           <LanguageProvider>
           <AuthProvider>
-            <CohortStudentProvider>
-              <ManagedTeacherProvider>
-                <CurriculumProvider>
-                  <SectionRoleProvider>
-                    <GradingAssignmentProvider>
+            <SectionRoleProvider>
+              <GradingAssignmentProvider>
+                <CohortStudentProvider>
+                  <ManagedTeacherProvider>
+                    <CurriculumProvider>
                       <CourseProvider>
                         <StudentProvider>
                           <CLOProvider>
@@ -53,11 +53,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                           </CLOProvider>
                         </StudentProvider>
                       </CourseProvider>
-                    </GradingAssignmentProvider>
-                  </SectionRoleProvider>
-                </CurriculumProvider>
-              </ManagedTeacherProvider>
-            </CohortStudentProvider>
+                    </CurriculumProvider>
+                  </ManagedTeacherProvider>
+                </CohortStudentProvider>
+              </GradingAssignmentProvider>
+            </SectionRoleProvider>
           </AuthProvider>
           </LanguageProvider>
         </ThemeProvider>

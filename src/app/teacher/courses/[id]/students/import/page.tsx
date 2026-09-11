@@ -210,7 +210,7 @@ export default function ImportStudentsPage() {
                   </thead>
                   <tbody className="text-gray-500">
                     <tr>
-                      <td className="py-2 pr-6 font-mono">66070500401</td>
+                      <td className="py-2 pr-6 tabular-nums">66070500401</td>
                       <td className="py-2 pr-6">สมชาย</td>
                       <td className="py-2 pr-6">ใจดี</td>
                       <td className="py-2 pr-6 text-gray-300">somchai@kmitl.ac.th</td>
@@ -269,7 +269,7 @@ export default function ImportStudentsPage() {
                         className={row.error ? "bg-[var(--s-err-bg)]" : "hover:bg-gray-50/50"}
                       >
                         <td className="px-5 py-3 text-gray-300 text-xs">{row.line}</td>
-                        <td className="px-5 py-3 font-mono text-xs text-gray-600">{row.studentId || <span className="text-[var(--s-err-text)]">—</span>}</td>
+                        <td className="px-5 py-3 tabular-nums text-xs text-gray-600">{row.studentId || <span className="text-[var(--s-err-text)]">—</span>}</td>
                         <td className="px-5 py-3 text-[var(--text-primary)]">{row.firstName || <span className="text-[var(--s-err-text)]">—</span>}</td>
                         <td className="px-5 py-3 text-[var(--text-primary)]">{row.lastName || <span className="text-[var(--s-err-text)]">—</span>}</td>
                         <td className="px-5 py-3 text-gray-500 text-xs">{row.email || "—"}</td>

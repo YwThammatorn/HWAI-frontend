@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { useCourses, PRESET_COLORS, type GradingSource, type PublishMode } from "@/lib/courses";
+import { useCurriculum } from "@/lib/curriculum";
 import { useLanguage } from "@/context/LanguageContext";
 import { CourseIcon, COURSE_ICON_KEYS, type CourseIconKey } from "@/components/CourseIcon";
 
@@ -12,8 +13,12 @@ export default function CourseSettingsPage() {
   const router = useRouter();
   const { t } = useLanguage();
   const { getCourse, updateCourse, removeCourse } = useCourses();
+  const { curriculumVersions, courseTemplates } = useCurriculum();
   const CONFIRM_MSG = t("การเปลี่ยนแปลงจะไม่ถูกบันทึก\nต้องการออกจากหน้านี้หรือไม่?", "Unsaved changes.\nLeave this page?");
   const course = getCourse(id);
+  const linkedTemplate = course?.courseTemplateId ? courseTemplates.find((ct) => ct.id === course.courseTemplateId) : undefined;
+  const linkedCurriculum = linkedTemplate ? curriculumVersions.find((v) => v.id === linkedTemplate.curriculumVersionId) : undefined;
+  const TERM_LABEL: Record<string, string> = { "1": t("เทอม 1", "Term 1"), "2": t("เทอม 2", "Term 2"), summer: t("ภาคฤดูร้อน", "Summer") };
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -116,6 +121,30 @@ export default function CourseSettingsPage() {
         </button>
 
         <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-6">{t("แก้ไขรายวิชา", "Edit Existing Course")}</h1>
+
+        {/* Curriculum link — read-only, set only at course creation */}
+        {linkedTemplate && (
+          <div className="flex items-center gap-3 mb-6 px-4 py-3 rounded-xl border border-[var(--accent)]/30 bg-[var(--accent-subtle)]">
+            <svg className="text-[var(--accent)] shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+              <path d="M22 10v6M2 10l10-5 10 5-10 5-10-5z"/>
+              <path d="M6 12v5c0 1.66 2.69 3 6 3s6-1.34 6-3v-5"/>
+            </svg>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-[var(--text-primary)]">
+                {linkedTemplate.code} — {linkedTemplate.name}
+              </p>
+              <p className="text-xs text-[var(--text-secondary)] mt-0.5">
+                {linkedCurriculum ? `${linkedCurriculum.program} — ${linkedCurriculum.label}` : t("หลักสูตรถูกลบไปแล้ว", "Curriculum version was removed")}
+                {course.academicYear && ` · ${t("ปีการศึกษา", "AY")} ${course.academicYear}`}
+                {course.term !== undefined && ` · ${TERM_LABEL[String(course.term)]}`}
+                {course.sectionNumber && ` · Section ${course.sectionNumber}`}
+              </p>
+            </div>
+            <Link href="/admin/curriculum" className="text-xs font-medium text-[var(--accent)] hover:underline shrink-0">
+              {t("ดูหลักสูตร", "View curriculum")}
+            </Link>
+          </div>
+        )}
 
         <form onSubmit={handleSave} className="space-y-6">
           {/* General Information */}

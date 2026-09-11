@@ -32,6 +32,10 @@ export default function SectionRoleProvider({ children }: { children: React.Reac
     persist(sectionRoles.filter(r => r.id !== id));
   }, [sectionRoles, persist]);
 
+  const removeRolesByAccount = useCallback((accountId: string) => {
+    persist(sectionRoles.filter(r => r.accountId !== accountId));
+  }, [sectionRoles, persist]);
+
   const getRolesBySection = useCallback((courseId: string) =>
     sectionRoles.filter(r => r.courseId === courseId), [sectionRoles]);
 
@@ -47,7 +51,7 @@ export default function SectionRoleProvider({ children }: { children: React.Reac
 
   return (
     <SectionRoleContext.Provider value={{
-      sectionRoles, addSectionRole, removeSectionRole,
+      sectionRoles, addSectionRole, removeSectionRole, removeRolesByAccount,
       getRolesBySection, getRolesByAccount, hasPermission,
     }}>
       {children}

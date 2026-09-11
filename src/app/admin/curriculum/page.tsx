@@ -262,7 +262,7 @@ function CourseTemplateDrawer({
               value={code}
               onChange={(e) => setCode(e.target.value)}
               placeholder={t("เช่น 01076312", "e.g. 01076312")}
-              className="h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] font-mono focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
+              className="h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] tabular-nums focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
             />
           </div>
           <div className="flex flex-col gap-1.5">
@@ -361,12 +361,12 @@ function CourseTemplateRow({
 }) {
   return (
     <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[var(--bg-subtle)] group transition-colors">
-      <div className="w-8 h-8 rounded-lg bg-[var(--accent-bright)]/20 text-[var(--accent)] text-[10px] font-bold flex items-center justify-center shrink-0 select-none font-mono" aria-hidden="true">
+      <div className="w-8 h-8 rounded-lg bg-[var(--accent-bright)]/20 text-[var(--accent)] text-[10px] font-bold flex items-center justify-center shrink-0 select-none tabular-nums" aria-hidden="true">
         {template.code.slice(-3)}
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-[var(--text-primary)] truncate">{template.name}</p>
-        <p className="text-[11px] text-[var(--text-muted)] font-mono truncate">{template.code}</p>
+        <p className="text-[11px] text-[var(--text-muted)] tabular-nums truncate">{template.code}</p>
       </div>
       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
         <button
