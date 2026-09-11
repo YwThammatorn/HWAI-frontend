@@ -21,11 +21,20 @@ fetch('/mock-data/courses-mockup.json').then(r=>r.json()).then(d=>{localStorage.
 
 ---
 
-[3] อาจารย์ / นักศึกษา - ไม่ต้องใช้ console
+[3] อาจารย์ พร้อม assign เข้าวิชาแล้ว (5 คน — ต้องทำ [2] ก่อน จะได้ courseId ตรงกัน)
+    สมศักดิ์ เจริญสุข -> 2 วิชา, ประเสริฐ ดีเลิศ -> 1 วิชา, กานต์ ศรีสุวรรณ -> 2 วิชา,
+    นภาพร มานะ (TA) -> share วิชากับสมศักดิ์, วิทยา สมบูรณ์ (TA) -> ยังไม่ assign (ทดสอบ empty state)
+
+fetch('/mock-data/teachers-mockup.json').then(r=>r.json()).then(d=>{localStorage.setItem('hwai_managed_teachers_v1', JSON.stringify(d)); location.reload();});
+
+---
+
+[3b] นักศึกษา - ไม่ต้องใช้ console
 
 ไปที่ /admin/users -> กด "นำเข้า CSV" -> เลือกไฟล์:
-  - test-data/teachers_sample.csv   (อาจารย์)
   - test-data/students_sample.csv   (นักศึกษา)
+
+(อาจารย์ใช้ [3] ด้านบนแทน CSV import เพราะต้องผูก courseId ด้วย ถ้าอยากได้อาจารย์เปล่าๆ ไม่ผูกวิชา ค่อยใช้ CSV import teachers_sample.csv แทน)
 
 ---
 
@@ -36,6 +45,7 @@ fetch('/mock-data/courses-mockup.json').then(r=>r.json()).then(d=>{localStorage.
 ---
 
 หมายเหตุ:
-- ไฟล์ json ต้นทางอยู่ใน public/mock-data/ (courses-mockup.json, curriculum-mockup.json)
+- ไฟล์ json ต้นทางอยู่ใน public/mock-data/ (courses-mockup.json, curriculum-mockup.json, teachers-mockup.json)
   ถ้าแก้ข้อมูล mock ให้แก้ที่ test-data/*.json ก่อน แล้ว copy ทับไฟล์ใน public/mock-data/ ด้วย
 - คำสั่งพวกนี้ทำงานเฉพาะตอน dev server รันอยู่ (npm run dev) เพราะ fetch ไปที่ localhost
+- teachers-mockup.json ใช้ courseId ที่ตรงกับ courses-mockup.json (c-mock-1..6) ทำ [2] ก่อน [3] เสมอ

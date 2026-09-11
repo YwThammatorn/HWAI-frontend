@@ -7,6 +7,10 @@ import { useCurriculum } from "@/lib/curriculum";
 import { useLanguage } from "@/context/LanguageContext";
 import { CourseIcon, COURSE_ICON_KEYS, type CourseIconKey } from "@/components/CourseIcon";
 
+// Teachers can't create their own courses for now (10/9/2569) — only admin
+// creates sections and assigns teachers, via /admin/courses. Set this back
+// to false to re-enable; form + logic below are kept intact, untouched.
+const TEACHER_COURSE_CREATION_DISABLED = true;
 
 export default function NewCoursePage() {
   const router = useRouter();
@@ -14,6 +18,10 @@ export default function NewCoursePage() {
   const { addCourse } = useCourses();
   const { curriculumVersions, getCourseTemplatesByCurriculum } = useCurriculum();
   const CONFIRM_MSG = t("ข้อมูลที่กรอกจะไม่ถูกบันทึก\nต้องการออกจากหน้านี้หรือไม่?", "Your input will not be saved.\nLeave this page?");
+
+  useEffect(() => {
+    if (TEACHER_COURSE_CREATION_DISABLED) router.replace("/teacher/courses");
+  }, [router]);
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -76,6 +84,8 @@ export default function NewCoursePage() {
   }
 
   const isValid = name.trim().length > 0;
+
+  if (TEACHER_COURSE_CREATION_DISABLED) return null;
 
   return (
       <main className="w-full max-w-[860px] mx-auto px-8 py-8">

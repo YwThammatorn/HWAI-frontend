@@ -25,10 +25,12 @@ function CourseDrawer({
   const { t } = useLanguage();
   const { addCourse, updateCourse } = useCourses();
   const { curriculumVersions, courseTemplates, getCourseTemplatesByCurriculum } = useCurriculum();
+  const { teachers, assignToCourse } = useManagedTeachers();
 
   const [name, setName] = useState(course?.name ?? "");
   const [description, setDescription] = useState(course?.description ?? "");
   const [coverColor, setCoverColor] = useState(course?.coverColor ?? PRESET_COLORS[0]);
+  const [teacherId, setTeacherId] = useState("");
   const nameRef = useRef<HTMLInputElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
 
@@ -45,6 +47,14 @@ function CourseDrawer({
   function handleCurriculumChange(id: string) {
     setCurriculumVersionId(id);
     setCourseTemplateId(""); // selected template belonged to the old curriculum's list
+  }
+
+  function handleTemplateChange(id: string) {
+    setCourseTemplateId(id);
+    // Auto-fill the name from the curriculum book so admin doesn't have to
+    // retype it — still editable after, in case they want to customize it.
+    const selected = courseTemplateOptions.find((ct) => ct.id === id);
+    if (selected) setName(selected.name);
   }
 
   useEffect(() => { nameRef.current?.focus(); }, []);
@@ -80,7 +90,8 @@ function CourseDrawer({
       ...(sectionNumber.trim() !== "" && { sectionNumber: sectionNumber.trim() }),
     };
     if (mode === "create") {
-      addCourse({ name: trimmed, description, coverColor, iconColor: coverColor, status: "active", source: "manual", ...sectionFields });
+      const created = addCourse({ name: trimmed, description, coverColor, iconColor: coverColor, status: "active", source: "manual", ...sectionFields });
+      if (teacherId) assignToCourse(teacherId, created.id);
     } else if (course) {
       updateCourse(course.id, { name: trimmed, description, coverColor, iconColor: coverColor, ...sectionFields });
     }
@@ -157,7 +168,7 @@ function CourseDrawer({
                 </select>
                 <select
                   value={courseTemplateId}
-                  onChange={(e) => setCourseTemplateId(e.target.value)}
+                  onChange={(e) => handleTemplateChange(e.target.value)}
                   disabled={!curriculumVersionId}
                   className="h-9 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-2.5 text-xs text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)] disabled:opacity-50"
                 >
@@ -192,6 +203,23 @@ function CourseDrawer({
                   className="h-9 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-2.5 text-xs text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
                 />
               </div>
+            </div>
+          )}
+
+          {/* Primary teacher — only at creation; reassign later via the course row's expand panel */}
+          {mode === "create" && (
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-[var(--text-muted)]">{t("อาจารย์ประจำวิชา", "Primary Teacher")}</label>
+              <select
+                value={teacherId}
+                onChange={(e) => setTeacherId(e.target.value)}
+                className="h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
+              >
+                <option value="">{t("ยังไม่ระบุ — เลือกทีหลังได้", "Not set — assign later")}</option>
+                {teachers.map((tc) => (
+                  <option key={tc.id} value={tc.id}>{tc.title ? `${tc.title} ` : ""}{tc.name}</option>
+                ))}
+              </select>
             </div>
           )}
 

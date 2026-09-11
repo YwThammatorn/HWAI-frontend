@@ -5,6 +5,9 @@ import Link from "next/link";
 import { useCourses } from "@/lib/courses";
 import { useStudents } from "@/lib/students";
 import { useAssignments } from "@/lib/assignments";
+import { useManagedTeachers } from "@/lib/managed-teachers";
+import { useSectionRoles } from "@/lib/section-roles";
+import { useCurrentAccountId } from "@/lib/current-account";
 import type { Course } from "@/lib/courses";
 import { useLanguage } from "@/context/LanguageContext";
 import SearchInput from "@/components/SearchInput";
@@ -13,13 +16,25 @@ import { CourseIcon } from "@/components/CourseIcon";
 
 export default function CoursesPage() {
   const { t } = useLanguage();
-  const { courses, updateCourse } = useCourses();
+  const { courses: allCourses, updateCourse } = useCourses();
   const { getStudentsByCourse } = useStudents();
   const { getAssignmentsByCourse, getSubmissionsByAssignment } = useAssignments();
+  const { teachers } = useManagedTeachers();
+  const { getRolesByAccount } = useSectionRoles();
+  const currentAccountId = useCurrentAccountId();
   const [tab, setTab] = useState<"active" | "archived">("active");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 6;
+
+  // Only courses this teacher/TA is actually assigned to — either via the
+  // admin-managed courseIds list or a per-section SectionRole (collaborators).
+  // No matching ManagedTeacher for the session (e.g. an unlinked dev-bypass
+  // account) → empty list, not "show everything".
+  const myTeacher = currentAccountId ? teachers.find((tc) => tc.id === currentAccountId) : undefined;
+  const roleCourseIds = currentAccountId ? getRolesByAccount(currentAccountId).map((r) => r.courseId) : [];
+  const myCourseIds = new Set([...(myTeacher?.courseIds ?? []), ...roleCourseIds]);
+  const courses = allCourses.filter((c) => myCourseIds.has(c.id));
 
   const active = courses.filter((c) => c.status !== "archived");
   const archived = courses.filter((c) => c.status === "archived");
@@ -78,16 +93,6 @@ export default function CoursesPage() {
                 ariaLabel={t("ค้นหารายวิชา", "Search courses")}
                 className="w-56"
               />
-              {/* Add Course */}
-              <Link
-                href="/teacher/courses/new"
-                className="flex items-center gap-2 px-4 py-2 bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] font-medium rounded-xl text-sm transition-colors"
-              >
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                  <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
-                </svg>
-                {t("เพิ่มรายวิชา", "Add Course")}
-              </Link>
             </div>
           )}
         </div>
@@ -166,20 +171,10 @@ function EmptyState() {
           <div className="absolute top-8 -left-3 w-2 h-2 rounded-full bg-[var(--accent-bright)] opacity-40"/>
         </div>
 
-        <h2 className="text-xl font-bold text-[var(--text-primary)] mb-2">{t("เริ่มสร้างรายวิชาแรกของคุณ", "Let's start your first class")}</h2>
-        <p className="text-sm text-gray-500 mb-8 leading-relaxed">
-          {t("สร้างรายวิชาเพื่อเริ่มตรวจงานด้วย HWAI Agent", "Create a course to begin grading assignments with HWAI Agent.")}
+        <h2 className="text-xl font-bold text-[var(--text-primary)] mb-2">{t("ยังไม่มีรายวิชาที่ได้รับมอบหมาย", "No courses assigned yet")}</h2>
+        <p className="text-sm text-gray-500 leading-relaxed">
+          {t("ติดต่อแอดมินเพื่อให้เพิ่มคุณเข้ารายวิชา", "Contact your admin to be assigned to a course.")}
         </p>
-
-        <Link
-          href="/teacher/courses/new"
-          className="flex items-center gap-2 px-6 py-2.5 bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] font-medium rounded-full text-sm transition-colors"
-        >
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-            <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
-          </svg>
-          {t("เพิ่มรายวิชาแรก", "Add Your First Course")}
-        </Link>
       </div>
     </div>
   );

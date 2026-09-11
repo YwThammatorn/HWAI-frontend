@@ -4,11 +4,17 @@ const BASE = "http://localhost:3000";
 
 const MOCK_USER = { name: "Test Teacher", email: "test@school.edu", role: "teacher" };
 
-/** Inject mock auth session + force English lang before page load */
+/** Inject mock auth session + force English lang before page load. Also seeds
+ *  a ManagedTeacher matching MOCK_USER's email with courseIds covering the
+ *  app's own SEED_COURSES (seed-1/seed-2) — /teacher/courses now filters by
+ *  assignment (10/9/2569), so an unlinked session would see none of them. */
 async function withAuth(page: Page) {
   await page.addInitScript((u) => {
     localStorage.setItem("hwai_user", JSON.stringify(u));
     localStorage.setItem("hwai_lang", "en");
+    localStorage.setItem("hwai_managed_teachers_v1", JSON.stringify([
+      { id: "e2e-teacher-1", name: u.name, email: u.email, role: "teacher", status: "active", courseIds: ["seed-1", "seed-2"] },
+    ]));
   }, MOCK_USER);
 }
 
@@ -510,28 +516,12 @@ test.describe("Notifications Page", () => {
   });
 });
 
-test.describe("Courses New", () => {
-  test.beforeEach(async ({ page }) => { await withAuth(page); });
-
-  test("form loads with Course Name field and color picker", async ({ page }) => {
-    await waitReady(page, "/teacher/courses/new");
-    await expect(page.getByRole("heading", { name: /add new course/i })).toBeVisible();
-    await expect(page.getByPlaceholder("e.g. UX/UI Design Principles")).toBeVisible();
-    await expect(page.getByRole("button", { name: /create course/i })).toBeVisible();
-  });
-
-  test("Create Course button is disabled with empty name", async ({ page }) => {
-    await waitReady(page, "/teacher/courses/new");
-    const submitBtn = page.getByRole("button", { name: /create course/i });
-    await expect(submitBtn).toBeDisabled();
-  });
-
-  test("typing course name enables Create Course button", async ({ page }) => {
-    await waitReady(page, "/teacher/courses/new");
-    await page.getByPlaceholder("e.g. UX/UI Design Principles").fill("My New Course");
-    await expect(page.getByRole("button", { name: /create course/i })).toBeEnabled();
-  });
-});
+// "Courses New" describe block removed (10/9/2569) — teachers can no longer
+// create their own courses (TEACHER_COURSE_CREATION_DISABLED in
+// teacher/courses/new/page.tsx redirects the route away); only admin
+// creates courses now, via /admin/courses. Restore these 3 tests
+// (form loads / submit disabled on empty name / enabled once filled)
+// alongside flipping that flag back to false.
 
 test.describe("Course Settings", () => {
   test.beforeEach(async ({ page }) => { await withAuth(page); });
@@ -632,6 +622,9 @@ async function withManyCourses(page: Page) {
     localStorage.setItem("hwai_user", JSON.stringify({ name: "Test Teacher", email: "test@school.edu", role: "teacher" }));
     localStorage.setItem("hwai_lang", "en");
     localStorage.setItem("hwai_courses_v2", JSON.stringify(courses));
+    localStorage.setItem("hwai_managed_teachers_v1", JSON.stringify([
+      { id: "e2e-teacher-1", name: "Test Teacher", email: "test@school.edu", role: "teacher", status: "active", courseIds: courses.map((c) => c.id) },
+    ]));
   });
 }
 
