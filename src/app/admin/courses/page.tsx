@@ -42,6 +42,8 @@ function CourseDrawer({
   const [academicYear, setAcademicYear] = useState(String(course?.academicYear ?? currentAcademicYear));
   const [term, setTerm] = useState<Term | "">(course?.term ?? "");
   const [sectionNumber, setSectionNumber] = useState(course?.sectionNumber ?? "");
+  const [schedule, setSchedule] = useState(course?.schedule ?? "");
+  const [room, setRoom] = useState(course?.room ?? "");
 
   function handleCurriculumChange(id: string) {
     setCurriculumVersionId(id);
@@ -88,6 +90,8 @@ function CourseDrawer({
       ...(year !== undefined && !isNaN(year) && { academicYear: year }),
       ...(term !== "" && { term }),
       ...(sectionNumber.trim() !== "" && { sectionNumber: sectionNumber.trim() }),
+      ...(schedule.trim() !== "" && { schedule: schedule.trim() }),
+      ...(room.trim() !== "" && { room: room.trim() }),
     };
     if (mode === "create") {
       const created = addCourse({ name: trimmed, description, coverColor, iconColor: coverColor, status: "active", source: "manual", ...sectionFields });
@@ -205,6 +209,28 @@ function CourseDrawer({
               </div>
             </div>
           )}
+
+          {/* Schedule & Room */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-[var(--text-muted)]">{t("วันเวลาเรียน", "Class Schedule")}</label>
+              <input
+                value={schedule}
+                onChange={(e) => setSchedule(e.target.value)}
+                placeholder={t("เช่น จันทร์ 9:00-12:00", "e.g. Mon 9:00-12:00")}
+                className="h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-[var(--text-muted)]">{t("ห้องเรียน", "Room")}</label>
+              <input
+                value={room}
+                onChange={(e) => setRoom(e.target.value)}
+                placeholder={t("เช่น 811", "e.g. 811")}
+                className="h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
+              />
+            </div>
+          </div>
 
           {/* Primary teacher — required at creation; reassign later via the course row's expand panel */}
           {mode === "create" && (
@@ -469,6 +495,9 @@ function CourseRow({
             </div>
             <p className="text-xs text-[var(--text-muted)] mt-0.5 truncate">
               {assignedTeachers.length > 0 ? assignedTeachers.map((tc) => tc.name).join(", ") : t("ยังไม่มีอาจารย์ assigned", "No teachers assigned")}
+              {(course.schedule || course.room) && (
+                <> · {[course.schedule, course.room && t(`ห้อง ${course.room}`, `Room ${course.room}`)].filter(Boolean).join(" · ")}</>
+              )}
             </p>
           </div>
           <span className={`transition-transform duration-200 text-[var(--text-muted)] shrink-0 ${expanded ? "rotate-180" : ""}`} aria-hidden="true">

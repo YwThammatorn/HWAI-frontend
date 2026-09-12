@@ -232,6 +232,12 @@ function CourseCard({ course, studentCount, allGraded, activeAssignments, isArch
               <p className="text-xs font-semibold text-[var(--accent)] truncate">{termLabel}</p>
             </div>
           </div>
+
+          {(course.schedule || course.room) && (
+            <p className="text-xs text-gray-400 pt-2 truncate">
+              {[course.schedule, course.room && t(`ห้อง ${course.room}`, `Room ${course.room}`)].filter(Boolean).join(" · ")}
+            </p>
+          )}
         </div>
 
         {isArchived ? (

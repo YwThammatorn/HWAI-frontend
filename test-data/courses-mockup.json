@@ -16,7 +16,9 @@
     "term": 1,
     "sectionNumber": "1",
     "gradingSource": "ta",
-    "publishMode": "manual"
+    "publishMode": "manual",
+    "schedule": "จันทร์ 9:00-12:00",
+    "room": "811"
   },
   {
     "id": "c-mock-2",
@@ -35,7 +37,9 @@
     "term": 1,
     "sectionNumber": "1",
     "gradingSource": "ai",
-    "publishMode": "auto"
+    "publishMode": "auto",
+    "schedule": "อังคาร 13:00-16:00",
+    "room": "810"
   },
   {
     "id": "c-mock-3",
@@ -54,7 +58,9 @@
     "term": 2,
     "sectionNumber": "1",
     "gradingSource": "ta",
-    "publishMode": "manual"
+    "publishMode": "manual",
+    "schedule": "พุธ 9:00-12:00",
+    "room": "502"
   },
   {
     "id": "c-mock-4",
@@ -73,7 +79,9 @@
     "term": 1,
     "sectionNumber": "1",
     "gradingSource": "blind",
-    "publishMode": "manual"
+    "publishMode": "manual",
+    "schedule": "พฤหัสบดี 13:00-15:00",
+    "room": "706"
   },
   {
     "id": "c-mock-5",

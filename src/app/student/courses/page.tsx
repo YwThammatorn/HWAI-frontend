@@ -10,6 +10,7 @@ import { useAssignments } from "@/lib/assignments";
 import EmptyState from "@/components/EmptyState";
 import PageHeader from "@/components/PageHeader";
 import { CourseIcon } from "@/components/CourseIcon";
+import { useManagedTeachers } from "@/lib/managed-teachers";
 
 export default function StudentCoursesPage() {
   const { t } = useLanguage();
@@ -17,6 +18,7 @@ export default function StudentCoursesPage() {
   const { students } = useStudents();
   const { getCourse } = useCourses();
   const { getAssignmentsByCourse } = useAssignments();
+  const { getTeachersByCourse } = useManagedTeachers();
 
   const sourceLabel: Record<string, string> = {
     manual: t("เพิ่มเอง", "Manually Added"),
@@ -64,6 +66,9 @@ export default function StudentCoursesPage() {
                   : course.code
                 : sourceLabel[course.source] ?? course.source;
               const termLabel = course.academicYear && course.term ? `${course.term}/${course.academicYear}` : "—";
+              const instructor = getTeachersByCourse(course.id)[0];
+              const instructorLabel = instructor ? `${instructor.title ? `${instructor.title} ` : ""}${instructor.name}` : null;
+              const roomLabel = course.room ? t(`ห้อง ${course.room}`, `Room ${course.room}`) : null;
               return (
                 <Link
                   key={course.id}
@@ -100,6 +105,15 @@ export default function StudentCoursesPage() {
                           <p className="text-xs font-semibold text-[var(--accent)] truncate">{termLabel}</p>
                         </div>
                       </div>
+
+                      {(instructorLabel || course.schedule || roomLabel) && (
+                        <div className="pt-2 text-xs text-[var(--text-muted)] space-y-0.5">
+                          {instructorLabel && <p className="truncate">{instructorLabel}</p>}
+                          {(course.schedule || roomLabel) && (
+                            <p className="truncate">{[course.schedule, roomLabel].filter(Boolean).join(" · ")}</p>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     <div className="flex items-center justify-between text-xs text-[var(--text-muted)] border-t border-[var(--border-subtle)] pt-3 mt-3">

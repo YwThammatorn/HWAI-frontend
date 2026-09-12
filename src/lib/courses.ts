@@ -44,6 +44,10 @@ export interface Course {
   gradingSource?: GradingSource;
   /** ประกาศคะแนนอัตโนมัติ หรือรอ approve — ตั้งค่าต่อ section (มติที่ประชุม 4/9/2569 decision #2) */
   publishMode?: PublishMode;
+  /** วันเวลาเรียน — free text, e.g. "จันทร์ 9:00-12:00" */
+  schedule?: string;
+  /** เลขห้องเรียน — free text, e.g. "811" */
+  room?: string;
 }
 
 // "Slate Morning" course-cover palette (10/9/2569) — replaces the old raw
@@ -78,6 +82,8 @@ export const SEED_COURSES: Course[] = [
     iconColor: "#2DD4BF",
     createdAt: "2026-07-01T00:00:00.000Z",
     updatedAt: "2026-07-01T00:00:00.000Z",
+    schedule: "จันทร์ 13:00-16:00",
+    room: "305",
   },
   {
     id: "seed-2",
@@ -89,6 +95,8 @@ export const SEED_COURSES: Course[] = [
     iconColor: "#A78BFA",
     createdAt: "2026-07-01T00:00:00.000Z",
     updatedAt: "2026-07-01T00:00:00.000Z",
+    schedule: "พฤหัสบดี 9:00-12:00",
+    room: "412",
   },
 ];
 
