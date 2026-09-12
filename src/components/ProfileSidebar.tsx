@@ -58,20 +58,6 @@ const HISTORY_ICON = (
   </svg>
 );
 
-const PROFILE_ICON = (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-    <circle cx="12" cy="8" r="4" />
-    <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
-  </svg>
-);
-
-const SETTINGS_ICON = (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-    <circle cx="12" cy="12" r="3" />
-    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
-  </svg>
-);
-
 /* ── Course sub-page icons (module-level: no translated strings) ── */
 
 const OVERVIEW_ICON = (
@@ -159,11 +145,6 @@ export default function ProfileSidebar() {
     { label: t("แดชบอร์ด", "Dashboard"), href: "/teacher/dashboard", active: pathname === "/teacher/dashboard",       icon: DASHBOARD_ICON },
   ];
 
-  const ACCOUNT_NAV = [
-    { label: t("ข้อมูลส่วนตัว", "Information"), href: "/teacher/profile",  active: pathname === "/teacher/profile",  icon: PROFILE_ICON  },
-    { label: t("ตั้งค่า", "Settings"),           href: "/teacher/settings", active: pathname === "/teacher/settings", icon: SETTINGS_ICON },
-  ];
-
   // Per-course sub-navigation (only shown when inside /courses/[id]/...)
   const COURSE_NAV = activeCourseId
     ? [
@@ -205,17 +186,6 @@ export default function ProfileSidebar() {
           </nav>
         </>
       )}
-
-      <div className="border-t border-white/10 my-1" />
-
-      <p className="text-white/55 text-[10px] font-semibold uppercase tracking-widest px-3 mt-4 mb-2">
-        {t("บัญชี", "Account")}
-      </p>
-      <nav className="flex flex-col gap-0.5 flex-1">
-        {ACCOUNT_NAV.map((item) => (
-          <NavItem key={item.href} {...item} />
-        ))}
-      </nav>
     </aside>
   );
 }

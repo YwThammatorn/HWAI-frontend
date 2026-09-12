@@ -57,7 +57,6 @@ export default function ViewAssignmentPage() {
   const { getStudentsByCourse } = useStudents();
 
   const [search, setSearch] = useState("");
-  const [copied, setCopied] = useState(false);
 
   const course = getCourse(id);
   const assignment = getAssignment(assignmentId);
@@ -81,15 +80,6 @@ export default function ViewAssignmentPage() {
         (submissions.filter((s) => s.aiScore !== null).length || 1))
     : 0;
   const gradedCount = submissions.filter((s) => s.status === "graded").length;
-
-  const uploadLink = `https://hwai-agent.kmitl.ac.th/submit/${assignmentId.replace("a-", "")}`;
-
-  function handleCopy() {
-    navigator.clipboard.writeText(uploadLink).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
-  }
 
   const visible = search
     ? submissions.filter((s) =>
@@ -167,32 +157,6 @@ export default function ViewAssignmentPage() {
               )}
             </Link>
           </div>
-        </div>
-
-        {/* Upload link */}
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 mb-5 flex items-center gap-4">
-          <div className="flex items-center gap-1.5 text-xs text-gray-500 shrink-0">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2">
-              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
-            {t("ลิงก์อัปโหลดงาน", "Assignment Submission Upload Link")}
-          </div>
-          <div className="flex-1 px-3 py-1.5 bg-gray-50 rounded-lg text-xs text-gray-500 font-mono truncate border border-gray-100">
-            {uploadLink}
-          </div>
-          <button
-            onClick={handleCopy}
-            className={[
-              "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors shrink-0",
-              copied ? "bg-emerald-50 text-emerald-600 border border-emerald-200" : "border border-gray-200 text-gray-600 hover:bg-gray-50",
-            ].join(" ")}
-          >
-            {copied ? (
-              <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>{t("คัดลอกแล้ว", "Copied")}</>
-            ) : (
-              <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>{t("คัดลอก", "Copy")}</>
-            )}
-          </button>
         </div>
 
         {/* 4 stat cards */}

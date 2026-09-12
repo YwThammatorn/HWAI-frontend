@@ -54,10 +54,6 @@ test.describe("Navigation", () => {
     await expect(page.locator("text=/Detailed Grading Log/i")).toBeVisible();
   });
 
-  test("profile page loads", async ({ page }) => {
-    await waitReady(page, "/teacher/profile");
-    await expect(page).toHaveURL(/\/teacher\/profile/);
-  });
 });
 
 // ── 2. Course Detail ──────────────────────────────────────────────────────────
@@ -581,26 +577,11 @@ test.describe("Student Import", () => {
   });
 });
 
-test.describe("App Settings", () => {
-  test.beforeEach(async ({ page }) => { await withAuth(page); });
-
-  test("page loads with theme toggle switches", async ({ page }) => {
-    await waitReady(page, "/teacher/settings");
-    // Settings page has theme-related toggles
-    await expect(page.locator("role=switch").first()).toBeVisible();
-  });
-
-  test("dark mode toggle is a switch", async ({ page }) => {
-    await waitReady(page, "/teacher/settings");
-    const themeSwitch = page.locator("[role='switch']").first();
-    await expect(themeSwitch).toBeVisible();
-    // Click it and verify aria-checked changes
-    const before = await themeSwitch.getAttribute("aria-checked");
-    await themeSwitch.click();
-    const after = await themeSwitch.getAttribute("aria-checked");
-    expect(before).not.toBe(after);
-  });
-});
+// "App Settings" describe block removed (12/9/2569) — /teacher/settings and
+// /teacher/profile were deleted at the user's request (no longer needed);
+// theme toggling still works app-wide via the header button in every shell
+// (AppShell/AdminShell/StudentShell), which calls ThemeProvider's
+// toggleTheme() directly and doesn't depend on this settings page.
 
 // ── New Feature Tests ─────────────────────────────────────────────────────────
 
