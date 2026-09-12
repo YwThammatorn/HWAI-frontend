@@ -38,14 +38,26 @@ fetch('/mock-data/teachers-mockup.json').then(r=>r.json()).then(d=>{localStorage
 
 ---
 
+[5] นักศึกษาครบ flow — cohort + ลงทะเบียนวิชา + งาน + rubric + ผลตรวจ
+    (ต้องทำ [2] ก่อน เพราะลงทะเบียนเข้า c-mock-1 "การเขียนโปรแกรมคอมพิวเตอร์" ของสมศักดิ์)
+    5 คนใน cohort (CE67/68/69, 1 คน inactive) — 3 คนแรกลงทะเบียนวิชา c-mock-1 จริง
+    วิชานี้มี 2 งาน: [1] ครบกำหนดแล้ว มี rubric + ผลตรวจ 3 แบบ (ตรวจแล้ว/รอตรวจ/ยังไม่ตรวจ)
+                     [2] ยังไม่ถึงกำหนด ยังไม่มีใครส่ง
+    ล็อกอินเป็นนักศึกษาด้วยอีเมล 69070101@kmitl.ac.th (รหัสผ่านอะไรก็ได้ 4 ตัวขึ้นไป) จะเห็นวิชา+งานนี้
+
+fetch('/mock-data/student-flow-mockup.json').then(r=>r.json()).then(d=>{localStorage.setItem('hwai_cohort_students_v1', JSON.stringify(d.cohortStudents)); localStorage.setItem('hwai_students_v1', JSON.stringify(d.courseStudents)); localStorage.setItem('hwai_assignments_v1', JSON.stringify(d.assignments)); localStorage.setItem('hwai_rubrics_v1', JSON.stringify(d.rubrics)); localStorage.setItem('hwai_submissions_v1', JSON.stringify(d.submissions)); location.reload();});
+
+---
+
 [4] ล้างข้อมูลทั้งหมด (ถ้าอยากเริ่มใหม่)
 
-['hwai_user','hwai_managed_teachers_v1','hwai_cohort_students_v1','hwai_courses_v2','hwai_curriculum_versions_v1','hwai_course_templates_v1'].forEach(k=>localStorage.removeItem(k)); location.reload();
+['hwai_user','hwai_managed_teachers_v1','hwai_cohort_students_v1','hwai_courses_v2','hwai_curriculum_versions_v1','hwai_course_templates_v1','hwai_students_v1','hwai_assignments_v1','hwai_rubrics_v1','hwai_submissions_v1'].forEach(k=>localStorage.removeItem(k)); location.reload();
 
 ---
 
 หมายเหตุ:
-- ไฟล์ json ต้นทางอยู่ใน public/mock-data/ (courses-mockup.json, curriculum-mockup.json, teachers-mockup.json)
+- ไฟล์ json ต้นทางอยู่ใน public/mock-data/ (courses-mockup.json, curriculum-mockup.json, teachers-mockup.json, student-flow-mockup.json)
   ถ้าแก้ข้อมูล mock ให้แก้ที่ test-data/*.json ก่อน แล้ว copy ทับไฟล์ใน public/mock-data/ ด้วย
 - คำสั่งพวกนี้ทำงานเฉพาะตอน dev server รันอยู่ (npm run dev) เพราะ fetch ไปที่ localhost
 - teachers-mockup.json ใช้ courseId ที่ตรงกับ courses-mockup.json (c-mock-1..6) ทำ [2] ก่อน [3] เสมอ
+- student-flow-mockup.json ก็ใช้ courseId c-mock-1 เหมือนกัน ทำ [2] ก่อน [5] เสมอ
