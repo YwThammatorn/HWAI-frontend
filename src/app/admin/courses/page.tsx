@@ -8,8 +8,7 @@ import { useManagedTeachers } from "@/lib/managed-teachers";
 import { getInitials } from "@/lib/utils";
 import EmptyState from "@/components/EmptyState";
 import StatCard from "@/components/StatCard";
-import { useCohortStudents } from "@/lib/cohort-students";
-import { useStudents, Student } from "@/lib/students";
+import { useStudents } from "@/lib/students";
 
 // ── Course create/edit drawer ─────────────────────────────────────────────────
 
@@ -81,6 +80,7 @@ function CourseDrawer({
   function handleSave() {
     const trimmed = name.trim();
     if (!trimmed) return;
+    if (mode === "create" && !teacherId) return;
     const selectedTemplate = courseTemplateOptions.find((ct) => ct.id === courseTemplateId);
     const year = academicYear.trim() === "" ? undefined : parseInt(academicYear, 10);
     const sectionFields = {
@@ -91,7 +91,7 @@ function CourseDrawer({
     };
     if (mode === "create") {
       const created = addCourse({ name: trimmed, description, coverColor, iconColor: coverColor, status: "active", source: "manual", ...sectionFields });
-      if (teacherId) assignToCourse(teacherId, created.id);
+      assignToCourse(teacherId, created.id);
     } else if (course) {
       updateCourse(course.id, { name: trimmed, description, coverColor, iconColor: coverColor, ...sectionFields });
     }
@@ -206,20 +206,26 @@ function CourseDrawer({
             </div>
           )}
 
-          {/* Primary teacher — only at creation; reassign later via the course row's expand panel */}
+          {/* Primary teacher — required at creation; reassign later via the course row's expand panel */}
           {mode === "create" && (
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-[var(--text-muted)]">{t("อาจารย์ประจำวิชา", "Primary Teacher")}</label>
+              <label className="text-xs font-semibold text-[var(--text-muted)]">
+                {t("อาจารย์ประจำวิชา", "Primary Teacher")} <span className="text-[var(--s-err-text)]">*</span>
+              </label>
               <select
                 value={teacherId}
                 onChange={(e) => setTeacherId(e.target.value)}
+                required
                 className="h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
               >
-                <option value="">{t("ยังไม่ระบุ — เลือกทีหลังได้", "Not set — assign later")}</option>
+                <option value="">{t("เลือกอาจารย์ประจำวิชา...", "Select a teacher...")}</option>
                 {teachers.map((tc) => (
                   <option key={tc.id} value={tc.id}>{tc.title ? `${tc.title} ` : ""}{tc.name}</option>
                 ))}
               </select>
+              {teachers.length === 0 && (
+                <p className="text-[11px] text-[var(--s-err-text)]">{t("ยังไม่มีอาจารย์ในระบบ — ไปเพิ่มที่หน้าจัดการอาจารย์ก่อน", "No teachers yet — add one on the User Management page first")}</p>
+              )}
             </div>
           )}
 
@@ -251,7 +257,7 @@ function CourseDrawer({
           </button>
           <button
             onClick={handleSave}
-            disabled={!name.trim()}
+            disabled={!name.trim() || (mode === "create" && !teacherId)}
             className="h-9 px-5 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] disabled:opacity-50 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
           >
             {mode === "create" ? t("สร้างรายวิชา", "Create Course") : t("บันทึก", "Save")}
@@ -303,139 +309,24 @@ function ConfirmDialog({
   );
 }
 
-// ── Student list item ─────────────────────────────────────────────────────────
-
-function StudentListItem({ student, onRemove }: { student: Student; onRemove: () => void }) {
-  const initials = (s: Student) =>
-    `${s.firstName?.[0] ?? ""}${s.lastName?.[0] ?? ""}`.toUpperCase();
-
-  return (
-    <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-[var(--bg-subtle)] group transition-colors">
-      <div className="w-7 h-7 rounded-full bg-[var(--accent-bright)]/20 text-[var(--accent)] text-[10px] font-bold flex items-center justify-center shrink-0 select-none">
-        {initials(student)}
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-[var(--text-primary)] truncate">{student.firstName} {student.lastName}</p>
-        <p className="text-[11px] text-[var(--text-muted)] truncate">{student.email}</p>
-      </div>
-      {student.cohort && (
-        <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-md bg-[var(--bg-subtle)] text-[var(--text-muted)] shrink-0">
-          {student.cohort}
-        </span>
-      )}
-      <button
-        onClick={onRemove}
-        className="w-6 h-6 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--s-err-text)] hover:bg-[var(--s-err-bg)] opacity-0 group-hover:opacity-100 transition-all shrink-0"
-        aria-label={`Remove ${student.firstName}`}
-      >
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-        </svg>
-      </button>
-    </div>
-  );
-}
-
 // ── Assign panel ──────────────────────────────────────────────────────────────
+// Teacher assignment only — student enrollment is now the teacher's own job
+// (CSV import on the course, teacher/courses/[id]/students/import), not
+// admin's, so there's no add/remove student UI here anymore (10/9/2569).
 
 function CourseAssignPanel({ course }: { course: Course }) {
   const { t } = useLanguage();
   const { teachers, assignToCourse, unassignFromCourse, getTeachersByCourse } = useManagedTeachers();
-  const { getCohorts, getStudentsByCohort } = useCohortStudents();
-  const { removeStudent, getStudentsByCourse, addStudents } = useStudents();
+  const { getStudentsByCourse } = useStudents();
 
   const assignedTeachers = getTeachersByCourse(course.id);
-  const enrolledStudents = getStudentsByCourse(course.id);
-  const cohorts = getCohorts();
-  const [selectedCohort, setSelectedCohort] = useState("");
-  const [enrolling, setEnrolling] = useState(false);
-  const [msg, setMsg] = useState<{ text: string; type: "ok" | "warn" }>({ text: "", type: "ok" });
-  const [studentSearch, setStudentSearch] = useState("");
+  const enrolledCount = getStudentsByCourse(course.id).length;
   const [teacherSearch, setTeacherSearch] = useState("");
-
-  // Individual picker state
-  const [showPicker, setShowPicker] = useState(false);
-  const [pickerSearch, setPickerSearch] = useState("");
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-
-  // Confirm state for destructive student actions
-  const [pendingRemoveStudent, setPendingRemoveStudent] = useState<Student | null>(null);
-  const [pendingRemoveCohort, setPendingRemoveCohort] = useState(false);
-
-  const enrolledStudentIds = new Set(enrolledStudents.map((s) => s.studentId));
-  const allCohortStudents = cohorts.flatMap((c) => getStudentsByCohort(c));
-  const availableStudents = allCohortStudents.filter((s) => !enrolledStudentIds.has(s.studentId));
-  const filteredAvailable = pickerSearch
-    ? availableStudents.filter((s) =>
-        `${s.firstName} ${s.lastName}`.toLowerCase().includes(pickerSearch.toLowerCase()) ||
-        s.email.toLowerCase().includes(pickerSearch.toLowerCase()) ||
-        (s.studentId ?? "").includes(pickerSearch)
-      )
-    : availableStudents;
-
-  function toggleSelectStudent(studentId: string) {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      next.has(studentId) ? next.delete(studentId) : next.add(studentId);
-      return next;
-    });
-  }
-
-  function handleAddSelected() {
-    const toAdd = availableStudents
-      .filter((s) => selectedIds.has(s.studentId))
-      .map(({ studentId, firstName, lastName, email, cohort }) => ({ studentId, firstName, lastName, email, cohort }));
-    addStudents(course.id, toAdd);
-    setSelectedIds(new Set());
-    setShowPicker(false);
-    setPickerSearch("");
-    showMsg(t(`เพิ่ม ${toAdd.length} คนเข้ารายวิชาแล้ว`, `Added ${toAdd.length} student(s)`));
-  }
-
-  const showMsg = (text: string, type: "ok" | "warn" = "ok") => {
-    setMsg({ text, type });
-    setTimeout(() => setMsg({ text: "", type: "ok" }), 4000);
-  };
 
   function toggleTeacher(teacherId: string, assigned: boolean) {
     if (assigned) unassignFromCourse(teacherId, course.id);
     else assignToCourse(teacherId, course.id);
   }
-
-  function handleEnroll() {
-    if (!selectedCohort) return;
-    setEnrolling(true);
-    const cohortStudents = getStudentsByCohort(selectedCohort);
-    const existing = new Set(enrolledStudents.map((s) => s.studentId));
-    const toAdd = cohortStudents
-      .filter((cs) => !existing.has(cs.studentId))
-      .map(({ studentId, firstName, lastName, email, cohort }) => ({ studentId, firstName, lastName, email, cohort }));
-    addStudents(course.id, toAdd);
-    setEnrolling(false);
-    showMsg(t(`เพิ่ม ${toAdd.length} คน (${selectedCohort}) เข้ารายวิชาแล้ว`, `Enrolled ${toAdd.length} from ${selectedCohort}`));
-  }
-
-  function handleRemoveCohort() {
-    if (!selectedCohort) return;
-    const toRemove = enrolledStudents.filter((s) => s.cohort === selectedCohort);
-    if (toRemove.length === 0) { showMsg(t("ไม่มีนักศึกษาจาก cohort นี้ใน course", `No students from ${selectedCohort}`), "warn"); return; }
-    setPendingRemoveCohort(true);
-  }
-
-  function confirmRemoveCohort() {
-    const toRemove = enrolledStudents.filter((s) => s.cohort === selectedCohort);
-    toRemove.forEach((s) => removeStudent(s.id));
-    showMsg(t(`ลบ ${toRemove.length} คน (${selectedCohort}) ออกแล้ว`, `Removed ${toRemove.length} from ${selectedCohort}`));
-    setPendingRemoveCohort(false);
-  }
-
-  const filteredStudents = studentSearch
-    ? enrolledStudents.filter((s) =>
-        `${s.firstName} ${s.lastName}`.toLowerCase().includes(studentSearch.toLowerCase()) ||
-        s.email.toLowerCase().includes(studentSearch.toLowerCase()) ||
-        (s.studentId ?? "").includes(studentSearch)
-      )
-    : enrolledStudents;
 
   const TEACHER_ROLE_LABEL: Record<"teacher" | "ta", string> = { teacher: t("อาจารย์", "Teacher"), ta: "TA" };
 
@@ -448,271 +339,86 @@ function CourseAssignPanel({ course }: { course: Course }) {
     : sortedTeachers;
 
   return (
-    <>
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-[var(--bg-app)] rounded-b-2xl border-t border-[var(--border-subtle)]">
-
-      {/* Left: Teacher assignment */}
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-2">
-          <p className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">{t("อาจารย์ผู้สอน", "Teaching Staff")}</p>
-          {assignedTeachers.length > 0 && (
-            <span className="text-[10px] font-bold text-[var(--accent)] bg-[var(--accent-bright)]/15 px-1.5 py-0.5 rounded-full tabular-nums">
-              {assignedTeachers.length}
-            </span>
-          )}
-        </div>
-        {teachers.length === 0 ? (
-          <p className="text-xs text-[var(--text-muted)]">{t("ยังไม่มีอาจารย์ในระบบ — ไปเพิ่มที่หน้าจัดการอาจารย์", "No teachers yet — add them first")}</p>
-        ) : (
-          <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] overflow-hidden">
-            {/* Search bar */}
-            <div className="flex items-center gap-2 px-3 py-2 border-b border-[var(--border-subtle)]">
-              <svg className="text-[var(--text-muted)] shrink-0" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-              </svg>
-              <input
-                value={teacherSearch}
-                onChange={(e) => setTeacherSearch(e.target.value)}
-                placeholder={t("ค้นหาอาจารย์...", "Search teachers...")}
-                className="flex-1 text-xs bg-transparent text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none"
-              />
-              {teacherSearch && (
-                <button onClick={() => setTeacherSearch("")} className="text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors">
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                  </svg>
-                </button>
-              )}
-            </div>
-            {/* List */}
-            <div className="max-h-[200px] overflow-y-auto">
-              {filteredTeachers.length === 0 ? (
-                <p className="text-xs text-[var(--text-muted)] px-3 py-3">{t("ไม่พบอาจารย์ที่ค้นหา", "No match found")}</p>
-              ) : filteredTeachers.map((teacher, idx, arr) => {
-                const assigned = assignedTeachers.some((a) => a.id === teacher.id);
-                const prevAssigned = idx > 0 && assignedTeachers.some((a) => a.id === arr[idx - 1].id);
-                const isDivider = !teacherSearch && idx > 0 && !assigned && prevAssigned && assignedTeachers.length > 0;
-                return (
-                  <div key={teacher.id}>
-                    {isDivider && <div className="mx-3 my-0.5 border-t border-[var(--border-subtle)]" />}
-                    <label className={`flex items-center gap-3 px-3 py-2.5 cursor-pointer transition-colors ${assigned ? "bg-[var(--accent-bright)]/5 hover:bg-[var(--accent-bright)]/10" : "hover:bg-[var(--bg-subtle)]"}`}>
-                      <input
-                        type="checkbox"
-                        checked={assigned}
-                        onChange={() => toggleTeacher(teacher.id, assigned)}
-                        className="w-4 h-4 accent-[var(--accent)] cursor-pointer shrink-0"
-                      />
-                      <div
-                        className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 select-none transition-colors ${assigned ? "bg-[var(--accent-solid)] text-[var(--accent-solid-text)]" : "bg-[var(--accent-bright)]/20 text-[var(--accent)]"}`}
-                        aria-hidden="true"
-                      >
-                        {getInitials(teacher.name)}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className={`text-sm font-medium truncate ${assigned ? "text-[var(--text-primary)]" : "text-[var(--text-secondary)]"}`}>{teacher.name}</p>
-                        <p className="text-[11px] text-[var(--text-muted)]">{TEACHER_ROLE_LABEL[teacher.role]}</p>
-                      </div>
-                      {assigned && (
-                        <svg className="text-[var(--accent)] shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="20 6 9 17 4 12"/>
-                        </svg>
-                      )}
-                    </label>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+    <div className="flex flex-col gap-2 p-4 bg-[var(--bg-app)] rounded-b-2xl border-t border-[var(--border-subtle)]">
+      <div className="flex items-center gap-2">
+        <p className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">{t("อาจารย์ผู้สอน", "Teaching Staff")}</p>
+        {assignedTeachers.length > 0 && (
+          <span className="text-[10px] font-bold text-[var(--accent)] bg-[var(--accent-bright)]/15 px-1.5 py-0.5 rounded-full tabular-nums">
+            {assignedTeachers.length}
+          </span>
         )}
       </div>
-
-      {/* Right: Student management */}
-      <div className="flex flex-col gap-3">
-        {/* Header + search + add button */}
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <p className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">{t("นักศึกษา", "Students")}</p>
-            <span className="text-xs font-bold text-[var(--accent)] tabular-nums bg-[var(--accent-bright)]/10 px-2 py-0.5 rounded-full">{enrolledStudents.length}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            {enrolledStudents.length > 0 && (
-              <div className="relative">
-                <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      {teachers.length === 0 ? (
+        <p className="text-xs text-[var(--text-muted)]">{t("ยังไม่มีอาจารย์ในระบบ — ไปเพิ่มที่หน้าจัดการอาจารย์", "No teachers yet — add them first")}</p>
+      ) : (
+        <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] overflow-hidden max-w-md">
+          {/* Search bar */}
+          <div className="flex items-center gap-2 px-3 py-2 border-b border-[var(--border-subtle)]">
+            <svg className="text-[var(--text-muted)] shrink-0" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+            </svg>
+            <input
+              value={teacherSearch}
+              onChange={(e) => setTeacherSearch(e.target.value)}
+              placeholder={t("ค้นหาอาจารย์...", "Search teachers...")}
+              className="flex-1 text-xs bg-transparent text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none"
+            />
+            {teacherSearch && (
+              <button onClick={() => setTeacherSearch("")} className="text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                 </svg>
-                <input
-                  value={studentSearch}
-                  onChange={(e) => setStudentSearch(e.target.value)}
-                  placeholder={t("ค้นหา...", "Search...")}
-                  className="h-7 pl-7 pr-3 text-xs rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-bright)] w-28"
-                />
-              </div>
+              </button>
             )}
-            <button
-              onClick={() => { setShowPicker((v) => !v); setPickerSearch(""); setSelectedIds(new Set()); }}
-              className={`h-7 px-2.5 rounded-lg text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] ${showPicker ? "bg-[var(--accent-bright)]/15 text-[var(--accent)]" : "bg-[var(--accent-solid)] text-[var(--accent-solid-text)] hover:bg-[var(--accent-solid-hover)]"}`}
-            >
-              {showPicker ? t("ปิด", "Close") : t("+ รายบุคคล", "+ Individual")}
-            </button>
+          </div>
+          {/* List */}
+          <div className="max-h-[200px] overflow-y-auto">
+            {filteredTeachers.length === 0 ? (
+              <p className="text-xs text-[var(--text-muted)] px-3 py-3">{t("ไม่พบอาจารย์ที่ค้นหา", "No match found")}</p>
+            ) : filteredTeachers.map((teacher, idx, arr) => {
+              const assigned = assignedTeachers.some((a) => a.id === teacher.id);
+              const prevAssigned = idx > 0 && assignedTeachers.some((a) => a.id === arr[idx - 1].id);
+              const isDivider = !teacherSearch && idx > 0 && !assigned && prevAssigned && assignedTeachers.length > 0;
+              return (
+                <div key={teacher.id}>
+                  {isDivider && <div className="mx-3 my-0.5 border-t border-[var(--border-subtle)]" />}
+                  <label className={`flex items-center gap-3 px-3 py-2.5 cursor-pointer transition-colors ${assigned ? "bg-[var(--accent-bright)]/5 hover:bg-[var(--accent-bright)]/10" : "hover:bg-[var(--bg-subtle)]"}`}>
+                    <input
+                      type="checkbox"
+                      checked={assigned}
+                      onChange={() => toggleTeacher(teacher.id, assigned)}
+                      className="w-4 h-4 accent-[var(--accent)] cursor-pointer shrink-0"
+                    />
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 select-none transition-colors ${assigned ? "bg-[var(--accent-solid)] text-[var(--accent-solid-text)]" : "bg-[var(--accent-bright)]/20 text-[var(--accent)]"}`}
+                      aria-hidden="true"
+                    >
+                      {getInitials(teacher.name)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-sm font-medium truncate ${assigned ? "text-[var(--text-primary)]" : "text-[var(--text-secondary)]"}`}>{teacher.name}</p>
+                      <p className="text-[11px] text-[var(--text-muted)]">{TEACHER_ROLE_LABEL[teacher.role]}</p>
+                    </div>
+                    {assigned && (
+                      <svg className="text-[var(--accent)] shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12"/>
+                      </svg>
+                    )}
+                  </label>
+                </div>
+              );
+            })}
           </div>
         </div>
+      )}
 
-        {/* Individual picker */}
-        {showPicker && (
-          <div className="rounded-xl border border-[var(--accent-bright)]/30 bg-[var(--bg-surface)] overflow-hidden">
-            {/* Picker search */}
-            <div className="p-2 border-b border-[var(--border-subtle)]">
-              <div className="relative">
-                <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-                </svg>
-                <input
-                  value={pickerSearch}
-                  onChange={(e) => setPickerSearch(e.target.value)}
-                  placeholder={t("ค้นหาชื่อ, email, รหัส...", "Search name, email, ID...")}
-                  autoFocus
-                  className="w-full h-7 pl-7 pr-3 text-xs bg-transparent text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none"
-                />
-              </div>
-            </div>
-            {/* Picker list */}
-            {availableStudents.length === 0 ? (
-              <p className="text-xs text-[var(--text-muted)] px-3 py-3">{t("นักศึกษาทุกคนใน cohort อยู่ใน course นี้แล้ว", "All cohort students are already enrolled")}</p>
-            ) : filteredAvailable.length === 0 ? (
-              <p className="text-xs text-[var(--text-muted)] px-3 py-3">{t("ไม่พบนักศึกษาที่ค้นหา", "No match found")}</p>
-            ) : (
-              <div className="max-h-44 overflow-y-auto">
-                {filteredAvailable.map((s) => {
-                  const checked = selectedIds.has(s.studentId);
-                  return (
-                    <label key={s.studentId} className={`flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-[var(--bg-subtle)] transition-colors ${checked ? "bg-[var(--accent-bright)]/5" : ""}`}>
-                      <input
-                        type="checkbox"
-                        checked={checked}
-                        onChange={() => toggleSelectStudent(s.studentId)}
-                        className="w-3.5 h-3.5 accent-[var(--accent)] cursor-pointer shrink-0"
-                      />
-                      <div className="w-6 h-6 rounded-full bg-[var(--accent-bright)]/20 text-[var(--accent)] text-[9px] font-bold flex items-center justify-center shrink-0 select-none" aria-hidden="true">
-                        {getInitials(`${s.firstName} ${s.lastName}`)}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-medium text-[var(--text-primary)] truncate">{s.firstName} {s.lastName}</p>
-                        <p className="text-[10px] text-[var(--text-muted)] truncate">{s.email} · {s.cohort}</p>
-                      </div>
-                    </label>
-                  );
-                })}
-              </div>
-            )}
-            {/* Confirm row */}
-            {availableStudents.length > 0 && (
-              <div className="flex items-center justify-between gap-2 p-2 border-t border-[var(--border-subtle)] bg-[var(--bg-app)]">
-                <span className="text-xs text-[var(--text-muted)]">
-                  {selectedIds.size > 0
-                    ? t(`เลือก ${selectedIds.size} คน`, `${selectedIds.size} selected`)
-                    : t("เลือกนักศึกษาที่ต้องการ", "Select students to add")}
-                </span>
-                <button
-                  onClick={handleAddSelected}
-                  disabled={selectedIds.size === 0}
-                  className="h-7 px-3 rounded-lg bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-xs font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
-                >
-                  {t(`+ เพิ่ม${selectedIds.size > 0 ? ` ${selectedIds.size} คน` : ""}`, `+ Add${selectedIds.size > 0 ? ` ${selectedIds.size}` : ""}`)}
-                </button>
-              </div>
-            )}
-          </div>
+      <p className="text-xs text-[var(--text-muted)] mt-2">
+        {t(
+          `นักศึกษาในวิชานี้ ${enrolledCount} คน — อาจารย์ประจำวิชาเป็นผู้นำเข้าเองที่หน้ารายวิชา (นำเข้า CSV)`,
+          `${enrolledCount} student(s) enrolled — the course's teacher imports them (CSV) from the course page`
         )}
-
-        {/* Student list */}
-        {enrolledStudents.length === 0 ? (
-          <p className="text-xs text-[var(--text-muted)] px-3">{t("ยังไม่มีนักศึกษาใน course นี้", "No students enrolled yet")}</p>
-        ) : filteredStudents.length === 0 ? (
-          <p className="text-xs text-[var(--text-muted)] px-3">{t("ไม่พบนักศึกษาที่ค้นหา", "No match found")}</p>
-        ) : (
-          <div className="max-h-44 overflow-y-auto rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] py-1">
-            {filteredStudents.map((s) => (
-              <StudentListItem key={s.id} student={s} onRemove={() => setPendingRemoveStudent(s)} />
-            ))}
-          </div>
-        )}
-
-        {/* Enroll section */}
-        <div className="flex flex-col gap-2 pt-1 border-t border-[var(--border-subtle)]">
-          <p className="text-xs text-[var(--text-muted)]">{t("จัดการ cohort:", "Manage cohort:")}</p>
-          {cohorts.length === 0 ? (
-            <p className="text-xs text-[var(--text-muted)]">{t("ยังไม่มี cohort — นำเข้าจากหน้าจัดการนักศึกษาก่อน", "No cohorts — import students first")}</p>
-          ) : (
-            <>
-              <div className="flex gap-2">
-                <select
-                  value={selectedCohort}
-                  onChange={(e) => { setSelectedCohort(e.target.value); setMsg({ text: "", type: "ok" }); }}
-                  className="flex-1 h-8 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-2.5 text-xs text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
-                >
-                  <option value="">{t("เลือก cohort…", "Select cohort…")}</option>
-                  {cohorts.map((c) => (
-                    <option key={c} value={c}>{c} ({getStudentsByCohort(c).length} {t("คน", "students")})</option>
-                  ))}
-                </select>
-                <button
-                  onClick={handleEnroll}
-                  disabled={!selectedCohort || enrolling}
-                  title={t("นำเข้านักศึกษาจาก cohort ที่เลือก", "Enroll selected cohort")}
-                  className="h-8 px-3 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-xs font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors whitespace-nowrap"
-                >
-                  {enrolling ? "…" : t("+ นำเข้า", "+ Enroll")}
-                </button>
-                <button
-                  onClick={handleRemoveCohort}
-                  disabled={!selectedCohort}
-                  title={t("ลบนักศึกษาทั้ง cohort ออกจาก course นี้", "Remove entire cohort from this course")}
-                  className="h-8 px-3 rounded-xl border border-[var(--border-subtle)] text-xs font-semibold text-[var(--s-err-text)] hover:bg-[var(--s-err-bg)] active:scale-[0.97] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--s-err-bd)] transition-colors whitespace-nowrap"
-                >
-                  {t("ลบ cohort", "Remove")}
-                </button>
-              </div>
-              {msg.text && (
-                <p role="status" className={`text-xs rounded-lg px-3 py-1.5 border ${msg.type === "ok" ? "text-green-700 bg-green-50 border-green-100" : "text-amber-700 bg-amber-50 border-amber-100"}`}>
-                  {msg.text}
-                </p>
-              )}
-            </>
-          )}
-        </div>
-      </div>
+      </p>
     </div>
-
-    {/* Confirm: remove individual student */}
-    {pendingRemoveStudent && (
-      <ConfirmDialog
-        title={t("ลบนักศึกษาออกจาก course?", "Remove student from course?")}
-        description={t(
-          `"${pendingRemoveStudent.firstName} ${pendingRemoveStudent.lastName}" จะถูกลบออกจาก course นี้`,
-          `"${pendingRemoveStudent.firstName} ${pendingRemoveStudent.lastName}" will be removed from this course`
-        )}
-        confirmLabel={t("ลบออก", "Remove")}
-        danger={true}
-        onConfirm={() => { removeStudent(pendingRemoveStudent.id); setPendingRemoveStudent(null); }}
-        onCancel={() => setPendingRemoveStudent(null)}
-      />
-    )}
-
-    {/* Confirm: remove entire cohort */}
-    {pendingRemoveCohort && selectedCohort && (
-      <ConfirmDialog
-        title={t("ลบนักศึกษาทั้ง cohort?", "Remove entire cohort?")}
-        description={t(
-          `นักศึกษาจาก ${selectedCohort} ทั้งหมด ${enrolledStudents.filter((s) => s.cohort === selectedCohort).length} คน จะถูกลบออกจาก course นี้`,
-          `All ${enrolledStudents.filter((s) => s.cohort === selectedCohort).length} students from ${selectedCohort} will be removed from this course`
-        )}
-        confirmLabel={t("ลบทั้ง cohort", "Remove Cohort")}
-        danger={true}
-        onConfirm={confirmRemoveCohort}
-        onCancel={() => setPendingRemoveCohort(false)}
-      />
-    )}
-    </>
   );
 }
 
