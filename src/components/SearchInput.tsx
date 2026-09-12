@@ -6,6 +6,7 @@ interface SearchInputProps {
   placeholder?: string;
   className?: string;
   ariaLabel?: string;
+  rounded?: "xl" | "full";
 }
 
 export default function SearchInput({
@@ -14,6 +15,7 @@ export default function SearchInput({
   placeholder = "Search…",
   className = "",
   ariaLabel,
+  rounded = "xl",
 }: SearchInputProps) {
   return (
     <div className={`relative ${className}`}>
@@ -37,7 +39,7 @@ export default function SearchInput({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         aria-label={ariaLabel ?? placeholder}
-        className="w-full h-9 pl-8 pr-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
+        className={`w-full h-9 pl-8 pr-3 border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)] ${rounded === "full" ? "rounded-full" : "rounded-xl"}`}
       />
     </div>
   );

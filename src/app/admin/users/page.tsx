@@ -7,6 +7,7 @@ import { useCohortStudents, CohortStudent } from "@/lib/cohort-students";
 import { getInitials } from "@/lib/utils";
 import EmptyState from "@/components/EmptyState";
 import SearchInput from "@/components/SearchInput";
+import FilterSelect from "@/components/FilterSelect";
 import StatCard from "@/components/StatCard";
 import PillTabBar from "@/components/PillTabBar";
 import Pagination from "@/components/Pagination";
@@ -916,26 +917,28 @@ function TeachersTab() {
   return (
     <div>
       {/* Action bar */}
-      <div className="flex items-center gap-3 mb-4">
-        <div className="flex-1">
-          <SearchInput value={search} onChange={setSearch} placeholder={t("ค้นหาอาจารย์...", "Search teachers...")} />
+      <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap">
+          <SearchInput value={search} onChange={setSearch} placeholder={t("ค้นหาอาจารย์...", "Search teachers...")} className="w-48 shrink-0" rounded="full" />
         </div>
-        <button onClick={() => setImportOpen(true)}
-          className="flex items-center gap-2 h-10 px-4 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:border-[var(--accent-bright)] hover:text-[var(--text-primary)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors shrink-0">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-            <polyline points="14 2 14 8 20 8"/>
-            <line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>
-          </svg>
-          {t("นำเข้า CSV", "Import CSV")}
-        </button>
-        <button onClick={() => setDrawerOpen(true)}
-          className="flex items-center gap-2 h-10 px-4 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors shrink-0">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-          </svg>
-          {t("เพิ่มอาจารย์", "Add Teacher")}
-        </button>
+        <div className="flex items-center gap-2 shrink-0">
+          <button onClick={() => setImportOpen(true)}
+            className="flex items-center gap-2 h-9 px-4 rounded-full border border-[var(--border)] bg-[var(--bg-surface)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:border-[var(--accent-bright)] hover:text-[var(--text-primary)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors shrink-0">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>
+            </svg>
+            {t("นำเข้า CSV", "Import CSV")}
+          </button>
+          <button onClick={() => setDrawerOpen(true)}
+            className="flex items-center gap-2 h-9 px-4 rounded-full bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors shrink-0">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            {t("เพิ่มอาจารย์", "Add Teacher")}
+          </button>
+        </div>
       </div>
 
       {teachers.length === 0 ? (
@@ -1396,48 +1399,71 @@ function StudentsTab() {
   return (
     <div>
       {/* Action bar */}
-      <div className="flex items-center gap-3 mb-4">
-        <div className="flex-1">
-          <SearchInput value={search} onChange={setSearch} placeholder={t("ค้นหานักศึกษา...", "Search students...")} />
+      <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap">
+          <SearchInput value={search} onChange={setSearch} placeholder={t("ค้นหานักศึกษา...", "Search students...")} className="w-48 shrink-0" rounded="full" />
+          {cohorts.length > 0 && (
+            <FilterSelect
+              value={cohortFilter}
+              onChange={setCohortFilter}
+              ariaLabel={t("กรองตาม cohort", "Filter by cohort")}
+              icon={
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+              }
+            >
+              <option value="all">{COHORT_LABEL}</option>
+              {cohorts.map((c) => <option key={c} value={c}>{c}</option>)}
+            </FilterSelect>
+          )}
+          {programs.length > 0 && (
+            <FilterSelect
+              value={programFilter}
+              onChange={setProgramFilter}
+              ariaLabel={t("กรองตามหลักสูตร", "Filter by program")}
+              icon={
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                </svg>
+              }
+            >
+              {programs.map((p) => <option key={p} value={p}>{PROGRAM_LABEL[p] ?? p}</option>)}
+            </FilterSelect>
+          )}
+          <FilterSelect
+            value={sortOrder}
+            onChange={(v) => setSortOrder(v as typeof sortOrder)}
+            ariaLabel={t("เรียงลำดับตามชื่อ", "Sort by name")}
+            icon={
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="9" y2="18"/>
+              </svg>
+            }
+          >
+            <option value="none">{t("เรียงลำดับ: ค่าเริ่มต้น", "Sort: Default")}</option>
+            <option value="name-asc">{t("ชื่อ ก–ฮ", "Name A–Z")}</option>
+            <option value="name-desc">{t("ชื่อ ฮ–ก", "Name Z–A")}</option>
+          </FilterSelect>
         </div>
-        {cohorts.length > 0 && (
-          <select value={cohortFilter} onChange={(e) => setCohortFilter(e.target.value)}
-            aria-label={t("กรองตาม cohort", "Filter by cohort")}
-            className="h-10 pl-3 pr-8 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)] transition-colors shrink-0">
-            <option value="all">{COHORT_LABEL}</option>
-            {cohorts.map((c) => <option key={c} value={c}>{c}</option>)}
-          </select>
-        )}
-        {programs.length > 0 && (
-          <select value={programFilter} onChange={(e) => setProgramFilter(e.target.value)}
-            aria-label={t("กรองตามหลักสูตร", "Filter by program")}
-            className="h-10 pl-3 pr-8 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)] transition-colors shrink-0">
-            {programs.map((p) => <option key={p} value={p}>{PROGRAM_LABEL[p] ?? p}</option>)}
-          </select>
-        )}
-        <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value as typeof sortOrder)}
-          aria-label={t("เรียงลำดับตามชื่อ", "Sort by name")}
-          className="h-10 pl-3 pr-8 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)] transition-colors shrink-0">
-          <option value="none">{t("เรียงลำดับ: ค่าเริ่มต้น", "Sort: Default")}</option>
-          <option value="name-asc">{t("ชื่อ ก–ฮ", "Name A–Z")}</option>
-          <option value="name-desc">{t("ชื่อ ฮ–ก", "Name Z–A")}</option>
-        </select>
-        <button onClick={() => setImportOpen(true)}
-          className="flex items-center gap-2 h-10 px-4 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:border-[var(--accent-bright)] hover:text-[var(--text-primary)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors shrink-0">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-            <polyline points="17 8 12 3 7 8"/>
-            <line x1="12" y1="3" x2="12" y2="15"/>
-          </svg>
-          {t("นำเข้า CSV", "Import CSV")}
-        </button>
-        <button onClick={() => setAddOpen(true)}
-          className="flex items-center gap-2 h-10 px-4 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors shrink-0">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-          </svg>
-          {t("เพิ่มนักศึกษา", "Add Student")}
-        </button>
+        <div className="flex items-center gap-2 shrink-0">
+          <button onClick={() => setImportOpen(true)}
+            className="flex items-center gap-2 h-9 px-4 rounded-full border border-[var(--border)] bg-[var(--bg-surface)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:border-[var(--accent-bright)] hover:text-[var(--text-primary)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors shrink-0">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            {t("นำเข้า CSV", "Import CSV")}
+          </button>
+          <button onClick={() => setAddOpen(true)}
+            className="flex items-center gap-2 h-9 px-4 rounded-full bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors shrink-0">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            {t("เพิ่มนักศึกษา", "Add Student")}
+          </button>
+        </div>
       </div>
 
       {cohortStudents.length === 0 ? (
