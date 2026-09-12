@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
-import { useNavCollapse } from "@/hooks/useNavCollapse";
 
 interface CourseLink {
   secId: string;
@@ -21,9 +20,6 @@ export default function StudentSidebar({ courses = [] }: StudentSidebarProps) {
   // derive active course from pathname
   const courseMatch = pathname.match(/\/student\/courses\/([^/]+)/);
   const activeCourseId = courseMatch ? courseMatch[1] : null;
-  const { isOpen, toggle } = useNavCollapse(
-    activeCourseId != null || pathname.startsWith("/student/courses") ? ["courses"] : []
-  );
 
   function isActive(href: string, exact = false) {
     if (exact) return pathname === href;
@@ -64,108 +60,39 @@ export default function StudentSidebar({ courses = [] }: StudentSidebarProps) {
             </Link>
           </li>
 
-          {/* Courses accordion */}
-          <li>
-            <button
-              onClick={() => toggle("courses")}
-              aria-expanded={isOpen("courses")}
-              aria-controls="student-courses-menu"
-              className={[
-                "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors min-h-[44px]",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--sidebar-bg)]",
-                pathname.startsWith("/student/courses")
-                  ? "bg-[var(--accent-bright)]/20 text-[var(--nav-active-text)]"
-                  : "text-white/55 hover:text-white hover:bg-white/8",
-              ].join(" ")}
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-              </svg>
-              <span className="flex-1 text-left">{t("รายวิชา", "Courses")}</span>
-              <span aria-hidden="true" className={`transition-transform duration-200 ${isOpen("courses") ? "rotate-180" : ""}`}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                  <polyline points="6 9 12 15 18 9"/>
-                </svg>
-              </span>
-            </button>
-
-            {isOpen("courses") && (
-              <ul id="student-courses-menu" role="list" className="mt-0.5 flex flex-col gap-0.5 pl-3">
-                {/* Top-level course list link */}
-                <li>
-                  <Link
-                    href="/student/courses"
-                    aria-current={isActive("/student/courses", true) ? "page" : undefined}
-                    className={[
-                      "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors min-h-[36px]",
-                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]",
-                      isActive("/student/courses", true)
-                        ? "bg-[var(--accent-bright)]/20 text-[var(--nav-active-text)]"
-                        : "text-white/55 hover:text-white hover:bg-white/8",
-                    ].join(" ")}
-                  >
-                    {t("รายวิชาทั้งหมด", "All Courses")}
-                  </Link>
+          {/* Per-course sub-links — only shown while inside a course */}
+          {activeCourseId && (
+            <li>
+              <ul role="list" className="mt-0.5 flex flex-col gap-0.5">
+                <li className="px-3 pt-2 pb-1">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-white/55">
+                    {courses.find((c) => c.secId === activeCourseId)?.name ?? t("รายวิชานี้", "This Course")}
+                  </span>
                 </li>
-
-                {/* Per-course sub-links (when a course is selected) */}
-                {activeCourseId && (
-                  <>
-                    <li className="px-3 pt-2 pb-1">
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-white/55">
-                        {courses.find((c) => c.secId === activeCourseId)?.name ?? t("รายวิชานี้", "This Course")}
-                      </span>
+                {SUB_LINKS.map((sub) => {
+                  const href = `/student/courses/${activeCourseId}/${sub.key}`;
+                  const active = isActive(href);
+                  return (
+                    <li key={sub.key}>
+                      <Link
+                        href={href}
+                        aria-current={active ? "page" : undefined}
+                        className={[
+                          "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors min-h-[36px]",
+                          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]",
+                          active
+                            ? "bg-[var(--accent-bright)]/20 text-[var(--nav-active-text)]"
+                            : "text-white/55 hover:text-white hover:bg-white/8",
+                        ].join(" ")}
+                      >
+                        {t(sub.labelTh, sub.labelEn)}
+                      </Link>
                     </li>
-                    {SUB_LINKS.map((sub) => {
-                      const href = `/student/courses/${activeCourseId}/${sub.key}`;
-                      const active = isActive(href);
-                      return (
-                        <li key={sub.key}>
-                          <Link
-                            href={href}
-                            aria-current={active ? "page" : undefined}
-                            className={[
-                              "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors min-h-[36px]",
-                              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]",
-                              active
-                                ? "bg-[var(--accent-bright)]/20 text-[var(--nav-active-text)]"
-                                : "text-white/55 hover:text-white hover:bg-white/8",
-                            ].join(" ")}
-                          >
-                            {t(sub.labelTh, sub.labelEn)}
-                          </Link>
-                        </li>
-                      );
-                    })}
-                  </>
-                )}
+                  );
+                })}
               </ul>
-            )}
-          </li>
-
-          {/* Calendar (shell only) */}
-          <li>
-            <Link
-              href="/student/calendar"
-              aria-current={isActive("/student/calendar") ? "page" : undefined}
-              className={[
-                "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors min-h-[44px]",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--sidebar-bg)]",
-                isActive("/student/calendar")
-                  ? "bg-[var(--accent-bright)]/20 text-[var(--nav-active-text)]"
-                  : "text-white/55 hover:text-white hover:bg-white/8",
-              ].join(" ")}
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                <line x1="16" y1="2" x2="16" y2="6"/>
-                <line x1="8" y1="2" x2="8" y2="6"/>
-                <line x1="3" y1="10" x2="21" y2="10"/>
-              </svg>
-              {t("ปฏิทิน", "Calendar")}
-            </Link>
-          </li>
+            </li>
+          )}
         </ul>
       </nav>
     </aside>
