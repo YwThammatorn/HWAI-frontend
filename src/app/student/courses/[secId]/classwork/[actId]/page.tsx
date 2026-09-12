@@ -87,8 +87,8 @@ export default function StudentClassworkDetailPage() {
                 <h1 className="text-xl font-bold text-[var(--text-primary)]">{assignment.name}</h1>
                 <span className={`shrink-0 px-2.5 py-1 rounded-lg text-xs font-semibold ${
                   assignment.submissionType === "group"
-                    ? "bg-purple-50 text-purple-700"
-                    : "bg-[#F97316]/10 text-[#C2410C]"
+                    ? "bg-purple-100 text-purple-700"
+                    : "bg-gray-50 text-gray-500"
                 }`}>
                   {assignment.submissionType === "group" ? t("งานกลุ่ม", "Group") : t("งานเดี่ยว", "Individual")}
                 </span>
@@ -172,7 +172,7 @@ export default function StudentClassworkDetailPage() {
                 <button
                   onClick={() => setConfirmOpen(true)}
                   disabled={submitting}
-                  className="w-full h-10 rounded-xl bg-[#F97316] text-white text-sm font-semibold hover:bg-[#ea6c0d] active:scale-[0.97] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F97316] transition-colors"
+                  className="w-full h-10 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
                 >
                   {SUBMIT_BTN_LABEL}
                 </button>
@@ -209,14 +209,14 @@ export default function StudentClassworkDetailPage() {
             <div className="flex gap-2">
               <button
                 onClick={() => setConfirmOpen(false)}
-                className="flex-1 h-9 rounded-xl border border-[var(--border-subtle)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F97316] transition-colors"
+                className="flex-1 h-9 rounded-xl border border-[var(--border-subtle)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
               >
                 {t("ยกเลิก", "Cancel")}
               </button>
               <button
                 onClick={handleSubmit}
                 disabled={submitting}
-                className="flex-1 h-9 rounded-xl bg-[#F97316] text-white text-sm font-semibold hover:bg-[#ea6c0d] active:scale-[0.97] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F97316] transition-colors"
+                className="flex-1 h-9 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
               >
                 {submitting ? t("กำลังส่ง…", "Submitting…") : t("ยืนยัน ส่งงาน", "Confirm & Submit")}
               </button>

@@ -76,9 +76,9 @@ export default function StudentHome() {
                   <Link
                     key={item.assignmentId}
                     href={`/student/courses/${item.courseId}/classwork/${item.assignmentId}`}
-                    className="flex items-center gap-3 p-3 rounded-xl hover:bg-[var(--bg-subtle)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F97316]"
+                    className="flex items-center gap-3 p-3 rounded-xl hover:bg-[var(--bg-subtle)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]"
                   >
-                    <div className={`w-2 h-2 rounded-full shrink-0 ${isUrgent ? "bg-red-400" : "bg-[#F97316]"}`} aria-hidden="true" />
+                    <div className={`w-2 h-2 rounded-full shrink-0 ${isUrgent ? "bg-[var(--danger-solid)]" : "bg-[var(--accent-bright)]"}`} aria-hidden="true" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-[var(--text-primary)] truncate">{item.name}</p>
                       <p className="text-xs text-[var(--text-muted)]">{item.courseName}</p>
@@ -107,7 +107,7 @@ export default function StudentHome() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-base font-bold text-[var(--text-primary)]">{t("รายวิชาของฉัน", "My Courses")}</h2>
             {enrolledCourses.length > 0 && (
-              <Link href="/student/courses" className="text-xs text-[#F97316] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F97316] rounded">
+              <Link href="/student/courses" className="text-xs text-[var(--accent)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] rounded">
                 {t("ดูทั้งหมด →", "View all →")}
               </Link>
             )}
@@ -121,7 +121,7 @@ export default function StudentHome() {
                 <Link
                   key={course.id}
                   href={`/student/courses/${course.id}/classwork`}
-                  className="flex items-center gap-3 p-3 rounded-xl hover:bg-[var(--bg-subtle)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F97316]"
+                  className="flex items-center gap-3 p-3 rounded-xl hover:bg-[var(--bg-subtle)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]"
                 >
                   <div
                     className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-sm shrink-0"

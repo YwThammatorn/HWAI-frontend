@@ -9,6 +9,7 @@ import { useCourses } from "@/lib/courses";
 import { useAssignments } from "@/lib/assignments";
 import EmptyState from "@/components/EmptyState";
 import PageHeader from "@/components/PageHeader";
+import { CourseIcon } from "@/components/CourseIcon";
 
 export default function StudentCoursesPage() {
   const { t } = useLanguage();
@@ -16,6 +17,12 @@ export default function StudentCoursesPage() {
   const { students } = useStudents();
   const { getCourse } = useCourses();
   const { getAssignmentsByCourse } = useAssignments();
+
+  const sourceLabel: Record<string, string> = {
+    manual: t("เพิ่มเอง", "Manually Added"),
+    google: "Google Classroom",
+    teams: "Microsoft Teams",
+  };
 
   const enrolledCourses = useMemo(() => {
     if (!user?.studentId) return [];
@@ -37,9 +44,9 @@ export default function StudentCoursesPage() {
 
         {enrolledCourses.length === 0 ? (
           <EmptyState
-            iconColor="#F97316"
+            iconColor="var(--accent-bright)"
             icon={
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent-bright)" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
                 <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
                 <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
               </svg>
@@ -51,31 +58,48 @@ export default function StudentCoursesPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {enrolledCourses.map((course) => {
               const assignments = getAssignmentsByCourse(course.id);
+              const codeLabel = course.code
+                ? course.sectionNumber
+                  ? `${course.code} · ${t("กลุ่ม", "Sec.")} ${course.sectionNumber}`
+                  : course.code
+                : sourceLabel[course.source] ?? course.source;
+              const termLabel = course.academicYear && course.term ? `${course.term}/${course.academicYear}` : "—";
               return (
                 <Link
                   key={course.id}
                   href={`/student/courses/${course.id}/classwork`}
-                  className="group flex flex-col bg-[var(--bg-surface)] rounded-2xl shadow-sm border border-[var(--border-subtle)] overflow-hidden hover:shadow-md transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F97316]"
+                  className="group flex flex-col bg-[var(--bg-surface)] rounded-2xl shadow-sm border border-[var(--border-subtle)] overflow-hidden hover:shadow-md transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]"
                 >
-                  {/* Banner — solid color, book icon (matches teacher) */}
+                  {/* Banner — solid color, course icon, archived overlay (matches teacher) */}
                   <div className="relative h-28 shrink-0" style={{ background: course.coverColor }}>
                     <div className="absolute bottom-3 left-3 w-9 h-9 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-                      </svg>
+                      <CourseIcon iconKey={course.icon} size={18} className="text-white" />
                     </div>
+                    {course.status !== "active" && (
+                      <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                        <span className="text-white text-xs font-medium bg-black/40 px-2 py-1 rounded-full">{t("เก็บถาวร", "Archived")}</span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Card body — flex column so footer pins to bottom */}
                   <div className="flex flex-col flex-1 p-4">
                     <div className="flex-1">
-                      <h3 className="font-bold text-[var(--text-primary)] text-[15px] leading-snug mb-1 line-clamp-2 group-hover:text-[#C2410C] transition-colors">
+                      <h3 className="font-bold text-[var(--text-primary)] text-[15px] leading-snug line-clamp-2 mb-2">
                         {course.name}
                       </h3>
-                      {course.description && (
-                        <p className="text-xs text-[var(--text-muted)] line-clamp-2">{course.description}</p>
-                      )}
+
+                      {/* DEEP-QA-style two-column meta row — matches teacher's own course card */}
+                      <div className="grid grid-cols-2 gap-3 pb-3 border-b border-[var(--border-subtle)]">
+                        <div className="min-w-0">
+                          <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wide mb-0.5">{t("รหัสวิชา", "Code")}</p>
+                          <p className="text-xs font-semibold text-[var(--text-primary)] truncate">{codeLabel}</p>
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wide mb-0.5">{t("ภาคเรียนที่", "Term")}</p>
+                          <p className="text-xs font-semibold text-[var(--accent)] truncate">{termLabel}</p>
+                        </div>
+                      </div>
                     </div>
 
                     <div className="flex items-center justify-between text-xs text-[var(--text-muted)] border-t border-[var(--border-subtle)] pt-3 mt-3">
@@ -87,7 +111,7 @@ export default function StudentCoursesPage() {
                         {assignments.length} {t("งาน", "assignment(s)")}
                       </span>
                       {course.status === "active" ? (
-                        <span className="flex items-center gap-1 text-[#F97316]">
+                        <span className="flex items-center gap-1 text-[var(--accent)]">
                           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
                             <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
                             <line x1="16" y1="2" x2="16" y2="6"/>

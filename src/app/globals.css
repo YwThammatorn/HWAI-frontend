@@ -321,10 +321,9 @@ body {
 [data-theme="dark"] .border-blue-100    { border-color: var(--border); }
 [data-theme="dark"] .border-purple-200  { border-color: var(--border); }
 
-/* Teal/orange buttons: dark navy text works in both light and dark modes */
-/* bg-[#2DD4BF] with text-white fails dark mode; bg-[#F97316] with text-white = 2.8:1 on orange ❌ */
+/* Teal logo-mark background: dark navy text works in both light and dark modes */
+/* bg-[#2DD4BF] with text-white fails dark mode */
 .bg-\[\#2DD4BF\] { color: #1B2A4A; }
-.bg-\[\#F97316\] { color: #1B2A4A; }  /* 5.16:1 on #F97316, passes WCAG AA */
 
 /* Input dark mode */
 [data-theme="dark"] input,

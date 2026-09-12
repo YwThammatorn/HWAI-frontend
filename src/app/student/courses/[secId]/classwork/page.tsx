@@ -54,11 +54,11 @@ function ClassworkCard({
   return (
     <Link
       href={`/student/courses/${courseId}/classwork/${assignment.id}`}
-      className="flex items-center gap-4 p-4 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] hover:shadow-sm hover:-translate-y-0.5 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F97316]"
+      className="flex items-center gap-4 p-4 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] hover:shadow-sm hover:-translate-y-0.5 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]"
     >
       {/* Left icon */}
-      <div className="w-10 h-10 rounded-xl bg-[#F97316]/10 flex items-center justify-center shrink-0">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
+      <div className="w-10 h-10 rounded-xl bg-[var(--accent-bright)]/10 flex items-center justify-center shrink-0">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-bright)" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
           <polyline points="14 2 14 8 20 8"/>
           <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
@@ -77,8 +77,8 @@ function ClassworkCard({
           </span>
           <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
             assignment.submissionType === "group"
-              ? "bg-purple-50 text-purple-700"
-              : "bg-[#F97316]/10 text-[#C2410C]"
+              ? "bg-purple-100 text-purple-700"
+              : "bg-gray-50 text-gray-500"
           }`}>
             {assignment.submissionType === "group" ? t("กลุ่ม", "Group") : t("เดี่ยว", "Individual")}
           </span>
@@ -164,8 +164,8 @@ export default function StudentClassworkPage() {
 
         {assignments.length === 0 ? (
           <div className="flex flex-col items-center py-16 text-center">
-            <div className="w-12 h-12 rounded-full bg-[#F97316]/10 flex items-center justify-center mb-3">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
+            <div className="w-12 h-12 rounded-full bg-[var(--accent-bright)]/10 flex items-center justify-center mb-3">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent-bright)" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
               </svg>
             </div>

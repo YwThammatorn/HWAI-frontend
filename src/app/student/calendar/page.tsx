@@ -12,9 +12,9 @@ export default function StudentCalendarPage() {
       <p className="mt-1 text-sm text-[var(--text-muted)]">{t("กำหนดส่งงานและกิจกรรมในชั้นเรียน", "Assignment deadlines and class activities")}</p>
       <div className="mt-8">
         <EmptyState
-          iconColor="#F97316"
+          iconColor="var(--accent-bright)"
           icon={
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="1.5" strokeLinecap="round" className="text-[var(--text-muted)]" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent-bright)" strokeWidth="1.5" strokeLinecap="round" className="text-[var(--text-muted)]" aria-hidden="true">
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
               <line x1="16" y1="2" x2="16" y2="6"/>
               <line x1="8" y1="2" x2="8" y2="6"/>

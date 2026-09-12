@@ -48,7 +48,7 @@ export default function StudentShell({ children }: { children: React.ReactNode }
       {/* Skip link */}
       <a
         href="#student-main"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 z-50 bg-[#F97316] text-white text-sm font-semibold px-4 py-2 rounded-lg"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 z-50 bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold px-4 py-2 rounded-lg"
       >
         {t("ข้ามไปเนื้อหาหลัก", "Skip to main content")}
       </a>
