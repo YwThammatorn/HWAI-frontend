@@ -234,9 +234,16 @@ function CourseCard({ course, studentCount, allGraded, activeAssignments, isArch
           </div>
 
           {(course.schedule || course.room) && (
-            <p className="text-xs text-gray-400 pt-2 truncate">
-              {[course.schedule, course.room && t(`ห้อง ${course.room}`, `Room ${course.room}`)].filter(Boolean).join(" · ")}
-            </p>
+            <div className="grid grid-cols-2 gap-3 pt-3">
+              <div className="min-w-0">
+                <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-0.5">{t("วันเวลาเรียน", "Schedule")}</p>
+                <p className="text-xs font-semibold text-[var(--text-primary)] truncate">{course.schedule || "—"}</p>
+              </div>
+              <div className="min-w-0">
+                <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-0.5">{t("ห้องเรียน", "Room")}</p>
+                <p className="text-xs font-semibold text-[var(--text-primary)] truncate">{course.room || "—"}</p>
+              </div>
+            </div>
           )}
         </div>
 

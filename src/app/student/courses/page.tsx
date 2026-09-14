@@ -68,7 +68,6 @@ export default function StudentCoursesPage() {
               const termLabel = course.academicYear && course.term ? `${course.term}/${course.academicYear}` : "—";
               const instructor = getTeachersByCourse(course.id)[0];
               const instructorLabel = instructor ? `${instructor.title ? `${instructor.title} ` : ""}${instructor.name}` : null;
-              const roomLabel = course.room ? t(`ห้อง ${course.room}`, `Room ${course.room}`) : null;
               return (
                 <Link
                   key={course.id}
@@ -106,12 +105,20 @@ export default function StudentCoursesPage() {
                         </div>
                       </div>
 
-                      {(instructorLabel || course.schedule || roomLabel) && (
-                        <div className="pt-2 text-xs text-[var(--text-muted)] space-y-0.5">
-                          {instructorLabel && <p className="truncate">{instructorLabel}</p>}
-                          {(course.schedule || roomLabel) && (
-                            <p className="truncate">{[course.schedule, roomLabel].filter(Boolean).join(" · ")}</p>
-                          )}
+                      {instructorLabel && (
+                        <p className="pt-2 text-xs text-[var(--text-muted)] truncate">{instructorLabel}</p>
+                      )}
+
+                      {(course.schedule || course.room) && (
+                        <div className="grid grid-cols-2 gap-3 pt-2">
+                          <div className="min-w-0">
+                            <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wide mb-0.5">{t("วันเวลาเรียน", "Schedule")}</p>
+                            <p className="text-xs font-semibold text-[var(--text-primary)] truncate">{course.schedule || "—"}</p>
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wide mb-0.5">{t("ห้องเรียน", "Room")}</p>
+                            <p className="text-xs font-semibold text-[var(--text-primary)] truncate">{course.room || "—"}</p>
+                          </div>
                         </div>
                       )}
                     </div>
