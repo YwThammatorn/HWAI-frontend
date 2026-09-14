@@ -96,6 +96,13 @@ const WEEKLY_PLAN_ICON = (
   </svg>
 );
 
+const MATERIALS_ICON = (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+    <polyline points="14 2 14 8 20 8" />
+  </svg>
+);
+
 const CLO_ICON = (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <circle cx="12" cy="12" r="10" />
@@ -161,6 +168,7 @@ export default function ProfileSidebar() {
         { label: t("งาน/การบ้าน", "Assignments"), href: `/teacher/courses/${activeCourseId}/assignments`,   active: isAt(`/teacher/courses/${activeCourseId}/assignments`),   icon: ASSIGNMENTS_ICON   },
         { label: t("ผลการเรียน", "Results"),      href: `/teacher/courses/${activeCourseId}/results`,       active: isAt(`/teacher/courses/${activeCourseId}/results`),       icon: RESULTS_ICON        },
         { label: t("แผนการสอน", "Teaching Plan"), href: `/teacher/courses/${activeCourseId}/weekly-plan`,       active: isAt(`/teacher/courses/${activeCourseId}/weekly-plan`),   icon: WEEKLY_PLAN_ICON    },
+        { label: t("สื่อการสอน", "Materials"), href: `/teacher/courses/${activeCourseId}/materials`,           active: isAt(`/teacher/courses/${activeCourseId}/materials`),     icon: MATERIALS_ICON      },
         { label: t("วางแผนรายวิชา", "Course Planning"), href: `/teacher/courses/${activeCourseId}/clo`,       active: isAt(`/teacher/courses/${activeCourseId}/clo`),           icon: CLO_ICON            },
         { label: t("ผู้ร่วมสอน", "Collaborators"), href: `/teacher/courses/${activeCourseId}/collaborators`, active: isAt(`/teacher/courses/${activeCourseId}/collaborators`), icon: COLLABORATORS_ICON  },
         { label: t("แบ่งงานตรวจ", "Grading Split"), href: `/teacher/courses/${activeCourseId}/grading-split`, active: isAt(`/teacher/courses/${activeCourseId}/grading-split`), icon: GRADING_SPLIT_ICON },
