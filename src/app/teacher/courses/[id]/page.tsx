@@ -124,16 +124,31 @@ export default function CourseDetailPage() {
           </Link>
         </div>
 
-        {/* Stats row */}
-        <div className="grid grid-cols-3 gap-4 mb-6">
+        {/* Stats strip — one compact bar instead of 3 tall cards */}
+        <div className="grid grid-cols-3 divide-x divide-gray-100 bg-white rounded-xl border border-gray-100 shadow-sm mb-6">
           {[
-            { label: t("นักศึกษา", "Students"), value: `${students.length}` },
-            { label: t("ชิ้นงาน", "Assignments"), value: `${assignments.length}` },
-            { label: t("สถานะการตรวจ", "Grading Status"), value: allGraded ? t("ตรวจครบแล้ว", "All Graded") : `${activeAssignments} ${t("กำลังดำเนินการ", "Active")}` },
+            {
+              label: t("นักศึกษา", "Students"), value: `${students.length}`,
+              icon: <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />,
+            },
+            {
+              label: t("ชิ้นงาน", "Assignments"), value: `${assignments.length}`,
+              icon: <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M9 13h6M9 17h6" />,
+            },
+            {
+              label: t("สถานะการตรวจ", "Grading Status"),
+              value: allGraded ? t("ตรวจครบแล้ว", "All Graded") : `${activeAssignments} ${t("กำลังดำเนินการ", "Active")}`,
+              icon: allGraded ? <polyline points="20 6 9 17 4 12" /> : <><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></>,
+            },
           ].map((s) => (
-            <div key={s.label} className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-              <p className="text-xs text-gray-500 mb-1">{s.label}</p>
-              <p className="text-2xl font-bold text-[var(--text-primary)]">{s.value}</p>
+            <div key={s.label} className="flex items-center gap-3 px-5 py-3.5">
+              <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${s.label === t("สถานะการตรวจ", "Grading Status") && allGraded ? "bg-[var(--accent-subtle)] text-[var(--accent)]" : "bg-gray-50 text-gray-400"}`}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{s.icon}</svg>
+              </div>
+              <div className="min-w-0">
+                <p className="text-base font-bold text-[var(--text-primary)] leading-tight truncate">{s.value}</p>
+                <p className="text-xs text-gray-500 truncate">{s.label}</p>
+              </div>
             </div>
           ))}
         </div>
