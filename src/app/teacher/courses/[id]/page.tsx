@@ -115,6 +115,12 @@ export default function CourseDetailPage() {
               {t("สื่อการสอน", "Materials")}
             </Link>
             <Link
+              href={`/teacher/courses/${id}/announcements`}
+              className="py-3 px-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-[var(--accent)] transition-colors"
+            >
+              {t("ประกาศ", "Announcements")}
+            </Link>
+            <Link
               href={`/teacher/courses/${id}/clo`}
               className="py-3 px-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-[var(--accent)] transition-colors"
             >

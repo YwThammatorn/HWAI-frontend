@@ -6,6 +6,7 @@ import CLOProvider from "@/components/CLOProvider";
 import GradingCategoryProvider from "@/components/GradingCategoryProvider";
 import WeeklyPlanProvider from "@/components/WeeklyPlanProvider";
 import TeachingMaterialProvider from "@/components/TeachingMaterialProvider";
+import AnnouncementProvider from "@/components/AnnouncementProvider";
 import AssignmentProvider from "@/components/AssignmentProvider";
 import ThemeProvider from "@/components/ThemeProvider";
 import { AuthProvider } from "@/context/AuthContext";
@@ -55,7 +56,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                             <GradingCategoryProvider>
                               <WeeklyPlanProvider>
                                 <TeachingMaterialProvider>
-                                  <AssignmentProvider>{children}</AssignmentProvider>
+                                  <AnnouncementProvider>
+                                    <AssignmentProvider>{children}</AssignmentProvider>
+                                  </AnnouncementProvider>
                                 </TeachingMaterialProvider>
                               </WeeklyPlanProvider>
                             </GradingCategoryProvider>
