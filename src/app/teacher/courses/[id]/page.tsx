@@ -103,6 +103,12 @@ export default function CourseDetailPage() {
               )}
             </Link>
             <Link
+              href={`/teacher/courses/${id}/weekly-plan`}
+              className="py-3 px-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-[var(--accent)] transition-colors"
+            >
+              {t("แผนการสอน", "Teaching Plan")}
+            </Link>
+            <Link
               href={`/teacher/courses/${id}/clo`}
               className="py-3 px-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-[var(--accent)] transition-colors"
             >
