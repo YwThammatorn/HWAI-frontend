@@ -32,7 +32,16 @@ fetch('/mock-data/teachers-mockup.json').then(r=>r.json()).then(d=>{localStorage
 [3b] นักศึกษา - ไม่ต้องใช้ console
 
 ไปที่ /admin/users -> กด "นำเข้า CSV" -> เลือกไฟล์:
-  - test-data/students_sample.csv   (นักศึกษา)
+  - test-data/students_sample.csv   (นักศึกษา, 30 แถว — 25 ใช้ได้ปกติ + 5 แถวตั้งใจใส่ผิดไว้โชว์ validation ของหน้านี้)
+
+    ID ใช้ scheme เดียวกับ cohort ใน [5] (690701xx=CE69, 680201xx=CE68, 670101xx=CE67, 700101xx=CE70)
+    ต่อเลขให้ไม่ชนกัน ยกเว้นแถวสุดท้ายที่ตั้งใจให้ชนตรงๆ — ทำ [5] ก่อนถึงจะเห็นผลข้อ 5 ด้านล่างชัด:
+    1. studentId ว่างช่อง program (69070119)   -> "ขาด: program"
+    2. studentId สั้นแค่ 6 หลัก (690701)         -> "รหัสนักศึกษาต้องเป็นตัวเลข 8 หลัก"
+    3. อีเมลรูปแบบผิด "not-an-email" (69070120)  -> "อีเมลไม่ถูกต้อง"
+    4. อีเมลไม่ตรงกับ studentId (68020111)        -> "อีเมลต้องเป็น รหัสนักศึกษา@kmitl.ac.th"
+    5. studentId ซ้ำกับคนที่มีอยู่แล้ว (69070101, ต้องทำ [5] ก่อน) -> แถวนี้จะไม่ error ในตาราง preview
+       (แอปยังไม่ tag ว่า error ตรงนี้) แต่จะไม่ถูกนับใน "ใหม่ N" และไม่ถูก import จริง — เป็นพฤติกรรมเดิมของแอป
 
 (อาจารย์ใช้ [3] ด้านบนแทน CSV import เพราะต้องผูก courseId ด้วย ถ้าอยากได้อาจารย์เปล่าๆ ไม่ผูกวิชา ค่อยใช้ CSV import teachers_sample.csv แทน)
 
@@ -85,6 +94,7 @@ fetch('/mock-data/student-flow-mockup.json').then(r=>r.json()).then(d=>{localSto
 - คำสั่งพวกนี้ทำงานเฉพาะตอน dev server รันอยู่ (npm run dev) เพราะ fetch ไปที่ localhost
 - teachers-mockup.json ใช้ courseId ที่ตรงกับ courses-mockup.json (c-mock-1..6) ทำ [2] ก่อน [3] เสมอ
 - student-flow-mockup.json ก็ใช้ courseId c-mock-1 เหมือนกัน ทำ [2] ก่อน [5] เสมอ
-- course-import-test.csv (ใช้ใน [7]) เป็น CSV แยกต่างหาก ไม่เกี่ยวกับ students_sample.csv ที่ใช้ใน [3b]
-  — [3b] คือ import นักศึกษาเข้า cohort กลางของระบบ (ผ่าน /admin/users)
-  — [7] คือ import นักศึกษาที่มีอยู่ใน cohort แล้ว เข้าไปลงทะเบียนวิชาใดวิชาหนึ่ง (ผ่านหน้า course ของอาจารย์)
+- students_sample.csv ([3b]) กับ course-import-test.csv ([7]) เป็นคนละไฟล์ คนละหน้า แต่ ID ใช้ scheme เดียวกัน:
+  — [3b] คือ import นักศึกษาเข้า cohort กลางของระบบ (ผ่าน /admin/users, format 6 คอลัมน์ studentId,firstName,lastName,email,cohort,program)
+  — [7] คือ import นักศึกษาที่มีอยู่ใน cohort แล้ว เข้าไปลงทะเบียนวิชาใดวิชาหนึ่ง (ผ่านหน้า course ของอาจารย์, format 4 คอลัมน์ student_id,first_name,last_name,email)
+  — ทำ [3b] เสร็จแล้ว คนที่เพิ่งนำเข้ามา (เช่น 69070109-118) ก็เอาไปใส่ใน CSV แบบ [7] เพื่อทดสอบ import เข้าวิชาต่อได้เลย
