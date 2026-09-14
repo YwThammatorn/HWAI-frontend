@@ -110,6 +110,15 @@ const ANNOUNCEMENTS_ICON = (
   </svg>
 );
 
+const STUDENTS_ICON = (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <rect x="8" y="2" width="8" height="4" rx="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    <line x1="8" y1="11" x2="16" y2="11" />
+    <line x1="8" y1="15" x2="16" y2="15" />
+  </svg>
+);
+
 const CLO_ICON = (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <circle cx="12" cy="12" r="10" />
@@ -172,6 +181,7 @@ export default function ProfileSidebar() {
   const COURSE_NAV = activeCourseId
     ? [
         { label: t("ภาพรวม", "Overview"),        href: `/teacher/courses/${activeCourseId}`,               active: isAt(`/teacher/courses/${activeCourseId}`, true), icon: OVERVIEW_ICON       },
+        { label: t("นักศึกษา", "Students"), href: `/teacher/courses/${activeCourseId}/students`,           active: isAt(`/teacher/courses/${activeCourseId}/students`),      icon: STUDENTS_ICON       },
         { label: t("งาน/การบ้าน", "Assignments"), href: `/teacher/courses/${activeCourseId}/assignments`,   active: isAt(`/teacher/courses/${activeCourseId}/assignments`),   icon: ASSIGNMENTS_ICON   },
         { label: t("ผลการเรียน", "Results"),      href: `/teacher/courses/${activeCourseId}/results`,       active: isAt(`/teacher/courses/${activeCourseId}/results`),       icon: RESULTS_ICON        },
         { label: t("แผนการสอน", "Teaching Plan"), href: `/teacher/courses/${activeCourseId}/weekly-plan`,       active: isAt(`/teacher/courses/${activeCourseId}/weekly-plan`),   icon: WEEKLY_PLAN_ICON    },

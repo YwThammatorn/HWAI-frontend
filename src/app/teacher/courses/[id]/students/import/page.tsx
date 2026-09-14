@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCourses } from "@/lib/courses";
 import { useStudents } from "@/lib/students";
+import { useCohortStudents, CohortStudent } from "@/lib/cohort-students";
 import { useLanguage } from "@/context/LanguageContext";
 
 interface ParsedRow {
@@ -14,6 +15,7 @@ interface ParsedRow {
   lastName: string;
   email: string;
   error?: string;
+  match?: CohortStudent;
 }
 
 function parseCSV(text: string): ParsedRow[] {
@@ -51,13 +53,17 @@ export default function ImportStudentsPage() {
   const { t } = useLanguage();
   const { getCourse } = useCourses();
   const { addStudents, getStudentsByCourse } = useStudents();
+  const { findByStudentId } = useCohortStudents();
   const course = getCourse(id);
+  const enrolledIds = new Set(getStudentsByCourse(id).map((s) => s.studentId));
 
   function translateError(code?: string) {
     if (!code) return "";
     if (code === "missing_id") return t("ไม่มีรหัสนักศึกษา", "Missing student ID");
     if (code === "missing_first") return t("ไม่มีชื่อ", "Missing first name");
     if (code === "missing_last") return t("ไม่มีนามสกุล", "Missing last name");
+    if (code === "not_in_system") return t("ไม่พบในระบบ", "Not found in system");
+    if (code === "already_enrolled") return t("ลงทะเบียนแล้ว", "Already enrolled");
     return code;
   }
 
@@ -77,12 +83,24 @@ export default function ImportStudentsPage() {
     const reader = new FileReader();
     reader.onload = (e) => {
       const text = e.target?.result as string;
-      const parsed = parseCSV(text);
+      const parsed = parseCSV(text).map((row) => {
+        if (row.error) return row;
+        if (enrolledIds.has(row.studentId)) {
+          return { ...row, error: "already_enrolled" };
+        }
+        const match = findByStudentId(row.studentId);
+        if (!match) return { ...row, error: "not_in_system" };
+        // Cross-checked against the system's student database — the
+        // authoritative name/email come from there, not from whatever the
+        // teacher typed in the CSV, so a typo in the file can't drift the
+        // enrolled record from the real account.
+        return { ...row, firstName: match.firstName, lastName: match.lastName, email: match.email, match };
+      });
       setRows(parsed);
       setStep("preview");
     };
     reader.readAsText(file, "UTF-8");
-  }, []);
+  }, [enrolledIds, findByStudentId]);
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
@@ -96,8 +114,10 @@ export default function ImportStudentsPage() {
 
   function handleImport() {
     setImporting(true);
-    addStudents(id, validRows.map(({ studentId, firstName, lastName, email }) => ({
+    addStudents(id, validRows.map(({ studentId, firstName, lastName, email, match }) => ({
       studentId, firstName, lastName, email,
+      cohort: match?.cohort,
+      enrollmentStatus: "enrolled" as const,
     })));
     setImporting(false);
     setStep("done");
@@ -129,6 +149,20 @@ export default function ImportStudentsPage() {
             {t("อัปโหลดไฟล์ CSV เพื่อเพิ่มนักศึกษาใน", "Upload a CSV file to enroll students in")} <span className="font-medium text-[var(--text-primary)]">{course.name}</span>
           </p>
         </div>
+
+        {step === "upload" && (
+          <div className="flex gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 mb-5">
+            <svg className="shrink-0 mt-0.5" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+            </svg>
+            <p className="text-xs text-blue-600 leading-relaxed">
+              {t(
+                "ทุกรหัสนักศึกษาจะถูกตรวจสอบกับรายชื่อที่มีอยู่ในระบบก่อน — ถ้าพบจะดึงชื่อ/อีเมลจริงจากระบบมาลงทะเบียน ถ้าไม่พบในระบบจะข้ามแถวนั้นไป (ให้แอดมินเพิ่มเข้าระบบก่อน)",
+                "Each student ID is checked against the system's existing student database first — a match pulls the real name/email from there; an ID not in the system is skipped (ask an admin to add it first)."
+              )}
+            </p>
+          </div>
+        )}
 
         {/* ─── STEP: UPLOAD ─── */}
         {step === "upload" && (

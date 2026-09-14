@@ -126,14 +126,17 @@ export default function CourseDetailPage() {
             >
               {t("วางแผนรายวิชา", "Course Planning")}
             </Link>
-            <button className="py-3 px-4 text-sm font-medium border-b-2 border-[var(--accent)] text-[var(--accent)]">
+            <Link
+              href={`/teacher/courses/${id}/students`}
+              className="py-3 px-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-[var(--accent)] transition-colors"
+            >
               {t("นักศึกษา", "Students")}
               {students.length > 0 && (
                 <span className="ml-1.5 text-xs bg-[var(--accent-subtle)] text-[var(--accent)] px-1.5 py-0.5 rounded-full">
                   {students.length}
                 </span>
               )}
-            </button>
+            </Link>
             <Link
               href={`/teacher/courses/${id}/collaborators`}
               className="py-3 px-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-[var(--accent)] transition-colors"
@@ -153,71 +156,6 @@ export default function CourseDetailPage() {
               {t("แบ่งงานตรวจ", "Grading Split")}
             </Link>
           </div>
-
-          {students.length === 0 ? (
-            /* Empty state */
-            <div className="p-12 flex flex-col items-center justify-center text-center">
-              <div className="w-16 h-16 rounded-2xl bg-gray-50 flex items-center justify-center mb-4">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="1.5">
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
-                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                </svg>
-              </div>
-              <p className="text-sm font-medium text-gray-500 mb-1">{t("ยังไม่มีรายชื่อนักศึกษา", "No students yet")}</p>
-              <p className="text-xs text-gray-500 mb-5">{t("นำเข้ารายชื่อจากไฟล์ CSV เพื่อเริ่มต้น", "Import a CSV file to get started")}</p>
-              <Link
-                href={`/teacher/courses/${id}/students/import`}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-medium rounded-xl transition-colors"
-              >
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                  <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>
-                  <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
-                </svg>
-                {t("นำเข้านักศึกษา", "Import Students")}
-              </Link>
-            </div>
-          ) : (
-            /* Student list */
-            <div>
-              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50">
-                <p className="text-sm text-gray-500">{students.length} {t("นักศึกษา", "students")}</p>
-                <Link
-                  href={`/teacher/courses/${id}/students/import`}
-                  className="inline-flex items-center gap-1.5 text-xs text-[var(--accent)] hover:underline font-medium"
-                >
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                    <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>
-                    <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
-                  </svg>
-                  {t("Import เพิ่มเติม", "Import More")}
-                </Link>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead className="border-b border-gray-50">
-                    <tr className="text-left text-xs text-gray-500 uppercase tracking-wider">
-                      <th className="px-6 py-3 font-medium">#</th>
-                      <th className="px-6 py-3 font-medium">{t("รหัสนักศึกษา", "Student ID")}</th>
-                      <th className="px-6 py-3 font-medium">{t("ชื่อ", "First Name")}</th>
-                      <th className="px-6 py-3 font-medium">{t("นามสกุล", "Last Name")}</th>
-                      <th className="px-6 py-3 font-medium">{t("อีเมล", "Email")}</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-50">
-                    {students.map((s, i) => (
-                      <tr key={s.id} className="hover:bg-gray-50/50">
-                        <td className="px-6 py-3 text-gray-300 text-xs">{i + 1}</td>
-                        <td className="px-6 py-3 tabular-nums text-xs text-gray-500">{s.studentId}</td>
-                        <td className="px-6 py-3 text-[var(--text-primary)]">{s.firstName}</td>
-                        <td className="px-6 py-3 text-[var(--text-primary)]">{s.lastName}</td>
-                        <td className="px-6 py-3 text-gray-500 text-xs">{s.email || "—"}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
         </div>
       </main>
   );
