@@ -106,7 +106,7 @@ export default function CourseDetailPage() {
               href={`/teacher/courses/${id}/clo`}
               className="py-3 px-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-[var(--accent)] transition-colors"
             >
-              CLO
+              {t("วางแผนรายวิชา", "Course Planning")}
             </Link>
             <button className="py-3 px-4 text-sm font-medium border-b-2 border-[var(--accent)] text-[var(--accent)]">
               {t("นักศึกษา", "Students")}
