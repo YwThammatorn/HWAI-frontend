@@ -37,12 +37,6 @@ export default function CourseDetailPage() {
     );
   }
 
-  const sourceLabel: Record<string, string> = {
-    manual: t("เพิ่มด้วยตนเอง", "Manually Added"),
-    google: "Google Classroom",
-    teams: "Microsoft Teams",
-  };
-
   return (
       <main className="w-full px-8 py-8">
         {/* Breadcrumb */}
@@ -63,7 +57,9 @@ export default function CourseDetailPage() {
             </div>
             <div>
               <h1 className="text-xl font-bold text-white">{course.name}</h1>
-              <p className="text-white/70 text-xs mt-0.5">{sourceLabel[course.source]}</p>
+              {course.description && (
+                <p className="text-white/70 text-xs mt-0.5 max-w-md truncate">{course.description}</p>
+              )}
             </div>
           </div>
           <Link
