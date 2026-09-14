@@ -1,0 +1,13 @@
+student_id,first_name,last_name,email
+69070104,ทดสอบ,ชื่อผิด,wrong@example.com
+69070105,ทดสอบ,ชื่อผิด,wrong@example.com
+69070106,ทดสอบ,ชื่อผิด,wrong@example.com
+69070107,ทดสอบ,ชื่อผิด,wrong@example.com
+69070108,ทดสอบ,ชื่อผิด,wrong@example.com
+68020102,ทดสอบ,ชื่อผิด,wrong@example.com
+68020103,ทดสอบ,ชื่อผิด,wrong@example.com
+68020104,ทดสอบ,ชื่อผิด,wrong@example.com
+70010101,ทดสอบ,ชื่อผิด,wrong@example.com
+70010102,ทดสอบ,ชื่อผิด,wrong@example.com
+69070101,ซ้ำ,ลงทะเบียนแล้ว,dup@example.com
+99999999,ไม่มี,ในระบบ,none@example.com

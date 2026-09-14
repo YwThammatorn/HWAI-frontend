@@ -40,7 +40,9 @@ fetch('/mock-data/teachers-mockup.json').then(r=>r.json()).then(d=>{localStorage
 
 [5] นักศึกษาครบ flow — cohort + ลงทะเบียนวิชา + งาน + rubric + ผลตรวจ
     (ต้องทำ [2] ก่อน เพราะลงทะเบียนเข้า c-mock-1 "การเขียนโปรแกรมคอมพิวเตอร์" ของสมศักดิ์)
-    5 คนใน cohort (CE67/68/69, 1 คน inactive) — 3 คนแรกลงทะเบียนวิชา c-mock-1 จริง
+    15 คนใน cohort (CE67/68/69/70, 1 คน inactive) — 3 คนแรก (69070101-103) ลงทะเบียนวิชา c-mock-1 จริง
+    อีก 11 คนที่เหลือ (69070104-108, 68020101-104, 67010101, 70010101-102) ยังไม่ลงวิชาไหนเลย
+    — ไว้ใช้ทดสอบการ import นักศึกษาเข้าวิชา ดู [7] ด้านล่าง
     วิชานี้มี 2 งาน: [1] ครบกำหนดแล้ว มี rubric + ผลตรวจ 3 แบบ (ตรวจแล้ว/รอตรวจ/ยังไม่ตรวจ)
                      [2] ยังไม่ถึงกำหนด ยังไม่มีใครส่ง
     ล็อกอินเป็นนักศึกษาด้วยอีเมล 69070101@kmitl.ac.th (รหัสผ่านอะไรก็ได้ 4 ตัวขึ้นไป) จะเห็นวิชา+งานนี้
@@ -59,6 +61,18 @@ fetch('/mock-data/student-flow-mockup.json').then(r=>r.json()).then(d=>{localSto
 
 ---
 
+[7] ทดสอบนำเข้านักศึกษาเข้าวิชา (teacher CSV import + cross-check กับระบบ)
+    ต้องทำ [5] ก่อน (ให้มี cohort 15 คนใน hwai_cohort_students_v1)
+    ไปที่ /teacher/courses/c-mock-1/students/import -> อัปโหลด test-data/course-import-test.csv
+
+    ไฟล์นี้มี 12 แถว ตั้งใจใส่ชื่อ/อีเมลผิดในทุกแถวที่ยังไม่ลงวิชา เพื่อพิสูจน์ว่าระบบดึงชื่อจริงจากระบบมาแทน:
+    - 10 แถวแรก (69070104-108, 68020102-104, 70010101-102) -> อยู่ใน cohort แล้ว ยังไม่ลงวิชาไหน
+      -> ควร "พร้อม import" ทั้งหมด และตอน preview ชื่อ/อีเมลจะเปลี่ยนเป็นของจริงจากระบบ ไม่ใช่ที่พิมพ์ในไฟล์
+    - แถว 69070101 -> ลงทะเบียน c-mock-1 อยู่แล้ว -> ต้องขึ้น "ลงทะเบียนแล้ว" แล้วถูกข้าม
+    - แถว 99999999 -> ไม่มีใน cohort เลย -> ต้องขึ้น "ไม่พบในระบบ" แล้วถูกข้าม
+
+---
+
 [4] ล้างข้อมูลทั้งหมด (ถ้าอยากเริ่มใหม่)
 
 ['hwai_user','hwai_managed_teachers_v1','hwai_cohort_students_v1','hwai_courses_v2','hwai_curriculum_versions_v1','hwai_course_templates_v1','hwai_students_v1','hwai_assignments_v1','hwai_rubrics_v1','hwai_submissions_v1'].forEach(k=>localStorage.removeItem(k)); location.reload();
@@ -71,3 +85,6 @@ fetch('/mock-data/student-flow-mockup.json').then(r=>r.json()).then(d=>{localSto
 - คำสั่งพวกนี้ทำงานเฉพาะตอน dev server รันอยู่ (npm run dev) เพราะ fetch ไปที่ localhost
 - teachers-mockup.json ใช้ courseId ที่ตรงกับ courses-mockup.json (c-mock-1..6) ทำ [2] ก่อน [3] เสมอ
 - student-flow-mockup.json ก็ใช้ courseId c-mock-1 เหมือนกัน ทำ [2] ก่อน [5] เสมอ
+- course-import-test.csv (ใช้ใน [7]) เป็น CSV แยกต่างหาก ไม่เกี่ยวกับ students_sample.csv ที่ใช้ใน [3b]
+  — [3b] คือ import นักศึกษาเข้า cohort กลางของระบบ (ผ่าน /admin/users)
+  — [7] คือ import นักศึกษาที่มีอยู่ใน cohort แล้ว เข้าไปลงทะเบียนวิชาใดวิชาหนึ่ง (ผ่านหน้า course ของอาจารย์)
