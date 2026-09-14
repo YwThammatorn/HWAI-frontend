@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useCourses } from "@/lib/courses";
 import { useAssignments, Submission } from "@/lib/assignments";
+import { useGradingCategories } from "@/lib/gradingCategories";
 import { useStudents } from "@/lib/students";
 import { useLanguage } from "@/context/LanguageContext";
 
@@ -54,6 +55,7 @@ export default function ViewAssignmentPage() {
   const { t, lang } = useLanguage();
   const { getCourse } = useCourses();
   const { getAssignment, getSubmissionsByAssignment } = useAssignments();
+  const { getCategoriesByCourse } = useGradingCategories();
   const { getStudentsByCourse } = useStudents();
 
   const [search, setSearch] = useState("");
@@ -75,6 +77,9 @@ export default function ViewAssignmentPage() {
   const today = new Date().toISOString().split("T")[0];
   const isOverdue = assignment.dueDate < today;
   const allGraded = submissions.length > 0 && submissions.every((s) => s.status === "graded");
+  const category = assignment.categoryId
+    ? getCategoriesByCourse(id).find((c) => c.id === assignment.categoryId)
+    : undefined;
   const avgScore = submissions.length > 0
     ? Math.round(submissions.filter((s) => s.aiScore !== null).reduce((acc, s) => acc + (s.aiScore ?? 0), 0) /
         (submissions.filter((s) => s.aiScore !== null).length || 1))
@@ -113,6 +118,14 @@ export default function ViewAssignmentPage() {
                 <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
               </svg>
               <span className="text-gray-500">{t("กำหนดส่ง", "Due")} {fmtDate(assignment.dueDate)} {t("เวลา 23:59 น.", "at 11:59 PM")}</span>
+              {category && (
+                <>
+                  <span className="text-gray-300">·</span>
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-[var(--accent-subtle)] text-[var(--accent)] text-xs font-medium tabular-nums">
+                    {category.name} ({category.weight}%)
+                  </span>
+                </>
+              )}
               <span className="text-gray-300">·</span>
               {allGraded ? (
                 <span className="text-emerald-500 font-medium">{t("ตรวจครบแล้ว", "All Graded")}</span>

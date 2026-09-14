@@ -3,6 +3,7 @@ import { Lexend, Prompt } from "next/font/google";
 import CourseProvider from "@/components/CourseProvider";
 import StudentProvider from "@/components/StudentProvider";
 import CLOProvider from "@/components/CLOProvider";
+import GradingCategoryProvider from "@/components/GradingCategoryProvider";
 import AssignmentProvider from "@/components/AssignmentProvider";
 import ThemeProvider from "@/components/ThemeProvider";
 import { AuthProvider } from "@/context/AuthContext";
@@ -49,7 +50,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                       <CourseProvider>
                         <StudentProvider>
                           <CLOProvider>
-                            <AssignmentProvider>{children}</AssignmentProvider>
+                            <GradingCategoryProvider>
+                              <AssignmentProvider>{children}</AssignmentProvider>
+                            </GradingCategoryProvider>
                           </CLOProvider>
                         </StudentProvider>
                       </CourseProvider>

@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCourses } from "@/lib/courses";
 import { useAssignments, Assignment } from "@/lib/assignments";
+import { useGradingCategories } from "@/lib/gradingCategories";
 import { useLanguage } from "@/context/LanguageContext";
 
 export default function EditAssignmentPage() {
@@ -16,6 +17,7 @@ export default function EditAssignmentPage() {
     getAssignment, updateAssignment, removeAssignment,
     getRubricsByAssignment, addRubric, removeRubric,
   } = useAssignments();
+  const { getCategoriesByCourse } = useGradingCategories();
 
   const CONFIRM_MSG = t(
     "การเปลี่ยนแปลงจะไม่ถูกบันทึก\nต้องการออกจากหน้านี้หรือไม่?",
@@ -31,11 +33,13 @@ export default function EditAssignmentPage() {
   const course = getCourse(id);
   const assignment = getAssignment(assignmentId);
   const linkedRubrics = getRubricsByAssignment(assignmentId);
+  const categories = getCategoriesByCourse(id);
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [maxPoints, setMaxPoints] = useState("100");
+  const [categoryId, setCategoryId] = useState("");
   const [acceptsFiles, setAcceptsFiles] = useState(true);
   const [fileTypes, setFileTypes] = useState<Assignment["fileTypes"]>(["figma", "pdf"]);
   const [submissionType, setSubmissionType] = useState<"individual" | "group">("individual");
@@ -46,7 +50,7 @@ export default function EditAssignmentPage() {
   const [newRubricName, setNewRubricName] = useState("");
 
   const origRef = useRef({
-    name: "", description: "", dueDate: "", maxPoints: "",
+    name: "", description: "", dueDate: "", maxPoints: "", categoryId: "",
     acceptsFiles: true, fileTypesJson: "[]",
     submissionType: "individual" as "individual" | "group",
     maxGroupSizeStr: "",
@@ -62,6 +66,7 @@ export default function EditAssignmentPage() {
         description: assignment.description,
         dueDate: assignment.dueDate,
         maxPoints: String(assignment.maxPoints),
+        categoryId: assignment.categoryId ?? "",
         acceptsFiles: assignment.acceptsFiles ?? true,
         fileTypesJson: JSON.stringify(ft),
         submissionType: st,
@@ -71,6 +76,7 @@ export default function EditAssignmentPage() {
       setDescription(orig.description);
       setDueDate(orig.dueDate);
       setMaxPoints(orig.maxPoints);
+      setCategoryId(orig.categoryId);
       setAcceptsFiles(orig.acceptsFiles);
       setFileTypes(ft);
       setSubmissionType(st);
@@ -90,6 +96,7 @@ export default function EditAssignmentPage() {
       description !== origRef.current.description ||
       dueDate !== origRef.current.dueDate ||
       maxPoints !== origRef.current.maxPoints ||
+      categoryId !== origRef.current.categoryId ||
       acceptsFiles !== origRef.current.acceptsFiles ||
       JSON.stringify(fileTypes) !== origRef.current.fileTypesJson ||
       submissionType !== origRef.current.submissionType ||
@@ -125,6 +132,7 @@ export default function EditAssignmentPage() {
       description: description.trim(),
       dueDate,
       maxPoints: parseInt(maxPoints) || 100,
+      categoryId: categoryId || undefined,
       acceptsFiles,
       fileTypes: acceptsFiles ? fileTypes : [],
       submissionType,
@@ -261,6 +269,22 @@ export default function EditAssignmentPage() {
                 />
               </div>
             </div>
+
+            {categories.length > 0 && (
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">{t("หมวดงาน (สัดส่วนคะแนน)", "Grading Category")}</label>
+                <select
+                  value={categoryId}
+                  onChange={(e) => setCategoryId(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
+                >
+                  <option value="">{t("ไม่ระบุ", "None")}</option>
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.id}>{c.name} ({c.weight}%)</option>
+                  ))}
+                </select>
+              </div>
+            )}
           </section>
 
           {/* Submission Settings */}

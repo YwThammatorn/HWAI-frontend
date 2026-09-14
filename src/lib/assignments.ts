@@ -9,6 +9,7 @@ export interface Assignment {
   description: string;
   dueDate: string; // YYYY-MM-DD
   maxPoints: number;
+  categoryId?: string; // FK -> GradingCategory, which % of the course grade this assignment counts toward
   acceptsFiles: boolean;
   fileTypes: ("figma" | "pdf" | "image")[];
   submissionType: "individual" | "group";

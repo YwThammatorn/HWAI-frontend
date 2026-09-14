@@ -151,7 +151,7 @@ export default function ProfileSidebar() {
         { label: t("ภาพรวม", "Overview"),        href: `/teacher/courses/${activeCourseId}`,               active: isAt(`/teacher/courses/${activeCourseId}`, true), icon: OVERVIEW_ICON       },
         { label: t("งาน/การบ้าน", "Assignments"), href: `/teacher/courses/${activeCourseId}/assignments`,   active: isAt(`/teacher/courses/${activeCourseId}/assignments`),   icon: ASSIGNMENTS_ICON   },
         { label: t("ผลการเรียน", "Results"),      href: `/teacher/courses/${activeCourseId}/results`,       active: isAt(`/teacher/courses/${activeCourseId}/results`),       icon: RESULTS_ICON        },
-        { label: t("CLO", "CLO"),                 href: `/teacher/courses/${activeCourseId}/clo`,           active: isAt(`/teacher/courses/${activeCourseId}/clo`),           icon: CLO_ICON            },
+        { label: t("วางแผนรายวิชา", "Course Planning"), href: `/teacher/courses/${activeCourseId}/clo`,       active: isAt(`/teacher/courses/${activeCourseId}/clo`),           icon: CLO_ICON            },
         { label: t("ผู้ร่วมสอน", "Collaborators"), href: `/teacher/courses/${activeCourseId}/collaborators`, active: isAt(`/teacher/courses/${activeCourseId}/collaborators`), icon: COLLABORATORS_ICON  },
         { label: t("แบ่งงานตรวจ", "Grading Split"), href: `/teacher/courses/${activeCourseId}/grading-split`, active: isAt(`/teacher/courses/${activeCourseId}/grading-split`), icon: GRADING_SPLIT_ICON },
         { label: t("ตั้งค่าวิชา", "Settings"),   href: `/teacher/courses/${activeCourseId}/settings`,      active: isAt(`/teacher/courses/${activeCourseId}/settings`),      icon: COURSE_SETTINGS_ICON},

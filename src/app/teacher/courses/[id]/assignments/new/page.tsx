@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useCourses } from "@/lib/courses";
 import { useAssignments, Assignment } from "@/lib/assignments";
+import { useGradingCategories } from "@/lib/gradingCategories";
 import { useLanguage } from "@/context/LanguageContext";
 
 export default function NewAssignmentPage() {
@@ -12,6 +13,7 @@ export default function NewAssignmentPage() {
   const { t } = useLanguage();
   const { getCourse } = useCourses();
   const { addAssignment, addRubric, updateAssignment } = useAssignments();
+  const { getCategoriesByCourse } = useGradingCategories();
 
   const CONFIRM_MSG = t(
     "ข้อมูลที่กรอกจะไม่ถูกบันทึก\nต้องการออกจากหน้านี้หรือไม่?",
@@ -32,8 +34,10 @@ export default function NewAssignmentPage() {
   const [fileTypes, setFileTypes] = useState<Assignment["fileTypes"]>(["figma", "pdf"]);
   const [submissionType, setSubmissionType] = useState<"individual" | "group">("individual");
   const [maxGroupSize, setMaxGroupSize] = useState<string>("");
+  const [categoryId, setCategoryId] = useState("");
 
   const course = getCourse(id);
+  const categories = getCategoriesByCourse(id);
   const todayStr = new Date().toISOString().split("T")[0];
 
   const isDirty =
@@ -70,6 +74,7 @@ export default function NewAssignmentPage() {
       description: description.trim(),
       dueDate,
       maxPoints: parseInt(maxPoints) || 100,
+      categoryId: categoryId || undefined,
       acceptsFiles,
       fileTypes: acceptsFiles ? fileTypes : [],
       submissionType,
@@ -178,6 +183,22 @@ export default function NewAssignmentPage() {
                 />
               </div>
             </div>
+
+            {categories.length > 0 && (
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">{t("หมวดงาน (สัดส่วนคะแนน)", "Grading Category")}</label>
+                <select
+                  value={categoryId}
+                  onChange={(e) => setCategoryId(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
+                >
+                  <option value="">{t("ไม่ระบุ", "None")}</option>
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.id}>{c.name} ({c.weight}%)</option>
+                  ))}
+                </select>
+              </div>
+            )}
           </section>
 
           {/* Submission Settings */}
