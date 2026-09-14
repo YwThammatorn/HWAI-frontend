@@ -180,16 +180,19 @@ export default function ProfileSidebar() {
   // Per-course sub-navigation (only shown when inside /courses/[id]/...)
   const COURSE_NAV = activeCourseId
     ? [
+        // Order: 1-2 checked daily, 3-5 grading workflow, 6-8 term-setup/planning,
+        // 9-11 course administration (roster/staffing/settings) — proposed to and
+        // confirmed by the user 15/9/2569.
         { label: t("ภาพรวม", "Overview"),        href: `/teacher/courses/${activeCourseId}`,               active: isAt(`/teacher/courses/${activeCourseId}`, true), icon: OVERVIEW_ICON       },
-        { label: t("นักศึกษา", "Students"), href: `/teacher/courses/${activeCourseId}/students`,           active: isAt(`/teacher/courses/${activeCourseId}/students`),      icon: STUDENTS_ICON       },
+        { label: t("ประกาศ", "Announcements"), href: `/teacher/courses/${activeCourseId}/announcements`,       active: isAt(`/teacher/courses/${activeCourseId}/announcements`), icon: ANNOUNCEMENTS_ICON  },
         { label: t("งาน/การบ้าน", "Assignments"), href: `/teacher/courses/${activeCourseId}/assignments`,   active: isAt(`/teacher/courses/${activeCourseId}/assignments`),   icon: ASSIGNMENTS_ICON   },
         { label: t("ผลการเรียน", "Results"),      href: `/teacher/courses/${activeCourseId}/results`,       active: isAt(`/teacher/courses/${activeCourseId}/results`),       icon: RESULTS_ICON        },
+        { label: t("แบ่งงานตรวจ", "Grading Split"), href: `/teacher/courses/${activeCourseId}/grading-split`, active: isAt(`/teacher/courses/${activeCourseId}/grading-split`), icon: GRADING_SPLIT_ICON },
         { label: t("แผนการสอน", "Teaching Plan"), href: `/teacher/courses/${activeCourseId}/weekly-plan`,       active: isAt(`/teacher/courses/${activeCourseId}/weekly-plan`),   icon: WEEKLY_PLAN_ICON    },
         { label: t("สื่อการสอน", "Materials"), href: `/teacher/courses/${activeCourseId}/materials`,           active: isAt(`/teacher/courses/${activeCourseId}/materials`),     icon: MATERIALS_ICON      },
-        { label: t("ประกาศ", "Announcements"), href: `/teacher/courses/${activeCourseId}/announcements`,       active: isAt(`/teacher/courses/${activeCourseId}/announcements`), icon: ANNOUNCEMENTS_ICON  },
         { label: t("วางแผนรายวิชา", "Course Planning"), href: `/teacher/courses/${activeCourseId}/clo`,       active: isAt(`/teacher/courses/${activeCourseId}/clo`),           icon: CLO_ICON            },
+        { label: t("นักศึกษา", "Students"), href: `/teacher/courses/${activeCourseId}/students`,           active: isAt(`/teacher/courses/${activeCourseId}/students`),      icon: STUDENTS_ICON       },
         { label: t("ผู้ร่วมสอน", "Collaborators"), href: `/teacher/courses/${activeCourseId}/collaborators`, active: isAt(`/teacher/courses/${activeCourseId}/collaborators`), icon: COLLABORATORS_ICON  },
-        { label: t("แบ่งงานตรวจ", "Grading Split"), href: `/teacher/courses/${activeCourseId}/grading-split`, active: isAt(`/teacher/courses/${activeCourseId}/grading-split`), icon: GRADING_SPLIT_ICON },
         { label: t("ตั้งค่าวิชา", "Settings"),   href: `/teacher/courses/${activeCourseId}/settings`,      active: isAt(`/teacher/courses/${activeCourseId}/settings`),      icon: COURSE_SETTINGS_ICON},
       ]
     : [];
