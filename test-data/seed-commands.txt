@@ -49,6 +49,16 @@ fetch('/mock-data/student-flow-mockup.json').then(r=>r.json()).then(d=>{localSto
 
 ---
 
+[6] รีเซ็ตแค่ "ผลตรวจ" กลับไปที่ค่าเริ่มต้น (เผื่อทดสอบส่งงานซ้ำๆ)
+    ใช้ตอนทดสอบ role student แล้วกดส่งงาน "โปรเจกต์เล็ก: เครื่องคิดเลข" (a-mock-2) ไปแล้ว
+    อยากให้กลับไปเป็น "ยังไม่ส่ง" เพื่อลองกดส่งใหม่อีกรอบ — ไม่กระทบ cohort/รายวิชา/งาน/rubric เลย
+    แก้แค่ hwai_submissions_v1 กลับไปเป็น 3 รายการเดิมของ a-mock-1 (ตรวจแล้ว/รอตรวจ/ยังไม่ตรวจ)
+    ส่วน a-mock-2 จะไม่มี submission อยู่เลย เหมือนตอนเริ่มต้น
+
+fetch('/mock-data/student-flow-mockup.json').then(r=>r.json()).then(d=>{localStorage.setItem('hwai_submissions_v1', JSON.stringify(d.submissions)); location.reload();});
+
+---
+
 [4] ล้างข้อมูลทั้งหมด (ถ้าอยากเริ่มใหม่)
 
 ['hwai_user','hwai_managed_teachers_v1','hwai_cohort_students_v1','hwai_courses_v2','hwai_curriculum_versions_v1','hwai_course_templates_v1','hwai_students_v1','hwai_assignments_v1','hwai_rubrics_v1','hwai_submissions_v1'].forEach(k=>localStorage.removeItem(k)); location.reload();
