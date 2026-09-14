@@ -201,10 +201,10 @@ function CourseCard({ course, studentCount, allGraded, activeAssignments, isArch
     : src.label;
   const termLabel = course.academicYear && course.term ? `${course.term}/${course.academicYear}` : "—";
 
-  return (
-    <div className="flex flex-col bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
+  const cardContent = (
+    <>
       {/* Cover — color + configurable icon */}
-      <Link href={isArchived ? "#" : `/teacher/courses/${course.id}`} className="block relative h-24 shrink-0" style={{ background: course.coverColor }}>
+      <div className="relative h-24 shrink-0" style={{ background: course.coverColor }}>
         <div className="absolute bottom-3 left-3 w-9 h-9 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
           <CourseIcon iconKey={course.icon} size={18} className="text-white" />
         </div>
@@ -213,7 +213,7 @@ function CourseCard({ course, studentCount, allGraded, activeAssignments, isArch
             <span className="text-white text-xs font-medium bg-black/40 px-2 py-1 rounded-full">{t("เก็บถาวร", "Archived")}</span>
           </div>
         )}
-      </Link>
+      </div>
 
       {/* Card body — flex column so footer pins to bottom */}
       <div className="flex flex-col flex-1 p-4">
@@ -274,6 +274,18 @@ function CourseCard({ course, studentCount, allGraded, activeAssignments, isArch
           </div>
         )}
       </div>
-    </div>
+    </>
+  );
+
+  const cardClassName = "flex flex-col bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]";
+
+  if (isArchived) {
+    return <div className={cardClassName}>{cardContent}</div>;
+  }
+
+  return (
+    <Link href={`/teacher/courses/${course.id}`} className={cardClassName}>
+      {cardContent}
+    </Link>
   );
 }
