@@ -1,10 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useCourses } from "@/lib/courses";
 import { useStudents } from "@/lib/students";
 import { useAssignments } from "@/lib/assignments";
+import { useManagedTeachers } from "@/lib/managed-teachers";
+import { useGradingCategories, GradingCategory } from "@/lib/gradingCategories";
 import { useLanguage } from "@/context/LanguageContext";
 
 export default function CourseDetailPage() {
@@ -13,9 +16,56 @@ export default function CourseDetailPage() {
   const { getCourse } = useCourses();
   const { getStudentsByCourse } = useStudents();
   const { getAssignmentsByCourse, getSubmissionsByAssignment } = useAssignments();
+  const { getTeachersByCourse } = useManagedTeachers();
+  const { getCategoriesByCourse, addCategory, updateCategory, removeCategory } = useGradingCategories();
   const course = getCourse(id);
   const students = getStudentsByCourse(id);
   const assignments = getAssignmentsByCourse(id);
+  const instructor = course ? getTeachersByCourse(course.id)[0] : undefined;
+  const categories = course ? getCategoriesByCourse(course.id) : [];
+  const totalWeight = categories.reduce((sum, c) => sum + c.weight, 0);
+
+  const [catFormOpen, setCatFormOpen] = useState(false);
+  const [catEditingId, setCatEditingId] = useState<string | null>(null);
+  const [catName, setCatName] = useState("");
+  const [catWeight, setCatWeight] = useState("");
+
+  function openAddCategory() {
+    setCatEditingId(null);
+    setCatName("");
+    setCatWeight("");
+    setCatFormOpen(true);
+  }
+
+  function openEditCategory(cat: GradingCategory) {
+    setCatEditingId(cat.id);
+    setCatName(cat.name);
+    setCatWeight(String(cat.weight));
+    setCatFormOpen(true);
+  }
+
+  function cancelCategoryForm() {
+    setCatFormOpen(false);
+    setCatEditingId(null);
+  }
+
+  function handleSaveCategory() {
+    const name = catName.trim();
+    const weight = Number(catWeight);
+    if (!name || !Number.isFinite(weight) || weight <= 0) return;
+    if (catEditingId) {
+      updateCategory(catEditingId, { name, weight });
+    } else {
+      addCategory({ courseId: id, name, weight });
+    }
+    setCatFormOpen(false);
+    setCatEditingId(null);
+  }
+
+  function handleDeleteCategory(cat: GradingCategory) {
+    if (!window.confirm(t(`ลบหมวด "${cat.name}" ถาวร? ไม่สามารถกู้คืนได้`, `Permanently delete "${cat.name}"? Cannot be undone.`))) return;
+    removeCategory(cat.id);
+  }
 
   const activeAssignments = assignments.filter((a) => {
     const subs = getSubmissionsByAssignment(a.id);
@@ -157,6 +207,188 @@ export default function CourseDetailPage() {
             </Link>
           </div>
         </div>
+
+        {/* Course description */}
+        {course.description && (
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mt-6">
+            <h2 className="text-base font-bold text-[var(--text-primary)] mb-3">{t("คำอธิบายรายวิชา", "Course Description")}</h2>
+            <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">{course.description}</p>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+          {/* Details */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-base font-bold text-[var(--text-primary)]">{t("รายละเอียด", "Details")}</h2>
+              <Link
+                href={`/teacher/courses/${id}/settings`}
+                className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-[var(--text-primary)] transition-colors"
+                title={t("แก้ไข", "Edit")}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+              <DetailField label={t("รายวิชา", "Course")} value={course.name} span2 />
+              <DetailField label={t("รหัสวิชา", "Course Code")} value={course.code} />
+              <DetailField label={t("กลุ่มเรียน", "Section")} value={course.sectionNumber} />
+              <DetailField label={t("วันและเวลาเรียน", "Schedule")} value={course.schedule} placeholder={t("ยังไม่กำหนด", "Not set")} />
+              <DetailField label={t("ห้องเรียน", "Room")} value={course.room} placeholder={t("ยังไม่กำหนด", "Not set")} />
+              <DetailField
+                label={t("อาจารย์ประจำวิชา", "Instructor")}
+                value={instructor ? `${instructor.title ? `${instructor.title} ` : ""}${instructor.name}` : undefined}
+                span2
+              />
+              <DetailField label="Email" value={instructor?.email} span2 />
+            </div>
+            {(!course.schedule || !course.room) && (
+              <p className="text-xs text-[var(--s-err-text)] mt-4">
+                {t("กรุณากำหนดข้อมูลวัน เวลาเรียน และห้องเรียนให้เรียบร้อย", "Please set the class schedule and room")}
+              </p>
+            )}
+          </div>
+
+          {/* Grading Categories — สัดส่วนคะแนน */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-base font-bold text-[var(--text-primary)]">{t("สัดส่วนคะแนน", "Grading Categories")}</h2>
+              <button
+                onClick={openAddCategory}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-xs font-medium transition-colors shrink-0"
+              >
+                <svg width="11" height="11" viewBox="0 0 16 16" fill="none">
+                  <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+                </svg>
+                {t("เพิ่มเกณฑ์คะแนน", "Add Category")}
+              </button>
+            </div>
+
+            {categories.length === 0 && !catFormOpen ? (
+              <div className="py-10 flex flex-col items-center justify-center text-center">
+                <p className="text-sm font-medium text-gray-500 mb-1">{t("ยังไม่มีข้อมูล", "No data")}</p>
+                <p className="text-xs text-gray-500">{t("เช่น Quiz, Midterm, Final, Project ฯลฯ", "e.g. Quiz, Midterm, Final, Project")}</p>
+              </div>
+            ) : (
+              <div className="rounded-xl border border-gray-100 overflow-hidden">
+                <div className="grid gap-0 border-b border-gray-100 bg-gray-50/60" style={{ gridTemplateColumns: "1fr 96px 64px" }}>
+                  {[t("หัวข้อ", "Category"), t("น้ำหนัก (%)", "Weight (%)"), ""].map((h, i) => (
+                    <div key={i} className="px-3 py-2.5 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">{h}</div>
+                  ))}
+                </div>
+                {categories.map((cat, idx) => (
+                  <div
+                    key={cat.id}
+                    className={[
+                      "grid gap-0 items-center py-2.5 transition-colors",
+                      idx < categories.length - 1 ? "border-b border-gray-50" : "",
+                      catEditingId === cat.id ? "bg-[#F0FFFE] opacity-60" : "hover:bg-gray-50/50",
+                    ].join(" ")}
+                    style={{ gridTemplateColumns: "1fr 96px 64px" }}
+                  >
+                    <div className="px-3 text-sm text-[var(--text-primary)]">{cat.name}</div>
+                    <div className="px-3 text-sm font-semibold text-[var(--accent)] tabular-nums">{cat.weight}%</div>
+                    <div className="px-3 flex items-center gap-1">
+                      <button
+                        onClick={() => openEditCategory(cat)}
+                        disabled={catEditingId === cat.id}
+                        className="p-1 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-[var(--text-primary)] transition-colors disabled:opacity-50"
+                        title={t("แก้ไข", "Edit")}
+                      >
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                        </svg>
+                      </button>
+                      <button
+                        onClick={() => handleDeleteCategory(cat)}
+                        className="p-1 rounded-lg hover:bg-[var(--s-err-bg)] text-gray-500 hover:text-[var(--s-err-text)] transition-colors"
+                        title={t("ลบ", "Delete")}
+                      >
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                          <polyline points="3 6 5 6 21 6"/>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {catFormOpen && (
+              <div className="mt-4 rounded-xl border-2 border-[var(--accent)]/20 bg-teal-50/40 p-4">
+                <p className="text-xs font-semibold text-[var(--accent)] uppercase tracking-wider mb-3">
+                  {catEditingId ? t("แก้ไขหมวด", "Edit Category") : t("เพิ่มหมวดใหม่", "Add New Category")}
+                </p>
+                <div className="grid gap-3 mb-3" style={{ gridTemplateColumns: "1fr 100px" }}>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1.5">
+                      {t("ชื่อหมวด", "Category Name")} <span className="text-[var(--s-err-text)]">*</span>
+                    </label>
+                    <input
+                      value={catName}
+                      onChange={e => setCatName(e.target.value)}
+                      placeholder={t("เช่น Midterm", "e.g. Midterm")}
+                      className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1.5">
+                      {t("%", "%")} <span className="text-[var(--s-err-text)]">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={100}
+                      value={catWeight}
+                      onChange={e => setCatWeight(e.target.value)}
+                      placeholder="30"
+                      className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm tabular-nums focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={cancelCategoryForm}
+                    className="px-3.5 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+                  >
+                    {t("ยกเลิก", "Cancel")}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSaveCategory}
+                    disabled={!catName.trim() || !Number(catWeight)}
+                    className="px-3.5 py-1.5 rounded-lg bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {t("บันทึก", "Save")}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <p className={[
+              "text-xs font-medium mt-4",
+              totalWeight === 100 ? "text-[var(--accent)]" : "text-[var(--s-err-text)]",
+            ].join(" ")}>
+              {t(`คะแนนรวมตอนนี้ ${totalWeight}%`, `Total so far: ${totalWeight}%`)}
+              {totalWeight !== 100 && ` (${t("ต้องเป็น 100%", "must equal 100%")})`}
+            </p>
+          </div>
+        </div>
       </main>
+  );
+}
+
+function DetailField({ label, value, placeholder, span2 }: { label: string; value?: string; placeholder?: string; span2?: boolean }) {
+  return (
+    <div className={span2 ? "col-span-2" : undefined}>
+      <p className="text-xs font-semibold text-[var(--accent)] mb-1">{label}</p>
+      <p className="text-sm text-[var(--text-primary)]">{value || <span className="text-gray-400">{placeholder ?? "—"}</span>}</p>
+    </div>
   );
 }
