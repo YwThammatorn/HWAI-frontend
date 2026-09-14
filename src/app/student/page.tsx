@@ -8,16 +8,24 @@ import { useStudents } from "@/lib/students";
 import { useCourses } from "@/lib/courses";
 import { useAssignments } from "@/lib/assignments";
 import { useManagedTeachers } from "@/lib/managed-teachers";
+import { useAnnouncements, announcementReachesCourse } from "@/lib/announcements";
 import { CourseIcon } from "@/components/CourseIcon";
 import StudentCalendar, { StudentCalendarItem } from "@/components/StudentCalendar";
 
+function fmtAnnouncementDate(iso: string, lang: string) {
+  return new Date(iso).toLocaleDateString(lang === "th" ? "th-TH" : "en-US", {
+    day: "numeric", month: "short", hour: "2-digit", minute: "2-digit",
+  });
+}
+
 export default function StudentHome() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const { user } = useAuth();
   const { students } = useStudents();
   const { getCourse } = useCourses();
   const { getAssignmentsByCourse, getSubmissionsByAssignment } = useAssignments();
   const { getTeachersByCourse } = useManagedTeachers();
+  const { announcements } = useAnnouncements();
 
   const sourceLabel: Record<string, string> = {
     manual: t("เพิ่มเอง", "Manually Added"),
@@ -89,6 +97,23 @@ export default function StudentHome() {
     return items;
   }, [enrolledCourses, getAssignmentsByCourse, getSubmissionsByAssignment, user]);
 
+  const recentAnnouncements = useMemo(() => {
+    const seen = new Set<string>();
+    const items: { id: string; title: string; body: string; createdAt: string; courseId: string; courseName: string }[] = [];
+
+    enrolledCourses.forEach((course) => {
+      announcements
+        .filter((a) => announcementReachesCourse(a, course))
+        .forEach((a) => {
+          if (seen.has(a.id)) return;
+          seen.add(a.id);
+          items.push({ id: a.id, title: a.title, body: a.body, createdAt: a.createdAt, courseId: course.id, courseName: course.name });
+        });
+    });
+
+    return items.sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 5);
+  }, [enrolledCourses, announcements]);
+
   return (
     <div className="p-6 w-full">
         <h1 className="text-2xl font-bold text-[var(--text-primary)]">
@@ -101,6 +126,34 @@ export default function StudentHome() {
         <div className="mt-8 grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-5 items-start">
           {/* Left column */}
           <div className="flex flex-col gap-4 min-w-0">
+            {/* Announcements — aggregated across all enrolled courses */}
+            <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-5">
+              <h2 className="text-base font-bold text-[var(--text-primary)] mb-4">{t("ประกาศ", "Announcements")}</h2>
+
+              {recentAnnouncements.length === 0 ? (
+                <p className="text-sm text-[var(--text-muted)]">{t("ยังไม่มีประกาศ", "No announcements yet")}</p>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  {recentAnnouncements.map((item) => (
+                    <Link
+                      key={item.id}
+                      href={`/student/courses/${item.courseId}/announcements`}
+                      className="flex flex-col gap-1 p-3 rounded-xl hover:bg-[var(--bg-subtle)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <p className="text-sm font-medium text-[var(--text-primary)] truncate">{item.title}</p>
+                        <span className="shrink-0 text-xs text-[var(--text-muted)]">{fmtAnnouncementDate(item.createdAt, lang)}</span>
+                      </div>
+                      <p className="text-xs text-[var(--text-muted)] truncate">{item.body}</p>
+                      <span className="inline-flex items-center self-start px-2 py-0.5 rounded-full bg-[var(--accent-bright)]/15 text-[var(--accent)] text-[10px] font-semibold mt-0.5">
+                        {item.courseName}
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
             {/* Upcoming assignments */}
             <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-5">
               <h2 className="text-base font-bold text-[var(--text-primary)] mb-4">{t("งานที่ต้องส่งเร็วๆ นี้", "Upcoming assignments")}</h2>
