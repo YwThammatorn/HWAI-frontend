@@ -8,8 +8,8 @@ import { useStudents } from "@/lib/students";
 import { useCourses } from "@/lib/courses";
 import { useAssignments } from "@/lib/assignments";
 import { useManagedTeachers } from "@/lib/managed-teachers";
-import EmptyState from "@/components/EmptyState";
 import { CourseIcon } from "@/components/CourseIcon";
+import StudentCalendar, { StudentCalendarItem } from "@/components/StudentCalendar";
 
 export default function StudentHome() {
   const { t } = useLanguage();
@@ -60,6 +60,33 @@ export default function StudentHome() {
     });
 
     return items.sort((a, b) => a.hoursLeft - b.hoursLeft).slice(0, 5);
+  }, [enrolledCourses, getAssignmentsByCourse, getSubmissionsByAssignment, user]);
+
+  const calendarItems = useMemo(() => {
+    const now = Date.now();
+    const items: StudentCalendarItem[] = [];
+
+    enrolledCourses.forEach((course) => {
+      const assignments = getAssignmentsByCourse(course.id);
+      assignments.forEach((a) => {
+        const due = new Date(a.dueDate + "T23:59:59");
+        const allSubs = getSubmissionsByAssignment(a.id);
+        const mySub = allSubs.find(
+          (s) => s.studentId === (user?.studentId ?? user?.email ?? "")
+        );
+        const isDone = mySub?.status === "graded" || mySub?.status === "not_graded";
+        items.push({
+          date: a.dueDate,
+          assignmentId: a.id,
+          name: a.name,
+          courseId: course.id,
+          courseName: course.name,
+          isOverdue: due.getTime() < now && !isDone,
+        });
+      });
+    });
+
+    return items;
   }, [enrolledCourses, getAssignmentsByCourse, getSubmissionsByAssignment, user]);
 
   return (
@@ -190,19 +217,7 @@ export default function StudentHome() {
           {/* Right column: Calendar */}
           <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-5">
             <h2 className="text-base font-bold text-[var(--text-primary)] mb-4">{t("ปฏิทิน", "Calendar")}</h2>
-            <EmptyState
-              iconColor="var(--accent-bright)"
-              icon={
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent-bright)" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
-                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                  <line x1="16" y1="2" x2="16" y2="6"/>
-                  <line x1="8" y1="2" x2="8" y2="6"/>
-                  <line x1="3" y1="10" x2="21" y2="10"/>
-                </svg>
-              }
-              title={t("ฟีเจอร์นี้จะมาเร็วๆ นี้", "Coming soon")}
-              description={t("ปฏิทินจะแสดงวันส่งงานทุกรายวิชาในที่เดียว", "All assignment due dates in one place")}
-            />
+            <StudentCalendar items={calendarItems} />
           </div>
         </div>
     </div>

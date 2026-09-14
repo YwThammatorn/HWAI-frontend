@@ -13,7 +13,7 @@ export default function StudentClassworkDetailPage() {
   const { t } = useLanguage();
   const { user } = useAuth();
   const { getCourse } = useCourses();
-  const { getAssignment, getSubmissionsByAssignment, addSubmission, updateSubmission } = useAssignments();
+  const { getAssignment, getSubmissionsByAssignment, addSubmission, updateSubmission, getRubricsByAssignment } = useAssignments();
 
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -21,6 +21,7 @@ export default function StudentClassworkDetailPage() {
 
   const course = getCourse(secId);
   const assignment = getAssignment(actId);
+  const rubrics = getRubricsByAssignment(actId);
   const allSubs = getSubmissionsByAssignment(actId);
   const mySubmission = allSubs.find(
     (s) => s.studentId === (user?.studentId ?? user?.email ?? "")
@@ -119,6 +120,40 @@ export default function StudentClassworkDetailPage() {
                 <p className="text-sm text-[var(--text-muted)] italic">{t("ไม่มีคำอธิบาย", "No description provided")}</p>
               )}
             </div>
+
+            {/* Rubric — read-only, shows what the student will be graded on */}
+            {rubrics.length > 0 && (
+              <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-5">
+                <h2 className="text-sm font-bold text-[var(--text-primary)] mb-3">{t("เกณฑ์การให้คะแนน", "Grading Rubric")}</h2>
+                <div className="flex flex-col gap-3">
+                  {rubrics.flatMap((rubric) => rubric.criteria).map((c) => (
+                    <div key={c.id} className="rounded-xl border border-[var(--border-subtle)] p-3">
+                      <div className="flex items-start justify-between gap-3 mb-1">
+                        <p className="text-sm font-semibold text-[var(--text-primary)]">{c.name}</p>
+                        <span className="shrink-0 text-xs font-semibold text-[var(--accent)] tabular-nums">
+                          {c.weight}% · {c.maxPoints} {t("คะแนน", "pts")}
+                        </span>
+                      </div>
+                      {c.description && (
+                        <p className="text-xs text-[var(--text-muted)] mb-2">{c.description}</p>
+                      )}
+                      {c.levels.length > 0 && (
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2">
+                          {c.levels.map((lvl, i) => (
+                            <div key={i} className="rounded-lg bg-[var(--bg-app)] p-2">
+                              <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">{lvl.label}</p>
+                              {lvl.description && (
+                                <p className="text-[11px] text-[var(--text-secondary)] mt-0.5 leading-snug">{lvl.description}</p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Right: Submit section */}
