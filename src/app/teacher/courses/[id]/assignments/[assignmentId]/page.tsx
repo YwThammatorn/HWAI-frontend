@@ -7,6 +7,7 @@ import { useCourses } from "@/lib/courses";
 import { useAssignments, Submission } from "@/lib/assignments";
 import { useGradingCategories } from "@/lib/gradingCategories";
 import { useStudents } from "@/lib/students";
+import { useStudentGroups } from "@/lib/studentGroups";
 import { useLanguage } from "@/context/LanguageContext";
 
 const AVATAR_COLORS = ["#4F46E5", "#7C3AED", "#BE185D", "#B45309", "#047857", "#0369A1", "#C2410C", "#0E7490"];
@@ -57,6 +58,7 @@ export default function ViewAssignmentPage() {
   const { getAssignment, getSubmissionsByAssignment } = useAssignments();
   const { getCategoriesByCourse } = useGradingCategories();
   const { getStudentsByCourse } = useStudents();
+  const { getGroupsByAssignment } = useStudentGroups();
 
   const [search, setSearch] = useState("");
 
@@ -64,6 +66,8 @@ export default function ViewAssignmentPage() {
   const assignment = getAssignment(assignmentId);
   const submissions = getSubmissionsByAssignment(assignmentId);
   const enrolledCount = getStudentsByCourse(id).length;
+  const isGroupAssignment = assignment?.submissionType === "group";
+  const groups = isGroupAssignment ? getGroupsByAssignment(assignmentId) : [];
 
   if (!course || !assignment) {
     return (
@@ -92,6 +96,30 @@ export default function ViewAssignmentPage() {
         s.email.toLowerCase().includes(search.toLowerCase())
       )
     : submissions;
+
+  // Group assignments: one row per team (submissions sharing a groupId) instead
+  // of one row per student — a team submits once, so grading it once should
+  // apply everywhere (see RecheckPage.handleSave, which fans out to the whole
+  // group). A submission with no groupId (shouldn't normally happen for a
+  // group assignment, but defensively handled) still gets its own row.
+  const rows: { key: string; teamName?: string; subs: Submission[] }[] = (() => {
+    if (!isGroupAssignment) return visible.map((s) => ({ key: s.id, subs: [s] }));
+    const seen = new Set<string>();
+    const result: { key: string; teamName?: string; subs: Submission[] }[] = [];
+    visible.forEach((s) => {
+      if (seen.has(s.id)) return;
+      if (s.groupId) {
+        const teamSubs = visible.filter((x) => x.groupId === s.groupId);
+        teamSubs.forEach((x) => seen.add(x.id));
+        const group = groups.find((g) => g.id === s.groupId);
+        result.push({ key: s.groupId, teamName: group?.name ?? t("ทีม", "Team"), subs: teamSubs });
+      } else {
+        seen.add(s.id);
+        result.push({ key: s.id, subs: [s] });
+      }
+    });
+    return result;
+  })();
 
   return (
       <main className="w-full px-8 py-8">
@@ -336,53 +364,97 @@ export default function ViewAssignmentPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                  {visible.map((s) => (
-                    <tr key={s.id} className="hover:bg-gray-50/50 transition-colors">
-                      <td className="px-5 py-3.5"><input type="checkbox" className="rounded border-gray-300" /></td>
-                      <td className="px-3 py-3.5">
-                        <div className="flex items-center gap-2.5">
-                          <div
-                            className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
-                            style={{ background: avatarColor(s.studentName) }}
-                          >
-                            {initials(s.studentName)}
-                          </div>
-                          <div>
-                            <p className="font-medium text-[var(--text-primary)] text-sm">{s.studentName}</p>
-                            <p className="text-xs text-gray-500">{s.email}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-3 py-3.5 text-xs text-gray-500">{fmtDateTime(s.submittedAt)}</td>
-                      <td className="px-3 py-3.5">
-                        {s.aiScore !== null ? (
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium text-[var(--text-primary)]">{s.aiScore}%</span>
-                            <div className="w-20 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                              <div className="h-full bg-[var(--accent-bright)] rounded-full" style={{ width: `${s.aiScore}%` }} />
+                  {rows.map((row) => {
+                    const rep = row.subs[0];
+                    const mixedStatus = new Set(row.subs.map((x) => x.status)).size > 1;
+                    return (
+                      <tr key={row.key} className="hover:bg-gray-50/50 transition-colors">
+                        <td className="px-5 py-3.5"><input type="checkbox" className="rounded border-gray-300" /></td>
+                        <td className="px-3 py-3.5">
+                          {row.teamName ? (
+                            <div>
+                              <div className="flex items-center gap-1.5 mb-1">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth="2" strokeLinecap="round">
+                                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                                </svg>
+                                <p className="font-medium text-[var(--text-primary)] text-sm">{row.teamName}</p>
+                              </div>
+                              <div className="flex items-center">
+                                {row.subs.map((s, idx) => (
+                                  <div
+                                    key={s.id}
+                                    className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-bold shrink-0 border-2 border-white"
+                                    style={{ background: avatarColor(s.studentName), marginLeft: idx > 0 ? "-8px" : 0 }}
+                                    title={s.studentName}
+                                  >
+                                    {initials(s.studentName)}
+                                  </div>
+                                ))}
+                                <p className="text-xs text-gray-500 ml-2 truncate">
+                                  {row.subs.map((s) => s.studentName).join(", ")}
+                                </p>
+                              </div>
                             </div>
-                          </div>
-                        ) : (
-                          <span className="text-xs text-gray-300">—</span>
-                        )}
-                      </td>
-                      <td className="px-3 py-3.5"><StatusBadge status={s.status} /></td>
-                      <td className="px-3 py-3.5">
-                        {(s.status === "need_review" || s.status === "graded") && (
-                          <Link
-                            href={`/teacher/courses/${id}/assignments/${assignmentId}/recheck?sub=${s.id}`}
-                            className="text-xs text-[var(--accent)] hover:underline font-medium"
-                          >
-                            {s.status === "need_review" ? t("ตรวจสอบ", "Review") : t("ขอตรวจใหม่", "Recheck")}
-                          </Link>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
+                          ) : (
+                            <div className="flex items-center gap-2.5">
+                              <div
+                                className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
+                                style={{ background: avatarColor(rep.studentName) }}
+                              >
+                                {initials(rep.studentName)}
+                              </div>
+                              <div>
+                                <p className="font-medium text-[var(--text-primary)] text-sm">{rep.studentName}</p>
+                                <p className="text-xs text-gray-500">{rep.email}</p>
+                              </div>
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-3 py-3.5 text-xs text-gray-500">{fmtDateTime(rep.submittedAt)}</td>
+                        <td className="px-3 py-3.5">
+                          {rep.aiScore !== null ? (
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium text-[var(--text-primary)]">{rep.aiScore}%</span>
+                              <div className="w-20 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                <div className="h-full bg-[var(--accent-bright)] rounded-full" style={{ width: `${rep.aiScore}%` }} />
+                              </div>
+                            </div>
+                          ) : (
+                            <span className="text-xs text-gray-300">—</span>
+                          )}
+                        </td>
+                        <td className="px-3 py-3.5">
+                          {mixedStatus ? (
+                            <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium bg-amber-100 text-amber-700">
+                              {t("ไม่ตรงกัน", "Mixed")}
+                            </span>
+                          ) : (
+                            <StatusBadge status={rep.status} />
+                          )}
+                        </td>
+                        <td className="px-3 py-3.5">
+                          {(rep.status === "need_review" || rep.status === "graded") && (
+                            <Link
+                              href={`/teacher/courses/${id}/assignments/${assignmentId}/recheck?sub=${rep.id}`}
+                              className="text-xs text-[var(--accent)] hover:underline font-medium"
+                            >
+                              {rep.status === "need_review"
+                                ? t("ตรวจสอบ", "Review")
+                                : row.teamName ? t("ขอตรวจใหม่ทั้งทีม", "Recheck team") : t("ขอตรวจใหม่", "Recheck")}
+                            </Link>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
               <div className="flex items-center justify-between px-5 py-3 text-xs text-gray-500 border-t border-gray-50">
-                <span>{t("แสดง", "Showing")} <span className="font-medium text-[var(--text-primary)]">1–{visible.length}</span> {t("จาก", "of")} <span className="font-medium text-[var(--text-primary)]">{submissions.length}</span> {t("งาน", "submissions")}</span>
+                <span>
+                  {t("แสดง", "Showing")} <span className="font-medium text-[var(--text-primary)]">1–{rows.length}</span> {t("จาก", "of")} <span className="font-medium text-[var(--text-primary)]">{rows.length}</span>{" "}
+                  {isGroupAssignment ? t("ทีม", "team(s)") : t("งาน", "submissions")}
+                </span>
                 {submissions.length > 5 && (
                   <div className="flex gap-1">
                     {[1, 2, 3].map((p) => (

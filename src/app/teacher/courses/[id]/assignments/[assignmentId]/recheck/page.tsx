@@ -5,6 +5,7 @@ import { useParams, useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCourses } from "@/lib/courses";
 import { useAssignments, RubricCriterion } from "@/lib/assignments";
+import { useStudentGroups } from "@/lib/studentGroups";
 import { useLanguage } from "@/context/LanguageContext";
 
 function genFeedback(name: string, level: "high" | "low"): string {
@@ -31,6 +32,7 @@ export default function RecheckPage() {
 
   const { getCourse } = useCourses();
   const { getAssignment, getSubmissionsByAssignment, getRubricsByAssignment, updateSubmission } = useAssignments();
+  const { getGroupsByAssignment } = useStudentGroups();
 
   const course = getCourse(id);
   const assignment = getAssignment(assignmentId);
@@ -38,6 +40,9 @@ export default function RecheckPage() {
   const submission = allSubs.find((s) => s.id === subId) ?? allSubs[0];
   const rubrics = getRubricsByAssignment(assignmentId);
   const rubric = rubrics[0];
+  const team = submission?.groupId
+    ? getGroupsByAssignment(assignmentId).find((g) => g.id === submission.groupId)
+    : undefined;
 
   const [zoom, setZoom] = useState(100);
   const [scores, setScores] = useState<CriterionScore[]>([]);
@@ -106,10 +111,18 @@ export default function RecheckPage() {
   }
 
   function handleSave() {
-    updateSubmission(submission.id, {
-      instructorScore: totalScore,
-      instructorComment: comment,
-      status: "graded",
+    // Group assignments: everyone on the team shares one submission in spirit
+    // (see TeamFormationDrawer / student classwork submit flow) — grading the
+    // representative row grades the whole team, not just whoever is shown here.
+    const teammates = submission.groupId
+      ? allSubs.filter((s) => s.groupId === submission.groupId)
+      : [submission];
+    teammates.forEach((s) => {
+      updateSubmission(s.id, {
+        instructorScore: totalScore,
+        instructorComment: comment,
+        status: "graded",
+      });
     });
     setSaved(true);
     setTimeout(() => router.push(`/teacher/courses/${id}/assignments/${assignmentId}/results`), 1000);
@@ -169,6 +182,11 @@ export default function RecheckPage() {
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-[var(--text-primary)] mb-1">{submission.studentName}</p>
+                  {team && (
+                    <p className="text-xs text-[var(--accent)] mb-1">
+                      {t(`ทีม ${team.name} — คะแนนนี้จะใช้กับสมาชิกทุกคน`, `Team ${team.name} — this grade applies to every member`)}
+                    </p>
+                  )}
                   <p className="text-xs text-gray-400">
                     {t("ส่งเมื่อ", "Submitted")}{" "}
                     {new Date(submission.submittedAt).toLocaleDateString(lang === "th" ? "th-TH" : "en-US", {
