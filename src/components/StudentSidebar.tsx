@@ -29,6 +29,8 @@ export default function StudentSidebar({ courses = [] }: StudentSidebarProps) {
   const SUB_LINKS = [
     { key: "announcements", labelTh: "ประกาศ", labelEn: "Announcements" },
     { key: "classwork", labelTh: "งานในชั้นเรียน", labelEn: "Classwork" },
+    { key: "weekly-plan", labelTh: "แผนการสอน", labelEn: "Weekly Plan" },
+    { key: "materials", labelTh: "สื่อการสอน", labelEn: "Materials" },
     { key: "evaluation", labelTh: "ผลการประเมิน", labelEn: "Evaluation" },
   ];
 
