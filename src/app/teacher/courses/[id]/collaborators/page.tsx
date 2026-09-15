@@ -325,8 +325,6 @@ export default function CollaboratorsPage() {
 
   const [search, setSearch] = useState("");
   const [addOpen, setAddOpen] = useState(false);
-  const [inviteCode, setInviteCode] = useState("CVD1FT");
-  const [copied, setCopied] = useState(false);
 
   const rows: TeamRow[] = useMemo(() => {
     if (!course) return [];
@@ -408,17 +406,6 @@ export default function CollaboratorsPage() {
     row.onRemove?.();
   }
 
-  function copyCode() {
-    navigator.clipboard.writeText(inviteCode).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
-  }
-
-  function generateCode() {
-    return Math.random().toString(36).substring(2, 8).toUpperCase();
-  }
-
   if (!course) {
     return (
       <main className="flex-1 flex items-center justify-center text-[var(--text-muted)] text-sm">
@@ -465,7 +452,7 @@ export default function CollaboratorsPage() {
       </div>
 
       {/* Course Team card */}
-      <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-subtle)] shadow-sm mb-5">
+      <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-subtle)] shadow-sm">
         {/* Card header */}
         <div className="flex items-start justify-between gap-4 px-6 pt-5 pb-4 border-b border-[var(--border-subtle)]">
           <div>
@@ -528,53 +515,6 @@ export default function CollaboratorsPage() {
             </svg>
             {t("อาจารย์ผู้สอนหลักกำหนดโดยผู้ดูแลระบบ", "Primary teacher is assigned by an admin")}
           </p>
-        </div>
-      </div>
-
-      {/* Invite Code card */}
-      <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-subtle)] shadow-sm">
-        <div className="flex items-start justify-between gap-6 px-6 py-5">
-          <div className="flex-1">
-            <h2 className="text-base font-bold text-[var(--text-primary)] mb-1">{t("รหัสเชิญ", "Invite Code")}</h2>
-            <p className="text-sm text-[var(--text-muted)] leading-relaxed max-w-sm">
-              {t("แชร์รหัสนี้เพื่อให้ผู้ช่วยสอนขอเข้าร่วม คำขอต้องได้รับการอนุมัติจากคุณ", "Share this code to allow TAs to request access to this course. Requests will need your approval.")}
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2 shrink-0">
-            <div className="px-4 py-2 border border-[var(--border-subtle)] rounded-xl text-sm font-mono font-semibold text-[var(--text-primary)] bg-[var(--bg-subtle)] min-w-[80px] text-center tracking-widest">
-              {inviteCode}
-            </div>
-            <button
-              onClick={copyCode}
-              className={[
-                "flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium border transition-colors",
-                copied
-                  ? "bg-[var(--s-ok-bg)] border-transparent text-[var(--s-ok-text)]"
-                  : "border-[var(--border-subtle)] text-[var(--text-primary)] hover:bg-[var(--bg-subtle)]",
-              ].join(" ")}
-            >
-              {copied ? (
-                <>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-                  {t("คัดลอกแล้ว", "Copied")}
-                </>
-              ) : (
-                <>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                    <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                  </svg>
-                  {t("คัดลอก", "Copy")}
-                </>
-              )}
-            </button>
-            <button
-              onClick={() => setInviteCode(generateCode())}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium border border-[var(--border-subtle)] text-[var(--text-primary)] hover:bg-[var(--bg-subtle)] transition-colors"
-            >
-              {t("สร้างใหม่", "Regenerate")}
-            </button>
-          </div>
         </div>
       </div>
 
