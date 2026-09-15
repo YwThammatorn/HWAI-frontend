@@ -2,6 +2,12 @@ import { test, expect, Page } from "@playwright/test";
 
 const BASE = "http://localhost:3000";
 
+// Mirrors LANGUAGE_TOGGLE_DISABLED in src/context/LanguageContext.tsx — keep
+// in sync. The language-toggle button is hidden app-wide (15/9/2569,
+// temporary), so the whole "i18n Language Toggle" suite below is skipped
+// until it's restored.
+const LANGUAGE_TOGGLE_DISABLED = true;
+
 const MOCK_USER = { name: "Test Teacher", email: "test@school.edu", role: "teacher" };
 
 /** Inject mock auth session + force English lang before page load. Also seeds
@@ -449,6 +455,7 @@ test.describe("Sign Out", () => {
 // ── 14. i18n Language Toggle ──────────────────────────────────────────────────
 
 test.describe("i18n Language Toggle", () => {
+  test.skip(LANGUAGE_TOGGLE_DISABLED, "Language toggle button is hidden app-wide until LANGUAGE_TOGGLE_DISABLED is flipped back to false");
   // Don't set hwai_lang — fresh context starts empty, app defaults to "th".
   // Setting it via addInitScript would re-run on reload and break the persist test.
   test.beforeEach(async ({ page }) => {

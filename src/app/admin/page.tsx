@@ -81,7 +81,7 @@ export default function AdminDashboard() {
             }
           />
           <StatCard
-            label={t("นักศึกษา (cohort)", "Students (cohort)")}
+            label={t("นักศึกษา", "Students")}
             value={studentCount}
             color="var(--s-info-text)"
             bg="var(--s-info-bg)"

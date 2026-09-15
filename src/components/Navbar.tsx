@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTheme } from "./ThemeProvider";
 import { useAuth } from "@/context/AuthContext";
-import { useLanguage } from "@/context/LanguageContext";
+import { useLanguage, LANGUAGE_TOGGLE_DISABLED } from "@/context/LanguageContext";
 import { INITIAL_NOTIFS } from "@/lib/notifications";
 import RoleSwitcher from "./RoleSwitcher";
 
@@ -41,15 +41,17 @@ export default function Navbar() {
       {/* Right side: role switcher + theme toggle + bell + avatar */}
       <div className="flex items-center gap-3">
         <RoleSwitcher />
-        {/* Language toggle */}
-        <button
-          type="button"
-          onClick={toggleLang}
-          aria-label="Toggle language"
-          className="h-7 px-2.5 flex items-center justify-center rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors text-xs font-semibold tracking-wide border border-white/20 hover:border-white/40"
-        >
-          {lang === "th" ? "TH" : "EN"}
-        </button>
+        {/* Language toggle — hidden temporarily, see LANGUAGE_TOGGLE_DISABLED */}
+        {!LANGUAGE_TOGGLE_DISABLED && (
+          <button
+            type="button"
+            onClick={toggleLang}
+            aria-label="Toggle language"
+            className="h-7 px-2.5 flex items-center justify-center rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors text-xs font-semibold tracking-wide border border-white/20 hover:border-white/40"
+          >
+            {lang === "th" ? "TH" : "EN"}
+          </button>
+        )}
 
         {/* Theme toggle */}
         <button
