@@ -8,6 +8,7 @@ import WeeklyPlanProvider from "@/components/WeeklyPlanProvider";
 import TeachingMaterialProvider from "@/components/TeachingMaterialProvider";
 import AnnouncementProvider from "@/components/AnnouncementProvider";
 import AssignmentProvider from "@/components/AssignmentProvider";
+import StudentGroupProvider from "@/components/StudentGroupProvider";
 import ThemeProvider from "@/components/ThemeProvider";
 import { AuthProvider } from "@/context/AuthContext";
 import { LanguageProvider } from "@/context/LanguageContext";
@@ -57,7 +58,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                               <WeeklyPlanProvider>
                                 <TeachingMaterialProvider>
                                   <AnnouncementProvider>
-                                    <AssignmentProvider>{children}</AssignmentProvider>
+                                    <AssignmentProvider>
+                                      <StudentGroupProvider>{children}</StudentGroupProvider>
+                                    </AssignmentProvider>
                                   </AnnouncementProvider>
                                 </TeachingMaterialProvider>
                               </WeeklyPlanProvider>

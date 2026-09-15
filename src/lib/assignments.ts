@@ -33,6 +33,11 @@ export interface Submission {
   // Security: student work must not leave faculty without explicit consent
   externalUseConsent: boolean;
   status: "not_graded" | "need_review" | "graded";
+  /** Set when this submission was created as part of a group assignment —
+   *  every StudentGroup member gets their own row sharing this id, so a
+   *  future "grade once, apply to the whole team" flow has something to
+   *  group by without another data migration. */
+  groupId?: string;
   updatedAt: string;
 }
 

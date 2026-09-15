@@ -7,6 +7,14 @@ import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
 import { useCourses } from "@/lib/courses";
 import { useAssignments } from "@/lib/assignments";
+import { useStudents } from "@/lib/students";
+import { useStudentGroups } from "@/lib/studentGroups";
+import TeamFormationDrawer from "@/components/TeamFormationDrawer";
+
+function initialsOf(name: string) {
+  const parts = name.trim().split(/\s+/);
+  return ((parts[0]?.[0] ?? "") + (parts[1]?.[0] ?? "")).toUpperCase() || "?";
+}
 
 export default function StudentClassworkDetailPage() {
   const { secId, actId } = useParams<{ secId: string; actId: string }>();
@@ -14,18 +22,30 @@ export default function StudentClassworkDetailPage() {
   const { user } = useAuth();
   const { getCourse } = useCourses();
   const { getAssignment, getSubmissionsByAssignment, addSubmission, updateSubmission, getRubricsByAssignment } = useAssignments();
+  const { getStudentsByCourse } = useStudents();
+  const { getGroupForStudent, updateGroup, removeGroup } = useStudentGroups();
 
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [teamDrawerOpen, setTeamDrawerOpen] = useState(false);
 
   const course = getCourse(secId);
   const assignment = getAssignment(actId);
   const rubrics = getRubricsByAssignment(actId);
   const allSubs = getSubmissionsByAssignment(actId);
-  const mySubmission = allSubs.find(
-    (s) => s.studentId === (user?.studentId ?? user?.email ?? "")
-  );
+  const studentId = user?.studentId ?? user?.email ?? "";
+  const mySubmission = allSubs.find((s) => s.studentId === studentId);
+
+  const isGroup = assignment?.submissionType === "group";
+  const myGroup = isGroup ? getGroupForStudent(actId, studentId) : undefined;
+  const roster = getStudentsByCourse(secId);
+
+  function memberInfo(id: string) {
+    if (id === studentId) return { name: user?.name ?? "Unknown Student", email: user?.email ?? "" };
+    const s = roster.find((r) => r.studentId === id);
+    return s ? { name: `${s.firstName} ${s.lastName}`, email: s.email } : { name: id, email: "" };
+  }
 
   if (!course || !assignment) {
     return (
@@ -37,15 +57,23 @@ export default function StudentClassworkDetailPage() {
   const isPast = new Date() > due;
   const isGraded = mySubmission?.status === "graded";
   const score = mySubmission?.instructorScore ?? mySubmission?.aiScore ?? null;
+  const canSubmit = !isGroup || !!myGroup;
 
   function handleSubmit() {
     setSubmitting(true);
-    if (!mySubmission) {
+    const memberIds = isGroup && myGroup ? myGroup.memberStudentIds : [studentId];
+    memberIds.forEach((id) => {
+      const existing = allSubs.find((s) => s.studentId === id);
+      if (existing) {
+        updateSubmission(existing.id, { status: "not_graded" });
+        return;
+      }
+      const info = memberInfo(id);
       addSubmission({
         assignmentId: actId,
-        studentId: user?.studentId ?? user?.email ?? "unknown",
-        studentName: user?.name ?? "Unknown Student",
-        email: user?.email ?? "",
+        studentId: id,
+        studentName: info.name,
+        email: info.email,
         submittedAt: new Date().toISOString(),
         fileUrl: null,
         aiScore: null,
@@ -53,13 +81,20 @@ export default function StudentClassworkDetailPage() {
         instructorComment: "",
         externalUseConsent: false,
         status: "not_graded",
+        ...(myGroup ? { groupId: myGroup.id } : {}),
       });
-    } else {
-      updateSubmission(mySubmission.id, { status: "not_graded" });
-    }
+    });
     setSubmitting(false);
     setConfirmOpen(false);
     setSubmitted(true);
+  }
+
+  function handleLeaveTeam() {
+    if (!myGroup) return;
+    if (!window.confirm(t(`ออกจากทีม "${myGroup.name}"?`, `Leave team "${myGroup.name}"?`))) return;
+    const remaining = myGroup.memberStudentIds.filter((id) => id !== studentId);
+    if (remaining.length === 0) removeGroup(myGroup.id);
+    else updateGroup(myGroup.id, { memberStudentIds: remaining });
   }
 
   const SUBMIT_BTN_LABEL = mySubmission
@@ -158,6 +193,63 @@ export default function StudentClassworkDetailPage() {
 
           {/* Right: Submit section */}
           <div className="flex flex-col gap-4">
+            {/* Team panel — only for group assignments */}
+            {isGroup && (
+              <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-5">
+                <h2 className="text-sm font-bold text-[var(--text-primary)] mb-3">{t("ทีมของฉัน", "Your team")}</h2>
+                {myGroup ? (
+                  <>
+                    <div className="flex items-center justify-between gap-3 mb-3">
+                      <p className="text-sm font-semibold text-[var(--text-primary)] truncate">{myGroup.name}</p>
+                      <button
+                        onClick={handleLeaveTeam}
+                        disabled={isGraded}
+                        title={isGraded ? t("ตรวจแล้ว — ออกจากทีมไม่ได้", "Already graded — can't leave the team") : t("ออกจากทีม", "Leave team")}
+                        className="text-xs font-medium text-[var(--s-err-text)] hover:underline disabled:opacity-40 disabled:no-underline disabled:cursor-not-allowed shrink-0"
+                      >
+                        {t("ออกจากทีม", "Leave team")}
+                      </button>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      {myGroup.memberStudentIds.map((id) => {
+                        const info = memberInfo(id);
+                        return (
+                          <div key={id} className="flex items-center gap-2.5">
+                            <div className="w-7 h-7 rounded-full bg-[var(--accent-subtle)] flex items-center justify-center text-[var(--accent)] text-[11px] font-bold shrink-0">
+                              {initialsOf(info.name)}
+                            </div>
+                            <p className="text-xs text-[var(--text-primary)] truncate">
+                              {info.name}{id === studentId && <span className="text-[var(--text-muted)]"> ({t("คุณ", "you")})</span>}
+                            </p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    {assignment.maxGroupSize && (
+                      <p className="text-[11px] text-[var(--text-muted)] mt-3">
+                        {t(
+                          `เต็มที่ ${myGroup.memberStudentIds.length}/${assignment.maxGroupSize} คน`,
+                          `${myGroup.memberStudentIds.length} of ${assignment.maxGroupSize} spots filled`
+                        )}
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <p className="text-xs text-[var(--text-muted)] mb-3">
+                      {t("ยังไม่ได้เข้าร่วมทีม — เพื่อนร่วมทีมต้องเรียนอยู่ใน sec นี้เท่านั้น", "You haven't joined a team yet. Teammates must be classmates in this section.")}
+                    </p>
+                    <button
+                      onClick={() => setTeamDrawerOpen(true)}
+                      className="w-full h-9 rounded-xl border border-[var(--accent-bright)] text-[var(--accent)] text-sm font-semibold hover:bg-[var(--bg-subtle)] transition-colors"
+                    >
+                      {t("จับกลุ่ม", "Form a team")}
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
+
             <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-5">
               <h2 className="text-sm font-bold text-[var(--text-primary)] mb-4">{t("งานของฉัน", "My Work")}</h2>
 
@@ -198,7 +290,9 @@ export default function StudentClassworkDetailPage() {
               {/* No submission yet */}
               {!mySubmission && !submitted && (
                 <div className="mb-4 p-3 rounded-xl border border-dashed border-[var(--border-subtle)] text-center">
-                  <p className="text-xs text-[var(--text-muted)]">{t("ยังไม่ได้ส่งงาน", "Not submitted yet")}</p>
+                  <p className="text-xs text-[var(--text-muted)]">
+                    {canSubmit ? t("ยังไม่ได้ส่งงาน", "Not submitted yet") : t("เข้าร่วมทีมก่อนถึงจะส่งงานได้", "Join a team before you can submit")}
+                  </p>
                 </div>
               )}
 
@@ -206,8 +300,9 @@ export default function StudentClassworkDetailPage() {
               {!isGraded && !isPast && (
                 <button
                   onClick={() => setConfirmOpen(true)}
-                  disabled={submitting}
-                  className="w-full h-10 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
+                  disabled={submitting || !canSubmit}
+                  title={canSubmit ? undefined : t("เข้าร่วมทีมก่อนถึงจะส่งงานได้", "Join a team before you can submit")}
+                  className="w-full h-10 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
                 >
                   {SUBMIT_BTN_LABEL}
                 </button>
@@ -258,6 +353,17 @@ export default function StudentClassworkDetailPage() {
             </div>
           </div>
         </>
+      )}
+
+      {teamDrawerOpen && (
+        <TeamFormationDrawer
+          courseId={secId}
+          assignmentId={actId}
+          maxGroupSize={assignment.maxGroupSize}
+          currentStudentId={studentId}
+          onCreated={() => setTeamDrawerOpen(false)}
+          onClose={() => setTeamDrawerOpen(false)}
+        />
       )}
     </>
   );
