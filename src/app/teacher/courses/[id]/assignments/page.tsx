@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useCourses } from "@/lib/courses";
 import { useStudents } from "@/lib/students";
@@ -30,9 +30,8 @@ function rowStatus(a: Assignment, subs: Submission[], today: string) {
 
 export default function AssignmentsPage() {
   const { id } = useParams<{ id: string }>();
-  const router = useRouter();
   const { t } = useLanguage();
-  const { getCourse, removeCourse } = useCourses();
+  const { getCourse } = useCourses();
   const { getStudentsByCourse } = useStudents();
   const { getAssignmentsByCourse, getSubmissionsByAssignment, removeAssignment } = useAssignments();
 
@@ -86,13 +85,6 @@ export default function AssignmentsPage() {
     google: "Google Classroom",
     teams: "Microsoft Teams",
   };
-
-  function handleDelete() {
-    if (window.confirm(t(`ลบ "${course?.name}" ถาวร? ไม่สามารถกู้คืนได้`, `Permanently delete "${course?.name}"? This cannot be undone.`))) {
-      removeCourse(id);
-      router.push("/teacher/courses");
-    }
-  }
 
   const statCards = [
     {
@@ -165,9 +157,6 @@ export default function AssignmentsPage() {
                 <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
               </svg>
               <span>{students.length} {t("นักศึกษา", "Students")}</span>
-              <span className="text-gray-300">|</span>
-              <Link href={`/teacher/courses/${id}/settings`} className="text-[var(--accent)] hover:underline font-medium">{t("แก้ไข", "Edit")}</Link>
-              <button onClick={handleDelete} className="text-[var(--s-err-text)] hover:underline font-medium">{t("ลบรายวิชา", "Delete this Course")}</button>
             </div>
           </div>
           <div className="flex items-center gap-3">
