@@ -42,6 +42,14 @@
       "dueDate": "2026-09-25", "maxPoints": 100, "categoryId": "gcat-seed-c1-1",
       "acceptsFiles": true, "fileTypes": ["pdf"], "submissionType": "individual", "maxGroupSize": null, "rubricIds": ["r-mock-2"],
       "createdAt": "2026-09-01T09:00:00.000Z", "updatedAt": "2026-09-01T09:00:00.000Z"
+    },
+    {
+      "id": "a-mock-3", "courseId": "c-mock-1",
+      "name": "โปรเจกต์กลุ่ม: ระบบจัดการร้านค้าเล็กๆ",
+      "description": "จับคู่ 2 คน เขียนโปรแกรม Python จัดการสต๊อกสินค้าร้านค้าเล็กๆ (เพิ่ม/ลบ/แก้ไขสินค้า, คำนวณยอดขาย) ส่งเป็นไฟล์ PDF พร้อมเอกสารแบ่งงาน",
+      "dueDate": "2026-10-10", "maxPoints": 100, "categoryId": "gcat-seed-c1-1",
+      "acceptsFiles": true, "fileTypes": ["pdf"], "submissionType": "group", "maxGroupSize": 2, "rubricIds": ["r-mock-3"],
+      "createdAt": "2026-09-10T09:00:00.000Z", "updatedAt": "2026-09-10T09:00:00.000Z"
     }
   ],
   "rubrics": [
@@ -62,6 +70,15 @@
         { "id": "rc-6", "name": "ความสะอาดของโค้ด", "description": "จัดรูปแบบโค้ดอ่านง่าย มี comment เหมาะสม", "maxPoints": 20, "weight": 20, "levels": [{"label":"Excellent","description":""},{"label":"Good","description":""},{"label":"Needs Improvement","description":""}] }
       ],
       "createdAt": "2026-09-01T09:00:00.000Z", "updatedAt": "2026-09-01T09:00:00.000Z"
+    },
+    {
+      "id": "r-mock-3", "assignmentId": "a-mock-3", "name": "เกณฑ์ตรวจโปรเจกต์กลุ่ม: ระบบจัดการร้านค้าเล็กๆ",
+      "criteria": [
+        { "id": "rc-7", "name": "ความถูกต้องของฟังก์ชันการทำงาน", "description": "เพิ่ม/ลบ/แก้ไขสินค้า และคำนวณยอดขายได้ถูกต้อง", "maxPoints": 50, "weight": 50, "levels": [{"label":"Excellent","description":"ทำงานถูกต้องครบทุกฟังก์ชัน"},{"label":"Good","description":"ถูกต้องส่วนใหญ่ มีข้อผิดพลาดเล็กน้อย"},{"label":"Needs Improvement","description":"ฟังก์ชันหลักทำงานไม่ถูกต้อง"}] },
+        { "id": "rc-8", "name": "การออกแบบโครงสร้างโปรแกรม", "description": "แบ่งฟังก์ชัน/โมดูลอย่างเหมาะสม อ่านง่าย", "maxPoints": 30, "weight": 30, "levels": [{"label":"Excellent","description":"โครงสร้างชัดเจน แบ่งโมดูลดี"},{"label":"Good","description":"โครงสร้างพอใช้ได้"},{"label":"Needs Improvement","description":"โค้ดปนกันไม่มีโครงสร้าง"}] },
+        { "id": "rc-9", "name": "การทำงานร่วมกันเป็นทีม", "description": "มีเอกสารแบ่งงานชัดเจน ทั้งคู่มีส่วนร่วม", "maxPoints": 20, "weight": 20, "levels": [{"label":"Excellent","description":"แบ่งงานชัดเจน สมดุล"},{"label":"Good","description":"แบ่งงานพอใช้ได้"},{"label":"Needs Improvement","description":"ไม่มีเอกสารแบ่งงาน"}] }
+      ],
+      "createdAt": "2026-09-10T09:00:00.000Z", "updatedAt": "2026-09-10T09:00:00.000Z"
     }
   ],
   "submissions": [
