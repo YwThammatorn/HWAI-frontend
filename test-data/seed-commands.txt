@@ -91,6 +91,19 @@ fetch('/mock-data/student-flow-mockup.json').then(r=>r.json()).then(d=>{localSto
 
 ---
 
+[8] รีเซ็ต flow งานกลุ่ม (a-mock-3) กลับไปเล่นใหม่ — ไม่กระทบงาน/วิชาอื่นเลย
+    ทำ [5] มาก่อนแล้ว (ต้องมีงาน a-mock-3 อยู่ก่อน) — Sign out ก่อนรันทุกครั้งกันชื่อ user ค้าง
+
+    [8a] กลับไปเริ่มจากศูนย์ (ไม่มีทีม ไม่มีใครส่ง) — ใช้ตอนอยากลองจับทีมใหม่ทั้งหมด
+
+localStorage.setItem('hwai_submissions_v1', JSON.stringify(JSON.parse(localStorage.getItem('hwai_submissions_v1')||'[]').filter(s=>s.assignmentId!=='a-mock-3'))); localStorage.setItem('hwai_student_groups_v1', JSON.stringify(JSON.parse(localStorage.getItem('hwai_student_groups_v1')||'[]').filter(g=>g.assignmentId!=='a-mock-3'))); location.reload();
+
+    [8b] เก็บทีมไว้ แค่รีเซ็ต "ผลตรวจ" กลับเป็นยังไม่ตรวจ — ใช้ตอนอยากลองให้คะแนนซ้ำโดยไม่ต้องจับทีมใหม่
+
+localStorage.setItem('hwai_submissions_v1', JSON.stringify(JSON.parse(localStorage.getItem('hwai_submissions_v1')||'[]').map(s=>s.assignmentId==='a-mock-3'?{...s,status:'not_graded',instructorScore:null,aiScore:null,instructorComment:''}:s))); location.reload();
+
+---
+
 [4] ล้างข้อมูลทั้งหมด (ถ้าอยากเริ่มใหม่)
 
 ['hwai_user','hwai_managed_teachers_v1','hwai_cohort_students_v1','hwai_courses_v2','hwai_curriculum_versions_v1','hwai_course_templates_v1','hwai_students_v1','hwai_grading_categories_v1','hwai_assignments_v1','hwai_rubrics_v1','hwai_submissions_v1','hwai_student_groups_v1'].forEach(k=>localStorage.removeItem(k)); location.reload();
