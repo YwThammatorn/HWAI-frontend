@@ -47,17 +47,20 @@ fetch('/mock-data/teachers-mockup.json').then(r=>r.json()).then(d=>{localStorage
 
 ---
 
-[5] นักศึกษาครบ flow — cohort + ลงทะเบียนวิชา + งาน + rubric + ผลตรวจ
+[5] นักศึกษาครบ flow — cohort + ลงทะเบียนวิชา + หมวดคะแนน + งาน + rubric + ผลตรวจ
     (ต้องทำ [2] ก่อน เพราะลงทะเบียนเข้า c-mock-1 "การเขียนโปรแกรมคอมพิวเตอร์" ของสมศักดิ์)
     15 คนใน cohort (CE67/68/69/70, 1 คน inactive) — 3 คนแรก (69070101-103) ลงทะเบียนวิชา c-mock-1 จริง
     อีก 11 คนที่เหลือ (69070104-108, 68020101-104, 67010101, 70010101-102) ยังไม่ลงวิชาไหนเลย
     — ไว้ใช้ทดสอบการ import นักศึกษาเข้าวิชา ดู [7] ด้านล่าง
-    วิชานี้มี 2 งาน ทั้งคู่มี rubric ผูกอยู่แล้ว (ทุกงานที่สร้างผ่าน UI จะมี rubric เสมอ):
+    วิชานี้มี 3 หมวดคะแนน (งานที่มอบหมาย 40% / สอบกลางภาค 25% / สอบปลายภาค 35% — ยังไม่มีงานผูกกับ
+    2 หมวดหลัง เป็นของจริงที่ยังไม่ได้สร้าง ไม่ใช่ bug) และ 2 งาน ทั้งคู่อยู่ในหมวด "งานที่มอบหมาย"
+    ทั้งคู่มี rubric ผูกอยู่แล้ว (ทุกงานที่สร้างผ่าน UI จะมี rubric เสมอ):
                      [1] ครบกำหนดแล้ว มี rubric 3 ข้อ + ผลตรวจ 3 แบบ (ตรวจแล้ว/รอตรวจ/ยังไม่ตรวจ)
                      [2] ยังไม่ถึงกำหนด มี rubric 3 ข้อ ยังไม่มีใครส่ง
     ล็อกอินเป็นนักศึกษาด้วยอีเมล 69070101@kmitl.ac.th (รหัสผ่านอะไรก็ได้ 4 ตัวขึ้นไป) จะเห็นวิชา+งานนี้
+    และหน้า "ผลการประเมิน" จะโชว์ยอดรวมถ่วงน้ำหนักจริง (90/100 ในหมวด 40% -> Total so far 36.0%)
 
-fetch('/mock-data/student-flow-mockup.json').then(r=>r.json()).then(d=>{localStorage.setItem('hwai_cohort_students_v1', JSON.stringify(d.cohortStudents)); localStorage.setItem('hwai_students_v1', JSON.stringify(d.courseStudents)); localStorage.setItem('hwai_assignments_v1', JSON.stringify(d.assignments)); localStorage.setItem('hwai_rubrics_v1', JSON.stringify(d.rubrics)); localStorage.setItem('hwai_submissions_v1', JSON.stringify(d.submissions)); location.reload();});
+fetch('/mock-data/student-flow-mockup.json').then(r=>r.json()).then(d=>{localStorage.setItem('hwai_cohort_students_v1', JSON.stringify(d.cohortStudents)); localStorage.setItem('hwai_students_v1', JSON.stringify(d.courseStudents)); localStorage.setItem('hwai_grading_categories_v1', JSON.stringify(d.gradingCategories)); localStorage.setItem('hwai_assignments_v1', JSON.stringify(d.assignments)); localStorage.setItem('hwai_rubrics_v1', JSON.stringify(d.rubrics)); localStorage.setItem('hwai_submissions_v1', JSON.stringify(d.submissions)); location.reload();});
 
 ---
 
@@ -85,7 +88,7 @@ fetch('/mock-data/student-flow-mockup.json').then(r=>r.json()).then(d=>{localSto
 
 [4] ล้างข้อมูลทั้งหมด (ถ้าอยากเริ่มใหม่)
 
-['hwai_user','hwai_managed_teachers_v1','hwai_cohort_students_v1','hwai_courses_v2','hwai_curriculum_versions_v1','hwai_course_templates_v1','hwai_students_v1','hwai_assignments_v1','hwai_rubrics_v1','hwai_submissions_v1'].forEach(k=>localStorage.removeItem(k)); location.reload();
+['hwai_user','hwai_managed_teachers_v1','hwai_cohort_students_v1','hwai_courses_v2','hwai_curriculum_versions_v1','hwai_course_templates_v1','hwai_students_v1','hwai_grading_categories_v1','hwai_assignments_v1','hwai_rubrics_v1','hwai_submissions_v1'].forEach(k=>localStorage.removeItem(k)); location.reload();
 
 ---
 

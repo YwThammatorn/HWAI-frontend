@@ -21,12 +21,17 @@
     { "id": "s-roster-2", "courseId": "c-mock-1", "studentId": "69070102", "firstName": "สุดา", "lastName": "วงษ์สา", "email": "69070102@kmitl.ac.th", "cohort": "CE69", "sequenceNumber": 2, "enrollmentStatus": "enrolled" },
     { "id": "s-roster-3", "courseId": "c-mock-1", "studentId": "69070103", "firstName": "อนุชา", "lastName": "ปานเพชร", "email": "69070103@kmitl.ac.th", "cohort": "CE69", "sequenceNumber": 3, "enrollmentStatus": "enrolled" }
   ],
+  "gradingCategories": [
+    { "id": "gcat-seed-c1-1", "courseId": "c-mock-1", "name": "งานที่มอบหมาย", "weight": 40, "createdAt": "2026-07-01T09:00:00.000Z", "updatedAt": "2026-07-01T09:00:00.000Z" },
+    { "id": "gcat-seed-c1-2", "courseId": "c-mock-1", "name": "สอบกลางภาค", "weight": 25, "createdAt": "2026-07-01T09:00:00.000Z", "updatedAt": "2026-07-01T09:00:00.000Z" },
+    { "id": "gcat-seed-c1-3", "courseId": "c-mock-1", "name": "สอบปลายภาค", "weight": 35, "createdAt": "2026-07-01T09:00:00.000Z", "updatedAt": "2026-07-01T09:00:00.000Z" }
+  ],
   "assignments": [
     {
       "id": "a-mock-1", "courseId": "c-mock-1",
       "name": "แบบฝึกหัด Python เบื้องต้น",
       "description": "เขียนโปรแกรม Python แก้โจทย์ 5 ข้อ ตามที่กำหนดใน worksheet ส่งเป็นไฟล์ PDF",
-      "dueDate": "2026-09-05", "maxPoints": 100,
+      "dueDate": "2026-09-05", "maxPoints": 100, "categoryId": "gcat-seed-c1-1",
       "acceptsFiles": true, "fileTypes": ["pdf"], "submissionType": "individual", "maxGroupSize": null, "rubricIds": ["r-mock-1"],
       "createdAt": "2026-08-20T09:00:00.000Z", "updatedAt": "2026-08-20T09:00:00.000Z"
     },
@@ -34,7 +39,7 @@
       "id": "a-mock-2", "courseId": "c-mock-1",
       "name": "โปรเจกต์เล็ก: เครื่องคิดเลข",
       "description": "สร้างโปรแกรมเครื่องคิดเลขอย่างง่ายด้วย Python รองรับ +, -, *, / และจัดการ error เบื้องต้น",
-      "dueDate": "2026-09-25", "maxPoints": 100,
+      "dueDate": "2026-09-25", "maxPoints": 100, "categoryId": "gcat-seed-c1-1",
       "acceptsFiles": true, "fileTypes": ["pdf"], "submissionType": "individual", "maxGroupSize": null, "rubricIds": ["r-mock-2"],
       "createdAt": "2026-09-01T09:00:00.000Z", "updatedAt": "2026-09-01T09:00:00.000Z"
     }
