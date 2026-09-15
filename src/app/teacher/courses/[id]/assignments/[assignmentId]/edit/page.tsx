@@ -162,6 +162,13 @@ export default function EditAssignmentPage() {
   }
 
   function handleDeleteRubric(rubricId: string, rubricName: string) {
+    if (linkedRubrics.length <= 1) {
+      window.alert(t(
+        "ลบไม่ได้ — ชิ้นงานต้องมีเกณฑ์การให้คะแนนอย่างน้อย 1 ชุดเสมอ เพิ่มเกณฑ์ใหม่ก่อนถึงจะลบอันนี้ได้",
+        "Can't delete — an assignment must always keep at least one rubric. Add a replacement first."
+      ));
+      return;
+    }
     if (!window.confirm(t(
       `ลบเกณฑ์ "${rubricName}" ถาวร? ไม่สามารถกู้คืนได้`,
       `Delete rubric "${rubricName}" permanently? Cannot be undone.`
@@ -409,8 +416,11 @@ export default function EditAssignmentPage() {
                       <button
                         type="button"
                         onClick={() => handleDeleteRubric(rubric.id, rubric.name)}
-                        className="p-1.5 rounded-lg hover:bg-[var(--s-err-bg)] text-gray-500 hover:text-[var(--s-err-text)] transition-colors"
-                        title={t("ลบเกณฑ์", "Delete rubric")}
+                        disabled={linkedRubrics.length <= 1}
+                        className="p-1.5 rounded-lg hover:bg-[var(--s-err-bg)] text-gray-500 hover:text-[var(--s-err-text)] transition-colors disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-gray-500 disabled:cursor-not-allowed"
+                        title={linkedRubrics.length <= 1
+                          ? t("ลบไม่ได้ — ต้องมีเกณฑ์อย่างน้อย 1 ชุดเสมอ", "Can't delete — must keep at least 1 rubric")
+                          : t("ลบเกณฑ์", "Delete rubric")}
                       >
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                           <polyline points="3 6 5 6 21 6"/>

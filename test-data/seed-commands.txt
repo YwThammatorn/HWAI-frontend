@@ -52,8 +52,9 @@ fetch('/mock-data/teachers-mockup.json').then(r=>r.json()).then(d=>{localStorage
     15 คนใน cohort (CE67/68/69/70, 1 คน inactive) — 3 คนแรก (69070101-103) ลงทะเบียนวิชา c-mock-1 จริง
     อีก 11 คนที่เหลือ (69070104-108, 68020101-104, 67010101, 70010101-102) ยังไม่ลงวิชาไหนเลย
     — ไว้ใช้ทดสอบการ import นักศึกษาเข้าวิชา ดู [7] ด้านล่าง
-    วิชานี้มี 2 งาน: [1] ครบกำหนดแล้ว มี rubric + ผลตรวจ 3 แบบ (ตรวจแล้ว/รอตรวจ/ยังไม่ตรวจ)
-                     [2] ยังไม่ถึงกำหนด ยังไม่มีใครส่ง
+    วิชานี้มี 2 งาน ทั้งคู่มี rubric ผูกอยู่แล้ว (ทุกงานที่สร้างผ่าน UI จะมี rubric เสมอ):
+                     [1] ครบกำหนดแล้ว มี rubric 3 ข้อ + ผลตรวจ 3 แบบ (ตรวจแล้ว/รอตรวจ/ยังไม่ตรวจ)
+                     [2] ยังไม่ถึงกำหนด มี rubric 3 ข้อ ยังไม่มีใครส่ง
     ล็อกอินเป็นนักศึกษาด้วยอีเมล 69070101@kmitl.ac.th (รหัสผ่านอะไรก็ได้ 4 ตัวขึ้นไป) จะเห็นวิชา+งานนี้
 
 fetch('/mock-data/student-flow-mockup.json').then(r=>r.json()).then(d=>{localStorage.setItem('hwai_cohort_students_v1', JSON.stringify(d.cohortStudents)); localStorage.setItem('hwai_students_v1', JSON.stringify(d.courseStudents)); localStorage.setItem('hwai_assignments_v1', JSON.stringify(d.assignments)); localStorage.setItem('hwai_rubrics_v1', JSON.stringify(d.rubrics)); localStorage.setItem('hwai_submissions_v1', JSON.stringify(d.submissions)); location.reload();});

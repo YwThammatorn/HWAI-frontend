@@ -35,7 +35,7 @@
       "name": "โปรเจกต์เล็ก: เครื่องคิดเลข",
       "description": "สร้างโปรแกรมเครื่องคิดเลขอย่างง่ายด้วย Python รองรับ +, -, *, / และจัดการ error เบื้องต้น",
       "dueDate": "2026-09-25", "maxPoints": 100,
-      "acceptsFiles": true, "fileTypes": ["pdf"], "submissionType": "individual", "maxGroupSize": null, "rubricIds": [],
+      "acceptsFiles": true, "fileTypes": ["pdf"], "submissionType": "individual", "maxGroupSize": null, "rubricIds": ["r-mock-2"],
       "createdAt": "2026-09-01T09:00:00.000Z", "updatedAt": "2026-09-01T09:00:00.000Z"
     }
   ],
@@ -48,6 +48,15 @@
         { "id": "rc-3", "name": "การจัดการ Error", "description": "จัดการ input ผิดพลาดอย่างเหมาะสม", "maxPoints": 20, "weight": 20, "levels": [{"label":"Excellent","description":""},{"label":"Good","description":""},{"label":"Needs Improvement","description":""}] }
       ],
       "createdAt": "2026-08-20T09:00:00.000Z", "updatedAt": "2026-08-20T09:00:00.000Z"
+    },
+    {
+      "id": "r-mock-2", "assignmentId": "a-mock-2", "name": "เกณฑ์ตรวจโปรเจกต์เล็ก: เครื่องคิดเลข",
+      "criteria": [
+        { "id": "rc-4", "name": "ความถูกต้องของการคำนวณ", "description": "รองรับ +, -, *, / และให้ผลลัพธ์ถูกต้อง", "maxPoints": 50, "weight": 50, "levels": [{"label":"Excellent","description":"ถูกต้องครบทุกโจทย์"},{"label":"Good","description":"ถูกต้องส่วนใหญ่"},{"label":"Needs Improvement","description":"ผิดหลายกรณี"}] },
+        { "id": "rc-5", "name": "การจัดการ Error", "description": "จัดการกรณีหารด้วยศูนย์และ input ผิดพลาดอย่างเหมาะสม", "maxPoints": 30, "weight": 30, "levels": [{"label":"Excellent","description":"ครอบคลุมทุกกรณี"},{"label":"Good","description":"ครอบคลุมกรณีหลัก"},{"label":"Needs Improvement","description":"โปรแกรม crash เมื่อ input ผิดพลาด"}] },
+        { "id": "rc-6", "name": "ความสะอาดของโค้ด", "description": "จัดรูปแบบโค้ดอ่านง่าย มี comment เหมาะสม", "maxPoints": 20, "weight": 20, "levels": [{"label":"Excellent","description":""},{"label":"Good","description":""},{"label":"Needs Improvement","description":""}] }
+      ],
+      "createdAt": "2026-09-01T09:00:00.000Z", "updatedAt": "2026-09-01T09:00:00.000Z"
     }
   ],
   "submissions": [
