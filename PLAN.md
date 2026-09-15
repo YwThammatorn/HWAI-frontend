@@ -15,7 +15,7 @@ Tracks the work triggered by the professor's 31/8/2569 review comment (*"ยั�
 **Output:** drafted in-conversation 4/9/2569, not yet saved as its own file — the shapes live in this plan's Phase 1 section below for reference until Phase 2 turns them into the ER diagram.
 
 **Open items carried forward (not blocking, decide before Phase 4 code):**
-- [ ] Q1: StudentGroup scoped per-Assignment or per-Section? (leaning per-Assignment)
+- [x] Q1: StudentGroup scoped per-Assignment or per-Section? **Resolved 15/9/2569: per-Assignment** — matches `Assignment.maxGroupSize` already being per-assignment. Shipped as `src/lib/studentGroups.ts` + `StudentGroupProvider` (`hwai_student_groups_v1`): students self-form a team from their section's roster only, with a "reuse a previous team" preset pulling past same-course teams so re-forming for a new assignment isn't a cold start. `GradingAssignment`'s `{ type: "group"; studentGroupIds: string[] }` scope can now actually be wired up in grading-split's disabled "By Group" button — not done yet, tracked as a follow-up.
 - [ ] Q2: GradingAssignment "custom" mode — a saved rule set once, or ad hoc TA pick-up? (leaning saved rule)
 
 **Exit criteria:** ✅ user has seen the draft and the two open questions; proceeding to Phase 2 with recommended answers unless corrected. ✅ Scenario-validated against reviewer Q1-10 + meeting decisions — see `docs/phase1-model-validation.md` (7/8 scenarios pass clean, 1 needs a form-validation rule not a model change, 1 real scope gap found and folded into Phase 4 above).
