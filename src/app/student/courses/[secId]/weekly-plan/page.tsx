@@ -1,19 +1,28 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
 import { useCourses } from "@/lib/courses";
 import { useWeeklyPlan } from "@/lib/weeklyPlan";
 import EmptyState from "@/components/EmptyState";
+import { WEEKLY_PLAN_DISABLED } from "@/lib/featureFlags";
 
 export default function StudentWeeklyPlanPage() {
   const { secId } = useParams<{ secId: string }>();
+  const router = useRouter();
   const { t } = useLanguage();
   const { getCourse } = useCourses();
   const { getWeeklyPlanByCourse } = useWeeklyPlan();
 
+  useEffect(() => {
+    if (WEEKLY_PLAN_DISABLED) router.replace(`/student/courses/${secId}/classwork`);
+  }, [router, secId]);
+
   const course = getCourse(secId);
   const items = course ? getWeeklyPlanByCourse(secId) : [];
+
+  if (WEEKLY_PLAN_DISABLED) return null;
 
   return (
     <div className="p-6 max-w-3xl">

@@ -11,6 +11,7 @@ import { useManagedTeachers } from "@/lib/managed-teachers";
 import { useAnnouncements, announcementReachesCourse } from "@/lib/announcements";
 import { CourseIcon } from "@/components/CourseIcon";
 import StudentCalendar, { StudentCalendarItem } from "@/components/StudentCalendar";
+import { ANNOUNCEMENTS_DISABLED } from "@/lib/featureFlags";
 
 function fmtAnnouncementDate(iso: string, lang: string) {
   return new Date(iso).toLocaleDateString(lang === "th" ? "th-TH" : "en-US", {
@@ -126,33 +127,35 @@ export default function StudentHome() {
         <div className="mt-8 grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-5 items-start">
           {/* Left column */}
           <div className="flex flex-col gap-4 min-w-0">
-            {/* Announcements — aggregated across all enrolled courses */}
-            <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-5">
-              <h2 className="text-base font-bold text-[var(--text-primary)] mb-4">{t("ประกาศ", "Announcements")}</h2>
+            {/* Announcements — aggregated across all enrolled courses (hidden, see featureFlags.ts) */}
+            {!ANNOUNCEMENTS_DISABLED && (
+              <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-5">
+                <h2 className="text-base font-bold text-[var(--text-primary)] mb-4">{t("ประกาศ", "Announcements")}</h2>
 
-              {recentAnnouncements.length === 0 ? (
-                <p className="text-sm text-[var(--text-muted)]">{t("ยังไม่มีประกาศ", "No announcements yet")}</p>
-              ) : (
-                <div className="flex flex-col gap-2">
-                  {recentAnnouncements.map((item) => (
-                    <Link
-                      key={item.id}
-                      href={`/student/courses/${item.courseId}/announcements`}
-                      className="flex flex-col gap-1 p-3 rounded-xl hover:bg-[var(--bg-subtle)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <p className="text-sm font-medium text-[var(--text-primary)] truncate">{item.title}</p>
-                        <span className="shrink-0 text-xs text-[var(--text-muted)]">{fmtAnnouncementDate(item.createdAt, lang)}</span>
-                      </div>
-                      <p className="text-xs text-[var(--text-muted)] truncate">{item.body}</p>
-                      <span className="inline-flex items-center self-start px-2 py-0.5 rounded-full bg-[var(--accent-bright)]/15 text-[var(--accent)] text-[10px] font-semibold mt-0.5">
-                        {item.courseName}
-                      </span>
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
+                {recentAnnouncements.length === 0 ? (
+                  <p className="text-sm text-[var(--text-muted)]">{t("ยังไม่มีประกาศ", "No announcements yet")}</p>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    {recentAnnouncements.map((item) => (
+                      <Link
+                        key={item.id}
+                        href={`/student/courses/${item.courseId}/announcements`}
+                        className="flex flex-col gap-1 p-3 rounded-xl hover:bg-[var(--bg-subtle)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <p className="text-sm font-medium text-[var(--text-primary)] truncate">{item.title}</p>
+                          <span className="shrink-0 text-xs text-[var(--text-muted)]">{fmtAnnouncementDate(item.createdAt, lang)}</span>
+                        </div>
+                        <p className="text-xs text-[var(--text-muted)] truncate">{item.body}</p>
+                        <span className="inline-flex items-center self-start px-2 py-0.5 rounded-full bg-[var(--accent-bright)]/15 text-[var(--accent)] text-[10px] font-semibold mt-0.5">
+                          {item.courseName}
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Upcoming assignments */}
             <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-5">

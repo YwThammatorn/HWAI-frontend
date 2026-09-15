@@ -1,11 +1,13 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
 import { useCourses } from "@/lib/courses";
 import { useTeachingMaterials, TeachingMaterial, TeachingMaterialType } from "@/lib/teachingMaterials";
 import { resolveFileUrl } from "@/lib/fileStorage";
 import EmptyState from "@/components/EmptyState";
+import { MATERIALS_DISABLED } from "@/lib/featureFlags";
 
 const TYPE_ICON: Record<TeachingMaterialType, React.ReactNode> = {
   link: (
@@ -30,9 +32,14 @@ const TYPE_ICON: Record<TeachingMaterialType, React.ReactNode> = {
 
 export default function StudentMaterialsPage() {
   const { secId } = useParams<{ secId: string }>();
+  const router = useRouter();
   const { t } = useLanguage();
   const { getCourse } = useCourses();
   const { getMaterialsByCourse } = useTeachingMaterials();
+
+  useEffect(() => {
+    if (MATERIALS_DISABLED) router.replace(`/student/courses/${secId}/classwork`);
+  }, [router, secId]);
 
   const TYPE_LABEL: Record<TeachingMaterialType, string> = {
     link: t("ลิงก์", "Link"),
@@ -47,6 +54,8 @@ export default function StudentMaterialsPage() {
     const href = m.source === "url" ? m.ref : resolveFileUrl(m.ref);
     if (href) window.open(href, "_blank", "noopener,noreferrer");
   }
+
+  if (MATERIALS_DISABLED) return null;
 
   return (
     <div className="p-6 max-w-3xl">

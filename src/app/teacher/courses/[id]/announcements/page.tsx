@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { useParams } from "next/navigation";
+import { useMemo, useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
 import { useCourses } from "@/lib/courses";
 import { useAnnouncements, announcementReachesCourse, AnnouncementScope } from "@/lib/announcements";
 import { useLanguage } from "@/context/LanguageContext";
+import { ANNOUNCEMENTS_DISABLED } from "@/lib/featureFlags";
 
 function fmtDateTime(iso: string, lang: string) {
   return new Date(iso).toLocaleDateString(lang === "th" ? "th-TH" : "en-US", {
@@ -14,9 +15,14 @@ function fmtDateTime(iso: string, lang: string) {
 
 export default function TeacherAnnouncementsPage() {
   const { id } = useParams<{ id: string }>();
+  const router = useRouter();
   const { t, lang } = useLanguage();
   const { courses, getCourse } = useCourses();
   const { announcements, addAnnouncement, removeAnnouncement } = useAnnouncements();
+
+  useEffect(() => {
+    if (ANNOUNCEMENTS_DISABLED) router.replace(`/teacher/courses/${id}`);
+  }, [router, id]);
 
   const course = getCourse(id);
 
@@ -78,6 +84,8 @@ export default function TeacherAnnouncementsPage() {
         </main>
     );
   }
+
+  if (ANNOUNCEMENTS_DISABLED) return null;
 
   const showEmpty = visible.length === 0 && !formOpen;
 

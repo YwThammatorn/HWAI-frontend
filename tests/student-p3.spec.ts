@@ -2,6 +2,10 @@ import { test, expect, Page } from "@playwright/test";
 
 const BASE = "http://localhost:3000";
 
+// Mirrors src/lib/featureFlags.ts — keep in sync. Announcements is hidden
+// app-wide (15/9/2569, temporary).
+const ANNOUNCEMENTS_DISABLED = true;
+
 // ── Fixtures ──────────────────────────────────────────────────────────────────
 
 const COURSE = {
@@ -208,6 +212,7 @@ test.describe("P3b — Student Classwork Detail + Submit", () => {
 test.describe("P3c — Student Announcements + Evaluation Stubs", () => {
 
   test("announcements page loads with empty state", async ({ page }) => {
+    test.skip(ANNOUNCEMENTS_DISABLED, "Announcements is hidden app-wide until ANNOUNCEMENTS_DISABLED is flipped back to false");
     await seedStudent(page);
     await page.goto(`${BASE}/student/courses/c-p3/announcements`);
     await page.waitForLoadState("networkidle");

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
+import { WEEKLY_PLAN_DISABLED, MATERIALS_DISABLED, ANNOUNCEMENTS_DISABLED } from "@/lib/featureFlags";
 
 interface CourseLink {
   secId: string;
@@ -27,10 +28,10 @@ export default function StudentSidebar({ courses = [] }: StudentSidebarProps) {
   }
 
   const SUB_LINKS = [
-    { key: "announcements", labelTh: "ประกาศ", labelEn: "Announcements" },
+    ...(ANNOUNCEMENTS_DISABLED ? [] : [{ key: "announcements", labelTh: "ประกาศ", labelEn: "Announcements" }]),
     { key: "classwork", labelTh: "งานในชั้นเรียน", labelEn: "Classwork" },
-    { key: "weekly-plan", labelTh: "แผนการสอน", labelEn: "Weekly Plan" },
-    { key: "materials", labelTh: "สื่อการสอน", labelEn: "Materials" },
+    ...(WEEKLY_PLAN_DISABLED ? [] : [{ key: "weekly-plan", labelTh: "แผนการสอน", labelEn: "Weekly Plan" }]),
+    ...(MATERIALS_DISABLED ? [] : [{ key: "materials", labelTh: "สื่อการสอน", labelEn: "Materials" }]),
     { key: "evaluation", labelTh: "ผลการประเมิน", labelEn: "Evaluation" },
   ];
 

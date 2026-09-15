@@ -2,6 +2,13 @@ import { test, expect, Page } from "@playwright/test";
 
 const BASE = "http://localhost:3000";
 
+// Mirrors src/lib/featureFlags.ts — keep in sync. Weekly Plan / Materials /
+// Announcements are hidden app-wide (15/9/2569, temporary), so every describe
+// block that exercises one of these pages directly is skipped below.
+const WEEKLY_PLAN_DISABLED = true;
+const MATERIALS_DISABLED = true;
+const ANNOUNCEMENTS_DISABLED = true;
+
 // ── Fixtures ──────────────────────────────────────────────────────────────────
 // Student-facing side of this session's new systems: the aggregated
 // announcements feed on the home page, the per-course announcements page
@@ -79,6 +86,7 @@ async function seedStudent(page: Page) {
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 test.describe("P4 — Student Home Announcements Feed", () => {
+  test.skip(ANNOUNCEMENTS_DISABLED, "Announcements is hidden app-wide until ANNOUNCEMENTS_DISABLED is flipped back to false");
   test.beforeEach(async ({ page }) => { await seedStudent(page); });
 
   test("shows announcements from every enrolled course, newest first", async ({ page }) => {
@@ -105,6 +113,7 @@ test.describe("P4 — Student Home Announcements Feed", () => {
 });
 
 test.describe("P4 — Student Per-Course Announcements Page", () => {
+  test.skip(ANNOUNCEMENTS_DISABLED, "Announcements is hidden app-wide until ANNOUNCEMENTS_DISABLED is flipped back to false");
   test.beforeEach(async ({ page }) => { await seedStudent(page); });
 
   test("shows the real announcement instead of the old empty-state stub", async ({ page }) => {
@@ -187,6 +196,8 @@ async function seedEvaluation(page: Page, opts: { categories?: unknown[]; submis
 }
 
 test.describe("P5 — Student Weekly Plan Page", () => {
+  test.skip(WEEKLY_PLAN_DISABLED, "Weekly Plan is hidden app-wide until WEEKLY_PLAN_DISABLED is flipped back to false");
+
   test("shows teacher-posted weeks with topic and notes", async ({ page }) => {
     await seedEvaluation(page);
     await page.goto(`${BASE}/student/courses/c-sp4-a/weekly-plan`);
@@ -206,6 +217,8 @@ test.describe("P5 — Student Weekly Plan Page", () => {
 });
 
 test.describe("P5 — Student Materials Page", () => {
+  test.skip(MATERIALS_DISABLED, "Materials is hidden app-wide until MATERIALS_DISABLED is flipped back to false");
+
   test("shows teacher-posted materials", async ({ page }) => {
     await seedEvaluation(page);
     await page.goto(`${BASE}/student/courses/c-sp4-a/materials`);

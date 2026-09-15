@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useCourses } from "@/lib/courses";
 import { useTeachingMaterials, TeachingMaterial, TeachingMaterialType } from "@/lib/teachingMaterials";
 import { storeFile, resolveFileUrl, FileTooLargeError } from "@/lib/fileStorage";
 import { useLanguage } from "@/context/LanguageContext";
+import { MATERIALS_DISABLED } from "@/lib/featureFlags";
 
 const TYPE_ICON: Record<TeachingMaterialType, React.ReactNode> = {
   link: (
@@ -30,10 +31,14 @@ const TYPE_ICON: Record<TeachingMaterialType, React.ReactNode> = {
 
 export default function TeachingMaterialsPage() {
   const { id } = useParams<{ id: string }>();
-  useRouter();
+  const router = useRouter();
   const { t } = useLanguage();
   const { getCourse } = useCourses();
   const { getMaterialsByCourse, addMaterial, removeMaterial } = useTeachingMaterials();
+
+  useEffect(() => {
+    if (MATERIALS_DISABLED) router.replace(`/teacher/courses/${id}`);
+  }, [router, id]);
 
   const TYPE_LABEL: Record<TeachingMaterialType, string> = {
     link: t("ลิงก์", "Link"),
@@ -111,6 +116,8 @@ export default function TeachingMaterialsPage() {
         </main>
     );
   }
+
+  if (MATERIALS_DISABLED) return null;
 
   const showEmpty = materials.length === 0 && !formOpen;
 

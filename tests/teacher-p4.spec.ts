@@ -2,6 +2,13 @@ import { test, expect, Page } from "@playwright/test";
 
 const BASE = "http://localhost:3000";
 
+// Mirrors src/lib/featureFlags.ts — keep in sync. Weekly Plan / Materials /
+// Announcements are hidden app-wide (15/9/2569, temporary), so every describe
+// block that exercises one of these pages directly is skipped below.
+const WEEKLY_PLAN_DISABLED = true;
+const MATERIALS_DISABLED = true;
+const ANNOUNCEMENTS_DISABLED = true;
+
 // ── Fixtures ──────────────────────────────────────────────────────────────────
 // Covers the systems shipped from the teacher-role flow-diagram review
 // (14-15/9/2569): grading categories, weekly plan, teaching materials,
@@ -123,6 +130,7 @@ test.describe("P4 — Course Landing: Details + Grading Categories", () => {
 });
 
 test.describe("P4 — Weekly Teaching Plan", () => {
+  test.skip(WEEKLY_PLAN_DISABLED, "Weekly Plan is hidden app-wide until WEEKLY_PLAN_DISABLED is flipped back to false");
   test.beforeEach(async ({ page }) => { await seedTeacher(page); });
 
   test("shows seeded week and topic", async ({ page }) => {
@@ -145,6 +153,7 @@ test.describe("P4 — Weekly Teaching Plan", () => {
 });
 
 test.describe("P4 — Teaching Materials", () => {
+  test.skip(MATERIALS_DISABLED, "Materials is hidden app-wide until MATERIALS_DISABLED is flipped back to false");
   test.beforeEach(async ({ page }) => { await seedTeacher(page); });
 
   test("shows seeded material", async ({ page }) => {
@@ -165,6 +174,7 @@ test.describe("P4 — Teaching Materials", () => {
 });
 
 test.describe("P4 — Announcements: authoring and section scoping", () => {
+  test.skip(ANNOUNCEMENTS_DISABLED, "Announcements is hidden app-wide until ANNOUNCEMENTS_DISABLED is flipped back to false");
   test.beforeEach(async ({ page }) => { await seedTeacher(page, { courses: [COURSE, SIBLING_COURSE] }); });
 
   test("shows seeded announcement", async ({ page }) => {
@@ -211,6 +221,7 @@ test.describe("P4 — Announcements: authoring and section scoping", () => {
 });
 
 test.describe("P4 — Announcements: cross-section visibility (fresh seed, no post-mutation navigation)", () => {
+  test.skip(ANNOUNCEMENTS_DISABLED, "Announcements is hidden app-wide until ANNOUNCEMENTS_DISABLED is flipped back to false");
   test("an all-sections announcement authored elsewhere shows on the sibling section, un-deletable", async ({ page }) => {
     const crossSectionAnnouncement = {
       id: "ann-p4-cross", authorCourseId: "c-p4", scope: "all-sections",

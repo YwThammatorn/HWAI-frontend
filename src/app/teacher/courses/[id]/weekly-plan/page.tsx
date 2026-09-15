@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useCourses } from "@/lib/courses";
 import { useWeeklyPlan, WeeklyPlanItem } from "@/lib/weeklyPlan";
 import { useLanguage } from "@/context/LanguageContext";
+import { WEEKLY_PLAN_DISABLED } from "@/lib/featureFlags";
 
 export default function WeeklyPlanPage() {
   const { id } = useParams<{ id: string }>();
@@ -12,6 +13,10 @@ export default function WeeklyPlanPage() {
   const { t } = useLanguage();
   const { getCourse } = useCourses();
   const { getWeeklyPlanByCourse, addWeeklyPlanItem, updateWeeklyPlanItem, removeWeeklyPlanItem } = useWeeklyPlan();
+
+  useEffect(() => {
+    if (WEEKLY_PLAN_DISABLED) router.replace(`/teacher/courses/${id}`);
+  }, [router, id]);
 
   const CONFIRM_LEAVE = t("มีข้อมูลที่ยังไม่ได้บันทึก\nต้องการออกจากหน้านี้หรือไม่?", "Unsaved changes.\nLeave this page?");
   const CONFIRM_CANCEL = t("การเปลี่ยนแปลงจะไม่ถูกบันทึก\nต้องการยกเลิกหรือไม่?", "Changes will not be saved.\nCancel editing?");
@@ -90,6 +95,8 @@ export default function WeeklyPlanPage() {
         </main>
     );
   }
+
+  if (WEEKLY_PLAN_DISABLED) return null;
 
   const isFormValid = formTopic.trim().length > 0 && Number(formWeek) > 0;
   const showEmpty = items.length === 0 && formMode === "idle";

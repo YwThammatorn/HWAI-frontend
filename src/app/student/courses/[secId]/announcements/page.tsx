@@ -1,11 +1,12 @@
 "use client";
 
-import { useMemo } from "react";
-import { useParams } from "next/navigation";
+import { useMemo, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
 import { useCourses } from "@/lib/courses";
 import { useAnnouncements, announcementReachesCourse } from "@/lib/announcements";
 import EmptyState from "@/components/EmptyState";
+import { ANNOUNCEMENTS_DISABLED } from "@/lib/featureFlags";
 
 function fmtDateTime(iso: string, lang: string) {
   return new Date(iso).toLocaleDateString(lang === "th" ? "th-TH" : "en-US", {
@@ -15,9 +16,14 @@ function fmtDateTime(iso: string, lang: string) {
 
 export default function StudentAnnouncementsPage() {
   const { secId } = useParams<{ secId: string }>();
+  const router = useRouter();
   const { t, lang } = useLanguage();
   const { getCourse } = useCourses();
   const { announcements } = useAnnouncements();
+
+  useEffect(() => {
+    if (ANNOUNCEMENTS_DISABLED) router.replace(`/student/courses/${secId}/classwork`);
+  }, [router, secId]);
 
   const course = getCourse(secId);
 
@@ -27,6 +33,8 @@ export default function StudentAnnouncementsPage() {
       .filter((a) => announcementReachesCourse(a, course))
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }, [announcements, course]);
+
+  if (ANNOUNCEMENTS_DISABLED) return null;
 
   return (
     <div className="p-6 max-w-3xl">
