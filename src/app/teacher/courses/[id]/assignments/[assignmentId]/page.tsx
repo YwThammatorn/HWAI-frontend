@@ -8,6 +8,7 @@ import { useAssignments, Submission } from "@/lib/assignments";
 import { useGradingCategories } from "@/lib/gradingCategories";
 import { useStudents } from "@/lib/students";
 import { useStudentGroups } from "@/lib/studentGroups";
+import { groupSubmissionsByTeam, SubmissionRow } from "@/lib/groupSubmissions";
 import { useLanguage } from "@/context/LanguageContext";
 
 const AVATAR_COLORS = ["#4F46E5", "#7C3AED", "#BE185D", "#B45309", "#047857", "#0369A1", "#C2410C", "#0E7490"];
@@ -97,29 +98,12 @@ export default function ViewAssignmentPage() {
       )
     : submissions;
 
-  // Group assignments: one row per team (submissions sharing a groupId) instead
-  // of one row per student — a team submits once, so grading it once should
-  // apply everywhere (see RecheckPage.handleSave, which fans out to the whole
-  // group). A submission with no groupId (shouldn't normally happen for a
-  // group assignment, but defensively handled) still gets its own row.
-  const rows: { key: string; teamName?: string; subs: Submission[] }[] = (() => {
-    if (!isGroupAssignment) return visible.map((s) => ({ key: s.id, subs: [s] }));
-    const seen = new Set<string>();
-    const result: { key: string; teamName?: string; subs: Submission[] }[] = [];
-    visible.forEach((s) => {
-      if (seen.has(s.id)) return;
-      if (s.groupId) {
-        const teamSubs = visible.filter((x) => x.groupId === s.groupId);
-        teamSubs.forEach((x) => seen.add(x.id));
-        const group = groups.find((g) => g.id === s.groupId);
-        result.push({ key: s.groupId, teamName: group?.name ?? t("ทีม", "Team"), subs: teamSubs });
-      } else {
-        seen.add(s.id);
-        result.push({ key: s.id, subs: [s] });
-      }
-    });
-    return result;
-  })();
+  // Group assignments: one row per team instead of one row per student — a
+  // team submits once, so grading it once should apply everywhere (see
+  // RecheckPage.handleSave, which fans out to the whole group).
+  const rows: SubmissionRow[] = isGroupAssignment
+    ? groupSubmissionsByTeam(visible, groups, t("ทีม", "Team"))
+    : visible.map((s) => ({ key: s.id, subs: [s] }));
 
   return (
       <main className="w-full px-8 py-8">

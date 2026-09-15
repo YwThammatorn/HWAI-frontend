@@ -139,3 +139,62 @@ test.describe("P5 — Grading a team row grades every member", () => {
     expect(teamSubs.every((s: { status: string }) => s.status === "graded")).toBe(true);
   });
 });
+
+function gradedTeamSubmission(studentId: string, name: string, email: string, score: number) {
+  return {
+    id: `sub-tp5-${studentId}`, assignmentId: "a-tp5-1", studentId, studentName: name, email,
+    submittedAt: "2026-01-05T10:00:00.000Z", fileUrl: null,
+    aiScore: score, instructorScore: score, instructorComment: "",
+    externalUseConsent: false, status: "graded", groupId: "sg-tp5-1",
+    updatedAt: "2026-01-05T10:00:00.000Z",
+  };
+}
+
+test.describe("P5 — Results page merges by team", () => {
+  test("shows one row per team and averages by team, not by raw submission count", async ({ page }) => {
+    await seedTeacher(page, {
+      submissions: [
+        gradedTeamSubmission("64070701", "Fah Test", "64070701@kmitl.ac.th", 90),
+        gradedTeamSubmission("64070702", "Beam Suk", "64070702@kmitl.ac.th", 90),
+        SOLO_SUBMISSION,
+      ],
+    });
+    await page.goto(`${BASE}/teacher/courses/c-tp5/assignments/a-tp5-1/results`);
+    await page.waitForLoadState("networkidle");
+    await expect(page.getByText("Prototype Pals").first()).toBeVisible();
+    await expect(page.getByText("Fah Test, Beam Suk")).toBeVisible();
+    // Average of [90] (the one graded team, counted once) is 90.0 — not
+    // averaged as if two separate 90s were two separate data points, which
+    // happens to compute the same here but the team-count stat proves the
+    // dedup: 2 teams total (Prototype Pals + Solo Student), not 3 submissions.
+    await expect(page.getByText(/2 team\(s\)/i)).toBeVisible();
+    await expect(page.getByText("90.0")).toBeVisible();
+  });
+});
+
+test.describe("P5 — Grade Adjustment table merges by team", () => {
+  test("entering an instructor score for a team row fans out to every member on save", async ({ page }) => {
+    await seedTeacher(page, {
+      submissions: [
+        teamSubmission("64070701", "Fah Test", "64070701@kmitl.ac.th", "not_graded"),
+        teamSubmission("64070702", "Beam Suk", "64070702@kmitl.ac.th", "not_graded"),
+        SOLO_SUBMISSION,
+      ],
+    });
+    await page.goto(`${BASE}/teacher/courses/c-tp5/assignments/a-tp5-1/grading`);
+    await page.waitForLoadState("networkidle");
+    // 3 raw submissions collapse to 2 rows: the team (2 members) + the solo student.
+    await expect(page.getByText(/2 row\(s\)/i)).toBeVisible();
+
+    await page.getByLabel(/Instructor score for team Prototype Pals/i).fill("95");
+    await page.getByRole("button", { name: /save/i }).click();
+
+    const subs = await page.evaluate(() => JSON.parse(localStorage.getItem("hwai_submissions_v1") ?? "[]"));
+    const teamSubs = subs.filter((s: { groupId?: string }) => s.groupId === "sg-tp5-1");
+    expect(teamSubs).toHaveLength(2);
+    expect(teamSubs.every((s: { instructorScore: number; status: string }) => s.instructorScore === 95 && s.status === "graded")).toBe(true);
+    // Untouched solo submission stays as-is.
+    const solo = subs.find((s: { id: string }) => s.id === "sub-tp5-solo");
+    expect(solo.status).toBe("not_graded");
+  });
+});

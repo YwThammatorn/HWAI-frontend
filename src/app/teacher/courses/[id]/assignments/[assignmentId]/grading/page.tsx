@@ -4,7 +4,9 @@ import { useState, useEffect, useMemo } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useCourses } from "@/lib/courses";
-import { useAssignments, Submission } from "@/lib/assignments";
+import { useAssignments } from "@/lib/assignments";
+import { useStudentGroups } from "@/lib/studentGroups";
+import { groupSubmissionsByTeam, SubmissionRow } from "@/lib/groupSubmissions";
 import { useLanguage } from "@/context/LanguageContext";
 import { getInitials } from "@/lib/utils";
 
@@ -69,58 +71,82 @@ interface RowState {
 }
 
 function GradeRow({
-  sub,
+  row,
   maxPoints,
   rowState,
   onChange,
   onRegrade,
 }: {
-  sub: Submission;
+  row: SubmissionRow;
   maxPoints: number;
   rowState: RowState;
   onChange: (val: string) => void;
   onRegrade: () => void;
 }) {
   const { t } = useLanguage();
+  const rep = row.subs[0];
+  const isTeam = !!row.teamName;
 
   const parsedInstructor = rowState.instructorScore === "" ? null : parseFloat(rowState.instructorScore);
   const isModified =
     parsedInstructor !== null &&
     !isNaN(parsedInstructor) &&
-    parsedInstructor !== sub.aiScore;
+    parsedInstructor !== rep.aiScore;
 
   const STATUS_MAP = {
     not_graded: { label: t("ยังไม่ได้ตรวจ", "Not graded"), cls: "bg-gray-100 text-gray-500" },
     need_review: { label: t("รอตรวจสอบ", "Needs review"), cls: "bg-amber-100 text-amber-700" },
     graded: { label: t("ตรวจแล้ว", "Graded"), cls: "bg-green-100 text-green-700" },
   };
-  const statusInfo = STATUS_MAP[sub.status];
+  const mixedStatus = new Set(row.subs.map((s) => s.status)).size > 1;
+  const statusInfo = mixedStatus
+    ? { label: t("ไม่ตรงกัน", "Mixed"), cls: "bg-amber-100 text-amber-700" }
+    : STATUS_MAP[rep.status];
 
   return (
     <tr className={`border-b border-gray-100 last:border-0 transition-colors ${isModified ? "bg-amber-50" : "hover:bg-gray-50"}`}>
-      {/* Student */}
+      {/* Student / team */}
       <td className="px-4 py-3">
-        <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-full bg-[var(--accent-bright)]/20 text-[var(--accent)] text-[10px] font-bold flex items-center justify-center shrink-0 select-none" aria-hidden="true">
-            {getInitials(sub.studentName)}
-          </div>
+        {isTeam ? (
           <div className="min-w-0">
-            <p className="text-sm font-medium text-[var(--text-primary)] truncate">{sub.studentName}</p>
-            <p className="text-xs text-gray-400 truncate">{sub.email}</p>
+            <p className="text-sm font-medium text-[var(--text-primary)] truncate mb-1">{row.teamName}</p>
+            <div className="flex items-center">
+              {row.subs.map((s, idx) => (
+                <div
+                  key={s.id}
+                  className="w-6 h-6 rounded-full bg-[var(--accent-bright)]/20 text-[var(--accent)] text-[9px] font-bold flex items-center justify-center shrink-0 select-none border-2 border-white"
+                  style={{ marginLeft: idx > 0 ? "-8px" : 0 }}
+                  title={s.studentName}
+                >
+                  {getInitials(s.studentName)}
+                </div>
+              ))}
+              <p className="text-xs text-gray-400 truncate ml-2">{row.subs.map((s) => s.studentName).join(", ")}</p>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-full bg-[var(--accent-bright)]/20 text-[var(--accent)] text-[10px] font-bold flex items-center justify-center shrink-0 select-none" aria-hidden="true">
+              {getInitials(rep.studentName)}
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-[var(--text-primary)] truncate">{rep.studentName}</p>
+              <p className="text-xs text-gray-400 truncate">{rep.email}</p>
+            </div>
+          </div>
+        )}
       </td>
 
       {/* Submitted at */}
       <td className="px-4 py-3 text-xs text-gray-400 whitespace-nowrap">
-        {new Date(sub.submittedAt).toLocaleDateString("th-TH", { day: "numeric", month: "short" })}
+        {new Date(rep.submittedAt).toLocaleDateString("th-TH", { day: "numeric", month: "short" })}
       </td>
 
       {/* AI Score */}
       <td className="px-4 py-3 text-sm tabular-nums">
-        {sub.aiScore !== null ? (
+        {rep.aiScore !== null ? (
           <span className={isModified ? "text-gray-400 line-through" : "text-[var(--text-primary)] font-semibold"}>
-            {sub.aiScore}
+            {rep.aiScore}
           </span>
         ) : (
           <span className="text-gray-300">—</span>
@@ -138,8 +164,10 @@ function GradeRow({
             step={0.5}
             value={rowState.instructorScore}
             onChange={(e) => onChange(e.target.value)}
-            placeholder={sub.aiScore !== null ? String(sub.aiScore) : "—"}
-            aria-label={t(`คะแนนอาจารย์ของ ${sub.studentName}`, `Instructor score for ${sub.studentName}`)}
+            placeholder={rep.aiScore !== null ? String(rep.aiScore) : "—"}
+            aria-label={isTeam
+              ? t(`คะแนนอาจารย์ของทีม ${row.teamName}`, `Instructor score for team ${row.teamName}`)
+              : t(`คะแนนอาจารย์ของ ${rep.studentName}`, `Instructor score for ${rep.studentName}`)}
             className={`w-20 h-8 rounded-lg border text-sm text-center tabular-nums focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)] transition-colors ${
               isModified
                 ? "border-amber-300 bg-amber-50 text-amber-700 font-semibold"
@@ -166,7 +194,7 @@ function GradeRow({
         <button
           onClick={onRegrade}
           disabled={rowState.regrading}
-          aria-label={t(`Re-grade ${sub.studentName}`, `Re-grade ${sub.studentName}`)}
+          aria-label={isTeam ? t(`Re-grade team ${row.teamName}`, `Re-grade team ${row.teamName}`) : t(`Re-grade ${rep.studentName}`, `Re-grade ${rep.studentName}`)}
           className="flex items-center gap-1.5 h-7 px-2.5 rounded-lg border border-gray-200 text-xs font-medium text-gray-500 hover:border-[var(--accent-bright)] hover:text-[var(--accent)] hover:bg-[var(--accent-bright)]/5 active:scale-[0.97] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-all"
         >
           {rowState.regrading ? (
@@ -189,11 +217,11 @@ function GradeRow({
 // ── Grade adjustment table ─────────────────────────────────────────────────
 
 function GradeAdjustmentTable({
-  submissions,
+  rows,
   maxPoints,
   onSaveAll,
 }: {
-  submissions: Submission[];
+  rows: SubmissionRow[];
   maxPoints: number;
   onSaveAll: (changes: Record<string, number | null>) => void;
 }) {
@@ -201,10 +229,10 @@ function GradeAdjustmentTable({
 
   const [rowStates, setRowStates] = useState<Record<string, RowState>>(() =>
     Object.fromEntries(
-      submissions.map((s) => [
-        s.id,
+      rows.map((row) => [
+        row.key,
         {
-          instructorScore: s.instructorScore !== null ? String(s.instructorScore) : "",
+          instructorScore: row.subs[0].instructorScore !== null ? String(row.subs[0].instructorScore) : "",
           regrading: false,
         },
       ])
@@ -215,41 +243,44 @@ function GradeAdjustmentTable({
   const [savedMsg, setSavedMsg] = useState(false);
 
   const modifiedCount = useMemo(() => {
-    return submissions.filter((sub) => {
-      const val = rowStates[sub.id]?.instructorScore ?? "";
+    return rows.filter((row) => {
+      const val = rowStates[row.key]?.instructorScore ?? "";
       const parsed = val === "" ? null : parseFloat(val);
-      return parsed !== null && !isNaN(parsed) && parsed !== sub.aiScore;
+      return parsed !== null && !isNaN(parsed) && parsed !== row.subs[0].aiScore;
     }).length;
-  }, [rowStates, submissions]);
+  }, [rowStates, rows]);
 
-  function updateRow(id: string, val: string) {
+  function updateRow(key: string, val: string) {
     // Clamp to [0, maxPoints]
     const parsed = parseFloat(val);
     let clamped = val;
     if (!isNaN(parsed)) clamped = String(Math.min(maxPoints, Math.max(0, parsed)));
-    setRowStates((prev) => ({ ...prev, [id]: { ...prev[id], instructorScore: clamped } }));
+    setRowStates((prev) => ({ ...prev, [key]: { ...prev[key], instructorScore: clamped } }));
   }
 
-  async function handleRegrade(subId: string) {
-    setRowStates((prev) => ({ ...prev, [subId]: { ...prev[subId], regrading: true } }));
+  async function handleRegrade(row: SubmissionRow) {
+    setRowStates((prev) => ({ ...prev, [row.key]: { ...prev[row.key], regrading: true } }));
     await new Promise((r) => setTimeout(r, 1500));
     // Mock: regenerate score within ±15% of maxPoints
     const newScore = Math.round(maxPoints * (0.55 + Math.random() * 0.4));
     setRowStates((prev) => ({
       ...prev,
-      [subId]: { instructorScore: "", regrading: false },
+      [row.key]: { instructorScore: "", regrading: false },
     }));
-    onSaveAll({ [subId]: newScore }); // immediately persist new aiScore mock
+    // Every team member's submission gets the same re-graded score.
+    const changes: Record<string, number> = {};
+    row.subs.forEach((s) => { changes[s.id] = newScore; });
+    onSaveAll(changes);
   }
 
   function handleSaveAll() {
     setSaving(true);
     const changes: Record<string, number | null> = {};
-    submissions.forEach((sub) => {
-      const val = rowStates[sub.id]?.instructorScore ?? "";
+    rows.forEach((row) => {
+      const val = rowStates[row.key]?.instructorScore ?? "";
       const parsed = val === "" ? null : parseFloat(val);
-      if (parsed !== null && !isNaN(parsed) && parsed !== sub.aiScore) {
-        changes[sub.id] = parsed;
+      if (parsed !== null && !isNaN(parsed) && parsed !== row.subs[0].aiScore) {
+        row.subs.forEach((s) => { changes[s.id] = parsed; });
       }
     });
     onSaveAll(changes);
@@ -266,8 +297,8 @@ function GradeAdjustmentTable({
           <h2 className="text-sm font-bold text-[var(--text-primary)]">{t("ปรับคะแนน", "Grade Adjustment")}</h2>
           <p className="text-xs text-gray-400 mt-0.5">
             {t(
-              `${submissions.length} คน — พิมพ์ "คะแนนอาจารย์" เพื่อ override AI หรือกด Re-grade เพื่อให้ AI ตรวจใหม่`,
-              `${submissions.length} submission(s) — type an instructor score to override AI, or Re-grade to re-run AI`
+              `${rows.length} รายการ — พิมพ์ "คะแนนอาจารย์" เพื่อ override AI หรือกด Re-grade เพื่อให้ AI ตรวจใหม่`,
+              `${rows.length} row(s) — type an instructor score to override AI, or Re-grade to re-run AI`
             )}
           </p>
         </div>
@@ -293,7 +324,7 @@ function GradeAdjustmentTable({
         </div>
       </div>
 
-      {submissions.length === 0 ? (
+      {rows.length === 0 ? (
         <div className="py-12 text-center text-sm text-gray-400">
           {t("ยังไม่มีการส่งงาน", "No submissions yet")}
         </div>
@@ -311,14 +342,14 @@ function GradeAdjustmentTable({
               </tr>
             </thead>
             <tbody>
-              {submissions.map((sub) => (
+              {rows.map((row) => (
                 <GradeRow
-                  key={sub.id}
-                  sub={sub}
+                  key={row.key}
+                  row={row}
                   maxPoints={maxPoints}
-                  rowState={rowStates[sub.id] ?? { instructorScore: "", regrading: false }}
-                  onChange={(val) => updateRow(sub.id, val)}
-                  onRegrade={() => handleRegrade(sub.id)}
+                  rowState={rowStates[row.key] ?? { instructorScore: "", regrading: false }}
+                  onChange={(val) => updateRow(row.key, val)}
+                  onRegrade={() => handleRegrade(row)}
                 />
               ))}
             </tbody>
@@ -336,6 +367,7 @@ export default function GradingProgressPage() {
   const { t } = useLanguage();
   const { getCourse } = useCourses();
   const { getAssignment, getSubmissionsByAssignment, updateSubmission } = useAssignments();
+  const { getGroupsByAssignment } = useStudentGroups();
 
   const course = getCourse(id);
   const assignment = getAssignment(assignmentId);
@@ -352,10 +384,19 @@ export default function GradingProgressPage() {
     );
   }
 
-  const total = submissions.length;
-  const processed = submissions.filter((s) => s.status === "graded").length;
-  const needsReview = submissions.filter((s) => s.status === "need_review").length;
-  const scoredSubs = submissions.filter((s) => s.aiScore !== null);
+  // Group assignments: one row per team instead of one row per student — see
+  // groupSubmissionsByTeam / TeamFormationDrawer / RecheckPage.handleSave.
+  const isGroupAssignment = assignment.submissionType === "group";
+  const groups = isGroupAssignment ? getGroupsByAssignment(assignmentId) : [];
+  const rows: SubmissionRow[] = isGroupAssignment
+    ? groupSubmissionsByTeam(submissions, groups, t("ทีม", "Team"))
+    : submissions.map((s) => ({ key: s.id, subs: [s] }));
+  const repSubs = rows.map((r) => r.subs[0]);
+
+  const total = rows.length;
+  const processed = repSubs.filter((s) => s.status === "graded").length;
+  const needsReview = repSubs.filter((s) => s.status === "need_review").length;
+  const scoredSubs = repSubs.filter((s) => s.aiScore !== null);
   const avgScore =
     scoredSubs.length > 0
       ? scoredSubs.reduce((sum, s) => sum + (s.aiScore ?? 0), 0) / scoredSubs.length
@@ -459,9 +500,9 @@ export default function GradingProgressPage() {
             }
           />
           <StatCard
-            label={t("ไฟล์ทั้งหมด", "Total Files")}
+            label={isGroupAssignment ? t("ทีมทั้งหมด", "Total Teams") : t("ไฟล์ทั้งหมด", "Total Files")}
             value={total}
-            sub={t("ไฟล์ที่ส่ง", "submissions")}
+            sub={isGroupAssignment ? t("ทีม", "team(s)") : t("ไฟล์ที่ส่ง", "submissions")}
             icon={
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="1.5">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -535,7 +576,7 @@ export default function GradingProgressPage() {
 
         {/* Grade Adjustment table */}
         <GradeAdjustmentTable
-          submissions={submissions}
+          rows={rows}
           maxPoints={assignment.maxPoints}
           onSaveAll={handleSaveChanges}
         />

@@ -5,6 +5,8 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useCourses } from "@/lib/courses";
 import { useAssignments, Submission } from "@/lib/assignments";
+import { useStudentGroups } from "@/lib/studentGroups";
+import { groupSubmissionsByTeam, SubmissionRow } from "@/lib/groupSubmissions";
 import { useLanguage } from "@/context/LanguageContext";
 
 const AVATAR_COLORS = ["#4F46E5", "#7C3AED", "#BE185D", "#B45309", "#047857", "#0369A1", "#C2410C", "#0E7490"];
@@ -62,6 +64,7 @@ export default function ResultsPage() {
   const { t, lang } = useLanguage();
   const { getCourse } = useCourses();
   const { getAssignment, getSubmissionsByAssignment } = useAssignments();
+  const { getGroupsByAssignment } = useStudentGroups();
 
   const [search, setSearch] = useState("");
   const [starRating, setStarRating] = useState(0);
@@ -84,32 +87,49 @@ export default function ResultsPage() {
   }
 
   const max = assignment.maxPoints;
-  const scoredSubs = allSubs.filter((s) => s.aiScore !== null || s.instructorScore !== null);
+  const isGroupAssignment = assignment.submissionType === "group";
+  const groups = isGroupAssignment ? getGroupsByAssignment(assignmentId) : [];
+
+  // Group assignments: one row per team instead of one row per student — a
+  // team submits once, so its score/status is shared across every member
+  // (RecheckPage.handleSave fans grading out to the whole group already).
+  const rows: SubmissionRow[] = isGroupAssignment
+    ? groupSubmissionsByTeam(allSubs, groups, t("ทีม", "Team"))
+    : allSubs.map((s) => ({ key: s.id, subs: [s] }));
+  const repRows = rows.map((r) => ({
+    key: r.key,
+    rep: r.subs[0],
+    displayName: r.teamName ?? r.subs[0].studentName,
+    isTeam: !!r.teamName,
+    members: r.subs,
+  }));
+
+  const scoredRows = repRows.filter((r) => r.rep.aiScore !== null || r.rep.instructorScore !== null);
   const avgScore =
-    scoredSubs.length > 0
-      ? scoredSubs.reduce((sum, s) => sum + (s.instructorScore ?? s.aiScore ?? 0), 0) / scoredSubs.length
+    scoredRows.length > 0
+      ? scoredRows.reduce((sum, r) => sum + (r.rep.instructorScore ?? r.rep.aiScore ?? 0), 0) / scoredRows.length
       : null;
 
   const gradeCounts: Record<string, number> = { F: 0, D: 0, C: 0, B: 0, A: 0 };
-  scoredSubs.forEach((s) => {
-    const score = s.instructorScore ?? s.aiScore ?? 0;
+  scoredRows.forEach((r) => {
+    const score = r.rep.instructorScore ?? r.rep.aiScore ?? 0;
     gradeCounts[gradeLetter(score, max)]++;
   });
   const maxCount = Math.max(1, ...Object.values(gradeCounts));
 
-  const filtered = allSubs.filter((s) =>
-    s.studentName.toLowerCase().includes(search.toLowerCase()) ||
-    s.email.toLowerCase().includes(search.toLowerCase())
+  const filtered = repRows.filter((r) =>
+    r.displayName.toLowerCase().includes(search.toLowerCase()) ||
+    r.members.some((s) => s.studentName.toLowerCase().includes(search.toLowerCase()) || s.email.toLowerCase().includes(search.toLowerCase()))
   );
 
-  const requiresAttention = [...scoredSubs]
-    .filter((s) => ((s.instructorScore ?? s.aiScore ?? 0) / max) * 100 < 60)
-    .sort((a, b) => (a.instructorScore ?? a.aiScore ?? 0) - (b.instructorScore ?? b.aiScore ?? 0))
+  const requiresAttention = [...scoredRows]
+    .filter((r) => ((r.rep.instructorScore ?? r.rep.aiScore ?? 0) / max) * 100 < 60)
+    .sort((a, b) => (a.rep.instructorScore ?? a.rep.aiScore ?? 0) - (b.rep.instructorScore ?? b.rep.aiScore ?? 0))
     .slice(0, 3);
 
-  const topPerformer = scoredSubs.length > 0
-    ? scoredSubs.reduce((best, s) =>
-        (s.instructorScore ?? s.aiScore ?? 0) > (best.instructorScore ?? best.aiScore ?? 0) ? s : best
+  const topPerformer = scoredRows.length > 0
+    ? scoredRows.reduce((best, r) =>
+        (r.rep.instructorScore ?? r.rep.aiScore ?? 0) > (best.rep.instructorScore ?? best.rep.aiScore ?? 0) ? r : best
       )
     : null;
 
@@ -136,7 +156,7 @@ export default function ResultsPage() {
     {
       labelTh: "ตรวจแล้ว",
       labelEn: "Processed",
-      value: allSubs.filter((s) => s.status === "graded").length,
+      value: repRows.filter((r) => r.rep.status === "graded").length,
       subTh: "เสร็จสิ้น",
       subEn: "completed",
       color: "#059669",
@@ -149,11 +169,11 @@ export default function ResultsPage() {
       ),
     },
     {
-      labelTh: "ไฟล์ทั้งหมด",
-      labelEn: "Total Files",
-      value: allSubs.length,
-      subTh: "ไฟล์ที่ส่ง",
-      subEn: "submissions",
+      labelTh: isGroupAssignment ? "ทีมทั้งหมด" : "ไฟล์ทั้งหมด",
+      labelEn: isGroupAssignment ? "Total Teams" : "Total Files",
+      value: repRows.length,
+      subTh: isGroupAssignment ? "ทีม" : "ไฟล์ที่ส่ง",
+      subEn: isGroupAssignment ? "team(s)" : "submissions",
       color: "#1B2A4A",
       icon: (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="1.5">
@@ -165,7 +185,7 @@ export default function ResultsPage() {
     {
       labelTh: "รอตรวจสอบ",
       labelEn: "Needs Review",
-      value: allSubs.filter((s) => s.status === "need_review").length,
+      value: repRows.filter((r) => r.rep.status === "need_review").length,
       subTh: "รอดำเนินการ",
       subEn: "Pending",
       color: "#D97706",
@@ -339,25 +359,52 @@ export default function ResultsPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-50">
-                    {filtered.map((s) => {
-                      const score = s.instructorScore ?? s.aiScore;
+                    {filtered.map((r) => {
+                      const score = r.rep.instructorScore ?? r.rep.aiScore;
                       const letter = score !== null ? gradeLetter(score, max) : null;
-                      const conf = score !== null ? confidence(s, max) : null;
+                      const conf = score !== null ? confidence(r.rep, max) : null;
                       return (
-                        <tr key={s.id} className="hover:bg-gray-50/50 transition-colors">
+                        <tr key={r.key} className="hover:bg-gray-50/50 transition-colors">
                           <td className="px-6 py-3">
-                            <div className="flex items-center gap-3">
-                              <div
-                                className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
-                                style={{ backgroundColor: avatarColor(s.studentName) }}
-                              >
-                                {initials(s.studentName)}
-                              </div>
+                            {r.isTeam ? (
                               <div>
-                                <p className="font-medium text-[var(--text-primary)] text-sm">{s.studentName}</p>
-                                <p className="text-xs text-gray-400">{s.email}</p>
+                                <div className="flex items-center gap-1.5 mb-1">
+                                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth="2" strokeLinecap="round">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                                  </svg>
+                                  <p className="font-medium text-[var(--text-primary)] text-sm">{r.displayName}</p>
+                                </div>
+                                <div className="flex items-center">
+                                  {r.members.map((s, idx) => (
+                                    <div
+                                      key={s.id}
+                                      className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-bold shrink-0 border-2 border-white"
+                                      style={{ backgroundColor: avatarColor(s.studentName), marginLeft: idx > 0 ? "-8px" : 0 }}
+                                      title={s.studentName}
+                                    >
+                                      {initials(s.studentName)}
+                                    </div>
+                                  ))}
+                                  <p className="text-xs text-gray-400 ml-2 truncate">
+                                    {r.members.map((s) => s.studentName).join(", ")}
+                                  </p>
+                                </div>
                               </div>
-                            </div>
+                            ) : (
+                              <div className="flex items-center gap-3">
+                                <div
+                                  className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
+                                  style={{ backgroundColor: avatarColor(r.rep.studentName) }}
+                                >
+                                  {initials(r.rep.studentName)}
+                                </div>
+                                <div>
+                                  <p className="font-medium text-[var(--text-primary)] text-sm">{r.rep.studentName}</p>
+                                  <p className="text-xs text-gray-400">{r.rep.email}</p>
+                                </div>
+                              </div>
+                            )}
                           </td>
                           <td className="px-6 py-3">
                             {score !== null && letter ? (
@@ -392,24 +439,24 @@ export default function ResultsPage() {
                           </td>
                           <td className="px-6 py-3">
                             <div className="flex items-center gap-2">
-                              {s.status === "need_review" ? (
+                              {r.rep.status === "need_review" ? (
                                 <>
                                   <Link
-                                    href={`/teacher/courses/${id}/assignments/${assignmentId}/recheck?sub=${s.id}`}
+                                    href={`/teacher/courses/${id}/assignments/${assignmentId}/recheck?sub=${r.rep.id}`}
                                     className="text-xs text-amber-600 hover:underline font-medium"
                                   >
                                     {t("ตรวจสอบ", "Review")}
                                   </Link>
                                   <Link
-                                    href={`/teacher/courses/${id}/assignments/${assignmentId}/recheck?sub=${s.id}`}
+                                    href={`/teacher/courses/${id}/assignments/${assignmentId}/recheck?sub=${r.rep.id}`}
                                     className="px-3 py-1.5 rounded-lg bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-xs font-semibold transition-colors"
                                   >
-                                    {t("ขอให้ตรวจใหม่", "Recheck")}
+                                    {r.isTeam ? t("ขอให้ตรวจใหม่ทั้งทีม", "Recheck team") : t("ขอให้ตรวจใหม่", "Recheck")}
                                   </Link>
                                 </>
                               ) : (
                                 <Link
-                                  href={`/teacher/courses/${id}/assignments/${assignmentId}/recheck?sub=${s.id}`}
+                                  href={`/teacher/courses/${id}/assignments/${assignmentId}/recheck?sub=${r.rep.id}`}
                                   className="px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-500 hover:bg-gray-50 transition-colors"
                                 >
                                   {t("ดูรายละเอียด", "View Details")}
@@ -435,22 +482,22 @@ export default function ResultsPage() {
                   {t("ต้องตรวจสอบ", "Requires Attention")}
                 </p>
                 <div className="space-y-2">
-                  {requiresAttention.map((s) => {
-                    const score = s.instructorScore ?? s.aiScore ?? 0;
+                  {requiresAttention.map((r) => {
+                    const score = r.rep.instructorScore ?? r.rep.aiScore ?? 0;
                     const letter = gradeLetter(score, max);
                     return (
                       <div
-                        key={s.id}
+                        key={r.key}
                         className="flex items-center justify-between p-3 rounded-xl bg-[var(--s-err-bg)] border border-[var(--s-err-bd)]"
                       >
                         <div>
-                          <p className="text-xs font-semibold text-[var(--text-primary)]">{s.studentName}</p>
+                          <p className="text-xs font-semibold text-[var(--text-primary)]">{r.displayName}</p>
                           <p className={`text-xs ${gradeTextClass(letter)}`}>
                             {t("คะแนน", "Score")}: {score}/{max} ({letter})
                           </p>
                         </div>
                         <Link
-                          href={`/teacher/courses/${id}/assignments/${assignmentId}/recheck?sub=${s.id}`}
+                          href={`/teacher/courses/${id}/assignments/${assignmentId}/recheck?sub=${r.rep.id}`}
                           className="text-xs text-[var(--accent)] font-medium hover:underline shrink-0"
                         >
                           {t("ดู", "View")}
@@ -469,9 +516,9 @@ export default function ResultsPage() {
                   {t("ผู้ที่ทำได้ดีที่สุด", "Top Performer")}
                 </p>
                 <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-100">
-                  <p className="text-xs font-semibold text-[var(--text-primary)]">{topPerformer.studentName}</p>
+                  <p className="text-xs font-semibold text-[var(--text-primary)]">{topPerformer.displayName}</p>
                   <p className="text-xs text-emerald-700 font-medium mt-0.5">
-                    {t("คะแนน", "Score")}: {topPerformer.instructorScore ?? topPerformer.aiScore}/{max} (A+)
+                    {t("คะแนน", "Score")}: {topPerformer.rep.instructorScore ?? topPerformer.rep.aiScore}/{max} (A+)
                   </p>
                 </div>
               </div>
