@@ -29,6 +29,8 @@ export default function StudentClassworkDetailPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [teamDrawerOpen, setTeamDrawerOpen] = useState(false);
+  const [linkValue, setLinkValue] = useState("");
+  const [fileValue, setFileValue] = useState<File | null>(null);
 
   const course = getCourse(secId);
   const assignment = getAssignment(actId);
@@ -57,15 +59,24 @@ export default function StudentClassworkDetailPage() {
   const isPast = new Date() > due;
   const isGraded = mySubmission?.status === "graded";
   const score = mySubmission?.instructorScore ?? mySubmission?.aiScore ?? null;
-  const canSubmit = !isGroup || !!myGroup;
+  const wantsFigmaLink = assignment.acceptsFiles && assignment.fileTypes.includes("figma");
+  const wantsFileUpload = assignment.acceptsFiles && assignment.fileTypes.some((ft) => ft === "pdf" || ft === "image");
+  const fileAccept = assignment.fileTypes
+    .filter((ft) => ft !== "figma")
+    .map((ft) => (ft === "pdf" ? ".pdf" : "image/*"))
+    .join(",");
+  const hasAttachment = linkValue.trim() !== "" || fileValue !== null;
+  const attachmentOk = !assignment.acceptsFiles || hasAttachment;
+  const canSubmit = (!isGroup || !!myGroup) && attachmentOk;
 
   function handleSubmit() {
     setSubmitting(true);
+    const fileUrl = linkValue.trim() || (fileValue ? URL.createObjectURL(fileValue) : null);
     const memberIds = isGroup && myGroup ? myGroup.memberStudentIds : [studentId];
     memberIds.forEach((id) => {
       const existing = allSubs.find((s) => s.studentId === id);
       if (existing) {
-        updateSubmission(existing.id, { status: "not_graded" });
+        updateSubmission(existing.id, { status: "not_graded", fileUrl });
         return;
       }
       const info = memberInfo(id);
@@ -75,7 +86,7 @@ export default function StudentClassworkDetailPage() {
         studentName: info.name,
         email: info.email,
         submittedAt: new Date().toISOString(),
-        fileUrl: null,
+        fileUrl,
         aiScore: null,
         instructorScore: null,
         instructorComment: "",
@@ -87,6 +98,8 @@ export default function StudentClassworkDetailPage() {
     setSubmitting(false);
     setConfirmOpen(false);
     setSubmitted(true);
+    setLinkValue("");
+    setFileValue(null);
   }
 
   function handleLeaveTeam() {
@@ -103,7 +116,7 @@ export default function StudentClassworkDetailPage() {
 
   return (
     <>
-    <div className="p-6 max-w-4xl">
+    <div className="w-full px-8 py-8">
         {/* Breadcrumb */}
         <div className="flex items-center gap-1.5 text-xs text-[var(--text-muted)] mb-5 flex-wrap">
           <Link href={`/student/courses/${secId}/classwork`} className="hover:text-[var(--text-primary)] transition-colors">
@@ -263,6 +276,15 @@ export default function StudentClassworkDetailPage() {
                   {mySubmission?.instructorComment && (
                     <p className="text-xs text-green-700 mt-2 leading-relaxed">{mySubmission.instructorComment}</p>
                   )}
+                  {mySubmission?.fileUrl && (
+                    <a href={mySubmission.fileUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs font-medium text-green-700 hover:underline mt-2">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                      </svg>
+                      {t("ดูงานที่ส่ง", "View submission")}
+                    </a>
+                  )}
                 </div>
               )}
 
@@ -284,6 +306,15 @@ export default function StudentClassworkDetailPage() {
                       )}
                     </div>
                   </div>
+                  {mySubmission?.fileUrl && (
+                    <a href={mySubmission.fileUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs font-medium text-gray-600 hover:underline mt-2 ml-7">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                      </svg>
+                      {t("ดูงานที่ส่ง", "View submission")}
+                    </a>
+                  )}
                 </div>
               )}
 
@@ -291,8 +322,40 @@ export default function StudentClassworkDetailPage() {
               {!mySubmission && !submitted && (
                 <div className="mb-4 p-3 rounded-xl border border-dashed border-[var(--border-subtle)] text-center">
                   <p className="text-xs text-[var(--text-muted)]">
-                    {canSubmit ? t("ยังไม่ได้ส่งงาน", "Not submitted yet") : t("เข้าร่วมทีมก่อนถึงจะส่งงานได้", "Join a team before you can submit")}
+                    {isGroup && !myGroup ? t("เข้าร่วมทีมก่อนถึงจะส่งงานได้", "Join a team before you can submit") : t("ยังไม่ได้ส่งงาน", "Not submitted yet")}
                   </p>
+                </div>
+              )}
+
+              {/* Attach a file or link — only for assignments configured to accept one */}
+              {!isGraded && !isPast && assignment.acceptsFiles && (
+                <div className="mb-4 flex flex-col gap-3">
+                  {wantsFigmaLink && (
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs font-semibold text-[var(--text-secondary)]">{t("ลิงก์ Figma", "Figma link")}</label>
+                      <input
+                        type="url"
+                        value={linkValue}
+                        onChange={(e) => setLinkValue(e.target.value)}
+                        placeholder="https://figma.com/..."
+                        className="w-full h-9 px-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
+                      />
+                    </div>
+                  )}
+                  {wantsFileUpload && (
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs font-semibold text-[var(--text-secondary)]">
+                        {t("แนบไฟล์", "Attach file")}
+                        {" "}({assignment.fileTypes.filter((ft) => ft !== "figma").map((ft) => (ft === "pdf" ? "PDF" : t("รูปภาพ", "Image"))).join(", ")})
+                      </label>
+                      <input
+                        type="file"
+                        accept={fileAccept}
+                        onChange={(e) => setFileValue(e.target.files?.[0] ?? null)}
+                        className="text-xs text-[var(--text-secondary)] file:mr-3 file:h-8 file:px-3 file:rounded-lg file:border-0 file:bg-[var(--accent-bright)]/10 file:text-[var(--accent)] file:text-xs file:font-semibold file:cursor-pointer hover:file:bg-[var(--accent-bright)]/20"
+                      />
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -301,7 +364,13 @@ export default function StudentClassworkDetailPage() {
                 <button
                   onClick={() => setConfirmOpen(true)}
                   disabled={submitting || !canSubmit}
-                  title={canSubmit ? undefined : t("เข้าร่วมทีมก่อนถึงจะส่งงานได้", "Join a team before you can submit")}
+                  title={
+                    isGroup && !myGroup
+                      ? t("เข้าร่วมทีมก่อนถึงจะส่งงานได้", "Join a team before you can submit")
+                      : !attachmentOk
+                      ? t("แนบไฟล์หรือใส่ลิงก์ก่อนส่งงาน", "Attach a file or link before submitting")
+                      : undefined
+                  }
                   className="w-full h-10 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
                 >
                   {SUBMIT_BTN_LABEL}
