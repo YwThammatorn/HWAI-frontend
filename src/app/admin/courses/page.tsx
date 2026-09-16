@@ -12,6 +12,29 @@ import { useStudents } from "@/lib/students";
 
 // ── Course create/edit drawer ─────────────────────────────────────────────────
 
+const DAY_OPTIONS = [
+  { value: "จันทร์", labelTh: "จันทร์", labelEn: "Monday" },
+  { value: "อังคาร", labelTh: "อังคาร", labelEn: "Tuesday" },
+  { value: "พุธ", labelTh: "พุธ", labelEn: "Wednesday" },
+  { value: "พฤหัสบดี", labelTh: "พฤหัสบดี", labelEn: "Thursday" },
+  { value: "ศุกร์", labelTh: "ศุกร์", labelEn: "Friday" },
+  { value: "เสาร์", labelTh: "เสาร์", labelEn: "Saturday" },
+  { value: "อาทิตย์", labelTh: "อาทิตย์", labelEn: "Sunday" },
+] as const;
+
+const SLOT_OPTIONS = [
+  { value: "9:00-12:00", labelTh: "คาบเช้า (9:00-12:00)", labelEn: "Morning (9:00-12:00)" },
+  { value: "13:00-16:00", labelTh: "คาบบ่าย (13:00-16:00)", labelEn: "Afternoon (13:00-16:00)" },
+  { value: "16:00-19:00", labelTh: "คาบเย็น (16:00-19:00)", labelEn: "Evening (16:00-19:00)" },
+] as const;
+
+function parseSchedule(schedule?: string): { day: string; slot: string } {
+  if (!schedule) return { day: "", slot: "" };
+  const day = DAY_OPTIONS.find((d) => schedule.startsWith(d.value))?.value ?? "";
+  const slot = SLOT_OPTIONS.find((s) => schedule.includes(s.value))?.value ?? "";
+  return { day, slot };
+}
+
 function CourseDrawer({
   mode,
   course,
@@ -42,7 +65,10 @@ function CourseDrawer({
   const [academicYear, setAcademicYear] = useState(String(course?.academicYear ?? currentAcademicYear));
   const [term, setTerm] = useState<Term | "">(course?.term ?? "");
   const [sectionNumber, setSectionNumber] = useState(course?.sectionNumber ?? "");
-  const [schedule, setSchedule] = useState(course?.schedule ?? "");
+  const initialSchedule = parseSchedule(course?.schedule);
+  const [scheduleDay, setScheduleDay] = useState(initialSchedule.day);
+  const [scheduleSlot, setScheduleSlot] = useState(initialSchedule.slot);
+  const schedule = scheduleDay && scheduleSlot ? `${scheduleDay} ${scheduleSlot}` : "";
   const [room, setRoom] = useState(course?.room ?? "");
 
   function handleCurriculumChange(id: string) {
@@ -210,26 +236,45 @@ function CourseDrawer({
             </div>
           )}
 
-          {/* Schedule & Room */}
+          {/* Class Schedule */}
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-[var(--text-muted)]">{t("วันเวลาเรียน", "Class Schedule")}</label>
-              <input
-                value={schedule}
-                onChange={(e) => setSchedule(e.target.value)}
-                placeholder={t("เช่น จันทร์ 9:00-12:00", "e.g. Mon 9:00-12:00")}
-                className="h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
-              />
+              <label className="text-xs font-semibold text-[var(--text-muted)]">{t("วันเรียน", "Day")}</label>
+              <select
+                value={scheduleDay}
+                onChange={(e) => setScheduleDay(e.target.value)}
+                className="h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
+              >
+                <option value="">{t("เลือกวัน", "Select day")}</option>
+                {DAY_OPTIONS.map((d) => (
+                  <option key={d.value} value={d.value}>{t(d.labelTh, d.labelEn)}</option>
+                ))}
+              </select>
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-[var(--text-muted)]">{t("ห้องเรียน", "Room")}</label>
-              <input
-                value={room}
-                onChange={(e) => setRoom(e.target.value)}
-                placeholder={t("เช่น 811", "e.g. 811")}
-                className="h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
-              />
+              <label className="text-xs font-semibold text-[var(--text-muted)]">{t("คาบเวลา", "Time Slot")}</label>
+              <select
+                value={scheduleSlot}
+                onChange={(e) => setScheduleSlot(e.target.value)}
+                className="h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
+              >
+                <option value="">{t("เลือกคาบเวลา", "Select time slot")}</option>
+                {SLOT_OPTIONS.map((s) => (
+                  <option key={s.value} value={s.value}>{t(s.labelTh, s.labelEn)}</option>
+                ))}
+              </select>
             </div>
+          </div>
+
+          {/* Room */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold text-[var(--text-muted)]">{t("ห้องเรียน", "Room")}</label>
+            <input
+              value={room}
+              onChange={(e) => setRoom(e.target.value)}
+              placeholder={t("เช่น 811", "e.g. 811")}
+              className="h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
+            />
           </div>
 
           {/* Primary teacher — required at creation; reassign later via the course row's expand panel */}
