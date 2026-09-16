@@ -129,7 +129,7 @@ function CurriculumDrawer({
               placeholder={t(`เช่น ${program} ${currentYear}`, `e.g. ${program} ${currentYear}`)}
               className="h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
             />
-            <p className="text-[11px] text-[var(--text-muted)]">{t("ระบุรุ่น/สาขาให้ชัด — cohort อย่างเดียวไม่พอสำหรับแยกหลักสูตร", "Be specific about batch/track — cohort alone isn't enough to distinguish curricula")}</p>
+            <p className="text-[11px] text-[var(--text-muted)]">{t("ระบุรุ่น/สาขาให้ชัด — cohort อย่างเดียวไม่พอสำหรับแยกหลักสูตร", "Be specific about batch/track — cohort alone isn't enough to distinguish curriculum")}</p>
           </div>
 
           {/* Effective years */}
@@ -574,7 +574,7 @@ export default function AdminCurriculumPage() {
       {/* Stat cards */}
       <div className="flex gap-4 mb-6">
         <StatCard
-          label={t("หลักสูตรทั้งหมด", "Total Curricula")}
+          label={t("หลักสูตรทั้งหมด", "Total Curriculum")}
           value={curriculumVersions.length}
           color="var(--accent)"
           bg="var(--accent-subtle)"
@@ -636,11 +636,11 @@ export default function AdminCurriculumPage() {
         <div className="flex flex-col gap-6">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)] mb-3">
-              {t(`หลักสูตรที่ใช้อยู่ (${activeVersions.length})`, `Active curricula (${activeVersions.length})`)}
+              {t(`หลักสูตรที่ใช้อยู่ (${activeVersions.length})`, `Active curriculum (${activeVersions.length})`)}
             </p>
             <div className="flex flex-col gap-3">
               {activeVersions.length === 0 ? (
-                <p className="text-sm text-[var(--text-muted)]">{t("ไม่มีหลักสูตรที่ใช้อยู่", "No active curricula")}</p>
+                <p className="text-sm text-[var(--text-muted)]">{t("ไม่มีหลักสูตรที่ใช้อยู่", "No active curriculum")}</p>
               ) : (
                 activeVersions.map((v) => (
                   <CurriculumRow

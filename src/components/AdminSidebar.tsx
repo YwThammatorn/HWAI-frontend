@@ -76,8 +76,8 @@ export default function AdminSidebar() {
           <path d="M6 12v5c3 3 9 3 12 0v-5"/>
         </svg>
       ),
-      labelEn: "Curricula",
-      label: t("จัดการหลักสูตร", "Curricula"),
+      labelEn: "Curriculum",
+      label: t("จัดการหลักสูตร", "Curriculum"),
     },
   ];
 
