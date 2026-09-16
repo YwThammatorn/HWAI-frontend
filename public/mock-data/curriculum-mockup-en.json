@@ -1,0 +1,74 @@
+{
+  "curriculumVersions": [
+    { "id": "cv-ce-2554", "program": "CE", "label": "Computer Engineering (Revised 2554)", "effectiveFrom": 2554, "effectiveTo": 2558 },
+    { "id": "cv-ce-2559", "program": "CE", "label": "Computer Engineering (Revised 2559)", "effectiveFrom": 2559, "effectiveTo": 2563 },
+    { "id": "cv-ce-2564", "program": "CE", "label": "Computer Engineering (Revised 2564)", "effectiveFrom": 2564, "effectiveTo": 2568 },
+    { "id": "cv-ce-2569", "program": "CE", "label": "Computer Engineering (Revised 2569)", "effectiveFrom": 2569 },
+    { "id": "cv-cecs-2560", "program": "CECS", "label": "Computer Engineering and Cybersecurity (Revised 2560)", "effectiveFrom": 2560, "effectiveTo": 2564 },
+    { "id": "cv-cecs-2565", "program": "CECS", "label": "Computer Engineering and Cybersecurity (Revised 2565)", "effectiveFrom": 2565 },
+    { "id": "cv-cei-2558", "program": "CEI", "label": "Computer Engineering International Program (Revised 2558)", "effectiveFrom": 2558, "effectiveTo": 2562 },
+    { "id": "cv-cei-2563", "program": "CEI", "label": "Computer Engineering International Program (Revised 2563)", "effectiveFrom": 2563, "effectiveTo": 2567 },
+    { "id": "cv-cei-2568", "program": "CEI", "label": "Computer Engineering International Program (Revised 2568)", "effectiveFrom": 2568 }
+  ],
+  "courseTemplates": [
+    { "id": "ct-1", "curriculumVersionId": "cv-ce-2554", "code": "01076112", "name": "Computer Programming", "description": "Computer Programming" },
+    { "id": "ct-2", "curriculumVersionId": "cv-ce-2554", "code": "01076113", "name": "Data Structures and Algorithms", "description": "Data Structures and Algorithms" },
+    { "id": "ct-3", "curriculumVersionId": "cv-ce-2554", "code": "01076221", "name": "Database Systems", "description": "Database Systems" },
+
+    { "id": "ct-4", "curriculumVersionId": "cv-ce-2559", "code": "01076112", "name": "Computer Programming", "description": "Computer Programming" },
+    { "id": "ct-5", "curriculumVersionId": "cv-ce-2559", "code": "01076113", "name": "Data Structures and Algorithms", "description": "Data Structures and Algorithms" },
+    { "id": "ct-6", "curriculumVersionId": "cv-ce-2559", "code": "01076231", "name": "Computer Architecture", "description": "Computer Architecture" },
+    { "id": "ct-7", "curriculumVersionId": "cv-ce-2559", "code": "01076241", "name": "Operating Systems", "description": "Operating Systems" },
+    { "id": "ct-8", "curriculumVersionId": "cv-ce-2559", "code": "01076341", "name": "Computer Networks", "description": "Computer Networks" },
+
+    { "id": "ct-9",  "curriculumVersionId": "cv-ce-2564", "code": "01076112", "name": "Computer Programming", "description": "Computer Programming" },
+    { "id": "ct-10", "curriculumVersionId": "cv-ce-2564", "code": "01076114", "name": "Discrete Structures", "description": "Discrete Structures" },
+    { "id": "ct-11", "curriculumVersionId": "cv-ce-2564", "code": "01076215", "name": "Data Structures and Algorithms", "description": "Data Structures and Algorithms" },
+    { "id": "ct-12", "curriculumVersionId": "cv-ce-2564", "code": "01076231", "name": "Digital Logic Design", "description": "Digital Logic Design" },
+    { "id": "ct-13", "curriculumVersionId": "cv-ce-2564", "code": "01076232", "name": "Computer Architecture", "description": "Computer Architecture" },
+    { "id": "ct-14", "curriculumVersionId": "cv-ce-2564", "code": "01076241", "name": "Operating Systems", "description": "Operating Systems" },
+    { "id": "ct-15", "curriculumVersionId": "cv-ce-2564", "code": "01076321", "name": "Database Systems", "description": "Database Systems" },
+    { "id": "ct-16", "curriculumVersionId": "cv-ce-2564", "code": "01076351", "name": "Software Engineering", "description": "Software Engineering" },
+    { "id": "ct-17", "curriculumVersionId": "cv-ce-2564", "code": "01076497", "name": "Computer Engineering Senior Project", "description": "Computer Engineering Senior Project" },
+
+    { "id": "ct-18", "curriculumVersionId": "cv-ce-2569", "code": "01076112", "name": "Computer Programming", "description": "Computer Programming" },
+    { "id": "ct-19", "curriculumVersionId": "cv-ce-2569", "code": "01076114", "name": "Discrete Structures", "description": "Discrete Structures" },
+    { "id": "ct-20", "curriculumVersionId": "cv-ce-2569", "code": "01076215", "name": "Data Structures and Algorithms", "description": "Data Structures and Algorithms" },
+    { "id": "ct-21", "curriculumVersionId": "cv-ce-2569", "code": "01076232", "name": "Computer Architecture", "description": "Computer Architecture" },
+    { "id": "ct-22", "curriculumVersionId": "cv-ce-2569", "code": "01076241", "name": "Operating Systems", "description": "Operating Systems" },
+    { "id": "ct-23", "curriculumVersionId": "cv-ce-2569", "code": "01076321", "name": "Database Systems", "description": "Database Systems" },
+    { "id": "ct-24", "curriculumVersionId": "cv-ce-2569", "code": "01076355", "name": "User Experience and User Interface Design", "description": "User Experience and User Interface Design" },
+    { "id": "ct-25", "curriculumVersionId": "cv-ce-2569", "code": "01076362", "name": "Machine Learning", "description": "Machine Learning" },
+    { "id": "ct-26", "curriculumVersionId": "cv-ce-2569", "code": "01076371", "name": "Embedded Systems", "description": "Embedded Systems" },
+    { "id": "ct-27", "curriculumVersionId": "cv-ce-2569", "code": "01076497", "name": "Computer Engineering Senior Project", "description": "Computer Engineering Senior Project" },
+
+    { "id": "ct-28", "curriculumVersionId": "cv-cecs-2560", "code": "01077113", "name": "Object-Oriented Programming", "description": "Object-Oriented Programming" },
+    { "id": "ct-29", "curriculumVersionId": "cv-cecs-2560", "code": "01077221", "name": "Theory of Computation", "description": "Theory of Computation" },
+    { "id": "ct-30", "curriculumVersionId": "cv-cecs-2560", "code": "01077231", "name": "Introduction to Artificial Intelligence", "description": "Introduction to Artificial Intelligence" },
+    { "id": "ct-31", "curriculumVersionId": "cv-cecs-2560", "code": "01077351", "name": "Human-Computer Interaction", "description": "Human-Computer Interaction" },
+
+    { "id": "ct-32", "curriculumVersionId": "cv-cecs-2565", "code": "01077113", "name": "Object-Oriented Programming", "description": "Object-Oriented Programming" },
+    { "id": "ct-33", "curriculumVersionId": "cv-cecs-2565", "code": "01077221", "name": "Theory of Computation", "description": "Theory of Computation" },
+    { "id": "ct-34", "curriculumVersionId": "cv-cecs-2565", "code": "01077332", "name": "Artificial Intelligence and Machine Learning", "description": "Artificial Intelligence and Machine Learning" },
+    { "id": "ct-35", "curriculumVersionId": "cv-cecs-2565", "code": "01077341", "name": "Data Science", "description": "Data Science" },
+    { "id": "ct-36", "curriculumVersionId": "cv-cecs-2565", "code": "01077355", "name": "UX/UI Design", "description": "UX/UI Design" },
+    { "id": "ct-37", "curriculumVersionId": "cv-cecs-2565", "code": "01077421", "name": "Cybersecurity", "description": "Cybersecurity" },
+
+    { "id": "ct-38", "curriculumVersionId": "cv-cei-2558", "code": "01078112", "name": "Computer Programming", "description": "" },
+    { "id": "ct-39", "curriculumVersionId": "cv-cei-2558", "code": "01078221", "name": "Data Structures and Algorithms", "description": "" },
+    { "id": "ct-40", "curriculumVersionId": "cv-cei-2558", "code": "01078351", "name": "Human-Computer Interaction", "description": "" },
+
+    { "id": "ct-41", "curriculumVersionId": "cv-cei-2563", "code": "01078112", "name": "Computer Programming", "description": "" },
+    { "id": "ct-42", "curriculumVersionId": "cv-cei-2563", "code": "01078231", "name": "Computer Architecture", "description": "" },
+    { "id": "ct-43", "curriculumVersionId": "cv-cei-2563", "code": "01078311", "name": "Software Engineering", "description": "" },
+    { "id": "ct-44", "curriculumVersionId": "cv-cei-2563", "code": "01078341", "name": "Computer Networks", "description": "" },
+    { "id": "ct-45", "curriculumVersionId": "cv-cei-2563", "code": "01078351", "name": "Human-Computer Interaction", "description": "" },
+
+    { "id": "ct-46", "curriculumVersionId": "cv-cei-2568", "code": "01078112", "name": "Computer Programming", "description": "" },
+    { "id": "ct-47", "curriculumVersionId": "cv-cei-2568", "code": "01078231", "name": "Computer Architecture", "description": "" },
+    { "id": "ct-48", "curriculumVersionId": "cv-cei-2568", "code": "01078355", "name": "Cloud Computing and IoT", "description": "" },
+    { "id": "ct-49", "curriculumVersionId": "cv-cei-2568", "code": "01078362", "name": "Machine Learning", "description": "" },
+    { "id": "ct-50", "curriculumVersionId": "cv-cei-2568", "code": "01078365", "name": "User Experience and User Interface Design", "description": "" },
+    { "id": "ct-51", "curriculumVersionId": "cv-cei-2568", "code": "01078497", "name": "Senior Project", "description": "" }
+  ]
+}
