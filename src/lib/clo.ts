@@ -7,7 +7,6 @@ export interface CLO {
   courseId: string;
   code: string;
   text: string;
-  ploMapping: string[];
   createdAt: string;
   updatedAt: string;
 }

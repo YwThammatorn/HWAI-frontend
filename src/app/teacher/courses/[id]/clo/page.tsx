@@ -6,8 +6,6 @@ import { useCourses } from "@/lib/courses";
 import { useCLOs, CLO } from "@/lib/clo";
 import { useLanguage } from "@/context/LanguageContext";
 
-const PLO_OPTIONS = ["PLO1", "PLO2", "PLO3", "PLO4", "PLO5"];
-
 export default function CLOPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
@@ -25,9 +23,8 @@ export default function CLOPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formCode, setFormCode] = useState("");
   const [formText, setFormText] = useState("");
-  const [formPlo, setFormPlo] = useState<string[]>([]);
 
-  const formDirty = formMode !== "idle" && (formCode !== "" || formText !== "" || formPlo.length > 0);
+  const formDirty = formMode !== "idle" && (formCode !== "" || formText !== "");
 
   useEffect(() => {
     const handler = (e: BeforeUnloadEvent) => {
@@ -47,7 +44,6 @@ export default function CLOPage() {
     setEditingId(null);
     setFormCode(`CLO${clos.length + 1}`);
     setFormText("");
-    setFormPlo([]);
     setFormMode("add");
   }
 
@@ -56,7 +52,6 @@ export default function CLOPage() {
     setEditingId(clo.id);
     setFormCode(clo.code);
     setFormText(clo.text);
-    setFormPlo([...clo.ploMapping]);
     setFormMode("edit");
   }
 
@@ -71,9 +66,9 @@ export default function CLOPage() {
     const text = formText.trim();
     if (!code || !text) return;
     if (formMode === "add") {
-      addCLO({ courseId: id, code, text, ploMapping: formPlo });
+      addCLO({ courseId: id, code, text });
     } else if (formMode === "edit" && editingId) {
-      updateCLO(editingId, { code, text, ploMapping: formPlo });
+      updateCLO(editingId, { code, text });
     }
     setFormMode("idle");
     setEditingId(null);
@@ -82,10 +77,6 @@ export default function CLOPage() {
   function handleDelete(clo: CLO) {
     if (!window.confirm(t(`ลบ "${clo.code}" ถาวร? ไม่สามารถกู้คืนได้`, `Permanently delete "${clo.code}"? Cannot be undone.`))) return;
     removeCLO(clo.id);
-  }
-
-  function togglePlo(plo: string) {
-    setFormPlo(prev => prev.includes(plo) ? prev.filter(p => p !== plo) : [...prev, plo]);
   }
 
   if (!course) {
@@ -121,39 +112,15 @@ export default function CLOPage() {
           </div>
           <div className="flex items-center gap-2 mt-1">
             <button
-              disabled
-              title={t("ฟีเจอร์นี้จะพร้อมใช้งานเร็ว ๆ นี้", "This feature is coming soon")}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-gray-200 text-xs font-medium text-gray-300 cursor-not-allowed select-none"
-            >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-              </svg>
-              {t("ให้ AI ช่วยร่าง", "AI Draft")}
-            </button>
-            <button
               onClick={openAdd}
               className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-medium transition-colors"
             >
               <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
                 <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
               </svg>
-              {t("เพิ่ม CLO เอง", "Add CLO")}
+              {t("เพิ่ม CLO", "Add CLO")}
             </button>
           </div>
-        </div>
-
-        {/* Info banner */}
-        <div className="flex gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 mb-6">
-          <svg className="shrink-0 mt-0.5" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round">
-            <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
-          </svg>
-          <p className="text-xs text-blue-600 leading-relaxed">
-            <strong>PLO (Program Learning Outcome)</strong>{" "}
-            {t(
-              "คือผลลัพธ์การเรียนรู้ระดับหลักสูตร — CLO แต่ละข้อควรสนับสนุนอย่างน้อย 1 PLO เพื่อให้ระบบรายงาน CLO Attainment ได้ถูกต้อง",
-              "are program-level learning outcomes — each CLO should support at least one PLO for accurate CLO Attainment reporting."
-            )}
-          </p>
         </div>
 
         {/* Empty state */}
@@ -182,8 +149,8 @@ export default function CLOPage() {
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
 
             {/* Table header */}
-            <div className="grid gap-0 border-b border-gray-100" style={{ gridTemplateColumns: "88px 1fr 148px 170px 76px" }}>
-              {[t("รหัส", "Code"), t("ข้อความ CLO", "CLO Text"), "PLO", t("เกณฑ์ที่ผูก", "Linked Criteria"), ""].map((h, i) => (
+            <div className="grid gap-0 border-b border-gray-100" style={{ gridTemplateColumns: "88px 1fr 170px 76px" }}>
+              {[t("รหัส", "Code"), t("ข้อความ CLO", "CLO Text"), t("เกณฑ์ที่ผูก", "Linked Criteria"), ""].map((h, i) => (
                 <div key={i} className="px-4 py-3 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">{h}</div>
               ))}
             </div>
@@ -197,7 +164,7 @@ export default function CLOPage() {
                   idx < clos.length - 1 ? "border-b border-gray-50" : "",
                   editingId === clo.id ? "bg-[#F0FFFE] opacity-60" : "hover:bg-gray-50/50",
                 ].join(" ")}
-                style={{ gridTemplateColumns: "88px 1fr 148px 170px 76px" }}
+                style={{ gridTemplateColumns: "88px 1fr 170px 76px" }}
               >
                 {/* Code */}
                 <div className="px-4">
@@ -208,19 +175,6 @@ export default function CLOPage() {
 
                 {/* Text */}
                 <div className="px-4 text-sm text-[var(--text-primary)] leading-relaxed">{clo.text}</div>
-
-                {/* PLO */}
-                <div className="px-4 flex flex-wrap gap-1 pt-0.5">
-                  {clo.ploMapping.length > 0 ? (
-                    clo.ploMapping.map(p => (
-                      <span key={p} className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-violet-50 text-violet-600 text-xs font-medium">
-                        {p}
-                      </span>
-                    ))
-                  ) : (
-                    <span className="text-xs text-gray-300">—</span>
-                  )}
-                </div>
 
                 {/* เกณฑ์ผูก */}
                 <div className="px-4 pt-0.5">
@@ -289,27 +243,6 @@ export default function CLOPage() {
                       rows={2}
                       className="w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] resize-none transition-colors"
                     />
-                  </div>
-                </div>
-
-                <div className="mb-5">
-                  <label className="block text-xs font-medium text-gray-500 mb-2">{t("PLO ที่สนับสนุน", "Supporting PLOs")}</label>
-                  <div className="flex gap-2 flex-wrap">
-                    {PLO_OPTIONS.map(plo => (
-                      <button
-                        key={plo}
-                        type="button"
-                        onClick={() => togglePlo(plo)}
-                        className={[
-                          "px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors",
-                          formPlo.includes(plo)
-                            ? "bg-violet-500 text-white border-violet-500"
-                            : "border-gray-200 text-gray-500 bg-white hover:border-violet-400 hover:text-violet-500",
-                        ].join(" ")}
-                      >
-                        {plo}
-                      </button>
-                    ))}
                   </div>
                 </div>
 
