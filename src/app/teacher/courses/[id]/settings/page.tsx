@@ -178,81 +178,69 @@ export default function CourseSettingsPage() {
           <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
             <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-5">{t("รูปแบบรายวิชา", "Course Visuals")}</h2>
 
-            <div className="grid grid-cols-[1fr_auto_1fr] gap-6 items-start">
-              {/* Icon Picker */}
-              <div className="flex flex-col items-center">
-                <label className="block text-sm font-medium text-[var(--text-primary)] mb-2 self-start">{t("ไอคอน", "Icon")}</label>
-                <div className="w-16 h-16 rounded-xl mb-3 shadow flex items-center justify-center" style={{ background: coverColor }}>
-                  <CourseIcon iconKey={icon} size={26} className="text-white" />
-                </div>
-                <div className="grid grid-cols-4 gap-1.5">
-                  {COURSE_ICON_KEYS.map((k) => (
-                    <button
-                      type="button"
-                      key={k}
-                      onClick={() => setIcon(k)}
-                      aria-label={k}
-                      aria-pressed={icon === k}
-                      className={[
-                        "w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all",
-                        icon === k
-                          ? "border-[#1B2A4A] text-[var(--text-primary)] scale-110"
-                          : "border-transparent text-gray-400 hover:text-[var(--text-primary)]",
-                      ].join(" ")}
-                    >
-                      <CourseIcon iconKey={k} size={15} />
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Color Picker */}
-              <div className="flex flex-col items-center">
-                <label className="block text-sm font-medium text-[var(--text-primary)] mb-2 self-start">{t("สีปก", "Cover Color")}</label>
-                <div className="w-16 h-16 rounded-xl mb-3 shadow" style={{ background: coverColor }} />
-                <div className="grid grid-cols-4 gap-1.5">
-                  {PRESET_COLORS.map((c) => (
-                    <button
-                      type="button"
-                      key={c}
-                      onClick={() => setCoverColor(c)}
-                      className="w-7 h-7 rounded-lg border-2 transition-all"
-                      style={{
-                        background: c,
-                        borderColor: coverColor === c ? "#1B2A4A" : "transparent",
-                        transform: coverColor === c ? "scale(1.1)" : "scale(1)",
-                      }}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              {/* Upload Cover */}
-              <div>
-                <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">{t("อัปโหลดภาพปก", "Upload Cover Image")}</label>
-                <div className="border-2 border-dashed border-gray-200 rounded-xl h-32 flex flex-col items-center justify-center gap-2 text-gray-500 hover:border-[var(--accent)] hover:text-[var(--accent)] cursor-pointer transition-colors">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                    <polyline points="17 8 12 3 7 8"/>
-                    <line x1="12" y1="3" x2="12" y2="15"/>
-                  </svg>
-                  <span className="text-xs">{t("คลิกเพื่ออัปโหลด", "Click to upload")}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Live preview */}
-            <div className="mt-5">
-              <p className="text-xs text-gray-500 mb-2">{t("ตัวอย่าง", "Preview")}</p>
-              <div className="w-48 rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
-                <div className="h-20 relative" style={{ background: coverColor }}>
-                  <div className="absolute bottom-2 left-2 w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center">
-                    <CourseIcon iconKey={icon} size={14} className="text-white" />
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-8">
+              {/* Pickers */}
+              <div className="flex flex-col gap-6">
+                {/* Icon Picker */}
+                <div>
+                  <label className="block text-sm font-medium text-[var(--text-primary)] mb-2.5">{t("ไอคอน", "Icon")}</label>
+                  <div className="flex flex-wrap gap-2">
+                    {COURSE_ICON_KEYS.map((k) => (
+                      <button
+                        type="button"
+                        key={k}
+                        onClick={() => setIcon(k)}
+                        aria-label={k}
+                        aria-pressed={icon === k}
+                        className={[
+                          "w-9 h-9 rounded-lg border-2 flex items-center justify-center transition-all",
+                          icon === k
+                            ? "border-[#1B2A4A] text-[var(--text-primary)] scale-110"
+                            : "border-gray-100 text-gray-400 hover:text-[var(--text-primary)] hover:border-gray-200",
+                        ].join(" ")}
+                      >
+                        <CourseIcon iconKey={k} size={16} />
+                      </button>
+                    ))}
                   </div>
                 </div>
-                <div className="bg-white p-3">
-                  <p className="text-xs font-bold text-[var(--text-primary)] truncate">{name || t("ชื่อรายวิชา", "Course Name")}</p>
-                  <p className="text-[10px] text-gray-500 mt-0.5">{t("เพิ่มด้วยตนเอง", "Manually Added")}</p>
+
+                {/* Color Picker */}
+                <div>
+                  <label className="block text-sm font-medium text-[var(--text-primary)] mb-2.5">{t("สีปก", "Cover Color")}</label>
+                  <div className="flex flex-wrap gap-2">
+                    {PRESET_COLORS.map((c) => (
+                      <button
+                        type="button"
+                        key={c}
+                        onClick={() => setCoverColor(c)}
+                        aria-label={c}
+                        aria-pressed={coverColor === c}
+                        className="w-9 h-9 rounded-lg border-2 transition-all"
+                        style={{
+                          background: c,
+                          borderColor: coverColor === c ? "#1B2A4A" : "transparent",
+                          transform: coverColor === c ? "scale(1.1)" : "scale(1)",
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Live preview */}
+              <div className="flex flex-col">
+                <p className="text-sm font-medium text-[var(--text-primary)] mb-2.5">{t("ตัวอย่าง", "Preview")}</p>
+                <div className="w-48 rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
+                  <div className="h-20 relative" style={{ background: coverColor }}>
+                    <div className="absolute bottom-2 left-2 w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center">
+                      <CourseIcon iconKey={icon} size={14} className="text-white" />
+                    </div>
+                  </div>
+                  <div className="bg-white p-3">
+                    <p className="text-xs font-bold text-[var(--text-primary)] truncate">{name || t("ชื่อรายวิชา", "Course Name")}</p>
+                    <p className="text-[10px] text-gray-500 mt-0.5">{t("เพิ่มด้วยตนเอง", "Manually Added")}</p>
+                  </div>
                 </div>
               </div>
             </div>

@@ -303,21 +303,32 @@ function CourseDrawer({
           {/* Color picker */}
           <div className="flex flex-col gap-2">
             <label className="text-xs font-semibold text-[var(--text-muted)]">{t("สีปก", "Cover Color")}</label>
-            <div className="grid grid-cols-6 gap-2">
+            <div className="flex flex-wrap gap-2">
               {PRESET_COLORS.map((c) => (
                 <button
                   key={c}
                   onClick={() => setCoverColor(c)}
-                  className="w-9 h-9 rounded-xl transition-transform active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]"
-                  style={{ background: c, outline: c === coverColor ? "3px solid var(--accent-bright)" : "none", outlineOffset: "2px" }}
+                  className="w-8 h-8 rounded-lg border-2 transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]"
+                  style={{
+                    background: c,
+                    borderColor: c === coverColor ? "var(--accent-bright)" : "transparent",
+                    transform: c === coverColor ? "scale(1.08)" : "scale(1)",
+                  }}
                   aria-label={c}
                   aria-pressed={c === coverColor}
                 />
               ))}
             </div>
             {/* Preview */}
-            <div className="h-14 rounded-xl flex items-end p-3" style={{ background: coverColor }}>
-              <span className="text-white text-xs font-semibold opacity-90 truncate">{name || t("ชื่อรายวิชา", "Course name")}</span>
+            <div className="flex items-center gap-3 mt-1 p-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)]">
+              <div
+                className="w-9 h-9 rounded-xl shrink-0 flex items-center justify-center text-white font-bold text-xs"
+                style={{ background: coverColor }}
+                aria-hidden="true"
+              >
+                {(name || "?").charAt(0).toUpperCase()}
+              </div>
+              <span className="text-sm font-medium text-[var(--text-primary)] truncate">{name || t("ชื่อรายวิชา", "Course name")}</span>
             </div>
           </div>
         </div>
