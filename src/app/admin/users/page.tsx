@@ -1353,7 +1353,7 @@ function StudentsTab() {
   // raw value for anything else, since `program` isn't FK-enforced (see above).
   const PROGRAM_LABEL: Record<string, string> = {
     CE: t("วิศวกรรมคอมพิวเตอร์", "Computer Engineering"),
-    CECS: t("วิศวกรรมคอมพิวเตอร์และวิทยาการคอมพิวเตอร์", "Computer Engineering and Computer Science"),
+    CECS: t("วิศวกรรมคอมพิวเตอร์และความมั่นคงปลอดภัยไซเบอร์", "Computer Engineering and Cybersecurity"),
     CEI: t("วิศวกรรมคอมพิวเตอร์นานาชาติ", "Computer Engineering International"),
   };
 
