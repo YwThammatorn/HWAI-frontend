@@ -306,7 +306,8 @@ export default function CourseDetailPage() {
               <h2 className="text-base font-bold text-[var(--text-primary)]">{t("สัดส่วนคะแนน", "Grading Categories")}</h2>
               <button
                 onClick={openAddCategory}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-xs font-medium transition-colors shrink-0"
+                disabled={catFormOpen}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-xs font-medium transition-colors shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <svg width="11" height="11" viewBox="0 0 16 16" fill="none">
                   <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
@@ -327,95 +328,138 @@ export default function CourseDetailPage() {
                     <div key={i} className="px-3 py-2.5 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">{h}</div>
                   ))}
                 </div>
-                {categories.map((cat, idx) => (
-                  <div
-                    key={cat.id}
-                    className={[
-                      "grid gap-0 items-center py-2.5 transition-colors",
-                      idx < categories.length - 1 ? "border-b border-gray-50" : "",
-                      catEditingId === cat.id ? "bg-[#F0FFFE] opacity-60" : "hover:bg-gray-50/50",
-                    ].join(" ")}
-                    style={{ gridTemplateColumns: "1fr 96px 64px" }}
-                  >
-                    <div className="px-3 text-sm text-[var(--text-primary)]">{cat.name}</div>
-                    <div className="px-3 text-sm font-semibold text-[var(--accent)] tabular-nums">{cat.weight}%</div>
+                {categories.map((cat, idx) => {
+                  const isRowLast = idx === categories.length - 1 && !(catFormOpen && !catEditingId);
+                  return catEditingId === cat.id ? (
+                    <div
+                      key={cat.id}
+                      className={`grid gap-0 items-center py-2 bg-[#F0FFFE] ${isRowLast ? "" : "border-b border-gray-50"}`}
+                      style={{ gridTemplateColumns: "1fr 96px 64px" }}
+                    >
+                      <div className="px-3">
+                        <input
+                          value={catName}
+                          onChange={(e) => setCatName(e.target.value)}
+                          placeholder={t("เช่น Midterm", "e.g. Midterm")}
+                          autoFocus
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-[var(--accent)]/40 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 transition-colors"
+                        />
+                      </div>
+                      <div className="px-3">
+                        <input
+                          type="number"
+                          min={1}
+                          max={100}
+                          value={catWeight}
+                          onChange={(e) => setCatWeight(e.target.value)}
+                          placeholder="30"
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-[var(--accent)]/40 bg-white text-sm tabular-nums focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 transition-colors"
+                        />
+                      </div>
+                      <div className="px-3 flex items-center gap-1">
+                        <button
+                          onClick={cancelCategoryForm}
+                          className="p-1 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-[var(--text-primary)] transition-colors"
+                          title={t("ยกเลิก", "Cancel")}
+                        >
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                          </svg>
+                        </button>
+                        <button
+                          onClick={handleSaveCategory}
+                          disabled={!catName.trim() || !Number(catWeight)}
+                          className="p-1 rounded-lg hover:bg-[var(--accent-bright)]/10 text-[var(--accent)] transition-colors disabled:opacity-40"
+                          title={t("บันทึก", "Save")}
+                        >
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                            <polyline points="20 6 9 17 4 12"/>
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      key={cat.id}
+                      className={`grid gap-0 items-center py-2.5 transition-colors hover:bg-gray-50/50 ${isRowLast ? "" : "border-b border-gray-50"}`}
+                      style={{ gridTemplateColumns: "1fr 96px 64px" }}
+                    >
+                      <div className="px-3 text-sm text-[var(--text-primary)]">{cat.name}</div>
+                      <div className="px-3 text-sm font-semibold text-[var(--accent)] tabular-nums">{cat.weight}%</div>
+                      <div className="px-3 flex items-center gap-1">
+                        <button
+                          onClick={() => openEditCategory(cat)}
+                          disabled={catFormOpen}
+                          className="p-1 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-[var(--text-primary)] transition-colors disabled:opacity-50"
+                          title={t("แก้ไข", "Edit")}
+                        >
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                          </svg>
+                        </button>
+                        <button
+                          onClick={() => handleDeleteCategory(cat)}
+                          disabled={catFormOpen}
+                          className="p-1 rounded-lg hover:bg-[var(--s-err-bg)] text-gray-500 hover:text-[var(--s-err-text)] transition-colors disabled:opacity-50"
+                          title={t("ลบ", "Delete")}
+                        >
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                            <polyline points="3 6 5 6 21 6"/>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* New-category row — appended in place instead of a form panel below */}
+                {catFormOpen && !catEditingId && (
+                  <div className="grid gap-0 items-center py-2 bg-[#F0FFFE]" style={{ gridTemplateColumns: "1fr 96px 64px" }}>
+                    <div className="px-3">
+                      <input
+                        value={catName}
+                        onChange={(e) => setCatName(e.target.value)}
+                        placeholder={t("เช่น Midterm", "e.g. Midterm")}
+                        autoFocus
+                        className="w-full px-2.5 py-1.5 rounded-lg border border-[var(--accent)]/40 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 transition-colors"
+                      />
+                    </div>
+                    <div className="px-3">
+                      <input
+                        type="number"
+                        min={1}
+                        max={100}
+                        value={catWeight}
+                        onChange={(e) => setCatWeight(e.target.value)}
+                        placeholder="30"
+                        className="w-full px-2.5 py-1.5 rounded-lg border border-[var(--accent)]/40 bg-white text-sm tabular-nums focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 transition-colors"
+                      />
+                    </div>
                     <div className="px-3 flex items-center gap-1">
                       <button
-                        onClick={() => openEditCategory(cat)}
-                        disabled={catEditingId === cat.id}
-                        className="p-1 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-[var(--text-primary)] transition-colors disabled:opacity-50"
-                        title={t("แก้ไข", "Edit")}
+                        onClick={cancelCategoryForm}
+                        className="p-1 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-[var(--text-primary)] transition-colors"
+                        title={t("ยกเลิก", "Cancel")}
                       >
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                         </svg>
                       </button>
                       <button
-                        onClick={() => handleDeleteCategory(cat)}
-                        className="p-1 rounded-lg hover:bg-[var(--s-err-bg)] text-gray-500 hover:text-[var(--s-err-text)] transition-colors"
-                        title={t("ลบ", "Delete")}
+                        onClick={handleSaveCategory}
+                        disabled={!catName.trim() || !Number(catWeight)}
+                        className="p-1 rounded-lg hover:bg-[var(--accent-bright)]/10 text-[var(--accent)] transition-colors disabled:opacity-40"
+                        title={t("บันทึก", "Save")}
                       >
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                          <polyline points="3 6 5 6 21 6"/>
-                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                          <polyline points="20 6 9 17 4 12"/>
                         </svg>
                       </button>
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
-
-            {catFormOpen && (
-              <div className="mt-4 rounded-xl border-2 border-[var(--accent)]/20 bg-teal-50/40 p-4">
-                <p className="text-xs font-semibold text-[var(--accent)] uppercase tracking-wider mb-3">
-                  {catEditingId ? t("แก้ไขหมวด", "Edit Category") : t("เพิ่มหมวดใหม่", "Add New Category")}
-                </p>
-                <div className="grid gap-3 mb-3" style={{ gridTemplateColumns: "1fr 100px" }}>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1.5">
-                      {t("ชื่อหมวด", "Category Name")} <span className="text-[var(--s-err-text)]">*</span>
-                    </label>
-                    <input
-                      value={catName}
-                      onChange={e => setCatName(e.target.value)}
-                      placeholder={t("เช่น Midterm", "e.g. Midterm")}
-                      className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1.5">
-                      {t("%", "%")} <span className="text-[var(--s-err-text)]">*</span>
-                    </label>
-                    <input
-                      type="number"
-                      min={1}
-                      max={100}
-                      value={catWeight}
-                      onChange={e => setCatWeight(e.target.value)}
-                      placeholder="30"
-                      className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm tabular-nums focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
-                    />
-                  </div>
-                </div>
-                <div className="flex justify-end gap-2">
-                  <button
-                    type="button"
-                    onClick={cancelCategoryForm}
-                    className="px-3.5 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors"
-                  >
-                    {t("ยกเลิก", "Cancel")}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleSaveCategory}
-                    disabled={!catName.trim() || !Number(catWeight)}
-                    className="px-3.5 py-1.5 rounded-lg bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {t("บันทึก", "Save")}
-                  </button>
-                </div>
+                )}
               </div>
             )}
 
