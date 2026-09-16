@@ -104,6 +104,18 @@ localStorage.setItem('hwai_submissions_v1', JSON.stringify(JSON.parse(localStora
 
 ---
 
+[9] ทดสอบนำเข้ารายวิชาเข้าหลักสูตร (admin CSV import) - ไม่ต้องใช้ console
+    ต้องทำ [1] ก่อน (ให้มีหลักสูตร CE 2569 = cv-ce-2569 อยู่แล้ว)
+
+    ไปที่ /admin/curriculum -> ขยายแถว "วิศวกรรมคอมพิวเตอร์ (หลักสูตรปรับปรุง 2569)" -> กด "นำเข้า CSV" -> เลือกไฟล์:
+      - test-data/course-templates_sample.csv   (5 แถว — 2 ใหม่ + 1 รหัสซ้ำ (01076112, มีอยู่แล้วใน CE 2569)
+        + 2 แถวตั้งใจใส่ผิด (ไม่มี code / ไม่มี name) ไว้โชว์ validation ของหน้านี้)
+
+    ควรเห็น "ใหม่ 2 / ซ้ำ 1 / ผิด 2" ในตัว preview แล้วกด "+ Import 2" -> โชว์ "Added 2 course(s) (skipped 3)"
+    รายวิชาที่เพิ่มจะไปโผล่ในลิสต์ "รายวิชาในหลักสูตรนี้" ทันที และ "รายวิชาทั้งหมด" ที่ stat card ด้านบนขยับด้วย
+
+---
+
 [4] ล้างข้อมูลทั้งหมด (ถ้าอยากเริ่มใหม่)
 
 ['hwai_user','hwai_managed_teachers_v1','hwai_cohort_students_v1','hwai_courses_v2','hwai_curriculum_versions_v1','hwai_course_templates_v1','hwai_students_v1','hwai_grading_categories_v1','hwai_assignments_v1','hwai_rubrics_v1','hwai_submissions_v1','hwai_student_groups_v1'].forEach(k=>localStorage.removeItem(k)); location.reload();
