@@ -66,7 +66,10 @@ export default function StudentClassworkDetailPage() {
     .map((ft) => (ft === "pdf" ? ".pdf" : "image/*"))
     .join(",");
   const hasAttachment = linkValue.trim() !== "" || fileValue !== null;
-  const attachmentOk = !assignment.acceptsFiles || hasAttachment;
+  // acceptsFiles=true with an empty fileTypes list means there's nothing the
+  // student could actually attach (no UI renders for it either) — treat that
+  // the same as not requiring an attachment, rather than blocking submission.
+  const attachmentOk = !assignment.acceptsFiles || assignment.fileTypes.length === 0 || hasAttachment;
   const canSubmit = (!isGroup || !!myGroup) && attachmentOk;
 
   function handleSubmit() {

@@ -160,6 +160,7 @@ test.describe("P3b — Student Classwork Detail + Submit", () => {
     await seedStudent(page);
     await page.goto(`${BASE}/student/courses/c-p3/classwork/a-open`);
     await page.waitForLoadState("networkidle");
+    await page.getByPlaceholder("https://figma.com/...").fill("https://figma.com/file/test");
     await page.getByRole("button", { name: /ส่งงาน|Submit/ }).click();
     const dialog = page.getByRole("alertdialog");
     await expect(dialog).toBeVisible();
@@ -170,6 +171,7 @@ test.describe("P3b — Student Classwork Detail + Submit", () => {
     await seedStudent(page);
     await page.goto(`${BASE}/student/courses/c-p3/classwork/a-open`);
     await page.waitForLoadState("networkidle");
+    await page.getByPlaceholder("https://figma.com/...").fill("https://figma.com/file/test");
     await page.getByRole("button", { name: /ส่งงาน|Submit/ }).click();
     await page.getByRole("button", { name: /ยกเลิก|Cancel/ }).click();
     await expect(page.getByRole("alertdialog")).not.toBeVisible();
@@ -181,6 +183,7 @@ test.describe("P3b — Student Classwork Detail + Submit", () => {
     await seedStudent(page);
     await page.goto(`${BASE}/student/courses/c-p3/classwork/a-open`);
     await page.waitForLoadState("networkidle");
+    await page.getByPlaceholder("https://figma.com/...").fill("https://figma.com/file/test");
     await page.getByRole("button", { name: /ส่งงาน|Submit/ }).click();
     await page.getByRole("alertdialog").getByRole("button", { name: /ยืนยัน|Confirm/i }).click();
     // Post-submit state
