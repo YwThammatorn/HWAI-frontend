@@ -8,12 +8,13 @@ import { useStudents } from "@/lib/students";
 import { useAssignments } from "@/lib/assignments";
 import { useManagedTeachers } from "@/lib/managed-teachers";
 import { useGradingCategories, GradingCategory } from "@/lib/gradingCategories";
+import { DAY_OPTIONS, SLOT_OPTIONS, parseSchedule } from "@/lib/schedule";
 import { useLanguage } from "@/context/LanguageContext";
 
 export default function CourseDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { t } = useLanguage();
-  const { getCourse } = useCourses();
+  const { getCourse, updateCourse } = useCourses();
   const { getStudentsByCourse } = useStudents();
   const { getAssignmentsByCourse, getSubmissionsByAssignment } = useAssignments();
   const { getTeachersByCourse } = useManagedTeachers();
@@ -29,6 +30,37 @@ export default function CourseDetailPage() {
   const [catEditingId, setCatEditingId] = useState<string | null>(null);
   const [catName, setCatName] = useState("");
   const [catWeight, setCatWeight] = useState("");
+
+  const [detailsEditing, setDetailsEditing] = useState(false);
+  const [detailsName, setDetailsName] = useState("");
+  const [detailsDay, setDetailsDay] = useState("");
+  const [detailsSlot, setDetailsSlot] = useState("");
+  const [detailsRoom, setDetailsRoom] = useState("");
+
+  function openEditDetails() {
+    if (!course) return;
+    setDetailsName(course.name);
+    const { day, slot } = parseSchedule(course.schedule);
+    setDetailsDay(day);
+    setDetailsSlot(slot);
+    setDetailsRoom(course.room ?? "");
+    setDetailsEditing(true);
+  }
+
+  function cancelEditDetails() {
+    setDetailsEditing(false);
+  }
+
+  function handleSaveDetails() {
+    const name = detailsName.trim();
+    if (!name) return;
+    updateCourse(id, {
+      name,
+      schedule: detailsDay && detailsSlot ? `${detailsDay} ${detailsSlot}` : undefined,
+      room: detailsRoom.trim() || undefined,
+    });
+    setDetailsEditing(false);
+  }
 
   function openAddCategory() {
     setCatEditingId(null);
@@ -158,23 +190,83 @@ export default function CourseDetailPage() {
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-base font-bold text-[var(--text-primary)]">{t("รายละเอียด", "Details")}</h2>
-              <Link
-                href={`/teacher/courses/${id}/settings`}
-                className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-[var(--text-primary)] transition-colors"
-                title={t("แก้ไข", "Edit")}
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                </svg>
-              </Link>
+              {!detailsEditing && (
+                <button
+                  onClick={openEditDetails}
+                  className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-[var(--text-primary)] transition-colors"
+                  title={t("แก้ไข", "Edit")}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                  </svg>
+                </button>
+              )}
             </div>
             <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-              <DetailField label={t("รายวิชา", "Course")} value={course.name} span2 />
+              {detailsEditing ? (
+                <div className="col-span-2 flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold text-[var(--accent)]">{t("รายวิชา", "Course")}</label>
+                  <input
+                    value={detailsName}
+                    onChange={(e) => setDetailsName(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
+                  />
+                </div>
+              ) : (
+                <DetailField label={t("รายวิชา", "Course")} value={course.name} span2 />
+              )}
+
               <DetailField label={t("รหัสวิชา", "Course Code")} value={course.code} />
               <DetailField label={t("กลุ่มเรียน", "Section")} value={course.sectionNumber} />
-              <DetailField label={t("วันและเวลาเรียน", "Schedule")} value={course.schedule} placeholder={t("ยังไม่กำหนด", "Not set")} />
-              <DetailField label={t("ห้องเรียน", "Room")} value={course.room} placeholder={t("ยังไม่กำหนด", "Not set")} />
+
+              {detailsEditing ? (
+                <div className="col-span-2 grid grid-cols-2 gap-3">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-semibold text-[var(--accent)]">{t("วันเรียน", "Day")}</label>
+                    <select
+                      value={detailsDay}
+                      onChange={(e) => setDetailsDay(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
+                    >
+                      <option value="">{t("เลือกวัน", "Select day")}</option>
+                      {DAY_OPTIONS.map((d) => (
+                        <option key={d.value} value={d.value}>{t(d.labelTh, d.labelEn)}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-semibold text-[var(--accent)]">{t("คาบเวลา", "Time Slot")}</label>
+                    <select
+                      value={detailsSlot}
+                      onChange={(e) => setDetailsSlot(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
+                    >
+                      <option value="">{t("เลือกคาบเวลา", "Select time slot")}</option>
+                      {SLOT_OPTIONS.map((s) => (
+                        <option key={s.value} value={s.value}>{t(s.labelTh, s.labelEn)}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              ) : (
+                <DetailField label={t("วันและเวลาเรียน", "Schedule")} value={course.schedule} placeholder={t("ยังไม่กำหนด", "Not set")} />
+              )}
+
+              {detailsEditing ? (
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold text-[var(--accent)]">{t("ห้องเรียน", "Room")}</label>
+                  <input
+                    value={detailsRoom}
+                    onChange={(e) => setDetailsRoom(e.target.value)}
+                    placeholder={t("เช่น 811", "e.g. 811")}
+                    className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
+                  />
+                </div>
+              ) : (
+                <DetailField label={t("ห้องเรียน", "Room")} value={course.room} placeholder={t("ยังไม่กำหนด", "Not set")} />
+              )}
+
               <DetailField
                 label={t("อาจารย์ประจำวิชา", "Instructor")}
                 value={instructor ? `${instructor.title ? `${instructor.title} ` : ""}${instructor.name}` : undefined}
@@ -182,7 +274,26 @@ export default function CourseDetailPage() {
               />
               <DetailField label="Email" value={instructor?.email} span2 />
             </div>
-            {(!course.schedule || !course.room) && (
+            {detailsEditing && (
+              <div className="flex justify-end gap-2 mt-5">
+                <button
+                  type="button"
+                  onClick={cancelEditDetails}
+                  className="px-3.5 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+                >
+                  {t("ยกเลิก", "Cancel")}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveDetails}
+                  disabled={!detailsName.trim()}
+                  className="px-3.5 py-1.5 rounded-lg bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {t("บันทึก", "Save")}
+                </button>
+              </div>
+            )}
+            {!detailsEditing && (!course.schedule || !course.room) && (
               <p className="text-xs text-[var(--s-err-text)] mt-4">
                 {t("กรุณากำหนดข้อมูลวัน เวลาเรียน และห้องเรียนให้เรียบร้อย", "Please set the class schedule and room")}
               </p>

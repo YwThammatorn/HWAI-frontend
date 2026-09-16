@@ -9,31 +9,9 @@ import { getInitials } from "@/lib/utils";
 import EmptyState from "@/components/EmptyState";
 import StatCard from "@/components/StatCard";
 import { useStudents } from "@/lib/students";
+import { DAY_OPTIONS, SLOT_OPTIONS, parseSchedule } from "@/lib/schedule";
 
 // ── Course create/edit drawer ─────────────────────────────────────────────────
-
-const DAY_OPTIONS = [
-  { value: "จันทร์", labelTh: "จันทร์", labelEn: "Monday" },
-  { value: "อังคาร", labelTh: "อังคาร", labelEn: "Tuesday" },
-  { value: "พุธ", labelTh: "พุธ", labelEn: "Wednesday" },
-  { value: "พฤหัสบดี", labelTh: "พฤหัสบดี", labelEn: "Thursday" },
-  { value: "ศุกร์", labelTh: "ศุกร์", labelEn: "Friday" },
-  { value: "เสาร์", labelTh: "เสาร์", labelEn: "Saturday" },
-  { value: "อาทิตย์", labelTh: "อาทิตย์", labelEn: "Sunday" },
-] as const;
-
-const SLOT_OPTIONS = [
-  { value: "9:00-12:00", labelTh: "คาบเช้า (9:00-12:00)", labelEn: "Morning (9:00-12:00)" },
-  { value: "13:00-16:00", labelTh: "คาบบ่าย (13:00-16:00)", labelEn: "Afternoon (13:00-16:00)" },
-  { value: "16:00-19:00", labelTh: "คาบเย็น (16:00-19:00)", labelEn: "Evening (16:00-19:00)" },
-] as const;
-
-function parseSchedule(schedule?: string): { day: string; slot: string } {
-  if (!schedule) return { day: "", slot: "" };
-  const day = DAY_OPTIONS.find((d) => schedule.startsWith(d.value))?.value ?? "";
-  const slot = SLOT_OPTIONS.find((s) => schedule.includes(s.value))?.value ?? "";
-  return { day, slot };
-}
 
 function CourseDrawer({
   mode,
