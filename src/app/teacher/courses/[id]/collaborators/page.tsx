@@ -43,44 +43,6 @@ function Avatar({ initials, bg }: { initials: string; bg: string }) {
   );
 }
 
-function RowMenu({ onRemove, label }: { onRemove: () => void; label: string }) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-  const { t } = useLanguage();
-
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
-
-  return (
-    <div ref={ref} className="relative">
-      <button
-        onClick={() => setOpen((o) => !o)}
-        className="w-8 h-8 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-subtle)] transition-colors"
-        aria-label={t("ตัวเลือกเพิ่มเติม", "More options")}
-      >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-          <circle cx="12" cy="5" r="1.5" /><circle cx="12" cy="12" r="1.5" /><circle cx="12" cy="19" r="1.5" />
-        </svg>
-      </button>
-      {open && (
-        <div className="absolute right-0 top-9 z-20 bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-xl shadow-lg py-1 w-36">
-          <button
-            onClick={() => { onRemove(); setOpen(false); }}
-            className="w-full text-left px-4 py-2 text-sm text-[var(--s-err-text)] hover:bg-[var(--s-err-bg)] transition-colors"
-          >
-            {label}
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
-
 // ─── Add collaborator drawer ────────────────────────────────────────────────────
 
 function AddCollaboratorDrawer({
@@ -486,28 +448,51 @@ export default function CollaboratorsPage() {
         {filtered.length === 0 ? (
           <div className="px-6 py-10 text-center text-sm text-[var(--text-muted)]">{t("ไม่พบผู้ร่วมงานที่ตรงกัน", "No matching collaborators found")}</div>
         ) : (
-          <div className="divide-y divide-[var(--border-subtle)]">
-            {filtered.map((row) => (
-              <div key={row.key} className="flex items-center gap-4 px-6 py-4 hover:bg-[var(--bg-subtle)]/50 transition-colors">
-                <Avatar initials={row.initials} bg={row.avatarBg} />
-
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-[var(--text-primary)]">{row.name}</p>
-                  <p className="text-xs text-[var(--text-muted)]">{row.email}</p>
-                </div>
-
-                <div className="text-right shrink-0 max-w-[220px]">
-                  <p className="text-sm font-semibold" style={{ color: row.roleBadgeColor }}>{row.roleLabel}</p>
-                  <p className="text-xs text-[var(--text-muted)]">{row.permissionSummary}</p>
-                </div>
-
-                {row.removable && canManage ? (
-                  <RowMenu label={t("ลบออก", "Remove")} onRemove={() => remove(row)} />
-                ) : (
-                  <div className="w-8" />
-                )}
-              </div>
-            ))}
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-[var(--border-subtle)] bg-[var(--bg-app)]">
+                  <th scope="col" className="px-6 py-3 text-left text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("ชื่อ", "Name")}</th>
+                  <th scope="col" className="px-4 py-3 text-left text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("อีเมล", "Email")}</th>
+                  <th scope="col" className="px-4 py-3 text-left text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("บทบาท", "Role")}</th>
+                  <th scope="col" className="px-4 py-3 text-left text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("สิทธิ์", "Permissions")}</th>
+                  <th scope="col" className="px-4 py-3 text-right text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("การดำเนินการ", "Action")}</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[var(--border-subtle)]">
+                {filtered.map((row) => (
+                  <tr key={row.key} className="hover:bg-[var(--bg-subtle)]/50 transition-colors">
+                    <td className="px-6 py-3.5">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <Avatar initials={row.initials} bg={row.avatarBg} />
+                        <p className="text-sm font-semibold text-[var(--text-primary)] truncate">{row.name}</p>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3.5 text-[var(--text-muted)] truncate max-w-[220px]">{row.email}</td>
+                    <td className="px-4 py-3.5">
+                      <span className="text-sm font-semibold whitespace-nowrap" style={{ color: row.roleBadgeColor }}>{row.roleLabel}</span>
+                    </td>
+                    <td className="px-4 py-3.5 text-xs text-[var(--text-muted)] max-w-[260px]">{row.permissionSummary}</td>
+                    <td className="px-4 py-3.5 text-right">
+                      {row.removable && canManage ? (
+                        <button
+                          onClick={() => remove(row)}
+                          title={t("ลบออกจากรายวิชา", "Remove from course")}
+                          className="w-7 h-7 inline-flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--s-err-text)] hover:bg-[var(--s-err-bg)] transition-colors"
+                        >
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                            <polyline points="3 6 5 6 21 6"/>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                          </svg>
+                        </button>
+                      ) : (
+                        <span className="text-xs text-[var(--text-muted)]">—</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
 
