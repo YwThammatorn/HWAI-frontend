@@ -2,7 +2,8 @@
 
 import { useState, useRef, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { GRADING_SPLIT_DISABLED } from "@/lib/featureFlags";
 import { useCourses } from "@/lib/courses";
 import { useSectionRoles } from "@/lib/section-roles";
 import { useCohortStudents } from "@/lib/cohort-students";
@@ -471,8 +472,13 @@ function GradingAssignmentRow({
 
 export default function GradingSplitPage() {
   const { id } = useParams<{ id: string }>();
+  const router = useRouter();
   const { t } = useLanguage();
   const { getCourse } = useCourses();
+
+  useEffect(() => {
+    if (GRADING_SPLIT_DISABLED) router.replace(`/teacher/courses/${id}`);
+  }, [router, id]);
   const { cohortStudents } = useCohortStudents();
   const { teachers } = useManagedTeachers();
   const { getRolesBySection, hasPermission } = useSectionRoles();
@@ -510,6 +516,8 @@ export default function GradingSplitPage() {
       </main>
     );
   }
+
+  if (GRADING_SPLIT_DISABLED) return null;
 
   return (
     <main className="w-full px-8 py-8">
