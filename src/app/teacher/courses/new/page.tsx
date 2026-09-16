@@ -279,7 +279,6 @@ export default function NewCoursePage() {
                 </div>
                 <div className="bg-white p-3">
                   <p className="text-xs font-bold text-[var(--text-primary)] truncate">{name || t("ชื่อรายวิชา", "Course Name")}</p>
-                  <p className="text-[10px] text-gray-500 mt-0.5">{t("เพิ่มเอง", "Manually Added")}</p>
                 </div>
               </div>
             </div>
