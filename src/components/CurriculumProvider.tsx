@@ -24,44 +24,55 @@ export default function CurriculumProvider({ children }: { children: React.React
     setCourseTemplates(load(LS_TEMPLATES));
   }, []);
 
-  const persistVersions = useCallback((next: CurriculumVersion[]) => {
-    setCurriculumVersions(next);
-    localStorage.setItem(LS_VERSIONS, JSON.stringify(next));
+  // Functional updaters (not a plain array) so several calls made within the
+  // same tick — e.g. CSV-importing N course templates in a forEach loop —
+  // each build on the truly-latest state instead of the array captured when
+  // the surrounding callback was memoized (which silently dropped all but
+  // the last write; see the "Fix bulk course-template import" commit).
+  const persistVersions = useCallback((updater: (prev: CurriculumVersion[]) => CurriculumVersion[]) => {
+    setCurriculumVersions(prev => {
+      const next = updater(prev);
+      localStorage.setItem(LS_VERSIONS, JSON.stringify(next));
+      return next;
+    });
   }, []);
 
-  const persistTemplates = useCallback((next: CourseTemplate[]) => {
-    setCourseTemplates(next);
-    localStorage.setItem(LS_TEMPLATES, JSON.stringify(next));
+  const persistTemplates = useCallback((updater: (prev: CourseTemplate[]) => CourseTemplate[]) => {
+    setCourseTemplates(prev => {
+      const next = updater(prev);
+      localStorage.setItem(LS_TEMPLATES, JSON.stringify(next));
+      return next;
+    });
   }, []);
 
   const addCurriculumVersion = useCallback((data: Omit<CurriculumVersion, "id">): CurriculumVersion => {
     const v: CurriculumVersion = { ...data, id: crypto.randomUUID() };
-    persistVersions([...curriculumVersions, v]);
+    persistVersions(prev => [...prev, v]);
     return v;
-  }, [curriculumVersions, persistVersions]);
+  }, [persistVersions]);
 
   const updateCurriculumVersion = useCallback((id: string, data: Partial<Omit<CurriculumVersion, "id">>) => {
-    persistVersions(curriculumVersions.map(v => v.id === id ? { ...v, ...data } : v));
-  }, [curriculumVersions, persistVersions]);
+    persistVersions(prev => prev.map(v => v.id === id ? { ...v, ...data } : v));
+  }, [persistVersions]);
 
   const removeCurriculumVersion = useCallback((id: string) => {
-    persistVersions(curriculumVersions.filter(v => v.id !== id));
-    persistTemplates(courseTemplates.filter(t => t.curriculumVersionId !== id)); // cascade
-  }, [curriculumVersions, courseTemplates, persistVersions, persistTemplates]);
+    persistVersions(prev => prev.filter(v => v.id !== id));
+    persistTemplates(prev => prev.filter(t => t.curriculumVersionId !== id)); // cascade
+  }, [persistVersions, persistTemplates]);
 
   const addCourseTemplate = useCallback((data: Omit<CourseTemplate, "id">): CourseTemplate => {
     const t: CourseTemplate = { ...data, id: crypto.randomUUID() };
-    persistTemplates([...courseTemplates, t]);
+    persistTemplates(prev => [...prev, t]);
     return t;
-  }, [courseTemplates, persistTemplates]);
+  }, [persistTemplates]);
 
   const updateCourseTemplate = useCallback((id: string, data: Partial<Omit<CourseTemplate, "id" | "curriculumVersionId">>) => {
-    persistTemplates(courseTemplates.map(t => t.id === id ? { ...t, ...data } : t));
-  }, [courseTemplates, persistTemplates]);
+    persistTemplates(prev => prev.map(t => t.id === id ? { ...t, ...data } : t));
+  }, [persistTemplates]);
 
   const removeCourseTemplate = useCallback((id: string) => {
-    persistTemplates(courseTemplates.filter(t => t.id !== id));
-  }, [courseTemplates, persistTemplates]);
+    persistTemplates(prev => prev.filter(t => t.id !== id));
+  }, [persistTemplates]);
 
   const getCourseTemplatesByCurriculum = useCallback((curriculumVersionId: string) =>
     courseTemplates.filter(t => t.curriculumVersionId === curriculumVersionId), [courseTemplates]);
