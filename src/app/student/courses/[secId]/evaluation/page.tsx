@@ -61,7 +61,7 @@ export default function StudentEvaluationPage() {
   const hasAnyGradedWork = assignments.some((a) => myScoreFor(a.id) !== null);
 
   return (
-    <div className="p-6 max-w-3xl">
+    <div className="w-full px-8 py-8">
       <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-6">{t("ผลการประเมิน", "Evaluation")}</h1>
 
       {categories.length === 0 && !hasAnyGradedWork ? (
@@ -86,12 +86,14 @@ export default function StudentEvaluationPage() {
               "Your instructor hasn't set up grade categories for this course yet — here are your graded scores so far"
             )}
           </p>
-          {assignments.filter((a) => myScoreFor(a.id) !== null).map((a) => (
-            <div key={a.id} className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-4 flex items-center justify-between gap-3">
-              <span className="text-sm text-[var(--text-primary)] truncate">{a.name}</span>
-              <span className="text-sm font-bold text-[var(--accent)] tabular-nums shrink-0">{myScoreFor(a.id)}/{a.maxPoints}</span>
-            </div>
-          ))}
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
+            {assignments.filter((a) => myScoreFor(a.id) !== null).map((a) => (
+              <div key={a.id} className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-4 flex items-center justify-between gap-3">
+                <span className="text-sm text-[var(--text-primary)] truncate">{a.name}</span>
+                <span className="text-sm font-bold text-[var(--accent)] tabular-nums shrink-0">{myScoreFor(a.id)}/{a.maxPoints}</span>
+              </div>
+            ))}
+          </div>
         </div>
       ) : (
         <>
@@ -114,7 +116,7 @@ export default function StudentEvaluationPage() {
           </div>
 
           {/* Per-category breakdown */}
-          <div className="flex flex-col gap-3">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
             {categoryRows.map((row) => (
               <div key={row.category.id} className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-5">
                 <div className="flex items-start justify-between gap-3 mb-3">
@@ -156,7 +158,7 @@ export default function StudentEvaluationPage() {
             ))}
 
             {uncategorized.length > 0 && (
-              <div className="rounded-2xl border border-dashed border-[var(--border-subtle)] p-5">
+              <div className="xl:col-span-2 rounded-2xl border border-dashed border-[var(--border-subtle)] p-5">
                 <p className="text-sm font-bold text-[var(--text-primary)] mb-1">{t("ยังไม่ระบุหมวด", "Uncategorized")}</p>
                 <p className="text-xs text-[var(--text-muted)] mb-3">
                   {t(

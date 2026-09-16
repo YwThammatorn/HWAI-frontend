@@ -141,7 +141,7 @@ export default function StudentClassworkPage() {
   }
 
   return (
-    <div className="p-6 max-w-3xl">
+    <div className="w-full px-8 py-8">
         {/* Course banner */}
         <div
           className="rounded-2xl p-5 mb-6 flex items-center gap-4"
@@ -179,7 +179,7 @@ export default function StudentClassworkPage() {
                 <h2 className="text-xs font-semibold uppercase tracking-wider text-[var(--s-err-text)] mb-3">
                   {t(`ส่งวันนี้ (${dueToday.length})`, `Due today (${dueToday.length})`)}
                 </h2>
-                <div className="flex flex-col gap-2">
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
                   {dueToday.map((a) => (
                     <ClassworkCard
                       key={a.id}
@@ -197,7 +197,7 @@ export default function StudentClassworkPage() {
               <h2 className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)] mb-3">
                 {t("งานทั้งหมด", "All Assignments")}
               </h2>
-              <div className="flex flex-col gap-2">
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
                 {(dueToday.length > 0 ? allOther : assignments).map((a) => (
                   <ClassworkCard
                     key={a.id}

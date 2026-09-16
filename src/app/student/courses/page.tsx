@@ -38,7 +38,7 @@ export default function StudentCoursesPage() {
   }, [students, user?.studentId, getCourse]);
 
   return (
-    <div className="p-6 max-w-4xl">
+    <div className="w-full px-8 py-8">
         <PageHeader
           title={t("รายวิชาของฉัน", "My Courses")}
           description={t(`ลงทะเบียน ${enrolledCourses.length} รายวิชา`, `Enrolled in ${enrolledCourses.length} course(s)`)}
