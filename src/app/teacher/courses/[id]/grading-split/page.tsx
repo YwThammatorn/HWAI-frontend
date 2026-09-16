@@ -480,15 +480,22 @@ export default function GradingSplitPage() {
     if (GRADING_SPLIT_DISABLED) router.replace(`/teacher/courses/${id}`);
   }, [router, id]);
   const { cohortStudents } = useCohortStudents();
-  const { teachers } = useManagedTeachers();
+  const { teachers, getTeachersByCourse } = useManagedTeachers();
   const { getRolesBySection, hasPermission } = useSectionRoles();
   const { gradingAssignments, removeGradingAssignment, getAssignmentsBySection } = useGradingAssignments();
   const currentAccountId = useCurrentAccountId();
   const course = getCourse(id);
+  // The primary teacher's access comes from ManagedTeacher.courseIds
+  // (admin-assigned), not a SectionRole row — hasPermission only looks at
+  // SectionRole, so it always returns false for them (see the same fix on
+  // collaborators/page.tsx).
+  const isPrimaryTeacher = course ? getTeachersByCourse(course.id).some((tc) => tc.id === currentAccountId) : false;
   // Fail open when unresolvable — see the comment on useCurrentAccountId().
   // Grading-split configuration reads as course-settings-adjacent, so it's
   // gated on canEditSettings rather than canManageRoster.
-  const canManage = course ? (currentAccountId === null || hasPermission(currentAccountId, course.id, "canEditSettings")) : true;
+  const canManage = course
+    ? (currentAccountId === null || isPrimaryTeacher || hasPermission(currentAccountId, course.id, "canEditSettings"))
+    : true;
 
   const [drawerMode, setDrawerMode] = useState<"create" | "edit" | null>(null);
   const [editTarget, setEditTarget] = useState<GradingAssignment | undefined>(undefined);

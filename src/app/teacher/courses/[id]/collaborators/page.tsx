@@ -317,11 +317,18 @@ export default function CollaboratorsPage() {
   const { teachers, getTeachersByCourse } = useManagedTeachers();
   const currentAccountId = useCurrentAccountId();
   const course = getCourse(id);
+  // The primary teacher's access comes from ManagedTeacher.courseIds
+  // (admin-assigned), not a SectionRole row — hasPermission only looks at
+  // SectionRole, so it always returns false for them. Without this check the
+  // course's own teacher could never see the Add/Remove collaborator controls.
+  const isPrimaryTeacher = course ? getTeachersByCourse(course.id).some((tc) => tc.id === currentAccountId) : false;
   // Fail open when the session can't be resolved to an account (e.g. a
   // dev-bypass login with no matching ManagedTeacher/CohortStudent row) —
   // this is a localStorage-only demo auth model, not a real backend, so an
   // unresolvable session shouldn't silently lock the screen down.
-  const canManage = course ? (currentAccountId === null || hasPermission(currentAccountId, course.id, "canManageRoster")) : true;
+  const canManage = course
+    ? (currentAccountId === null || isPrimaryTeacher || hasPermission(currentAccountId, course.id, "canManageRoster"))
+    : true;
 
   const [search, setSearch] = useState("");
   const [addOpen, setAddOpen] = useState(false);
