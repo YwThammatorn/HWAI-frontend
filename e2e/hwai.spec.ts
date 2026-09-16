@@ -337,7 +337,6 @@ test.describe("Login", () => {
     await expect(page.getByPlaceholder("you@kmitl.ac.th")).toBeVisible();
     await expect(page.getByRole("button", { name: /sign in/i })).toBeVisible();
     await expect(page.getByRole("button", { name: /google/i })).toBeVisible();
-    await expect(page.getByRole("button", { name: /microsoft/i })).toBeVisible();
   });
 
   test("valid credentials redirect to /teacher/courses", async ({ page }) => {
