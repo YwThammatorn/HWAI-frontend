@@ -59,7 +59,10 @@ export default function StudentClassworkDetailPage() {
   const isPast = new Date() > due;
   const isGraded = mySubmission?.status === "graded";
   const score = mySubmission?.instructorScore ?? mySubmission?.aiScore ?? null;
-  const wantsFigmaLink = assignment.acceptsFiles && assignment.fileTypes.includes("figma");
+  // A link is always offered when the assignment accepts attachments at all —
+  // not just for fileTypes that include "figma" — since plenty of valid
+  // submissions are links regardless of tool (GitHub repo, Google Doc, etc).
+  const wantsLink = assignment.acceptsFiles;
   const wantsFileUpload = assignment.acceptsFiles && assignment.fileTypes.some((ft) => ft === "pdf" || ft === "image");
   const fileAccept = assignment.fileTypes
     .filter((ft) => ft !== "figma")
@@ -333,14 +336,14 @@ export default function StudentClassworkDetailPage() {
               {/* Attach a file or link — only for assignments configured to accept one */}
               {!isGraded && !isPast && assignment.acceptsFiles && (
                 <div className="mb-4 flex flex-col gap-3">
-                  {wantsFigmaLink && (
+                  {wantsLink && (
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-xs font-semibold text-[var(--text-secondary)]">{t("ลิงก์ Figma", "Figma link")}</label>
+                      <label className="text-xs font-semibold text-[var(--text-secondary)]">{t("ลิงก์", "Link")}</label>
                       <input
                         type="url"
                         value={linkValue}
                         onChange={(e) => setLinkValue(e.target.value)}
-                        placeholder="https://figma.com/..."
+                        placeholder={t("เช่น ลิงก์ Figma, GitHub, Google Docs", "e.g. Figma, GitHub, or Google Docs link")}
                         className="w-full h-9 px-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
                       />
                     </div>
