@@ -104,7 +104,8 @@ test.describe("P3b — Student Classwork List (/student/courses/[secId]/classwor
     await seedStudent(page);
     await page.goto(`${BASE}/student/courses/c-p3/classwork`);
     await page.waitForLoadState("networkidle");
-    await expect(page.getByText("Not submitted")).toBeVisible();
+    // exact: true — the "Not submitted (N)" section heading also contains this substring
+    await expect(page.getByText("Not submitted", { exact: true })).toBeVisible();
   });
 
   test("graded assignment shows Graded badge", async ({ page }) => {

@@ -7,6 +7,11 @@ import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
 import { useCourses } from "@/lib/courses";
 import { useAssignments, Assignment, Submission } from "@/lib/assignments";
+import { useGradingCategories, computeCategoryGradeRows, computeTotalSoFar } from "@/lib/gradingCategories";
+
+// An unsubmitted assignment due within this many days (or already overdue)
+// is grouped into the "Due soon" section instead of "Not submitted".
+const DUE_SOON_DAYS = 3;
 
 // ── Status helper ──────────────────────────────────────────────────────────
 
@@ -114,25 +119,49 @@ export default function StudentClassworkPage() {
   const { t } = useLanguage();
   const { user } = useAuth();
   const { getCourse } = useCourses();
-  const { getAssignmentsByCourse, getSubmissionsByAssignment } = useAssignments();
+  const { getAssignmentsByCourse, getSubmissionsByAssignment, submissions } = useAssignments();
+  const { getCategoriesByCourse } = useGradingCategories();
 
   const course = getCourse(secId);
   const assignments = getAssignmentsByCourse(secId);
+  const studentId = user?.studentId ?? user?.email ?? "";
 
   const mySubmissions = useMemo(() => {
     const map = new Map<string, Submission>();
     assignments.forEach((a) => {
-      const sub = getSubmissionsByAssignment(a.id).find(
-        (s) => s.studentId === (user?.studentId ?? user?.email ?? "")
-      );
+      const sub = getSubmissionsByAssignment(a.id).find((s) => s.studentId === studentId);
       if (sub) map.set(a.id, sub);
     });
     return map;
-  }, [assignments, getSubmissionsByAssignment, user]);
+  }, [assignments, getSubmissionsByAssignment, studentId]);
 
-  const today = new Date().toISOString().split("T")[0];
-  const dueToday = assignments.filter((a) => a.dueDate === today);
-  const allOther = assignments.filter((a) => a.dueDate !== today);
+  // Grouped by urgency, top to bottom: due soon (or overdue) → not submitted → submitted.
+  const now = new Date().getTime();
+  const { dueSoon, notSubmitted, submitted } = useMemo(() => {
+    const dueSoon: Assignment[] = [];
+    const notSubmitted: Assignment[] = [];
+    const submitted: Assignment[] = [];
+    assignments.forEach((a) => {
+      if (mySubmissions.has(a.id)) {
+        submitted.push(a);
+        return;
+      }
+      const daysUntilDue = (new Date(a.dueDate + "T23:59:59").getTime() - now) / (24 * 3_600_000);
+      (daysUntilDue <= DUE_SOON_DAYS ? dueSoon : notSubmitted).push(a);
+    });
+    dueSoon.sort((a, b) => a.dueDate.localeCompare(b.dueDate));
+    notSubmitted.sort((a, b) => a.dueDate.localeCompare(b.dueDate));
+    submitted.sort((a, b) => (mySubmissions.get(b.id)?.submittedAt ?? "").localeCompare(mySubmissions.get(a.id)?.submittedAt ?? ""));
+    return { dueSoon, notSubmitted, submitted };
+  }, [assignments, mySubmissions, now]);
+
+  const categories = useMemo(() => (course ? getCategoriesByCourse(secId) : []), [course, secId, getCategoriesByCourse]);
+  const categoryRows = useMemo(
+    () => computeCategoryGradeRows(categories, assignments, submissions, studentId),
+    [categories, assignments, submissions, studentId]
+  );
+  const gradedCategoryRows = categoryRows.filter((r) => r.percent !== null);
+  const totalSoFar = computeTotalSoFar(categoryRows);
 
   if (!course) {
     return (
@@ -162,6 +191,29 @@ export default function StudentClassworkPage() {
           </div>
         </div>
 
+        {/* Weighted score summary — only once the course has grading categories set up */}
+        {categories.length > 0 && (
+          <Link
+            href={`/student/courses/${secId}/evaluation`}
+            className="flex items-center justify-between gap-4 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-4 mb-6 hover:shadow-sm transition-shadow"
+          >
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)] mb-1">
+                {t("คะแนนรวมเท่าที่ตรวจแล้ว", "Total so far")}
+              </p>
+              <p className="text-2xl font-bold text-[var(--text-primary)] tabular-nums">
+                {gradedCategoryRows.length > 0 ? `${totalSoFar.toFixed(1)}%` : "—"}
+              </p>
+            </div>
+            <div className="flex items-center gap-2 text-xs text-[var(--text-muted)] shrink-0">
+              <span>{t(`${gradedCategoryRows.length}/${categories.length} หมวดมีคะแนนแล้ว`, `${gradedCategoryRows.length}/${categories.length} categories graded`)}</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </div>
+          </Link>
+        )}
+
         {assignments.length === 0 ? (
           <div className="flex flex-col items-center py-16 text-center">
             <div className="w-12 h-12 rounded-full bg-[var(--accent-bright)]/10 flex items-center justify-center mb-3">
@@ -173,44 +225,47 @@ export default function StudentClassworkPage() {
           </div>
         ) : (
           <div className="flex flex-col gap-6">
-            {/* Due today */}
-            {dueToday.length > 0 && (
+            {/* Due soon (or overdue), not yet submitted — most urgent, shown first */}
+            {dueSoon.length > 0 && (
               <section>
                 <h2 className="text-xs font-semibold uppercase tracking-wider text-[var(--s-err-text)] mb-3">
-                  {t(`ส่งวันนี้ (${dueToday.length})`, `Due today (${dueToday.length})`)}
+                  {t(`ใกล้ส่ง (${dueSoon.length})`, `Due soon (${dueSoon.length})`)}
                 </h2>
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
-                  {dueToday.map((a) => (
-                    <ClassworkCard
-                      key={a.id}
-                      assignment={a}
-                      submission={mySubmissions.get(a.id)}
-                      courseId={secId}
-                    />
+                  {dueSoon.map((a) => (
+                    <ClassworkCard key={a.id} assignment={a} submission={mySubmissions.get(a.id)} courseId={secId} />
                   ))}
                 </div>
               </section>
             )}
 
-            {/* All assignments */}
-            <section>
-              <h2 className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)] mb-3">
-                {t("งานทั้งหมด", "All Assignments")}
-              </h2>
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
-                {(dueToday.length > 0 ? allOther : assignments).map((a) => (
-                  <ClassworkCard
-                    key={a.id}
-                    assignment={a}
-                    submission={mySubmissions.get(a.id)}
-                    courseId={secId}
-                  />
-                ))}
-                {dueToday.length > 0 && allOther.length === 0 && (
-                  <p className="text-sm text-[var(--text-muted)]">{t("ไม่มีงานอื่น", "No other assignments")}</p>
-                )}
-              </div>
-            </section>
+            {/* Not submitted, due later */}
+            {notSubmitted.length > 0 && (
+              <section>
+                <h2 className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)] mb-3">
+                  {t(`ยังไม่ส่ง (${notSubmitted.length})`, `Not submitted (${notSubmitted.length})`)}
+                </h2>
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
+                  {notSubmitted.map((a) => (
+                    <ClassworkCard key={a.id} assignment={a} submission={mySubmissions.get(a.id)} courseId={secId} />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Submitted (or graded) — most recently submitted first */}
+            {submitted.length > 0 && (
+              <section>
+                <h2 className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)] mb-3">
+                  {t(`ส่งแล้ว (${submitted.length})`, `Submitted (${submitted.length})`)}
+                </h2>
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
+                  {submitted.map((a) => (
+                    <ClassworkCard key={a.id} assignment={a} submission={mySubmissions.get(a.id)} courseId={secId} />
+                  ))}
+                </div>
+              </section>
+            )}
           </div>
         )}
     </div>
