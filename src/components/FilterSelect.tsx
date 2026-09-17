@@ -28,7 +28,7 @@ export default function FilterSelect({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         aria-label={ariaLabel}
-        className="h-9 w-36 pl-8 pr-7 rounded-full border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-sm text-[var(--text-primary)] truncate appearance-none focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)] transition-colors"
+        className="h-9 min-w-[8.5rem] pl-8 pr-7 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-sm text-[var(--text-primary)] whitespace-nowrap appearance-none focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)] transition-colors"
       >
         {children}
       </select>
