@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
 import { useState, useEffect } from "react";
+import { ADMIN_DASHBOARD_DISABLED } from "@/lib/featureFlags";
 
 const COLLAPSED_KEY = "hwai_admin_sidebar_collapsed";
 
@@ -27,20 +28,22 @@ export default function AdminSidebar() {
 
   // Declared inside component so t() is in scope (CLAUDE.md: never Thai strings at module level)
   const NAV_ITEMS = [
-    {
-      href: "/admin",
-      exact: true,
-      icon: (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-          <rect x="3" y="3" width="7" height="7" rx="1"/>
-          <rect x="14" y="3" width="7" height="7" rx="1"/>
-          <rect x="3" y="14" width="7" height="7" rx="1"/>
-          <rect x="14" y="14" width="7" height="7" rx="1"/>
-        </svg>
-      ),
-      labelEn: "Dashboard",
-      label: t("หน้าหลัก", "Dashboard"),
-    },
+    ...(ADMIN_DASHBOARD_DISABLED ? [] : [
+      {
+        href: "/admin",
+        exact: true,
+        icon: (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+            <rect x="3" y="3" width="7" height="7" rx="1"/>
+            <rect x="14" y="3" width="7" height="7" rx="1"/>
+            <rect x="3" y="14" width="7" height="7" rx="1"/>
+            <rect x="14" y="14" width="7" height="7" rx="1"/>
+          </svg>
+        ),
+        labelEn: "Dashboard",
+        label: t("หน้าหลัก", "Dashboard"),
+      },
+    ]),
     {
       href: "/admin/users",
       exact: false,

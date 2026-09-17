@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { useCohortStudents } from "@/lib/cohort-students";
+import { ADMIN_DASHBOARD_DISABLED } from "@/lib/featureFlags";
 import type { UserRole } from "@/context/AuthContext";
 
 function HwaiLogo() {
@@ -77,7 +78,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!user) return;
-    if (user.role === "admin") router.replace("/admin");
+    if (user.role === "admin") router.replace(ADMIN_DASHBOARD_DISABLED ? "/admin/users" : "/admin");
     else if (user.role === "student") router.replace("/student");
     else router.replace("/teacher/courses");
   }, [user, router]);

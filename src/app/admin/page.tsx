@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
 import { useManagedTeachers } from "@/lib/managed-teachers";
@@ -7,6 +9,7 @@ import { useCohortStudents } from "@/lib/cohort-students";
 import { useCourses } from "@/lib/courses";
 import PageHeader from "@/components/PageHeader";
 import StatCard from "@/components/StatCard";
+import { ADMIN_DASHBOARD_DISABLED } from "@/lib/featureFlags";
 
 function CheckIcon({ done }: { done: boolean }) {
   return done ? (
@@ -20,9 +23,16 @@ function CheckIcon({ done }: { done: boolean }) {
 
 export default function AdminDashboard() {
   const { t } = useLanguage();
+  const router = useRouter();
   const { teachers } = useManagedTeachers();
   const { cohortStudents } = useCohortStudents();
   const { courses } = useCourses();
+
+  useEffect(() => {
+    if (ADMIN_DASHBOARD_DISABLED) router.replace("/admin/users");
+  }, [router]);
+
+  if (ADMIN_DASHBOARD_DISABLED) return null;
 
   const teacherCount = teachers.length;
   const studentCount = cohortStudents.length;
