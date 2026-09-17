@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
+import { TEACHER_HISTORY_DISABLED } from "@/lib/featureFlags";
 
 // ─── Types & Seed Data ────────────────────────────────────────────────────────
 
@@ -151,9 +153,14 @@ const PER_PAGE = 8;
 
 export default function HistoryPage() {
   const { t } = useLanguage();
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | GradingStatus>("all");
   const [page, setPage] = useState(1);
+
+  useEffect(() => {
+    if (TEACHER_HISTORY_DISABLED) router.replace("/teacher/courses");
+  }, [router]);
 
   // ── Stats (from all data, not filtered) ──────────────────────────────────
   const totalCreditsUsed = HISTORY.reduce((s, h) => s + (h.status === "completed" ? h.cost : 0), 0);
@@ -196,6 +203,8 @@ export default function HistoryPage() {
     if (safeePage >= totalPages - 2) return [1, "...", totalPages - 2, totalPages - 1, totalPages];
     return [1, "...", safeePage - 1, safeePage, safeePage + 1, "...", totalPages];
   })();
+
+  if (TEACHER_HISTORY_DISABLED) return null;
 
   return (
       <main className="w-full px-8 py-8">

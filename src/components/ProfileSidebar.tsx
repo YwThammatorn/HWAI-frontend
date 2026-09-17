@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
 import { useCourses } from "@/lib/courses";
-import { WEEKLY_PLAN_DISABLED, MATERIALS_DISABLED, ANNOUNCEMENTS_DISABLED, GRADING_SPLIT_DISABLED } from "@/lib/featureFlags";
+import { WEEKLY_PLAN_DISABLED, MATERIALS_DISABLED, ANNOUNCEMENTS_DISABLED, GRADING_SPLIT_DISABLED, TEACHER_HISTORY_DISABLED, TEACHER_DASHBOARD_DISABLED } from "@/lib/featureFlags";
 
 function NavItem({
   label,
@@ -174,8 +174,12 @@ export default function ProfileSidebar() {
 
   const MAIN_NAV = [
     { label: t("รายวิชา", "Courses"),     href: "/teacher/courses",   active: pathname.startsWith("/teacher/courses"), icon: COURSES_ICON   },
-    { label: t("ประวัติ", "History"),     href: "/teacher/history",   active: pathname === "/teacher/history",         icon: HISTORY_ICON   },
-    { label: t("แดชบอร์ด", "Dashboard"), href: "/teacher/dashboard", active: pathname === "/teacher/dashboard",       icon: DASHBOARD_ICON },
+    ...(TEACHER_HISTORY_DISABLED ? [] : [
+      { label: t("ประวัติ", "History"),     href: "/teacher/history",   active: pathname === "/teacher/history",         icon: HISTORY_ICON   },
+    ]),
+    ...(TEACHER_DASHBOARD_DISABLED ? [] : [
+      { label: t("แดชบอร์ด", "Dashboard"), href: "/teacher/dashboard", active: pathname === "/teacher/dashboard",       icon: DASHBOARD_ICON },
+    ]),
   ];
 
   // Per-course sub-navigation (only shown when inside /courses/[id]/...)

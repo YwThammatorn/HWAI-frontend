@@ -17,3 +17,14 @@ export const ANNOUNCEMENTS_DISABLED = true;
  * pattern as the flags above: flip to false to restore the nav entry and page.
  */
 export const GRADING_SPLIT_DISABLED = true;
+
+/**
+ * Teacher "History" + "Dashboard" nav entries, and Admin "Dashboard" nav
+ * entry, hidden at the user's request (17/9/2569). Same "flag it off,
+ * don't delete" pattern as the flags above: flip to false to restore the
+ * nav entry and page. Both pages still exist and redirect away if visited
+ * directly while disabled.
+ */
+export const TEACHER_HISTORY_DISABLED = true;
+export const TEACHER_DASHBOARD_DISABLED = true;
+export const ADMIN_DASHBOARD_DISABLED = true;

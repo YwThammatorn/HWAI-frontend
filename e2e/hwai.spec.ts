@@ -8,6 +8,10 @@ const BASE = "http://localhost:3000";
 // until it's restored.
 const LANGUAGE_TOGGLE_DISABLED = true;
 
+// Mirrors TEACHER_HISTORY_DISABLED in src/lib/featureFlags.ts — keep in sync.
+// /teacher/history is hidden from nav and redirects away (17/9/2569, temporary).
+const TEACHER_HISTORY_DISABLED = true;
+
 const MOCK_USER = { name: "Test Teacher", email: "test@school.edu", role: "teacher" };
 
 /** Inject mock auth session + force English lang before page load. Also seeds
@@ -55,6 +59,7 @@ test.describe("Navigation", () => {
   });
 
   test("history page loads with grading log", async ({ page }) => {
+    test.skip(TEACHER_HISTORY_DISABLED, "/teacher/history is hidden and redirects away until TEACHER_HISTORY_DISABLED is flipped back to false");
     await waitReady(page, "/teacher/history");
     await expect(page.locator("h1").filter({ hasText: /grading history/i })).toBeVisible();
     await expect(page.locator("text=/Detailed Grading Log/i")).toBeVisible();
@@ -231,6 +236,7 @@ test.describe("Course Results", () => {
 // ── 8. History ────────────────────────────────────────────────────────────────
 
 test.describe("History", () => {
+  test.skip(TEACHER_HISTORY_DISABLED, "/teacher/history is hidden and redirects away until TEACHER_HISTORY_DISABLED is flipped back to false");
   test.beforeEach(async ({ page }) => { await withAuth(page); });
 
   test("stat cards show credits and papers count", async ({ page }) => {

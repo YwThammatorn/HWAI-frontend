@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
+import { TEACHER_DASHBOARD_DISABLED } from "@/lib/featureFlags";
 
 // ─── Mock data ────────────────────────────────────────────────────────────────
 
@@ -134,8 +136,15 @@ type UsagePeriod = "this_month" | "last_30_days" | "last_quarter";
 
 export default function DashboardPage() {
   const { t } = useLanguage();
+  const router = useRouter();
   const [perfPeriod, setPerfPeriod] = useState<PerfPeriod>("this_semester");
   const [usagePeriod, setUsagePeriod] = useState<UsagePeriod>("this_month");
+
+  useEffect(() => {
+    if (TEACHER_DASHBOARD_DISABLED) router.replace("/teacher/courses");
+  }, [router]);
+
+  if (TEACHER_DASHBOARD_DISABLED) return null;
 
   const PERF_PERIODS: { key: PerfPeriod; label: string }[] = [
     { key: "this_semester",  label: t("ภาคนี้", "This Semester") },
