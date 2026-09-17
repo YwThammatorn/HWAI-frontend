@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import { useCourses, PRESET_COLORS, type GradingSource, type PublishMode } from "@/lib/courses";
+import { useCourses, PRESET_COLORS } from "@/lib/courses";
 import { useCurriculum } from "@/lib/curriculum";
 import { useLanguage } from "@/context/LanguageContext";
 import { CourseIcon, COURSE_ICON_KEYS, type CourseIconKey } from "@/components/CourseIcon";
@@ -24,10 +24,8 @@ export default function CourseSettingsPage() {
   const [description, setDescription] = useState("");
   const [coverColor, setCoverColor] = useState(PRESET_COLORS[0]);
   const [icon, setIcon] = useState<CourseIconKey>("book");
-  const [gradingSource, setGradingSource] = useState<GradingSource>("ta");
-  const [publishMode, setPublishMode] = useState<PublishMode>("manual");
   const [saved, setSaved] = useState(false);
-  const originalRef = useRef({ name: "", description: "", coverColor: "", icon: "book" as CourseIconKey, gradingSource: "ta" as GradingSource, publishMode: "manual" as PublishMode });
+  const originalRef = useRef({ name: "", description: "", coverColor: "", icon: "book" as CourseIconKey });
 
   useEffect(() => {
     if (course) {
@@ -36,15 +34,11 @@ export default function CourseSettingsPage() {
         description: course.description ?? "",
         coverColor: course.coverColor ?? PRESET_COLORS[0],
         icon: course.icon ?? ("book" as CourseIconKey),
-        gradingSource: course.gradingSource ?? ("ta" as GradingSource),
-        publishMode: course.publishMode ?? ("manual" as PublishMode),
       };
       setName(orig.name);
       setDescription(orig.description);
       setCoverColor(orig.coverColor);
       setIcon(orig.icon);
-      setGradingSource(orig.gradingSource);
-      setPublishMode(orig.publishMode);
       originalRef.current = orig;
     }
   }, [course?.id]);
@@ -54,9 +48,7 @@ export default function CourseSettingsPage() {
       name !== originalRef.current.name ||
       description !== originalRef.current.description ||
       coverColor !== originalRef.current.coverColor ||
-      icon !== originalRef.current.icon ||
-      gradingSource !== originalRef.current.gradingSource ||
-      publishMode !== originalRef.current.publishMode
+      icon !== originalRef.current.icon
     );
 
   useEffect(() => {
@@ -89,8 +81,6 @@ export default function CourseSettingsPage() {
       coverColor,
       iconColor: coverColor,
       icon,
-      gradingSource,
-      publishMode,
     });
     setSaved(true);
     setTimeout(() => router.push(`/teacher/courses/${id}`), 800);
@@ -241,64 +231,6 @@ export default function CourseSettingsPage() {
                     <p className="text-xs font-bold text-[var(--text-primary)] truncate">{name || t("ชื่อรายวิชา", "Course Name")}</p>
                   </div>
                 </div>
-              </div>
-            </div>
-          </section>
-
-          {/* Grading & Publishing */}
-          <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-5">{t("การตรวจและประกาศคะแนน", "Grading & Publishing")}</h2>
-
-            <div className="mb-5">
-              <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">{t("แหล่งคะแนน", "Grading Source")}</label>
-              <p className="text-xs text-gray-500 mb-2.5">{t("เลือกว่าคะแนนของวิชานี้มาจากใครเป็นหลัก", "Choose who grades submissions in this section by default.")}</p>
-              <div className="grid grid-cols-3 gap-2">
-                {([
-                  { key: "ta" as GradingSource, label: t("TA ตรวจ", "TA-graded") },
-                  { key: "ai" as GradingSource, label: t("AI ตรวจ", "AI-graded") },
-                  { key: "blind" as GradingSource, label: t("Blind Test", "Blind Test") },
-                ]).map((opt) => (
-                  <button
-                    type="button"
-                    key={opt.key}
-                    onClick={() => setGradingSource(opt.key)}
-                    aria-pressed={gradingSource === opt.key}
-                    className={[
-                      "px-3 py-2.5 rounded-xl border text-sm font-medium transition-colors",
-                      gradingSource === opt.key
-                        ? "border-[var(--accent)] bg-[var(--accent-subtle)] text-[var(--accent)]"
-                        : "border-gray-200 text-gray-500 hover:bg-gray-50",
-                    ].join(" ")}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">{t("การประกาศคะแนน", "Publishing")}</label>
-              <p className="text-xs text-gray-500 mb-2.5">{t("ประกาศคะแนนให้นักศึกษาเห็นทันทีหลังตรวจเสร็จ หรือรอให้อาจารย์กด approve ก่อน", "Show scores to students right after grading, or hold them until you approve.")}</p>
-              <div className="grid grid-cols-2 gap-2">
-                {([
-                  { key: "auto" as PublishMode, label: t("ประกาศอัตโนมัติ", "Auto-publish") },
-                  { key: "manual" as PublishMode, label: t("รอ Approve", "Wait for approval") },
-                ]).map((opt) => (
-                  <button
-                    type="button"
-                    key={opt.key}
-                    onClick={() => setPublishMode(opt.key)}
-                    aria-pressed={publishMode === opt.key}
-                    className={[
-                      "px-3 py-2.5 rounded-xl border text-sm font-medium transition-colors",
-                      publishMode === opt.key
-                        ? "border-[var(--accent)] bg-[var(--accent-subtle)] text-[var(--accent)]"
-                        : "border-gray-200 text-gray-500 hover:bg-gray-50",
-                    ].join(" ")}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
               </div>
             </div>
           </section>
