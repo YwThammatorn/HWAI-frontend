@@ -130,9 +130,6 @@ export default function CourseSettingsPage() {
                 {course.sectionNumber && ` · Section ${course.sectionNumber}`}
               </p>
             </div>
-            <Link href="/admin/curriculum" className="text-xs font-medium text-[var(--accent)] hover:underline shrink-0">
-              {t("ดูหลักสูตร", "View curriculum")}
-            </Link>
           </div>
         )}
 
