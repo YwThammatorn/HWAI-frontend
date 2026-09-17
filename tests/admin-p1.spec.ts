@@ -270,11 +270,16 @@ test.describe("P1b — Admin Students (/admin/students)", () => {
     await seedPage(page, { students: [STUDENT_1, STUDENT_2] });
     await gotoPage(page, "/admin/students");
     await openStudentsTab(page);
+    // Cohort filter now defaults to the current year (CE69), not "all" — STUDENT_2
+    // is CE68, so switch to "all" first since this test is about the search box, not the cohort filter.
+    await page.getByLabel("Filter by cohort").selectOption("all");
     // Both visible initially
     await expect(page.getByText("64070501", { exact: true })).toBeVisible();
     await expect(page.getByText("64070502", { exact: true })).toBeVisible();
-    // Type in search box (type="search" → role searchbox)
-    await page.getByRole("searchbox").fill("64070501");
+    // Type in search box. Role is "combobox" (not "searchbox") now that this
+    // input has autocomplete suggestions — role reflects the ARIA combobox
+    // pattern (aria-expanded/aria-autocomplete), so locate by placeholder instead.
+    await page.getByPlaceholder("Search students...").fill("64070501");
     await expect(page.getByText("64070501", { exact: true })).toBeVisible();
     await expect(page.getByText("64070502", { exact: true })).not.toBeVisible();
   });

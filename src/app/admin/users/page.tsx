@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import { useManagedTeachers, ManagedTeacher, splitTeacherTitle } from "@/lib/managed-teachers";
-import { useCohortStudents, CohortStudent } from "@/lib/cohort-students";
+import { useCohortStudents, CohortStudent, cohortYearLabel } from "@/lib/cohort-students";
 import { getInitials } from "@/lib/utils";
 import { splitCsvLine } from "@/lib/csv";
 import EmptyState from "@/components/EmptyState";
@@ -579,7 +579,7 @@ function expectedStudentEmail(studentId: string) {
 }
 
 interface ParsedStudentRow {
-  studentId: string; firstName: string; lastName: string;
+  studentId: string; title: string; firstName: string; lastName: string;
   email: string; cohort: string; program: string;
   error?: StudentRowError;
 }
@@ -598,6 +598,7 @@ function parseStudentCsv(raw: string): StudentParseResult {
     const cells = splitCsvLine(line);
     const row: ParsedStudentRow = {
       studentId: cells[colIndex.studentId] ?? "",
+      title: colIndex.title !== undefined ? cells[colIndex.title] ?? "" : "",
       firstName: cells[colIndex.firstName] ?? "",
       lastName: cells[colIndex.lastName] ?? "",
       email: cells[colIndex.email] ?? "",
@@ -643,7 +644,7 @@ function ImportStudentDrawer({ open, onClose }: { open: boolean; onClose: () => 
   function handleImport() {
     if (!validRows.length) return;
     setImporting(true);
-    addCohortStudents(validRows.map((r) => ({ studentId: r.studentId, firstName: r.firstName, lastName: r.lastName, email: r.email, cohort: r.cohort, program: r.program })));
+    addCohortStudents(validRows.map((r) => ({ studentId: r.studentId, title: r.title || undefined, firstName: r.firstName, lastName: r.lastName, email: r.email, cohort: r.cohort, program: r.program })));
     setImporting(false);
     setDone(true);
   }
@@ -712,7 +713,7 @@ function ImportStudentDrawer({ open, onClose }: { open: boolean; onClose: () => 
                 <line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>
               </svg>
               <p className="text-sm font-semibold text-[var(--text-primary)]">{t("ลากไฟล์ CSV มาวาง หรือคลิกเลือก", "Drag CSV here or click to browse")}</p>
-              <p className="text-xs text-[var(--text-muted)] mt-1">{t("คอลัมน์: studentId, firstName, lastName, email, cohort, program", "Columns: studentId, firstName, lastName, email, cohort, program")}</p>
+              <p className="text-xs text-[var(--text-muted)] mt-1">{t("คอลัมน์: studentId, title, firstName, lastName, email, cohort, program (title ไม่บังคับ)", "Columns: studentId, title, firstName, lastName, email, cohort, program (title is optional)")}</p>
             </div>
           )}
           {!parseResult && !done && (
@@ -895,7 +896,14 @@ function TeachersTab() {
       {/* Action bar */}
       <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
         <div className="flex items-center gap-2 flex-wrap">
-          <SearchInput value={search} onChange={setSearch} placeholder={t("ค้นหาอาจารย์...", "Search teachers...")} className="w-48 shrink-0" rounded="full" />
+          <SearchInput
+            value={search}
+            onChange={setSearch}
+            placeholder={t("ค้นหาอาจารย์...", "Search teachers...")}
+            className="w-48 shrink-0"
+            rounded="full"
+            suggestions={teachers.map((tc) => tc.name)}
+          />
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <button onClick={() => setImportOpen(true)}
@@ -1101,6 +1109,7 @@ function StudentDrawer({ open, onClose }: {
   const { addCohortStudents, findByStudentId } = useCohortStudents();
   const dialogRef = useRef<HTMLDivElement>(null);
   const [studentId, setStudentId] = useState("");
+  const [title, setTitle] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -1111,7 +1120,7 @@ function StudentDrawer({ open, onClose }: {
 
   useEffect(() => {
     if (open) {
-      setStudentId(""); setFirstName(""); setLastName("");
+      setStudentId(""); setTitle(""); setFirstName(""); setLastName("");
       setEmail(""); setCohort(""); setProgram(""); setErrors({});
     }
   }, [open]);
@@ -1157,7 +1166,7 @@ function StudentDrawer({ open, onClose }: {
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
     setLoading(true);
     addCohortStudents([{
-      studentId: studentId.trim(), firstName: firstName.trim(), lastName: lastName.trim(),
+      studentId: studentId.trim(), title: title.trim() || undefined, firstName: firstName.trim(), lastName: lastName.trim(),
       email: email.trim().toLowerCase(), cohort: cohort.trim(), program: program.trim(),
     }]);
     setLoading(false);
@@ -1191,6 +1200,15 @@ function StudentDrawer({ open, onClose }: {
               onChange={(e) => { setStudentId(e.target.value); setErrors((p) => ({ ...p, studentId: "" })); }}
               placeholder="64070501" aria-invalid={!!errors.studentId} className={fieldClass} />
             {errors.studentId && <p role="alert" className="text-xs text-[var(--s-err-text)]">{errors.studentId}</p>}
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="stitle" className={labelClass}>{t("คำนำหน้านาม", "Title")}</label>
+            <select id="stitle" value={title} onChange={(e) => setTitle(e.target.value)} className={fieldClass}>
+              <option value="">{t("ไม่ระบุ", "None")}</option>
+              <option value="นาย">{t("นาย", "Mr.")}</option>
+              <option value="นาง">{t("นาง", "Mrs.")}</option>
+              <option value="นางสาว">{t("นางสาว", "Ms.")}</option>
+            </select>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
@@ -1259,15 +1277,16 @@ function StudentsTab() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deactivatingId, setDeactivatingId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  const [cohortFilter, setCohortFilter] = useState("all");
+  const [cohortFilter, setCohortFilter] = useState("CE69");
   const [programFilter, setProgramFilter] = useState("CE");
-  const [sortOrder, setSortOrder] = useState<"none" | "name-asc" | "name-desc">("none");
+  const [sortOrder, setSortOrder] = useState<"id-asc" | "name-asc" | "name-desc">("id-asc");
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 10;
 
   // Inline row edit
   const [editingRowId, setEditingRowId] = useState<string | null>(null);
   const [draftStudentId, setDraftStudentId] = useState("");
+  const [draftTitle, setDraftTitle] = useState("");
   const [draftFirstName, setDraftFirstName] = useState("");
   const [draftLastName, setDraftLastName] = useState("");
   const [draftEmail, setDraftEmail] = useState("");
@@ -1278,6 +1297,7 @@ function StudentsTab() {
   function startEdit(student: CohortStudent) {
     setEditingRowId(student.id);
     setDraftStudentId(student.studentId);
+    setDraftTitle(student.title ?? "");
     setDraftFirstName(student.firstName);
     setDraftLastName(student.lastName);
     setDraftEmail(student.email);
@@ -1314,7 +1334,7 @@ function StudentsTab() {
     const errs = validateEdit();
     if (Object.keys(errs).length > 0) { setDraftErrors(errs); return; }
     updateCohortStudent(editingRowId!, {
-      studentId: draftStudentId.trim(), firstName: draftFirstName.trim(), lastName: draftLastName.trim(),
+      studentId: draftStudentId.trim(), title: draftTitle.trim() || undefined, firstName: draftFirstName.trim(), lastName: draftLastName.trim(),
       email: draftEmail.trim().toLowerCase(), cohort: draftCohort.trim(), program: draftProgram.trim(),
     });
     setEditingRowId(null);
@@ -1338,15 +1358,15 @@ function StudentsTab() {
     const matchProgram = s.program === programFilter;
     const q = search.toLowerCase();
     const matchSearch = !q || s.studentId.includes(q) || s.firstName.toLowerCase().includes(q) ||
-      s.lastName.toLowerCase().includes(q) || s.email.toLowerCase().includes(q);
+      s.lastName.toLowerCase().includes(q) || `${s.firstName} ${s.lastName}`.toLowerCase().includes(q) ||
+      s.email.toLowerCase().includes(q);
     return matchCohort && matchProgram && matchSearch;
   });
-  if (sortOrder !== "none") {
-    filtered.sort((a, b) => {
-      const cmp = `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`, "th");
-      return sortOrder === "name-asc" ? cmp : -cmp;
-    });
-  }
+  filtered.sort((a, b) => {
+    if (sortOrder === "id-asc") return a.studentId.localeCompare(b.studentId, undefined, { numeric: true });
+    const cmp = `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`, "th");
+    return sortOrder === "name-asc" ? cmp : -cmp;
+  });
   useEffect(() => { setPage(1); }, [search, cohortFilter, programFilter, sortOrder]);
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -1370,14 +1390,21 @@ function StudentsTab() {
   }
 
   const COHORT_LABEL = t("cohort ทั้งหมด", "All cohorts");
-  const COL_COUNT = 7;
+  const COL_COUNT = 8;
 
   return (
     <div>
       {/* Action bar */}
       <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
         <div className="flex items-center gap-2 flex-wrap">
-          <SearchInput value={search} onChange={setSearch} placeholder={t("ค้นหานักศึกษา...", "Search students...")} className="w-48 shrink-0" rounded="full" />
+          <SearchInput
+            value={search}
+            onChange={setSearch}
+            placeholder={t("ค้นหานักศึกษา...", "Search students...")}
+            className="w-48 shrink-0"
+            rounded="full"
+            suggestions={cohortStudents.map((s) => `${s.firstName} ${s.lastName}`)}
+          />
           {cohorts.length > 0 && (
             <FilterSelect
               value={cohortFilter}
@@ -1390,7 +1417,7 @@ function StudentsTab() {
               }
             >
               <option value="all">{COHORT_LABEL}</option>
-              {cohorts.map((c) => <option key={c} value={c}>{c}</option>)}
+              {cohorts.map((c) => <option key={c} value={c}>{cohortYearLabel(c)}</option>)}
             </FilterSelect>
           )}
           {programs.length > 0 && (
@@ -1417,7 +1444,7 @@ function StudentsTab() {
               </svg>
             }
           >
-            <option value="none">{t("เรียงลำดับ: ค่าเริ่มต้น", "Sort: Default")}</option>
+            <option value="id-asc">{t("รหัสนักศึกษา (ค่าเริ่มต้น)", "Student ID (Default)")}</option>
             <option value="name-asc">{t("ชื่อ ก–ฮ", "Name A–Z")}</option>
             <option value="name-desc">{t("ชื่อ ฮ–ก", "Name Z–A")}</option>
           </FilterSelect>
@@ -1467,17 +1494,19 @@ function StudentsTab() {
             <div className="overflow-y-auto max-h-[calc(100vh-380px)]">
             <table className="w-full text-sm table-fixed">
               <colgroup>
-                <col className="w-[90px]" />
+                <col className="w-[80px]" />
+                <col className="w-[70px]" />
+                <col className="w-[16%]" />
                 <col className="w-[20%]" />
-                <col className="w-[25%]" />
+                <col className="w-[80px]" />
+                <col className="w-[18%]" />
                 <col className="w-[100px]" />
-                <col className="w-[90px]" />
-                <col className="w-[120px]" />
                 <col className="w-24" />
               </colgroup>
               <thead className="sticky top-0 z-10">
                 <tr className="border-b border-[var(--border-subtle)]">
                   <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("รหัส", "Student ID")}</th>
+                  <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("คำนำหน้า", "Title")}</th>
                   <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("ชื่อ-นามสกุล", "Name")}</th>
                   <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("อีเมล", "Email")}</th>
                   <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("Cohort", "Cohort")}</th>
@@ -1503,7 +1532,7 @@ function StudentsTab() {
                         key={student.id}
                         className="border-b border-[var(--border-subtle)] transition-colors hover:bg-[var(--bg-subtle)]"
                       >
-                        <td className="px-4 py-1 text-xs text-[var(--text-primary)] tabular-nums truncate">
+                        <td className="px-4 py-1 text-[var(--text-secondary)] tabular-nums truncate">
                           {isEditing ? (
                             <div>
                               <input value={draftStudentId} onChange={(e) => { setDraftStudentId(e.target.value); setDraftErrors((p) => ({ ...p, studentId: "" })); }}
@@ -1511,6 +1540,12 @@ function StudentsTab() {
                               {draftErrors.studentId && <p role="alert" className="text-[10px] text-[var(--s-err-text)] mt-0.5">{draftErrors.studentId}</p>}
                             </div>
                           ) : student.studentId}
+                        </td>
+                        <td className="px-4 py-1 text-[var(--text-secondary)] truncate">
+                          {isEditing ? (
+                            <input value={draftTitle} onChange={(e) => setDraftTitle(e.target.value)}
+                              aria-label={t("คำนำหน้านาม", "Title")} className={inputClass} />
+                          ) : (student.title || "-")}
                         </td>
                         <td className="px-4 py-1 font-medium text-[var(--text-primary)] truncate">
                           {isEditing ? (
@@ -1540,7 +1575,7 @@ function StudentsTab() {
                               {draftErrors.cohort && <p role="alert" className="text-[10px] text-[var(--s-err-text)] mt-0.5">{draftErrors.cohort}</p>}
                             </div>
                           ) : (
-                            <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 whitespace-nowrap">{student.cohort}</span>
+                            <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 whitespace-nowrap">{cohortYearLabel(student.cohort)}</span>
                           )}
                         </td>
                         <td className="px-4 py-1">
@@ -1551,7 +1586,7 @@ function StudentsTab() {
                               {draftErrors.program && <p role="alert" className="text-[10px] text-[var(--s-err-text)] mt-0.5">{draftErrors.program}</p>}
                             </div>
                           ) : (
-                            <span className="text-xs text-[var(--text-secondary)] truncate">{student.program}</span>
+                            <span className="text-xs text-[var(--text-secondary)] truncate" title={PROGRAM_LABEL[student.program] ?? student.program}>{PROGRAM_LABEL[student.program] ?? student.program}</span>
                           )}
                         </td>
                         <td className="px-4 py-1">
@@ -1595,6 +1630,16 @@ function StudentsTab() {
                                 <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                               </svg>
                             </button>
+                            <button
+                              onClick={() => setDeletingId(student.id)}
+                              aria-label={t(`ลบ ${student.firstName} ${student.lastName}`, `Delete ${student.firstName} ${student.lastName}`)}
+                              className="min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg text-[var(--text-secondary)] hover:text-[var(--s-err-text)] hover:bg-[var(--s-err-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--s-err-bd)] transition-colors"
+                            >
+                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                                <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>
+                                <path d="M10 11v6m4-6v6"/><path d="M9 6V4h6v2"/>
+                              </svg>
+                            </button>
                             {isInactive ? (
                               <button
                                 onClick={() => activateStudent(student.id)}
@@ -1617,16 +1662,6 @@ function StudentsTab() {
                                 </svg>
                               </button>
                             )}
-                            <button
-                              onClick={() => setDeletingId(student.id)}
-                              aria-label={t(`ลบ ${student.firstName} ${student.lastName}`, `Delete ${student.firstName} ${student.lastName}`)}
-                              className="min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg text-[var(--text-secondary)] hover:text-[var(--s-err-text)] hover:bg-[var(--s-err-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--s-err-bd)] transition-colors"
-                            >
-                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                                <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>
-                                <path d="M10 11v6m4-6v6"/><path d="M9 6V4h6v2"/>
-                              </svg>
-                            </button>
                               </>
                             )}
                           </div>

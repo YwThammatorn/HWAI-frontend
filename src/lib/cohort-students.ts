@@ -7,6 +7,7 @@ export type AccountStatus = "active" | "inactive";
 export interface CohortStudent {
   id: string;
   studentId: string; // institutional ID e.g. "64070501"
+  title?: string; // honorific prefix e.g. "นาย"/"นาง"/"นางสาว" — optional, free text
   firstName: string;
   lastName: string;
   email: string;
@@ -30,6 +31,14 @@ export interface CohortStudentContextValue {
   findByStudentId: (studentId: string) => CohortStudent | undefined;
   getCohorts: () => string[];
   getStudentsByCohort: (cohort: string) => CohortStudent[];
+}
+
+// Converts a cohort code like "CE69" to its Buddhist-calendar admission
+// year "2569" for display. Falls back to the raw value if it doesn't match
+// the expected <prefix><2-digit year> pattern.
+export function cohortYearLabel(cohort: string): string {
+  const m = cohort.match(/(\d{2})$/);
+  return m ? `25${m[1]}` : cohort;
 }
 
 export const CohortStudentContext = createContext<CohortStudentContextValue | null>(null);
