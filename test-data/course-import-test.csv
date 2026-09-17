@@ -7,7 +7,7 @@ student_id,first_name,last_name,email
 68020102,ทดสอบ,ชื่อผิด,wrong@example.com
 68020103,ทดสอบ,ชื่อผิด,wrong@example.com
 68020104,ทดสอบ,ชื่อผิด,wrong@example.com
-70010101,ทดสอบ,ชื่อผิด,wrong@example.com
-70010102,ทดสอบ,ชื่อผิด,wrong@example.com
+68020101,ทดสอบ,ชื่อผิด,wrong@example.com
+67010101,ทดสอบ,ชื่อผิด,wrong@example.com
 69070101,ซ้ำ,ลงทะเบียนแล้ว,dup@example.com
 99999999,ไม่มี,ในระบบ,none@example.com
