@@ -5,19 +5,9 @@ import { useParams } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
 import { useCourses } from "@/lib/courses";
-import { useAssignments, Assignment } from "@/lib/assignments";
-import { useGradingCategories, GradingCategory } from "@/lib/gradingCategories";
+import { useAssignments } from "@/lib/assignments";
+import { useGradingCategories, computeCategoryGradeRows, computeTotalSoFar, scoreForAssignment, type CategoryGradeRow } from "@/lib/gradingCategories";
 import EmptyState from "@/components/EmptyState";
-
-interface CategoryRow {
-  category: GradingCategory;
-  assignments: Assignment[];
-  gradedCount: number;
-  earnedPoints: number;
-  possiblePoints: number;
-  percent: number | null;
-  contribution: number | null;
-}
 
 export default function StudentEvaluationPage() {
   const { secId } = useParams<{ secId: string }>();
@@ -32,32 +22,16 @@ export default function StudentEvaluationPage() {
   const assignments = useMemo(() => (course ? getAssignmentsByCourse(secId) : []), [course, secId, getAssignmentsByCourse]);
   const categories = useMemo(() => (course ? getCategoriesByCourse(secId) : []), [course, secId, getCategoriesByCourse]);
 
-  const myScoreFor = (assignmentId: string): number | null => {
-    const sub = submissions.find((s) => s.assignmentId === assignmentId && s.studentId === studentId);
-    if (!sub || sub.status !== "graded") return null;
-    return sub.instructorScore ?? sub.aiScore ?? 0;
-  };
+  const myScoreFor = (assignmentId: string): number | null => scoreForAssignment(submissions, assignmentId, studentId);
 
-  const categoryRows: CategoryRow[] = useMemo(() => categories.map((category) => {
-    const catAssignments = assignments.filter((a) => a.categoryId === category.id);
-    let earnedPoints = 0, possiblePoints = 0, gradedCount = 0;
-    catAssignments.forEach((a) => {
-      const score = myScoreFor(a.id);
-      if (score !== null) {
-        earnedPoints += score;
-        possiblePoints += a.maxPoints;
-        gradedCount++;
-      }
-    });
-    const percent = gradedCount > 0 && possiblePoints > 0 ? (earnedPoints / possiblePoints) * 100 : null;
-    const contribution = percent !== null ? (percent / 100) * category.weight : null;
-    return { category, assignments: catAssignments, gradedCount, earnedPoints, possiblePoints, percent, contribution };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [categories, assignments, submissions, studentId]);
+  const categoryRows: CategoryGradeRow[] = useMemo(
+    () => computeCategoryGradeRows(categories, assignments, submissions, studentId),
+    [categories, assignments, submissions, studentId]
+  );
 
   const uncategorized = assignments.filter((a) => !a.categoryId || !categories.some((c) => c.id === a.categoryId));
   const gradedCategoryRows = categoryRows.filter((r) => r.percent !== null);
-  const totalSoFar = gradedCategoryRows.reduce((sum, r) => sum + (r.contribution ?? 0), 0);
+  const totalSoFar = computeTotalSoFar(categoryRows);
   const hasAnyGradedWork = assignments.some((a) => myScoreFor(a.id) !== null);
 
   return (
