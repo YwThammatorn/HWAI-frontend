@@ -4,6 +4,7 @@ import { useState, useMemo, useRef, useEffect } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import { useStudents } from "@/lib/students";
 import { useStudentGroups, StudentGroup } from "@/lib/studentGroups";
+import SearchInput from "@/components/SearchInput";
 
 function initialsOf(name: string) {
   const parts = name.trim().split(/\s+/);
@@ -176,15 +177,13 @@ export default function TeamFormationDrawer({
             <label className="block text-xs font-medium text-[var(--text-muted)] mb-1.5">
               {t("เพื่อนร่วมทีม", "Teammates")}
             </label>
-            <div className="relative mb-2">
-              <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-              </svg>
-              <input
+            <div className="mb-2">
+              <SearchInput
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={setSearch}
                 placeholder={t("ค้นหาชื่อ/รหัสนักศึกษา", "Search name / student ID")}
-                className="w-full h-9 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] pl-9 pr-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
+                suggestions={roster.map((s) => `${s.firstName} ${s.lastName}`)}
+                className="w-full"
               />
             </div>
 

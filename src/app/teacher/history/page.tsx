@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
 import { TEACHER_HISTORY_DISABLED } from "@/lib/featureFlags";
+import SearchInput from "@/components/SearchInput";
 
 // ─── Types & Seed Data ────────────────────────────────────────────────────────
 
@@ -88,14 +89,6 @@ function IconCheck() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
       <path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
-    </svg>
-  );
-}
-
-function IconSearch() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-      <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
     </svg>
   );
 }
@@ -270,18 +263,13 @@ export default function HistoryPage() {
             <h2 className="text-base font-bold text-[var(--text-primary)]">{t("บันทึกการตรวจงาน", "Detailed Grading Log")}</h2>
             <div className="flex items-center gap-2">
               {/* Search */}
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
-                  <IconSearch />
-                </span>
-                <input
-                  type="text"
-                  placeholder={t("ค้นหา...", "Search activity...")}
-                  value={search}
-                  onChange={(e) => handleSearch(e.target.value)}
-                  className="pl-8 pr-3 py-1.5 text-sm rounded-xl border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]/40 focus:border-[var(--accent-bright)] w-48"
-                />
-              </div>
+              <SearchInput
+                value={search}
+                onChange={handleSearch}
+                placeholder={t("ค้นหา...", "Search activity...")}
+                suggestions={[...new Set(HISTORY.map((h) => h.assignment))]}
+                className="w-48"
+              />
 
               {/* Status filter */}
               <select

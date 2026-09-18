@@ -8,6 +8,7 @@ import { useManagedTeachers } from "@/lib/managed-teachers";
 import { getInitials } from "@/lib/utils";
 import EmptyState from "@/components/EmptyState";
 import StatCard from "@/components/StatCard";
+import SearchInput from "@/components/SearchInput";
 import { useStudents } from "@/lib/students";
 
 // ── Course create/edit drawer ─────────────────────────────────────────────────
@@ -380,23 +381,14 @@ function CourseAssignPanel({ course }: { course: Course }) {
       ) : (
         <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] overflow-hidden max-w-md">
           {/* Search bar */}
-          <div className="flex items-center gap-2 px-3 py-2 border-b border-[var(--border-subtle)]">
-            <svg className="text-[var(--text-muted)] shrink-0" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-            </svg>
-            <input
+          <div className="px-3 py-2 border-b border-[var(--border-subtle)]">
+            <SearchInput
               value={teacherSearch}
-              onChange={(e) => setTeacherSearch(e.target.value)}
+              onChange={setTeacherSearch}
               placeholder={t("ค้นหาอาจารย์...", "Search teachers...")}
-              className="flex-1 text-xs bg-transparent text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none"
+              suggestions={sortedTeachers.map((tc) => tc.name)}
+              className="w-full"
             />
-            {teacherSearch && (
-              <button onClick={() => setTeacherSearch("")} className="text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors">
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                </svg>
-              </button>
-            )}
           </div>
           {/* List */}
           <div className="max-h-[200px] overflow-y-auto">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
 interface SearchInputProps {
   value: string;
@@ -12,6 +12,9 @@ interface SearchInputProps {
   /** Candidate values to suggest from as the user types (e.g. names/ids).
    *  Omit to keep this a plain search box with no dropdown. */
   suggestions?: string[];
+  /** Focus the input once on mount. Pair with a `key` prop that changes
+   *  (e.g. a tab id) to re-focus when the input is effectively "new". */
+  autoFocus?: boolean;
 }
 
 export default function SearchInput({
@@ -22,9 +25,13 @@ export default function SearchInput({
   ariaLabel,
   rounded = "xl",
   suggestions,
+  autoFocus,
 }: SearchInputProps) {
   const [open, setOpen] = useState(false);
   const [highlight, setHighlight] = useState(0);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => { if (autoFocus) inputRef.current?.focus(); }, [autoFocus]);
 
   const query = value.trim().toLowerCase();
   const matches = suggestions && query
@@ -54,6 +61,7 @@ export default function SearchInput({
         <line x1="21" y1="21" x2="16.65" y2="16.65" />
       </svg>
       <input
+        ref={inputRef}
         type="search"
         role={suggestions ? "combobox" : undefined}
         aria-expanded={suggestions ? showDropdown : undefined}

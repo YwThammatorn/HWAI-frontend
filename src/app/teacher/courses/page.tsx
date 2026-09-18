@@ -91,6 +91,7 @@ export default function CoursesPage() {
                 onChange={setSearch}
                 placeholder={t("ค้นหารายวิชา", "Search courses...")}
                 ariaLabel={t("ค้นหารายวิชา", "Search courses")}
+                suggestions={active.map((c) => c.name)}
                 className="w-56"
               />
             </div>

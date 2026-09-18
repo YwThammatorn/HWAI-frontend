@@ -9,6 +9,7 @@ import { useCohortStudents } from "@/lib/cohort-students";
 import { useManagedTeachers } from "@/lib/managed-teachers";
 import { useCurrentAccountId } from "@/lib/current-account";
 import { useLanguage } from "@/context/LanguageContext";
+import SearchInput from "@/components/SearchInput";
 
 // ─── Resolved-row shape (SectionRole joined against the account it points to) ──
 
@@ -60,9 +61,6 @@ function AddCollaboratorDrawer({
   const [roleTab, setRoleTab] = useState<Exclude<SectionRoleType, "teacher">>("ta");
   const [search, setSearch] = useState("");
   const dialogRef = useRef<HTMLDivElement>(null);
-  const searchRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => { searchRef.current?.focus(); }, [roleTab]);
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) { if (e.key === "Escape") onClose(); }
@@ -174,18 +172,17 @@ function AddCollaboratorDrawer({
 
         {/* Search */}
         <div className="px-6 pt-3">
-          <div className="relative">
-            <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-            </svg>
-            <input
-              ref={searchRef}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder={roleTab === "ta" ? t("ค้นหาชื่อ/รหัสนักศึกษา/อีเมล", "Search name / student ID / email") : t("ค้นหาชื่อ/อีเมล", "Search name / email")}
-              className="w-full h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] pl-9 pr-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
-            />
-          </div>
+          <SearchInput
+            key={roleTab}
+            value={search}
+            onChange={setSearch}
+            placeholder={roleTab === "ta" ? t("ค้นหาชื่อ/รหัสนักศึกษา/อีเมล", "Search name / student ID / email") : t("ค้นหาชื่อ/อีเมล", "Search name / email")}
+            suggestions={roleTab === "ta"
+              ? cohortStudents.filter((s) => s.status !== "inactive").map((s) => `${s.firstName} ${s.lastName}`)
+              : teachers.filter((tc) => tc.role === "teacher" && tc.status !== "inactive").map((tc) => tc.name)}
+            autoFocus
+            className="w-full"
+          />
         </div>
 
         <div className="flex-1 overflow-y-auto px-6 py-3 flex flex-col gap-1">
@@ -430,18 +427,13 @@ export default function CollaboratorsPage() {
               {t("รายชื่อผู้ร่วมงานทั้งหมดที่มีสิทธิ์จัดการหรือตรวจงาน", "A list of all collaborators with administrative or grading access to this course.")}
             </p>
           </div>
-          <div className="relative shrink-0">
-            <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-            </svg>
-            <input
-              type="text"
-              placeholder={t("ค้นหาชื่อหรืออีเมล", "Search by name or email")}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-8 pr-3 py-2 text-sm border border-[var(--border-subtle)] bg-[var(--bg-card)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]/30 focus:border-[var(--accent-bright)] transition-colors w-56"
-            />
-          </div>
+          <SearchInput
+            value={search}
+            onChange={setSearch}
+            placeholder={t("ค้นหาชื่อหรืออีเมล", "Search by name or email")}
+            suggestions={rows.map((r) => r.name)}
+            className="w-56 shrink-0"
+          />
         </div>
 
         {/* Rows */}

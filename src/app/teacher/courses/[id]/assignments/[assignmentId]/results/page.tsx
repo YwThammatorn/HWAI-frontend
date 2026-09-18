@@ -8,6 +8,7 @@ import { useAssignments, Submission } from "@/lib/assignments";
 import { useStudentGroups } from "@/lib/studentGroups";
 import { groupSubmissionsByTeam, SubmissionRow } from "@/lib/groupSubmissions";
 import { useLanguage } from "@/context/LanguageContext";
+import SearchInput from "@/components/SearchInput";
 
 const AVATAR_COLORS = ["#4F46E5", "#7C3AED", "#BE185D", "#B45309", "#047857", "#0369A1", "#C2410C", "#0E7490"];
 function avatarColor(name: string) { return AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length]; }
@@ -327,20 +328,13 @@ export default function ResultsPage() {
                 <h2 className="text-sm font-semibold text-[var(--text-primary)]">
                   {t("ผลลัพธ์นักศึกษา", "Student Results")}
                 </h2>
-                <div className="relative">
-                  <svg
-                    className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400"
-                    width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"
-                  >
-                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                  </svg>
-                  <input
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    placeholder={t("ค้นหานักศึกษา...", "Search student...")}
-                    className="pl-7 pr-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
-                  />
-                </div>
+                <SearchInput
+                  value={search}
+                  onChange={setSearch}
+                  placeholder={t("ค้นหานักศึกษา...", "Search student...")}
+                  suggestions={repRows.map((r) => r.displayName)}
+                  className="w-44"
+                />
               </div>
 
               {filtered.length === 0 ? (
