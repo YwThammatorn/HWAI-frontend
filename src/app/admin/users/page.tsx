@@ -1039,6 +1039,14 @@ function TeachersTab() {
                               <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                             </svg>
                           </button>
+                          <button onClick={() => setDeletingId(teacher.id)}
+                            aria-label={t(`ลบ ${teacher.name}`, `Delete ${teacher.name}`)}
+                            className="min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg text-[var(--text-secondary)] hover:text-[var(--s-err-text)] hover:bg-[var(--s-err-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--s-err-bd)] transition-colors">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                              <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>
+                              <path d="M10 11v6m4-6v6"/><path d="M9 6V4h6v2"/>
+                            </svg>
+                          </button>
                           {teacher.status === "inactive" ? (
                             <button onClick={() => activateTeacher(teacher.id)}
                               aria-label={t(`เปิดใช้งาน ${teacher.name}`, `Activate ${teacher.name}`)}
@@ -1057,14 +1065,6 @@ function TeachersTab() {
                               </svg>
                             </button>
                           )}
-                          <button onClick={() => setDeletingId(teacher.id)}
-                            aria-label={t(`ลบ ${teacher.name}`, `Delete ${teacher.name}`)}
-                            className="min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg text-[var(--text-secondary)] hover:text-[var(--s-err-text)] hover:bg-[var(--s-err-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--s-err-bd)] transition-colors">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                              <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>
-                              <path d="M10 11v6m4-6v6"/><path d="M9 6V4h6v2"/>
-                            </svg>
-                          </button>
                         </>
                       )}
                     </div>
@@ -1279,7 +1279,10 @@ function StudentsTab() {
   const [search, setSearch] = useState("");
   const [cohortFilter, setCohortFilter] = useState("CE69");
   const [programFilter, setProgramFilter] = useState("CE");
-  const [sortOrder, setSortOrder] = useState<"id-asc" | "name-asc" | "name-desc">("id-asc");
+  // Two independent sort filters, per the user's request to separate them (17/9/2569):
+  // picking a name order overrides the ID order; ID order applies whenever name is "none".
+  const [idSort, setIdSort] = useState<"asc" | "desc">("asc");
+  const [nameSort, setNameSort] = useState<"none" | "asc" | "desc">("none");
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 10;
 
@@ -1363,11 +1366,14 @@ function StudentsTab() {
     return matchCohort && matchProgram && matchSearch;
   });
   filtered.sort((a, b) => {
-    if (sortOrder === "id-asc") return a.studentId.localeCompare(b.studentId, undefined, { numeric: true });
-    const cmp = `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`, "th");
-    return sortOrder === "name-asc" ? cmp : -cmp;
+    if (nameSort !== "none") {
+      const cmp = `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`, "th");
+      return nameSort === "asc" ? cmp : -cmp;
+    }
+    const cmp = a.studentId.localeCompare(b.studentId, undefined, { numeric: true });
+    return idSort === "asc" ? cmp : -cmp;
   });
-  useEffect(() => { setPage(1); }, [search, cohortFilter, programFilter, sortOrder]);
+  useEffect(() => { setPage(1); }, [search, cohortFilter, programFilter, idSort, nameSort]);
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
@@ -1435,18 +1441,31 @@ function StudentsTab() {
             </FilterSelect>
           )}
           <FilterSelect
-            value={sortOrder}
-            onChange={(v) => setSortOrder(v as typeof sortOrder)}
-            ariaLabel={t("เรียงลำดับตามชื่อ", "Sort by name")}
+            value={idSort}
+            onChange={(v) => setIdSort(v as typeof idSort)}
+            ariaLabel={t("เรียงลำดับตามรหัส", "Sort by ID")}
             icon={
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="9" y2="18"/>
               </svg>
             }
           >
-            <option value="id-asc">{t("รหัสนักศึกษา (ค่าเริ่มต้น)", "Student ID (Default)")}</option>
-            <option value="name-asc">{t("ชื่อ ก–ฮ", "Name A–Z")}</option>
-            <option value="name-desc">{t("ชื่อ ฮ–ก", "Name Z–A")}</option>
+            <option value="asc">{t("รหัส น้อย→มาก (ค่าเริ่มต้น)", "Student ID Ascending (Default)")}</option>
+            <option value="desc">{t("รหัส มาก→น้อย", "Student ID Descending")}</option>
+          </FilterSelect>
+          <FilterSelect
+            value={nameSort}
+            onChange={(v) => setNameSort(v as typeof nameSort)}
+            ariaLabel={t("เรียงลำดับตามชื่อ", "Sort by name")}
+            icon={
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 7h11M4 12h7M4 17h4"/><path d="m16 15 3 3 3-3M19 6v12"/>
+              </svg>
+            }
+          >
+            <option value="none">{t("ไม่เรียงตามชื่อ", "Not sorted by name")}</option>
+            <option value="asc">{t("ชื่อ ก–ฮ", "Name A–Z")}</option>
+            <option value="desc">{t("ชื่อ ฮ–ก", "Name Z–A")}</option>
           </FilterSelect>
         </div>
         <div className="flex items-center gap-2 shrink-0">
