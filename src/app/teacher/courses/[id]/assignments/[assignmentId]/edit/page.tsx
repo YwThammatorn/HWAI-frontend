@@ -7,6 +7,7 @@ import { useCourses } from "@/lib/courses";
 import { useAssignments, Assignment } from "@/lib/assignments";
 import { useGradingCategories } from "@/lib/gradingCategories";
 import { useLanguage } from "@/context/LanguageContext";
+import { AttachmentsEditor, useAttachmentsDraft } from "@/components/AssignmentAttachments";
 
 export default function EditAssignmentPage() {
   const { id, assignmentId } = useParams<{ id: string; assignmentId: string }>();
@@ -45,6 +46,7 @@ export default function EditAssignmentPage() {
   const [submissionType, setSubmissionType] = useState<"individual" | "group">("individual");
   const [maxGroupSize, setMaxGroupSize] = useState("");
   const [saved, setSaved] = useState(false);
+  const att = useAttachmentsDraft();
 
   const [showNewRubricForm, setShowNewRubricForm] = useState(false);
   const [newRubricName, setNewRubricName] = useState("");
@@ -81,6 +83,7 @@ export default function EditAssignmentPage() {
       setFileTypes(ft);
       setSubmissionType(st);
       setMaxGroupSize(gs);
+      att.reset(assignment.attachments ?? []);
       origRef.current = orig;
     }
   }, [assignment?.id]);
@@ -100,7 +103,8 @@ export default function EditAssignmentPage() {
       acceptsFiles !== origRef.current.acceptsFiles ||
       JSON.stringify(fileTypes) !== origRef.current.fileTypesJson ||
       submissionType !== origRef.current.submissionType ||
-      maxGroupSize !== origRef.current.maxGroupSizeStr
+      maxGroupSize !== origRef.current.maxGroupSizeStr ||
+      att.dirty
     );
 
   useEffect(() => {
@@ -130,6 +134,7 @@ export default function EditAssignmentPage() {
     updateAssignment(assignmentId, {
       name: name.trim(),
       description: description.trim(),
+      attachments: att.items,
       dueDate,
       maxPoints: parseInt(maxPoints) || 100,
       categoryId: categoryId || undefined,
@@ -138,6 +143,7 @@ export default function EditAssignmentPage() {
       submissionType,
       maxGroupSize: submissionType === "group" && maxGroupSize ? parseInt(maxGroupSize) : null,
     });
+    att.commit();
     setSaved(true);
     setTimeout(() => router.push(`/teacher/courses/${id}/assignments/${assignmentId}`), 800);
   }
@@ -234,6 +240,7 @@ export default function EditAssignmentPage() {
               rows={4}
               className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] resize-none transition-colors"
             />
+            <AttachmentsEditor items={att.items} onChange={att.setItems} />
           </section>
 
           {/* Details */}

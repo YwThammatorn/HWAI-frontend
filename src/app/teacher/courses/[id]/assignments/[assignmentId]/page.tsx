@@ -11,6 +11,7 @@ import { useStudentGroups } from "@/lib/studentGroups";
 import { groupSubmissionsByTeam, SubmissionRow } from "@/lib/groupSubmissions";
 import { useLanguage } from "@/context/LanguageContext";
 import SearchInput from "@/components/SearchInput";
+import { AttachmentList } from "@/components/AssignmentAttachments";
 
 const AVATAR_COLORS = ["#4F46E5", "#7C3AED", "#BE185D", "#B45309", "#047857", "#0369A1", "#C2410C", "#0E7490"];
 
@@ -288,13 +289,14 @@ export default function ViewAssignmentPage() {
         </div>
 
         {/* Description */}
-        {assignment.description && (
+        {(assignment.description || (assignment.attachments?.length ?? 0) > 0) && (
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 mb-5">
             <p className="text-xs text-gray-500 mb-1.5">{t("คำอธิบายงาน", "Assignment Description")}</p>
             <div className="flex items-start justify-between gap-4">
               <p className="text-sm text-[var(--text-primary)] leading-relaxed">{assignment.description}</p>
               <Link href={`/teacher/courses/${id}/assignments/${assignmentId}/edit`} className="text-[var(--accent)] text-sm hover:underline shrink-0">{t("แก้ไข", "Edit")}</Link>
             </div>
+            <AttachmentList attachments={assignment.attachments} />
           </div>
         )}
 

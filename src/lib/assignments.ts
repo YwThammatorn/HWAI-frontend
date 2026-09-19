@@ -2,11 +2,27 @@
 
 import { createContext, useContext } from "react";
 
+/** Teacher-supplied reference material shown to students alongside the
+ *  assignment brief (example work, a spec PDF, a Figma link, ...). This is NOT
+ *  what students submit — see `Assignment.fileTypes` for that. */
+export interface AssignmentAttachment {
+  id: string;
+  kind: "file" | "image" | "link";
+  /** Display label: the file name, or the link's title (falls back to the URL). */
+  name: string;
+  /** "upload": `ref` is a storage key — resolve with resolveFileUrl() from
+   *  @/lib/fileStorage. "url": `ref` is an external link used as-is. */
+  source: "upload" | "url";
+  ref: string;
+}
+
 export interface Assignment {
   id: string;
   courseId: string;
   name: string;
   description: string;
+  /** Optional reference files/images/links from the teacher. Absent on assignments created before this existed. */
+  attachments?: AssignmentAttachment[];
   dueDate: string; // YYYY-MM-DD
   maxPoints: number;
   categoryId?: string; // FK -> GradingCategory, which % of the course grade this assignment counts toward

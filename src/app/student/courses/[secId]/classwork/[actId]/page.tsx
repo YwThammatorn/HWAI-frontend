@@ -10,6 +10,7 @@ import { useAssignments } from "@/lib/assignments";
 import { useStudents } from "@/lib/students";
 import { useStudentGroups } from "@/lib/studentGroups";
 import TeamFormationDrawer from "@/components/TeamFormationDrawer";
+import { AttachmentList } from "@/components/AssignmentAttachments";
 
 function initialsOf(name: string) {
   const parts = name.trim().split(/\s+/);
@@ -173,6 +174,7 @@ export default function StudentClassworkDetailPage() {
               ) : (
                 <p className="text-sm text-[var(--text-muted)] italic">{t("ไม่มีคำอธิบาย", "No description provided")}</p>
               )}
+              <AttachmentList attachments={assignment.attachments} />
             </div>
 
             {/* Rubric — read-only, shows what the student will be graded on */}

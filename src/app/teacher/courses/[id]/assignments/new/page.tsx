@@ -6,6 +6,7 @@ import { useCourses } from "@/lib/courses";
 import { useAssignments, Assignment } from "@/lib/assignments";
 import { useGradingCategories } from "@/lib/gradingCategories";
 import { useLanguage } from "@/context/LanguageContext";
+import { AttachmentsEditor, useAttachmentsDraft } from "@/components/AssignmentAttachments";
 
 export default function NewAssignmentPage() {
   const { id } = useParams<{ id: string }>();
@@ -35,6 +36,7 @@ export default function NewAssignmentPage() {
   const [submissionType, setSubmissionType] = useState<"individual" | "group">("individual");
   const [maxGroupSize, setMaxGroupSize] = useState<string>("");
   const [categoryId, setCategoryId] = useState("");
+  const att = useAttachmentsDraft();
 
   const course = getCourse(id);
   const categories = getCategoriesByCourse(id);
@@ -42,7 +44,7 @@ export default function NewAssignmentPage() {
 
   const isDirty =
     name.trim() !== "" || description.trim() !== "" || dueDate !== "" || maxPoints !== "100" ||
-    submissionType !== "individual" || maxGroupSize !== "";
+    submissionType !== "individual" || maxGroupSize !== "" || att.items.length > 0;
 
   useEffect(() => {
     const handler = (e: BeforeUnloadEvent) => {
@@ -72,6 +74,7 @@ export default function NewAssignmentPage() {
       courseId: id,
       name: name.trim(),
       description: description.trim(),
+      attachments: att.items.length > 0 ? att.items : undefined,
       dueDate,
       maxPoints: parseInt(maxPoints) || 100,
       categoryId: categoryId || undefined,
@@ -81,6 +84,7 @@ export default function NewAssignmentPage() {
       maxGroupSize: submissionType === "group" && maxGroupSize ? parseInt(maxGroupSize) : null,
       rubricIds: [],
     });
+    att.commit();
     // Land the teacher straight in the rubric editor for this assignment
     // (meeting 26/8/2569 — create + rubric in one continuous flow, following
     // DEEP-QA's "เพิ่มกิจกรรมการประเมิน" pattern; see [[project-hwai-meeting-20260826]]).
@@ -141,6 +145,7 @@ export default function NewAssignmentPage() {
               rows={4}
               className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] resize-none transition-colors"
             />
+            <AttachmentsEditor items={att.items} onChange={att.setItems} />
           </section>
 
           {/* Details */}

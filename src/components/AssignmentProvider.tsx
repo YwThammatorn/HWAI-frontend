@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { AssignmentContext, Assignment, Submission, Rubric, DEFAULT_LEVELS } from "@/lib/assignments";
+import { removeFile } from "@/lib/fileStorage";
 
 const LS_ASSIGNMENTS = "hwai_assignments_v1";
 const LS_SUBMISSIONS = "hwai_submissions_v1";
@@ -171,12 +172,14 @@ export default function AssignmentProvider({ children }: { children: React.React
   }, [persistA]);
 
   const removeAssignment = useCallback((id: string) => {
+    // Free the mock-storage blobs so deleted assignments don't eat localStorage quota
+    assignments.find(a => a.id === id)?.attachments?.forEach(att => { if (att.source === "upload") removeFile(att.ref); });
     persistA(prev => prev.filter(a => a.id !== id));
     persistS(prev => prev.filter(s => s.assignmentId !== id)); // cascade
     persistR(prev => prev.filter(r => r.assignmentId !== id)); // cascade
-  }, [persistA, persistS, persistR]);
+  }, [assignments, persistA, persistS, persistR]);
 
-  const getAssignment = useCallback((id: string) => assignments.find(a => a.id === id), [assignments]);
+  const getAssignment= useCallback((id: string) => assignments.find(a => a.id === id), [assignments]);
 
   const getAssignmentsByCourse = useCallback((courseId: string) =>
     assignments.filter(a => a.courseId === courseId), [assignments]);
