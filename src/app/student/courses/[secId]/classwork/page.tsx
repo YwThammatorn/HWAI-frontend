@@ -231,7 +231,7 @@ export default function StudentClassworkPage() {
                 <h2 className="text-xs font-semibold uppercase tracking-wider text-[var(--s-err-text)] mb-3">
                   {t(`ใกล้ส่ง (${dueSoon.length})`, `Due soon (${dueSoon.length})`)}
                 </h2>
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
+                <div className="flex flex-col gap-3">
                   {dueSoon.map((a) => (
                     <ClassworkCard key={a.id} assignment={a} submission={mySubmissions.get(a.id)} courseId={secId} />
                   ))}
@@ -245,7 +245,7 @@ export default function StudentClassworkPage() {
                 <h2 className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)] mb-3">
                   {t(`ยังไม่ส่ง (${notSubmitted.length})`, `Not submitted (${notSubmitted.length})`)}
                 </h2>
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
+                <div className="flex flex-col gap-3">
                   {notSubmitted.map((a) => (
                     <ClassworkCard key={a.id} assignment={a} submission={mySubmissions.get(a.id)} courseId={secId} />
                   ))}
@@ -259,7 +259,7 @@ export default function StudentClassworkPage() {
                 <h2 className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)] mb-3">
                   {t(`ส่งแล้ว (${submitted.length})`, `Submitted (${submitted.length})`)}
                 </h2>
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
+                <div className="flex flex-col gap-3">
                   {submitted.map((a) => (
                     <ClassworkCard key={a.id} assignment={a} submission={mySubmissions.get(a.id)} courseId={secId} />
                   ))}

@@ -133,6 +133,27 @@ test.describe("P3b — Student Classwork List (/student/courses/[secId]/classwor
 
 });
 
+test.describe("P3b — Classwork list layout", () => {
+  test("assignments in a group stack top-to-bottom, one per row (not side by side)", async ({ page }) => {
+    await seedStudent(page);
+    // Override with three not-yet-submitted assignments so they land in the same group
+    await page.addInitScript((list) => {
+      localStorage.setItem("hwai_assignments_v1", JSON.stringify(list));
+    }, ["a1", "a2", "a3"].map((k, i) => ({
+      ...ASSIGNMENT_OPEN, id: `a-stack-${k}`, name: `Stack ${i + 1}`, dueDate: "2099-12-31",
+    })));
+    await page.setViewportSize({ width: 1600, height: 900 }); // wide enough that the old xl two-column grid would kick in
+    await page.goto(`${BASE}/student/courses/c-p3/classwork`);
+    await page.waitForLoadState("networkidle");
+    const boxes = await Promise.all([1, 2, 3].map((n) => page.getByText(`Stack ${n}`).first().boundingBox()));
+    for (const b of boxes) expect(b).not.toBeNull();
+    // same left edge and strictly increasing top => one column
+    expect(new Set(boxes.map((b) => Math.round(b!.x))).size).toBe(1);
+    expect(boxes[1]!.y).toBeGreaterThan(boxes[0]!.y);
+    expect(boxes[2]!.y).toBeGreaterThan(boxes[1]!.y);
+  });
+});
+
 test.describe("P3b — Student Classwork Detail + Submit", () => {
 
   test("detail page shows assignment name and maxPoints", async ({ page }) => {
