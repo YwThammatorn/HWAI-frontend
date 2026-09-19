@@ -4,6 +4,9 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
+import { useCohortStudents } from "@/lib/cohort-students";
+import { findMultiRoleAccount, identityEmail } from "@/lib/accounts";
+import { ADMIN_DASHBOARD_DISABLED } from "@/lib/featureFlags";
 import type { UserRole } from "@/context/AuthContext";
 
 const ROLE_ROUTE: Record<UserRole, string> = {
@@ -26,8 +29,9 @@ const DEV_SWITCHABLE: UserRole[] = ["admin", "teacher", "ta", "student"];
 const TEACHER_PREVIEW_TARGETS: UserRole[] = ["teacher", "ta", "student"];
 
 export default function RoleSwitcher() {
-  const { user, viewAs, setViewAs, effectiveRole } = useAuth();
+  const { user, viewAs, setViewAs, effectiveRole, switchRole } = useAuth();
   const { t, lang } = useLanguage();
+  const { findByStudentId } = useCohortStudents();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -49,6 +53,68 @@ export default function RoleSwitcher() {
 
   const displayRole = effectiveRole ?? user.role;
   const meta = ROLE_LABELS[displayRole];
+
+  // One sign-in, several roles (see lib/accounts.ts): a real switch between the
+  // roles this account actually holds — never a preview, and never any other role.
+  const account = user.roles && user.roles.length > 1 ? findMultiRoleAccount(user.accountEmail) : undefined;
+  if (account) {
+    const pickRole = (r: UserRole) => {
+      setOpen(false);
+      if (r !== user.role) {
+        const student = r === "student" && account.studentId ? findByStudentId(account.studentId) : undefined;
+        switchRole(r, student ? `${student.firstName} ${student.lastName}` : undefined);
+      }
+      router.push(r === "admin" && ADMIN_DASHBOARD_DISABLED ? "/admin/users" : ROLE_ROUTE[r]);
+    };
+    return (
+      <div ref={ref} className="relative">
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          aria-label={t("สลับบทบาท", "Switch role")}
+          aria-haspopup="menu"
+          aria-expanded={open}
+          className="flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[10px] font-bold transition-colors hover:opacity-80"
+          style={{ color: meta.color, background: meta.bg, borderColor: meta.color + "80" }}
+        >
+          {lang === "th" ? meta.th : meta.en}
+          <svg width="8" height="8" viewBox="0 0 10 10" fill="currentColor" style={{ opacity: .6 }}>
+            <path d="M5 7L1 3h8L5 7z"/>
+          </svg>
+        </button>
+
+        {open && (
+          <div role="menu" className="absolute right-0 top-full mt-1.5 w-60 rounded-xl border border-white/10 bg-[#0D1628] shadow-xl z-50 py-1 overflow-hidden">
+            <p className="text-[9px] font-bold tracking-widest uppercase text-white/30 px-3 pt-2 pb-1">{t("สลับบทบาท", "Switch role")}</p>
+            {account.roles.map((r) => {
+              const m = ROLE_LABELS[r];
+              const isActive = user.role === r;
+              return (
+                <button
+                  key={r}
+                  type="button"
+                  role="menuitemradio"
+                  aria-checked={isActive}
+                  onClick={() => pickRole(r)}
+                  className="w-full text-left px-3 py-1.5 flex items-center gap-2 transition-colors hover:bg-white/5"
+                >
+                  <span className="w-2 shrink-0 flex items-center" style={{ color: m.color }}>
+                    {isActive && <svg width="8" height="8" viewBox="0 0 10 10" fill="currentColor"><circle cx="5" cy="5" r="4"/></svg>}
+                  </span>
+                  <span className="flex flex-col min-w-0">
+                    <span className="text-xs font-medium" style={{ color: isActive ? m.color : "#94A3B8" }}>
+                      {lang === "th" ? m.th : m.en}
+                    </span>
+                    <span className="text-[10px] text-white/55 truncate">{identityEmail(account, r)}</span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  }
 
   if (!interactive) {
     return (
