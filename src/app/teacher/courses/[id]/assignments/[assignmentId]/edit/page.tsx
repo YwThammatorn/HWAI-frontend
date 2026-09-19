@@ -198,36 +198,26 @@ export default function EditAssignmentPage() {
   const isValid = name.trim().length > 0 && dueDate !== "" && (!acceptsFiles || fileTypes.length > 0);
 
   return (
-      <main className="w-full px-8 py-8">
+      <main className="w-full max-w-[700px] mx-auto px-8 py-10">
 
-        {/* Breadcrumb (same pattern as the other course pages) */}
-        <div className="flex items-center gap-2 text-sm text-gray-500 mb-6 flex-wrap">
-          <button type="button" onClick={() => navAway("/teacher/courses")} aria-label={t("รายวิชาทั้งหมด", "All Courses")} className="hover:text-[var(--accent)] transition-colors">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
-            </svg>
-          </button>
-          <span>/</span>
-          <button type="button" onClick={() => navAway(`/teacher/courses/${id}`)} className="hover:text-[var(--accent)] transition-colors">{course.name}</button>
-          <span>/</span>
-          <button type="button" onClick={() => navAway(`/teacher/courses/${id}/assignments`)} className="hover:text-[var(--accent)] transition-colors">{t("ชิ้นงาน", "Assignments")}</button>
-          <span>/</span>
-          <button type="button" onClick={() => navAway(`/teacher/courses/${id}/assignments/${assignmentId}`)} className="hover:text-[var(--accent)] transition-colors">{assignment.name}</button>
-          <span>/</span>
-          <span className="text-[var(--accent)] font-medium">{t("แก้ไข", "Edit")}</span>
-        </div>
+        <button
+          onClick={() => navAway(`/teacher/courses/${id}/assignments/${assignmentId}`)}
+          className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-[var(--accent)] mb-6 transition-colors"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+          {t("กลับหน้าชิ้นงาน", "Back to assignment")}
+        </button>
 
-        <h1 className="text-3xl font-bold text-[var(--text-primary)]">{t("แก้ไขชิ้นงาน", "Edit Assignment")}</h1>
-        <p className="text-sm text-gray-500 mt-1.5 mb-8">
+        <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">{t("แก้ไขชิ้นงาน", "Edit Assignment")}</h1>
+        <p className="text-sm text-gray-500 mb-8">
           {t("กำลังแก้ไข", "Editing")}{" "}
           <span className="font-semibold text-[var(--text-primary)]">{assignment.name}</span>{" "}
           {t("ในวิชา", "in")} <span className="font-semibold text-[var(--text-primary)]">{course.name}</span>
         </p>
 
-        <form onSubmit={handleSave}>
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 items-start">
-          <div className="space-y-5">
-
+        <form onSubmit={handleSave} className="space-y-5">
 
           {/* General Information */}
           <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
@@ -252,111 +242,6 @@ export default function EditAssignmentPage() {
             />
             <AttachmentsEditor items={att.items} onChange={att.setItems} />
           </section>
-
-          {/* Rubric section */}
-          <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-            <div className="flex items-center justify-between mb-5">
-              <div className="flex items-center gap-2">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent-bright)" strokeWidth="2" strokeLinecap="round">
-                  <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                </svg>
-                <h2 className="text-sm font-semibold text-[var(--text-primary)]">{t("เกณฑ์การให้คะแนน (Rubric)", "Grading Rubric")}</h2>
-              </div>
-              <button
-                type="button"
-                onClick={() => { setShowNewRubricForm(true); setNewRubricName(""); }}
-                disabled={showNewRubricForm}
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-[var(--accent)] text-[var(--accent)] text-xs font-medium hover:bg-teal-50 transition-colors disabled:opacity-50"
-              >
-                <svg width="11" height="11" viewBox="0 0 16 16" fill="none">
-                  <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
-                </svg>
-                {t("สร้างเกณฑ์ใหม่", "New Rubric")}
-              </button>
-            </div>
-
-            {linkedRubrics.length === 0 && !showNewRubricForm ? (
-              <div className="text-center py-6 text-xs text-gray-500">
-                {t('ยังไม่มีเกณฑ์การให้คะแนน — กด "สร้างเกณฑ์ใหม่" เพื่อเพิ่ม', 'No rubrics yet — click "New Rubric" to add one')}
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {linkedRubrics.map(rubric => (
-                  <div key={rubric.id} className="flex items-center justify-between px-4 py-3 rounded-xl bg-gray-50 border border-gray-100">
-                    <div className="flex items-center gap-3">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round">
-                        <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                      </svg>
-                      <div>
-                        <p className="text-sm font-medium text-[var(--text-primary)]">{rubric.name}</p>
-                        <p className="text-xs text-gray-500 mt-0.5">
-                          {rubric.criteria.length > 0
-                            ? `${rubric.criteria.length} ${t("เกณฑ์ย่อย", "criteria")} · ${rubric.criteria.reduce((s, c) => s + c.maxPoints, 0)} ${t("คะแนนรวม", "total pts")}`
-                            : t("ยังไม่มีเกณฑ์ย่อย — เปิด Rubric Editor เพื่อเพิ่ม", "No criteria yet — open Rubric Editor to add")}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Link
-                        href={`/teacher/courses/${id}/assignments/${assignmentId}/rubrics/${rubric.id}`}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs text-[var(--accent)] border border-[var(--accent)] hover:bg-teal-50 transition-colors font-medium"
-                      >
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                        </svg>
-                        {t("แก้ไข Rubric", "Edit Rubric")}
-                      </Link>
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteRubric(rubric.id, rubric.name)}
-                        disabled={linkedRubrics.length <= 1}
-                        className="p-1.5 rounded-lg hover:bg-[var(--s-err-bg)] text-gray-500 hover:text-[var(--s-err-text)] transition-colors disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-gray-500 disabled:cursor-not-allowed"
-                        title={linkedRubrics.length <= 1
-                          ? t("ลบไม่ได้ — ต้องมีเกณฑ์อย่างน้อย 1 ชุดเสมอ", "Can't delete — must keep at least 1 rubric")
-                          : t("ลบเกณฑ์", "Delete rubric")}
-                      >
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                          <polyline points="3 6 5 6 21 6"/>
-                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {showNewRubricForm && (
-              <div className="mt-3 p-4 rounded-xl bg-teal-50/50 border border-[var(--accent)]/20">
-                <label className="block text-xs font-medium text-gray-500 mb-2">{t("ชื่อเกณฑ์", "Rubric Name")}</label>
-                <div className="flex gap-2">
-                  <input
-                    autoFocus
-                    value={newRubricName}
-                    onChange={e => setNewRubricName(e.target.value)}
-                    onKeyDown={e => {
-                      if (e.key === "Enter") { e.preventDefault(); handleAddRubric(); }
-                      if (e.key === "Escape") { setShowNewRubricForm(false); setNewRubricName(""); }
-                    }}
-                    placeholder={t("เช่น เกณฑ์การวิจัยผู้ใช้", "e.g. User Research Rubric")}
-                    className="flex-1 px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
-                  />
-                  <button type="button" onClick={handleAddRubric} disabled={!newRubricName.trim()}
-                    className="px-3 py-2 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-medium hover:bg-[var(--accent-solid-hover)] disabled:opacity-50 transition-colors">
-                    {t("บันทึก", "Save")}
-                  </button>
-                  <button type="button" onClick={() => { setShowNewRubricForm(false); setNewRubricName(""); }}
-                    className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm text-gray-500 hover:bg-gray-50 transition-colors">
-                    {t("ยกเลิก", "Cancel")}
-                  </button>
-                </div>
-              </div>
-            )}
-          </section>
-
-          </div>
-          <div className="space-y-5">
 
           {/* Details */}
           <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
@@ -481,6 +366,108 @@ export default function EditAssignmentPage() {
             </div>
           </section>
 
+          {/* Rubric section */}
+          <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-2">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent-bright)" strokeWidth="2" strokeLinecap="round">
+                  <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                </svg>
+                <h2 className="text-sm font-semibold text-[var(--text-primary)]">{t("เกณฑ์การให้คะแนน (Rubric)", "Grading Rubric")}</h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => { setShowNewRubricForm(true); setNewRubricName(""); }}
+                disabled={showNewRubricForm}
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-[var(--accent)] text-[var(--accent)] text-xs font-medium hover:bg-teal-50 transition-colors disabled:opacity-50"
+              >
+                <svg width="11" height="11" viewBox="0 0 16 16" fill="none">
+                  <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+                </svg>
+                {t("สร้างเกณฑ์ใหม่", "New Rubric")}
+              </button>
+            </div>
+
+            {linkedRubrics.length === 0 && !showNewRubricForm ? (
+              <div className="text-center py-6 text-xs text-gray-500">
+                {t('ยังไม่มีเกณฑ์การให้คะแนน — กด "สร้างเกณฑ์ใหม่" เพื่อเพิ่ม', 'No rubrics yet — click "New Rubric" to add one')}
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {linkedRubrics.map(rubric => (
+                  <div key={rubric.id} className="flex items-center justify-between px-4 py-3 rounded-xl bg-gray-50 border border-gray-100">
+                    <div className="flex items-center gap-3">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round">
+                        <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                      </svg>
+                      <div>
+                        <p className="text-sm font-medium text-[var(--text-primary)]">{rubric.name}</p>
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          {rubric.criteria.length > 0
+                            ? `${rubric.criteria.length} ${t("เกณฑ์ย่อย", "criteria")} · ${rubric.criteria.reduce((s, c) => s + c.maxPoints, 0)} ${t("คะแนนรวม", "total pts")}`
+                            : t("ยังไม่มีเกณฑ์ย่อย — เปิด Rubric Editor เพื่อเพิ่ม", "No criteria yet — open Rubric Editor to add")}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Link
+                        href={`/teacher/courses/${id}/assignments/${assignmentId}/rubrics/${rubric.id}`}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs text-[var(--accent)] border border-[var(--accent)] hover:bg-teal-50 transition-colors font-medium"
+                      >
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                        </svg>
+                        {t("แก้ไข Rubric", "Edit Rubric")}
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteRubric(rubric.id, rubric.name)}
+                        disabled={linkedRubrics.length <= 1}
+                        className="p-1.5 rounded-lg hover:bg-[var(--s-err-bg)] text-gray-500 hover:text-[var(--s-err-text)] transition-colors disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-gray-500 disabled:cursor-not-allowed"
+                        title={linkedRubrics.length <= 1
+                          ? t("ลบไม่ได้ — ต้องมีเกณฑ์อย่างน้อย 1 ชุดเสมอ", "Can't delete — must keep at least 1 rubric")
+                          : t("ลบเกณฑ์", "Delete rubric")}
+                      >
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                          <polyline points="3 6 5 6 21 6"/>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {showNewRubricForm && (
+              <div className="mt-3 p-4 rounded-xl bg-teal-50/50 border border-[var(--accent)]/20">
+                <label className="block text-xs font-medium text-gray-500 mb-2">{t("ชื่อเกณฑ์", "Rubric Name")}</label>
+                <div className="flex gap-2">
+                  <input
+                    autoFocus
+                    value={newRubricName}
+                    onChange={e => setNewRubricName(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === "Enter") { e.preventDefault(); handleAddRubric(); }
+                      if (e.key === "Escape") { setShowNewRubricForm(false); setNewRubricName(""); }
+                    }}
+                    placeholder={t("เช่น เกณฑ์การวิจัยผู้ใช้", "e.g. User Research Rubric")}
+                    className="flex-1 px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
+                  />
+                  <button type="button" onClick={handleAddRubric} disabled={!newRubricName.trim()}
+                    className="px-3 py-2 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-medium hover:bg-[var(--accent-solid-hover)] disabled:opacity-50 transition-colors">
+                    {t("บันทึก", "Save")}
+                  </button>
+                  <button type="button" onClick={() => { setShowNewRubricForm(false); setNewRubricName(""); }}
+                    className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm text-gray-500 hover:bg-gray-50 transition-colors">
+                    {t("ยกเลิก", "Cancel")}
+                  </button>
+                </div>
+              </div>
+            )}
+          </section>
+
           {/* Danger Zone */}
           <section className="bg-white rounded-2xl border border-[var(--s-err-bd)] shadow-sm p-6">
             <h2 className="text-sm font-semibold text-[var(--s-err-text)] uppercase tracking-wider mb-4">{t("โซนอันตราย", "Danger Zone")}</h2>
@@ -495,11 +482,8 @@ export default function EditAssignmentPage() {
             </p>
           </section>
 
-          </div>
-          </div>
-
           {/* Actions */}
-          <div className="flex justify-end gap-3 mt-8 pt-6 pb-4 border-t border-gray-100">
+          <div className="flex justify-end gap-3 pb-4">
             <button type="button" onClick={() => navAway(`/teacher/courses/${id}/assignments/${assignmentId}`)}
               className="px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
               {t("ยกเลิก", "Cancel")}
