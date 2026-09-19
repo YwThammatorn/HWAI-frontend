@@ -220,6 +220,55 @@ test.describe("P3b — Individual / Group type chips", () => {
   });
 });
 
+test.describe("P3b — Course banner + grading categories on the classwork page", () => {
+  test("banner is the teacher-style solid cover (no tint, left accent or shadow)", async ({ page }) => {
+    await seedStudent(page);
+    await page.goto(`${BASE}/student/courses/c-p3/classwork`);
+    await page.waitForLoadState("networkidle");
+    const heading = page.locator("h1", { hasText: "Data Structures" });
+    const banner = heading.locator("xpath=ancestor::div[contains(@class,'h-36')]");
+    await expect(banner).toBeVisible();
+    const css = await banner.evaluate((el) => {
+      const c = getComputedStyle(el);
+      return { bg: c.backgroundColor, borderLeft: c.borderLeftWidth, shadow: c.boxShadow };
+    });
+    // COURSE.coverColor = #F97316
+    expect(css).toEqual({ bg: "rgb(249, 115, 22)", borderLeft: "0px", shadow: "none" });
+    expect(await heading.evaluate((el) => getComputedStyle(el).color)).toBe("rgb(255, 255, 255)");
+  });
+
+  test("shows the grading categories read-only, and no longer the evaluation summary card", async ({ page }) => {
+    await seedStudent(page);
+    await page.addInitScript(() => {
+      const now = "2026-01-01T00:00:00.000Z";
+      localStorage.setItem("hwai_grading_categories_v1", JSON.stringify([
+        { id: "gc-1", courseId: "c-p3", name: "Coursework", weight: 60, createdAt: now, updatedAt: now },
+        { id: "gc-2", courseId: "c-p3", name: "Final Project", weight: 40, createdAt: now, updatedAt: now },
+      ]));
+    });
+    await page.goto(`${BASE}/student/courses/c-p3/classwork`);
+    await page.waitForLoadState("networkidle");
+    await expect(page.getByRole("heading", { name: "Grading Categories" })).toBeVisible();
+    await expect(page.getByText("Coursework", { exact: true })).toBeVisible();
+    await expect(page.getByText("60%", { exact: true })).toBeVisible();
+    await expect(page.getByText("Final Project", { exact: true })).toBeVisible();
+    await expect(page.getByText("40%", { exact: true })).toBeVisible();
+    await expect(page.getByText("Total: 100%")).toBeVisible();
+    // read-only: no add / edit controls (those are teacher-only)
+    await expect(page.getByRole("button", { name: /Add Category/i })).toHaveCount(0);
+    // the old evaluation summary card is gone from this page
+    await expect(page.getByText("Total so far")).toHaveCount(0);
+    await expect(page.getByText(/categories graded/)).toHaveCount(0);
+  });
+
+  test("no categories set up -> the section is hidden", async ({ page }) => {
+    await seedStudent(page);
+    await page.goto(`${BASE}/student/courses/c-p3/classwork`);
+    await page.waitForLoadState("networkidle");
+    await expect(page.getByRole("heading", { name: "Grading Categories" })).toHaveCount(0);
+  });
+});
+
 test.describe("P3b — Classwork list layout", () => {
   test("assignments in a group stack top-to-bottom, one per row (not side by side)", async ({ page }) => {
     await seedStudent(page);

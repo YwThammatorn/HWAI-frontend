@@ -7,7 +7,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
 import { useCourses } from "@/lib/courses";
 import { useAssignments, Assignment, Submission } from "@/lib/assignments";
-import { useGradingCategories, computeCategoryGradeRows, computeTotalSoFar } from "@/lib/gradingCategories";
+import { useGradingCategories, GradingCategory } from "@/lib/gradingCategories";
 import AssignmentStatusBadge, { AssignmentStatus } from "@/components/AssignmentStatusBadge";
 import AssignmentTypeBadge from "@/components/AssignmentTypeBadge";
 
@@ -96,6 +96,37 @@ function ClassworkCard({
   );
 }
 
+// ── Grading categories (read-only, mirrors the teacher course page) ────────
+
+function GradingCategoriesCard({ categories, totalWeight }: { categories: GradingCategory[]; totalWeight: number }) {
+  const { t } = useLanguage();
+  const COLS = "1fr 96px";
+  return (
+    <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-6 mb-6">
+      <h2 className="text-base font-bold text-[var(--text-primary)] mb-5">{t("สัดส่วนคะแนน", "Grading Categories")}</h2>
+      <div className="rounded-xl border border-[var(--border-subtle)] overflow-hidden">
+        <div className="grid border-b border-[var(--border-subtle)] bg-[var(--bg-subtle)]" style={{ gridTemplateColumns: COLS }}>
+          <div className="px-3 py-2.5 text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("หัวข้อ", "Category")}</div>
+          <div className="px-3 py-2.5 text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("น้ำหนัก (%)", "Weight (%)")}</div>
+        </div>
+        {categories.map((cat, idx) => (
+          <div
+            key={cat.id}
+            className={`grid items-center py-2.5 ${idx === categories.length - 1 ? "" : "border-b border-[var(--border-subtle)]"}`}
+            style={{ gridTemplateColumns: COLS }}
+          >
+            <div className="px-3 text-sm text-[var(--text-primary)]">{cat.name}</div>
+            <div className="px-3 text-sm font-semibold text-[var(--accent)] tabular-nums">{cat.weight}%</div>
+          </div>
+        ))}
+      </div>
+      <p className="text-xs font-medium mt-4 text-[var(--text-muted)]">
+        {t(`รวม ${totalWeight}%`, `Total: ${totalWeight}%`)}
+      </p>
+    </div>
+  );
+}
+
 // ── Main page ──────────────────────────────────────────────────────────────
 
 export default function StudentClassworkPage() {
@@ -103,7 +134,7 @@ export default function StudentClassworkPage() {
   const { t } = useLanguage();
   const { user } = useAuth();
   const { getCourse } = useCourses();
-  const { getAssignmentsByCourse, getSubmissionsByAssignment, submissions } = useAssignments();
+  const { getAssignmentsByCourse, getSubmissionsByAssignment } = useAssignments();
   const { getCategoriesByCourse } = useGradingCategories();
 
   const course = getCourse(secId);
@@ -140,12 +171,7 @@ export default function StudentClassworkPage() {
   }, [assignments, mySubmissions, now]);
 
   const categories = useMemo(() => (course ? getCategoriesByCourse(secId) : []), [course, secId, getCategoriesByCourse]);
-  const categoryRows = useMemo(
-    () => computeCategoryGradeRows(categories, assignments, submissions, studentId),
-    [categories, assignments, submissions, studentId]
-  );
-  const gradedCategoryRows = categoryRows.filter((r) => r.percent !== null);
-  const totalSoFar = computeTotalSoFar(categoryRows);
+  const totalWeight = categories.reduce((sum, c) => sum + c.weight, 0);
 
   if (!course) {
     return (
@@ -155,48 +181,26 @@ export default function StudentClassworkPage() {
 
   return (
     <div className="w-full px-8 py-8">
-        {/* Course banner */}
-        <div
-          className="rounded-2xl p-5 mb-6 flex items-center gap-4"
-          style={{ background: `linear-gradient(135deg, ${course.coverColor}33, ${course.coverColor}22)`, borderLeft: `4px solid ${course.coverColor}` }}
-        >
-          <div
-            className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-lg shrink-0"
-            style={{ background: course.coverColor }}
-            aria-hidden="true"
-          >
-            {course.name.charAt(0).toUpperCase()}
-          </div>
-          <div>
-            <h1 className="text-lg font-bold text-[var(--text-primary)]">{course.name}</h1>
-            <p className="text-xs text-[var(--text-muted)]">
-              {t(`${assignments.length} งานทั้งหมด`, `${assignments.length} assignment(s) total`)}
-            </p>
+        {/* Course banner — same look as the teacher course page: solid cover colour, no card/button feel */}
+        <div className="relative h-36 rounded-2xl mb-6 overflow-hidden" style={{ background: course.coverColor }}>
+          <div className="absolute inset-0 bg-black/10" />
+          <div className="absolute bottom-4 left-5 right-5 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center shrink-0" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+              </svg>
+            </div>
+            <div className="min-w-0">
+              <h1 className="text-xl font-bold text-white truncate">{course.name}</h1>
+              <p className="text-white/80 text-xs mt-0.5 max-w-md truncate">
+                {course.description || t(`${assignments.length} งานทั้งหมด`, `${assignments.length} assignment(s) total`)}
+              </p>
+            </div>
           </div>
         </div>
 
-        {/* Weighted score summary — only once the course has grading categories set up */}
-        {categories.length > 0 && (
-          <Link
-            href={`/student/courses/${secId}/evaluation`}
-            className="flex items-center justify-between gap-4 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-4 mb-6 hover:shadow-sm transition-shadow"
-          >
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)] mb-1">
-                {t("คะแนนรวมเท่าที่ตรวจแล้ว", "Total so far")}
-              </p>
-              <p className="text-2xl font-bold text-[var(--text-primary)] tabular-nums">
-                {gradedCategoryRows.length > 0 ? `${totalSoFar.toFixed(1)}%` : "—"}
-              </p>
-            </div>
-            <div className="flex items-center gap-2 text-xs text-[var(--text-muted)] shrink-0">
-              <span>{t(`${gradedCategoryRows.length}/${categories.length} หมวดมีคะแนนแล้ว`, `${gradedCategoryRows.length}/${categories.length} categories graded`)}</span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                <polyline points="9 18 15 12 9 6"/>
-              </svg>
-            </div>
-          </Link>
-        )}
+        {/* Grading categories (สัดส่วนคะแนน) — read-only version of the teacher course page table */}
+        {categories.length > 0 && <GradingCategoriesCard categories={categories} totalWeight={totalWeight} />}
 
         {assignments.length === 0 ? (
           <div className="flex flex-col items-center py-16 text-center">
