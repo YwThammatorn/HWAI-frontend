@@ -197,9 +197,7 @@ function CourseCard({ course, studentCount, allGraded, activeAssignments, isArch
   };
   const src = sourceLabel[course.source] ?? { label: course.source, dot: "" };
 
-  const codeLabel = course.code
-    ? course.sectionNumber ? `${course.code} · ${t("กลุ่ม", "Sec.")} ${course.sectionNumber}` : course.code
-    : src.label;
+  const codeLabel = course.code || src.label;
   const termLabel = course.academicYear && course.term ? `${course.term}/${course.academicYear}` : "—";
 
   const cardContent = (
@@ -223,10 +221,14 @@ function CourseCard({ course, studentCount, allGraded, activeAssignments, isArch
 
           {/* DEEP-QA-style two-column meta row — always shown for a consistent card shape;
               falls back to the source label / an em-dash when a course has no CourseTemplate link */}
-          <div className="grid grid-cols-2 gap-3 pb-3 border-b border-gray-50">
+          <div className="grid grid-cols-[minmax(0,1.3fr)_minmax(0,0.7fr)_minmax(0,1fr)] gap-3 pb-3 border-b border-gray-50">
             <div className="min-w-0">
               <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-0.5">{t("รหัสวิชา", "Code")}</p>
               <p className="text-xs font-semibold text-[var(--text-primary)] truncate">{codeLabel}</p>
+            </div>
+            <div className="min-w-0">
+              <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-0.5">{t("กลุ่ม", "Section")}</p>
+              <p className="text-xs font-semibold text-[var(--text-primary)] truncate">{course.sectionNumber || "—"}</p>
             </div>
             <div className="min-w-0">
               <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-0.5">{t("ภาคเรียนที่", "Term")}</p>
@@ -235,8 +237,8 @@ function CourseCard({ course, studentCount, allGraded, activeAssignments, isArch
           </div>
 
           {(course.schedule || course.room) && (
-            <div className="grid grid-cols-2 gap-3 pt-3">
-              <div className="min-w-0">
+            <div className="grid grid-cols-[minmax(0,1.3fr)_minmax(0,0.7fr)_minmax(0,1fr)] gap-3 pt-3">
+              <div className="col-span-2 min-w-0">
                 <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-0.5">{t("วันเวลาเรียน", "Schedule")}</p>
                 <p className="text-xs font-semibold text-[var(--text-primary)] truncate">{course.schedule || "—"}</p>
               </div>

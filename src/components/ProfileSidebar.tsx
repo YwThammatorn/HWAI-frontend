@@ -203,7 +203,7 @@ export default function ProfileSidebar() {
         ...(MATERIALS_DISABLED ? [] : [
           { label: t("สื่อการสอน", "Materials"), href: `/teacher/courses/${activeCourseId}/materials`,           active: isAt(`/teacher/courses/${activeCourseId}/materials`),     icon: MATERIALS_ICON      },
         ]),
-        { label: t("วางแผนรายวิชา", "Course Planning"), href: `/teacher/courses/${activeCourseId}/clo`,       active: isAt(`/teacher/courses/${activeCourseId}/clo`),           icon: CLO_ICON            },
+        { label: "CLO", href: `/teacher/courses/${activeCourseId}/clo`,       active: isAt(`/teacher/courses/${activeCourseId}/clo`),           icon: CLO_ICON            },
         { label: t("นักศึกษา", "Students"), href: `/teacher/courses/${activeCourseId}/students`,           active: isAt(`/teacher/courses/${activeCourseId}/students`),      icon: STUDENTS_ICON       },
         { label: t("ผู้ร่วมสอน", "Collaborators"), href: `/teacher/courses/${activeCourseId}/collaborators`, active: isAt(`/teacher/courses/${activeCourseId}/collaborators`), icon: COLLABORATORS_ICON  },
         { label: t("ตั้งค่าวิชา", "Settings"),   href: `/teacher/courses/${activeCourseId}/settings`,      active: isAt(`/teacher/courses/${activeCourseId}/settings`),      icon: COURSE_SETTINGS_ICON},
