@@ -194,6 +194,32 @@ test.describe("P3b — Assignment status colours", () => {
   });
 });
 
+test.describe("P3b — Individual / Group type chips", () => {
+  test("individual is teal, group is purple, both bordered and readable", async ({ page }) => {
+    await seedStudent(page);
+    await page.addInitScript((list) => {
+      localStorage.setItem("hwai_assignments_v1", JSON.stringify(list));
+    }, [
+      { ...ASSIGNMENT_OPEN, id: "t-solo", name: "Solo work", submissionType: "individual" },
+      { ...ASSIGNMENT_OPEN, id: "t-group", name: "Group work", submissionType: "group", maxGroupSize: 3 },
+    ]);
+    await page.goto(`${BASE}/student/courses/c-p3/classwork`);
+    await page.waitForLoadState("networkidle");
+    const css = (name: string) =>
+      page.locator("a span.rounded-full", { hasText: new RegExp(`^${name}$`) }).first().evaluate((el) => {
+        const c = getComputedStyle(el);
+        return { bg: c.backgroundColor, fg: c.color, borderWidth: c.borderTopWidth };
+      });
+    expect(await css("Individual")).toEqual({ bg: "rgb(204, 251, 241)", fg: "rgb(17, 94, 89)", borderWidth: "1px" });
+    expect(await css("Group")).toEqual({ bg: "rgb(237, 233, 254)", fg: "rgb(91, 33, 182)", borderWidth: "1px" });
+
+    // detail page uses the same chip (long label)
+    await page.goto(`${BASE}/student/courses/c-p3/classwork/t-group`);
+    await page.waitForLoadState("networkidle");
+    await expect(page.locator("span.rounded-lg", { hasText: /^Group$/ }).first()).toBeVisible();
+  });
+});
+
 test.describe("P3b — Classwork list layout", () => {
   test("assignments in a group stack top-to-bottom, one per row (not side by side)", async ({ page }) => {
     await seedStudent(page);

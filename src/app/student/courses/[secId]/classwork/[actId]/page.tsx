@@ -12,6 +12,7 @@ import { useStudentGroups } from "@/lib/studentGroups";
 import TeamFormationDrawer from "@/components/TeamFormationDrawer";
 import { AttachmentList } from "@/components/AssignmentAttachments";
 import AssignmentStatusBadge, { STATUS_STYLE } from "@/components/AssignmentStatusBadge";
+import AssignmentTypeBadge from "@/components/AssignmentTypeBadge";
 
 function initialsOf(name: string) {
   const parts = name.trim().split(/\s+/);
@@ -142,13 +143,7 @@ export default function StudentClassworkDetailPage() {
             <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-5">
               <div className="flex items-start justify-between gap-3 mb-3">
                 <h1 className="text-xl font-bold text-[var(--text-primary)]">{assignment.name}</h1>
-                <span className={`shrink-0 px-2.5 py-1 rounded-lg text-xs font-semibold ${
-                  assignment.submissionType === "group"
-                    ? "bg-purple-100 text-purple-700"
-                    : "bg-gray-50 text-gray-500"
-                }`}>
-                  {assignment.submissionType === "group" ? t("งานกลุ่ม", "Group") : t("งานเดี่ยว", "Individual")}
-                </span>
+                <AssignmentTypeBadge type={assignment.submissionType === "group" ? "group" : "individual"} size="md" />
               </div>
 
               <div className="flex items-center gap-4 text-sm mb-4 flex-wrap">

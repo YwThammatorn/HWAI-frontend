@@ -9,6 +9,7 @@ import { useCourses } from "@/lib/courses";
 import { useAssignments, Assignment, Submission } from "@/lib/assignments";
 import { useGradingCategories, computeCategoryGradeRows, computeTotalSoFar } from "@/lib/gradingCategories";
 import AssignmentStatusBadge, { AssignmentStatus } from "@/components/AssignmentStatusBadge";
+import AssignmentTypeBadge from "@/components/AssignmentTypeBadge";
 
 // An unsubmitted assignment due within this many days (or already overdue)
 // is grouped into the "Due soon" section instead of "Not submitted".
@@ -71,13 +72,7 @@ function ClassworkCard({
               {due.toLocaleDateString("th-TH", { day: "numeric", month: "short" })}
             </span>
           </span>
-          <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
-            assignment.submissionType === "group"
-              ? "bg-purple-100 text-purple-700"
-              : "bg-gray-50 text-gray-500"
-          }`}>
-            {assignment.submissionType === "group" ? t("กลุ่ม", "Group") : t("เดี่ยว", "Individual")}
-          </span>
+          <AssignmentTypeBadge type={assignment.submissionType === "group" ? "group" : "individual"} />
           {isUrgent && (
             <span className="text-[10px] font-bold text-[var(--s-err-text)] bg-[var(--s-err-bg)] px-2 py-0.5 rounded-full">
               {t("ใกล้ครบกำหนด!", "Due soon!")}

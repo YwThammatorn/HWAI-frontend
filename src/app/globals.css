@@ -139,6 +139,10 @@
   --st-graded-bg:  #DCFCE7; --st-graded-text:  #15803D;
   --st-overdue-bg: #FEE2E2; --st-overdue-text: #B91C1C;
 
+  /* Assignment type chip (individual vs group) — hues kept away from the status colours above */
+  --type-solo-bg:  #CCFBF1; --type-solo-text:  #115E59;
+  --type-group-bg: #EDE9FE; --type-group-text: #5B21B6;
+
   /* Destructive solid — confirm-dialog final action only, never a row-level button */
   --danger-solid:       #C43A4A;
   --danger-solid-hover: #AE3240;
@@ -198,6 +202,9 @@
   --st-sent-bg:    #0C2233; --st-sent-text:    #7DD3FC;
   --st-graded-bg:  #0D2E1E; --st-graded-text:  #86EFAC;
   --st-overdue-bg: #2A0E14; --st-overdue-text: #FCA5A5;
+
+  --type-solo-bg:  #0F2E2B; --type-solo-text:  #5EEAD4;
+  --type-group-bg: #2D1B69; --type-group-text: #C4B5FD;
 
   --danger-solid:       #C43A4A;
   --danger-solid-hover: #D14A5A;
