@@ -195,7 +195,7 @@ test.describe("P3b — Assignment status colours", () => {
 });
 
 test.describe("P3b — Individual / Group type chips", () => {
-  test("individual is teal, group is purple, both bordered and readable", async ({ page }) => {
+  test("individual is teal, group is purple, no border, still readable", async ({ page }) => {
     await seedStudent(page);
     await page.addInitScript((list) => {
       localStorage.setItem("hwai_assignments_v1", JSON.stringify(list));
@@ -210,8 +210,8 @@ test.describe("P3b — Individual / Group type chips", () => {
         const c = getComputedStyle(el);
         return { bg: c.backgroundColor, fg: c.color, borderWidth: c.borderTopWidth };
       });
-    expect(await css("Individual")).toEqual({ bg: "rgb(204, 251, 241)", fg: "rgb(17, 94, 89)", borderWidth: "1px" });
-    expect(await css("Group")).toEqual({ bg: "rgb(237, 233, 254)", fg: "rgb(91, 33, 182)", borderWidth: "1px" });
+    expect(await css("Individual")).toEqual({ bg: "rgb(204, 251, 241)", fg: "rgb(17, 94, 89)", borderWidth: "0px" });
+    expect(await css("Group")).toEqual({ bg: "rgb(237, 233, 254)", fg: "rgb(91, 33, 182)", borderWidth: "0px" });
 
     // detail page uses the same chip (long label)
     await page.goto(`${BASE}/student/courses/c-p3/classwork/t-group`);

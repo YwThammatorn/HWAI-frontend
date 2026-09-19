@@ -2,8 +2,8 @@
 
 import { useLanguage } from "@/context/LanguageContext";
 
-/** Individual vs group chip. Teal vs purple, each with a hairline border and an icon so the
- *  two stay distinguishable (and visible on a white card) without relying on colour alone. */
+/** Individual vs group chip. Teal vs purple plus a person / people icon, so the two stay
+ *  distinguishable without relying on colour alone. No border (user preference, 19/9/2569). */
 export default function AssignmentTypeBadge({ type, size = "sm" }: { type: "individual" | "group"; size?: "sm" | "md" }) {
   const { t } = useLanguage();
   const isGroup = type === "group";
@@ -11,11 +11,11 @@ export default function AssignmentTypeBadge({ type, size = "sm" }: { type: "indi
     ? (size === "md" ? t("งานกลุ่ม", "Group") : t("กลุ่ม", "Group"))
     : (size === "md" ? t("งานเดี่ยว", "Individual") : t("เดี่ยว", "Individual"));
   const colours = isGroup
-    ? "bg-[var(--type-group-bg)] text-[var(--type-group-text)] border-[var(--type-group-text)]/30"
-    : "bg-[var(--type-solo-bg)] text-[var(--type-solo-text)] border-[var(--type-solo-text)]/30";
+    ? "bg-[var(--type-group-bg)] text-[var(--type-group-text)]"
+    : "bg-[var(--type-solo-bg)] text-[var(--type-solo-text)]";
   const shape = size === "md" ? "px-2.5 py-1 rounded-lg text-xs" : "px-2 py-0.5 rounded-full text-[10px]";
   return (
-    <span className={`inline-flex items-center gap-1 border font-semibold shrink-0 ${shape} ${colours}`}>
+    <span className={`inline-flex items-center gap-1 font-semibold shrink-0 ${shape} ${colours}`}>
       <svg width={size === "md" ? 12 : 10} height={size === "md" ? 12 : 10} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         {isGroup ? (
           <>
