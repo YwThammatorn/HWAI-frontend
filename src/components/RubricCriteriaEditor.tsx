@@ -11,6 +11,7 @@ import { RubricCriterion, CriterionLevel } from "@/lib/assignments";
 const LEVEL_LABEL_MAP: Record<string, string> = {
   ดีเยี่ยม: "Excellent",
   ดี: "Good",
+  พอใช้: "Fair",
   ต้องปรับปรุง: "Needs Improvement",
 };
 
@@ -67,11 +68,49 @@ export function finalizeCriteria(criteria: CriterionDraft[], maxPoints: number, 
   }));
 }
 
-const LEVEL_COLORS = [
+// A rubric scale runs best → worst; teachers can use anywhere from 2 to 6 levels.
+const MIN_LEVELS = 2;
+const MAX_LEVELS = 6;
+
+// Green → red ramp. A level's colour comes from its position in the scale, so
+// 3 levels still read green / amber / red and 4–6 fill in lime and orange.
+const LEVEL_TONES = [
   { label: "text-green-600", dot: "bg-green-500" },
+  { label: "text-lime-600", dot: "bg-lime-500" },
   { label: "text-amber-600", dot: "bg-amber-400" },
+  { label: "text-orange-600", dot: "bg-orange-500" },
   { label: "text-[var(--s-err-text)]", dot: "bg-[var(--s-err-text)]" },
 ];
+
+function levelRatio(i: number, total: number): number {
+  return total <= 1 ? 0 : i / (total - 1);
+}
+
+function levelTone(i: number, total: number) {
+  return LEVEL_TONES[Math.round(levelRatio(i, total) * (LEVEL_TONES.length - 1))];
+}
+
+/** Placeholder wording for "Generate", chosen by where the level sits on the scale. */
+function levelDescription(i: number, total: number, name: string, lang: string): string {
+  const r = levelRatio(i, total);
+  const en = lang === "en";
+  const n = en ? name.toLowerCase() : name;
+  if (r === 0) return en
+    ? `Clearly demonstrates ${n} with strong evidence and meets all expectations.`
+    : `แสดงความเข้าใจ ${n} ได้อย่างชัดเจนและครบถ้วน มีหลักฐานประกอบที่น่าเชื่อถือ`;
+  if (r === 1) return en
+    ? `${name} is insufficient and requires significant revision and development.`
+    : `${name} ยังไม่เพียงพอ จำเป็นต้องแก้ไขและพัฒนาเพิ่มเติมอย่างมีนัยสำคัญ`;
+  if (r < 0.5) return en
+    ? `Demonstrates ${n} well and meets most expectations, with only minor gaps.`
+    : `แสดง ${n} ได้ดี ตรงตามความคาดหวังเป็นส่วนใหญ่ มีข้อบกพร่องเล็กน้อย`;
+  if (r === 0.5) return en
+    ? `Demonstrates ${n} at an acceptable level but with some areas for improvement.`
+    : `แสดง ${n} ได้ในระดับที่ยอมรับได้ แต่ยังมีบางส่วนที่ต้องปรับปรุง`;
+  return en
+    ? `Only partly demonstrates ${n}; several expectations are not yet met.`
+    : `แสดง ${n} ได้เพียงบางส่วน ยังไม่ตรงตามความคาดหวังหลายประการ`;
+}
 
 export default function RubricCriteriaEditor({
   criteria,
@@ -98,10 +137,30 @@ export default function RubricCriteriaEditor({
     setCriteria((prev) => prev.map((c) => (c.id === cid ? { ...c, [field]: value } : c)));
   }
 
-  function updateLevel(cid: string, li: number, value: string) {
+  function updateLevel(cid: string, li: number, field: keyof CriterionLevel, value: string) {
     setCriteria((prev) => prev.map((c) => {
       if (c.id !== cid) return c;
-      return { ...c, levels: c.levels.map((lv, i) => (i === li ? { ...lv, description: value } : lv)) };
+      return { ...c, levels: c.levels.map((lv, i) => (i === li ? { ...lv, [field]: value } : lv)) };
+    }));
+  }
+
+  // New levels slot in just above the lowest one so the scale stays best → worst.
+  function addLevel(cid: string) {
+    setCriteria((prev) => prev.map((c) => {
+      if (c.id !== cid || c.levels.length >= MAX_LEVELS) return c;
+      const label = c.levels.some((lv) => lv.label === "พอใช้")
+        ? t(`ระดับที่ ${c.levels.length}`, `Level ${c.levels.length}`)
+        : "พอใช้";
+      const levels = [...c.levels];
+      levels.splice(levels.length - 1, 0, { label, description: "" });
+      return { ...c, levels };
+    }));
+  }
+
+  function removeLevel(cid: string, li: number) {
+    setCriteria((prev) => prev.map((c) => {
+      if (c.id !== cid || c.levels.length <= MIN_LEVELS) return c;
+      return { ...c, levels: c.levels.filter((_, i) => i !== li) };
     }));
   }
 
@@ -115,17 +174,7 @@ export default function RubricCriteriaEditor({
         prev.map((x) =>
           x.id !== cid ? x : {
             ...x,
-            levels: lang === "en"
-              ? [
-                  { label: x.levels[0]?.label ?? "ดีเยี่ยม", description: `Clearly demonstrates ${n.toLowerCase()} with strong evidence and meets all expectations.` },
-                  { label: x.levels[1]?.label ?? "ดี", description: `Demonstrates ${n.toLowerCase()} at an acceptable level but with some areas for improvement.` },
-                  { label: x.levels[2]?.label ?? "ต้องปรับปรุง", description: `${n} is insufficient and requires significant revision and development.` },
-                ]
-              : [
-                  { label: x.levels[0]?.label ?? "ดีเยี่ยม", description: `แสดงความเข้าใจ ${n} ได้อย่างชัดเจนและครบถ้วน มีหลักฐานประกอบที่น่าเชื่อถือ` },
-                  { label: x.levels[1]?.label ?? "ดี", description: `แสดง ${n} ได้ในระดับที่ยอมรับได้ แต่ยังมีบางส่วนที่ต้องปรับปรุง` },
-                  { label: x.levels[2]?.label ?? "ต้องปรับปรุง", description: `${n} ยังไม่เพียงพอ จำเป็นต้องแก้ไขและพัฒนาเพิ่มเติมอย่างมีนัยสำคัญ` },
-                ],
+            levels: x.levels.map((lv, i) => ({ ...lv, description: levelDescription(i, x.levels.length, n, lang) })),
           }
         )
       );
@@ -326,28 +375,63 @@ export default function RubricCriteriaEditor({
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-gray-50">
+              {/* 1px gaps over a tinted backdrop draw the dividers, so they stay clean when 4+ levels wrap */}
+              <div className="grid gap-px bg-gray-100 [grid-template-columns:repeat(auto-fit,minmax(200px,1fr))]">
                 {c.levels.map((lv, li) => {
-                  const col = LEVEL_COLORS[li] ?? LEVEL_COLORS[2];
+                  const col = levelTone(li, c.levels.length);
+                  const levelName = getDisplayLabel(lv.label, lang);
                   return (
-                    <div key={li} className="px-5 py-4">
+                    <div key={li} className="bg-white px-5 py-4">
                       <div className="flex items-center gap-1.5 mb-2">
                         <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${col.dot}`} />
-                        <span className={`text-xs font-semibold ${col.label}`}>
-                          {getDisplayLabel(lv.label, lang)}
-                        </span>
+                        <input
+                          value={levelName}
+                          onChange={(e) => updateLevel(c.id, li, "label", e.target.value)}
+                          aria-label={t("ชื่อระดับ", "Level name")}
+                          className={`flex-1 min-w-0 text-xs font-semibold bg-transparent border-0 outline-none rounded px-1 -mx-1 focus:bg-gray-50 ${col.label}`}
+                        />
+                        {c.levels.length > MIN_LEVELS && (
+                          <button
+                            type="button"
+                            onClick={() => removeLevel(c.id, li)}
+                            title={t("ลบระดับนี้", "Remove level")}
+                            aria-label={`${t("ลบระดับ", "Remove level")} ${levelName}`}
+                            className="p-1 rounded text-gray-300 hover:text-[var(--s-err-text)] hover:bg-[var(--s-err-bg)] transition-colors shrink-0"
+                          >
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                            </svg>
+                          </button>
+                        )}
                       </div>
                       <textarea
                         value={lv.description}
-                        onChange={(e) => updateLevel(c.id, li, e.target.value)}
+                        onChange={(e) => updateLevel(c.id, li, "description", e.target.value)}
                         rows={2}
                         placeholder={t("อธิบายลักษณะงาน...", "Describe work characteristics...")}
-                        aria-label={`${c.name || t("เกณฑ์", "Criterion")} — ${getDisplayLabel(lv.label, lang)}`}
+                        aria-label={`${c.name || t("เกณฑ์", "Criterion")} — ${levelName}`}
                         className="w-full text-xs text-gray-600 resize-none border-0 outline-none bg-transparent placeholder:text-gray-300 leading-relaxed"
                       />
                     </div>
                   );
                 })}
+              </div>
+
+              <div className="px-5 py-3 border-t border-gray-50 flex items-center justify-between gap-3">
+                <button
+                  type="button"
+                  onClick={() => addLevel(c.id)}
+                  disabled={c.levels.length >= MAX_LEVELS}
+                  className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--accent)] hover:underline disabled:text-gray-300 disabled:no-underline disabled:cursor-not-allowed"
+                >
+                  <svg width="11" height="11" viewBox="0 0 16 16" fill="none">
+                    <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+                  </svg>
+                  {t("เพิ่มระดับ", "Add level")}
+                </button>
+                <span className="text-[11px] text-gray-400 tabular-nums">
+                  {t(`${c.levels.length} / ${MAX_LEVELS} ระดับ`, `${c.levels.length} / ${MAX_LEVELS} levels`)}
+                </span>
               </div>
             </div>
           );

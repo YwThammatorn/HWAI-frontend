@@ -186,7 +186,7 @@ export default function StudentClassworkDetailPage() {
                         <p className="text-xs text-[var(--text-muted)] mb-2">{c.description}</p>
                       )}
                       {c.levels.length > 0 && (
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2">
+                        <div className="grid gap-2 mt-2 [grid-template-columns:repeat(auto-fit,minmax(140px,1fr))]">
                           {c.levels.map((lvl, i) => (
                             <div key={i} className="rounded-lg bg-[var(--bg-app)] p-2">
                               <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">{lvl.label}</p>
