@@ -83,7 +83,7 @@ export default function RubricEditorPage() {
   }
 
   return (
-    <main className="w-full max-w-[800px] mx-auto px-8 py-8">
+    <main className="w-full px-8 py-8">
 
       {/* Breadcrumb */}
       <div className="flex items-center gap-1.5 text-xs text-gray-500 mb-6 flex-wrap">
@@ -102,7 +102,7 @@ export default function RubricEditorPage() {
 
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">
+        <h1 className="text-3xl font-bold text-[var(--text-primary)] mb-1.5">
           {t("กำหนดเกณฑ์การให้คะแนน", "Define Criteria")}
         </h1>
         <p className="text-sm text-gray-500">

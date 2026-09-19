@@ -101,16 +101,21 @@ export default function CourseSettingsPage() {
   const isValid = name.trim().length > 0;
 
   return (
-      <main className="w-full max-w-[860px] mx-auto px-8 py-8">
-        {/* Back */}
-        <button onClick={() => navAway("/teacher/courses")} className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-[var(--accent)] mb-6 transition-colors">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-            <polyline points="15 18 9 12 15 6"/>
-          </svg>
-          {t("กลับไปหน้ารายวิชา", "Back to All Courses")}
-        </button>
+      <main className="w-full px-8 py-8">
+        {/* Breadcrumb (same pattern as the other course pages) */}
+        <div className="flex items-center gap-2 text-sm text-gray-500 mb-6 flex-wrap">
+          <button type="button" onClick={() => navAway("/teacher/courses")} aria-label={t("รายวิชาทั้งหมด", "All Courses")} className="hover:text-[var(--accent)] transition-colors">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+          </button>
+          <span>/</span>
+          <button type="button" onClick={() => navAway(`/teacher/courses/${id}`)} className="hover:text-[var(--accent)] transition-colors">{course.name}</button>
+          <span>/</span>
+          <span className="text-[var(--accent)] font-medium">{t("ตั้งค่า", "Settings")}</span>
+        </div>
 
-        <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-6">{t("แก้ไขรายวิชา", "Edit Existing Course")}</h1>
+        <h1 className="text-3xl font-bold text-[var(--text-primary)] mb-6">{t("แก้ไขรายวิชา", "Edit Existing Course")}</h1>
 
         {/* Curriculum link — read-only, set only at course creation */}
         {linkedTemplate && (
@@ -133,7 +138,9 @@ export default function CourseSettingsPage() {
           </div>
         )}
 
-        <form onSubmit={handleSave} className="space-y-6">
+        <form onSubmit={handleSave}>
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
+          <div className="space-y-6">
           {/* General Information */}
           <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
             <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-5">{t("ข้อมูลทั่วไป", "General Information")}</h2>
@@ -160,6 +167,31 @@ export default function CourseSettingsPage() {
               />
             </div>
           </section>
+
+          {/* Danger Zone */}
+          <section className="bg-white rounded-2xl border border-[var(--s-err-bd)] shadow-sm p-6">
+            <h2 className="text-sm font-semibold text-[var(--s-err-text)] uppercase tracking-wider mb-4">{t("โซนอันตราย", "Danger Zone")}</h2>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={handleArchive}
+                className="px-4 py-2 text-sm font-medium rounded-xl border border-orange-200 text-orange-500 hover:bg-orange-50 transition-colors"
+              >
+                {t("จัดเก็บรายวิชา", "Archive Course")}
+              </button>
+              <button
+                type="button"
+                onClick={handleDelete}
+                className="px-4 py-2 text-sm font-medium rounded-xl border border-[var(--s-err-bd)] text-[var(--s-err-text)] hover:bg-[var(--s-err-bg)] transition-colors"
+              >
+                {t("ลบถาวร", "Delete Permanently")}
+              </button>
+            </div>
+            <p className="text-xs text-gray-500 mt-3">{t("Archive จะซ่อนรายวิชา — สามารถ restore ได้ภายหลัง. Delete จะลบถาวร", "Archive hides the course — you can restore it later. Delete is permanent.")}</p>
+          </section>
+
+          </div>
+          <div className="space-y-6">
 
           {/* Course Visuals */}
           <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
@@ -232,30 +264,11 @@ export default function CourseSettingsPage() {
             </div>
           </section>
 
-          {/* Danger Zone */}
-          <section className="bg-white rounded-2xl border border-[var(--s-err-bd)] shadow-sm p-6">
-            <h2 className="text-sm font-semibold text-[var(--s-err-text)] uppercase tracking-wider mb-4">{t("โซนอันตราย", "Danger Zone")}</h2>
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={handleArchive}
-                className="px-4 py-2 text-sm font-medium rounded-xl border border-orange-200 text-orange-500 hover:bg-orange-50 transition-colors"
-              >
-                {t("จัดเก็บรายวิชา", "Archive Course")}
-              </button>
-              <button
-                type="button"
-                onClick={handleDelete}
-                className="px-4 py-2 text-sm font-medium rounded-xl border border-[var(--s-err-bd)] text-[var(--s-err-text)] hover:bg-[var(--s-err-bg)] transition-colors"
-              >
-                {t("ลบถาวร", "Delete Permanently")}
-              </button>
-            </div>
-            <p className="text-xs text-gray-500 mt-3">{t("Archive จะซ่อนรายวิชา — สามารถ restore ได้ภายหลัง. Delete จะลบถาวร", "Archive hides the course — you can restore it later. Delete is permanent.")}</p>
-          </section>
+          </div>
+          </div>
 
           {/* Actions */}
-          <div className="flex justify-end gap-3 pb-4">
+          <div className="flex justify-end gap-3 mt-8 pt-6 pb-4 border-t border-gray-100">
             <button
               type="button"
               onClick={() => navAway(`/teacher/courses/${id}`)}
