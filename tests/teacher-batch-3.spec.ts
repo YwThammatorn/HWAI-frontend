@@ -153,12 +153,12 @@ test.describe("Recheck — comment on a manually adjusted score", () => {
 
   test("the comment box appears only after the score is changed, and is saved per criterion", async ({ page }) => {
     await open(page);
-    await expect(page.getByLabel("Reason for adjustment")).toHaveCount(0);
+    await expect(page.getByLabel("Feedback to AI")).toHaveCount(0);
 
     // Layout starts at round(0.6 × 80) = 48 — push it to 55
     await page.locator('input[type="number"]').first().fill("55");
     await expect(page.getByText("Manually Edited")).toBeVisible();
-    const note = page.getByLabel("Reason for adjustment");
+    const note = page.getByLabel("Feedback to AI");
     await expect(note).toHaveCount(1);
     await note.fill("Strong grid work, bumped up");
     await page.getByRole("button", { name: /save changes/i }).click();
@@ -172,9 +172,9 @@ test.describe("Recheck — comment on a manually adjusted score", () => {
   test("a saved note is still there when the page is reopened, blank notes are not stored", async ({ page }) => {
     await open(page);
     await page.locator('input[type="number"]').first().fill("55");
-    await page.getByLabel("Reason for adjustment").fill("Bumped up");
+    await page.getByLabel("Feedback to AI").fill("Bumped up");
     await page.locator('input[type="number"]').nth(1).fill("30");
-    await page.getByLabel("Reason for adjustment").nth(1).fill("   ");
+    await page.getByLabel("Feedback to AI").nth(1).fill("   ");
     await page.getByRole("button", { name: /save changes/i }).click();
     const sub = (await page.evaluate(() => JSON.parse(localStorage.getItem("hwai_submissions_v1") ?? "[]")))
       .find((s: { id: string }) => s.id === "sub-tb3");
@@ -182,15 +182,15 @@ test.describe("Recheck — comment on a manually adjusted score", () => {
 
     await page.goto(`${BASE}/teacher/courses/c-tb3/assignments/a-tb3/recheck?sub=sub-tb3`);
     await page.waitForLoadState("networkidle");
-    await expect(page.getByLabel("Reason for adjustment")).toHaveCount(1);
-    await expect(page.getByLabel("Reason for adjustment")).toHaveValue("Bumped up");
+    await expect(page.getByLabel("Feedback to AI")).toHaveCount(1);
+    await expect(page.getByLabel("Feedback to AI")).toHaveValue("Bumped up");
   });
 
   test("Reset to Default drops unsaved notes", async ({ page }) => {
     await open(page);
     await page.locator('input[type="number"]').first().fill("55");
-    await page.getByLabel("Reason for adjustment").fill("temp");
+    await page.getByLabel("Feedback to AI").fill("temp");
     await page.getByRole("button", { name: /reset to default/i }).click();
-    await expect(page.getByLabel("Reason for adjustment")).toHaveCount(0);
+    await expect(page.getByLabel("Feedback to AI")).toHaveCount(0);
   });
 });

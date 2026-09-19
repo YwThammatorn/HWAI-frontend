@@ -300,10 +300,17 @@ export default function RecheckPage() {
                         htmlFor={`criterion-note-${s.criterionId}`}
                         className="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1"
                       >
-                        {t("เหตุผลที่ปรับคะแนน", "Reason for adjustment")}
+                        {t("ข้อเสนอแนะถึง AI", "Feedback to AI")}
                       </label>
+                      <p id={`criterion-note-hint-${s.criterionId}`} className="text-[11px] text-gray-400 leading-snug mb-1.5">
+                        {t(
+                          "บอก AI ว่าทำไมถึงปรับคะแนน — ไม่แสดงให้นักศึกษาเห็น เก็บไว้ใช้ปรับปรุงการตรวจของ AI",
+                          "Tell the AI why you changed this score — not shown to students; kept to help refine AI grading",
+                        )}
+                      </p>
                       <textarea
                         id={`criterion-note-${s.criterionId}`}
+                        aria-describedby={`criterion-note-hint-${s.criterionId}`}
                         value={criterionComments[s.criterionId] ?? ""}
                         onChange={(e) => {
                           const text = e.target.value;
@@ -311,7 +318,7 @@ export default function RecheckPage() {
                           setSaved(false);
                         }}
                         rows={2}
-                        placeholder={t("ใส่คอมเมนต์ให้เกณฑ์นี้ (ไม่บังคับ)...", "Add a comment for this criterion (optional)...")}
+                        placeholder={t("เช่น AI ให้เข้มเกินไป เพราะ... (ไม่บังคับ)", "e.g. The AI was too strict because… (optional)")}
                         className="w-full text-xs text-[var(--text-primary)] resize-none border border-gray-200 rounded-lg px-2.5 py-2 bg-white placeholder:text-gray-300 leading-relaxed focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
                       />
                     </div>
