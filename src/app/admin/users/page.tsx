@@ -1269,6 +1269,39 @@ function StudentDrawer({ open, onClose }: {
 // STUDENTS TAB
 // ═══════════════════════════════════════════════════════════════
 
+/** Column header that sorts on click. `dir` undefined = not the active sort column. */
+function SortableTh({ label, dir, onClick, hint }: {
+  label: string;
+  dir?: "asc" | "desc";
+  onClick: () => void;
+  hint: string;
+}) {
+  return (
+    <th
+      scope="col"
+      aria-sort={dir === "asc" ? "ascending" : dir === "desc" ? "descending" : "none"}
+      className="px-4 py-1 text-left text-xs font-semibold uppercase tracking-wider"
+    >
+      <button
+        type="button"
+        onClick={onClick}
+        title={hint}
+        className={`group -mx-1.5 px-1.5 py-0.5 inline-flex items-center gap-1 rounded-md uppercase tracking-wider transition-colors hover:bg-[var(--bg-subtle)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] ${
+          dir ? "text-[var(--text-primary)]" : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+        }`}
+      >
+        {label}
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
+          className={dir ? "text-[var(--accent-bright)]" : "opacity-40 group-hover:opacity-80"}>
+          {dir === "asc" && <><line x1="12" y1="19" x2="12" y2="5" /><polyline points="5 12 12 5 19 12" /></>}
+          {dir === "desc" && <><line x1="12" y1="5" x2="12" y2="19" /><polyline points="19 12 12 19 5 12" /></>}
+          {!dir && <><polyline points="8 9 12 5 16 9" /><polyline points="8 15 12 19 16 15" /></>}
+        </svg>
+      </button>
+    </th>
+  );
+}
+
 function StudentsTab() {
   const { t } = useLanguage();
   const { cohortStudents, updateCohortStudent, removeCohortStudent, findByStudentId } = useCohortStudents();
@@ -1279,10 +1312,18 @@ function StudentsTab() {
   const [search, setSearch] = useState("");
   const [cohortFilter, setCohortFilter] = useState("CE69");
   const [programFilter, setProgramFilter] = useState("CE");
-  // Two independent sort filters, per the user's request to separate them (17/9/2569):
-  // picking a name order overrides the ID order; ID order applies whenever name is "none".
-  const [idSort, setIdSort] = useState<"asc" | "desc">("asc");
-  const [nameSort, setNameSort] = useState<"none" | "asc" | "desc">("none");
+  // Sorting lives on the column headers (click Student ID / Name), one active
+  // key at a time. Default = Student ID ascending; Name cycles asc → desc → back to default.
+  const [sort, setSort] = useState<{ key: "id" | "name"; dir: "asc" | "desc" }>({ key: "id", dir: "asc" });
+  function toggleIdSort() {
+    setSort((s) => ({ key: "id", dir: s.key === "id" && s.dir === "asc" ? "desc" : "asc" }));
+  }
+  function toggleNameSort() {
+    setSort((s) => {
+      if (s.key !== "name") return { key: "name", dir: "asc" };
+      return s.dir === "asc" ? { key: "name", dir: "desc" } : { key: "id", dir: "asc" };
+    });
+  }
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 10;
 
@@ -1366,14 +1407,12 @@ function StudentsTab() {
     return matchCohort && matchProgram && matchSearch;
   });
   filtered.sort((a, b) => {
-    if (nameSort !== "none") {
-      const cmp = `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`, "th");
-      return nameSort === "asc" ? cmp : -cmp;
-    }
-    const cmp = a.studentId.localeCompare(b.studentId, undefined, { numeric: true });
-    return idSort === "asc" ? cmp : -cmp;
+    const cmp = sort.key === "name"
+      ? `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`, "th")
+      : a.studentId.localeCompare(b.studentId, undefined, { numeric: true });
+    return sort.dir === "asc" ? cmp : -cmp;
   });
-  useEffect(() => { setPage(1); }, [search, cohortFilter, programFilter, idSort, nameSort]);
+  useEffect(() => { setPage(1); }, [search, cohortFilter, programFilter, sort]);
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
@@ -1440,33 +1479,6 @@ function StudentsTab() {
               {programs.map((p) => <option key={p} value={p}>{PROGRAM_LABEL[p] ?? p}</option>)}
             </FilterSelect>
           )}
-          <FilterSelect
-            value={idSort}
-            onChange={(v) => setIdSort(v as typeof idSort)}
-            ariaLabel={t("เรียงลำดับตามรหัส", "Sort by ID")}
-            icon={
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="9" y2="18"/>
-              </svg>
-            }
-          >
-            <option value="asc">{t("รหัส น้อย→มาก (ค่าเริ่มต้น)", "Student ID Ascending (Default)")}</option>
-            <option value="desc">{t("รหัส มาก→น้อย", "Student ID Descending")}</option>
-          </FilterSelect>
-          <FilterSelect
-            value={nameSort}
-            onChange={(v) => setNameSort(v as typeof nameSort)}
-            ariaLabel={t("เรียงลำดับตามชื่อ", "Sort by name")}
-            icon={
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M4 7h11M4 12h7M4 17h4"/><path d="m16 15 3 3 3-3M19 6v12"/>
-              </svg>
-            }
-          >
-            <option value="none">{t("ไม่เรียงตามชื่อ", "Not sorted by name")}</option>
-            <option value="asc">{t("ชื่อ ก–ฮ", "Name A–Z")}</option>
-            <option value="desc">{t("ชื่อ ฮ–ก", "Name Z–A")}</option>
-          </FilterSelect>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <button onClick={() => setImportOpen(true)}
@@ -1524,9 +1536,11 @@ function StudentsTab() {
               </colgroup>
               <thead className="sticky top-0 z-10">
                 <tr className="border-b border-[var(--border-subtle)]">
-                  <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("รหัส", "Student ID")}</th>
+                  <SortableTh label={t("รหัส", "Student ID")} dir={sort.key === "id" ? sort.dir : undefined} onClick={toggleIdSort}
+                    hint={t("คลิกเพื่อเรียงตามรหัส", "Click to sort by student ID")} />
                   <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("คำนำหน้า", "Title")}</th>
-                  <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("ชื่อ-นามสกุล", "Name")}</th>
+                  <SortableTh label={t("ชื่อ-นามสกุล", "Name")} dir={sort.key === "name" ? sort.dir : undefined} onClick={toggleNameSort}
+                    hint={t("คลิกเพื่อเรียงตามชื่อ (ก–ฮ → ฮ–ก → กลับไปเรียงตามรหัส)", "Click to sort by name (A–Z → Z–A → back to ID order)")} />
                   <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("อีเมล", "Email")}</th>
                   <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("Cohort", "Cohort")}</th>
                   <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("สาขา", "Program")}</th>
