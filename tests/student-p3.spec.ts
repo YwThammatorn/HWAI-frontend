@@ -85,7 +85,8 @@ test.describe("P3a — Student Course List (/student/courses)", () => {
     await page.goto(`${BASE}/student/courses`);
     await page.waitForLoadState("networkidle");
     await page.getByText("Data Structures").click();
-    await expect(page).toHaveURL(/\/student\/courses\/c-p3\/classwork/);
+    // dev server renders the classwork route on demand; under parallel workers that can exceed 5s
+    await expect(page).toHaveURL(/\/student\/courses\/c-p3\/classwork/, { timeout: 20_000 });
   });
 
 });
@@ -259,6 +260,32 @@ test.describe("P3b — Course banner + grading categories on the classwork page"
     // the old evaluation summary card is gone from this page
     await expect(page.getByText("Total so far")).toHaveCount(0);
     await expect(page.getByText(/categories graded/)).toHaveCount(0);
+  });
+
+  test("wide screens: assignments on the left, grading categories on the right; narrow screens stack", async ({ page }) => {
+    await seedStudent(page);
+    await page.addInitScript(() => {
+      const now = "2026-01-01T00:00:00.000Z";
+      localStorage.setItem("hwai_grading_categories_v1", JSON.stringify([
+        { id: "gc-1", courseId: "c-p3", name: "Coursework", weight: 100, createdAt: now, updatedAt: now },
+      ]));
+    });
+    const box = async (loc: import("@playwright/test").Locator) => (await loc.boundingBox())!;
+
+    await page.setViewportSize({ width: 1600, height: 900 });
+    await page.goto(`${BASE}/student/courses/c-p3/classwork`);
+    await page.waitForLoadState("networkidle");
+    const work = page.getByText("Lab 1: Arrays");
+    const cats = page.getByRole("heading", { name: "Grading Categories" });
+    const wide = { w: await box(work), c: await box(cats) };
+    expect(wide.c.x).toBeGreaterThan(wide.w.x + 500); // categories are in a separate, right-hand column
+    expect(Math.abs(wide.c.y - wide.w.y)).toBeLessThan(400); // ...level with the top of the list, not below it
+
+    await page.setViewportSize({ width: 1100, height: 900 });
+    await page.waitForTimeout(300);
+    const narrow = { w: await box(work), c: await box(cats) };
+    expect(Math.abs(narrow.c.x - narrow.w.x)).toBeLessThan(80); // same column
+    expect(narrow.c.y).toBeGreaterThan(narrow.w.y); // categories after the work
   });
 
   test("no categories set up -> the section is hidden", async ({ page }) => {

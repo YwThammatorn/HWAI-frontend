@@ -102,7 +102,7 @@ function GradingCategoriesCard({ categories, totalWeight }: { categories: Gradin
   const { t } = useLanguage();
   const COLS = "1fr 96px";
   return (
-    <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-6 mb-6">
+    <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-6">
       <h2 className="text-base font-bold text-[var(--text-primary)] mb-5">{t("สัดส่วนคะแนน", "Grading Categories")}</h2>
       <div className="rounded-xl border border-[var(--border-subtle)] overflow-hidden">
         <div className="grid border-b border-[var(--border-subtle)] bg-[var(--bg-subtle)]" style={{ gridTemplateColumns: COLS }}>
@@ -199,9 +199,10 @@ export default function StudentClassworkPage() {
           </div>
         </div>
 
-        {/* Grading categories (สัดส่วนคะแนน) — read-only version of the teacher course page table */}
-        {categories.length > 0 && <GradingCategoriesCard categories={categories} totalWeight={totalWeight} />}
-
+        {/* Two columns on wide screens: work on the left, grading categories (สัดส่วนคะแนน) on the right.
+            Below xl everything stacks: work first, categories after. */}
+        <div className={`grid grid-cols-1 gap-6 items-start ${categories.length > 0 ? "xl:grid-cols-[minmax(0,1fr)_380px]" : ""}`}>
+        <div className="min-w-0">
         {assignments.length === 0 ? (
           <div className="flex flex-col items-center py-16 text-center">
             <div className="w-12 h-12 rounded-full bg-[var(--accent-bright)]/10 flex items-center justify-center mb-3">
@@ -256,6 +257,14 @@ export default function StudentClassworkPage() {
             )}
           </div>
         )}
+        </div>
+
+        {categories.length > 0 && (
+          <aside aria-label={t("สัดส่วนคะแนน", "Grading Categories")} className="xl:sticky xl:top-6">
+            <GradingCategoriesCard categories={categories} totalWeight={totalWeight} />
+          </aside>
+        )}
+        </div>
     </div>
   );
 }
