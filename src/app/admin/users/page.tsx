@@ -1286,13 +1286,13 @@ function SortableTh({ label, dir, onClick, hint }: {
         type="button"
         onClick={onClick}
         title={hint}
-        className={`group -mx-1.5 px-1.5 py-0.5 inline-flex items-center gap-1 rounded-md uppercase tracking-wider transition-colors hover:bg-[var(--bg-subtle)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] ${
-          dir ? "text-[var(--text-primary)]" : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+        className={`group -mx-1.5 px-1.5 py-0.5 inline-flex items-center gap-1.5 whitespace-nowrap rounded-md uppercase tracking-wider transition-colors hover:bg-[var(--bg-subtle)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] ${
+          dir ? "text-[var(--accent)]" : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"
         }`}
       >
         {label}
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
-          className={dir ? "text-[var(--accent-bright)]" : "opacity-40 group-hover:opacity-80"}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
+          className={dir ? "text-[var(--accent)]" : "text-[var(--text-secondary)] opacity-60 group-hover:opacity-100"}>
           {dir === "asc" && <><line x1="12" y1="19" x2="12" y2="5" /><polyline points="5 12 12 5 19 12" /></>}
           {dir === "desc" && <><line x1="12" y1="5" x2="12" y2="19" /><polyline points="19 12 12 19 5 12" /></>}
           {!dir && <><polyline points="8 9 12 5 16 9" /><polyline points="8 15 12 19 16 15" /></>}
@@ -1525,14 +1525,14 @@ function StudentsTab() {
             <div className="overflow-y-auto max-h-[calc(100vh-380px)]">
             <table className="w-full text-sm table-fixed">
               <colgroup>
-                <col className="w-[80px]" />
+                <col className="w-[136px]" />
                 <col className="w-[70px]" />
                 <col className="w-[16%]" />
                 <col className="w-[20%]" />
                 <col className="w-[80px]" />
-                <col className="w-[18%]" />
+                <col className="w-[16%]" />
                 <col className="w-[100px]" />
-                <col className="w-24" />
+                <col className="w-[128px]" />
               </colgroup>
               <thead className="sticky top-0 z-10">
                 <tr className="border-b border-[var(--border-subtle)]">
