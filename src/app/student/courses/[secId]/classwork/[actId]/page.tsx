@@ -21,6 +21,17 @@ function initialsOf(name: string) {
 }
 
 export default function StudentClassworkDetailPage() {
+  const { actId } = useParams<{ secId: string; actId: string }>();
+  const { user } = useAuth();
+  const { getSubmissionsByAssignment } = useAssignments();
+  const mine = getSubmissionsByAssignment(actId).find((s) => s.studentId === (user?.studentId ?? user?.email ?? ""));
+  // The form starts from what the student already submitted (files + link), so remount it
+  // whenever their submission appears or changes rather than syncing draft state by hand.
+  const formKey = mine ? `${mine.id}:${submissionAttachments(mine).map((a) => a.id).join(",")}` : "none";
+  return <ClassworkDetail key={formKey} />;
+}
+
+function ClassworkDetail() {
   const { secId, actId } = useParams<{ secId: string; actId: string }>();
   const { t } = useLanguage();
   const { user } = useAuth();
@@ -33,9 +44,6 @@ export default function StudentClassworkDetailPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [teamDrawerOpen, setTeamDrawerOpen] = useState(false);
-  const [linkValue, setLinkValue] = useState("");
-  // Files/images picked for this submission — each can be removed again before submitting
-  const files = useAttachmentsDraft();
 
   const course = getCourse(secId);
   const assignment = getAssignment(actId);
@@ -43,6 +51,11 @@ export default function StudentClassworkDetailPage() {
   const allSubs = getSubmissionsByAssignment(actId);
   const studentId = user?.studentId ?? user?.email ?? "";
   const mySubmission = allSubs.find((s) => s.studentId === studentId);
+
+  // Resubmitting starts from the previous submission: its files (each removable) and its link
+  const previous = submissionAttachments(mySubmission);
+  const [linkValue, setLinkValue] = useState(() => previous.find((a) => a.kind === "link")?.ref ?? "");
+  const files = useAttachmentsDraft(previous.filter((a) => a.kind !== "link"));
 
   const isGroup = assignment?.submissionType === "group";
   const myGroup = isGroup ? getGroupForStudent(actId, studentId) : undefined;
@@ -116,13 +129,12 @@ export default function StudentClassworkDetailPage() {
         ...(myGroup ? { groupId: myGroup.id } : {}),
       });
     });
-    replacedRefs.forEach((ref) => removeFile(ref));
+    const keptRefs = new Set(attachments.filter((a) => a.source === "upload").map((a) => a.ref));
+    replacedRefs.forEach((ref) => { if (!keptRefs.has(ref)) removeFile(ref); });
     setSubmitting(false);
     setConfirmOpen(false);
     setSubmitted(true);
-    setLinkValue("");
     files.commit(); // the uploads now belong to the submission — don't free them on leave
-    files.reset([]);
   }
 
   function handleLeaveTeam() {
@@ -331,6 +343,11 @@ export default function StudentClassworkDetailPage() {
               {/* Attach a file or link — only for assignments configured to accept one */}
               {!isGraded && !isPast && assignment.acceptsFiles && (
                 <div className="mb-4 flex flex-col gap-3">
+                  {mySubmission && (
+                    <p className="text-xs text-[var(--text-muted)]">
+                      {t("แก้ไขงานที่ส่งแล้ว — การเปลี่ยนแปลงจะมีผลเมื่อกด “ส่งอีกครั้ง”", "You're editing your submission — changes apply when you press Resubmit")}
+                    </p>
+                  )}
                   {wantsLink && (
                     <div className="flex flex-col gap-1.5">
                       <label className="text-xs font-semibold text-[var(--text-secondary)]">{t("ลิงก์", "Link")}</label>

@@ -18,7 +18,7 @@ const ASSIGNMENT = {
 const ROSTER = { id: "sr-sf", courseId: "c-sf", studentId: "64070501", firstName: "Fah", lastName: "Test", email: "s@kmitl.ac.th", cohort: "CE69" };
 const COHORT = { id: "cs-sf", studentId: "64070501", firstName: "Fah", lastName: "Test", email: "s@kmitl.ac.th", cohort: "CE69", program: "CE" };
 
-async function seed(page: Page, submissions: unknown[] = []) {
+async function seed(page: Page, submissions: unknown[] = [], stored: Record<string, string> = {}) {
   await page.addInitScript((data) => {
     // addInitScript re-runs on every navigation — only seed once so what the test saves survives
     if (sessionStorage.getItem("sf_seeded")) return;
@@ -30,18 +30,22 @@ async function seed(page: Page, submissions: unknown[] = []) {
     localStorage.setItem("hwai_students_v1", JSON.stringify([data.roster]));
     localStorage.setItem("hwai_cohort_students_v1", JSON.stringify([data.cohort]));
     localStorage.setItem("hwai_submissions_v1", JSON.stringify(data.submissions));
-  }, { course: COURSE, assignment: ASSIGNMENT, roster: ROSTER, cohort: COHORT, submissions });
+    Object.entries(data.stored).forEach(([k, v]) => localStorage.setItem(k, v));
+  }, { course: COURSE, assignment: ASSIGNMENT, roster: ROSTER, cohort: COHORT, submissions, stored });
 }
 
 const pdf = (name: string) => ({ name, mimeType: "application/pdf", buffer: Buffer.from(`%PDF-1.4 ${name}`) });
 const fileInput = (page: Page) => page.locator('input[type="file"]');
 const storedFiles = (page: Page) =>
   page.evaluate(() => Object.keys(localStorage).filter((k) => k.startsWith("hwai_file_")).length);
+// the read-only "Submitted work (n)" list — file names also appear in the edit form below it
+const submittedList = (page: Page, n: number) =>
+  page.getByText(`Submitted work (${n})`).locator("xpath=following-sibling::ul[1]");
 const savedSubmissions = (page: Page) =>
   page.evaluate(() => JSON.parse(localStorage.getItem("hwai_submissions_v1") ?? "[]"));
 
-async function open(page: Page, submissions: unknown[] = []) {
-  await seed(page, submissions);
+async function open(page: Page, submissions: unknown[] = [], stored: Record<string, string> = {}) {
+  await seed(page, submissions, stored);
   await page.goto(`${BASE}/student/courses/c-sf/classwork/a-sf`);
   await page.waitForLoadState("networkidle");
 }
@@ -89,7 +93,7 @@ test.describe("Student submission — attach several files, remove any of them",
     await expect(page.getByRole("button", { name: "Add another file" })).toBeDisabled();
   });
 
-  test("submitting saves every file plus the link, shows them under 'Submitted work', and clears the form", async ({ page }) => {
+  test("submitting saves every file plus the link and shows them under 'Submitted work'", async ({ page }) => {
     await open(page);
     await page.getByPlaceholder(/Figma, GitHub/).fill("github.com/fah/hardware-lab");
     await fileInput(page).setInputFiles([pdf("report.pdf"), pdf("appendix.pdf")]);
@@ -98,11 +102,13 @@ test.describe("Student submission — attach several files, remove any of them",
 
     await expect(page.getByText("Submitted — awaiting grade")).toBeVisible();
     await expect(page.getByText("Submitted work (3)")).toBeVisible();
-    await expect(page.getByRole("button", { name: /report\.pdf/ })).toBeVisible();
-    await expect(page.getByRole("button", { name: /appendix\.pdf/ })).toBeVisible();
-    await expect(page.getByRole("button", { name: /github\.com\/fah\/hardware-lab/ })).toBeVisible();
-    // the form is empty again for a possible resubmission
-    await expect(page.getByRole("list", { name: "Selected files" })).toHaveCount(0);
+    await expect(submittedList(page, 3).getByRole("button", { name: /report\.pdf/ })).toBeVisible();
+    await expect(submittedList(page, 3).getByRole("button", { name: /appendix\.pdf/ })).toBeVisible();
+    await expect(submittedList(page, 3).getByRole("button", { name: /github\.com\/fah\/hardware-lab/ })).toBeVisible();
+    // the form now holds the submitted work, ready to edit and resubmit
+    await expect(page.getByRole("list", { name: "Selected files" }).getByRole("listitem")).toHaveCount(2);
+    await expect(page.getByPlaceholder(/Figma, GitHub/)).toHaveValue("https://github.com/fah/hardware-lab");
+    await expect(page.getByRole("button", { name: "Resubmit" })).toBeEnabled();
 
     const [sub] = await savedSubmissions(page);
     expect(sub.attachments.map((a: { kind: string; name: string }) => [a.kind, a.name]))
@@ -111,20 +117,74 @@ test.describe("Student submission — attach several files, remove any of them",
     expect(await storedFiles(page)).toBe(2); // kept — they belong to the submission now
   });
 
-  test("resubmitting replaces the earlier files and frees them", async ({ page }) => {
+  test("Resubmit starts from the earlier files: drop one, add another, and the dropped one is freed", async ({ page }) => {
     await open(page);
-    await fileInput(page).setInputFiles(pdf("v1.pdf"));
+    await fileInput(page).setInputFiles([pdf("a.pdf"), pdf("b.pdf")]);
     await page.getByRole("button", { name: "Submit", exact: true }).click();
     await page.getByRole("button", { name: "Confirm & Submit" }).click();
-    await expect(page.getByText("Submitted work (1)")).toBeVisible();
+    await expect(page.getByText("Submitted work (2)")).toBeVisible();
 
-    await fileInput(page).setInputFiles([pdf("v2.pdf"), pdf("v2-extra.pdf")]);
+    // the earlier files are already in the form, plus a hint that this edits the submission
+    const list = page.getByRole("list", { name: "Selected files" });
+    await expect(list.getByRole("listitem")).toHaveCount(2);
+    await expect(page.getByText(/editing your submission/i)).toBeVisible();
+
+    await page.getByRole("button", { name: "Remove a.pdf" }).click();
+    await fileInput(page).setInputFiles(pdf("c.pdf"));
+    await expect(list.getByRole("listitem")).toHaveCount(2);
+    // nothing changes for the teacher until Resubmit is pressed
+    expect((await savedSubmissions(page))[0].attachments.map((x: { name: string }) => x.name)).toEqual(["a.pdf", "b.pdf"]);
+
     await page.getByRole("button", { name: "Resubmit" }).click();
     await page.getByRole("button", { name: "Confirm & Submit" }).click();
     await expect(page.getByText("Submitted work (2)")).toBeVisible();
-    await expect(page.getByRole("button", { name: /v1\.pdf/ })).toHaveCount(0);
+    await expect(submittedList(page, 2).getByRole("button", { name: /^c\.pdf/ })).toBeVisible();
+    await expect(submittedList(page, 2).getByRole("button", { name: /^a\.pdf/ })).toHaveCount(0);
+    const subs = await savedSubmissions(page);
+    expect(subs).toHaveLength(1);
+    expect(subs[0].attachments.map((x: { name: string }) => x.name)).toEqual(["b.pdf", "c.pdf"]);
+    expect(await storedFiles(page)).toBe(2); // a.pdf is gone
+  });
+
+  test("opening a page with an existing submission prefills its files and link", async ({ page }) => {
+    await open(page, [{
+      id: "sub-1", assignmentId: "a-sf", studentId: "64070501", studentName: "Fah Test", email: "s@kmitl.ac.th",
+      submittedAt: NOW, fileUrl: "https://github.com/fah/x",
+      attachments: [
+        { id: "att-1", kind: "file", name: "saved-report.pdf", source: "upload", ref: "hwai_file_seed1" },
+        { id: "att-2", kind: "link", name: "https://github.com/fah/x", source: "url", ref: "https://github.com/fah/x" },
+      ],
+      aiScore: null, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "not_graded", updatedAt: NOW,
+    }], { hwai_file_seed1: "data:application/pdf;base64,JVBERi0xLjQ=" });
+    const list = page.getByRole("list", { name: "Selected files" });
+    await expect(list.getByText("saved-report.pdf")).toBeVisible();
+    await expect(page.getByPlaceholder(/Figma, GitHub/)).toHaveValue("https://github.com/fah/x");
+    await expect(page.getByRole("button", { name: "Resubmit" })).toBeEnabled();
+  });
+
+  test("leaving keeps the submitted files but frees a file that was only added while editing", async ({ page }) => {
+    await open(page, [{
+      id: "sub-1", assignmentId: "a-sf", studentId: "64070501", studentName: "Fah Test", email: "s@kmitl.ac.th",
+      submittedAt: NOW, fileUrl: null,
+      attachments: [{ id: "att-1", kind: "file", name: "saved-report.pdf", source: "upload", ref: "hwai_file_seed1" }],
+      aiScore: null, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "not_graded", updatedAt: NOW,
+    }], { hwai_file_seed1: "data:application/pdf;base64,JVBERi0xLjQ=" });
+    await fileInput(page).setInputFiles(pdf("extra.pdf"));
     expect(await storedFiles(page)).toBe(2);
-    expect((await savedSubmissions(page))).toHaveLength(1);
+    await page.getByRole("link", { name: "Hardware Lab" }).click();
+    await expect(page).toHaveURL(/\/classwork$/, { timeout: 20_000 });
+    expect(await storedFiles(page)).toBe(1); // only the submitted file remains
+  });
+
+  test("removing every file and the link disables Resubmit", async ({ page }) => {
+    await open(page, [{
+      id: "sub-1", assignmentId: "a-sf", studentId: "64070501", studentName: "Fah Test", email: "s@kmitl.ac.th",
+      submittedAt: NOW, fileUrl: null,
+      attachments: [{ id: "att-1", kind: "file", name: "saved-report.pdf", source: "upload", ref: "hwai_file_seed1" }],
+      aiScore: null, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "not_graded", updatedAt: NOW,
+    }], { hwai_file_seed1: "data:application/pdf;base64,JVBERi0xLjQ=" });
+    await page.getByRole("button", { name: "Remove saved-report.pdf" }).click();
+    await expect(page.getByRole("button", { name: "Resubmit" })).toBeDisabled();
   });
 
   test("leaving the page without submitting frees the files that were picked", async ({ page }) => {
