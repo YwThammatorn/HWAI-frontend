@@ -53,7 +53,8 @@ test.describe("Assignment attachments — teacher form", () => {
     await expect(list.getByText("Figma reference")).toBeVisible();
 
     await page.getByRole("button", { name: "Create Assignment" }).click();
-    await expect(page).toHaveURL(/\/rubrics\//);
+    // Rubric is part of the create form now, so we land on the new assignment's page
+    await expect(page).toHaveURL(/\/assignments\/(?!new)[^/]+$/, { timeout: 20_000 }); // first visit compiles the route in dev
 
     const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("hwai_assignments_v1") ?? "[]"));
     expect(saved).toHaveLength(1);

@@ -7,6 +7,7 @@ import { useAssignments, Assignment } from "@/lib/assignments";
 import { useGradingCategories } from "@/lib/gradingCategories";
 import { useLanguage } from "@/context/LanguageContext";
 import { AttachmentsEditor, useAttachmentsDraft } from "@/components/AssignmentAttachments";
+import RubricCriteriaEditor, { CriterionDraft, newCriterionDraft, criteriaWeightOk, finalizeCriteria } from "@/components/RubricCriteriaEditor";
 
 export default function NewAssignmentPage() {
   const { id } = useParams<{ id: string }>();
@@ -37,6 +38,11 @@ export default function NewAssignmentPage() {
   const [maxGroupSize, setMaxGroupSize] = useState<string>("");
   const [categoryId, setCategoryId] = useState("");
   const att = useAttachmentsDraft();
+  // Rubric lives on this page now (was a separate step after creating). Start with one
+  // criterion worth 100% so a fresh form is already a valid rubric; the teacher splits it up.
+  const [criteria, setCriteria] = useState<CriterionDraft[]>(() => [newCriterionDraft(t("เกณฑ์ที่ 1", "Criterion 1"), "100")]);
+  const [initialCriteriaJson] = useState(() => JSON.stringify(criteria));
+  const [rubricTouched, setRubricTouched] = useState(false);
 
   const course = getCourse(id);
   const categories = getCategoriesByCourse(id);
@@ -44,7 +50,8 @@ export default function NewAssignmentPage() {
 
   const isDirty =
     name.trim() !== "" || description.trim() !== "" || dueDate !== "" || maxPoints !== "100" ||
-    submissionType !== "individual" || maxGroupSize !== "" || att.items.length > 0;
+    submissionType !== "individual" || maxGroupSize !== "" || att.items.length > 0 ||
+    (rubricTouched && JSON.stringify(criteria) !== initialCriteriaJson);
 
   useEffect(() => {
     const handler = (e: BeforeUnloadEvent) => {
@@ -70,13 +77,15 @@ export default function NewAssignmentPage() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!isValid) return;
+    const points = parseInt(maxPoints) || 100;
     const a = addAssignment({
       courseId: id,
       name: name.trim(),
       description: description.trim(),
       attachments: att.items.length > 0 ? att.items : undefined,
       dueDate,
-      maxPoints: parseInt(maxPoints) || 100,
+      maxPoints: points,
       categoryId: categoryId || undefined,
       acceptsFiles,
       fileTypes: acceptsFiles ? fileTypes : [],
@@ -84,41 +93,50 @@ export default function NewAssignmentPage() {
       maxGroupSize: submissionType === "group" && maxGroupSize ? parseInt(maxGroupSize) : null,
       rubricIds: [],
     });
-    att.commit();
-    // Land the teacher straight in the rubric editor for this assignment
-    // (meeting 26/8/2569 — create + rubric in one continuous flow, following
-    // DEEP-QA's "เพิ่มกิจกรรมการประเมิน" pattern; see [[project-hwai-meeting-20260826]]).
     const rubric = addRubric({
       assignmentId: a.id,
       name: t("เกณฑ์การให้คะแนน", "Grading Rubric"),
-      criteria: [],
+      criteria: finalizeCriteria(criteria, points, t("ไม่มีชื่อ", "Untitled")),
     });
     updateAssignment(a.id, { rubricIds: [rubric.id] });
-    router.push(`/teacher/courses/${id}/assignments/${a.id}/rubrics/${rubric.id}`);
+    att.commit();
+    router.push(`/teacher/courses/${id}/assignments/${a.id}`);
   }
 
-  const isValid = name.trim().length > 0 && dueDate !== "" && (!acceptsFiles || fileTypes.length > 0);
+  const weightOk = criteriaWeightOk(criteria);
+  const isValid = name.trim().length > 0 && dueDate !== "" && (!acceptsFiles || fileTypes.length > 0) && weightOk;
 
   return (
-      <main className="w-full max-w-[700px] mx-auto px-8 py-10">
+      <main className="w-full px-8 py-8">
 
-        <button
-          onClick={() => navAway(`/teacher/courses/${id}/assignments`)}
-          className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-[var(--accent)] mb-6 transition-colors"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-            <polyline points="15 18 9 12 15 6"/>
-          </svg>
-          {t("กลับรายการชิ้นงาน", "Back to assignments")}
-        </button>
+        {/* Breadcrumb (same pattern as the other course pages) */}
+        <div className="flex items-center gap-2 text-sm text-gray-500 mb-6 flex-wrap">
+          <button type="button" onClick={() => navAway("/teacher/courses")} aria-label={t("วิชาทั้งหมด", "All Courses")} className="hover:text-[var(--accent)] transition-colors">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+          </button>
+          <span>/</span>
+          <button type="button" onClick={() => navAway(`/teacher/courses/${id}`)} className="hover:text-[var(--accent)] transition-colors">{course?.name ?? "..."}</button>
+          <span>/</span>
+          <button type="button" onClick={() => navAway(`/teacher/courses/${id}/assignments`)} className="hover:text-[var(--accent)] transition-colors">{t("ชิ้นงาน", "Assignments")}</button>
+          <span>/</span>
+          <span className="text-[var(--accent)] font-medium">{t("สร้างชิ้นงานใหม่", "New Assignment")}</span>
+        </div>
 
-        <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">{t("สร้างชิ้นงานใหม่", "New Assignment")}</h1>
-        <p className="text-sm text-gray-500 mb-8">
-          {t("สร้างชิ้นงานในวิชา", "Create an assignment in")}{" "}
+        <h1 className="text-3xl font-bold text-[var(--text-primary)]">{t("สร้างชิ้นงานใหม่", "New Assignment")}</h1>
+        <p className="text-sm text-gray-500 mt-1.5 mb-8">
+          {t("สร้างชิ้นงานและตั้งเกณฑ์การให้คะแนนในวิชา", "Create an assignment and set its grading rubric in")}{" "}
           <span className="font-semibold text-[var(--text-primary)]">{course?.name ?? "..."}</span>
         </p>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        {/* Enter inside a text field must not submit the whole form (rubric fields live here too) */}
+        <form
+          onSubmit={handleSubmit}
+          onKeyDown={(e) => { if (e.key === "Enter" && (e.target as HTMLElement).tagName === "INPUT") e.preventDefault(); }}
+        >
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 items-start">
+          <div className="space-y-5">
 
           {/* General Information */}
           <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
@@ -147,6 +165,9 @@ export default function NewAssignmentPage() {
             />
             <AttachmentsEditor items={att.items} onChange={att.setItems} />
           </section>
+
+          </div>
+          <div className="space-y-5">
 
           {/* Details */}
           <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
@@ -292,22 +313,33 @@ export default function NewAssignmentPage() {
             </div>
           </section>
 
-          {/* Rubric note */}
-          <div className="flex gap-2.5 bg-amber-50 border border-amber-100 rounded-xl px-4 py-3">
-            <svg className="shrink-0 mt-0.5" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2" strokeLinecap="round">
-              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
-            <p className="text-xs text-amber-700 leading-relaxed">
-              <strong>{t("เกณฑ์การให้คะแนน (Rubric)", "Grading Rubric")}</strong> —{" "}
-              {t(
-                "หลังกดสร้างชิ้นงาน ระบบจะพาไปตั้งเกณฑ์การให้คะแนนต่อทันที",
-                "After you create this assignment, you'll go straight into setting up its grading rubric."
-              )}
-            </p>
+          </div>
           </div>
 
+          {/* Rubric */}
+          <section className="mt-8" aria-labelledby="rubric-heading">
+            <div className="flex items-center gap-2 mb-1.5">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent-bright)" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+              </svg>
+              <h2 id="rubric-heading" className="text-base font-semibold text-[var(--text-primary)]">{t("เกณฑ์การให้คะแนน (Rubric)", "Grading Rubric")}</h2>
+            </div>
+            <p className="text-sm text-gray-500 mb-5">
+              {t("ตั้งเกณฑ์ที่ HWAI Agent จะใช้ตรวจงานนี้ น้ำหนักรวมต้องได้ 100%", "Set the criteria the HWAI Agent will grade this assignment with. Weights must total 100%.")}
+            </p>
+            <RubricCriteriaEditor
+              criteria={criteria}
+              setCriteria={(u) => { setRubricTouched(true); setCriteria(u); }}
+              maxPoints={parseInt(maxPoints) || 100}
+              assignmentName={name.trim()}
+            />
+          </section>
+
           {/* Actions */}
-          <div className="flex justify-end gap-3 pb-4">
+          <div className="flex items-center justify-end gap-3 mt-8 pt-6 pb-4 border-t border-gray-100">
+            {!weightOk && (
+              <span className="text-xs text-amber-600 mr-auto">{t("น้ำหนักเกณฑ์รวมต้องเท่ากับ 100% ก่อนสร้างชิ้นงาน", "Rubric weights must total 100% before you can create the assignment")}</span>
+            )}
             <button
               type="button"
               onClick={() => navAway(`/teacher/courses/${id}/assignments`)}
