@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCourses } from "@/lib/courses";
-import { useAssignments, RubricCriterion } from "@/lib/assignments";
+import { useAssignments, RubricCriterion, submissionAttachments } from "@/lib/assignments";
+import SubmissionViewer from "@/components/SubmissionViewer";
 import { useStudentGroups } from "@/lib/studentGroups";
 import { useLanguage } from "@/context/LanguageContext";
 
@@ -178,7 +179,16 @@ export default function RecheckPage() {
             </button>
           </div>
 
-          {/* File placeholder */}
+          {/* What the student submitted; the sandbox placeholder when nothing was attached */}
+          <SubmissionViewer
+            attachments={submissionAttachments(submission)}
+            zoom={zoom}
+            caption={[
+              submission.studentName,
+              team ? t(`ทีม ${team.name}`, `Team ${team.name}`) : null,
+              `${t("ส่งเมื่อ", "Submitted")} ${new Date(submission.submittedAt).toLocaleDateString(lang === "th" ? "th-TH" : "en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}`,
+            ].filter(Boolean).join(" · ")}
+            empty={
           <div className="flex-1 overflow-auto flex items-start justify-center p-8">
             <div
               className="bg-white shadow-xl rounded-sm transition-all origin-top"
@@ -211,6 +221,8 @@ export default function RecheckPage() {
               </div>
             </div>
           </div>
+            }
+          />
         </div>
 
         {/* Right: grading panel */}
