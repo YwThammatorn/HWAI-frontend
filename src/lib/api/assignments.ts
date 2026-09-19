@@ -57,7 +57,7 @@ export async function getSubmissions(assignmentId: string): Promise<Submission[]
   return read<Submission>(KEYS.submissions).filter((s) => s.assignmentId === assignmentId);
 }
 
-export async function updateSubmission(id: string, data: Partial<Pick<Submission, "aiScore" | "instructorScore" | "instructorComment" | "criterionComments" | "status" | "fileUrl">>): Promise<Submission> {
+export async function updateSubmission(id: string, data: Partial<Pick<Submission, "aiScore" | "instructorScore" | "instructorComment" | "criterionComments" | "status" | "fileUrl" | "attachments">>): Promise<Submission> {
   // return client.patch<Submission>(`/api/submissions/${id}`, data);
   const items = read<Submission>(KEYS.submissions).map((s) =>
     s.id === id ? { ...s, ...data, updatedAt: new Date().toISOString() } : s,

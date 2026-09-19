@@ -55,6 +55,7 @@ export function useAttachmentsDraft(initial: AssignmentAttachment[] = []) {
   const reset = useCallback((list: AssignmentAttachment[]) => {
     originalRef.current = list;
     itemsRef.current = list;
+    committedRef.current = false;
     setItemsState(list);
     setDirty(false);
   }, []);
@@ -75,6 +76,18 @@ export function useAttachmentsDraft(initial: AssignmentAttachment[] = []) {
   }, []);
 
   return { items, dirty, setItems, reset, commit };
+}
+
+/** Put one picked file into mock storage and describe it as an attachment. */
+async function storeAttachment(file: File): Promise<AssignmentAttachment> {
+  const ref = await storeFile(file);
+  return {
+    id: crypto.randomUUID(),
+    kind: file.type.startsWith("image/") ? "image" : "file",
+    name: file.name,
+    source: "upload",
+    ref,
+  };
 }
 
 function KindIcon({ kind }: { kind: AssignmentAttachment["kind"] }) {
@@ -138,7 +151,7 @@ function AttachmentChip({ a, onRemove, removeLabel }: { a: AssignmentAttachment;
             : <KindIcon kind={a.kind} />}
         </span>
         <span className="min-w-0">
-          <span className="block text-sm font-medium text-[var(--text-primary)] truncate">{a.name}</span>
+          <span className="block text-sm font-medium text-[var(--text-primary)] truncate" title={a.name}>{a.name}</span>
           {a.kind === "link" && <span className="block text-xs text-[var(--text-muted)] truncate">{a.ref}</span>}
         </span>
       </button>
@@ -159,12 +172,12 @@ function AttachmentChip({ a, onRemove, removeLabel }: { a: AssignmentAttachment;
 }
 
 /** Read-only list, for the student brief and the teacher's assignment page. */
-export function AttachmentList({ attachments }: { attachments?: AssignmentAttachment[] }) {
+export function AttachmentList({ attachments, title }: { attachments?: AssignmentAttachment[]; title?: string }) {
   const { t } = useLanguage();
   if (!attachments || attachments.length === 0) return null;
   return (
     <div className="mt-4">
-      <p className="text-xs font-medium text-[var(--text-muted)] mb-2">{t("ไฟล์แนบ", "Attachments")} ({attachments.length})</p>
+      <p className="text-xs font-medium text-[var(--text-muted)] mb-2">{title ?? t("ไฟล์แนบ", "Attachments")} ({attachments.length})</p>
       <ul className="flex flex-col gap-2">
         {attachments.map((a) => <AttachmentChip key={a.id} a={a} />)}
       </ul>
@@ -195,16 +208,7 @@ export function AttachmentsEditor({ items, onChange }: {
     setUploading(true);
     const added: AssignmentAttachment[] = [];
     try {
-      for (const file of files) {
-        const ref = await storeFile(file);
-        added.push({
-          id: crypto.randomUUID(),
-          kind: file.type.startsWith("image/") ? "image" : "file",
-          name: file.name,
-          source: "upload",
-          ref,
-        });
-      }
+      for (const file of files) added.push(await storeAttachment(file));
     } catch (err) {
       setError(err instanceof FileTooLargeError
         ? t("ไฟล์ใหญ่เกินไป (จำกัด 2MB ต่อไฟล์สำหรับ mock storage)", "File too large (2MB per file mock storage limit)")
@@ -302,6 +306,98 @@ export function AttachmentsEditor({ items, onChange }: {
       {remaining <= 0 && (
         <p className="text-xs text-gray-500 mt-2">{t(`แนบได้สูงสุด ${MAX_ATTACHMENTS} รายการ`, `Up to ${MAX_ATTACHMENTS} attachments`)}</p>
       )}
+    </div>
+  );
+}
+
+/**
+ * Student-side file picker for a submission: every chosen file is listed with its own
+ * remove button and more can be added until `max`. Controlled by `useAttachmentsDraft`,
+ * so removed/abandoned uploads are freed from mock storage.
+ */
+export function SubmissionFilesPicker({ items, onChange, accept, label, max = MAX_ATTACHMENTS }: {
+  items: AssignmentAttachment[];
+  onChange: (next: AssignmentAttachment[]) => void;
+  /** `accept` attribute for the file dialog, e.g. ".pdf,image/*". */
+  accept?: string;
+  label: string;
+  max?: number;
+}) {
+  const { t } = useLanguage();
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const remaining = max - items.length;
+
+  async function handleFiles(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    e.target.value = "";
+    if (files.length === 0) return;
+    setError(null);
+    const picked = files.slice(0, Math.max(remaining, 0));
+    if (picked.length < files.length) {
+      setError(t(`แนบได้สูงสุด ${max} ไฟล์`, `Up to ${max} files`));
+    }
+    setBusy(true);
+    const added: AssignmentAttachment[] = [];
+    try {
+      for (const file of picked) added.push(await storeAttachment(file));
+    } catch (err) {
+      setError(err instanceof FileTooLargeError
+        ? t("ไฟล์ใหญ่เกินไป (จำกัด 2MB ต่อไฟล์สำหรับ mock storage)", "File too large (2MB per file mock storage limit)")
+        : t("แนบไฟล์ไม่สำเร็จ (พื้นที่เก็บข้อมูลอาจเต็ม)", "Couldn't attach the file (storage may be full)"));
+    } finally {
+      setBusy(false);
+      if (added.length > 0) onChange([...items, ...added]);
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <p id="submission-files-label" className="text-xs font-semibold text-[var(--text-secondary)]">{label}</p>
+
+      {items.length > 0 && (
+        <ul className="flex flex-col gap-2" aria-label={t("ไฟล์ที่เลือก", "Selected files")}>
+          {items.map((a) => (
+            <AttachmentChip
+              key={a.id}
+              a={a}
+              removeLabel={t(`ลบ ${a.name}`, `Remove ${a.name}`)}
+              onRemove={() => onChange(items.filter((x) => x.id !== a.id))}
+            />
+          ))}
+        </ul>
+      )}
+
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => fileRef.current?.click()}
+          disabled={busy || remaining <= 0}
+          className="h-8 px-3 rounded-lg bg-[var(--accent-bright)]/10 text-[var(--accent)] text-xs font-semibold hover:bg-[var(--accent-bright)]/20 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
+        >
+          {busy
+            ? t("กำลังแนบ...", "Attaching...")
+            : items.length > 0 ? t("เพิ่มไฟล์อีก", "Add another file") : t("เลือกไฟล์", "Choose file")}
+        </button>
+        {items.length === 0 && !busy && (
+          <span className="text-xs text-[var(--text-muted)]">{t("ยังไม่ได้เลือกไฟล์", "No file chosen")}</span>
+        )}
+        {items.length > 0 && (
+          <span className="text-[11px] text-[var(--text-muted)] tabular-nums">{items.length} / {max}</span>
+        )}
+      </div>
+      <input
+        ref={fileRef}
+        type="file"
+        multiple
+        accept={accept}
+        className="hidden"
+        onChange={handleFiles}
+        aria-labelledby="submission-files-label"
+      />
+
+      {error && <p role="alert" className="text-xs text-[var(--s-err-text)]">{error}</p>}
     </div>
   );
 }

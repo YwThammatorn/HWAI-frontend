@@ -42,7 +42,11 @@ export interface Submission {
   studentName: string; // denormalized for display; replace with join when API is ready
   email: string;       // denormalized for display
   submittedAt: string;
+  /** Legacy single-link field. New submissions keep the student's link here (if any)
+   *  and put everything they handed in — files, images and the link — in `attachments`. */
   fileUrl: string | null;
+  /** What the student submitted: up to 10 files/images plus an optional link. */
+  attachments?: AssignmentAttachment[];
   aiScore: number | null;
   instructorScore: number | null;
   instructorComment: string;
@@ -58,6 +62,16 @@ export interface Submission {
    *  group by without another data migration. */
   groupId?: string;
   updatedAt: string;
+}
+
+/** Everything a submission holds, including ones saved before multi-file support. */
+export function submissionAttachments(sub: Submission | undefined): AssignmentAttachment[] {
+  if (!sub) return [];
+  if (sub.attachments) return sub.attachments;
+  // Old rows only ever had one link in fileUrl; a blob: URL from an old upload can't be reopened, so skip it.
+  return sub.fileUrl && /^https?:\/\//i.test(sub.fileUrl)
+    ? [{ id: `legacy-${sub.id}`, kind: "link", name: sub.fileUrl, source: "url", ref: sub.fileUrl }]
+    : [];
 }
 
 export interface CriterionLevel {
@@ -99,7 +113,7 @@ export interface AssignmentContextValue {
   getAssignment: (id: string) => Assignment | undefined;
   getAssignmentsByCourse: (courseId: string) => Assignment[];
   addSubmission: (data: Omit<Submission, "id" | "updatedAt">) => Submission;
-  updateSubmission: (id: string, data: Partial<Pick<Submission, "aiScore" | "instructorScore" | "instructorComment" | "criterionComments" | "status" | "fileUrl">>) => void;
+  updateSubmission: (id: string, data: Partial<Pick<Submission, "aiScore" | "instructorScore" | "instructorComment" | "criterionComments" | "status" | "fileUrl" | "attachments">>) => void;
   getSubmissionsByAssignment: (assignmentId: string) => Submission[];
   addRubric: (data: Omit<Rubric, "id" | "createdAt" | "updatedAt">) => Rubric;
   updateRubric: (id: string, data: Partial<Omit<Rubric, "id" | "assignmentId" | "createdAt" | "updatedAt">>) => void;

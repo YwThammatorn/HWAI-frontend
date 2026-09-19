@@ -6,11 +6,12 @@ import { useParams } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
 import { useCourses } from "@/lib/courses";
-import { useAssignments } from "@/lib/assignments";
+import { useAssignments, submissionAttachments, AssignmentAttachment } from "@/lib/assignments";
+import { removeFile } from "@/lib/fileStorage";
 import { useStudents } from "@/lib/students";
 import { useStudentGroups } from "@/lib/studentGroups";
 import TeamFormationDrawer from "@/components/TeamFormationDrawer";
-import { AttachmentList } from "@/components/AssignmentAttachments";
+import { AttachmentList, SubmissionFilesPicker, normalizeLinkUrl, useAttachmentsDraft } from "@/components/AssignmentAttachments";
 import AssignmentStatusBadge, { STATUS_STYLE } from "@/components/AssignmentStatusBadge";
 import AssignmentTypeBadge from "@/components/AssignmentTypeBadge";
 
@@ -33,7 +34,8 @@ export default function StudentClassworkDetailPage() {
   const [submitted, setSubmitted] = useState(false);
   const [teamDrawerOpen, setTeamDrawerOpen] = useState(false);
   const [linkValue, setLinkValue] = useState("");
-  const [fileValue, setFileValue] = useState<File | null>(null);
+  // Files/images picked for this submission — each can be removed again before submitting
+  const files = useAttachmentsDraft();
 
   const course = getCourse(secId);
   const assignment = getAssignment(actId);
@@ -71,21 +73,30 @@ export default function StudentClassworkDetailPage() {
     .filter((ft) => ft !== "figma")
     .map((ft) => (ft === "pdf" ? ".pdf" : "image/*"))
     .join(",");
-  const hasAttachment = linkValue.trim() !== "" || fileValue !== null;
+  const linkUrl = normalizeLinkUrl(linkValue);
+  const linkInvalid = linkValue.trim() !== "" && linkUrl === null;
+  const hasAttachment = linkUrl !== null || files.items.length > 0;
   // acceptsFiles=true with an empty fileTypes list means there's nothing the
   // student could actually attach (no UI renders for it either) — treat that
   // the same as not requiring an attachment, rather than blocking submission.
   const attachmentOk = !assignment.acceptsFiles || assignment.fileTypes.length === 0 || hasAttachment;
-  const canSubmit = (!isGroup || !!myGroup) && attachmentOk;
+  const canSubmit = (!isGroup || !!myGroup) && attachmentOk && !linkInvalid;
 
   function handleSubmit() {
     setSubmitting(true);
-    const fileUrl = linkValue.trim() || (fileValue ? URL.createObjectURL(fileValue) : null);
+    const attachments: AssignmentAttachment[] = [
+      ...files.items,
+      ...(linkUrl ? [{ id: crypto.randomUUID(), kind: "link" as const, name: linkUrl, source: "url" as const, ref: linkUrl }] : []),
+    ];
+    const fileUrl = linkUrl; // legacy single-link field
     const memberIds = isGroup && myGroup ? myGroup.memberStudentIds : [studentId];
+    // A resubmission replaces the earlier one, so its uploads are no longer referenced
+    const replacedRefs = new Set<string>();
     memberIds.forEach((id) => {
       const existing = allSubs.find((s) => s.studentId === id);
       if (existing) {
-        updateSubmission(existing.id, { status: "not_graded", fileUrl });
+        submissionAttachments(existing).forEach((a) => { if (a.source === "upload") replacedRefs.add(a.ref); });
+        updateSubmission(existing.id, { status: "not_graded", fileUrl, attachments });
         return;
       }
       const info = memberInfo(id);
@@ -96,6 +107,7 @@ export default function StudentClassworkDetailPage() {
         email: info.email,
         submittedAt: new Date().toISOString(),
         fileUrl,
+        attachments,
         aiScore: null,
         instructorScore: null,
         instructorComment: "",
@@ -104,11 +116,13 @@ export default function StudentClassworkDetailPage() {
         ...(myGroup ? { groupId: myGroup.id } : {}),
       });
     });
+    replacedRefs.forEach((ref) => removeFile(ref));
     setSubmitting(false);
     setConfirmOpen(false);
     setSubmitted(true);
     setLinkValue("");
-    setFileValue(null);
+    files.commit(); // the uploads now belong to the submission — don't free them on leave
+    files.reset([]);
   }
 
   function handleLeaveTeam() {
@@ -279,15 +293,7 @@ export default function StudentClassworkDetailPage() {
                   {mySubmission?.instructorComment && (
                     <p className="text-xs mt-2 leading-relaxed">{mySubmission.instructorComment}</p>
                   )}
-                  {mySubmission?.fileUrl && (
-                    <a href={mySubmission.fileUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs font-medium hover:underline mt-2">
-                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
-                      </svg>
-                      {t("ดูงานที่ส่ง", "View submission")}
-                    </a>
-                  )}
+                  <AttachmentList attachments={submissionAttachments(mySubmission)} title={t("งานที่ส่ง", "Submitted work")} />
                 </div>
               )}
 
@@ -309,15 +315,7 @@ export default function StudentClassworkDetailPage() {
                       )}
                     </div>
                   </div>
-                  {mySubmission?.fileUrl && (
-                    <a href={mySubmission.fileUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs font-medium hover:underline mt-2 ml-7">
-                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
-                      </svg>
-                      {t("ดูงานที่ส่ง", "View submission")}
-                    </a>
-                  )}
+                  <AttachmentList attachments={submissionAttachments(mySubmission)} title={t("งานที่ส่ง", "Submitted work")} />
                 </div>
               )}
 
@@ -341,23 +339,23 @@ export default function StudentClassworkDetailPage() {
                         value={linkValue}
                         onChange={(e) => setLinkValue(e.target.value)}
                         placeholder={t("เช่น ลิงก์ Figma, GitHub, Google Docs", "e.g. Figma, GitHub, or Google Docs link")}
+                        aria-invalid={linkInvalid}
                         className="w-full h-9 px-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
                       />
+                      {linkInvalid && (
+                        <p role="alert" className="text-xs text-[var(--s-err-text)]">
+                          {t("ลิงก์ไม่ถูกต้อง เช่น https://github.com/...", "That doesn't look like a link, e.g. https://github.com/...")}
+                        </p>
+                      )}
                     </div>
                   )}
                   {wantsFileUpload && (
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-xs font-semibold text-[var(--text-secondary)]">
-                        {t("แนบไฟล์", "Attach file")}
-                        {" "}({assignment.fileTypes.filter((ft) => ft !== "figma").map((ft) => (ft === "pdf" ? "PDF" : t("รูปภาพ", "Image"))).join(", ")})
-                      </label>
-                      <input
-                        type="file"
-                        accept={fileAccept}
-                        onChange={(e) => setFileValue(e.target.files?.[0] ?? null)}
-                        className="text-xs text-[var(--text-secondary)] file:mr-3 file:h-8 file:px-3 file:rounded-lg file:border-0 file:bg-[var(--accent-bright)]/10 file:text-[var(--accent)] file:text-xs file:font-semibold file:cursor-pointer hover:file:bg-[var(--accent-bright)]/20"
-                      />
-                    </div>
+                    <SubmissionFilesPicker
+                      items={files.items}
+                      onChange={files.setItems}
+                      accept={fileAccept}
+                      label={`${t("แนบไฟล์", "Attach files")} (${assignment.fileTypes.filter((ft) => ft !== "figma").map((ft) => (ft === "pdf" ? "PDF" : t("รูปภาพ", "Image"))).join(", ")})`}
+                    />
                   )}
                 </div>
               )}
@@ -372,6 +370,8 @@ export default function StudentClassworkDetailPage() {
                       ? t("เข้าร่วมทีมก่อนถึงจะส่งงานได้", "Join a team before you can submit")
                       : !attachmentOk
                       ? t("แนบไฟล์หรือใส่ลิงก์ก่อนส่งงาน", "Attach a file or link before submitting")
+                      : linkInvalid
+                      ? t("ลิงก์ไม่ถูกต้อง", "Fix the link before submitting")
                       : undefined
                   }
                   className="w-full h-10 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
