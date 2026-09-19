@@ -48,6 +48,8 @@ export default function RecheckPage() {
   const [scores, setScores] = useState<CriterionScore[]>([]);
   const [saved, setSaved] = useState(false);
   const [comment, setComment] = useState(submission?.instructorComment ?? "");
+  // Per-criterion notes ("why I changed this score"), keyed by criterion id
+  const [criterionComments, setCriterionComments] = useState<Record<string, string>>(submission?.criterionComments ?? {});
 
   useEffect(() => {
     if (!rubric || !submission) return;
@@ -63,6 +65,7 @@ export default function RecheckPage() {
       };
     });
     setScores(initial);
+    setCriterionComments(submission.criterionComments ?? {});
   }, [rubric?.id, submission?.id]);
 
   if (!course || !assignment || !submission) {
@@ -107,6 +110,7 @@ export default function RecheckPage() {
       edited: false,
     })));
     setComment(submission.instructorComment ?? "");
+    setCriterionComments(submission.criterionComments ?? {});
     setSaved(false);
   }
 
@@ -117,10 +121,17 @@ export default function RecheckPage() {
     const teammates = submission.groupId
       ? allSubs.filter((s) => s.groupId === submission.groupId)
       : [submission];
+    // Drop blank notes so the record only holds what the instructor actually wrote
+    const notes = Object.fromEntries(
+      Object.entries(criterionComments)
+        .map(([cid, text]) => [cid, text.trim()] as const)
+        .filter(([, text]) => text),
+    );
     teammates.forEach((s) => {
       updateSubmission(s.id, {
         instructorScore: totalScore,
         instructorComment: comment,
+        criterionComments: notes,
         status: "graded",
       });
     });
@@ -281,6 +292,30 @@ export default function RecheckPage() {
                     </p>
                     <p className="text-xs text-gray-600 leading-relaxed">{s.aiFeedback}</p>
                   </div>
+
+                  {/* Shown once the instructor overrides the score (or a note already exists) */}
+                  {(s.edited || criterionComments[s.criterionId]) && (
+                    <div className="mt-3">
+                      <label
+                        htmlFor={`criterion-note-${s.criterionId}`}
+                        className="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1"
+                      >
+                        {t("เหตุผลที่ปรับคะแนน", "Reason for adjustment")}
+                      </label>
+                      <textarea
+                        id={`criterion-note-${s.criterionId}`}
+                        value={criterionComments[s.criterionId] ?? ""}
+                        onChange={(e) => {
+                          const text = e.target.value;
+                          setCriterionComments((prev) => ({ ...prev, [s.criterionId]: text }));
+                          setSaved(false);
+                        }}
+                        rows={2}
+                        placeholder={t("ใส่คอมเมนต์ให้เกณฑ์นี้ (ไม่บังคับ)...", "Add a comment for this criterion (optional)...")}
+                        className="w-full text-xs text-[var(--text-primary)] resize-none border border-gray-200 rounded-lg px-2.5 py-2 bg-white placeholder:text-gray-300 leading-relaxed focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
+                      />
+                    </div>
+                  )}
                 </div>
               );
             })}
