@@ -100,7 +100,7 @@ test.describe("P3b — Student Classwork List (/student/courses/[secId]/classwor
     await expect(page.getByText("Lab 0: Setup")).toBeVisible();
   });
 
-  test("not-submitted assignment shows blue badge", async ({ page }) => {
+  test("not-submitted assignment shows Not submitted badge", async ({ page }) => {
     await seedStudent(page);
     await page.goto(`${BASE}/student/courses/c-p3/classwork`);
     await page.waitForLoadState("networkidle");
@@ -131,6 +131,67 @@ test.describe("P3b — Student Classwork List (/student/courses/[secId]/classwor
     await expect(page).toHaveURL(/\/student\/courses\/c-p3\/classwork\/a-open/);
   });
 
+});
+
+test.describe("P3b — Assignment status colours", () => {
+  // Spec from the user (19/9/2569): soft orange / blue / green / red pairs.
+  const EXPECTED = {
+    "Not submitted": { bg: "rgb(255, 247, 237)", fg: "rgb(194, 65, 12)" },
+    "Submitted": { bg: "rgb(240, 249, 255)", fg: "rgb(3, 105, 161)" },
+    "Graded": { bg: "rgb(220, 252, 231)", fg: "rgb(21, 128, 61)" },
+    "Overdue": { bg: "rgb(254, 226, 226)", fg: "rgb(185, 28, 28)" },
+  } as const;
+
+  test("list badges use the orange / blue / green / red status colours", async ({ page }) => {
+    await seedStudent(page);
+    const mk = (id: string, name: string, dueDate: string) => ({ ...ASSIGNMENT_OPEN, id, name, dueDate });
+    await page.addInitScript((data) => {
+      localStorage.setItem("hwai_assignments_v1", JSON.stringify(data.assignments));
+      localStorage.setItem("hwai_submissions_v1", JSON.stringify(data.submissions));
+    }, {
+      assignments: [
+        mk("s-todo", "Todo work", "2099-12-31"),
+        mk("s-sent", "Sent work", "2099-12-31"),
+        mk("s-graded", "Graded work", "2099-12-31"),
+        mk("s-late", "Late work", "2026-01-15"),
+      ],
+      submissions: [
+        { ...SUBMISSION_GRADED, id: "sub-sent", assignmentId: "s-sent", status: "need_review", instructorScore: null, aiScore: null },
+        { ...SUBMISSION_GRADED, id: "sub-graded", assignmentId: "s-graded" },
+      ],
+    });
+    await page.goto(`${BASE}/student/courses/c-p3/classwork`);
+    await page.waitForLoadState("networkidle");
+
+    for (const [label, want] of Object.entries(EXPECTED)) {
+      const badge = page.locator("a span.rounded-full", { hasText: new RegExp(`^${label}$`) }).first();
+      await expect(badge, label).toBeVisible();
+      const css = await badge.evaluate((el) => { const c = getComputedStyle(el); return { bg: c.backgroundColor, fg: c.color }; });
+      expect(css, label).toEqual(want);
+    }
+  });
+
+  test("detail page panels follow the same palette (graded = green, to-do = orange, overdue = red)", async ({ page }) => {
+    await seedStudent(page, { submissions: [SUBMISSION_GRADED] });
+    await page.addInitScript((a) => {
+      const list = JSON.parse(localStorage.getItem("hwai_assignments_v1") ?? "[]");
+      if (!list.some((x: { id: string }) => x.id === a.id)) localStorage.setItem("hwai_assignments_v1", JSON.stringify([...list, a]));
+    }, { ...ASSIGNMENT_OPEN, id: "a-past", name: "Past due work", dueDate: "2026-01-15" });
+    const colours = (loc: ReturnType<Page["locator"]>) =>
+      loc.evaluate((el) => { const c = getComputedStyle(el); return { bg: c.backgroundColor, fg: c.color }; });
+
+    await page.goto(`${BASE}/student/courses/c-p3/classwork/a-graded`);
+    await page.waitForLoadState("networkidle");
+    expect(await colours(page.locator("div.rounded-xl", { has: page.getByText("Graded", { exact: true }) }).first())).toEqual(EXPECTED.Graded);
+
+    await page.goto(`${BASE}/student/courses/c-p3/classwork/a-open`);
+    await page.waitForLoadState("networkidle");
+    expect(await colours(page.locator("div.rounded-xl", { has: page.getByText("Not submitted yet") }).first())).toEqual(EXPECTED["Not submitted"]);
+
+    await page.goto(`${BASE}/student/courses/c-p3/classwork/a-past`);
+    await page.waitForLoadState("networkidle");
+    expect(await colours(page.locator("div.rounded-xl", { has: page.getByText("Not submitted yet") }).first())).toEqual(EXPECTED.Overdue);
+  });
 });
 
 test.describe("P3b — Classwork list layout", () => {

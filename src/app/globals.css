@@ -132,6 +132,13 @@
   --s-err-bg:  #FCEEF0; --s-err-text:  #8C2535; --s-err-bd:  #DDB0B8;
   --s-info-bg: #E8EEF8; --s-info-text: #2B4D8C; --s-info-bd: #B0C4E0;
 
+  /* Student assignment status (spec from user 19/9/2569) — orange = to do, blue = handed in,
+     green = graded, red = overdue. Used by AssignmentStatusBadge + the classwork detail panels. */
+  --st-todo-bg:    #FFF7ED; --st-todo-text:    #C2410C;
+  --st-sent-bg:    #F0F9FF; --st-sent-text:    #0369A1;
+  --st-graded-bg:  #DCFCE7; --st-graded-text:  #15803D;
+  --st-overdue-bg: #FEE2E2; --st-overdue-text: #B91C1C;
+
   /* Destructive solid — confirm-dialog final action only, never a row-level button */
   --danger-solid:       #C43A4A;
   --danger-solid-hover: #AE3240;
@@ -186,6 +193,11 @@
   --s-warn-bg: #2A1E08; --s-warn-text: #D4A04A; --s-warn-bd: #4A3010;
   --s-err-bg:  #2A0E14; --s-err-text:  #E07080; --s-err-bd:  #4A1A22;
   --s-info-bg: #0D1E3A; --s-info-text: #7AB0E8; --s-info-bd: #1A3060;
+
+  --st-todo-bg:    #2A1608; --st-todo-text:    #FDBA74;
+  --st-sent-bg:    #0C2233; --st-sent-text:    #7DD3FC;
+  --st-graded-bg:  #0D2E1E; --st-graded-text:  #86EFAC;
+  --st-overdue-bg: #2A0E14; --st-overdue-text: #FCA5A5;
 
   --danger-solid:       #C43A4A;
   --danger-solid-hover: #D14A5A;

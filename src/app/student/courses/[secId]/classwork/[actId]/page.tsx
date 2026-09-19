@@ -11,6 +11,7 @@ import { useStudents } from "@/lib/students";
 import { useStudentGroups } from "@/lib/studentGroups";
 import TeamFormationDrawer from "@/components/TeamFormationDrawer";
 import { AttachmentList } from "@/components/AssignmentAttachments";
+import AssignmentStatusBadge, { STATUS_STYLE } from "@/components/AssignmentStatusBadge";
 
 function initialsOf(name: string) {
   const parts = name.trim().split(/\s+/);
@@ -157,14 +158,10 @@ export default function StudentClassworkDetailPage() {
                     <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
                     <line x1="3" y1="10" x2="21" y2="10"/>
                   </svg>
-                  <span className={isPast && !mySubmission ? "text-[var(--s-err-text)] font-semibold" : ""}>
+                  <span className={isPast && !mySubmission ? "text-[var(--st-overdue-text)] font-semibold" : ""}>
                     {t("กำหนดส่ง:", "Due:")} {due.toLocaleDateString("th-TH", { day: "numeric", month: "long", year: "numeric" })}
                   </span>
-                  {isPast && !mySubmission && (
-                    <span className="text-[10px] font-bold text-[var(--s-err-text)] bg-[var(--s-err-bg)] px-1.5 py-0.5 rounded-full">
-                      {t("เกินกำหนด", "Overdue")}
-                    </span>
-                  )}
+                  {isPast && !mySubmission && <AssignmentStatusBadge status="overdue" />}
                 </span>
                 <span className="text-[var(--text-muted)]">{t(`คะแนนเต็ม ${assignment.maxPoints} คะแนน`, `Max ${assignment.maxPoints} points`)}</span>
               </div>
@@ -276,16 +273,19 @@ export default function StudentClassworkDetailPage() {
 
               {/* Graded state */}
               {isGraded && (
-                <div className="mb-4 p-3 rounded-xl bg-green-50 border border-green-100">
-                  <p className="text-xs font-semibold text-green-700 mb-1">{t("ตรวจแล้ว", "Graded")}</p>
-                  <p className="text-2xl font-bold text-green-700 tabular-nums">
-                    {score}<span className="text-sm font-normal text-green-600">/{assignment.maxPoints}</span>
+                <div className={`mb-4 p-3 rounded-xl border ${STATUS_STYLE.graded.panel}`}>
+                  <p className="flex items-center gap-1.5 text-xs font-semibold mb-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-current shrink-0" aria-hidden="true" />
+                    {t("ตรวจแล้ว", "Graded")}
+                  </p>
+                  <p className="text-2xl font-bold tabular-nums">
+                    {score}<span className="text-sm font-normal opacity-80">/{assignment.maxPoints}</span>
                   </p>
                   {mySubmission?.instructorComment && (
-                    <p className="text-xs text-green-700 mt-2 leading-relaxed">{mySubmission.instructorComment}</p>
+                    <p className="text-xs mt-2 leading-relaxed">{mySubmission.instructorComment}</p>
                   )}
                   {mySubmission?.fileUrl && (
-                    <a href={mySubmission.fileUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs font-medium text-green-700 hover:underline mt-2">
+                    <a href={mySubmission.fileUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs font-medium hover:underline mt-2">
                       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
                         <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
                         <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
@@ -298,24 +298,24 @@ export default function StudentClassworkDetailPage() {
 
               {/* Submitted (waiting) state */}
               {(submitted || (mySubmission && !isGraded)) && (
-                <div className="mb-4 p-3 rounded-xl bg-gray-50 border border-gray-100">
+                <div className={`mb-4 p-3 rounded-xl border ${STATUS_STYLE.submitted.panel}`}>
                   <div className="flex items-center gap-2">
-                    <div className="w-5 h-5 rounded-full bg-gray-200 flex items-center justify-center shrink-0">
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="3" strokeLinecap="round" aria-hidden="true">
+                    <div className="w-5 h-5 rounded-full bg-[var(--st-sent-text)]/15 flex items-center justify-center shrink-0">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" aria-hidden="true">
                         <polyline points="20 6 9 17 4 12"/>
                       </svg>
                     </div>
                     <div>
-                      <p className="text-xs font-semibold text-gray-600">{t("ส่งแล้ว รอผล", "Submitted — awaiting grade")}</p>
+                      <p className="text-xs font-semibold">{t("ส่งแล้ว รอผล", "Submitted — awaiting grade")}</p>
                       {mySubmission?.submittedAt && (
-                        <p className="text-[10px] text-gray-400 mt-0.5">
+                        <p className="text-[10px] opacity-75 mt-0.5">
                           {new Date(mySubmission.submittedAt).toLocaleString("th-TH", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
                         </p>
                       )}
                     </div>
                   </div>
                   {mySubmission?.fileUrl && (
-                    <a href={mySubmission.fileUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs font-medium text-gray-600 hover:underline mt-2 ml-7">
+                    <a href={mySubmission.fileUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs font-medium hover:underline mt-2 ml-7">
                       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
                         <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
                         <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
@@ -328,8 +328,8 @@ export default function StudentClassworkDetailPage() {
 
               {/* No submission yet */}
               {!mySubmission && !submitted && (
-                <div className="mb-4 p-3 rounded-xl border border-dashed border-[var(--border-subtle)] text-center">
-                  <p className="text-xs text-[var(--text-muted)]">
+                <div className={`mb-4 p-3 rounded-xl border border-dashed text-center ${STATUS_STYLE[isPast ? "overdue" : "not_submitted"].panel}`}>
+                  <p className="text-xs font-medium">
                     {isGroup && !myGroup ? t("เข้าร่วมทีมก่อนถึงจะส่งงานได้", "Join a team before you can submit") : t("ยังไม่ได้ส่งงาน", "Not submitted yet")}
                   </p>
                 </div>
@@ -385,7 +385,7 @@ export default function StudentClassworkDetailPage() {
                 </button>
               )}
               {isPast && !mySubmission && (
-                <p className="text-xs text-[var(--s-err-text)] text-center">{t("เกินกำหนดแล้ว ไม่สามารถส่งได้", "Past due — submission closed")}</p>
+                <p className="text-xs text-[var(--st-overdue-text)] text-center">{t("เกินกำหนดแล้ว ไม่สามารถส่งได้", "Past due — submission closed")}</p>
               )}
             </div>
           </div>

@@ -8,6 +8,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useCourses } from "@/lib/courses";
 import { useAssignments, Assignment, Submission } from "@/lib/assignments";
 import { useGradingCategories, computeCategoryGradeRows, computeTotalSoFar } from "@/lib/gradingCategories";
+import AssignmentStatusBadge, { AssignmentStatus } from "@/components/AssignmentStatusBadge";
 
 // An unsubmitted assignment due within this many days (or already overdue)
 // is grouped into the "Due soon" section instead of "Not submitted".
@@ -15,26 +16,17 @@ const DUE_SOON_DAYS = 3;
 
 // ── Status helper ──────────────────────────────────────────────────────────
 
-type WorkStatus = "not_submitted" | "submitted" | "graded" | "late";
-
 function getWorkStatus(
   assignment: Assignment,
   submission: Submission | undefined
-): WorkStatus {
+): AssignmentStatus {
   if (!submission) {
     const due = new Date(assignment.dueDate + "T23:59:59");
-    return new Date() > due ? "late" : "not_submitted";
+    return new Date() > due ? "overdue" : "not_submitted";
   }
   if (submission.status === "graded") return "graded";
   return "submitted";
 }
-
-const STATUS_CONFIG: Record<WorkStatus, { label: string; labelEn: string; cls: string }> = {
-  not_submitted: { label: "ยังไม่ส่ง", labelEn: "Not submitted", cls: "bg-blue-50 text-blue-700" },
-  submitted: { label: "ส่งแล้ว", labelEn: "Submitted", cls: "bg-gray-100 text-gray-600" },
-  graded: { label: "มีคะแนนแล้ว", labelEn: "Graded", cls: "bg-green-50 text-green-700" },
-  late: { label: "เกินกำหนด", labelEn: "Late", cls: "bg-[var(--s-err-bg)] text-[var(--s-err-text)]" },
-};
 
 // ── Assignment card ────────────────────────────────────────────────────────
 
@@ -49,7 +41,6 @@ function ClassworkCard({
 }) {
   const { t } = useLanguage();
   const status = getWorkStatus(assignment, submission);
-  const config = STATUS_CONFIG[status];
   const due = new Date(assignment.dueDate + "T23:59:59");
   const hoursLeft = (due.getTime() - Date.now()) / 3_600_000;
   const isUrgent = hoursLeft > 0 && hoursLeft < 24;
@@ -104,9 +95,7 @@ function ClassworkCard({
         ) : (
           <p className="text-xs text-[var(--text-muted)]">{t("ยังไม่มีคะแนน", "No score yet")}</p>
         )}
-        <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${config.cls}`}>
-          {t(config.label, config.labelEn)}
-        </span>
+        <AssignmentStatusBadge status={status} />
       </div>
     </Link>
   );
