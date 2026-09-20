@@ -254,6 +254,26 @@ Role-colored table rows keep the same left-border mechanism, remapped to tokens:
 - TA → `var(--role-ta-text)`
 - Student → `var(--s-info-text)`
 
+## 9a. Modal / popup (centred dialog)
+
+Every "add / edit / import" form is a **centred popup**, not a side drawer (stakeholder decision 20/9/2569 — the right-hand drawers were retired). One component: `src/components/Modal.tsx`. Don't hand-roll an overlay in a page.
+
+| Part | Spec |
+|---|---|
+| Overlay | `bg-black/40` (same as the confirm dialogs), covers the whole viewport **including the sticky top bar** |
+| Layers | overlay `z-[60]`, dialog `z-[70]` — above the top bar (`z-50`). Nothing behind an open popup is clickable |
+| Surface | `--bg-surface`, `1px --border-subtle`, `rounded-2xl`, **`shadow-2xl`** (the largest elevation — a modal sits furthest above the page), `max-h:90vh`, body scrolls, header stays |
+| Width | `sm` 384px (confirmations) · `md` 512px (forms, default) · `lg` 672px (CSV import with a preview table). `calc(100% - 2rem)` on phones |
+| Header | title `text-base font-bold --text-primary`; optional description `text-xs --text-secondary` (not `--text-muted` — 4.42:1 fails AA on white); close ✕ is an icon-only action → rest color **`--text-secondary`**, hover `--text-primary` on `--bg-subtle` |
+| Footer row | right-aligned: **Ghost "Cancel"** (`--border` outline, `--text-secondary`) then **one Primary** (`--accent-solid`). `h-10 px-5 rounded-xl`, no shadow, `active:scale-[.97]`, `disabled:opacity-50` |
+| Fields | same as §5; two short fields may share a row (`grid-cols-2 gap-3`); IDs/codes use `tabular-nums` |
+| Status text | error `--s-err-text`, "already exists / heads-up" `--s-warn-text`, success check `--accent` on `--accent-subtle` (not `--accent-bright` — 2.79:1 as a glyph) |
+| Motion | 150ms fade + scale .96→1 (`cubic-bezier(.23,1,.32,1)`), overlay fades; `prefers-reduced-motion` turns it off. Classes `.hwai-modal` / `.hwai-modal-overlay` in `globals.css`. No exit animation (an occasional, dismissible surface) |
+
+**Behaviour (accessibility, non-negotiable):** `role="dialog" aria-modal="true"` labelled by the title (and described by the description); **Esc**, backdrop click, ✕ and Cancel all close it; **Tab is trapped** inside; focus moves to the first field on open (or an `autoFocus` field) and **returns to the button that opened it** on close (the opener is captured during render — an `autoFocus` field steals focus before effects run).
+
+**Popup vs confirm dialog:** a small yes/no (delete, deactivate) stays the compact `max-w-sm` confirm dialog with the *solid destructive* button (§4); everything that collects input uses `Modal`.
+
 ## 10. Migration — old KB patterns → new tokens
 
 | KB Pattern | What it hardcodes today | Maps to |
@@ -278,7 +298,7 @@ Unchanged from the existing stack — no new font introduced.
 1. `--role-ta-*` needs a real contrast-checker pass (see §2 warning).
 2. `globals.css` currently names surface tokens `--bg-surface` (alias of `--bg-card`) — this file uses `--bg-card` as primary. Reconcile naming before merge: rename in `globals.css` or add the alias here, don't maintain two names for the same thing.
 3. `--danger-solid` (#C43A4A) is a new token — nothing in the current codebase uses it yet (existing destructive actions use `bg-red-500`/`bg-red-600` per the earlier button audit). Implementing this file means replacing those, not adding a third destructive color.
-4. Not yet covered here: toast/notification styling, modal overlay treatment, table/pagination controls. Extend this file when those get designed, don't invent them ad hoc in component code.
+4. Not yet covered here: toast/notification styling, table/pagination controls (modal / popup is §9a). Extend this file when those get designed, don't invent them ad hoc in component code.
 
 ---
 
