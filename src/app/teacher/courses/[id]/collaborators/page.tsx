@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCourses } from "@/lib/courses";
@@ -10,6 +10,7 @@ import { useManagedTeachers } from "@/lib/managed-teachers";
 import { useCurrentAccountId } from "@/lib/current-account";
 import { useLanguage } from "@/context/LanguageContext";
 import SearchInput from "@/components/SearchInput";
+import Modal from "@/components/Modal";
 
 // ─── Resolved-row shape (SectionRole joined against the account it points to) ──
 
@@ -44,9 +45,9 @@ function Avatar({ initials, bg }: { initials: string; bg: string }) {
   );
 }
 
-// ─── Add collaborator drawer ────────────────────────────────────────────────────
+// ─── Add collaborator (centred popup) ────────────────────────────────────────────────────
 
-function AddCollaboratorDrawer({
+function AddCollaboratorModal({
   courseId,
   onClose,
 }: {
@@ -60,24 +61,6 @@ function AddCollaboratorDrawer({
 
   const [roleTab, setRoleTab] = useState<Exclude<SectionRoleType, "teacher">>("ta");
   const [search, setSearch] = useState("");
-  const dialogRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) { if (e.key === "Escape") onClose(); }
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [onClose]);
-
-  function handleFocusTrap(e: React.KeyboardEvent<HTMLDivElement>) {
-    if (e.key !== "Tab" || !dialogRef.current) return;
-    const focusable = Array.from(dialogRef.current.querySelectorAll<HTMLElement>(
-      'button:not([disabled]),[href],input:not([disabled]),select,textarea,[tabindex]:not([tabindex="-1"])'
-    ));
-    if (focusable.length === 0) return;
-    const first = focusable[0]; const last = focusable[focusable.length - 1];
-    if (e.shiftKey) { if (document.activeElement === first) { last.focus(); e.preventDefault(); } }
-    else { if (document.activeElement === last) { first.focus(); e.preventDefault(); } }
-  }
 
   const roleForCourse = sectionRoles.filter((r) => r.courseId === courseId);
   const primaryTeacherIds = new Set(getTeachersByCourse(courseId).map((tc) => tc.id));
@@ -123,145 +106,129 @@ function AddCollaboratorDrawer({
     tc.name.toLowerCase().includes(q) || tc.email.toLowerCase().includes(q)));
 
   return (
-    <div className="fixed inset-0 z-50 flex">
-      <div className="flex-1 bg-black/40" onClick={onClose} aria-hidden="true" />
-      <div
-        ref={dialogRef}
-        role="dialog" aria-modal="true" aria-labelledby="add-collab-title"
-        className="w-full max-w-md bg-[var(--bg-surface)] flex flex-col shadow-2xl"
-        onKeyDown={handleFocusTrap}
-      >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border-subtle)]">
-          <h2 id="add-collab-title" className="text-base font-bold text-[var(--text-primary)]">
-            {t("เพิ่มผู้ร่วมงาน", "Add Collaborator")}
-          </h2>
-          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[var(--bg-subtle)] text-[var(--text-muted)] transition-colors" aria-label={t("ปิด", "Close")}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
+    <Modal open onClose={onClose} size="md" title={t("เพิ่มผู้ร่วมงาน", "Add Collaborator")}
+      footer={
+        <>
+          <button onClick={onClose} className="h-10 px-5 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] transition-colors">
+            {t("เสร็จสิ้น", "Done")}
           </button>
-        </div>
+        </>
+      }
+    >
+      {/* Role tabs */}
+      <div className="flex gap-2">
+        <button
+          onClick={() => setRoleTab("ta")}
+          aria-pressed={roleTab === "ta"}
+          className={`flex-1 h-9 rounded-xl border text-sm font-semibold transition-colors ${
+            roleTab === "ta" ? "border-[var(--role-ta-border)] bg-[var(--role-ta-bg)] text-[var(--role-ta-text)]" : "border-[var(--border-subtle)] text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)]"
+          }`}
+        >
+          {t("ผู้ช่วยสอน (TA)", "Teaching Assistant")}
+        </button>
+        <button
+          onClick={() => setRoleTab("co-teacher")}
+          aria-pressed={roleTab === "co-teacher"}
+          className={`flex-1 h-9 rounded-xl border text-sm font-semibold transition-colors ${
+            roleTab === "co-teacher" ? "border-[var(--accent-bright)] bg-[var(--accent-bright)]/10 text-[var(--accent)]" : "border-[var(--border-subtle)] text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)]"
+          }`}
+        >
+          {t("อาจารย์ร่วมสอน", "Co-Teacher")}
+        </button>
+      </div>
 
-        {/* Role tabs */}
-        <div className="flex gap-2 px-6 pt-4">
-          <button
-            onClick={() => setRoleTab("ta")}
-            aria-pressed={roleTab === "ta"}
-            className={`flex-1 h-9 rounded-xl border text-sm font-semibold transition-colors ${
-              roleTab === "ta" ? "border-[var(--role-ta-border)] bg-[var(--role-ta-bg)] text-[var(--role-ta-text)]" : "border-[var(--border-subtle)] text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)]"
-            }`}
-          >
-            {t("ผู้ช่วยสอน (TA)", "Teaching Assistant")}
-          </button>
-          <button
-            onClick={() => setRoleTab("co-teacher")}
-            aria-pressed={roleTab === "co-teacher"}
-            className={`flex-1 h-9 rounded-xl border text-sm font-semibold transition-colors ${
-              roleTab === "co-teacher" ? "border-[var(--accent-bright)] bg-[var(--accent-bright)]/10 text-[var(--accent)]" : "border-[var(--border-subtle)] text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)]"
-            }`}
-          >
-            {t("อาจารย์ร่วมสอน", "Co-Teacher")}
-          </button>
-        </div>
+      <p className="pt-2 text-[11px] text-[var(--text-muted)]">
+        {roleTab === "ta"
+          ? t("ผู้ช่วยสอนตรวจงานได้ แต่จัดการรายชื่อ/ตั้งค่าวิชาไม่ได้", "TAs can grade but cannot manage the roster or edit course settings")
+          : t("อาจารย์ร่วมสอนมีสิทธิ์เต็มเหมือนอาจารย์ผู้สอนหลัก", "Co-teachers have full access, same as the primary teacher")}
+      </p>
 
-        <p className="px-6 pt-2 text-[11px] text-[var(--text-muted)]">
-          {roleTab === "ta"
-            ? t("ผู้ช่วยสอนตรวจงานได้ แต่จัดการรายชื่อ/ตั้งค่าวิชาไม่ได้", "TAs can grade but cannot manage the roster or edit course settings")
-            : t("อาจารย์ร่วมสอนมีสิทธิ์เต็มเหมือนอาจารย์ผู้สอนหลัก", "Co-teachers have full access, same as the primary teacher")}
-        </p>
+      {/* Search */}
+      <div className="pt-3">
+        <SearchInput
+          key={roleTab}
+          value={search}
+          onChange={setSearch}
+          placeholder={roleTab === "ta" ? t("ค้นหาชื่อ/รหัสนักศึกษา/อีเมล", "Search name / student ID / email") : t("ค้นหาชื่อ/อีเมล", "Search name / email")}
+          suggestions={roleTab === "ta"
+            ? cohortStudents.filter((s) => s.status !== "inactive").map((s) => `${s.firstName} ${s.lastName}`)
+            : teachers.filter((tc) => tc.role === "teacher" && tc.status !== "inactive").map((tc) => tc.name)}
+          autoFocus
+          className="w-full"
+        />
+      </div>
 
-        {/* Search */}
-        <div className="px-6 pt-3">
-          <SearchInput
-            key={roleTab}
-            value={search}
-            onChange={setSearch}
-            placeholder={roleTab === "ta" ? t("ค้นหาชื่อ/รหัสนักศึกษา/อีเมล", "Search name / student ID / email") : t("ค้นหาชื่อ/อีเมล", "Search name / email")}
-            suggestions={roleTab === "ta"
-              ? cohortStudents.filter((s) => s.status !== "inactive").map((s) => `${s.firstName} ${s.lastName}`)
-              : teachers.filter((tc) => tc.role === "teacher" && tc.status !== "inactive").map((tc) => tc.name)}
-            autoFocus
-            className="w-full"
-          />
-        </div>
-
-        <div className="flex-1 overflow-y-auto px-6 py-3 flex flex-col gap-1">
-          {roleTab === "ta" ? (
-            <>
-              {alreadyAddedTa.map((s) => (
-                <div key={s.id} className="flex items-center gap-3 px-3 py-2 rounded-xl bg-[var(--role-ta-bg)]">
-                  <Avatar initials={initialsOf(`${s.firstName} ${s.lastName}`)} bg="#7C3AED" />
+      <div className="mt-3 flex flex-col gap-1 max-h-[45vh] overflow-y-auto">
+        {roleTab === "ta" ? (
+          <>
+            {alreadyAddedTa.map((s) => (
+              <div key={s.id} className="flex items-center gap-3 px-3 py-2 rounded-xl bg-[var(--role-ta-bg)]">
+                <Avatar initials={initialsOf(`${s.firstName} ${s.lastName}`)} bg="#7C3AED" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-[var(--text-primary)] truncate">{s.firstName} {s.lastName}</p>
+                  <p className="text-[11px] text-[var(--text-muted)] tabular-nums truncate">{s.studentId}</p>
+                </div>
+                <span className="text-[11px] font-semibold text-[var(--role-ta-text)] shrink-0">{t("เพิ่มแล้ว", "Added")}</span>
+              </div>
+            ))}
+            {taCandidates.length === 0 && alreadyAddedTa.length === 0 ? (
+              <p className="text-sm text-[var(--text-muted)] text-center py-6">{t("ไม่พบนักศึกษาที่ตรงกัน", "No matching students")}</p>
+            ) : (
+              taCandidates.map((s) => (
+                <button
+                  key={s.id}
+                  onClick={() => addTa(s.id)}
+                  className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-[var(--bg-subtle)] text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]"
+                >
+                  <Avatar initials={initialsOf(`${s.firstName} ${s.lastName}`)} bg="#9CA3AF" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-[var(--text-primary)] truncate">{s.firstName} {s.lastName}</p>
-                    <p className="text-[11px] text-[var(--text-muted)] tabular-nums truncate">{s.studentId}</p>
+                    <p className="text-[11px] text-[var(--text-muted)] tabular-nums truncate">{s.studentId} · {s.email}</p>
                   </div>
-                  <span className="text-[11px] font-semibold text-[var(--role-ta-text)] shrink-0">{t("เพิ่มแล้ว", "Added")}</span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-[var(--text-muted)] shrink-0">
+                    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                  </svg>
+                </button>
+              ))
+            )}
+          </>
+        ) : (
+          <>
+            {alreadyAddedCoTeacher.map((tc) => (
+              <div key={tc.id} className="flex items-center gap-3 px-3 py-2 rounded-xl bg-[var(--accent-bright)]/10">
+                <Avatar initials={initialsOf(tc.name)} bg="#0F766E" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-[var(--text-primary)] truncate">{tc.name}</p>
+                  <p className="text-[11px] text-[var(--text-muted)] truncate">{tc.email}</p>
                 </div>
-              ))}
-              {taCandidates.length === 0 && alreadyAddedTa.length === 0 ? (
-                <p className="text-sm text-[var(--text-muted)] text-center py-6">{t("ไม่พบนักศึกษาที่ตรงกัน", "No matching students")}</p>
-              ) : (
-                taCandidates.map((s) => (
-                  <button
-                    key={s.id}
-                    onClick={() => addTa(s.id)}
-                    className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-[var(--bg-subtle)] text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]"
-                  >
-                    <Avatar initials={initialsOf(`${s.firstName} ${s.lastName}`)} bg="#9CA3AF" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-[var(--text-primary)] truncate">{s.firstName} {s.lastName}</p>
-                      <p className="text-[11px] text-[var(--text-muted)] tabular-nums truncate">{s.studentId} · {s.email}</p>
-                    </div>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-[var(--text-muted)] shrink-0">
-                      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-                    </svg>
-                  </button>
-                ))
-              )}
-            </>
-          ) : (
-            <>
-              {alreadyAddedCoTeacher.map((tc) => (
-                <div key={tc.id} className="flex items-center gap-3 px-3 py-2 rounded-xl bg-[var(--accent-bright)]/10">
-                  <Avatar initials={initialsOf(tc.name)} bg="#0F766E" />
+                <span className="text-[11px] font-semibold text-[var(--accent)] shrink-0">{t("เพิ่มแล้ว", "Added")}</span>
+              </div>
+            ))}
+            {coTeacherCandidates.length === 0 && alreadyAddedCoTeacher.length === 0 ? (
+              <p className="text-sm text-[var(--text-muted)] text-center py-6">{t("ไม่พบอาจารย์ที่ตรงกัน", "No matching teachers")}</p>
+            ) : (
+              coTeacherCandidates.map((tc) => (
+                <button
+                  key={tc.id}
+                  onClick={() => addCoTeacher(tc.id)}
+                  className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-[var(--bg-subtle)] text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]"
+                >
+                  <Avatar initials={initialsOf(tc.name)} bg="#9CA3AF" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-[var(--text-primary)] truncate">{tc.name}</p>
                     <p className="text-[11px] text-[var(--text-muted)] truncate">{tc.email}</p>
                   </div>
-                  <span className="text-[11px] font-semibold text-[var(--accent)] shrink-0">{t("เพิ่มแล้ว", "Added")}</span>
-                </div>
-              ))}
-              {coTeacherCandidates.length === 0 && alreadyAddedCoTeacher.length === 0 ? (
-                <p className="text-sm text-[var(--text-muted)] text-center py-6">{t("ไม่พบอาจารย์ที่ตรงกัน", "No matching teachers")}</p>
-              ) : (
-                coTeacherCandidates.map((tc) => (
-                  <button
-                    key={tc.id}
-                    onClick={() => addCoTeacher(tc.id)}
-                    className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-[var(--bg-subtle)] text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]"
-                  >
-                    <Avatar initials={initialsOf(tc.name)} bg="#9CA3AF" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-[var(--text-primary)] truncate">{tc.name}</p>
-                      <p className="text-[11px] text-[var(--text-muted)] truncate">{tc.email}</p>
-                    </div>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-[var(--text-muted)] shrink-0">
-                      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-                    </svg>
-                  </button>
-                ))
-              )}
-            </>
-          )}
-        </div>
-
-        <div className="flex items-center justify-end px-6 py-4 border-t border-[var(--border-subtle)]">
-          <button onClick={onClose} className="h-9 px-5 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] transition-colors">
-            {t("เสร็จสิ้น", "Done")}
-          </button>
-        </div>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-[var(--text-muted)] shrink-0">
+                    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                  </svg>
+                </button>
+              ))
+            )}
+          </>
+        )}
       </div>
-    </div>
+
+    </Modal>
   );
 }
 
@@ -502,7 +469,7 @@ export default function CollaboratorsPage() {
         </div>
       </div>
 
-      {addOpen && <AddCollaboratorDrawer courseId={course.id} onClose={() => setAddOpen(false)} />}
+      {addOpen && <AddCollaboratorModal courseId={course.id} onClose={() => setAddOpen(false)} />}
     </main>
   );
 }

@@ -10,7 +10,7 @@ import { useAssignments, submissionAttachments, AssignmentAttachment } from "@/l
 import { removeFile } from "@/lib/fileStorage";
 import { useStudents } from "@/lib/students";
 import { useStudentGroups } from "@/lib/studentGroups";
-import TeamFormationDrawer from "@/components/TeamFormationDrawer";
+import TeamFormationModal from "@/components/TeamFormationModal";
 import { AttachmentList, SubmissionFilesPicker, normalizeLinkUrl, useAttachmentsDraft } from "@/components/AssignmentAttachments";
 import AssignmentStatusBadge, { STATUS_STYLE } from "@/components/AssignmentStatusBadge";
 import AssignmentTypeBadge from "@/components/AssignmentTypeBadge";
@@ -43,7 +43,7 @@ function ClassworkDetail() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [teamDrawerOpen, setTeamDrawerOpen] = useState(false);
+  const [teamModalOpen, setTeamModalOpen] = useState(false);
 
   const course = getCourse(secId);
   const assignment = getAssignment(actId);
@@ -279,7 +279,7 @@ function ClassworkDetail() {
                       {t("ยังไม่ได้เข้าร่วมทีม — เพื่อนร่วมทีมต้องเรียนอยู่ใน sec นี้เท่านั้น", "You haven't joined a team yet. Teammates must be classmates in this section.")}
                     </p>
                     <button
-                      onClick={() => setTeamDrawerOpen(true)}
+                      onClick={() => setTeamModalOpen(true)}
                       className="w-full h-9 rounded-xl border border-[var(--accent-bright)] text-[var(--accent)] text-sm font-semibold hover:bg-[var(--bg-subtle)] transition-colors"
                     >
                       {t("จับกลุ่ม", "Form a team")}
@@ -444,14 +444,14 @@ function ClassworkDetail() {
         </>
       )}
 
-      {teamDrawerOpen && (
-        <TeamFormationDrawer
+      {teamModalOpen && (
+        <TeamFormationModal
           courseId={secId}
           assignmentId={actId}
           maxGroupSize={assignment.maxGroupSize}
           currentStudentId={studentId}
-          onCreated={() => setTeamDrawerOpen(false)}
-          onClose={() => setTeamDrawerOpen(false)}
+          onCreated={() => setTeamModalOpen(false)}
+          onClose={() => setTeamModalOpen(false)}
         />
       )}
     </>

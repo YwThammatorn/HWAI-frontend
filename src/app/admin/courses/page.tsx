@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import { useCourses, Course, PRESET_COLORS, Term } from "@/lib/courses";
 import { useCurriculum } from "@/lib/curriculum";
@@ -8,12 +8,13 @@ import { useManagedTeachers } from "@/lib/managed-teachers";
 import { getInitials } from "@/lib/utils";
 import EmptyState from "@/components/EmptyState";
 import StatCard from "@/components/StatCard";
+import Modal from "@/components/Modal";
 import SearchInput from "@/components/SearchInput";
 import { useStudents } from "@/lib/students";
 
-// ── Course create/edit drawer ─────────────────────────────────────────────────
+// ── Course create/edit (centred popup) ─────────────────────────────────────────────────
 
-function CourseDrawer({
+function CourseModal({
   mode,
   course,
   onClose,
@@ -32,7 +33,6 @@ function CourseDrawer({
   const [coverColor, setCoverColor] = useState(course?.coverColor ?? PRESET_COLORS[0]);
   const [teacherId, setTeacherId] = useState("");
   const nameRef = useRef<HTMLInputElement>(null);
-  const dialogRef = useRef<HTMLDivElement>(null);
 
   const activeCurriculumVersions = curriculumVersions.filter((v) => v.effectiveTo === undefined);
   const existingTemplate = course?.courseTemplateId ? courseTemplates.find((ct) => ct.id === course.courseTemplateId) : undefined;
@@ -59,25 +59,6 @@ function CourseDrawer({
 
   useEffect(() => { nameRef.current?.focus(); }, []);
 
-  const handleClose = useCallback(() => onClose(), [onClose]);
-
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) { if (e.key === "Escape") handleClose(); }
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [handleClose]);
-
-  function handleFocusTrap(e: React.KeyboardEvent<HTMLDivElement>) {
-    if (e.key !== "Tab" || !dialogRef.current) return;
-    const focusable = Array.from(dialogRef.current.querySelectorAll<HTMLElement>(
-      'button:not([disabled]),[href],input:not([disabled]):not([tabindex="-1"]),select,textarea,[tabindex]:not([tabindex="-1"])'
-    ));
-    if (focusable.length === 0) return;
-    const first = focusable[0]; const last = focusable[focusable.length - 1];
-    if (e.shiftKey) { if (document.activeElement === first) { last.focus(); e.preventDefault(); } }
-    else { if (document.activeElement === last) { first.focus(); e.preventDefault(); } }
-  }
-
   function handleSave() {
     const trimmed = name.trim();
     if (!trimmed) return;
@@ -100,199 +81,181 @@ function CourseDrawer({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex">
-      {/* backdrop */}
-      <div className="flex-1 bg-black/40" onClick={onClose} aria-hidden="true" />
-      {/* panel */}
-      <div
-        ref={dialogRef}
-        role="dialog" aria-modal="true" aria-labelledby="course-drawer-title"
-        className="w-full max-w-md bg-[var(--bg-surface)] flex flex-col shadow-2xl"
-        onKeyDown={handleFocusTrap}
-      >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border-subtle)]">
-          <h2 id="course-drawer-title" className="text-base font-bold text-[var(--text-primary)]">
-            {mode === "create" ? t("สร้างรายวิชาใหม่", "New Course") : t("แก้ไขรายวิชา", "Edit Course")}
-          </h2>
-          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[var(--bg-subtle)] text-[var(--text-muted)] transition-colors" aria-label={t("ปิด", "Close")}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
-          </button>
-        </div>
-
-        <div className="flex-1 overflow-y-auto px-6 py-5 flex flex-col gap-5">
-          {/* Name */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-[var(--text-muted)]">
-              {t("ชื่อรายวิชา", "Course Name")} <span className="text-[var(--s-err-text)]">*</span>
-            </label>
-            <input
-              ref={nameRef}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSave()}
-              placeholder={t("เช่น UX/UI Design", "e.g. UX/UI Design")}
-              className="h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
-            />
-          </div>
-
-          {/* Description */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-[var(--text-muted)]">{t("คำอธิบาย", "Description")}</label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={3}
-              placeholder={t("อธิบายรายวิชาโดยย่อ (ไม่บังคับ)", "Brief description (optional)")}
-              className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
-            />
-          </div>
-
-          {/* Curriculum / Section linking — optional, only useful once curricula exist */}
-          {activeCurriculumVersions.length > 0 && (
-            <div className="flex flex-col gap-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-3.5">
-              <div>
-                <p className="text-xs font-semibold text-[var(--text-muted)]">{t("หลักสูตรและภาคการศึกษา", "Curriculum & Term")}</p>
-                <p className="text-[11px] text-[var(--text-muted)] mt-0.5">{t("ไม่บังคับ — ผูกวิชานี้เข้ากับหลักสูตรที่มีอยู่", "Optional — link this course to a curriculum's course template")}</p>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <select
-                  value={curriculumVersionId}
-                  onChange={(e) => handleCurriculumChange(e.target.value)}
-                  className="h-9 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-2.5 text-xs text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
-                >
-                  <option value="">{t("ไม่ระบุหลักสูตร", "No curriculum")}</option>
-                  {activeCurriculumVersions.map((v) => (
-                    <option key={v.id} value={v.id}>{v.program} — {v.label}</option>
-                  ))}
-                </select>
-                <select
-                  value={courseTemplateId}
-                  onChange={(e) => handleTemplateChange(e.target.value)}
-                  disabled={!curriculumVersionId}
-                  className="h-9 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-2.5 text-xs text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)] disabled:opacity-50"
-                >
-                  <option value="">{curriculumVersionId ? t("ไม่ระบุวิชา", "No template") : t("เลือกหลักสูตรก่อน", "Pick curriculum first")}</option>
-                  {courseTemplateOptions.map((ct) => (
-                    <option key={ct.id} value={ct.id}>{ct.code} — {ct.name}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="grid grid-cols-3 gap-2">
-                <input
-                  type="number"
-                  value={academicYear}
-                  onChange={(e) => setAcademicYear(e.target.value)}
-                  placeholder={t("ปี", "Year")}
-                  className="h-9 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-2.5 text-xs tabular-nums text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
-                />
-                <select
-                  value={term}
-                  onChange={(e) => setTerm(e.target.value === "" ? "" : e.target.value === "summer" ? "summer" : (Number(e.target.value) as 1 | 2))}
-                  className="h-9 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-2.5 text-xs text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
-                >
-                  <option value="">{t("เทอม", "Term")}</option>
-                  <option value="1">{t("เทอม 1", "Term 1")}</option>
-                  <option value="2">{t("เทอม 2", "Term 2")}</option>
-                  <option value="summer">{t("ภาคฤดูร้อน", "Summer")}</option>
-                </select>
-                <input
-                  value={sectionNumber}
-                  onChange={(e) => setSectionNumber(e.target.value)}
-                  placeholder={t("Section", "Section")}
-                  className="h-9 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-2.5 text-xs text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Class Schedule & Room — the course's teacher sets these themselves, not admin */}
-          <div className="rounded-xl border border-dashed border-[var(--border-subtle)] bg-[var(--bg-subtle)] p-3">
-            <p className="text-xs font-semibold text-[var(--text-muted)] mb-2">{t("วันเวลาเรียน / ห้องเรียน", "Class Schedule / Room")}</p>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <p className="text-[11px] text-[var(--text-muted)]">{t("วันเวลาเรียน", "Schedule")}</p>
-                <p className="text-sm text-[var(--text-secondary)]">{course?.schedule || "-"}</p>
-              </div>
-              <div>
-                <p className="text-[11px] text-[var(--text-muted)]">{t("ห้องเรียน", "Room")}</p>
-                <p className="text-sm text-[var(--text-secondary)]">{course?.room || "-"}</p>
-              </div>
-            </div>
-            <p className="text-[11px] text-[var(--text-muted)] mt-2">{t("อาจารย์ประจำวิชาจะเป็นผู้กำหนดข้อมูลนี้เองภายหลัง", "The course's teacher sets this themselves later")}</p>
-          </div>
-
-          {/* Primary teacher — required at creation; reassign later via the course row's expand panel */}
-          {mode === "create" && (
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-[var(--text-muted)]">
-                {t("อาจารย์ประจำวิชา", "Primary Teacher")} <span className="text-[var(--s-err-text)]">*</span>
-              </label>
-              <select
-                value={teacherId}
-                onChange={(e) => setTeacherId(e.target.value)}
-                required
-                className="h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
-              >
-                <option value="">{t("เลือกอาจารย์ประจำวิชา...", "Select a teacher...")}</option>
-                {teachers.map((tc) => (
-                  <option key={tc.id} value={tc.id}>{tc.title ? `${tc.title} ` : ""}{tc.name}</option>
-                ))}
-              </select>
-              {teachers.length === 0 && (
-                <p className="text-[11px] text-[var(--s-err-text)]">{t("ยังไม่มีอาจารย์ในระบบ — ไปเพิ่มที่หน้าจัดการอาจารย์ก่อน", "No teachers yet — add one on the User Management page first")}</p>
-              )}
-            </div>
-          )}
-
-          {/* Color picker */}
-          <div className="flex flex-col gap-2">
-            <label className="text-xs font-semibold text-[var(--text-muted)]">{t("สีปก", "Cover Color")}</label>
-            <div className="flex flex-wrap gap-2">
-              {PRESET_COLORS.map((c) => (
-                <button
-                  key={c}
-                  onClick={() => setCoverColor(c)}
-                  className="w-8 h-8 rounded-lg border-2 transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]"
-                  style={{
-                    background: c,
-                    borderColor: c === coverColor ? "var(--accent-bright)" : "transparent",
-                    transform: c === coverColor ? "scale(1.08)" : "scale(1)",
-                  }}
-                  aria-label={c}
-                  aria-pressed={c === coverColor}
-                />
-              ))}
-            </div>
-            {/* Preview */}
-            <div className="flex items-center gap-3 mt-1 p-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)]">
-              <div
-                className="w-9 h-9 rounded-xl shrink-0 flex items-center justify-center text-white font-bold text-xs"
-                style={{ background: coverColor }}
-                aria-hidden="true"
-              >
-                {(name || "?").charAt(0).toUpperCase()}
-              </div>
-              <span className="text-sm font-medium text-[var(--text-primary)] truncate">{name || t("ชื่อรายวิชา", "Course name")}</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-[var(--border-subtle)]">
-          <button onClick={onClose} className="h-9 px-4 rounded-xl border border-[var(--border-subtle)] text-sm font-medium text-[var(--text-muted)] hover:bg-[var(--bg-subtle)] transition-colors">
+    <Modal open onClose={onClose} size="md" title={mode === "create" ? t("สร้างรายวิชาใหม่", "New Course") : t("แก้ไขรายวิชา", "Edit Course")}
+      footer={
+        <>
+          <button onClick={onClose} className="h-10 px-5 rounded-xl border border-[var(--border)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors">
             {t("ยกเลิก", "Cancel")}
           </button>
           <button
             onClick={handleSave}
             disabled={!name.trim() || (mode === "create" && !teacherId)}
-            className="h-9 px-5 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] disabled:opacity-50 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
+            className="h-10 px-5 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] disabled:opacity-50 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
           >
             {mode === "create" ? t("สร้างรายวิชา", "Create Course") : t("บันทึก", "Save")}
           </button>
+        </>
+      }
+    >
+      <div className="flex flex-col gap-5">
+        {/* Name */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-semibold text-[var(--text-muted)]">
+            {t("ชื่อรายวิชา", "Course Name")} <span className="text-[var(--s-err-text)]">*</span>
+          </label>
+          <input
+            ref={nameRef}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSave()}
+            placeholder={t("เช่น UX/UI Design", "e.g. UX/UI Design")}
+            className="h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
+          />
+        </div>
+
+        {/* Description */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-semibold text-[var(--text-muted)]">{t("คำอธิบาย", "Description")}</label>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={3}
+            placeholder={t("อธิบายรายวิชาโดยย่อ (ไม่บังคับ)", "Brief description (optional)")}
+            className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
+          />
+        </div>
+
+        {/* Curriculum / Section linking — optional, only useful once curricula exist */}
+        {activeCurriculumVersions.length > 0 && (
+          <div className="flex flex-col gap-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-3.5">
+            <div>
+              <p className="text-xs font-semibold text-[var(--text-muted)]">{t("หลักสูตรและภาคการศึกษา", "Curriculum & Term")}</p>
+              <p className="text-[11px] text-[var(--text-muted)] mt-0.5">{t("ไม่บังคับ — ผูกวิชานี้เข้ากับหลักสูตรที่มีอยู่", "Optional — link this course to a curriculum's course template")}</p>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <select
+                value={curriculumVersionId}
+                onChange={(e) => handleCurriculumChange(e.target.value)}
+                className="h-9 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-2.5 text-xs text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
+              >
+                <option value="">{t("ไม่ระบุหลักสูตร", "No curriculum")}</option>
+                {activeCurriculumVersions.map((v) => (
+                  <option key={v.id} value={v.id}>{v.program} — {v.label}</option>
+                ))}
+              </select>
+              <select
+                value={courseTemplateId}
+                onChange={(e) => handleTemplateChange(e.target.value)}
+                disabled={!curriculumVersionId}
+                className="h-9 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-2.5 text-xs text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)] disabled:opacity-50"
+              >
+                <option value="">{curriculumVersionId ? t("ไม่ระบุวิชา", "No template") : t("เลือกหลักสูตรก่อน", "Pick curriculum first")}</option>
+                {courseTemplateOptions.map((ct) => (
+                  <option key={ct.id} value={ct.id}>{ct.code} — {ct.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              <input
+                type="number"
+                value={academicYear}
+                onChange={(e) => setAcademicYear(e.target.value)}
+                placeholder={t("ปี", "Year")}
+                className="h-9 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-2.5 text-xs tabular-nums text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
+              />
+              <select
+                value={term}
+                onChange={(e) => setTerm(e.target.value === "" ? "" : e.target.value === "summer" ? "summer" : (Number(e.target.value) as 1 | 2))}
+                className="h-9 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-2.5 text-xs text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
+              >
+                <option value="">{t("เทอม", "Term")}</option>
+                <option value="1">{t("เทอม 1", "Term 1")}</option>
+                <option value="2">{t("เทอม 2", "Term 2")}</option>
+                <option value="summer">{t("ภาคฤดูร้อน", "Summer")}</option>
+              </select>
+              <input
+                value={sectionNumber}
+                onChange={(e) => setSectionNumber(e.target.value)}
+                placeholder={t("Section", "Section")}
+                className="h-9 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-2.5 text-xs text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Class Schedule & Room — the course's teacher sets these themselves, not admin */}
+        <div className="rounded-xl border border-dashed border-[var(--border-subtle)] bg-[var(--bg-subtle)] p-3">
+          <p className="text-xs font-semibold text-[var(--text-muted)] mb-2">{t("วันเวลาเรียน / ห้องเรียน", "Class Schedule / Room")}</p>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <p className="text-[11px] text-[var(--text-muted)]">{t("วันเวลาเรียน", "Schedule")}</p>
+              <p className="text-sm text-[var(--text-secondary)]">{course?.schedule || "-"}</p>
+            </div>
+            <div>
+              <p className="text-[11px] text-[var(--text-muted)]">{t("ห้องเรียน", "Room")}</p>
+              <p className="text-sm text-[var(--text-secondary)]">{course?.room || "-"}</p>
+            </div>
+          </div>
+          <p className="text-[11px] text-[var(--text-muted)] mt-2">{t("อาจารย์ประจำวิชาจะเป็นผู้กำหนดข้อมูลนี้เองภายหลัง", "The course's teacher sets this themselves later")}</p>
+        </div>
+
+        {/* Primary teacher — required at creation; reassign later via the course row's expand panel */}
+        {mode === "create" && (
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold text-[var(--text-muted)]">
+              {t("อาจารย์ประจำวิชา", "Primary Teacher")} <span className="text-[var(--s-err-text)]">*</span>
+            </label>
+            <select
+              value={teacherId}
+              onChange={(e) => setTeacherId(e.target.value)}
+              required
+              className="h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
+            >
+              <option value="">{t("เลือกอาจารย์ประจำวิชา...", "Select a teacher...")}</option>
+              {teachers.map((tc) => (
+                <option key={tc.id} value={tc.id}>{tc.title ? `${tc.title} ` : ""}{tc.name}</option>
+              ))}
+            </select>
+            {teachers.length === 0 && (
+              <p className="text-[11px] text-[var(--s-err-text)]">{t("ยังไม่มีอาจารย์ในระบบ — ไปเพิ่มที่หน้าจัดการอาจารย์ก่อน", "No teachers yet — add one on the User Management page first")}</p>
+            )}
+          </div>
+        )}
+
+        {/* Color picker */}
+        <div className="flex flex-col gap-2">
+          <label className="text-xs font-semibold text-[var(--text-muted)]">{t("สีปก", "Cover Color")}</label>
+          <div className="flex flex-wrap gap-2">
+            {PRESET_COLORS.map((c) => (
+              <button
+                key={c}
+                onClick={() => setCoverColor(c)}
+                className="w-8 h-8 rounded-lg border-2 transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]"
+                style={{
+                  background: c,
+                  borderColor: c === coverColor ? "var(--accent-bright)" : "transparent",
+                  transform: c === coverColor ? "scale(1.08)" : "scale(1)",
+                }}
+                aria-label={c}
+                aria-pressed={c === coverColor}
+              />
+            ))}
+          </div>
+          {/* Preview */}
+          <div className="flex items-center gap-3 mt-1 p-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)]">
+            <div
+              className="w-9 h-9 rounded-xl shrink-0 flex items-center justify-center text-white font-bold text-xs"
+              style={{ background: coverColor }}
+              aria-hidden="true"
+            >
+              {(name || "?").charAt(0).toUpperCase()}
+            </div>
+            <span className="text-sm font-medium text-[var(--text-primary)] truncate">{name || t("ชื่อรายวิชา", "Course name")}</span>
+          </div>
         </div>
       </div>
-    </div>
+
+    </Modal>
   );
 }
 
@@ -558,7 +521,7 @@ function CourseRow({
 export default function AdminCoursesPage() {
   const { t } = useLanguage();
   const { courses, updateCourse, removeCourse } = useCourses();
-  const [drawerMode, setDrawerMode] = useState<"create" | "edit" | null>(null);
+  const [modalMode, setModalMode] = useState<"create" | "edit" | null>(null);
   const [editTarget, setEditTarget] = useState<Course | undefined>(undefined);
   const [confirm, setConfirm] = useState<RowAction>(null);
 
@@ -613,7 +576,7 @@ export default function AdminCoursesPage() {
           </p>
         </div>
         <button
-          onClick={() => { setEditTarget(undefined); setDrawerMode("create"); }}
+          onClick={() => { setEditTarget(undefined); setModalMode("create"); }}
           className="flex items-center gap-2 h-10 px-4 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors shrink-0"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
@@ -677,7 +640,7 @@ export default function AdminCoursesPage() {
           description={t("สร้างรายวิชาแรกได้เลย", "Create your first course")}
           action={
             <button
-              onClick={() => { setEditTarget(undefined); setDrawerMode("create"); }}
+              onClick={() => { setEditTarget(undefined); setModalMode("create"); }}
               className="flex items-center gap-2 h-9 px-4 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] transition-colors"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
@@ -702,7 +665,7 @@ export default function AdminCoursesPage() {
                   <CourseRow
                     key={course.id}
                     course={course}
-                    onEdit={(c) => { setEditTarget(c); setDrawerMode("edit"); }}
+                    onEdit={(c) => { setEditTarget(c); setModalMode("edit"); }}
                     onAction={handleAction}
                   />
                 ))
@@ -721,7 +684,7 @@ export default function AdminCoursesPage() {
                   <CourseRow
                     key={course.id}
                     course={course}
-                    onEdit={(c) => { setEditTarget(c); setDrawerMode("edit"); }}
+                    onEdit={(c) => { setEditTarget(c); setModalMode("edit"); }}
                     onAction={handleAction}
                   />
                 ))}
@@ -731,12 +694,12 @@ export default function AdminCoursesPage() {
         </div>
       )}
 
-      {/* Drawers & dialogs */}
-      {drawerMode && (
-        <CourseDrawer
-          mode={drawerMode}
+      {/* Popups & dialogs */}
+      {modalMode && (
+        <CourseModal
+          mode={modalMode}
           course={editTarget}
-          onClose={() => setDrawerMode(null)}
+          onClose={() => setModalMode(null)}
         />
       )}
       {confirm && confirmConfig && (

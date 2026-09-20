@@ -117,7 +117,7 @@ export default function RecheckPage() {
 
   function handleSave() {
     // Group assignments: everyone on the team shares one submission in spirit
-    // (see TeamFormationDrawer / student classwork submit flow) — grading the
+    // (see TeamFormationModal / student classwork submit flow) — grading the
     // representative row grades the whole team, not just whoever is shown here.
     const teammates = submission.groupId
       ? allSubs.filter((s) => s.groupId === submission.groupId)

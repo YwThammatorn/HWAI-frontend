@@ -385,7 +385,7 @@ export default function GradingProgressPage() {
   }
 
   // Group assignments: one row per team instead of one row per student — see
-  // groupSubmissionsByTeam / TeamFormationDrawer / RecheckPage.handleSave.
+  // groupSubmissionsByTeam / TeamFormationModal / RecheckPage.handleSave.
   const isGroupAssignment = assignment.submissionType === "group";
   const groups = isGroupAssignment ? getGroupsByAssignment(assignmentId) : [];
   const rows: SubmissionRow[] = isGroupAssignment

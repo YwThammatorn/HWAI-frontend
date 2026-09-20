@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { GRADING_SPLIT_DISABLED } from "@/lib/featureFlags";
@@ -16,6 +16,7 @@ import {
   GradingAssignmentScope,
 } from "@/lib/grading-assignments";
 import { useLanguage } from "@/context/LanguageContext";
+import Modal from "@/components/Modal";
 
 function initialsOf(name: string) {
   const parts = name.trim().split(/\s+/);
@@ -55,9 +56,9 @@ function resolveTaName(
   return accountId;
 }
 
-// ─── Create/edit drawer ─────────────────────────────────────────────────────────
+// ─── Create/edit (centred popup) ─────────────────────────────────────────────────────────
 
-function GradingAssignmentDrawer({
+function GradingAssignmentModal({
   mode,
   courseId,
   existing,
@@ -103,25 +104,6 @@ function GradingAssignmentDrawer({
   const [selectedSubmissionIds, setSelectedSubmissionIds] = useState<Set<string>>(
     new Set(existing?.scope.type === "custom" ? existing.scope.submissionIds : [])
   );
-
-  const dialogRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) { if (e.key === "Escape") onClose(); }
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [onClose]);
-
-  function handleFocusTrap(e: React.KeyboardEvent<HTMLDivElement>) {
-    if (e.key !== "Tab" || !dialogRef.current) return;
-    const focusable = Array.from(dialogRef.current.querySelectorAll<HTMLElement>(
-      'button:not([disabled]),[href],input:not([disabled]),select,textarea,[tabindex]:not([tabindex="-1"])'
-    ));
-    if (focusable.length === 0) return;
-    const first = focusable[0]; const last = focusable[focusable.length - 1];
-    if (e.shiftKey) { if (document.activeElement === first) { last.focus(); e.preventDefault(); } }
-    else { if (document.activeElement === last) { first.focus(); e.preventDefault(); } }
-  }
 
   function addWeek() {
     const n = parseInt(weekInput, 10);
@@ -172,220 +154,204 @@ function GradingAssignmentDrawer({
   const pickerSubmissions = pickerAssignmentId ? getSubmissionsByAssignment(pickerAssignmentId) : [];
 
   return (
-    <div className="fixed inset-0 z-50 flex">
-      <div className="flex-1 bg-black/40" onClick={onClose} aria-hidden="true" />
-      <div
-        ref={dialogRef}
-        role="dialog" aria-modal="true" aria-labelledby="grading-split-drawer-title"
-        className="w-full max-w-md bg-[var(--bg-surface)] flex flex-col shadow-2xl"
-        onKeyDown={handleFocusTrap}
-      >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border-subtle)]">
-          <h2 id="grading-split-drawer-title" className="text-base font-bold text-[var(--text-primary)]">
-            {mode === "create" ? t("เพิ่มการแบ่งงานตรวจ", "New Grading Split") : t("แก้ไขการแบ่งงานตรวจ", "Edit Grading Split")}
-          </h2>
-          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[var(--bg-subtle)] text-[var(--text-muted)] transition-colors" aria-label={t("ปิด", "Close")}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
-          </button>
-        </div>
-
-        <div className="flex-1 overflow-y-auto px-6 py-5 flex flex-col gap-5">
-          {taCandidates.length === 0 ? (
-            <p className="text-sm text-[var(--text-muted)]">
-              {t("วิชานี้ยังไม่มีผู้ช่วยสอน — เพิ่มที่หน้า", "This course has no TAs yet — add one on the")}{" "}
-              <Link href={`/teacher/courses/${courseId}/collaborators`} className="text-[var(--accent)] hover:underline">
-                {t("ผู้ร่วมสอน", "Collaborators")}
-              </Link>
-            </p>
-          ) : (
-            <>
-              {/* TA picker */}
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-[var(--text-muted)]">
-                  {t("ผู้ช่วยสอน", "Teaching Assistant")} <span className="text-[var(--s-err-text)]">*</span>
-                </label>
-                <div className="flex flex-col gap-1.5">
-                  {taCandidates.map((s) => (
-                    <button
-                      key={s.id}
-                      type="button"
-                      onClick={() => setTaAccountId(s.id)}
-                      aria-pressed={taAccountId === s.id}
-                      className={`flex items-center gap-3 px-3 py-2 rounded-xl border text-left transition-colors ${
-                        taAccountId === s.id ? "border-[var(--role-ta-border)] bg-[var(--role-ta-bg)]" : "border-[var(--border-subtle)] hover:bg-[var(--bg-subtle)]"
-                      }`}
-                    >
-                      <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0" style={{ background: "#7C3AED" }}>
-                        {initialsOf(s.name)}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-[var(--text-primary)] truncate">{s.name}</p>
-                        <p className="text-[11px] text-[var(--text-muted)] font-mono truncate">{s.subtitle}</p>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Scope type */}
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-[var(--text-muted)]">{t("รูปแบบการแบ่งงาน", "Split Mode")}</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => { setScopeType("week"); setWeekError(""); }}
-                    aria-pressed={scopeType === "week"}
-                    className={`h-10 rounded-xl border text-sm font-semibold transition-colors ${
-                      scopeType === "week" ? "border-[var(--accent-bright)] bg-[var(--accent-bright)]/10 text-[var(--accent)]" : "border-[var(--border-subtle)] text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)]"
-                    }`}
-                  >
-                    {t("แบ่งตามสัปดาห์", "By Week")}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => { setScopeType("all"); setWeekError(""); }}
-                    aria-pressed={scopeType === "all"}
-                    className={`h-10 rounded-xl border text-sm font-semibold transition-colors ${
-                      scopeType === "all" ? "border-[var(--accent-bright)] bg-[var(--accent-bright)]/10 text-[var(--accent)]" : "border-[var(--border-subtle)] text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)]"
-                    }`}
-                  >
-                    {t("ตรวจทั้งหมด", "Grade Everything")}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => { setScopeType("custom"); setWeekError(""); }}
-                    aria-pressed={scopeType === "custom"}
-                    className={`h-10 rounded-xl border text-sm font-semibold transition-colors ${
-                      scopeType === "custom" ? "border-[var(--accent-bright)] bg-[var(--accent-bright)]/10 text-[var(--accent)]" : "border-[var(--border-subtle)] text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)]"
-                    }`}
-                  >
-                    {t("เลือกเอง", "Custom")}
-                  </button>
-                  <button
-                    type="button"
-                    disabled
-                    title={t("รอสรุปโมเดลกลุ่มนักศึกษา (Q1) — ยังใช้ไม่ได้", "Pending the student-group data model decision (Q1) — not available yet")}
-                    className="h-10 rounded-xl border border-dashed border-[var(--border-subtle)] text-sm font-semibold text-[var(--text-muted)] opacity-50 cursor-not-allowed"
-                  >
-                    {t("แบ่งตามกลุ่ม", "By Group")}
-                  </button>
-                </div>
-              </div>
-
-              {/* Scope-specific fields */}
-              {scopeType === "week" && (
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold text-[var(--text-muted)]">
-                    {t("สัปดาห์ที่รับผิดชอบ", "Weeks Responsible For")} <span className="text-[var(--s-err-text)]">*</span>
-                  </label>
-                  {otherWeekClaims.size > 0 && (
-                    <p className="text-[11px] text-[var(--text-muted)]">
-                      {t("สัปดาห์ที่มีคนตรวจแล้ว: ", "Already assigned: ")}
-                      {[...otherWeekClaims.entries()].sort(([a], [b]) => a - b).map(([w, name]) => `${w} (${name})`).join(", ")}
-                    </p>
-                  )}
-                  <div className="flex gap-2">
-                    <input
-                      type="number"
-                      value={weekInput}
-                      onChange={(e) => { setWeekInput(e.target.value); setWeekError(""); }}
-                      onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addWeek(); } }}
-                      placeholder={t("เช่น 3", "e.g. 3")}
-                      aria-invalid={weekError !== ""}
-                      className={`flex-1 h-10 rounded-xl border bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] tabular-nums focus:outline-none focus:ring-2 ${weekError ? "border-[var(--s-err-bd)] focus:ring-[var(--s-err-bd)]" : "border-[var(--border-subtle)] focus:ring-[var(--accent-bright)]"}`}
-                    />
-                    <button type="button" onClick={addWeek} className="h-10 px-4 rounded-xl border border-[var(--border-subtle)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] transition-colors">
-                      {t("เพิ่ม", "Add")}
-                    </button>
-                  </div>
-                  {weekError && (
-                    <p role="alert" className="text-xs text-[var(--s-err-text)]">{weekError}</p>
-                  )}
-                  {weekNumbers.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 mt-1">
-                      {weekNumbers.map((n) => (
-                        <span key={n} className="inline-flex items-center gap-1 pl-2.5 pr-1.5 py-1 rounded-full bg-[var(--accent-bright)]/10 text-[var(--accent)] text-xs font-semibold">
-                          {t(`สัปดาห์ ${n}`, `Week ${n}`)}
-                          <button type="button" onClick={() => removeWeek(n)} className="w-4 h-4 flex items-center justify-center rounded-full hover:bg-[var(--accent)]/20" aria-label={t("ลบ", "Remove")}>
-                            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                          </button>
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {scopeType === "all" && (
-                <p className="text-xs text-[var(--text-muted)] px-3 py-2 rounded-xl bg-[var(--bg-subtle)]">
-                  {t("ผู้ช่วยสอนคนนี้จะตรวจงานทุกชิ้นในวิชานี้", "This TA will grade every submission in this course")}
-                </p>
-              )}
-
-              {scopeType === "custom" && (
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold text-[var(--text-muted)]">
-                    {t("เลือกงานที่ต้องการมอบหมาย", "Pick Submissions to Assign")} <span className="text-[var(--s-err-text)]">*</span>
-                  </label>
-                  {courseAssignments.length === 0 ? (
-                    <p className="text-xs text-[var(--text-muted)]">{t("วิชานี้ยังไม่มีงาน/การบ้าน", "This course has no assignments yet")}</p>
-                  ) : (
-                    <>
-                      <select
-                        value={pickerAssignmentId}
-                        onChange={(e) => setPickerAssignmentId(e.target.value)}
-                        className="h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
-                      >
-                        {courseAssignments.map((a) => (
-                          <option key={a.id} value={a.id}>{a.name}</option>
-                        ))}
-                      </select>
-                      <div className="flex flex-col gap-1 max-h-48 overflow-y-auto rounded-xl border border-[var(--border-subtle)] p-1 mt-1">
-                        {pickerSubmissions.length === 0 ? (
-                          <p className="text-xs text-[var(--text-muted)] px-2 py-3 text-center">{t("ยังไม่มีนักศึกษาส่งงานชิ้นนี้", "No submissions for this assignment yet")}</p>
-                        ) : (
-                          pickerSubmissions.map((sub) => (
-                            <label key={sub.id} className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-[var(--bg-subtle)] cursor-pointer">
-                              <input
-                                type="checkbox"
-                                checked={selectedSubmissionIds.has(sub.id)}
-                                onChange={() => toggleSubmission(sub.id)}
-                                className="accent-[var(--accent)]"
-                              />
-                              <span className="text-sm text-[var(--text-primary)]">{sub.studentName}</span>
-                            </label>
-                          ))
-                        )}
-                      </div>
-                      {selectedSubmissionIds.size > 0 && (
-                        <p className="text-[11px] text-[var(--text-muted)]">
-                          {t(`เลือกแล้ว ${selectedSubmissionIds.size} ชิ้น (จากทุกงานที่เปิดไว้)`, `${selectedSubmissionIds.size} submission(s) selected (across all assignments browsed)`)}
-                        </p>
-                      )}
-                    </>
-                  )}
-                </div>
-              )}
-            </>
-          )}
-        </div>
-
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-[var(--border-subtle)]">
-          <button onClick={onClose} className="h-9 px-4 rounded-xl border border-[var(--border-subtle)] text-sm font-medium text-[var(--text-muted)] hover:bg-[var(--bg-subtle)] transition-colors">
+    <Modal open onClose={onClose} size="md" title={mode === "create" ? t("เพิ่มการแบ่งงานตรวจ", "New Grading Split") : t("แก้ไขการแบ่งงานตรวจ", "Edit Grading Split")}
+      footer={
+        <>
+          <button onClick={onClose} className="h-10 px-5 rounded-xl border border-[var(--border)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors">
             {t("ยกเลิก", "Cancel")}
           </button>
           <button
             onClick={handleSave}
             disabled={!isValid}
-            className="h-9 px-5 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] disabled:opacity-50 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
+            className="h-10 px-5 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] disabled:opacity-50 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
           >
             {mode === "create" ? t("เพิ่มการแบ่งงาน", "Add Split") : t("บันทึก", "Save")}
           </button>
-        </div>
+        </>
+      }
+    >
+      <div className="flex flex-col gap-5">
+        {taCandidates.length === 0 ? (
+          <p className="text-sm text-[var(--text-muted)]">
+            {t("วิชานี้ยังไม่มีผู้ช่วยสอน — เพิ่มที่หน้า", "This course has no TAs yet — add one on the")}{" "}
+            <Link href={`/teacher/courses/${courseId}/collaborators`} className="text-[var(--accent)] hover:underline">
+              {t("ผู้ร่วมสอน", "Collaborators")}
+            </Link>
+          </p>
+        ) : (
+          <>
+            {/* TA picker */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-[var(--text-muted)]">
+                {t("ผู้ช่วยสอน", "Teaching Assistant")} <span className="text-[var(--s-err-text)]">*</span>
+              </label>
+              <div className="flex flex-col gap-1.5">
+                {taCandidates.map((s) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => setTaAccountId(s.id)}
+                    aria-pressed={taAccountId === s.id}
+                    className={`flex items-center gap-3 px-3 py-2 rounded-xl border text-left transition-colors ${
+                      taAccountId === s.id ? "border-[var(--role-ta-border)] bg-[var(--role-ta-bg)]" : "border-[var(--border-subtle)] hover:bg-[var(--bg-subtle)]"
+                    }`}
+                  >
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0" style={{ background: "#7C3AED" }}>
+                      {initialsOf(s.name)}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-[var(--text-primary)] truncate">{s.name}</p>
+                      <p className="text-[11px] text-[var(--text-muted)] font-mono truncate">{s.subtitle}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Scope type */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-[var(--text-muted)]">{t("รูปแบบการแบ่งงาน", "Split Mode")}</label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => { setScopeType("week"); setWeekError(""); }}
+                  aria-pressed={scopeType === "week"}
+                  className={`h-10 rounded-xl border text-sm font-semibold transition-colors ${
+                    scopeType === "week" ? "border-[var(--accent-bright)] bg-[var(--accent-bright)]/10 text-[var(--accent)]" : "border-[var(--border-subtle)] text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)]"
+                  }`}
+                >
+                  {t("แบ่งตามสัปดาห์", "By Week")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setScopeType("all"); setWeekError(""); }}
+                  aria-pressed={scopeType === "all"}
+                  className={`h-10 rounded-xl border text-sm font-semibold transition-colors ${
+                    scopeType === "all" ? "border-[var(--accent-bright)] bg-[var(--accent-bright)]/10 text-[var(--accent)]" : "border-[var(--border-subtle)] text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)]"
+                  }`}
+                >
+                  {t("ตรวจทั้งหมด", "Grade Everything")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setScopeType("custom"); setWeekError(""); }}
+                  aria-pressed={scopeType === "custom"}
+                  className={`h-10 rounded-xl border text-sm font-semibold transition-colors ${
+                    scopeType === "custom" ? "border-[var(--accent-bright)] bg-[var(--accent-bright)]/10 text-[var(--accent)]" : "border-[var(--border-subtle)] text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)]"
+                  }`}
+                >
+                  {t("เลือกเอง", "Custom")}
+                </button>
+                <button
+                  type="button"
+                  disabled
+                  title={t("รอสรุปโมเดลกลุ่มนักศึกษา (Q1) — ยังใช้ไม่ได้", "Pending the student-group data model decision (Q1) — not available yet")}
+                  className="h-10 rounded-xl border border-dashed border-[var(--border-subtle)] text-sm font-semibold text-[var(--text-muted)] opacity-50 cursor-not-allowed"
+                >
+                  {t("แบ่งตามกลุ่ม", "By Group")}
+                </button>
+              </div>
+            </div>
+
+            {/* Scope-specific fields */}
+            {scopeType === "week" && (
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-[var(--text-muted)]">
+                  {t("สัปดาห์ที่รับผิดชอบ", "Weeks Responsible For")} <span className="text-[var(--s-err-text)]">*</span>
+                </label>
+                {otherWeekClaims.size > 0 && (
+                  <p className="text-[11px] text-[var(--text-muted)]">
+                    {t("สัปดาห์ที่มีคนตรวจแล้ว: ", "Already assigned: ")}
+                    {[...otherWeekClaims.entries()].sort(([a], [b]) => a - b).map(([w, name]) => `${w} (${name})`).join(", ")}
+                  </p>
+                )}
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    value={weekInput}
+                    onChange={(e) => { setWeekInput(e.target.value); setWeekError(""); }}
+                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addWeek(); } }}
+                    placeholder={t("เช่น 3", "e.g. 3")}
+                    aria-invalid={weekError !== ""}
+                    className={`h-10 px-5 rounded-xl border bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] tabular-nums focus:outline-none focus:ring-2 ${weekError ? "border-[var(--s-err-bd)] focus:ring-[var(--s-err-bd)]" : "border-[var(--border-subtle)] focus:ring-[var(--accent-bright)]"}`}
+                  />
+                  <button type="button" onClick={addWeek} className="h-10 px-4 rounded-xl border border-[var(--border-subtle)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] transition-colors">
+                    {t("เพิ่ม", "Add")}
+                  </button>
+                </div>
+                {weekError && (
+                  <p role="alert" className="text-xs text-[var(--s-err-text)]">{weekError}</p>
+                )}
+                {weekNumbers.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mt-1">
+                    {weekNumbers.map((n) => (
+                      <span key={n} className="inline-flex items-center gap-1 pl-2.5 pr-1.5 py-1 rounded-full bg-[var(--accent-bright)]/10 text-[var(--accent)] text-xs font-semibold">
+                        {t(`สัปดาห์ ${n}`, `Week ${n}`)}
+                        <button type="button" onClick={() => removeWeek(n)} className="w-4 h-4 flex items-center justify-center rounded-full hover:bg-[var(--accent)]/20" aria-label={t("ลบ", "Remove")}>
+                          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {scopeType === "all" && (
+              <p className="text-xs text-[var(--text-muted)] px-3 py-2 rounded-xl bg-[var(--bg-subtle)]">
+                {t("ผู้ช่วยสอนคนนี้จะตรวจงานทุกชิ้นในวิชานี้", "This TA will grade every submission in this course")}
+              </p>
+            )}
+
+            {scopeType === "custom" && (
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-[var(--text-muted)]">
+                  {t("เลือกงานที่ต้องการมอบหมาย", "Pick Submissions to Assign")} <span className="text-[var(--s-err-text)]">*</span>
+                </label>
+                {courseAssignments.length === 0 ? (
+                  <p className="text-xs text-[var(--text-muted)]">{t("วิชานี้ยังไม่มีงาน/การบ้าน", "This course has no assignments yet")}</p>
+                ) : (
+                  <>
+                    <select
+                      value={pickerAssignmentId}
+                      onChange={(e) => setPickerAssignmentId(e.target.value)}
+                      className="h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
+                    >
+                      {courseAssignments.map((a) => (
+                        <option key={a.id} value={a.id}>{a.name}</option>
+                      ))}
+                    </select>
+                    <div className="flex flex-col gap-1 max-h-48 overflow-y-auto rounded-xl border border-[var(--border-subtle)] p-1 mt-1">
+                      {pickerSubmissions.length === 0 ? (
+                        <p className="text-xs text-[var(--text-muted)] px-2 py-3 text-center">{t("ยังไม่มีนักศึกษาส่งงานชิ้นนี้", "No submissions for this assignment yet")}</p>
+                      ) : (
+                        pickerSubmissions.map((sub) => (
+                          <label key={sub.id} className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-[var(--bg-subtle)] cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={selectedSubmissionIds.has(sub.id)}
+                              onChange={() => toggleSubmission(sub.id)}
+                              className="accent-[var(--accent)]"
+                            />
+                            <span className="text-sm text-[var(--text-primary)]">{sub.studentName}</span>
+                          </label>
+                        ))
+                      )}
+                    </div>
+                    {selectedSubmissionIds.size > 0 && (
+                      <p className="text-[11px] text-[var(--text-muted)]">
+                        {t(`เลือกแล้ว ${selectedSubmissionIds.size} ชิ้น (จากทุกงานที่เปิดไว้)`, `${selectedSubmissionIds.size} submission(s) selected (across all assignments browsed)`)}
+                      </p>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+          </>
+        )}
       </div>
-    </div>
+
+    </Modal>
   );
 }
 
@@ -497,7 +463,7 @@ export default function GradingSplitPage() {
     ? (currentAccountId === null || isPrimaryTeacher || hasPermission(currentAccountId, course.id, "canEditSettings"))
     : true;
 
-  const [drawerMode, setDrawerMode] = useState<"create" | "edit" | null>(null);
+  const [modalMode, setModalMode] = useState<"create" | "edit" | null>(null);
   const [editTarget, setEditTarget] = useState<GradingAssignment | undefined>(undefined);
 
   const taRoles = course ? getRolesBySection(course.id).filter((r) => r.role === "ta") : [];
@@ -551,7 +517,7 @@ export default function GradingSplitPage() {
         </div>
         {canManage && (
           <button
-            onClick={() => { setEditTarget(undefined); setDrawerMode("create"); }}
+            onClick={() => { setEditTarget(undefined); setModalMode("create"); }}
             className="flex items-center gap-2 h-10 px-4 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors shrink-0"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
@@ -589,7 +555,7 @@ export default function GradingSplitPage() {
                 assignment={assignment}
                 taName={taName}
                 canManage={canManage}
-                onEdit={() => { setEditTarget(assignment); setDrawerMode("edit"); }}
+                onEdit={() => { setEditTarget(assignment); setModalMode("edit"); }}
                 onRemove={() => remove(assignment, taName)}
               />
             ))}
@@ -597,12 +563,12 @@ export default function GradingSplitPage() {
         )}
       </div>
 
-      {drawerMode && (
-        <GradingAssignmentDrawer
-          mode={drawerMode}
+      {modalMode && (
+        <GradingAssignmentModal
+          mode={modalMode}
           courseId={course.id}
           existing={editTarget}
-          onClose={() => setDrawerMode(null)}
+          onClose={() => setModalMode(null)}
         />
       )}
     </main>

@@ -1,6 +1,6 @@
 /**
  * Shared "Day + Time Slot" picker options for editing a Course's `schedule`
- * field, used by both the admin New/Edit Course drawer and the teacher's
+ * field, used by both the admin New/Edit Course popup and the teacher's
  * inline course-detail editor. `schedule` itself stays a free-text string
  * on Course (e.g. "จันทร์ 13:00-16:00") — these options + parseSchedule are
  * just how the UI composes/decomposes that string.

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import {
   useCurriculum,
@@ -11,6 +11,7 @@ import {
 import { splitCsvLine } from "@/lib/csv";
 import EmptyState from "@/components/EmptyState";
 import StatCard from "@/components/StatCard";
+import Modal from "@/components/Modal";
 
 const PROGRAMS: Program[] = ["CECS", "CEI", "CE"];
 
@@ -45,7 +46,7 @@ function parseCourseTemplateCsv(raw: string): ParsedCourseRow[] {
   });
 }
 
-function CourseTemplateImportDrawer({
+function CourseTemplateImportModal({
   curriculumVersionId,
   onClose,
 }: {
@@ -55,7 +56,6 @@ function CourseTemplateImportDrawer({
   const { t } = useLanguage();
   const { addCourseTemplate, getCourseTemplatesByCurriculum } = useCurriculum();
   const fileRef = useRef<HTMLInputElement>(null);
-  const dialogRef = useRef<HTMLDivElement>(null);
   const [rows, setRows] = useState<ParsedCourseRow[] | null>(null);
   const [fileName, setFileName] = useState("");
   const [importing, setImporting] = useState(false);
@@ -103,165 +103,133 @@ function CourseTemplateImportDrawer({
     onClose();
   }
 
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) { if (e.key === "Escape") handleClose(); }
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  function handleFocusTrap(e: React.KeyboardEvent<HTMLDivElement>) {
-    if (e.key !== "Tab" || !dialogRef.current) return;
-    const focusable = Array.from(dialogRef.current.querySelectorAll<HTMLElement>(
-      'button:not([disabled]),[href],input:not([disabled]):not([tabindex="-1"]),select,textarea,[tabindex]:not([tabindex="-1"])'
-    ));
-    if (focusable.length === 0) return;
-    const first = focusable[0]; const last = focusable[focusable.length - 1];
-    if (e.shiftKey) { if (document.activeElement === first) { last.focus(); e.preventDefault(); } }
-    else { if (document.activeElement === last) { first.focus(); e.preventDefault(); } }
-  }
-
   return (
-    <>
-      <div className="fixed inset-0 bg-black/30 z-30" onClick={handleClose} aria-hidden="true" />
-      <div
-        ref={dialogRef}
-        role="dialog" aria-modal="true" aria-label={t("นำเข้ารายวิชาจาก CSV", "Import Courses from CSV")}
-        className="fixed right-0 top-0 h-full w-full max-w-md bg-[var(--bg-surface)] border-l border-[var(--border-subtle)] shadow-2xl z-40 flex flex-col"
-        onKeyDown={handleFocusTrap}
-      >
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border-subtle)] shrink-0">
-          <h2 className="text-base font-bold text-[var(--text-primary)]">{t("นำเข้ารายวิชา", "Import Courses")}</h2>
-          <button onClick={handleClose} aria-label={t("ปิด", "Close")}
-            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[var(--bg-subtle)] text-[var(--text-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
-          </button>
-        </div>
-        <div className="flex-1 overflow-y-auto px-5 py-5 flex flex-col gap-4">
-          {!rows && !done && (
-            <div
-              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-              onDragLeave={() => setDragOver(false)}
-              onDrop={(e) => { e.preventDefault(); setDragOver(false); const f = e.dataTransfer.files[0]; if (f) handleFile(f); }}
-              onClick={() => fileRef.current?.click()}
-              className={`border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition-colors ${dragOver ? "border-[var(--accent-bright)] bg-[var(--accent-bright)]/5" : "border-[var(--border-subtle)] hover:border-[var(--accent-bright)]/50"}`}
-            >
-              <input ref={fileRef} type="file" accept=".csv" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent-bright)" strokeWidth="1.5" strokeLinecap="round" className="mx-auto mb-3" aria-hidden="true">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                <polyline points="14 2 14 8 20 8"/>
-              </svg>
-              <p className="text-sm font-semibold text-[var(--text-primary)]">{t("ลากไฟล์ CSV มาวาง หรือคลิกเลือก", "Drag CSV here or click to browse")}</p>
-              <p className="text-xs text-[var(--text-muted)] mt-1">{t("คอลัมน์: code, name, description", "Columns: code, name, description")}</p>
-            </div>
-          )}
-          {!rows && !done && (
-            <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-app)] p-3.5 flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-8 h-8 rounded-lg bg-[var(--accent-bright)]/15 flex items-center justify-center shrink-0">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                    <line x1="12" y1="18" x2="12" y2="12"/>
-                    <polyline points="9 15 12 18 15 15"/>
-                  </svg>
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xs font-medium text-[var(--text-primary)]">{t("ดาวน์โหลด Template", "Download Template")}</p>
-                  <p className="text-[11px] text-[var(--text-muted)] truncate">course-templates-template.csv</p>
-                </div>
-              </div>
-              <a href="/course-templates-template.csv" download
-                className="shrink-0 px-3 py-1.5 text-xs font-medium rounded-lg border border-[var(--accent-bright)]/40 text-[var(--accent)] hover:bg-[var(--accent-bright)]/10 transition-colors">
-                {t("ดาวน์โหลด", "Download")}
-              </a>
-            </div>
-          )}
-          {rows && !done && (
-            <div className="flex flex-col gap-3">
-              <div className="flex items-center gap-2 text-sm">
-                <span className="font-medium text-[var(--text-primary)]">{fileName}</span>
-                <span className="text-[var(--text-muted)]">—</span>
-                <span className="text-green-700 font-medium">{t(`ใหม่ ${newRows.length}`, `New: ${newRows.length}`)}</span>
-                {dupRows.length > 0 && <span className="text-amber-700">{t(`ซ้ำ ${dupRows.length}`, `Dup: ${dupRows.length}`)}</span>}
-                {errorRows.length > 0 && <span className="text-[var(--s-err-text)]">{t(`ผิด ${errorRows.length}`, `Err: ${errorRows.length}`)}</span>}
-              </div>
-              <div className="rounded-xl border border-[var(--border-subtle)] overflow-hidden">
-                <div className="overflow-x-auto max-h-72">
-                  <table className="w-full text-xs">
-                    <thead className="bg-[var(--bg-subtle)] sticky top-0">
-                      <tr>
-                        <th className="px-3 py-2 text-left font-semibold text-[var(--text-muted)]">{t("รหัสวิชา", "Code")}</th>
-                        <th className="px-3 py-2 text-left font-semibold text-[var(--text-muted)]">{t("ชื่อวิชา", "Name")}</th>
-                        <th className="px-3 py-2 text-left font-semibold text-[var(--text-muted)]">{t("สถานะ", "Status")}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {rows.map((row, idx) => {
-                        const isDup = !row.error && existingCodes.has(row.code.toLowerCase());
-                        return (
-                          <tr key={idx} className={`border-t border-[var(--border-subtle)] ${row.error ? "bg-[var(--s-err-bg)]" : isDup ? "bg-amber-50/50" : ""}`}>
-                            <td className="px-3 py-2 text-[var(--text-primary)] tabular-nums max-w-[110px] truncate">{row.code || <span className="text-[var(--text-muted)] italic">—</span>}</td>
-                            <td className="px-3 py-2 text-[var(--text-secondary)] max-w-[150px] truncate">{row.name || <span className="text-[var(--text-muted)] italic">—</span>}</td>
-                            <td className="px-3 py-2">
-                              {row.error ? (
-                                <span className="text-[var(--s-err-text)]">{t(`ขาด: ${row.error.fields.join(", ")}`, `Missing: ${row.error.fields.join(", ")}`)}</span>
-                              ) : isDup ? (
-                                <span className="text-amber-700">{t("มีแล้ว", "Exists")}</span>
-                              ) : (
-                                <span className="text-green-700">{t("ใหม่", "New")}</span>
-                              )}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-              <button onClick={() => { setRows(null); setFileName(""); if (fileRef.current) fileRef.current.value = ""; }}
-                className="text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)] underline self-start transition-colors">
-                {t("เลือกไฟล์ใหม่", "Choose different file")}
-              </button>
-            </div>
-          )}
-          {done && (
-            <div className="flex flex-col items-center gap-3 py-8">
-              <div className="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-                  <polyline points="20 6 9 17 4 12"/>
-                </svg>
-              </div>
-              <p className="text-sm font-semibold text-[var(--text-primary)]">{t("นำเข้าสำเร็จ", "Import complete")}</p>
-              <p className="text-xs text-[var(--text-muted)]">
-                {t(`เพิ่ม ${result?.added ?? 0} วิชา (ข้าม ${result?.skipped ?? 0} รายการ)`,
-                   `Added ${result?.added ?? 0} course(s) (skipped ${result?.skipped ?? 0})`)}
-              </p>
-            </div>
-          )}
-        </div>
-        <div className="px-5 py-4 border-t border-[var(--border-subtle)] shrink-0 flex gap-2">
+    <Modal open onClose={handleClose} size="lg" title={t("นำเข้ารายวิชา", "Import Courses")}
+      footer={
+        <>
           <button onClick={handleClose}
-            className="flex-1 h-10 rounded-xl border border-[var(--border-subtle)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors">
+            className="h-10 px-5 rounded-xl border border-[var(--border)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors">
             {done ? t("ปิด", "Close") : t("ยกเลิก", "Cancel")}
           </button>
           {rows && !done && (
             <button onClick={handleImport} disabled={newRows.length === 0 || importing}
-              className="flex-1 h-10 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors">
+              className="h-10 px-5 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors">
               {importing ? t("กำลังนำเข้า…", "Importing…") : t(`+ นำเข้า ${newRows.length} วิชา`, `+ Import ${newRows.length}`)}
             </button>
           )}
-        </div>
+        </>
+      }
+    >
+      <div className="flex flex-col gap-4">
+        {!rows && !done && (
+          <div
+            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={(e) => { e.preventDefault(); setDragOver(false); const f = e.dataTransfer.files[0]; if (f) handleFile(f); }}
+            onClick={() => fileRef.current?.click()}
+            className={`border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition-colors ${dragOver ? "border-[var(--accent-bright)] bg-[var(--accent-bright)]/5" : "border-[var(--border-subtle)] hover:border-[var(--accent-bright)]/50"}`}
+          >
+            <input ref={fileRef} type="file" accept=".csv" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent-bright)" strokeWidth="1.5" strokeLinecap="round" className="mx-auto mb-3" aria-hidden="true">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+            </svg>
+            <p className="text-sm font-semibold text-[var(--text-primary)]">{t("ลากไฟล์ CSV มาวาง หรือคลิกเลือก", "Drag CSV here or click to browse")}</p>
+            <p className="text-xs text-[var(--text-muted)] mt-1">{t("คอลัมน์: code, name, description", "Columns: code, name, description")}</p>
+          </div>
+        )}
+        {!rows && !done && (
+          <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-app)] p-3.5 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-lg bg-[var(--accent-bright)]/15 flex items-center justify-center shrink-0">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                  <line x1="12" y1="18" x2="12" y2="12"/>
+                  <polyline points="9 15 12 18 15 15"/>
+                </svg>
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-medium text-[var(--text-primary)]">{t("ดาวน์โหลด Template", "Download Template")}</p>
+                <p className="text-[11px] text-[var(--text-muted)] truncate">course-templates-template.csv</p>
+              </div>
+            </div>
+            <a href="/course-templates-template.csv" download
+              className="shrink-0 px-3 py-1.5 text-xs font-medium rounded-lg border border-[var(--accent-bright)]/40 text-[var(--accent)] hover:bg-[var(--accent-bright)]/10 transition-colors">
+              {t("ดาวน์โหลด", "Download")}
+            </a>
+          </div>
+        )}
+        {rows && !done && (
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center gap-2 text-sm">
+              <span className="font-medium text-[var(--text-primary)]">{fileName}</span>
+              <span className="text-[var(--text-muted)]">—</span>
+              <span className="text-[var(--s-ok-text)] font-medium">{t(`ใหม่ ${newRows.length}`, `New: ${newRows.length}`)}</span>
+              {dupRows.length > 0 && <span className="text-[var(--s-warn-text)]">{t(`ซ้ำ ${dupRows.length}`, `Dup: ${dupRows.length}`)}</span>}
+              {errorRows.length > 0 && <span className="text-[var(--s-err-text)]">{t(`ผิด ${errorRows.length}`, `Err: ${errorRows.length}`)}</span>}
+            </div>
+            <div className="rounded-xl border border-[var(--border-subtle)] overflow-hidden">
+              <div className="overflow-x-auto max-h-72">
+                <table className="w-full text-xs">
+                  <thead className="bg-[var(--bg-subtle)] sticky top-0">
+                    <tr>
+                      <th className="px-3 py-2 text-left font-semibold text-[var(--text-muted)]">{t("รหัสวิชา", "Code")}</th>
+                      <th className="px-3 py-2 text-left font-semibold text-[var(--text-muted)]">{t("ชื่อวิชา", "Name")}</th>
+                      <th className="px-3 py-2 text-left font-semibold text-[var(--text-muted)]">{t("สถานะ", "Status")}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.map((row, idx) => {
+                      const isDup = !row.error && existingCodes.has(row.code.toLowerCase());
+                      return (
+                        <tr key={idx} className={`border-t border-[var(--border-subtle)] ${row.error ? "bg-[var(--s-err-bg)]" : isDup ? "bg-[var(--s-warn-bg)]" : ""}`}>
+                          <td className="px-3 py-2 text-[var(--text-primary)] tabular-nums max-w-[110px] truncate">{row.code || <span className="text-[var(--text-muted)] italic">—</span>}</td>
+                          <td className="px-3 py-2 text-[var(--text-secondary)] max-w-[150px] truncate">{row.name || <span className="text-[var(--text-muted)] italic">—</span>}</td>
+                          <td className="px-3 py-2">
+                            {row.error ? (
+                              <span className="text-[var(--s-err-text)]">{t(`ขาด: ${row.error.fields.join(", ")}`, `Missing: ${row.error.fields.join(", ")}`)}</span>
+                            ) : isDup ? (
+                              <span className="text-[var(--s-warn-text)]">{t("มีแล้ว", "Exists")}</span>
+                            ) : (
+                              <span className="text-[var(--s-ok-text)]">{t("ใหม่", "New")}</span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <button onClick={() => { setRows(null); setFileName(""); if (fileRef.current) fileRef.current.value = ""; }}
+              className="text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)] underline self-start transition-colors">
+              {t("เลือกไฟล์ใหม่", "Choose different file")}
+            </button>
+          </div>
+        )}
+        {done && (
+          <div className="flex flex-col items-center gap-3 py-8">
+            <div className="w-12 h-12 rounded-full bg-[var(--s-ok-bg)] flex items-center justify-center">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--s-ok-text)" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </div>
+            <p className="text-sm font-semibold text-[var(--text-primary)]">{t("นำเข้าสำเร็จ", "Import complete")}</p>
+            <p className="text-xs text-[var(--text-muted)]">
+              {t(`เพิ่ม ${result?.added ?? 0} วิชา (ข้าม ${result?.skipped ?? 0} รายการ)`,
+                 `Added ${result?.added ?? 0} course(s) (skipped ${result?.skipped ?? 0})`)}
+            </p>
+          </div>
+        )}
       </div>
-    </>
+    </Modal>
   );
 }
 
-// ── Curriculum version create/edit drawer ──────────────────────────────────────
+// ── Curriculum version create/edit (centred popup) ──────────────────────────────────────
 
-function CurriculumDrawer({
+function CurriculumModal({
   mode,
   version,
   onClose,
@@ -279,28 +247,8 @@ function CurriculumDrawer({
   const [effectiveFrom, setEffectiveFrom] = useState(String(version?.effectiveFrom ?? currentYear));
   const [effectiveTo, setEffectiveTo] = useState(version?.effectiveTo != null ? String(version.effectiveTo) : "");
   const labelRef = useRef<HTMLInputElement>(null);
-  const dialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { labelRef.current?.focus(); }, []);
-
-  const handleClose = useCallback(() => onClose(), [onClose]);
-
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) { if (e.key === "Escape") handleClose(); }
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [handleClose]);
-
-  function handleFocusTrap(e: React.KeyboardEvent<HTMLDivElement>) {
-    if (e.key !== "Tab" || !dialogRef.current) return;
-    const focusable = Array.from(dialogRef.current.querySelectorAll<HTMLElement>(
-      'button:not([disabled]),[href],input:not([disabled]):not([tabindex="-1"]),select,textarea,[tabindex]:not([tabindex="-1"])'
-    ));
-    if (focusable.length === 0) return;
-    const first = focusable[0]; const last = focusable[focusable.length - 1];
-    if (e.shiftKey) { if (document.activeElement === first) { last.focus(); e.preventDefault(); } }
-    else { if (document.activeElement === last) { first.focus(); e.preventDefault(); } }
-  }
 
   const fromNum = parseInt(effectiveFrom, 10);
   const toNum = effectiveTo.trim() === "" ? undefined : parseInt(effectiveTo, 10);
@@ -318,115 +266,99 @@ function CurriculumDrawer({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex">
-      <div className="flex-1 bg-black/40" onClick={onClose} aria-hidden="true" />
-      <div
-        ref={dialogRef}
-        role="dialog" aria-modal="true" aria-labelledby="curriculum-drawer-title"
-        className="w-full max-w-md bg-[var(--bg-surface)] flex flex-col shadow-2xl"
-        onKeyDown={handleFocusTrap}
-      >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border-subtle)]">
-          <h2 id="curriculum-drawer-title" className="text-base font-bold text-[var(--text-primary)]">
-            {mode === "create" ? t("สร้างหลักสูตรใหม่", "New Curriculum Version") : t("แก้ไขหลักสูตร", "Edit Curriculum Version")}
-          </h2>
-          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[var(--bg-subtle)] text-[var(--text-muted)] transition-colors" aria-label={t("ปิด", "Close")}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
-          </button>
-        </div>
-
-        <div className="flex-1 overflow-y-auto px-6 py-5 flex flex-col gap-5">
-          {/* Program */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-[var(--text-muted)]">
-              {t("หลักสูตร", "Program")} <span className="text-[var(--s-err-text)]">*</span>
-            </label>
-            <div className="grid grid-cols-3 gap-2">
-              {PROGRAMS.map((p) => (
-                <button
-                  key={p}
-                  type="button"
-                  onClick={() => setProgram(p)}
-                  aria-pressed={program === p}
-                  className={`h-10 rounded-xl border text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] ${
-                    program === p
-                      ? "border-[var(--accent-bright)] bg-[var(--accent-bright)]/10 text-[var(--accent)]"
-                      : "border-[var(--border-subtle)] text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)]"
-                  }`}
-                >
-                  {p}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Label */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-[var(--text-muted)]">
-              {t("ชื่อหลักสูตร (รุ่น)", "Label")} <span className="text-[var(--s-err-text)]">*</span>
-            </label>
-            <input
-              ref={labelRef}
-              value={label}
-              onChange={(e) => setLabel(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSave()}
-              placeholder={t(`เช่น ${program} ${currentYear}`, `e.g. ${program} ${currentYear}`)}
-              className="h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
-            />
-            <p className="text-[11px] text-[var(--text-muted)]">{t("ระบุรุ่น/สาขาให้ชัด — cohort อย่างเดียวไม่พอสำหรับแยกหลักสูตร", "Be specific about batch/track — cohort alone isn't enough to distinguish curriculum")}</p>
-          </div>
-
-          {/* Effective years */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-[var(--text-muted)]">
-                {t("ใช้ตั้งแต่ปี (พ.ศ.)", "Effective From")} <span className="text-[var(--s-err-text)]">*</span>
-              </label>
-              <input
-                type="number"
-                value={effectiveFrom}
-                onChange={(e) => setEffectiveFrom(e.target.value)}
-                className="h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] tabular-nums focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-[var(--text-muted)]">{t("ถึงปี (ไม่บังคับ)", "Effective To (optional)")}</label>
-              <input
-                type="number"
-                value={effectiveTo}
-                onChange={(e) => setEffectiveTo(e.target.value)}
-                placeholder={t("ยังใช้อยู่", "still in use")}
-                className="h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] tabular-nums focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
-              />
-            </div>
-          </div>
-          {effectiveTo.trim() !== "" && toNum !== undefined && !isNaN(toNum) && toNum < fromNum && (
-            <p className="text-xs text-[var(--s-err-text)]">{t("ปีสิ้นสุดต้องไม่น้อยกว่าปีเริ่มใช้", "End year must not be before the start year")}</p>
-          )}
-        </div>
-
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-[var(--border-subtle)]">
-          <button onClick={onClose} className="h-9 px-4 rounded-xl border border-[var(--border-subtle)] text-sm font-medium text-[var(--text-muted)] hover:bg-[var(--bg-subtle)] transition-colors">
+    <Modal open onClose={onClose} size="md" title={mode === "create" ? t("สร้างหลักสูตรใหม่", "New Curriculum Version") : t("แก้ไขหลักสูตร", "Edit Curriculum Version")}
+      footer={
+        <>
+          <button onClick={onClose} className="h-10 px-5 rounded-xl border border-[var(--border)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors">
             {t("ยกเลิก", "Cancel")}
           </button>
           <button
             onClick={handleSave}
             disabled={!isValid}
-            className="h-9 px-5 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] disabled:opacity-50 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
+            className="h-10 px-5 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] disabled:opacity-50 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
           >
             {mode === "create" ? t("สร้างหลักสูตร", "Create Version") : t("บันทึก", "Save")}
           </button>
+        </>
+      }
+    >
+      <div className="flex flex-col gap-5">
+        {/* Program */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-semibold text-[var(--text-muted)]">
+            {t("หลักสูตร", "Program")} <span className="text-[var(--s-err-text)]">*</span>
+          </label>
+          <div className="grid grid-cols-3 gap-2">
+            {PROGRAMS.map((p) => (
+              <button
+                key={p}
+                type="button"
+                onClick={() => setProgram(p)}
+                aria-pressed={program === p}
+                className={`h-10 rounded-xl border text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] ${
+                  program === p
+                    ? "border-[var(--accent-bright)] bg-[var(--accent-bright)]/10 text-[var(--accent)]"
+                    : "border-[var(--border-subtle)] text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)]"
+                }`}
+              >
+                {p}
+              </button>
+            ))}
+          </div>
         </div>
+
+        {/* Label */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-semibold text-[var(--text-muted)]">
+            {t("ชื่อหลักสูตร (รุ่น)", "Label")} <span className="text-[var(--s-err-text)]">*</span>
+          </label>
+          <input
+            ref={labelRef}
+            value={label}
+            onChange={(e) => setLabel(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSave()}
+            placeholder={t(`เช่น ${program} ${currentYear}`, `e.g. ${program} ${currentYear}`)}
+            className="h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
+          />
+          <p className="text-[11px] text-[var(--text-muted)]">{t("ระบุรุ่น/สาขาให้ชัด — cohort อย่างเดียวไม่พอสำหรับแยกหลักสูตร", "Be specific about batch/track — cohort alone isn't enough to distinguish curriculum")}</p>
+        </div>
+
+        {/* Effective years */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold text-[var(--text-muted)]">
+              {t("ใช้ตั้งแต่ปี (พ.ศ.)", "Effective From")} <span className="text-[var(--s-err-text)]">*</span>
+            </label>
+            <input
+              type="number"
+              value={effectiveFrom}
+              onChange={(e) => setEffectiveFrom(e.target.value)}
+              className="h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] tabular-nums focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold text-[var(--text-muted)]">{t("ถึงปี (ไม่บังคับ)", "Effective To (optional)")}</label>
+            <input
+              type="number"
+              value={effectiveTo}
+              onChange={(e) => setEffectiveTo(e.target.value)}
+              placeholder={t("ยังใช้อยู่", "still in use")}
+              className="h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] tabular-nums focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
+            />
+          </div>
+        </div>
+        {effectiveTo.trim() !== "" && toNum !== undefined && !isNaN(toNum) && toNum < fromNum && (
+          <p className="text-xs text-[var(--s-err-text)]">{t("ปีสิ้นสุดต้องไม่น้อยกว่าปีเริ่มใช้", "End year must not be before the start year")}</p>
+        )}
       </div>
-    </div>
+
+    </Modal>
   );
 }
 
-// ── Course template create/edit drawer ─────────────────────────────────────────
+// ── Course template create/edit (centred popup) ─────────────────────────────────────────
 
-function CourseTemplateDrawer({
+function CourseTemplateModal({
   mode,
   template,
   curriculumVersionId,
@@ -444,27 +376,8 @@ function CourseTemplateDrawer({
   const [name, setName] = useState(template?.name ?? "");
   const [description, setDescription] = useState(template?.description ?? "");
   const codeRef = useRef<HTMLInputElement>(null);
-  const dialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { codeRef.current?.focus(); }, []);
-  const handleClose = useCallback(() => onClose(), [onClose]);
-
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) { if (e.key === "Escape") handleClose(); }
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [handleClose]);
-
-  function handleFocusTrap(e: React.KeyboardEvent<HTMLDivElement>) {
-    if (e.key !== "Tab" || !dialogRef.current) return;
-    const focusable = Array.from(dialogRef.current.querySelectorAll<HTMLElement>(
-      'button:not([disabled]),[href],input:not([disabled]):not([tabindex="-1"]),select,textarea,[tabindex]:not([tabindex="-1"])'
-    ));
-    if (focusable.length === 0) return;
-    const first = focusable[0]; const last = focusable[focusable.length - 1];
-    if (e.shiftKey) { if (document.activeElement === first) { last.focus(); e.preventDefault(); } }
-    else { if (document.activeElement === last) { first.focus(); e.preventDefault(); } }
-  }
 
   const isValid = code.trim() !== "" && name.trim() !== "";
 
@@ -479,76 +392,60 @@ function CourseTemplateDrawer({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex">
-      <div className="flex-1 bg-black/40" onClick={onClose} aria-hidden="true" />
-      <div
-        ref={dialogRef}
-        role="dialog" aria-modal="true" aria-labelledby="course-template-drawer-title"
-        className="w-full max-w-md bg-[var(--bg-surface)] flex flex-col shadow-2xl"
-        onKeyDown={handleFocusTrap}
-      >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border-subtle)]">
-          <h2 id="course-template-drawer-title" className="text-base font-bold text-[var(--text-primary)]">
-            {mode === "create" ? t("เพิ่มรายวิชาในหลักสูตร", "New Course Template") : t("แก้ไขรายวิชา", "Edit Course Template")}
-          </h2>
-          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[var(--bg-subtle)] text-[var(--text-muted)] transition-colors" aria-label={t("ปิด", "Close")}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
-          </button>
-        </div>
-
-        <div className="flex-1 overflow-y-auto px-6 py-5 flex flex-col gap-5">
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-[var(--text-muted)]">
-              {t("รหัสวิชา", "Course Code")} <span className="text-[var(--s-err-text)]">*</span>
-            </label>
-            <input
-              ref={codeRef}
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              placeholder={t("เช่น 01076312", "e.g. 01076312")}
-              className="h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] tabular-nums focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
-            />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-[var(--text-muted)]">
-              {t("ชื่อวิชา", "Course Name")} <span className="text-[var(--s-err-text)]">*</span>
-            </label>
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSave()}
-              placeholder={t("เช่น การออกแบบ UX/UI", "e.g. UX/UI Design")}
-              className="h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
-            />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-[var(--text-muted)]">{t("คำอธิบาย", "Description")}</label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={3}
-              placeholder={t("อธิบายรายวิชาโดยย่อ (ไม่บังคับ)", "Brief description (optional)")}
-              className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
-            />
-          </div>
-        </div>
-
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-[var(--border-subtle)]">
-          <button onClick={onClose} className="h-9 px-4 rounded-xl border border-[var(--border-subtle)] text-sm font-medium text-[var(--text-muted)] hover:bg-[var(--bg-subtle)] transition-colors">
+    <Modal open onClose={onClose} size="md" title={mode === "create" ? t("เพิ่มรายวิชาในหลักสูตร", "New Course Template") : t("แก้ไขรายวิชา", "Edit Course Template")}
+      footer={
+        <>
+          <button onClick={onClose} className="h-10 px-5 rounded-xl border border-[var(--border)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors">
             {t("ยกเลิก", "Cancel")}
           </button>
           <button
             onClick={handleSave}
             disabled={!isValid}
-            className="h-9 px-5 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] disabled:opacity-50 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
+            className="h-10 px-5 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] disabled:opacity-50 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
           >
             {mode === "create" ? t("เพิ่มรายวิชา", "Add Course") : t("บันทึก", "Save")}
           </button>
+        </>
+      }
+    >
+      <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-semibold text-[var(--text-muted)]">
+            {t("รหัสวิชา", "Course Code")} <span className="text-[var(--s-err-text)]">*</span>
+          </label>
+          <input
+            ref={codeRef}
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            placeholder={t("เช่น 01076312", "e.g. 01076312")}
+            className="h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] tabular-nums focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
+          />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-semibold text-[var(--text-muted)]">
+            {t("ชื่อวิชา", "Course Name")} <span className="text-[var(--s-err-text)]">*</span>
+          </label>
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSave()}
+            placeholder={t("เช่น การออกแบบ UX/UI", "e.g. UX/UI Design")}
+            className="h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
+          />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-semibold text-[var(--text-muted)]">{t("คำอธิบาย", "Description")}</label>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={3}
+            placeholder={t("อธิบายรายวิชาโดยย่อ (ไม่บังคับ)", "Brief description (optional)")}
+            className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
+          />
         </div>
       </div>
-    </div>
+
+    </Modal>
   );
 }
 
@@ -653,7 +550,7 @@ function CurriculumRow({
   const { t } = useLanguage();
   const { getCourseTemplatesByCurriculum, removeCourseTemplate } = useCurriculum();
   const [expanded, setExpanded] = useState(false);
-  const [templateDrawer, setTemplateDrawer] = useState<"create" | "edit" | null>(null);
+  const [templateModal, setTemplateModal] = useState<"create" | "edit" | null>(null);
   const [editTemplate, setEditTemplate] = useState<CourseTemplate | undefined>(undefined);
   const [pendingDeleteTemplate, setPendingDeleteTemplate] = useState<CourseTemplate | null>(null);
   const [importOpen, setImportOpen] = useState(false);
@@ -745,7 +642,7 @@ function CurriculumRow({
                   {t("นำเข้า CSV", "Import CSV")}
                 </button>
                 <button
-                  onClick={() => { setEditTemplate(undefined); setTemplateDrawer("create"); }}
+                  onClick={() => { setEditTemplate(undefined); setTemplateModal("create"); }}
                   className="h-7 px-2.5 rounded-lg bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-xs font-semibold hover:bg-[var(--accent-solid-hover)] transition-colors"
                 >
                   {t("+ เพิ่มรายวิชา", "+ Add course")}
@@ -760,7 +657,7 @@ function CurriculumRow({
                   <CourseTemplateRow
                     key={tpl.id}
                     template={tpl}
-                    onEdit={() => { setEditTemplate(tpl); setTemplateDrawer("edit"); }}
+                    onEdit={() => { setEditTemplate(tpl); setTemplateModal("edit"); }}
                     onDelete={() => setPendingDeleteTemplate(tpl)}
                   />
                 ))}
@@ -770,16 +667,16 @@ function CurriculumRow({
         )}
       </div>
 
-      {templateDrawer && (
-        <CourseTemplateDrawer
-          mode={templateDrawer}
+      {templateModal && (
+        <CourseTemplateModal
+          mode={templateModal}
           template={editTemplate}
           curriculumVersionId={version.id}
-          onClose={() => setTemplateDrawer(null)}
+          onClose={() => setTemplateModal(null)}
         />
       )}
       {importOpen && (
-        <CourseTemplateImportDrawer
+        <CourseTemplateImportModal
           curriculumVersionId={version.id}
           onClose={() => setImportOpen(false)}
         />
@@ -806,7 +703,7 @@ function CurriculumRow({
 export default function AdminCurriculumPage() {
   const { t } = useLanguage();
   const { curriculumVersions, removeCurriculumVersion, getCourseTemplatesByCurriculum } = useCurriculum();
-  const [drawerMode, setDrawerMode] = useState<"create" | "edit" | null>(null);
+  const [modalMode, setModalMode] = useState<"create" | "edit" | null>(null);
   const [editTarget, setEditTarget] = useState<CurriculumVersion | undefined>(undefined);
   const [pendingDelete, setPendingDelete] = useState<CurriculumVersion | null>(null);
 
@@ -827,7 +724,7 @@ export default function AdminCurriculumPage() {
           </p>
         </div>
         <button
-          onClick={() => { setEditTarget(undefined); setDrawerMode("create"); }}
+          onClick={() => { setEditTarget(undefined); setModalMode("create"); }}
           className="flex items-center gap-2 h-10 px-4 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors shrink-0"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
@@ -888,7 +785,7 @@ export default function AdminCurriculumPage() {
           description={t("สร้างหลักสูตรแรกก่อนเพิ่มรายวิชาและเปิด Section", "Create a curriculum version before adding course templates and opening sections")}
           action={
             <button
-              onClick={() => { setEditTarget(undefined); setDrawerMode("create"); }}
+              onClick={() => { setEditTarget(undefined); setModalMode("create"); }}
               className="flex items-center gap-2 h-9 px-4 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] transition-colors"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
@@ -912,7 +809,7 @@ export default function AdminCurriculumPage() {
                   <CurriculumRow
                     key={v.id}
                     version={v}
-                    onEdit={() => { setEditTarget(v); setDrawerMode("edit"); }}
+                    onEdit={() => { setEditTarget(v); setModalMode("edit"); }}
                     onDelete={() => setPendingDelete(v)}
                   />
                 ))
@@ -930,7 +827,7 @@ export default function AdminCurriculumPage() {
                   <CurriculumRow
                     key={v.id}
                     version={v}
-                    onEdit={() => { setEditTarget(v); setDrawerMode("edit"); }}
+                    onEdit={() => { setEditTarget(v); setModalMode("edit"); }}
                     onDelete={() => setPendingDelete(v)}
                   />
                 ))}
@@ -940,11 +837,11 @@ export default function AdminCurriculumPage() {
         </div>
       )}
 
-      {drawerMode && (
-        <CurriculumDrawer
-          mode={drawerMode}
+      {modalMode && (
+        <CurriculumModal
+          mode={modalMode}
           version={editTarget}
-          onClose={() => setDrawerMode(null)}
+          onClose={() => setModalMode(null)}
         />
       )}
       {pendingDelete && (

@@ -13,7 +13,7 @@ export interface SubmissionRow {
  * table (assignment detail, grading, results) uses this so "grade the row"
  * consistently means "grade the whole team" everywhere. A submission with no
  * groupId (shouldn't normally happen for a group assignment, since the student
- * submit flow always tags one — see TeamFormationDrawer) still gets its own row.
+ * submit flow always tags one — see TeamFormationModal) still gets its own row.
  */
 export function groupSubmissionsByTeam(
   submissions: Submission[],
