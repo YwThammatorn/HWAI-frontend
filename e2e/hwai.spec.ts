@@ -86,7 +86,7 @@ test.describe("Course Detail", () => {
     await expect(resultsLink).toBeVisible();
     await resultsLink.click();
     await page.waitForLoadState("networkidle");
-    await expect(page).toHaveURL(/\/courses\/seed-1\/results/);
+    await expect(page).toHaveURL(/\/courses\/seed-1\/results/, { timeout: 20_000 }); // the dev server compiles the route on first visit
   });
 });
 
