@@ -24,7 +24,7 @@ function StatCard({
         <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">{label}</p>
         {icon}
       </div>
-      <p className="text-3xl font-bold" style={{ color: color ?? "#1B2A4A" }}>
+      <p className="text-2xl font-bold" style={{ color: color ?? "#1B2A4A" }}>
         {value}{" "}
         <span className="text-sm font-normal text-gray-400">{sub}</span>
       </p>
@@ -333,11 +333,11 @@ function GradeAdjustmentTable({
           <table className="w-full min-w-[700px]">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-100">
-                <th scope="col" className="px-4 py-2.5 text-left text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{t("นักศึกษา", "Student")}</th>
-                <th scope="col" className="px-4 py-2.5 text-left text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{t("วันที่ส่ง", "Submitted")}</th>
-                <th scope="col" className="px-4 py-2.5 text-left text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{t("คะแนน AI", "AI Score")}</th>
-                <th scope="col" className="px-4 py-2.5 text-left text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{t("คะแนนอาจารย์", "Instructor Score")}</th>
-                <th scope="col" className="px-4 py-2.5 text-left text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{t("สถานะ", "Status")}</th>
+                <th scope="col" className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">{t("นักศึกษา", "Student")}</th>
+                <th scope="col" className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">{t("วันที่ส่ง", "Submitted")}</th>
+                <th scope="col" className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">{t("คะแนน AI", "AI Score")}</th>
+                <th scope="col" className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">{t("คะแนนอาจารย์", "Instructor Score")}</th>
+                <th scope="col" className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">{t("สถานะ", "Status")}</th>
                 <th scope="col" className="px-4 py-2.5 w-28" aria-label={t("Re-grade", "Re-grade")}></th>
               </tr>
             </thead>

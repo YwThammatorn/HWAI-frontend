@@ -411,11 +411,11 @@ export default function CollaboratorsPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-[var(--border-subtle)] bg-[var(--bg-app)]">
-                  <th scope="col" className="px-6 py-3 text-left text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("ชื่อ", "Name")}</th>
-                  <th scope="col" className="px-4 py-3 text-left text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("อีเมล", "Email")}</th>
-                  <th scope="col" className="px-4 py-3 text-left text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("บทบาท", "Role")}</th>
-                  <th scope="col" className="px-4 py-3 text-left text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("สิทธิ์", "Permissions")}</th>
-                  <th scope="col" className="px-4 py-3 text-right text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("การดำเนินการ", "Action")}</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("ชื่อ", "Name")}</th>
+                  <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("อีเมล", "Email")}</th>
+                  <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("บทบาท", "Role")}</th>
+                  <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("สิทธิ์", "Permissions")}</th>
+                  <th scope="col" className="px-4 py-3 text-right whitespace-nowrap text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("การดำเนินการ", "Action")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--border-subtle)]">

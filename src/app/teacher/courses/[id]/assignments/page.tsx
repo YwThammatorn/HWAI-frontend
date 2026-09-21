@@ -150,7 +150,7 @@ export default function AssignmentsPage() {
         {/* Course header */}
         <div className="flex items-start justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-[var(--text-primary)]">{course.name}</h1>
+            <h1 className="text-2xl font-bold text-[var(--text-primary)]">{course.name}</h1>
             <div className="flex items-center gap-2 mt-1.5 text-sm text-gray-500">
               <span>{sourceLabel[course.source] ?? course.source}</span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">

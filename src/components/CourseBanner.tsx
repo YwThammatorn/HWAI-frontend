@@ -54,7 +54,7 @@ export default function CourseBanner({ coverColor, icon, name, code, overlay }: 
         </div>
         <div className="min-w-0 flex-1">
           {code && <p className="text-xs font-semibold tracking-wide tabular-nums truncate mb-0.5">{code}</p>}
-          <h3 className="font-bold text-lg leading-snug line-clamp-2">{name}</h3>
+          <h3 className="font-bold text-base leading-snug line-clamp-2">{name}</h3>
         </div>
       </div>
       {overlay}

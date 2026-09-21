@@ -77,7 +77,7 @@ export default function CoursesPage() {
         {/* Header */}
         <div className="flex items-end justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-[var(--text-primary)]">{t("รายวิชาของฉัน", "My Courses")}</h1>
+            <h1 className="text-2xl font-bold text-[var(--text-primary)]">{t("รายวิชาของฉัน", "My Courses")}</h1>
             <p className="mt-1 text-sm text-gray-500">
               {t("จัดการรายวิชา งาน และความคืบหน้าของนักศึกษาจากที่นี่", "Manage your classes, assignments, and student progress from here.")}
             </p>
@@ -172,7 +172,7 @@ function EmptyState() {
           <div className="absolute top-8 -left-3 w-2 h-2 rounded-full bg-[var(--accent-bright)] opacity-40"/>
         </div>
 
-        <h2 className="text-xl font-bold text-[var(--text-primary)] mb-2">{t("ยังไม่มีรายวิชาที่ได้รับมอบหมาย", "No courses assigned yet")}</h2>
+        <h2 className="text-base font-bold text-[var(--text-primary)] mb-2">{t("ยังไม่มีรายวิชาที่ได้รับมอบหมาย", "No courses assigned yet")}</h2>
         <p className="text-sm text-gray-500 leading-relaxed">
           {t("ติดต่อแอดมินเพื่อให้เพิ่มคุณเข้ารายวิชา", "Contact your admin to be assigned to a course.")}
         </p>

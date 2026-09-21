@@ -216,7 +216,7 @@ export default function HistoryPage() {
               <span className="text-xs font-semibold tracking-wide uppercase text-gray-500">{t("Credit ที่ใช้ไปทั้งหมด", "Total Credits Used")}</span>
             </div>
             <div className="flex items-end gap-2">
-              <span className="text-3xl font-bold text-[var(--text-primary)] tabular-nums">{totalCreditsUsed.toLocaleString()}</span>
+              <span className="text-2xl font-bold text-[var(--text-primary)] tabular-nums">{totalCreditsUsed.toLocaleString()}</span>
               <span className="text-sm text-gray-400 mb-1">/ {TOTAL_CREDIT_LIMIT.toLocaleString()}</span>
             </div>
             <p className="text-xs text-[var(--accent)] mt-2 font-medium">↑ {usedPct}% {t("ของ credit ทั้งหมดที่ใช้ไป", "of total limit used")}</p>
@@ -229,7 +229,7 @@ export default function HistoryPage() {
               <span className="text-xs font-semibold tracking-wide uppercase text-gray-500">{t("งานที่ตรวจแล้ว", "Assignments Graded")}</span>
             </div>
             <div className="flex items-end gap-2">
-              <span className="text-3xl font-bold text-[var(--text-primary)] tabular-nums">{totalPapersGraded}</span>
+              <span className="text-2xl font-bold text-[var(--text-primary)] tabular-nums">{totalPapersGraded}</span>
               <span className="text-sm text-gray-400 mb-1">{t("ชิ้นงาน", "papers")}</span>
             </div>
             <p className="text-xs text-gray-400 mt-2">{t("เฉลี่ย", "Avg.")} {avgCostPerPaper} {t("credit ต่อชิ้นงาน", "credits per paper")}</p>
@@ -240,7 +240,7 @@ export default function HistoryPage() {
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">{t("ยอด Credit คงเหลือ", "Remaining Balance")}</p>
-                <span className="text-3xl font-bold text-white tabular-nums">{remaining.toLocaleString()}</span>
+                <span className="text-2xl font-bold text-white tabular-nums">{remaining.toLocaleString()}</span>
                 <p className="text-xs text-gray-400 mt-2 leading-relaxed max-w-[140px]">
                   {remainingPct < 30
                     ? t("Credit ใกล้หมดแล้ว กรุณาเติมก่อนตรวจงาน", "You are running low on credits for upcoming assignments.")

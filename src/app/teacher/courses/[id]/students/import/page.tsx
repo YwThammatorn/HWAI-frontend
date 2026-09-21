@@ -370,7 +370,7 @@ export default function ImportStudentsPage() {
                   <polyline points="20 6 9 17 4 12"/>
                 </svg>
               </div>
-              <h2 className="text-xl font-bold text-[var(--text-primary)] mb-2">{t("Import สำเร็จ", "Import Complete")}</h2>
+              <h2 className="text-base font-bold text-[var(--text-primary)] mb-2">{t("Import สำเร็จ", "Import Complete")}</h2>
               <p className="text-sm text-gray-500 mb-8">
                 {t(
                   `เพิ่ม ${validRows.length} นักศึกษา เข้า ${course.name} เรียบร้อยแล้ว`,

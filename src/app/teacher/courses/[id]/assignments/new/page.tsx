@@ -124,7 +124,7 @@ export default function NewAssignmentPage() {
           <span className="text-[var(--accent)] font-medium">{t("สร้างชิ้นงานใหม่", "New Assignment")}</span>
         </div>
 
-        <h1 className="text-3xl font-bold text-[var(--text-primary)]">{t("สร้างชิ้นงานใหม่", "New Assignment")}</h1>
+        <h1 className="text-2xl font-bold text-[var(--text-primary)]">{t("สร้างชิ้นงานใหม่", "New Assignment")}</h1>
         <p className="text-sm text-gray-500 mt-1.5 mb-8">
           {t("สร้างชิ้นงานและตั้งเกณฑ์การให้คะแนนในวิชา", "Create an assignment and set its grading rubric in")}{" "}
           <span className="font-semibold text-[var(--text-primary)]">{course?.name ?? "..."}</span>

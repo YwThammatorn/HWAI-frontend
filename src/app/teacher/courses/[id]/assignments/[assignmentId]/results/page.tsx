@@ -272,7 +272,7 @@ export default function ResultsPage() {
                 </p>
                 {s.icon}
               </div>
-              <p className="text-3xl font-bold" style={{ color: s.color }}>
+              <p className="text-2xl font-bold" style={{ color: s.color }}>
                 {s.value}{" "}
                 <span className="text-sm font-normal text-gray-400">
                   {lang === "th" ? s.subTh : s.subEn}
@@ -346,7 +346,7 @@ export default function ResultsPage() {
               ) : (
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="text-left text-[10px] font-semibold text-gray-400 uppercase tracking-wider border-b border-gray-50">
+                    <tr className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider border-b border-gray-50">
                       <th className="px-6 py-3">{t("ชื่อนักศึกษา", "Student Name")}</th>
                       <th className="px-6 py-3">{t("คะแนน", "Score")}</th>
                       <th className="px-6 py-3">{t("ความมั่นใจ AI", "Confidence")}</th>

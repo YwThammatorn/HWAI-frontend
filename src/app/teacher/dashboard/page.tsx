@@ -186,7 +186,7 @@ export default function DashboardPage() {
                 </svg>
               </div>
             </div>
-            <p className="text-3xl font-extrabold text-[var(--text-primary)]">54</p>
+            <p className="text-2xl font-extrabold text-[var(--text-primary)]">54</p>
             <p className="text-xs text-green-600 mt-1.5 flex items-center gap-0.5">
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><polyline points="18 15 12 9 6 15"/></svg>
               {t("12% จากภาคที่แล้ว", "12% from last semester")}
@@ -204,7 +204,7 @@ export default function DashboardPage() {
                 </svg>
               </div>
             </div>
-            <p className="text-3xl font-extrabold text-[var(--text-primary)]">48</p>
+            <p className="text-2xl font-extrabold text-[var(--text-primary)]">48</p>
             <p className="text-xs text-[var(--s-err-text)] mt-1.5 font-medium">{t("! ต้องดำเนินการด่วน", "! Urgent needs attention")}</p>
           </div>
 
@@ -218,7 +218,7 @@ export default function DashboardPage() {
                 </svg>
               </div>
             </div>
-            <p className="text-3xl font-extrabold text-[var(--text-primary)]">84.2%</p>
+            <p className="text-2xl font-extrabold text-[var(--text-primary)]">84.2%</p>
             <p className="text-xs text-green-600 mt-1.5 flex items-center gap-0.5">
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><polyline points="18 15 12 9 6 15"/></svg>
               {t("ปรับปรุง 2.4%", "2.4% improvement")}
@@ -235,7 +235,7 @@ export default function DashboardPage() {
                 </svg>
               </div>
             </div>
-            <p className="text-3xl font-extrabold text-[var(--text-primary)]">1,200</p>
+            <p className="text-2xl font-extrabold text-[var(--text-primary)]">1,200</p>
             <div className="mt-2">
               <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
                 <div className="h-full bg-purple-400 rounded-full" style={{ width: "70%" }} />
@@ -385,7 +385,7 @@ export default function DashboardPage() {
               </svg>
               <p className="text-xs text-gray-500">{t("เครดิตที่ใช้ทั้งหมด", "Total Credits Used")}</p>
             </div>
-            <p className="text-4xl font-extrabold text-[var(--text-primary)]">3,750 <span className="text-base font-normal text-gray-300">/ 5,000</span></p>
+            <p className="text-2xl font-extrabold text-[var(--text-primary)]">3,750 <span className="text-base font-normal text-gray-300">/ 5,000</span></p>
             <p className="text-xs text-green-600 mt-2">{t("↗ 12% มากกว่าเดือนที่แล้ว", "↗ 12% more than last month")}</p>
           </div>
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
@@ -395,7 +395,7 @@ export default function DashboardPage() {
               </svg>
               <p className="text-xs text-gray-500">{t("งานที่ตรวจแล้ว", "Assignments Graded")}</p>
             </div>
-            <p className="text-4xl font-extrabold text-[var(--text-primary)]">248 <span className="text-base font-normal text-gray-300">{t("งาน", "papers")}</span></p>
+            <p className="text-2xl font-extrabold text-[var(--text-primary)]">248 <span className="text-base font-normal text-gray-300">{t("งาน", "papers")}</span></p>
             <p className="text-xs text-gray-500 mt-2">{t("เฉลี่ย 15 เครดิตต่อกระดาษ", "Avg. 15 credits per paper")}</p>
           </div>
         </div>
@@ -404,7 +404,7 @@ export default function DashboardPage() {
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
           <div className="flex items-start justify-between mb-5">
             <div>
-              <h2 className="text-xl font-extrabold text-[var(--text-primary)]">{t("ประวัติการใช้ AI", "AI Usage History")}</h2>
+              <h2 className="text-base font-extrabold text-[var(--text-primary)]">{t("ประวัติการใช้ AI", "AI Usage History")}</h2>
               <p className="text-xs text-gray-500 mt-0.5">{t("ติดตามกิจกรรมการตรวจงานและการใช้เครดิต", "Track your grading activity and credit consumption.")}</p>
             </div>
             <div className="flex rounded-lg border border-gray-200 overflow-hidden text-xs">

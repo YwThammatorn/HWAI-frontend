@@ -77,7 +77,7 @@ export default function StudentEvaluationPage() {
               <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)] mb-1">
                 {t("คะแนนรวมเท่าที่ตรวจแล้ว", "Total so far")}
               </p>
-              <p className="text-3xl font-bold text-[var(--text-primary)] tabular-nums">
+              <p className="text-2xl font-bold text-[var(--text-primary)] tabular-nums">
                 {gradedCategoryRows.length > 0 ? `${totalSoFar.toFixed(1)}%` : "—"}
               </p>
             </div>
@@ -103,7 +103,7 @@ export default function StudentEvaluationPage() {
                   <div className="text-right shrink-0">
                     {row.percent !== null ? (
                       <>
-                        <p className="text-lg font-bold text-[var(--accent)] tabular-nums">{row.percent.toFixed(0)}%</p>
+                        <p className="text-base font-bold text-[var(--accent)] tabular-nums">{row.percent.toFixed(0)}%</p>
                         <p className="text-[11px] text-[var(--text-muted)] tabular-nums">{row.earnedPoints}/{row.possiblePoints} {t("คะแนน", "pts")}</p>
                       </>
                     ) : (
