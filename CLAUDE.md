@@ -1,5 +1,27 @@
 @AGENTS.md
 
+# Project Memory (CLAUDE.md)
+
+> ไฟล์นี้คือ root memory — อ่านทุก session ก่อนเริ่มงาน รายละเอียดเชิงลึกแยกไว้ใน `.claude/rules/` เพื่อไม่ให้ไฟล์นี้ยาวเกินไป
+
+## Standing rules (แยกไฟล์)
+- Context / session hygiene → `.claude/rules/context-hygiene.md`
+- Refactor & cleanup workflow → `.claude/rules/refactor-protocol.md`
+
+## หลักการหลัก (ย่อ)
+- ก่อนเริ่ม task ที่กระทบวงกว้าง (refactor, migration, เปลี่ยน architecture) → เปิด Plan Mode เสมอ
+- Subtask ต้องเล็กพอให้จบได้ภายใน ~50% ของ context ต่อ session
+- Commit ทันทีที่จบแต่ละ subtask — อย่าปล่อยค้าง
+- Manual /compact ที่ ~50% ของ context — อย่ารอ auto-compact
+- ไม่รู้ = ห้ามเดา → ประกาศ knowledge gap ก่อนเสมอ (รายละเอียดใน context-hygiene.md)
+- เช็ค .claude/skills/ ที่มีอยู่ก่อนเขียนอะไรใหม่เอง — Claude โหลด skill เองอัตโนมัติ ไม่ต้องทำ manifest มือ
+- ห้ามสรุปว่า "เสร็จแล้ว" โดยไม่รัน test จริง (มี hook บังคับอยู่แล้ว ดู .claude/hooks/)
+
+## Current active task
+_(อัปเดตช่องนี้ทุกครั้งที่เริ่ม task ใหม่ — ดูรายละเอียดที่ HANDOFF.md)_
+- Task: -
+- Status: -
+
 # i18n Rule (TH/EN Language Toggle)
 
 Every page with visible Thai or English strings **must** use the `useLanguage` hook.
