@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   INITIAL_NOTIFS,
   formatNotifTime,
@@ -9,6 +10,7 @@ import {
   type NotifType,
 } from "@/lib/notifications";
 import { useLanguage } from "@/context/LanguageContext";
+import { NOTIFICATIONS_DISABLED } from "@/lib/featureFlags";
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 
@@ -181,7 +183,13 @@ function GroupLabel({ label }: { label: string }) {
 
 export default function NotificationsPage() {
   const { t } = useLanguage();
+  const router = useRouter();
   const [notifs, setNotifs] = useState<Notif[]>(INITIAL_NOTIFS);
+
+  // Hidden while NOTIFICATIONS_DISABLED — the page stays in the codebase, but a direct visit bounces away.
+  useEffect(() => {
+    if (NOTIFICATIONS_DISABLED) router.replace("/teacher/courses");
+  }, [router]);
 
   function dismiss(id: string) {
     setNotifs((prev) => prev.filter((n) => n.id !== id));
@@ -199,6 +207,8 @@ export default function NotificationsPage() {
 
   const { today, yesterday, older } = groupNotifs(notifs);
   const isEmpty = notifs.length === 0;
+
+  if (NOTIFICATIONS_DISABLED) return null;
 
   return (
         <main className="w-full px-8 py-8">

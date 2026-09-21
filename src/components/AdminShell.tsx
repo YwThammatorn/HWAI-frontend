@@ -9,7 +9,7 @@ import { useTheme } from "./ThemeProvider";
 import AdminSidebar from "./AdminSidebar";
 import RoleSwitcher from "./RoleSwitcher";
 import { getInitials } from "@/lib/utils";
-import { ADMIN_DASHBOARD_DISABLED } from "@/lib/featureFlags";
+import { ADMIN_DASHBOARD_DISABLED, NOTIFICATIONS_DISABLED } from "@/lib/featureFlags";
 
 export default function AdminShell({ children }: { children: React.ReactNode }) {
   const { user, effectiveRole, logout } = useAuth();
@@ -97,16 +97,18 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           </button>
 
           {/* Notification bell */}
-          <button
-            type="button"
-            aria-label="Notifications"
-            className="relative w-8 h-8 flex items-center justify-center rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-            </svg>
-          </button>
+          {!NOTIFICATIONS_DISABLED && (
+            <button
+              type="button"
+              aria-label="Notifications"
+              className="relative w-8 h-8 flex items-center justify-center rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+              </svg>
+            </button>
+          )}
 
           {/* Avatar + name + logout */}
           <div className="flex items-center gap-2">

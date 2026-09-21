@@ -28,3 +28,14 @@ export const GRADING_SPLIT_DISABLED = true;
 export const TEACHER_HISTORY_DISABLED = true;
 export const TEACHER_DASHBOARD_DISABLED = true;
 export const ADMIN_DASHBOARD_DISABLED = true;
+
+/**
+ * Notifications (the bell in the teacher and admin top bars, and the
+ * /teacher/notifications page) hidden at the user's request (21/9/2569,
+ * "พับเก็บ feature นี้ไปก่อน" — temporary). Same "flag it off, don't delete"
+ * pattern as the flags above: flip to false to bring back the bell and the
+ * page. The page redirects away if visited directly while disabled; the
+ * notification data/model in lib/notifications.ts is untouched. The student
+ * top bar never had a bell.
+ */
+export const NOTIFICATIONS_DISABLED = true;

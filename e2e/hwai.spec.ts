@@ -12,6 +12,12 @@ const LANGUAGE_TOGGLE_DISABLED = true;
 // /teacher/history is hidden from nav and redirects away (17/9/2569, temporary).
 const TEACHER_HISTORY_DISABLED = true;
 
+// Mirrors NOTIFICATIONS_DISABLED in src/lib/featureFlags.ts — keep in sync.
+// The bell (teacher + admin top bars) is gone and /teacher/notifications redirects
+// away (21/9/2569, temporary), so the Notifications Page suite and the unread-badge
+// check are skipped until it's restored.
+const NOTIFICATIONS_DISABLED = true;
+
 const MOCK_USER = { name: "Test Teacher", email: "test@school.edu", role: "teacher" };
 
 /** Inject mock auth session + force English lang before page load. Also seeds
@@ -507,6 +513,7 @@ test.describe("i18n Language Toggle", () => {
 // ── 15. Uncovered Pages ───────────────────────────────────────────────────────
 
 test.describe("Notifications Page", () => {
+  test.skip(NOTIFICATIONS_DISABLED, "Notifications is hidden until NOTIFICATIONS_DISABLED is flipped back to false");
   test.beforeEach(async ({ page }) => { await withAuth(page); });
 
   test("loads and shows notification cards or empty state", async ({ page }) => {
@@ -666,6 +673,7 @@ test.describe("Navbar UI", () => {
   });
 
   test("unread notification badge is visible", async ({ page }) => {
+    test.skip(NOTIFICATIONS_DISABLED, "Notifications is hidden until NOTIFICATIONS_DISABLED is flipped back to false");
     await waitReady(page, "/teacher/dashboard");
     // 3 notifications are unread in INITIAL_NOTIFS — badge should render.
     // Migrated from bg-red-500 to the --danger-solid token during the Slate
