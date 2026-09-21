@@ -1,0 +1,4 @@
+# Shell scripts must stay LF: with core.autocrlf=true a Windows checkout would turn them
+# into CRLF and the "#!/usr/bin/env bash\r" shebang / `set -euo pipefail\r` fail to run
+# (e.g. .claude/hooks/post-edit-verify.sh).
+*.sh text eol=lf
