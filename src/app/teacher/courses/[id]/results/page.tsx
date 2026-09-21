@@ -1,158 +1,446 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCourses } from "@/lib/courses";
+import { useStudents } from "@/lib/students";
+import { useCohortStudents } from "@/lib/cohort-students";
 import { useAssignments } from "@/lib/assignments";
+import { useGradingCategories } from "@/lib/gradingCategories";
+import { buildScoreBook, scoreBookToCsv, toneForPct, type ScoreCell, type ScoreTone } from "@/lib/scoreBook";
 import { useLanguage } from "@/context/LanguageContext";
+import SearchInput from "@/components/SearchInput";
+import FilterSelect from "@/components/FilterSelect";
+import SortableTh from "@/components/SortableTh";
+import StatCard from "@/components/StatCard";
+import EmptyState from "@/components/EmptyState";
 
-function gradeLetter(score: number, max: number): string {
-  const pct = (score / max) * 100;
-  if (pct >= 80) return "A";
-  if (pct >= 70) return "B";
-  if (pct >= 60) return "C";
-  if (pct >= 50) return "D";
-  return "F";
-}
+type SortKey = "id" | "name" | "total";
 
-function gradeClass(letter: string): string {
-  return (
-    { A: "bg-green-100 text-green-700", B: "bg-blue-100 text-blue-700", C: "bg-yellow-100 text-yellow-700",
-      D: "bg-orange-100 text-orange-700", F: "bg-[var(--s-err-bg)] text-[var(--s-err-text)]" }[letter] ?? "bg-gray-100 text-gray-500"
-  );
-}
+// Sticky column geometry (px) — the sticky offsets below depend on these widths.
+const ID_W = 120;
+const NAME_W = 232;
+const TOTAL_W = 132;
+const GRADE_W = 84;
+const HEAD1_H = 45; // height of the category row (h-10 at the 4.5px spacing unit), where row 2 sticks
 
-export default function CourseResultsPage() {
+const TONE: Record<ScoreTone, string> = {
+  ok: "bg-[var(--s-ok-bg)] text-[var(--s-ok-text)]",
+  info: "bg-[var(--s-info-bg)] text-[var(--s-info-text)]",
+  err: "bg-[var(--s-err-bg)] text-[var(--s-err-text)]",
+};
+
+const TEAM_GLYPH = (
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" />
+    <path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
+  </svg>
+);
+
+export default function ScoreBookPage() {
   const { id } = useParams<{ id: string }>();
+  const router = useRouter();
   const { t } = useLanguage();
   const { getCourse } = useCourses();
+  const { getStudentsByCourse } = useStudents();
+  const { findByStudentId } = useCohortStudents();
   const { getAssignmentsByCourse, getSubmissionsByAssignment } = useAssignments();
+  const { getCategoriesByCourse } = useGradingCategories();
+
+  const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  // Click a header to sort; a third click returns to roster order (the default).
+  const [sort, setSort] = useState<{ key: SortKey; dir: "asc" | "desc" } | null>(null);
+  const firstDir = (key: SortKey) => (key === "total" ? "desc" : "asc");
+  function cycleSort(key: SortKey) {
+    setSort((s) => {
+      if (!s || s.key !== key) return { key, dir: firstDir(key) };
+      return s.dir === firstDir(key) ? { key, dir: s.dir === "asc" ? "desc" : "asc" } : null;
+    });
+  }
 
   const course = getCourse(id);
+  const roster = getStudentsByCourse(id);
   const assignments = getAssignmentsByCourse(id);
+  const categories = getCategoriesByCourse(id);
+  const today = new Date().toISOString().split("T")[0];
 
   if (!course) {
     return (
-        <main className="flex-1 flex items-center justify-center text-gray-500 text-sm">
-          {t("ไม่พบรายวิชา", "Course not found")} —{" "}
-          <Link href="/teacher/courses" className="text-[var(--accent)] ml-1 hover:underline">{t("กลับหน้าหลัก", "Back")}</Link>
-        </main>
+      <main className="flex-1 flex items-center justify-center text-[var(--text-secondary)] text-sm">
+        {t("ไม่พบรายวิชานี้", "Course not found")} —{" "}
+        <Link href="/teacher/courses" className="text-[var(--accent)] ml-1 hover:underline">{t("กลับหน้าหลัก", "Back")}</Link>
+      </main>
     );
   }
 
+  const book = buildScoreBook({
+    students: roster.map((s) => ({
+      studentId: s.studentId, firstName: s.firstName, lastName: s.lastName, email: s.email,
+      title: findByStudentId(s.studentId)?.title,
+    })),
+    assignments,
+    categories,
+    submissions: assignments.flatMap((a) => getSubmissionsByAssignment(a.id)),
+    today,
+  });
+
+  const groups = categoryFilter === "all" ? book.groups : book.groups.filter((g) => g.key === categoryFilter);
+  const columns = groups.flatMap((g) => g.columns);
+
+  const q = search.trim().toLowerCase();
+  const rows = book.rows.filter((r) => !q || [
+    r.student.studentId, r.student.title ?? "", r.student.firstName, r.student.lastName,
+    `${r.student.firstName} ${r.student.lastName}`, r.student.email ?? "",
+  ].some((f) => f.toLowerCase().includes(q)));
+  if (sort) {
+    rows.sort((a, b) => {
+      let cmp: number;
+      if (sort.key === "total") {
+        // ungraded students always sink to the bottom, whichever way the column is sorted
+        if (a.total === null || b.total === null) return a.total === b.total ? 0 : a.total === null ? 1 : -1;
+        cmp = a.total - b.total;
+      } else if (sort.key === "name") {
+        cmp = `${a.student.firstName} ${a.student.lastName}`.localeCompare(`${b.student.firstName} ${b.student.lastName}`, "th");
+      } else {
+        cmp = a.student.studentId.localeCompare(b.student.studentId, undefined, { numeric: true });
+      }
+      return sort.dir === "asc" ? cmp : -cmp;
+    });
+  }
+
+  const gradedPct = book.totalCells > 0 ? Math.round((book.gradedCells / book.totalCells) * 100) : 0;
+
+  function exportCsv() {
+    const csv = scoreBookToCsv(book, {
+      id: t("รหัสนักศึกษา", "Student ID"), title: t("คำนำหน้า", "Title"), first: t("ชื่อ", "First name"), last: t("นามสกุล", "Last name"),
+      total: t("คะแนนรวมเท่าที่ตรวจแล้ว", "Total so far"), grade: t("เกรด", "Grade"),
+      pending: t("รอตรวจ", "pending"), missing: t("ไม่ส่ง", "missing"),
+      categoryPct: (name) => `${name} (%)`,
+    });
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${course!.code || course!.name}-score-book.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function renderCell(cell: ScoreCell, assignmentId: string, isGroupWork: boolean) {
+    const recheck = (submissionId: string) => `/teacher/courses/${id}/assignments/${assignmentId}/recheck?sub=${submissionId}`;
+    const chip = "inline-flex items-center justify-center gap-1 min-w-[3.5rem] h-8 px-2 rounded-lg text-sm font-semibold tabular-nums whitespace-nowrap";
+    switch (cell.kind) {
+      case "graded":
+        return (
+          <Link
+            href={recheck(cell.submissionId)}
+            title={t("เปิดดู/ตรวจใหม่", "Open / recheck")}
+            className={`${chip} ${TONE[toneForPct(cell.pct)]} hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition`}
+          >
+            {isGroupWork && <span aria-label={t("คะแนนทีม", "Team score")}>{TEAM_GLYPH}</span>}
+            {Number.isInteger(cell.score) ? cell.score : cell.score.toFixed(1)}
+          </Link>
+        );
+      case "pending":
+        return (
+          <Link
+            href={recheck(cell.submissionId)}
+            className={`${chip} bg-[var(--s-warn-bg)] text-[var(--s-warn-text)] hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition`}
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-current" aria-hidden="true" />
+            {t("รอตรวจ", "Pending")}
+          </Link>
+        );
+      case "missing":
+        return (
+          <span className={`${chip} border border-dashed border-[var(--s-err-text)]/50 text-[var(--s-err-text)] font-medium`}>
+            {t("ไม่ส่ง", "Missing")}
+          </span>
+        );
+      default:
+        return <span className="text-[var(--text-muted)]" title={t("ยังไม่ส่ง", "Not submitted yet")}>—</span>;
+    }
+  }
+
+  const stickyHead = "sticky z-30 bg-[var(--bg-subtle)]";
+  const headBase = "bg-[var(--bg-subtle)] text-xs font-semibold text-[var(--text-muted)] whitespace-nowrap";
+  const headCaps = "uppercase tracking-wider"; // category / summary labels; assignment names keep their own case
+
   return (
-      <main className="w-full px-8 py-8">
-        {/* Breadcrumb */}
-        <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-5 flex-wrap">
-          <Link href="/teacher/courses" className="hover:text-[var(--accent)] transition-colors">{t("รายวิชา", "Courses")}</Link>
-          <span>/</span>
-          <Link href={`/teacher/courses/${id}`} className="hover:text-[var(--accent)] transition-colors">{course.name}</Link>
-          <span>/</span>
-          <span className="text-[var(--text-primary)] font-medium">{t("ผลลัพธ์", "Results")}</span>
+    <main className="w-full px-8 py-8">
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)] mb-6">
+        <Link href="/teacher/courses" className="hover:text-[var(--accent)] transition-colors" aria-label={t("รายวิชาทั้งหมด", "All courses")}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+        </Link>
+        <span>/</span>
+        <Link href={`/teacher/courses/${id}`} className="hover:text-[var(--accent)] transition-colors">{course.name}</Link>
+        <span>/</span>
+        <span className="text-[var(--accent)] font-medium">{t("สมุดคะแนน", "Score Book")}</span>
+      </div>
+
+      {/* Header */}
+      <div className="flex items-start justify-between gap-4 mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">{t("สมุดคะแนน", "Score Book")}</h1>
+          <p className="text-sm text-[var(--text-secondary)]">
+            {course.name} · {roster.length} {t("นักศึกษา", "students")} · {assignments.length} {t("งาน", "assignments")}
+          </p>
         </div>
+        <button
+          type="button"
+          onClick={exportCsv}
+          disabled={roster.length === 0 || assignments.length === 0}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)] active:scale-[.97] disabled:opacity-50 disabled:pointer-events-none transition-colors shrink-0"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+            <line x1="12" y1="12" x2="12" y2="18"/><polyline points="9 15 12 18 15 15"/>
+          </svg>
+          {t("ส่งออก CSV", "Export CSV")}
+        </button>
+      </div>
 
-        <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">{t("ผลการตรวจงาน", "Grading Results")}</h1>
-        <p className="text-sm text-gray-400 mb-8">{course.name}</p>
-
-        {assignments.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-12 text-center">
-            <div className="w-14 h-14 rounded-2xl bg-gray-50 flex items-center justify-center mx-auto mb-4">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="1.5">
-                <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
-              </svg>
-            </div>
-            <p className="text-sm font-medium text-gray-500">{t("ยังไม่มีชิ้นงาน", "No assignments yet")}</p>
-            <p className="text-xs text-gray-400 mt-1">{t("สร้างชิ้นงานก่อนเพื่อดูผลลัพธ์", "Create assignments first to view results")}</p>
+      {assignments.length === 0 || roster.length === 0 ? (
+        <EmptyState
+          iconColor="var(--accent-bright)"
+          icon={
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
+              <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+            </svg>
+          }
+          title={roster.length === 0 ? t("ยังไม่มีนักศึกษาในวิชานี้", "No students in this course yet") : t("ยังไม่มีชิ้นงาน", "No assignments yet")}
+          description={roster.length === 0
+            ? t("เพิ่มนักศึกษาก่อน คะแนนจะขึ้นที่นี่", "Add students first — their scores will appear here")
+            : t("สร้างชิ้นงานก่อน คะแนนจะขึ้นที่นี่", "Create an assignment first — scores will appear here")}
+          action={
+            <Link
+              href={roster.length === 0 ? `/teacher/courses/${id}/students` : `/teacher/courses/${id}/assignments/new`}
+              className="inline-flex items-center h-9 px-4 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[.97] transition-colors"
+            >
+              {roster.length === 0 ? t("ไปที่รายชื่อนักศึกษา", "Go to Students") : t("สร้างชิ้นงาน", "Create Assignment")}
+            </Link>
+          }
+        />
+      ) : (
+        <>
+          {/* Summary */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <StatCard
+              label={t("นักศึกษา", "Students")} value={roster.length} color="var(--s-info-text)" bg="var(--s-info-bg)"
+              icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>}
+            />
+            <StatCard
+              label={t("ตรวจแล้ว", "Graded")} value={gradedPct} suffix="%" color="var(--s-ok-text)" bg="var(--s-ok-bg)"
+              icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/></svg>}
+            />
+            <StatCard
+              label={t("เฉลี่ยทั้งห้อง", "Class average")} value={book.classAverage === null ? 0 : Math.round(book.classAverage)} suffix={book.classAverage === null ? "—" : "%"}
+              color="var(--accent)" bg="var(--accent-subtle)"
+              icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>}
+            />
+            <StatCard
+              label={t("รอตรวจ", "Awaiting grading")} value={book.pendingCells} color="var(--s-warn-text)" bg="var(--s-warn-bg)"
+              onClick={() => router.push(`/teacher/courses/${id}/grading`)}
+              icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="M5 3h14l-2 7H7L5 3z"/><path d="M7 10l-2 11h14L17 10"/></svg>}
+            />
           </div>
-        ) : (
-          <div className="space-y-3">
-            {assignments.map((a) => {
-              const subs = getSubmissionsByAssignment(a.id);
-              const total = subs.length;
-              const graded = subs.filter((s) => s.status === "graded").length;
-              const needsReview = subs.filter((s) => s.status === "need_review").length;
-              const scored = subs.filter((s) => s.aiScore !== null || s.instructorScore !== null);
-              const avg =
-                scored.length > 0
-                  ? scored.reduce((sum, s) => sum + (s.instructorScore ?? s.aiScore ?? 0), 0) / scored.length
-                  : null;
-              const avgLetter = avg !== null ? gradeLetter(avg, a.maxPoints) : null;
-              const allDone = total > 0 && graded === total;
 
-              return (
-                <div
-                  key={a.id}
-                  className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex items-center justify-between gap-4"
+          {/* Toolbar + legend */}
+          <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
+            <div className="flex items-center gap-2 flex-wrap">
+              <SearchInput
+                value={search}
+                onChange={setSearch}
+                placeholder={t("ค้นหานักศึกษา...", "Search students...")}
+                ariaLabel={t("ค้นหานักศึกษา", "Search students")}
+                suggestions={roster.flatMap((s) => [`${s.firstName} ${s.lastName}`, s.studentId])}
+                className="w-56 shrink-0"
+              />
+              {book.groups.length > 1 && (
+                <FilterSelect
+                  value={categoryFilter}
+                  onChange={setCategoryFilter}
+                  ariaLabel={t("กรองตามหมวดคะแนน", "Filter by category")}
+                  icon={<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>}
                 >
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-sm font-semibold text-[var(--text-primary)] truncate">{a.name}</h3>
-                      {total === 0 ? (
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-400 font-medium shrink-0">
-                          {t("ยังไม่มีงานส่ง", "No submissions")}
-                        </span>
-                      ) : allDone ? (
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-medium shrink-0">
-                          {t("เสร็จสิ้น", "Complete")}
-                        </span>
-                      ) : (
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium shrink-0">
-                          {t("กำลังดำเนินการ", "In Progress")}
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-4 text-xs text-gray-400">
-                      <span>{graded}/{total} {t("ตรวจแล้ว", "graded")}</span>
-                      {needsReview > 0 && (
-                        <span className="text-amber-600">{needsReview} {t("รอตรวจสอบ", "needs review")}</span>
-                      )}
-                      {avg !== null && avgLetter && (
-                        <span>
-                          {t("เฉลี่ย:", "Avg:")}{" "}
-                          <span className="font-semibold text-[var(--text-primary)]">{avg.toFixed(1)}</span>
-                          {" "}
-                          <span
-                            className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${gradeClass(avgLetter)}`}
-                          >
-                            {avgLetter}
-                          </span>
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Progress bar */}
-                    {total > 0 && (
-                      <div className="mt-2 h-1 rounded-full bg-gray-100 overflow-hidden">
-                        <div
-                          className="h-full rounded-full bg-[var(--accent-bright)]"
-                          style={{ width: `${(graded / total) * 100}%` }}
-                        />
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-2 shrink-0">
-                    {total === 0 ? null : allDone ? (
-                      <Link
-                        href={`/teacher/courses/${id}/assignments/${a.id}/results`}
-                        className="px-3 py-2 rounded-lg bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-xs font-semibold transition-colors"
-                      >
-                        {t("ดูผลลัพธ์", "View Results")}
-                      </Link>
-                    ) : (
-                      <Link
-                        href={`/teacher/courses/${id}/assignments/${a.id}/grading`}
-                        className="px-3 py-2 rounded-lg border border-gray-200 text-xs text-gray-500 hover:bg-gray-50 transition-colors"
-                      >
-                        {t("ดูความคืบหน้า", "View Progress")}
-                      </Link>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+                  <option value="all">{t("ทุกหมวด", "All categories")}</option>
+                  {book.groups.map((g) => (
+                    <option key={g.key} value={g.key}>{g.category ? `${g.category.name} (${g.category.weight}%)` : t("ไม่มีหมวด", "No category")}</option>
+                  ))}
+                </FilterSelect>
+              )}
+            </div>
+            <ul className="flex items-center gap-3 text-xs text-[var(--text-secondary)]" aria-label={t("คำอธิบายสี", "Legend")}>
+              <li className="inline-flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-[var(--s-ok-bg)] border border-[var(--s-ok-text)]/40" aria-hidden="true" />≥ 80%</li>
+              <li className="inline-flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-[var(--s-info-bg)] border border-[var(--s-info-text)]/40" aria-hidden="true" />60–79%</li>
+              <li className="inline-flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-[var(--s-err-bg)] border border-[var(--s-err-text)]/40" aria-hidden="true" />&lt; 60%</li>
+              <li className="inline-flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-[var(--s-warn-bg)] border border-[var(--s-warn-text)]/40" aria-hidden="true" />{t("รอตรวจ", "Pending")}</li>
+              <li className="inline-flex items-center gap-1.5"><span className="w-3 h-3 rounded border border-dashed border-[var(--s-err-text)]/60" aria-hidden="true" />{t("ไม่ส่ง", "Missing")}</li>
+            </ul>
           </div>
-        )}
-      </main>
+
+          {/* Matrix */}
+          <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] overflow-hidden">
+            <div className="overflow-auto max-h-[calc(100vh-380px)] min-h-[320px]">
+              <table className="w-max min-w-full text-sm border-separate border-spacing-0">
+                <thead>
+                  <tr style={{ height: HEAD1_H }}>
+                    <th colSpan={2} className={`${stickyHead} top-0 left-0`} aria-hidden="true" />
+                    {groups.map((g) => (
+                      <th
+                        key={g.key}
+                        colSpan={g.columns.length}
+                        scope="colgroup"
+                        className={`sticky top-0 z-20 px-4 text-left border-l border-[var(--border-subtle)] ${headBase} ${headCaps} !text-[var(--accent)]`}
+                      >
+                        {g.category ? `${g.category.name} · ${g.category.weight}%` : t("ไม่มีหมวด", "No category")}
+                      </th>
+                    ))}
+                    <th colSpan={2} scope="colgroup" className={`${stickyHead} top-0 right-0 px-4 text-left border-l border-[var(--border-subtle)] ${headBase} ${headCaps}`}>
+                      {t("สรุป", "Summary")}
+                    </th>
+                  </tr>
+                  <tr>
+                    <SortableTh
+                      label={t("รหัส", "Student ID")}
+                      dir={sort?.key === "id" ? sort.dir : undefined}
+                      onClick={() => cycleSort("id")}
+                      hint={t("คลิกเพื่อเรียงตามรหัส (น้อย→มาก → มาก→น้อย → ลำดับเดิม)", "Click to sort by student ID (ascending → descending → roster order)")}
+                      className={`${stickyHead} left-0 bg-[var(--bg-subtle)] border-b border-[var(--border-subtle)]`}
+                      style={{ top: HEAD1_H, width: ID_W, minWidth: ID_W }}
+                    />
+                    <SortableTh
+                      label={t("ชื่อ-นามสกุล", "Name")}
+                      dir={sort?.key === "name" ? sort.dir : undefined}
+                      onClick={() => cycleSort("name")}
+                      hint={t("คลิกเพื่อเรียงตามชื่อ (ก–ฮ → ฮ–ก → ลำดับเดิม)", "Click to sort by name (A–Z → Z–A → roster order)")}
+                      className={`${stickyHead} bg-[var(--bg-subtle)] border-b border-[var(--border-subtle)]`}
+                      style={{ top: HEAD1_H, left: ID_W, width: NAME_W, minWidth: NAME_W }}
+                    />
+                    {columns.map((a) => (
+                      <th
+                        key={a.id}
+                        scope="col"
+                        className={`sticky z-20 px-3 py-1 text-left border-b border-l border-[var(--border-subtle)] ${headBase}`}
+                        style={{ top: HEAD1_H, minWidth: 128 }}
+                      >
+                        <Link
+                          href={`/teacher/courses/${id}/assignments/${a.id}/grading`}
+                          title={a.name}
+                          className="block truncate max-w-[10rem] text-[var(--text-primary)] hover:text-[var(--accent)] hover:underline"
+                        >
+                          {a.name}
+                        </Link>
+                        <span className="block font-normal text-[var(--text-muted)] tabular-nums">
+                          {a.maxPoints} {t("คะแนน", "pts")}{a.submissionType === "group" ? ` · ${t("กลุ่ม", "group")}` : ""}
+                        </span>
+                      </th>
+                    ))}
+                    <SortableTh
+                      label={t("รวม", "Total")}
+                      dir={sort?.key === "total" ? sort.dir : undefined}
+                      onClick={() => cycleSort("total")}
+                      hint={t("คลิกเพื่อเรียงตามคะแนนรวม (มาก→น้อย → น้อย→มาก → ลำดับเดิม)", "Click to sort by total (high → low → low → high → roster order)")}
+                      className={`${stickyHead} bg-[var(--bg-subtle)] border-b border-l border-[var(--border-subtle)]`}
+                      style={{ top: HEAD1_H, right: GRADE_W, width: TOTAL_W, minWidth: TOTAL_W }}
+                    />
+                    <th
+                      scope="col"
+                      className={`${stickyHead} px-4 py-1 text-left border-b border-[var(--border-subtle)] ${headBase} ${headCaps}`}
+                      style={{ top: HEAD1_H, right: 0, width: GRADE_W, minWidth: GRADE_W }}
+                    >
+                      {t("เกรด", "Grade")}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.length === 0 && (
+                    <tr>
+                      <td colSpan={columns.length + 4} className="px-4 py-10 text-center text-sm text-[var(--text-muted)]">
+                        {t("ไม่พบผลการค้นหา", "No results found")}
+                      </td>
+                    </tr>
+                  )}
+                  {rows.map((r) => (
+                    <tr key={r.student.studentId} className="group">
+                      <td
+                        className="sticky left-0 z-10 px-4 py-2 tabular-nums text-[var(--text-secondary)] bg-[var(--bg-surface)] group-hover:bg-[var(--bg-subtle)] border-b border-[var(--border-subtle)]"
+                        style={{ width: ID_W, minWidth: ID_W }}
+                      >
+                        {r.student.studentId}
+                      </td>
+                      <td
+                        className="sticky z-10 px-4 py-2 bg-[var(--bg-surface)] group-hover:bg-[var(--bg-subtle)] border-b border-[var(--border-subtle)]"
+                        style={{ left: ID_W, width: NAME_W, minWidth: NAME_W }}
+                      >
+                        <span className="block truncate font-medium text-[var(--text-primary)]" style={{ maxWidth: NAME_W - 32 }}>
+                          {r.student.title && <span className="font-normal text-[var(--text-secondary)]">{r.student.title} </span>}
+                          {r.student.firstName} {r.student.lastName}
+                        </span>
+                      </td>
+                      {columns.map((a) => (
+                        <td key={a.id} className="px-3 py-2 border-b border-l border-[var(--border-subtle)] group-hover:bg-[var(--bg-subtle)]">
+                          {renderCell(r.cells[a.id], a.id, a.submissionType === "group")}
+                        </td>
+                      ))}
+                      <td
+                        className="sticky z-10 px-4 py-2 tabular-nums bg-[var(--bg-surface)] group-hover:bg-[var(--bg-subtle)] border-b border-l border-[var(--border-subtle)]"
+                        style={{ right: GRADE_W, width: TOTAL_W, minWidth: TOTAL_W }}
+                      >
+                        {r.total === null ? (
+                          <span className="text-[var(--text-muted)]">—</span>
+                        ) : (
+                          <span title={t(`คิดจากหมวดที่มีงานตรวจแล้ว (น้ำหนักรวม ${r.gradedWeight}%)`, `Counts only categories with graded work (${r.gradedWeight}% of the grade so far)`)}>
+                            <span className="font-semibold text-[var(--text-primary)]">{r.total.toFixed(1)}</span>
+                            <span className="text-[var(--text-muted)]"> / {r.gradedWeight}</span>
+                          </span>
+                        )}
+                      </td>
+                      <td
+                        className="sticky z-10 px-4 py-2 bg-[var(--bg-surface)] group-hover:bg-[var(--bg-subtle)] border-b border-[var(--border-subtle)]"
+                        style={{ right: 0, width: GRADE_W, minWidth: GRADE_W }}
+                      >
+                        {r.letter && r.normalized !== null ? (
+                          <span className={`inline-flex items-center justify-center min-w-[2rem] h-7 px-2 rounded-lg text-sm font-bold ${TONE[toneForPct(r.normalized)]}`}>{r.letter}</span>
+                        ) : (
+                          <span className="text-[var(--text-muted)]">—</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td colSpan={2} className="sticky left-0 bottom-0 z-20 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] bg-[var(--bg-subtle)] border-t border-[var(--border-subtle)]">
+                      {t("เฉลี่ยทั้งห้อง", "Class average")}
+                    </td>
+                    {columns.map((a) => {
+                      const avg = book.columnAverages[a.id];
+                      return (
+                        <td key={a.id} className="sticky bottom-0 z-10 px-3 py-2 tabular-nums text-[var(--text-secondary)] bg-[var(--bg-subtle)] border-t border-l border-[var(--border-subtle)]">
+                          {avg === null ? "—" : `${Math.round(avg)}%`}
+                        </td>
+                      );
+                    })}
+                    <td colSpan={2} className="sticky right-0 bottom-0 z-20 px-4 py-2 tabular-nums text-[var(--text-secondary)] bg-[var(--bg-subtle)] border-t border-l border-[var(--border-subtle)]">
+                      {book.classAverage === null ? "—" : `${book.classAverage.toFixed(1)}%`}
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+          <p className="mt-3 text-xs text-[var(--text-muted)]" aria-live="polite">
+            {q
+              ? t(`พบ ${rows.length} จาก ${roster.length} คน`, `${rows.length} of ${roster.length} students`)
+              : t("“รวม” นับเฉพาะหมวดที่มีงานตรวจแล้ว — ค่าเดียวกับที่นักศึกษาเห็นในหน้าผลการประเมิน", "“Total” counts only categories with graded work — the same number students see on their Evaluation page")}
+          </p>
+        </>
+      )}
+    </main>
   );
 }

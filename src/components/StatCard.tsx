@@ -7,9 +7,11 @@ interface StatCardProps {
   bg: string;
   icon: React.ReactNode;
   onClick?: () => void;
+  /** Appended to the number, e.g. "%". */
+  suffix?: string;
 }
 
-export default function StatCard({ label, value, color, bg, icon, onClick }: StatCardProps) {
+export default function StatCard({ label, value, color, bg, icon, onClick, suffix }: StatCardProps) {
   return (
     <div
       onClick={onClick}
@@ -30,7 +32,7 @@ export default function StatCard({ label, value, color, bg, icon, onClick }: Sta
           {label}
         </p>
         <p className="text-2xl font-bold tabular-nums leading-none" style={{ color }}>
-          {value}
+          {value}{suffix}
         </p>
       </div>
     </div>

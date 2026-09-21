@@ -1,16 +1,20 @@
 /** Table column header that sorts on click. `dir` undefined = not the active sort column.
  *  Shared by the admin Students tab and the teacher course roster so both read the same. */
-export default function SortableTh({ label, dir, onClick, hint }: {
+export default function SortableTh({ label, dir, onClick, hint, className = "", style }: {
   label: string;
   dir?: "asc" | "desc";
   onClick: () => void;
   hint: string;
+  /** Extra classes for the <th> (e.g. sticky positioning in a wide matrix). */
+  className?: string;
+  style?: React.CSSProperties;
 }) {
   return (
     <th
       scope="col"
       aria-sort={dir === "asc" ? "ascending" : dir === "desc" ? "descending" : "none"}
-      className="px-4 py-1 text-left text-xs font-semibold uppercase tracking-wider"
+      className={`px-4 py-1 text-left text-xs font-semibold uppercase tracking-wider ${className}`}
+      style={style}
     >
       <button
         type="button"

@@ -274,6 +274,18 @@ Every "add / edit / import" form is a **centred popup**, not a side drawer (stak
 
 **Popup vs confirm dialog:** a small yes/no (delete, deactivate) stays the compact `max-w-sm` confirm dialog with the *solid destructive* button (§4); everything that collects input uses `Modal`.
 
+## 9b. Data tables (teacher roster · admin Students · Score Book)
+
+Settled 21/9/2569 while building the Score Book; the roster and admin Students tables already follow it.
+
+- **Container**: `rounded-2xl` card, `border-[var(--border-subtle)]`, `--bg-surface`, `overflow-hidden`. If the table can grow, scroll *inside* the card (`overflow-auto` + `max-h`), never the page.
+- **Toolbar** sits *above* the card, not inside it (the search suggestion list would be clipped by `overflow-hidden`): search + filters on the left, actions on the right, a count line ("x of y") below or beside.
+- **Header**: `th` is `text-xs` (14px) semibold, uppercase, `tracking-wider`, `--text-muted`, on `--bg-subtle`; sticky when the table scrolls. Sortable columns use `SortableTh` (asc → desc → back to the original order; active column `--accent`; `aria-sort`). A header never wraps — `whitespace-nowrap`; `tests/font-scale.spec.ts` fails any header taller than one line.
+- **Rows**: cells 16px, `border-b --border-subtle`, hover `--bg-subtle`, **no bottom border on the last row** (it doubles up with the card edge). IDs and numbers are `tabular-nums`. Nothing found → one full-width "No results found" row.
+- **Wide matrices** (Score Book): pin the identifying columns left (ID, Name) and the result columns right (Total, Grade) with `sticky` and an *opaque* background (`--bg-surface`, `--bg-subtle` for header / hover) so scrolled cells never show through; category groups get their own first header row showing the weight; the class-average footer row is pinned to the bottom.
+- **Score cells**: graded ≥ 80% `--s-ok-*`, 60–79% `--s-info-*`, < 60% `--s-err-*`; *awaiting grading* is `--s-warn-*` with a dot and the word "Pending"; *missing* (past due, nothing handed in) is a dashed `--s-err-text` outline with the word "Missing"; *not submitted yet* is a muted "—". Colour is never the only signal (text or shape too) and a legend sits above the table. `--s-warn-*` is reserved for "awaiting grading" so a warning colour always means "needs you".
+- **Totals** say what they are out of ("15.0 / 30"): the weighted total counts only categories that already have graded work, and it is the same figure the student sees on the Evaluation page.
+
 ## 10. Migration — old KB patterns → new tokens
 
 | KB Pattern | What it hardcodes today | Maps to |
@@ -298,7 +310,7 @@ Unchanged from the existing stack — no new font introduced.
 1. `--role-ta-*` needs a real contrast-checker pass (see §2 warning).
 2. `globals.css` currently names surface tokens `--bg-surface` (alias of `--bg-card`) — this file uses `--bg-card` as primary. Reconcile naming before merge: rename in `globals.css` or add the alias here, don't maintain two names for the same thing.
 3. `--danger-solid` (#C43A4A) is a new token — nothing in the current codebase uses it yet (existing destructive actions use `bg-red-500`/`bg-red-600` per the earlier button audit). Implementing this file means replacing those, not adding a third destructive color.
-4. Not yet covered here: toast/notification styling, table/pagination controls (modal / popup is §9a). Extend this file when those get designed, don't invent them ad hoc in component code.
+4. Not yet covered here: toast/notification styling and pagination controls (modal / popup is §9a, data tables §9b). Extend this file when those get designed, don't invent them ad hoc in component code.
 
 ---
 
