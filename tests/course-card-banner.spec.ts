@@ -40,8 +40,8 @@ async function seed(page: Page, role: "teacher" | "student") {
   }, { courses: COURSES, teacher: TEACHER, roster: ROSTER, role });
 }
 
-/** The colour band of a card = the <h3>'s grandparent (h3 sits in a text block inside the band, not the body). */
-const band = (card: ReturnType<Page["locator"]>) => card.locator("h3").locator("xpath=../..");
+/** The colour band of a card (marked with data-course-banner by <CourseBanner>). */
+const band = (card: ReturnType<Page["locator"]>) => card.locator("[data-course-banner]");
 const rgb = (hex: string) => {
   const n = parseInt(hex.slice(1), 16);
   return `rgb(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255})`;
@@ -74,6 +74,24 @@ for (const role of ["teacher", "student"] as const) {
       // code is no longer a body field and never fused with the section
       await expect(card.getByText("Code", { exact: true })).toHaveCount(0);
       await expect(card.getByText("01076112 · Sec")).toHaveCount(0);
+    });
+
+    test("the icon sits on the same row as the code and name (left of them, vertically centred on them)", async ({ page }) => {
+      await seed(page, role);
+      await page.goto(`${BASE}${url}`);
+      await page.waitForLoadState("networkidle");
+      const b = band(cardOf(page, "Programming"));
+      const icon = await b.locator("svg").first().boundingBox();
+      const code = await b.getByText("01076112", { exact: true }).boundingBox();
+      const name = await b.locator("h3").boundingBox();
+      const bandBox = await b.boundingBox();
+      expect(icon!.x + icon!.width).toBeLessThanOrEqual(code!.x);        // left of the text
+      const textTop = code!.y, textBottom = name!.y + name!.height;
+      const iconMid = icon!.y + icon!.height / 2;
+      expect(iconMid).toBeGreaterThan(textTop);                            // inside the text block's vertical extent
+      expect(iconMid).toBeLessThan(textBottom);
+      expect(Math.abs(iconMid - (textTop + textBottom) / 2)).toBeLessThan(6); // ...and centred on it
+      expect(icon!.y).toBeGreaterThan(bandBox!.y + bandBox!.height / 2);   // in the lower half — no longer parked at the top
     });
 
     test("text colour follows the cover: ink on a pastel cover, white on a dark one", async ({ page }) => {
@@ -113,7 +131,7 @@ test("teacher: an archived course keeps its veil on the band", async ({ page }) 
   await page.goto(`${BASE}/teacher/courses`);
   await page.waitForLoadState("networkidle");
   await page.getByRole("button", { name: /Archived/ }).click();
-  const card = page.locator("h3", { hasText: "Retired Course" }).locator("xpath=../../..");
+  const card = page.locator("[data-course-banner]", { hasText: "Retired Course" }).locator("xpath=..");
   await expect(card.getByText("Archived", { exact: true })).toBeVisible();
   await expect(card.locator("h3")).toHaveText("Retired Course");
   await expect(card.getByText("01076999", { exact: true })).toBeVisible();

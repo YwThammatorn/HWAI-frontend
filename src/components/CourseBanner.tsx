@@ -27,7 +27,7 @@ export function coverTone(cover: string): "light" | "dark" {
 
 /**
  * Colour band at the top of a course card (My Courses — teacher and student):
- * icon chip on top, course code + name at the bottom, all on the cover colour.
+ * icon chip, course code and name on one row at the bottom of the cover colour.
  * `overlay` is rendered over the whole band (e.g. the "Archived" veil).
  */
 export default function CourseBanner({ coverColor, icon, name, code, overlay }: {
@@ -40,18 +40,22 @@ export default function CourseBanner({ coverColor, icon, name, code, overlay }: 
   const onLight = coverTone(coverColor) === "light";
   return (
     <div
-      className="relative h-40 shrink-0 flex flex-col justify-between p-4"
+      data-course-banner
+      className="relative h-40 shrink-0 flex items-end p-4"
       style={{ background: coverColor, color: onLight ? "#FFFFFF" : DARK_INK }}
     >
-      <div
-        className="w-9 h-9 rounded-xl flex items-center justify-center"
-        style={{ background: onLight ? "rgba(255,255,255,0.22)" : "rgba(15,30,46,0.12)" }}
-      >
-        <CourseIcon iconKey={icon} size={18} />
-      </div>
-      <div className="min-w-0">
-        {code && <p className="text-xs font-semibold tracking-wide tabular-nums truncate mb-0.5">{code}</p>}
-        <h3 className="font-bold text-lg leading-snug line-clamp-2">{name}</h3>
+      {/* icon sits on the same row as the code + name, centred against them */}
+      <div className="flex items-center gap-3 w-full min-w-0">
+        <div
+          className="w-9 h-9 shrink-0 rounded-xl flex items-center justify-center"
+          style={{ background: onLight ? "rgba(255,255,255,0.22)" : "rgba(15,30,46,0.12)" }}
+        >
+          <CourseIcon iconKey={icon} size={18} />
+        </div>
+        <div className="min-w-0 flex-1">
+          {code && <p className="text-xs font-semibold tracking-wide tabular-nums truncate mb-0.5">{code}</p>}
+          <h3 className="font-bold text-lg leading-snug line-clamp-2">{name}</h3>
+        </div>
       </div>
       {overlay}
     </div>
