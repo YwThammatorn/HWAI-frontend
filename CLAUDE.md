@@ -19,8 +19,8 @@
 
 ## Current active task
 _(อัปเดตช่องนี้ทุกครั้งที่เริ่ม task ใหม่ — ดูรายละเอียดที่ HANDOFF.md)_
-- Task: -
-- Status: -
+- Task: Teacher — split Assignments (planning) / Grading (checking), Results → Score Book
+- Status: sub-task 1 of 4 done (sidebar + course-level Grading page + planning-only Assignments list); next = assignment detail + per-assignment grading
 
 # i18n Rule (TH/EN Language Toggle)
 
