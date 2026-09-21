@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useCourses } from "@/lib/courses";
 import { useStudents } from "@/lib/students";
+import { useCohortStudents } from "@/lib/cohort-students";
 import { useLanguage } from "@/context/LanguageContext";
 import EnrollStudentModal from "@/components/EnrollStudentModal";
 
@@ -13,6 +14,7 @@ export default function StudentsRosterPage() {
   const { t } = useLanguage();
   const { getCourse } = useCourses();
   const { getStudentsByCourse } = useStudents();
+  const { findByStudentId } = useCohortStudents();
   const [addOpen, setAddOpen] = useState(false);
 
   const course = getCourse(id);
@@ -108,24 +110,30 @@ export default function StudentsRosterPage() {
                 <p className="text-sm text-gray-500">{students.length} {t("นักศึกษา", "students")}</p>
               </div>
               <div className="overflow-x-auto">
+                {/* Same column layout as the admin Students tab: ID · Title · Name (first + last together) · Email.
+                    The honorific lives on the central student record, so it is looked up by student ID. */}
                 <table className="w-full text-sm">
-                  <thead className="border-b border-gray-50">
-                    <tr className="text-left text-xs text-gray-500 uppercase tracking-wider">
-                      <th className="px-6 py-3 font-medium">#</th>
-                      <th className="px-6 py-3 font-medium">{t("รหัสนักศึกษา", "Student ID")}</th>
-                      <th className="px-6 py-3 font-medium">{t("ชื่อ", "First Name")}</th>
-                      <th className="px-6 py-3 font-medium">{t("นามสกุล", "Last Name")}</th>
-                      <th className="px-6 py-3 font-medium">{t("อีเมล", "Email")}</th>
+                  <thead>
+                    <tr className="border-b border-[var(--border-subtle)]">
+                      {[
+                        { key: "no", label: "#" },
+                        { key: "id", label: t("รหัสนักศึกษา", "Student ID") },
+                        { key: "title", label: t("คำนำหน้า", "Title") },
+                        { key: "name", label: t("ชื่อ-นามสกุล", "Name") },
+                        { key: "email", label: t("อีเมล", "Email") },
+                      ].map((col) => (
+                        <th key={col.key} scope="col" className="px-4 py-2 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{col.label}</th>
+                      ))}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-50">
+                  <tbody>
                     {students.map((s, i) => (
-                      <tr key={s.id} className="hover:bg-gray-50/50">
-                        <td className="px-6 py-3 text-gray-300 text-xs">{i + 1}</td>
-                        <td className="px-6 py-3 tabular-nums text-xs text-gray-500">{s.studentId}</td>
-                        <td className="px-6 py-3 text-[var(--text-primary)]">{s.firstName}</td>
-                        <td className="px-6 py-3 text-[var(--text-primary)]">{s.lastName}</td>
-                        <td className="px-6 py-3 text-gray-500 text-xs">{s.email || "—"}</td>
+                      <tr key={s.id} className="border-b border-[var(--border-subtle)] transition-colors hover:bg-[var(--bg-subtle)]">
+                        <td className="px-4 py-2 text-xs text-[var(--text-muted)] tabular-nums">{i + 1}</td>
+                        <td className="px-4 py-2 text-[var(--text-secondary)] tabular-nums">{s.studentId}</td>
+                        <td className="px-4 py-2 text-[var(--text-secondary)]">{findByStudentId(s.studentId)?.title || "-"}</td>
+                        <td className="px-4 py-2 font-medium text-[var(--text-primary)]">{s.firstName} {s.lastName}</td>
+                        <td className="px-4 py-2 text-[var(--text-secondary)]">{s.email || "—"}</td>
                       </tr>
                     ))}
                   </tbody>
