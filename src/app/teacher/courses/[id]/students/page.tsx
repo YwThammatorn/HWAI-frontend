@@ -8,6 +8,10 @@ import { useStudents } from "@/lib/students";
 import { useCohortStudents } from "@/lib/cohort-students";
 import { useLanguage } from "@/context/LanguageContext";
 import EnrollStudentModal from "@/components/EnrollStudentModal";
+import SearchInput from "@/components/SearchInput";
+import SortableTh from "@/components/SortableTh";
+
+type RosterSort = { key: "id" | "name"; dir: "asc" | "desc" } | null;
 
 export default function StudentsRosterPage() {
   const { id } = useParams<{ id: string }>();
@@ -16,9 +20,33 @@ export default function StudentsRosterPage() {
   const { getStudentsByCourse } = useStudents();
   const { findByStudentId } = useCohortStudents();
   const [addOpen, setAddOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  // Click a header to sort: ascending → descending → back to roster order (the default).
+  const [sort, setSort] = useState<RosterSort>(null);
+  function cycleSort(key: "id" | "name") {
+    setSort((s) => (!s || s.key !== key ? { key, dir: "asc" } : s.dir === "asc" ? { key, dir: "desc" } : null));
+  }
 
   const course = getCourse(id);
   const students = getStudentsByCourse(id);
+  // "#" is the student's place on the roster, so it must not change while sorting or filtering.
+  const rosterNo = new Map(students.map((s, i) => [s.id, i + 1]));
+
+  const q = search.trim().toLowerCase();
+  const visible = students.filter((s) => {
+    if (!q) return true;
+    const title = findByStudentId(s.studentId)?.title ?? "";
+    return [s.studentId, title, s.firstName, s.lastName, `${s.firstName} ${s.lastName}`, s.email ?? ""]
+      .some((f) => f.toLowerCase().includes(q));
+  });
+  if (sort) {
+    visible.sort((a, b) => {
+      const cmp = sort.key === "name"
+        ? `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`, "th")
+        : a.studentId.localeCompare(b.studentId, undefined, { numeric: true });
+      return sort.dir === "asc" ? cmp : -cmp;
+    });
+  }
 
   if (!course) {
     return (
@@ -75,6 +103,24 @@ export default function StudentsRosterPage() {
           </div>
         </div>
 
+        {students.length > 0 && (
+          <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+            <SearchInput
+              value={search}
+              onChange={setSearch}
+              placeholder={t("ค้นหานักศึกษา...", "Search students...")}
+              ariaLabel={t("ค้นหานักศึกษา", "Search students")}
+              className="w-64 shrink-0"
+              suggestions={students.flatMap((s) => [`${s.firstName} ${s.lastName}`, s.studentId])}
+            />
+            <p aria-live="polite" className="text-sm text-[var(--text-muted)]">
+              {q
+                ? t(`พบ ${visible.length} จาก ${students.length} นักศึกษา`, `${visible.length} of ${students.length} students`)
+                : `${students.length} ${t("นักศึกษา", "students")}`}
+            </p>
+          </div>
+        )}
+
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           {students.length === 0 ? (
             <div className="p-12 flex flex-col items-center justify-center text-center">
@@ -106,30 +152,30 @@ export default function StudentsRosterPage() {
             </div>
           ) : (
             <div>
-              <div className="px-6 py-4 border-b border-gray-50">
-                <p className="text-sm text-gray-500">{students.length} {t("นักศึกษา", "students")}</p>
-              </div>
               <div className="overflow-x-auto">
                 {/* Same column layout as the admin Students tab: ID · Title · Name (first + last together) · Email.
                     The honorific lives on the central student record, so it is looked up by student ID. */}
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-[var(--border-subtle)]">
-                      {[
-                        { key: "no", label: "#" },
-                        { key: "id", label: t("รหัสนักศึกษา", "Student ID") },
-                        { key: "title", label: t("คำนำหน้า", "Title") },
-                        { key: "name", label: t("ชื่อ-นามสกุล", "Name") },
-                        { key: "email", label: t("อีเมล", "Email") },
-                      ].map((col) => (
-                        <th key={col.key} scope="col" className="px-4 py-2 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{col.label}</th>
-                      ))}
+                      <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">#</th>
+                      <SortableTh label={t("รหัสนักศึกษา", "Student ID")} dir={sort?.key === "id" ? sort.dir : undefined} onClick={() => cycleSort("id")}
+                        hint={t("คลิกเพื่อเรียงตามรหัส (น้อย→มาก → มาก→น้อย → ลำดับเดิม)", "Click to sort by student ID (ascending → descending → roster order)")} />
+                      <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("คำนำหน้า", "Title")}</th>
+                      <SortableTh label={t("ชื่อ-นามสกุล", "Name")} dir={sort?.key === "name" ? sort.dir : undefined} onClick={() => cycleSort("name")}
+                        hint={t("คลิกเพื่อเรียงตามชื่อ (ก–ฮ → ฮ–ก → ลำดับเดิม)", "Click to sort by name (A–Z → Z–A → roster order)")} />
+                      <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("อีเมล", "Email")}</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {students.map((s, i) => (
-                      <tr key={s.id} className="border-b border-[var(--border-subtle)] transition-colors hover:bg-[var(--bg-subtle)]">
-                        <td className="px-4 py-2 text-xs text-[var(--text-muted)] tabular-nums">{i + 1}</td>
+                    {visible.length === 0 && (
+                      <tr>
+                        <td colSpan={5} className="px-4 py-8 text-center text-sm text-[var(--text-muted)]">{t("ไม่พบผลการค้นหา", "No results found")}</td>
+                      </tr>
+                    )}
+                    {visible.map((s) => (
+                      <tr key={s.id} className="border-b border-[var(--border-subtle)] last:border-b-0 transition-colors hover:bg-[var(--bg-subtle)]">
+                        <td className="px-4 py-2 text-xs text-[var(--text-muted)] tabular-nums">{rosterNo.get(s.id)}</td>
                         <td className="px-4 py-2 text-[var(--text-secondary)] tabular-nums">{s.studentId}</td>
                         <td className="px-4 py-2 text-[var(--text-secondary)]">{findByStudentId(s.studentId)?.title || "-"}</td>
                         <td className="px-4 py-2 font-medium text-[var(--text-primary)]">{s.firstName} {s.lastName}</td>
