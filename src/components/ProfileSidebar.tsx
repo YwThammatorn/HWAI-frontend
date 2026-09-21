@@ -137,6 +137,14 @@ const COLLABORATORS_ICON = (
   </svg>
 );
 
+const GRADING_ICON = (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <rect x="8" y="2" width="8" height="4" rx="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    <path d="m9 14 2 2 4-4" />
+  </svg>
+);
+
 const GRADING_SPLIT_ICON = (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <path d="M9 11l3 3L22 4" />
@@ -172,6 +180,15 @@ export default function ProfileSidebar() {
     return pathname === href || pathname.startsWith(href + "/");
   }
 
+  // Per-assignment sub-pages belong to Grading / Score Book, not to Assignments:
+  //   /teacher/courses/[id]/<section>/<assignmentId>/<leaf>
+  const seg = pathname.split("/");
+  const section = activeCourseId ? seg[4] : undefined;
+  const leaf = seg[6];
+  const onGrading = section === "grading" || (section === "assignments" && (leaf === "grading" || leaf === "recheck"));
+  const onScoreBook = section === "results" || (section === "assignments" && leaf === "results");
+  const onAssignments = section === "assignments" && !onGrading && !onScoreBook;
+
   const MAIN_NAV = [
     { label: t("รายวิชา", "Courses"),     href: "/teacher/courses",   active: pathname.startsWith("/teacher/courses"), icon: COURSES_ICON   },
     ...(TEACHER_HISTORY_DISABLED ? [] : [
@@ -187,13 +204,15 @@ export default function ProfileSidebar() {
     ? [
         // Order: 1-2 checked daily, 3-5 grading workflow, 6-8 term-setup/planning,
         // 9-11 course administration (roster/staffing/settings) — proposed to and
-        // confirmed by the user 15/9/2569.
+        // confirmed by the user 15/9/2569. 21/9/2569: Assignments (planning) split from
+        // Grading (checking); Results became the Score Book.
         { label: t("ภาพรวม", "Overview"),        href: `/teacher/courses/${activeCourseId}`,               active: isAt(`/teacher/courses/${activeCourseId}`, true), icon: OVERVIEW_ICON       },
         ...(ANNOUNCEMENTS_DISABLED ? [] : [
           { label: t("ประกาศ", "Announcements"), href: `/teacher/courses/${activeCourseId}/announcements`,       active: isAt(`/teacher/courses/${activeCourseId}/announcements`), icon: ANNOUNCEMENTS_ICON  },
         ]),
-        { label: t("งาน/การบ้าน", "Assignments"), href: `/teacher/courses/${activeCourseId}/assignments`,   active: isAt(`/teacher/courses/${activeCourseId}/assignments`),   icon: ASSIGNMENTS_ICON   },
-        { label: t("ผลการเรียน", "Results"),      href: `/teacher/courses/${activeCourseId}/results`,       active: isAt(`/teacher/courses/${activeCourseId}/results`),       icon: RESULTS_ICON        },
+        { label: t("งาน/การบ้าน", "Assignments"), href: `/teacher/courses/${activeCourseId}/assignments`,   active: onAssignments, icon: ASSIGNMENTS_ICON   },
+        { label: t("ตรวจงาน", "Grading"),         href: `/teacher/courses/${activeCourseId}/grading`,       active: onGrading,     icon: GRADING_ICON        },
+        { label: t("สมุดคะแนน", "Score Book"),    href: `/teacher/courses/${activeCourseId}/results`,       active: onScoreBook,   icon: RESULTS_ICON        },
         ...(GRADING_SPLIT_DISABLED ? [] : [
           { label: t("แบ่งงานตรวจ", "Grading Split"), href: `/teacher/courses/${activeCourseId}/grading-split`, active: isAt(`/teacher/courses/${activeCourseId}/grading-split`), icon: GRADING_SPLIT_ICON },
         ]),
