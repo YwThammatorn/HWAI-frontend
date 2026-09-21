@@ -49,13 +49,15 @@ async function seedTeacher(page: Page, opts: { withAssignment?: boolean } = {}) 
 }
 
 test.describe("Teacher My Courses — Code and Section are separate", () => {
-  test("card shows Code, Section and Term as their own fields", async ({ page }) => {
+  test("card shows Code (in the colour band), Section and Term as their own fields", async ({ page }) => {
     await seedTeacher(page);
     await page.goto(`${BASE}/teacher/courses`);
     await page.waitForLoadState("networkidle");
     const card = page.getByRole("link", { name: /Programming/ });
     const field = (label: string) => card.getByText(label, { exact: true }).locator("xpath=following-sibling::p[1]");
-    await expect(field("Code")).toHaveText("01076112");
+    // The code moved up into the colour band (see course-card-banner.spec.ts) — no "Code" field in the body any more
+    await expect(card.getByText("01076112", { exact: true })).toHaveCount(1);
+    await expect(card.getByText("Code", { exact: true })).toHaveCount(0);
     await expect(field("Section")).toHaveText("1");
     await expect(field("Term")).toHaveText("1/2569");
     await expect(card.getByText("01076112 · Sec")).toHaveCount(0);
