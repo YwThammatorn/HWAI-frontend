@@ -221,25 +221,23 @@ test.describe("Recheck", () => {
   });
 });
 
-// ── 7. Course Results Overview ────────────────────────────────────────────────
+// ── 7. Course Score Book (was "Course Results Overview" until 21/9/2569) ──────────────────────────────────
+// The full matrix behaviour (cells, totals, sort, export …) is covered in tests/teacher-score-book.spec.ts;
+// this only checks the page mounts for the shared seed course.
 
 test.describe("Course Results", () => {
   test.beforeEach(async ({ page }) => { await withAuth(page); });
 
-  test("shows assignment list with links", async ({ page }) => {
+  test("the Score Book page loads with its title", async ({ page }) => {
     await waitReady(page, "/teacher/courses/seed-1/results");
-    const assignmentLinks = page.locator("a[href*='/assignments/']");
-    await expect(assignmentLinks.first()).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Score Book" })).toBeVisible();
   });
 
-  test("has links to results or grading per assignment", async ({ page }) => {
+  test("shows the matrix, or an empty state that leads the teacher to fix it", async ({ page }) => {
     await waitReady(page, "/teacher/courses/seed-1/results");
-    const hrefs = await page.locator("a[href*='/assignments/']").evaluateAll(
-      (els) => els.map((el) => el.getAttribute("href") ?? "")
-    );
-    expect(hrefs.length).toBeGreaterThan(0);
-    const hasGradingOrResults = hrefs.some((h) => /\/(grading|results)$/.test(h));
-    expect(hasGradingOrResults).toBe(true);
+    const matrix = page.locator("main table");
+    const emptyAction = page.getByRole("link", { name: /go to students|create assignment/i });
+    await expect(matrix.or(emptyAction).first()).toBeVisible();
   });
 });
 

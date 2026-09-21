@@ -135,6 +135,7 @@ test.describe("Table headers are admin's 14px", () => {
     ["grading list", `${C}/assignments/a-mock-1/grading`],
     ["results", `${C}/assignments/a-mock-1/results`],
     ["roster", `${C}/students`],
+    ["score book", `${C}/results`],
   ];
   for (const [name, url] of cases) {
     test(name, async ({ page }) => {
