@@ -252,3 +252,130 @@ test.describe("Course Grading page", () => {
     await expect(page.getByText("รอนักศึกษาส่งงาน").first()).toBeVisible();
   });
 });
+
+// ── Sub-task 2: assignment detail = planning, per-assignment grading = stats + submissions ──────────────
+
+test.describe("Assignment detail is planning only", () => {
+  test("shows the brief, the details card and the rubric — and no submissions table or stats", async ({ page }) => {
+    await open(page, "/assignments/a-done");
+    await expect(page.getByRole("heading", { level: 1, name: "Done Quiz" })).toBeVisible();
+    await expect(page.getByText("Done Quiz description")).toBeVisible();
+    const details = page.getByRole("complementary", { name: "Details" });
+    await expect(details).toContainText("Jan 10, 2026");
+    await expect(details.getByText("Max points").locator("xpath=following-sibling::dd")).toHaveText("100");
+    await expect(details).toContainText("Homework (40%)");
+    await expect(details).toContainText("Individual");
+    await expect(details).toContainText("PDF");
+    await expect(page.getByText("Past due — Due Jan 10, 2026")).toBeVisible();
+    // gone: stat cards, submissions table, search, status filter
+    for (const gone of ["Submissions", "Average Grade", "Search students...", "Filter: All Status", "Student Name"]) {
+      await expect(page.getByText(gone, { exact: false })).toHaveCount(0);
+    }
+    await expect(page.locator("main table")).toHaveCount(1); // only the rubric table
+  });
+
+  test("rubric card lists criteria with weights and a 100% total; a missing rubric is flagged", async ({ page }) => {
+    await open(page, "/assignments/a-done");
+    const rubric = page.getByRole("region", { name: "Rubric" });
+    await expect(rubric).toContainText("Quality");
+    await expect(rubric).toContainText("1 criteria");
+    await expect(rubric.getByRole("row", { name: /Total/ })).toContainText("100%");
+    await expect(rubric.getByRole("link", { name: "Edit Rubric" })).toHaveAttribute("href", "/teacher/courses/c-gs/assignments/a-done/edit");
+
+    await page.goto(`${BASE}/teacher/courses/c-gs/assignments/a-review`);
+    await page.waitForLoadState("networkidle");
+    await expect(page.getByText("No rubric yet")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Add Rubric" })).toHaveAttribute("href", "/teacher/courses/c-gs/assignments/a-review/edit");
+  });
+
+  test("Go to grading carries the needs-review count and Edit Assignment goes to the form", async ({ page }) => {
+    await open(page, "/assignments/a-review");
+    const go = page.getByRole("link", { name: /Go to grading/ });
+    await expect(go).toHaveAttribute("href", "/teacher/courses/c-gs/assignments/a-review/grading");
+    await expect(go.getByLabel("1 need review")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Edit Assignment" })).toHaveAttribute("href", "/teacher/courses/c-gs/assignments/a-review/edit");
+    // an assignment with nothing to review has no badge
+    await page.goto(`${BASE}/teacher/courses/c-gs/assignments/a-done`);
+    await page.waitForLoadState("networkidle");
+    await expect(page.getByRole("link", { name: /Go to grading/ }).getByLabel(/need review/)).toHaveCount(0);
+  });
+
+  test("group assignment shows its member limit", async ({ page }) => {
+    await open(page, "/assignments/a-wait");
+    await expect(page.getByRole("complementary", { name: "Details" })).toContainText("≤ 3 members");
+    await expect(page.getByRole("complementary", { name: "Details" })).toContainText("Group");
+  });
+
+  test("Thai UI", async ({ page }) => {
+    await open(page, "/assignments/a-done", { lang: "th" });
+    await expect(page.getByRole("link", { name: /ไปตรวจงาน/ })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "เกณฑ์การให้คะแนน" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "รายละเอียด" })).toBeVisible();
+  });
+});
+
+test.describe("Per-assignment grading page took over the stats and the submissions list", () => {
+  // the four cards sit in the grid above the table ("Submitted" is also a column header, so scope to the grid)
+  const statCard = (page: Page, label: string) => page.locator("main div.grid > div").filter({ has: page.getByText(label, { exact: true }) });
+
+  test("stat cards: processed, submitted x / enrolled, needs review, average", async ({ page }) => {
+    await open(page, "/assignments/a-review/grading");
+    await expect(statCard(page, "Processed")).toContainText("1");
+    await expect(statCard(page, "Submitted")).toContainText("3");
+    await expect(statCard(page, "Submitted")).toContainText("/ 4 · 1 pending");
+    await expect(statCard(page, "Needs Review")).toContainText("1");
+    await expect(statCard(page, "Avg. Score")).toBeVisible();
+  });
+
+  test("lists every submission with a Review / Recheck link to the recheck page", async ({ page }) => {
+    await open(page, "/assignments/a-review/grading");
+    await expect(page.locator("main tbody tr")).toHaveCount(3);
+    await expect(page.getByRole("link", { name: "Review", exact: true })).toHaveAttribute("href", "/teacher/courses/c-gs/assignments/a-review/recheck?sub=s3");
+    await expect(page.getByRole("link", { name: "Recheck", exact: true })).toHaveAttribute("href", "/teacher/courses/c-gs/assignments/a-review/recheck?sub=s4");
+    // the not-graded row has nothing to review yet
+    const notGraded = page.locator("main tbody tr", { hasText: "Student 64070703" });
+    await expect(notGraded.getByRole("link")).toHaveCount(0);
+    await expect(page.getByText("Showing 1–3 of 3 submissions")).toBeVisible();
+  });
+
+  test("status filter carries counts and narrows the table", async ({ page }) => {
+    await open(page, "/assignments/a-review/grading");
+    await expect(page.getByRole("tab", { name: /^All\s*3$/ })).toBeVisible();
+    await page.getByRole("tab", { name: /Needs review/ }).click();
+    await expect(page.locator("main tbody tr")).toHaveCount(1);
+    await expect(page.getByText("Student 64070701")).toBeVisible();
+    await page.getByRole("tab", { name: /Not graded/ }).click();
+    await expect(page.getByText("Student 64070703")).toBeVisible();
+    await expect(page.getByText("Showing 1–1 of 1 submissions")).toBeVisible();
+    await page.getByRole("tab", { name: /^Graded\s*1$/ }).click();
+    await expect(page.getByText("Student 64070702")).toBeVisible();
+  });
+
+  test("search narrows by name or email; no match says so and clearing restores", async ({ page }) => {
+    await open(page, "/assignments/a-review/grading");
+    const box = page.getByRole("combobox", { name: "Search students" });
+    await box.fill("64070702");
+    await expect(page.locator("main tbody tr")).toHaveCount(1);
+    await box.fill("zzzz");
+    await expect(page.getByText("No results found")).toBeVisible();
+    await box.fill("");
+    await expect(page.locator("main tbody tr")).toHaveCount(3);
+  });
+
+  test("filtering does not lose an edited score", async ({ page }) => {
+    await open(page, "/assignments/a-review/grading");
+    const input = page.getByLabel("Instructor score for Student 64070701");
+    await input.fill("95");
+    await page.getByRole("tab", { name: /Graded/ }).click();   // row is filtered out …
+    await page.getByRole("tab", { name: /^All/ }).click();     // … and back
+    await expect(page.getByLabel("Instructor score for Student 64070701")).toHaveValue("95");
+    await expect(page.getByRole("button", { name: /Save 1 change/ })).toBeEnabled();
+  });
+
+  test("breadcrumb goes Courses / course / Grading / assignment", async ({ page }) => {
+    await open(page, "/assignments/a-review/grading");
+    const crumbs = page.locator("main div.flex.items-center").first();
+    await expect(crumbs.getByRole("link", { name: "Grading" })).toHaveAttribute("href", "/teacher/courses/c-gs/grading");
+    await expect(crumbs.getByRole("link", { name: "Review Me" })).toHaveAttribute("href", "/teacher/courses/c-gs/assignments/a-review");
+  });
+});

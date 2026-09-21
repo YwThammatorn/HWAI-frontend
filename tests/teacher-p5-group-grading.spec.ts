@@ -92,10 +92,11 @@ async function seedTeacher(page: Page, opts: { submissions?: unknown[]; groups?:
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
+// The submissions list lives on the assignment's Grading page since 21/9/2569 (it used to be on the detail page).
 test.describe("P5 — Teacher submissions table: group assignments merge into team rows", () => {
   test("shows one row per team with every member's name, plus a separate row for an unteamed submission", async ({ page }) => {
     await seedTeacher(page);
-    await page.goto(`${BASE}/teacher/courses/c-tp5/assignments/a-tp5-1`);
+    await page.goto(`${BASE}/teacher/courses/c-tp5/assignments/a-tp5-1/grading`);
     await page.waitForLoadState("networkidle");
 
     await expect(page.getByText("Prototype Pals")).toBeVisible();
@@ -111,7 +112,7 @@ test.describe("P5 — Teacher submissions table: group assignments merge into te
 
   test("a non-group assignment is unaffected — still one row per student", async ({ page }) => {
     await seedTeacher(page, { submissions: [INDIVIDUAL_SUBMISSION] });
-    await page.goto(`${BASE}/teacher/courses/c-tp5/assignments/a-tp5-2`);
+    await page.goto(`${BASE}/teacher/courses/c-tp5/assignments/a-tp5-2/grading`);
     await page.waitForLoadState("networkidle");
     await expect(page.getByText("Fah Test")).toBeVisible();
     await expect(page.getByRole("link", { name: /^review$/i })).toBeVisible();

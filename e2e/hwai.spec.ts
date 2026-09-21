@@ -102,31 +102,20 @@ test.describe("Course Detail", () => {
 test.describe("Assignment Detail", () => {
   test.beforeEach(async ({ page }) => { await withAuth(page); });
 
-  test("a-seed-1-1 (all graded) shows View Results button", async ({ page }) => {
+  // 21/9/2569: the detail page is planning only — the submissions table, stats and Review / Recheck
+  // links moved to the assignment's Grading page (see "Grading Progress" below).
+  test("a-seed-1-1 detail page leads to grading with a Go to grading button", async ({ page }) => {
     await waitReady(page, "/teacher/courses/seed-1/assignments/a-seed-1-1");
-    const btn = page.getByRole("link", { name: /view results/i }).first();
+    const btn = page.getByRole("link", { name: /go to grading/i }).first();
     await expect(btn).toBeVisible();
-    await expect(btn).toHaveAttribute("href", /\/results/);
+    await expect(btn).toHaveAttribute("href", /\/a-seed-1-1\/grading/);
   });
 
-  test("a-seed-1-2 (partial) shows Start Grading button", async ({ page }) => {
+  test("a-seed-1-2 detail page also leads to grading, and no longer lists submissions", async ({ page }) => {
     await waitReady(page, "/teacher/courses/seed-1/assignments/a-seed-1-2");
-    const btn = page.getByRole("link", { name: /start grading/i }).first();
-    await expect(btn).toBeVisible();
-    await expect(btn).toHaveAttribute("href", /\/grading/);
-  });
-
-  test("submissions table shows Recheck links for graded rows", async ({ page }) => {
-    await waitReady(page, "/teacher/courses/seed-1/assignments/a-seed-1-1");
-    await expect(page.getByRole("link", { name: /recheck/i }).first()).toBeVisible();
-  });
-
-  test("search box is present and accepts input", async ({ page }) => {
-    await waitReady(page, "/teacher/courses/seed-1/assignments/a-seed-1-1");
-    const search = page.getByPlaceholder("Search students...");
-    await expect(search).toBeVisible();
-    await search.fill("test");
-    await expect(search).toHaveValue("test");
+    await expect(page.getByRole("link", { name: /go to grading/i }).first()).toHaveAttribute("href", /\/a-seed-1-2\/grading/);
+    await expect(page.getByPlaceholder("Search students...")).toHaveCount(0);
+    await expect(page.getByRole("link", { name: /recheck|start grading/i })).toHaveCount(0);
   });
 });
 
@@ -148,6 +137,20 @@ test.describe("Grading Progress", () => {
     await expect(
       page.getByRole("link", { name: /view results/i }).first()
     ).toBeVisible();
+  });
+
+  // moved here from the old assignment detail page (21/9/2569)
+  test("submissions table shows Recheck links for graded rows", async ({ page }) => {
+    await waitReady(page, "/teacher/courses/seed-1/assignments/a-seed-1-1/grading");
+    await expect(page.getByRole("link", { name: /recheck/i }).first()).toBeVisible();
+  });
+
+  test("search box is present and accepts input", async ({ page }) => {
+    await waitReady(page, "/teacher/courses/seed-1/assignments/a-seed-1-1/grading");
+    const search = page.getByPlaceholder("Search students...");
+    await expect(search).toBeVisible();
+    await search.fill("test");
+    await expect(search).toHaveValue("test");
   });
 });
 
