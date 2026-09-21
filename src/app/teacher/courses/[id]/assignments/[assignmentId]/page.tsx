@@ -1,28 +1,13 @@
 "use client";
 
-import { useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useCourses } from "@/lib/courses";
-import { useAssignments, Submission } from "@/lib/assignments";
+import { useAssignments } from "@/lib/assignments";
 import { useGradingCategories } from "@/lib/gradingCategories";
-import { useStudents } from "@/lib/students";
-import { useStudentGroups } from "@/lib/studentGroups";
-import { groupSubmissionsByTeam, SubmissionRow } from "@/lib/groupSubmissions";
 import { useLanguage } from "@/context/LanguageContext";
-import SearchInput from "@/components/SearchInput";
+import AssignmentTypeBadge from "@/components/AssignmentTypeBadge";
 import { AttachmentList } from "@/components/AssignmentAttachments";
-
-const AVATAR_COLORS = ["#4F46E5", "#7C3AED", "#BE185D", "#B45309", "#047857", "#0369A1", "#C2410C", "#0E7490"];
-
-function avatarColor(name: string) {
-  return AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length];
-}
-
-function initials(name: string) {
-  const parts = name.trim().split(" ");
-  return parts.slice(0, 2).map((p) => p[0] ?? "").join("").toUpperCase();
-}
 
 function fmtDate(dateStr: string) {
   return new Date(dateStr + "T00:00:00").toLocaleDateString("en-US", {
@@ -30,428 +15,223 @@ function fmtDate(dateStr: string) {
   });
 }
 
-function fmtDateTime(iso: string) {
-  const d = new Date(iso);
-  return (
-    d.toLocaleDateString("en-US", { month: "short", day: "numeric" }) +
-    ", " +
-    d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })
-  );
-}
-
-function StatusBadge({ status }: { status: Submission["status"] }) {
-  const { t } = useLanguage();
-  const cfg = {
-    need_review: { label: t("รอตรวจสอบ", "Need Review"), className: "bg-purple-100 text-purple-700" },
-    not_graded:  { label: t("ยังไม่ตรวจ", "Not Graded"),  className: "bg-[var(--s-err-bg)] text-[var(--s-err-text)]" },
-    graded:      { label: t("ตรวจแล้ว", "Graded"),      className: "bg-green-100 text-green-700" },
-  }[status];
-  return (
-    <span className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium ${cfg.className}`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${status === "need_review" ? "bg-purple-400" : status === "not_graded" ? "bg-[var(--s-err-text)]" : "bg-green-400"}`} />
-      {cfg.label}
-    </span>
-  );
-}
-
+// Planning view of one assignment: what it is, when it is due, how it is scored.
+// Everything about checking the submissions (stats, table, Review / Recheck) is on the Grading page.
 export default function ViewAssignmentPage() {
   const { id, assignmentId } = useParams<{ id: string; assignmentId: string }>();
-  const { t, lang } = useLanguage();
+  const { t } = useLanguage();
   const { getCourse } = useCourses();
-  const { getAssignment, getSubmissionsByAssignment } = useAssignments();
+  const { getAssignment, getSubmissionsByAssignment, getRubricsByAssignment } = useAssignments();
   const { getCategoriesByCourse } = useGradingCategories();
-  const { getStudentsByCourse } = useStudents();
-  const { getGroupsByAssignment } = useStudentGroups();
-
-  const [search, setSearch] = useState("");
 
   const course = getCourse(id);
   const assignment = getAssignment(assignmentId);
-  const submissions = getSubmissionsByAssignment(assignmentId);
-  const enrolledCount = getStudentsByCourse(id).length;
-  const isGroupAssignment = assignment?.submissionType === "group";
-  const groups = isGroupAssignment ? getGroupsByAssignment(assignmentId) : [];
 
   if (!course || !assignment) {
     return (
-        <main className="flex-1 flex items-center justify-center text-gray-500 text-sm">
-          {t("ไม่พบข้อมูล", "Not found")} —{" "}
-          <Link href={`/teacher/courses/${id}/assignments`} className="text-[var(--accent)] ml-1 hover:underline">{t("กลับรายการงาน", "Back to assignments")}</Link>
-        </main>
+      <main className="flex-1 flex items-center justify-center text-[var(--text-secondary)] text-sm">
+        {t("ไม่พบข้อมูล", "Not found")} —{" "}
+        <Link href={`/teacher/courses/${id}/assignments`} className="text-[var(--accent)] ml-1 hover:underline">{t("กลับรายการงาน", "Back to assignments")}</Link>
+      </main>
     );
   }
 
   const today = new Date().toISOString().split("T")[0];
-  const isOverdue = assignment.dueDate < today;
-  const allGraded = submissions.length > 0 && submissions.every((s) => s.status === "graded");
+  const isPastDue = assignment.dueDate < today;
   const category = assignment.categoryId
     ? getCategoriesByCourse(id).find((c) => c.id === assignment.categoryId)
     : undefined;
-  const avgScore = submissions.length > 0
-    ? Math.round(submissions.filter((s) => s.aiScore !== null).reduce((acc, s) => acc + (s.aiScore ?? 0), 0) /
-        (submissions.filter((s) => s.aiScore !== null).length || 1))
-    : 0;
-  const gradedCount = submissions.filter((s) => s.status === "graded").length;
+  const rubric = getRubricsByAssignment(assignmentId)[0];
+  const needReview = getSubmissionsByAssignment(assignmentId).filter((s) => s.status === "need_review").length;
+  const editHref = `/teacher/courses/${id}/assignments/${assignmentId}/edit`;
+  const totalWeight = rubric ? rubric.criteria.reduce((sum, c) => sum + c.weight, 0) : 0;
+  const fileTypeLabel = (ft: string) => (ft === "figma" ? "Figma" : ft === "pdf" ? "PDF" : t("รูปภาพ", "Image"));
 
-  const visible = search
-    ? submissions.filter((s) =>
-        s.studentName.toLowerCase().includes(search.toLowerCase()) ||
-        s.email.toLowerCase().includes(search.toLowerCase())
-      )
-    : submissions;
-
-  // Group assignments: one row per team instead of one row per student — a
-  // team submits once, so grading it once should apply everywhere (see
-  // RecheckPage.handleSave, which fans out to the whole group).
-  const rows: SubmissionRow[] = isGroupAssignment
-    ? groupSubmissionsByTeam(visible, groups, t("ทีม", "Team"))
-    : visible.map((s) => ({ key: s.id, subs: [s] }));
+  const detailRows: { label: string; value: React.ReactNode }[] = [
+    {
+      label: t("กำหนดส่ง", "Due date"),
+      value: (
+        <span className={isPastDue ? "text-[var(--s-err-text)]" : undefined}>
+          {fmtDate(assignment.dueDate)} {t("เวลา 23:59 น.", "at 11:59 PM")}
+        </span>
+      ),
+    },
+    { label: t("คะแนนเต็ม", "Max points"), value: <span className="tabular-nums">{assignment.maxPoints}</span> },
+    {
+      label: t("หมวดคะแนน", "Grading category"),
+      value: category ? <span className="tabular-nums">{category.name} ({category.weight}%)</span> : <span className="text-[var(--text-muted)]">{t("ไม่ได้กำหนด", "Not set")}</span>,
+    },
+    {
+      label: t("ประเภทงาน", "Type"),
+      value: (
+        <span className="inline-flex items-center gap-2 flex-wrap">
+          <AssignmentTypeBadge type={assignment.submissionType} size="md" />
+          {assignment.submissionType === "group" && assignment.maxGroupSize && (
+            <span className="text-[var(--text-secondary)]">≤ {assignment.maxGroupSize} {t("คน", "members")}</span>
+          )}
+        </span>
+      ),
+    },
+    {
+      label: t("ไฟล์ที่รับ", "Accepted files"),
+      value: !(assignment.acceptsFiles ?? true) ? (
+        <span className="text-[var(--text-muted)]">{t("ไม่รับไฟล์", "No files")}</span>
+      ) : (assignment.fileTypes ?? []).length > 0 ? (
+        <span className="inline-flex gap-1.5 flex-wrap">
+          {assignment.fileTypes.map((ft) => (
+            <span key={ft} className="px-2 py-0.5 rounded-full bg-[var(--bg-subtle)] text-[var(--text-secondary)] text-xs font-mono">{fileTypeLabel(ft)}</span>
+          ))}
+        </span>
+      ) : (
+        <span className="text-[var(--text-muted)]">{t("ทุกประเภท", "Any type")}</span>
+      ),
+    },
+  ];
 
   return (
-      <main className="w-full px-8 py-8">
+    <main className="w-full px-8 py-8">
 
-        {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
-          <Link href="/teacher/courses" className="hover:text-[var(--accent)]">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
-            </svg>
-          </Link>
-          <span>/</span>
-          <Link href={`/teacher/courses/${id}/assignments`} className="hover:text-[var(--accent)] transition-colors">{course.name}</Link>
-          <span>/</span>
-          <span className="text-[var(--accent)] font-medium">{assignment.name}</span>
-        </div>
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)] mb-6">
+        <Link href="/teacher/courses" className="hover:text-[var(--accent)]" aria-label={t("รายวิชาทั้งหมด", "All courses")}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+        </Link>
+        <span>/</span>
+        <Link href={`/teacher/courses/${id}/assignments`} className="hover:text-[var(--accent)] transition-colors">{course.name}</Link>
+        <span>/</span>
+        <span className="text-[var(--accent)] font-medium">{assignment.name}</span>
+      </div>
 
-        {/* Header */}
-        <div className="flex items-start justify-between mb-5">
-          <div>
-            <h1 className="text-2xl font-bold text-[var(--text-primary)]">{assignment.name}</h1>
-            <div className="flex items-center gap-2 mt-1 text-sm">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2">
-                <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-              </svg>
-              <span className="text-gray-500">{t("กำหนดส่ง", "Due")} {fmtDate(assignment.dueDate)} {t("เวลา 23:59 น.", "at 11:59 PM")}</span>
-              {category && (
-                <>
-                  <span className="text-gray-300">·</span>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-[var(--accent-subtle)] text-[var(--accent)] text-xs font-medium tabular-nums">
-                    {category.name} ({category.weight}%)
-                  </span>
-                </>
-              )}
-              <span className="text-gray-300">·</span>
-              {allGraded ? (
-                <span className="text-emerald-500 font-medium">{t("ตรวจครบแล้ว", "All Graded")}</span>
-              ) : isOverdue ? (
-                <span className="text-[var(--s-err-text)] font-medium">{t("เลยกำหนด", "Overdue")}</span>
-              ) : (
-                <span className="text-orange-500 font-medium">{t("ยังไม่ตรวจ", "Not Graded")}</span>
-              )}
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <Link
-              href={`/teacher/courses/${id}/assignments/${assignmentId}/edit`}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
-            >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-              </svg>
-              {t("แก้ไขงาน", "Edit Assignment")}
-            </Link>
-            <Link
-              href={allGraded
-                ? `/teacher/courses/${id}/assignments/${assignmentId}/results`
-                : `/teacher/courses/${id}/assignments/${assignmentId}/grading`}
-              className="flex items-center gap-2 px-4 py-2 bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-medium rounded-xl transition-colors"
-            >
-              {allGraded ? (
-                <>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-                  </svg>
-                  {t("ดูผลลัพธ์", "View Results")}
-                </>
-              ) : (
-                <>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                    <polygon points="5 3 19 12 5 21 5 3"/>
-                  </svg>
-                  {t("เริ่มตรวจงาน", "Start Grading")}
-                </>
-              )}
-            </Link>
-          </div>
-        </div>
-
-        {/* 4 stat cards */}
-        <div className="grid grid-cols-4 gap-4 mb-5">
-          {/* Submissions */}
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 relative overflow-hidden">
-            <div className="absolute top-3 right-3 opacity-10">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent-bright)" strokeWidth="1.5">
-                <polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
-              </svg>
-            </div>
-            <p className="text-xs text-gray-500 mb-1">{t("งานที่ส่ง", "Submissions")}</p>
-            <p className="text-2xl font-bold text-[var(--text-primary)]">
-              {submissions.length}
-              <span className="text-sm font-normal text-gray-500">
-                {enrolledCount > 0 ? ` / ${enrolledCount}` : ""}
+      {/* Header */}
+      <div className="flex items-start justify-between gap-4 mb-6">
+        <div className="min-w-0">
+          <h1 className="text-2xl font-bold text-[var(--text-primary)]">{assignment.name}</h1>
+          <div className="flex items-center gap-2 mt-1.5 text-sm flex-wrap">
+            <span className={isPastDue ? "text-[var(--s-err-text)]" : "text-[var(--text-secondary)]"}>
+              {isPastDue ? `${t("เลยกำหนด", "Past due")} — ` : ""}{t("กำหนดส่ง", "Due")} {fmtDate(assignment.dueDate)}
+            </span>
+            {category && (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-[var(--accent-subtle)] text-[var(--accent)] text-xs font-medium tabular-nums">
+                {category.name} ({category.weight}%)
               </span>
-            </p>
-            {enrolledCount > 0 ? (
-              <>
-                <div className="mt-2 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-[var(--accent-bright)] rounded-full"
-                    style={{ width: `${Math.min((submissions.length / enrolledCount) * 100, 100)}%` }}
-                  />
-                </div>
-                {submissions.length < enrolledCount && (
-                  <p className="text-xs text-gray-500 mt-1.5">{enrolledCount - submissions.length} {t("คนยังไม่ส่ง", "students pending")}</p>
-                )}
-              </>
-            ) : (
-              <p className="text-xs text-gray-400 mt-1.5">{t("ยังไม่มีนักศึกษาใน course นี้", "No students enrolled")}</p>
             )}
-          </div>
-          {/* Average Grade */}
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 relative overflow-hidden">
-            <div className="absolute top-3 right-3 opacity-10">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" strokeWidth="1.5">
-                <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
-              </svg>
-            </div>
-            <p className="text-xs text-gray-500 mb-1">{t("คะแนนเฉลี่ย", "Average Grade")}</p>
-            <p className="text-2xl font-bold text-[var(--text-primary)]">{submissions.length > 0 ? `${avgScore}%` : "0%"}</p>
-            <p className="text-xs text-gray-500 mt-1.5 flex items-center gap-1">
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" strokeWidth="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-              {t("ความมั่นใจ AI:", "AI Confidence:")} {submissions.length > 0 ? t("สูง", "High") : t("ไม่มี", "None")}
-            </p>
-          </div>
-          {/* Graded */}
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 relative overflow-hidden">
-            <div className="absolute top-3 right-3 opacity-10">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="1.5">
-                <rect x="3" y="3" width="18" height="18" rx="2"/><polyline points="9 11 12 14 15 11"/>
-              </svg>
-            </div>
-            <p className="text-xs text-gray-500 mb-1">{t("ตรวจแล้ว", "Graded")}</p>
-            <p className="text-2xl font-bold text-[var(--text-primary)]">{gradedCount} <span className="text-sm font-normal text-gray-500">{t("ฉบับ", "papers")}</span></p>
-            <p className="text-xs text-gray-500 mt-1.5">
-              {submissions.length - gradedCount > 0
-                ? `${submissions.length - gradedCount} ${t("ยังไม่ตรวจ", "not graded")}`
-                : submissions.length > 0 ? t("ตรวจครบแล้ว", "All graded") : t("ยังไม่มีงาน", "No submissions")}
-            </p>
-          </div>
-          {/* Rubric */}
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 relative overflow-hidden">
-            <div className="absolute top-3 right-3 opacity-10">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent-bright)" strokeWidth="1.5">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-              </svg>
-            </div>
-            <p className="text-xs text-gray-500 mb-1">{t("เกณฑ์การให้คะแนน", "Rubric")}</p>
-            {assignment.rubricIds.length > 0 ? (
-              <>
-                <p className="text-2xl font-bold text-[var(--text-primary)]">{t("ใช้งานอยู่", "Applied")}</p>
-                <div className="mt-2">
-                  <Link
-                    href={`/teacher/courses/${id}/assignments/${assignmentId}/edit`}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-[var(--accent)] text-xs text-[var(--accent)] font-medium hover:bg-teal-50 transition-colors"
-                  >
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                    </svg>
-                    {t("แก้ไข Rubric", "Edit Rubric")}
-                  </Link>
-                </div>
-              </>
-            ) : (
-              <>
-                <p className="text-2xl font-bold text-gray-300">{t("ไม่มี", "None")}</p>
-                <p className="text-xs text-gray-500 mt-1.5">
-                  <Link
-                    href={`/teacher/courses/${id}/assignments/${assignmentId}/edit`}
-                    className="text-[var(--accent)] hover:underline"
-                  >
-                    {t("เพิ่ม Rubric", "Add Rubric")}
-                  </Link>
-                </p>
-              </>
-            )}
+            <AssignmentTypeBadge type={assignment.submissionType} />
           </div>
         </div>
+        <div className="flex items-center gap-3 shrink-0">
+          <Link
+            href={editHref}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)] active:scale-[.97] transition-colors"
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+            {t("แก้ไขงาน", "Edit Assignment")}
+          </Link>
+          <Link
+            href={`/teacher/courses/${id}/assignments/${assignmentId}/grading`}
+            className="flex items-center gap-2 px-4 py-2 bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-semibold rounded-xl active:scale-[.97] transition-colors"
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+              <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+            {t("ไปตรวจงาน", "Go to grading")}
+            {needReview > 0 && (
+              <span
+                className="inline-flex items-center justify-center min-w-[1.5rem] h-6 px-1.5 rounded-full bg-[var(--s-warn-bg)] text-[var(--s-warn-text)] text-xs font-bold tabular-nums"
+                aria-label={t(`${needReview} รอตรวจสอบ`, `${needReview} need review`)}
+              >
+                {needReview}
+              </span>
+            )}
+          </Link>
+        </div>
+      </div>
 
-        {/* Description */}
-        {(assignment.description || (assignment.attachments?.length ?? 0) > 0) && (
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 mb-5">
-            <p className="text-xs text-gray-500 mb-1.5">{t("คำอธิบายงาน", "Assignment Description")}</p>
-            <div className="flex items-start justify-between gap-4">
-              <p className="text-sm text-[var(--text-primary)] leading-relaxed">{assignment.description}</p>
-              <Link href={`/teacher/courses/${id}/assignments/${assignmentId}/edit`} className="text-[var(--accent)] text-sm hover:underline shrink-0">{t("แก้ไข", "Edit")}</Link>
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_22rem] items-start">
+        {/* Left: brief + rubric */}
+        <div className="flex flex-col gap-5 min-w-0">
+          <section className="bg-[var(--bg-surface)] rounded-xl border border-[var(--border-subtle)] p-5" aria-labelledby="brief-heading">
+            <div className="flex items-start justify-between gap-4 mb-2">
+              <h2 id="brief-heading" className="text-base font-bold text-[var(--text-primary)]">{t("คำอธิบายงาน", "Assignment brief")}</h2>
+              <Link href={editHref} className="text-[var(--accent)] text-sm hover:underline shrink-0">{t("แก้ไข", "Edit")}</Link>
             </div>
+            {assignment.description ? (
+              <p className="text-sm text-[var(--text-primary)] leading-relaxed whitespace-pre-line">{assignment.description}</p>
+            ) : (
+              <p className="text-sm text-[var(--text-muted)] italic">{t("ยังไม่มีคำอธิบาย", "No description yet")}</p>
+            )}
             <AttachmentList attachments={assignment.attachments} />
-          </div>
-        )}
+          </section>
 
-        {/* Submissions table */}
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-            <SearchInput
-              value={search}
-              onChange={setSearch}
-              placeholder={t("ค้นหานักศึกษา...", "Search students...")}
-              suggestions={submissions.map((s) => s.studentName)}
-              className="w-52"
-            />
-            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-medium text-gray-500 hover:bg-gray-50 transition-colors">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/>
-              </svg>
-              {t("กรอง: ทั้งหมด", "Filter: All Status")}
-            </button>
-          </div>
-
-          {submissions.length === 0 ? (
-            <div className="py-16 flex flex-col items-center justify-center text-center">
-              <div className="w-14 h-14 rounded-2xl bg-gray-50 flex items-center justify-center mb-3">
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="1.5">
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
-                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                </svg>
+          <section className="bg-[var(--bg-surface)] rounded-xl border border-[var(--border-subtle)]" aria-labelledby="rubric-heading">
+            <div className="flex items-center justify-between gap-4 px-5 py-4 border-b border-[var(--border-subtle)]">
+              <div>
+                <h2 id="rubric-heading" className="text-base font-bold text-[var(--text-primary)]">{t("เกณฑ์การให้คะแนน", "Rubric")}</h2>
+                {rubric && (
+                  <p className="text-xs text-[var(--text-secondary)] mt-0.5">
+                    {rubric.criteria.length} {t("เกณฑ์", "criteria")} · {assignment.maxPoints} {t("คะแนน", "pts")}
+                  </p>
+                )}
               </div>
-              <p className="text-sm text-gray-500">{t("ยังไม่มีนักศึกษาส่งงาน", "No submissions yet")}</p>
+              <Link href={editHref} className="text-sm font-medium text-[var(--accent)] hover:underline shrink-0">
+                {rubric ? t("แก้ไข Rubric", "Edit Rubric") : t("เพิ่ม Rubric", "Add Rubric")}
+              </Link>
             </div>
-          ) : (
-            <>
+            {rubric && rubric.criteria.length > 0 ? (
               <table className="w-full text-sm">
-                <thead className="border-b border-gray-100">
-                  <tr className="text-left text-xs text-gray-500 font-semibold">
-                    <th className="px-5 py-3 w-8"><input type="checkbox" className="rounded border-gray-300" /></th>
-                    <th className="px-3 py-3">{t("ชื่อนักศึกษา", "Student Name")}</th>
-                    <th className="px-3 py-3">{t("ส่งเมื่อ", "Submitted")}</th>
-                    <th className="px-3 py-3">
-                      <span className="flex items-center gap-1">
-                        {t("คะแนน AI", "AI Score")}
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" strokeWidth="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                      </span>
-                    </th>
-                    <th className="px-3 py-3">{t("สถานะ", "Status")}</th>
-                    <th className="px-3 py-3"></th>
+                <thead>
+                  <tr className="border-b border-[var(--border-subtle)]">
+                    <th scope="col" className="px-5 py-2 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("เกณฑ์", "Criterion")}</th>
+                    <th scope="col" className="px-4 py-2 text-right text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("น้ำหนัก", "Weight")}</th>
+                    <th scope="col" className="px-4 py-2 text-right text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("ระดับ", "Levels")}</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-50">
-                  {rows.map((row) => {
-                    const rep = row.subs[0];
-                    const mixedStatus = new Set(row.subs.map((x) => x.status)).size > 1;
-                    return (
-                      <tr key={row.key} className="hover:bg-gray-50/50 transition-colors">
-                        <td className="px-5 py-3.5"><input type="checkbox" className="rounded border-gray-300" /></td>
-                        <td className="px-3 py-3.5">
-                          {row.teamName ? (
-                            <div>
-                              <div className="flex items-center gap-1.5 mb-1">
-                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth="2" strokeLinecap="round">
-                                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
-                                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                                </svg>
-                                <p className="font-medium text-[var(--text-primary)] text-sm">{row.teamName}</p>
-                              </div>
-                              <div className="flex items-center">
-                                {row.subs.map((s, idx) => (
-                                  <div
-                                    key={s.id}
-                                    className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-bold shrink-0 border-2 border-white"
-                                    style={{ background: avatarColor(s.studentName), marginLeft: idx > 0 ? "-8px" : 0 }}
-                                    title={s.studentName}
-                                  >
-                                    {initials(s.studentName)}
-                                  </div>
-                                ))}
-                                <p className="text-xs text-gray-500 ml-2 truncate">
-                                  {row.subs.map((s) => s.studentName).join(", ")}
-                                </p>
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-2.5">
-                              <div
-                                className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
-                                style={{ background: avatarColor(rep.studentName) }}
-                              >
-                                {initials(rep.studentName)}
-                              </div>
-                              <div>
-                                <p className="font-medium text-[var(--text-primary)] text-sm">{rep.studentName}</p>
-                                <p className="text-xs text-gray-500">{rep.email}</p>
-                              </div>
-                            </div>
-                          )}
-                        </td>
-                        <td className="px-3 py-3.5 text-xs text-gray-500">{fmtDateTime(rep.submittedAt)}</td>
-                        <td className="px-3 py-3.5">
-                          {rep.aiScore !== null ? (
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm font-medium text-[var(--text-primary)]">{rep.aiScore}%</span>
-                              <div className="w-20 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                                <div className="h-full bg-[var(--accent-bright)] rounded-full" style={{ width: `${rep.aiScore}%` }} />
-                              </div>
-                            </div>
-                          ) : (
-                            <span className="text-xs text-gray-300">—</span>
-                          )}
-                        </td>
-                        <td className="px-3 py-3.5">
-                          {mixedStatus ? (
-                            <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium bg-amber-100 text-amber-700">
-                              {t("ไม่ตรงกัน", "Mixed")}
-                            </span>
-                          ) : (
-                            <StatusBadge status={rep.status} />
-                          )}
-                        </td>
-                        <td className="px-3 py-3.5">
-                          {(rep.status === "need_review" || rep.status === "graded") && (
-                            <Link
-                              href={`/teacher/courses/${id}/assignments/${assignmentId}/recheck?sub=${rep.id}`}
-                              className="text-xs text-[var(--accent)] hover:underline font-medium"
-                            >
-                              {rep.status === "need_review"
-                                ? t("ตรวจสอบ", "Review")
-                                : row.teamName ? t("ขอตรวจใหม่ทั้งทีม", "Recheck team") : t("ขอตรวจใหม่", "Recheck")}
-                            </Link>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
+                <tbody>
+                  {rubric.criteria.map((c) => (
+                    <tr key={c.id} className="border-b border-[var(--border-subtle)] last:border-b-0">
+                      <td className="px-5 py-3 align-top">
+                        <p className="font-medium text-[var(--text-primary)]">{c.name}</p>
+                        {c.description && <p className="text-xs text-[var(--text-secondary)] mt-0.5 line-clamp-2">{c.description}</p>}
+                      </td>
+                      <td className="px-4 py-3 text-right tabular-nums text-[var(--text-primary)] align-top">{c.weight}%</td>
+                      <td className="px-4 py-3 text-right tabular-nums text-[var(--text-secondary)] align-top">{c.levels.length}</td>
+                    </tr>
+                  ))}
                 </tbody>
+                <tfoot>
+                  <tr className="border-t border-[var(--border-subtle)] bg-[var(--bg-subtle)]">
+                    <td className="px-5 py-2 text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider">{t("รวม", "Total")}</td>
+                    <td className={`px-4 py-2 text-right tabular-nums font-semibold ${totalWeight === 100 ? "text-[var(--s-ok-text)]" : "text-[var(--s-warn-text)]"}`}>{totalWeight}%</td>
+                    <td />
+                  </tr>
+                </tfoot>
               </table>
-              <div className="flex items-center justify-between px-5 py-3 text-xs text-gray-500 border-t border-gray-50">
-                <span>
-                  {t("แสดง", "Showing")} <span className="font-medium text-[var(--text-primary)]">1–{rows.length}</span> {t("จาก", "of")} <span className="font-medium text-[var(--text-primary)]">{rows.length}</span>{" "}
-                  {isGroupAssignment ? t("ทีม", "team(s)") : t("งาน", "submissions")}
-                </span>
-                {submissions.length > 5 && (
-                  <div className="flex gap-1">
-                    {[1, 2, 3].map((p) => (
-                      <button key={p} className={[
-                        "w-7 h-7 rounded-full text-xs font-medium",
-                        p === 1 ? "bg-[var(--accent-solid)] text-[var(--accent-solid-text)]" : "text-gray-500 hover:bg-gray-100",
-                      ].join(" ")}>{p}</button>
-                    ))}
-                  </div>
-                )}
+            ) : (
+              <div className="px-5 py-8 text-center">
+                <p className="text-sm font-medium text-[var(--s-warn-text)]">{t("ยังไม่มี Rubric", "No rubric yet")}</p>
+                <p className="text-xs text-[var(--text-secondary)] mt-1">{t("งานที่ไม่มี rubric จะให้ AI ตรวจไม่ได้", "Without a rubric the AI has nothing to grade against")}</p>
               </div>
-            </>
-          )}
+            )}
+          </section>
         </div>
-      </main>
+
+        {/* Right: details */}
+        <aside className="bg-[var(--bg-surface)] rounded-xl border border-[var(--border-subtle)] p-5" aria-labelledby="details-heading">
+          <h2 id="details-heading" className="text-base font-bold text-[var(--text-primary)] mb-3">{t("รายละเอียด", "Details")}</h2>
+          <dl className="flex flex-col">
+            {detailRows.map((r) => (
+              <div key={r.label} className="flex items-start justify-between gap-4 py-2.5 border-b border-[var(--border-subtle)] last:border-b-0 text-sm">
+                <dt className="text-[var(--text-secondary)] shrink-0">{r.label}</dt>
+                <dd className="text-[var(--text-primary)] text-right min-w-0">{r.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </aside>
+      </div>
+    </main>
   );
 }

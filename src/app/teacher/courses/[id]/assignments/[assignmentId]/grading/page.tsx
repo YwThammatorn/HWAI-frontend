@@ -4,11 +4,14 @@ import { useState, useEffect, useMemo } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useCourses } from "@/lib/courses";
-import { useAssignments } from "@/lib/assignments";
+import { useAssignments, type Submission } from "@/lib/assignments";
+import { useStudents } from "@/lib/students";
 import { useStudentGroups } from "@/lib/studentGroups";
 import { groupSubmissionsByTeam, SubmissionRow } from "@/lib/groupSubmissions";
 import { useLanguage } from "@/context/LanguageContext";
 import { getInitials } from "@/lib/utils";
+import SearchInput from "@/components/SearchInput";
+import PillTabBar from "@/components/PillTabBar";
 
 // ── Stat card ─────────────────────────────────────────────────────────────
 
@@ -19,14 +22,14 @@ function StatCard({
   icon: React.ReactNode; color?: string;
 }) {
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+    <div className="bg-[var(--bg-surface)] rounded-xl border border-[var(--border-subtle)] p-5">
       <div className="flex items-start justify-between mb-3">
-        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">{label}</p>
+        <p className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{label}</p>
         {icon}
       </div>
-      <p className="text-2xl font-bold" style={{ color: color ?? "#1B2A4A" }}>
+      <p className="text-2xl font-bold" style={{ color: color ?? "var(--text-primary)" }}>
         {value}{" "}
-        <span className="text-sm font-normal text-gray-400">{sub}</span>
+        <span className="text-sm font-normal text-[var(--text-muted)]">{sub}</span>
       </p>
     </div>
   );
@@ -34,7 +37,7 @@ function StatCard({
 
 // ── Circle progress ────────────────────────────────────────────────────────
 
-function CircleProgress({ pct }: { pct: number }) {
+function CircleProgress({ pct, className }: { pct: number; className?: string }) {
   const [displayPct, setDisplayPct] = useState(0);
   const r = 80;
   const circ = 2 * Math.PI * r;
@@ -46,7 +49,7 @@ function CircleProgress({ pct }: { pct: number }) {
   }, [pct]);
 
   return (
-    <svg width="200" height="200" viewBox="0 0 200 200">
+    <svg width="200" height="200" viewBox="0 0 200 200" className={className}>
       <circle cx="100" cy="100" r={r} fill="none" stroke="#E5E7EB" strokeWidth="12" />
       <circle
         cx="100" cy="100" r={r}
@@ -76,12 +79,15 @@ function GradeRow({
   rowState,
   onChange,
   onRegrade,
+  reviewHref,
 }: {
   row: SubmissionRow;
   maxPoints: number;
   rowState: RowState;
   onChange: (val: string) => void;
   onRegrade: () => void;
+  /** Where "Review" / "Recheck" opens this row's submission (recheck page, keyed by the representative submission). */
+  reviewHref: string;
 }) {
   const { t } = useLanguage();
   const rep = row.subs[0];
@@ -94,13 +100,13 @@ function GradeRow({
     parsedInstructor !== rep.aiScore;
 
   const STATUS_MAP = {
-    not_graded: { label: t("ยังไม่ได้ตรวจ", "Not graded"), cls: "bg-gray-100 text-gray-500" },
-    need_review: { label: t("รอตรวจสอบ", "Needs review"), cls: "bg-amber-100 text-amber-700" },
-    graded: { label: t("ตรวจแล้ว", "Graded"), cls: "bg-green-100 text-green-700" },
+    not_graded: { label: t("ยังไม่ได้ตรวจ", "Not graded"), cls: "bg-[var(--bg-subtle)] text-[var(--text-secondary)]" },
+    need_review: { label: t("รอตรวจสอบ", "Needs review"), cls: "bg-[var(--s-warn-bg)] text-[var(--s-warn-text)]" },
+    graded: { label: t("ตรวจแล้ว", "Graded"), cls: "bg-[var(--s-ok-bg)] text-[var(--s-ok-text)]" },
   };
   const mixedStatus = new Set(row.subs.map((s) => s.status)).size > 1;
   const statusInfo = mixedStatus
-    ? { label: t("ไม่ตรงกัน", "Mixed"), cls: "bg-amber-100 text-amber-700" }
+    ? { label: t("ไม่ตรงกัน", "Mixed"), cls: "bg-[var(--s-warn-bg)] text-[var(--s-warn-text)]" }
     : STATUS_MAP[rep.status];
 
   return (
@@ -184,9 +190,20 @@ function GradeRow({
 
       {/* Status */}
       <td className="px-4 py-3">
-        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold ${statusInfo.cls}`}>
+        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${statusInfo.cls}`}>
           {statusInfo.label}
         </span>
+      </td>
+
+      {/* Review / Recheck — opens the submission (moved here from the assignment detail page) */}
+      <td className="px-4 py-3 whitespace-nowrap">
+        {(rep.status === "need_review" || rep.status === "graded") && (
+          <Link href={reviewHref} className="text-sm text-[var(--accent)] hover:underline font-medium">
+            {rep.status === "need_review"
+              ? t("ตรวจสอบ", "Review")
+              : isTeam ? t("ขอตรวจใหม่ทั้งทีม", "Recheck team") : t("ขอตรวจใหม่", "Recheck")}
+          </Link>
+        )}
       </td>
 
       {/* Re-grade button */}
@@ -195,7 +212,7 @@ function GradeRow({
           onClick={onRegrade}
           disabled={rowState.regrading}
           aria-label={isTeam ? t(`Re-grade team ${row.teamName}`, `Re-grade team ${row.teamName}`) : t(`Re-grade ${rep.studentName}`, `Re-grade ${rep.studentName}`)}
-          className="flex items-center gap-1.5 h-7 px-2.5 rounded-lg border border-gray-200 text-xs font-medium text-gray-500 hover:border-[var(--accent-bright)] hover:text-[var(--accent)] hover:bg-[var(--accent-bright)]/5 active:scale-[0.97] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-all"
+          className="flex items-center gap-1.5 h-7 px-2.5 whitespace-nowrap rounded-lg border border-gray-200 text-xs font-medium text-gray-500 hover:border-[var(--accent-bright)] hover:text-[var(--accent)] hover:bg-[var(--accent-bright)]/5 active:scale-[0.97] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-all"
         >
           {rowState.regrading ? (
             <svg className="animate-spin" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
@@ -216,13 +233,21 @@ function GradeRow({
 
 // ── Grade adjustment table ─────────────────────────────────────────────────
 
+type StatusFilter = "all" | "need_review" | "not_graded" | "graded";
+
 function GradeAdjustmentTable({
   rows,
   maxPoints,
+  courseId,
+  assignmentId,
+  isGroup,
   onSaveAll,
 }: {
   rows: SubmissionRow[];
   maxPoints: number;
+  courseId: string;
+  assignmentId: string;
+  isGroup: boolean;
   onSaveAll: (changes: Record<string, number | null>) => void;
 }) {
   const { t } = useLanguage();
@@ -241,6 +266,17 @@ function GradeAdjustmentTable({
 
   const [saving, setSaving] = useState(false);
   const [savedMsg, setSavedMsg] = useState(false);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+
+  // Search matches student name / email / team name; the status filter looks at the representative submission.
+  const q = search.trim().toLowerCase();
+  const visibleRows = rows.filter((row) => {
+    if (statusFilter !== "all" && row.subs[0].status !== statusFilter) return false;
+    if (!q) return true;
+    return [row.teamName ?? "", ...row.subs.flatMap((s) => [s.studentName, s.email])].some((f) => f.toLowerCase().includes(q));
+  });
+  const countBy = (st: Submission["status"]) => rows.filter((r) => r.subs[0].status === st).length;
 
   const modifiedCount = useMemo(() => {
     return rows.filter((row) => {
@@ -324,25 +360,55 @@ function GradeAdjustmentTable({
         </div>
       </div>
 
+      {rows.length > 0 && (
+        <div className="flex items-center justify-between gap-3 px-5 py-3 border-b border-gray-100 flex-wrap">
+          <PillTabBar
+            ariaLabel={t("กรองตามสถานะ", "Filter by status")}
+            activeKey={statusFilter}
+            onChange={(k) => setStatusFilter(k as StatusFilter)}
+            tabs={[
+              { key: "all", label: t("ทั้งหมด", "All"), count: rows.length },
+              { key: "need_review", label: t("รอตรวจสอบ", "Needs review"), count: countBy("need_review") },
+              { key: "not_graded", label: t("ยังไม่ตรวจ", "Not graded"), count: countBy("not_graded") },
+              { key: "graded", label: t("ตรวจแล้ว", "Graded"), count: countBy("graded") },
+            ]}
+          />
+          <SearchInput
+            value={search}
+            onChange={setSearch}
+            placeholder={t("ค้นหานักศึกษา...", "Search students...")}
+            ariaLabel={t("ค้นหานักศึกษา", "Search students")}
+            suggestions={rows.flatMap((r) => r.subs.map((s) => s.studentName))}
+            className="w-56 shrink-0"
+          />
+        </div>
+      )}
+
       {rows.length === 0 ? (
         <div className="py-12 text-center text-sm text-gray-400">
           {t("ยังไม่มีการส่งงาน", "No submissions yet")}
         </div>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[700px]">
+          <table className="w-full min-w-[820px]">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-100">
-                <th scope="col" className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">{t("นักศึกษา", "Student")}</th>
-                <th scope="col" className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">{t("วันที่ส่ง", "Submitted")}</th>
-                <th scope="col" className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">{t("คะแนน AI", "AI Score")}</th>
-                <th scope="col" className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">{t("คะแนนอาจารย์", "Instructor Score")}</th>
-                <th scope="col" className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">{t("สถานะ", "Status")}</th>
-                <th scope="col" className="px-4 py-2.5 w-28" aria-label={t("Re-grade", "Re-grade")}></th>
+                <th scope="col" className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">{t("นักศึกษา", "Student")}</th>
+                <th scope="col" className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">{t("วันที่ส่ง", "Submitted")}</th>
+                <th scope="col" className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">{t("คะแนน AI", "AI Score")}</th>
+                <th scope="col" className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">{t("คะแนนอาจารย์", "Instructor Score")}</th>
+                <th scope="col" className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">{t("สถานะ", "Status")}</th>
+                <th scope="col" className="px-4 py-2.5 w-32" aria-label={t("ตรวจสอบ", "Review")}></th>
+                <th scope="col" className="px-4 py-2.5 w-32" aria-label={t("Re-grade", "Re-grade")}></th>
               </tr>
             </thead>
             <tbody>
-              {rows.map((row) => (
+              {visibleRows.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="px-4 py-10 text-center text-sm text-[var(--text-muted)]">{t("ไม่พบผลการค้นหา", "No results found")}</td>
+                </tr>
+              )}
+              {visibleRows.map((row) => (
                 <GradeRow
                   key={row.key}
                   row={row}
@@ -350,10 +416,17 @@ function GradeAdjustmentTable({
                   rowState={rowStates[row.key] ?? { instructorScore: "", regrading: false }}
                   onChange={(val) => updateRow(row.key, val)}
                   onRegrade={() => handleRegrade(row)}
+                  reviewHref={`/teacher/courses/${courseId}/assignments/${assignmentId}/recheck?sub=${row.subs[0].id}`}
                 />
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+      {rows.length > 0 && (
+        <div className="px-5 py-3 text-xs text-[var(--text-secondary)] border-t border-gray-100" aria-live="polite">
+          {t("แสดง", "Showing")} <span className="font-medium text-[var(--text-primary)]">1–{visibleRows.length}</span> {t("จาก", "of")} <span className="font-medium text-[var(--text-primary)]">{visibleRows.length}</span>{" "}
+          {isGroup ? t("ทีม", "team(s)") : t("งาน", "submissions")}
         </div>
       )}
     </div>
@@ -368,6 +441,7 @@ export default function GradingProgressPage() {
   const { getCourse } = useCourses();
   const { getAssignment, getSubmissionsByAssignment, updateSubmission } = useAssignments();
   const { getGroupsByAssignment } = useStudentGroups();
+  const { getStudentsByCourse } = useStudents();
 
   const course = getCourse(id);
   const assignment = getAssignment(assignmentId);
@@ -393,6 +467,7 @@ export default function GradingProgressPage() {
     : submissions.map((s) => ({ key: s.id, subs: [s] }));
   const repSubs = rows.map((r) => r.subs[0]);
 
+  const enrolled = getStudentsByCourse(id).length;
   const total = rows.length;
   const processed = repSubs.filter((s) => s.status === "graded").length;
   const needsReview = repSubs.filter((s) => s.status === "need_review").length;
@@ -429,11 +504,11 @@ export default function GradingProgressPage() {
         <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-5 flex-wrap">
           <Link href="/teacher/courses" className="hover:text-[var(--accent)] transition-colors">{t("รายวิชา", "Courses")}</Link>
           <span>/</span>
-          <Link href={`/teacher/courses/${id}/assignments`} className="hover:text-[var(--accent)] transition-colors">{course.name}</Link>
+          <Link href={`/teacher/courses/${id}`} className="hover:text-[var(--accent)] transition-colors">{course.name}</Link>
           <span>/</span>
-          <Link href={`/teacher/courses/${id}/assignments/${assignmentId}`} className="hover:text-[var(--accent)] transition-colors">{assignment.name}</Link>
+          <Link href={`/teacher/courses/${id}/grading`} className="hover:text-[var(--accent)] transition-colors">{t("ตรวจงาน", "Grading")}</Link>
           <span>/</span>
-          <span className="text-[var(--text-primary)] font-medium">{t("ตรวจงาน", "Grading")}</span>
+          <Link href={`/teacher/courses/${id}/assignments/${assignmentId}`} className="text-[var(--text-primary)] font-medium hover:text-[var(--accent)] transition-colors">{assignment.name}</Link>
         </div>
 
         {/* Header */}
@@ -490,21 +565,25 @@ export default function GradingProgressPage() {
             label={t("ตรวจแล้ว", "Processed")}
             value={processed}
             sub={t("เสร็จสิ้น", "completed")}
-            color="#059669"
+            color="var(--s-ok-text)"
             icon={
-              <div className="w-7 h-7 rounded-full bg-emerald-100 flex items-center justify-center">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.5" strokeLinecap="round">
+              <div className="w-7 h-7 rounded-full bg-[var(--s-ok-bg)] flex items-center justify-center">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--s-ok-text)" strokeWidth="2.5" strokeLinecap="round">
                   <polyline points="20 6 9 17 4 12"/>
                 </svg>
               </div>
             }
           />
           <StatCard
-            label={isGroupAssignment ? t("ทีมทั้งหมด", "Total Teams") : t("ไฟล์ทั้งหมด", "Total Files")}
+            label={isGroupAssignment ? t("ทีมทั้งหมด", "Total Teams") : t("ส่งแล้ว", "Submitted")}
             value={total}
-            sub={isGroupAssignment ? t("ทีม", "team(s)") : t("ไฟล์ที่ส่ง", "submissions")}
+            sub={isGroupAssignment
+              ? t("ทีม", "team(s)")
+              : enrolled > 0
+                ? t(`/ ${enrolled} · ยังไม่ส่ง ${Math.max(0, enrolled - total)}`, `/ ${enrolled} · ${Math.max(0, enrolled - total)} pending`)
+                : t("งานที่ส่ง", "submissions")}
             icon={
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="1.5">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                 <polyline points="14 2 14 8 20 8"/>
                 <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
@@ -516,10 +595,10 @@ export default function GradingProgressPage() {
             label={t("รอตรวจสอบ", "Needs Review")}
             value={needsReview}
             sub={t("รอดำเนินการ", "Pending")}
-            color="#D97706"
+            color="var(--s-warn-text)"
             icon={
-              <div className="w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2" strokeLinecap="round">
+              <div className="w-7 h-7 rounded-lg bg-[var(--s-warn-bg)] flex items-center justify-center">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--s-warn-text)" strokeWidth="2" strokeLinecap="round">
                   <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
                   <line x1="12" y1="9" x2="12" y2="13"/>
                   <line x1="12" y1="17" x2="12.01" y2="17"/>
@@ -540,13 +619,13 @@ export default function GradingProgressPage() {
         </div>
 
         {/* Progress circle */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
-          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-2">
-            {t("ความคืบหน้า", "Overall Progress")}
-          </p>
-          <div className="flex flex-col items-center justify-center py-8 gap-6">
-            <CircleProgress pct={total > 0 ? pct : 0} />
-            <div className="text-center">
+        <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-subtle)] p-5">
+          <div className="flex items-center gap-6">
+            <CircleProgress pct={total > 0 ? pct : 0} className="w-28 h-28 shrink-0" />
+            <div>
+              <p className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-1">
+                {t("ความคืบหน้า", "Overall Progress")}
+              </p>
               <p className="text-base font-semibold text-[var(--text-primary)]">
                 {total === 0
                   ? t("ยังไม่มีการส่งงาน", "No Submissions Yet")
@@ -578,6 +657,9 @@ export default function GradingProgressPage() {
         <GradeAdjustmentTable
           rows={rows}
           maxPoints={assignment.maxPoints}
+          courseId={id}
+          assignmentId={assignmentId}
+          isGroup={isGroupAssignment}
           onSaveAll={handleSaveChanges}
         />
       </main>
