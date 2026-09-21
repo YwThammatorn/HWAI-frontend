@@ -12,7 +12,7 @@ import type { Course } from "@/lib/courses";
 import { useLanguage } from "@/context/LanguageContext";
 import SearchInput from "@/components/SearchInput";
 import Pagination from "@/components/Pagination";
-import { CourseIcon } from "@/components/CourseIcon";
+import CourseBanner from "@/components/CourseBanner";
 
 export default function CoursesPage() {
   const { t } = useLanguage();
@@ -197,35 +197,31 @@ function CourseCard({ course, studentCount, allGraded, activeAssignments, isArch
   };
   const src = sourceLabel[course.source] ?? { label: course.source, dot: "" };
 
-  const codeLabel = course.code || src.label;
+  // Manual courses without a code show nothing; imported ones fall back to their source name
+  const codeLabel = course.code || (course.source === "manual" ? "" : src.label);
   const termLabel = course.academicYear && course.term ? `${course.term}/${course.academicYear}` : "—";
 
   const cardContent = (
     <>
-      {/* Cover — color + configurable icon */}
-      <div className="relative h-24 shrink-0" style={{ background: course.coverColor }}>
-        <div className="absolute bottom-3 left-3 w-9 h-9 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-          <CourseIcon iconKey={course.icon} size={18} className="text-white" />
-        </div>
-        {isArchived && (
+      {/* Cover — colour band carries the icon, course code and name */}
+      <CourseBanner
+        coverColor={course.coverColor}
+        icon={course.icon}
+        name={course.name}
+        code={codeLabel}
+        overlay={isArchived && (
           <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
             <span className="text-white text-xs font-medium bg-black/40 px-2 py-1 rounded-full">{t("เก็บถาวร", "Archived")}</span>
           </div>
         )}
-      </div>
+      />
 
       {/* Card body — flex column so footer pins to bottom */}
       <div className="flex flex-col flex-1 p-4">
         <div className="flex-1">
-          <h3 className="font-bold text-[var(--text-primary)] text-[15px] leading-snug line-clamp-2 mb-2">{course.name}</h3>
-
-          {/* DEEP-QA-style two-column meta row — always shown for a consistent card shape;
-              falls back to the source label / an em-dash when a course has no CourseTemplate link */}
-          <div className="grid grid-cols-[minmax(0,1.3fr)_minmax(0,0.7fr)_minmax(0,1fr)] gap-3 pb-3 border-b border-gray-50">
-            <div className="min-w-0">
-              <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-0.5">{t("รหัสวิชา", "Code")}</p>
-              <p className="text-xs font-semibold text-[var(--text-primary)] truncate">{codeLabel}</p>
-            </div>
+          {/* DEEP-QA-style meta rows — always shown for a consistent card shape;
+              em-dash when a course has no Section / CourseTemplate link */}
+          <div className="grid grid-cols-2 gap-3 pb-3 border-b border-gray-50">
             <div className="min-w-0">
               <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-0.5">{t("กลุ่ม", "Section")}</p>
               <p className="text-xs font-semibold text-[var(--text-primary)] truncate">{course.sectionNumber || "—"}</p>
@@ -237,8 +233,8 @@ function CourseCard({ course, studentCount, allGraded, activeAssignments, isArch
           </div>
 
           {(course.schedule || course.room) && (
-            <div className="grid grid-cols-[minmax(0,1.3fr)_minmax(0,0.7fr)_minmax(0,1fr)] gap-3 pt-3">
-              <div className="col-span-2 min-w-0">
+            <div className="grid grid-cols-2 gap-3 pt-3">
+              <div className="min-w-0">
                 <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-0.5">{t("วันเวลาเรียน", "Schedule")}</p>
                 <p className="text-xs font-semibold text-[var(--text-primary)] truncate">{course.schedule || "—"}</p>
               </div>

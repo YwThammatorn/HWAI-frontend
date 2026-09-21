@@ -9,7 +9,7 @@ import { useCourses } from "@/lib/courses";
 import { useAssignments } from "@/lib/assignments";
 import EmptyState from "@/components/EmptyState";
 import PageHeader from "@/components/PageHeader";
-import { CourseIcon } from "@/components/CourseIcon";
+import CourseBanner from "@/components/CourseBanner";
 import { useManagedTeachers } from "@/lib/managed-teachers";
 
 export default function StudentCoursesPage() {
@@ -60,11 +60,8 @@ export default function StudentCoursesPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {enrolledCourses.map((course) => {
               const assignments = getAssignmentsByCourse(course.id);
-              const codeLabel = course.code
-                ? course.sectionNumber
-                  ? `${course.code} · ${t("กลุ่ม", "Sec.")} ${course.sectionNumber}`
-                  : course.code
-                : sourceLabel[course.source] ?? course.source;
+              // Same rule as the teacher card: the code stands alone, Section is its own field below
+              const codeLabel = course.code || (course.source === "manual" ? "" : sourceLabel[course.source] ?? course.source);
               const termLabel = course.academicYear && course.term ? `${course.term}/${course.academicYear}` : "—";
               const instructor = getTeachersByCourse(course.id)[0];
               const instructorLabel = instructor ? `${instructor.title ? `${instructor.title} ` : ""}${instructor.name}` : null;
@@ -74,30 +71,27 @@ export default function StudentCoursesPage() {
                   href={`/student/courses/${course.id}/classwork`}
                   className="group flex flex-col bg-[var(--bg-surface)] rounded-2xl shadow-sm border border-[var(--border-subtle)] overflow-hidden hover:shadow-md transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]"
                 >
-                  {/* Banner — solid color, course icon, archived overlay (matches teacher) */}
-                  <div className="relative h-28 shrink-0" style={{ background: course.coverColor }}>
-                    <div className="absolute bottom-3 left-3 w-9 h-9 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                      <CourseIcon iconKey={course.icon} size={18} className="text-white" />
-                    </div>
-                    {course.status !== "active" && (
+                  {/* Banner — colour band carries icon, code and name (same component as the teacher card) */}
+                  <CourseBanner
+                    coverColor={course.coverColor}
+                    icon={course.icon}
+                    name={course.name}
+                    code={codeLabel}
+                    overlay={course.status !== "active" && (
                       <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
                         <span className="text-white text-xs font-medium bg-black/40 px-2 py-1 rounded-full">{t("เก็บถาวร", "Archived")}</span>
                       </div>
                     )}
-                  </div>
+                  />
 
                   {/* Card body — flex column so footer pins to bottom */}
                   <div className="flex flex-col flex-1 p-4">
                     <div className="flex-1">
-                      <h3 className="font-bold text-[var(--text-primary)] text-[15px] leading-snug line-clamp-2 mb-2">
-                        {course.name}
-                      </h3>
-
                       {/* DEEP-QA-style two-column meta row — matches teacher's own course card */}
                       <div className="grid grid-cols-2 gap-3 pb-3 border-b border-[var(--border-subtle)]">
                         <div className="min-w-0">
-                          <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wide mb-0.5">{t("รหัสวิชา", "Code")}</p>
-                          <p className="text-xs font-semibold text-[var(--text-primary)] truncate">{codeLabel}</p>
+                          <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wide mb-0.5">{t("กลุ่ม", "Section")}</p>
+                          <p className="text-xs font-semibold text-[var(--text-primary)] truncate">{course.sectionNumber || "—"}</p>
                         </div>
                         <div className="min-w-0">
                           <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wide mb-0.5">{t("ภาคเรียนที่", "Term")}</p>
