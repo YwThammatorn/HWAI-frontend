@@ -63,7 +63,7 @@ const size = (loc: ReturnType<Page["locator"]>) => loc.first().evaluate((el) => 
 
 const C = "/teacher/courses/c-mock-1";
 const TEACHER_PAGES = [
-  "/teacher/courses", C, `${C}/students`, `${C}/assignments`, `${C}/assignments/new`, `${C}/assignments/a-mock-1`,
+  "/teacher/courses", C, `${C}/students`, `${C}/assignments`, `${C}/grading`, `${C}/assignments/new`, `${C}/assignments/a-mock-1`,
   `${C}/assignments/a-mock-1/grading`, `${C}/assignments/a-mock-1/results`, `${C}/collaborators`, `${C}/results`, `${C}/settings`,
 ];
 const STUDENT_PAGES = [

@@ -86,9 +86,10 @@ test.describe("Course Detail", () => {
     await expect(page.locator("text=Assignments").first()).toBeVisible();
   });
 
-  test("Results tab links to course results", async ({ page }) => {
+  test("Score Book tab links to course results", async ({ page }) => {
+    // 21/9/2569: the "Results" sidebar entry became "Score Book" (same /results route)
     await waitReady(page, "/teacher/courses/seed-1");
-    const resultsLink = page.getByRole("link", { name: /^results$/i }).first();
+    const resultsLink = page.getByRole("link", { name: /^score book$/i }).first();
     await expect(resultsLink).toBeVisible();
     await resultsLink.click();
     await page.waitForLoadState("networkidle");
