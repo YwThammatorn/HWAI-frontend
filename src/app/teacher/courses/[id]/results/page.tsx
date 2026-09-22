@@ -26,10 +26,13 @@ const TOTAL_W = 132;
 const GRADE_W = 84;
 const HEAD1_H = 45; // height of the category row (h-10 at the 4.5px spacing unit), where row 2 sticks
 
+// DESIGN.md §6 "Status Badges": every tinted status pill carries a matching --s-*-bd border —
+// the pale bg tints read fine on --bg-card but wash out (blend) against a plain white/surface
+// table cell without one. Missed on the first pass; the teacher flagged it (21/9/2569).
 const TONE: Record<ScoreTone, string> = {
-  ok: "bg-[var(--s-ok-bg)] text-[var(--s-ok-text)]",
-  info: "bg-[var(--s-info-bg)] text-[var(--s-info-text)]",
-  err: "bg-[var(--s-err-bg)] text-[var(--s-err-text)]",
+  ok: "bg-[var(--s-ok-bg)] text-[var(--s-ok-text)] border border-[var(--s-ok-bd)]",
+  info: "bg-[var(--s-info-bg)] text-[var(--s-info-text)] border border-[var(--s-info-bd)]",
+  err: "bg-[var(--s-err-bg)] text-[var(--s-err-text)] border border-[var(--s-err-bd)]",
 };
 
 const TEAM_GLYPH = (
@@ -175,15 +178,18 @@ export default function ScoreBookPage() {
         return (
           <Link
             href={recheck(cell.submissionId)}
-            className={`${chip} bg-[var(--s-warn-bg)] text-[var(--s-warn-text)] hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition`}
+            className={`${chip} bg-[var(--s-warn-bg)] text-[var(--s-warn-text)] border border-[var(--s-warn-bd)] hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition`}
           >
             <span className="w-1.5 h-1.5 rounded-full bg-current" aria-hidden="true" />
             {t("รอตรวจ", "Pending")}
           </Link>
         );
       case "missing":
+        // Filled + bordered like every other tinted status pill (DESIGN.md §6) — an outline-only
+        // treatment on a white cell reads as almost nothing there, which is the opposite of "missing".
         return (
-          <span className={`${chip} border border-dashed border-[var(--s-err-text)]/50 text-[var(--s-err-text)] font-medium`}>
+          <span className={`${chip} bg-[var(--s-err-bg)] text-[var(--s-err-text)] border border-[var(--s-err-bd)] font-medium`}>
+            <span className="w-1.5 h-1.5 rounded-full bg-current" aria-hidden="true" />
             {t("ไม่ส่ง", "Missing")}
           </span>
         );
@@ -303,12 +309,13 @@ export default function ScoreBookPage() {
                 </FilterSelect>
               )}
             </div>
+            {/* Swatches use the exact same bg/border tokens as the cells they explain (DESIGN.md §6). */}
             <ul className="flex items-center gap-3 text-xs text-[var(--text-secondary)]" aria-label={t("คำอธิบายสี", "Legend")}>
-              <li className="inline-flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-[var(--s-ok-bg)] border border-[var(--s-ok-text)]/40" aria-hidden="true" />≥ 80%</li>
-              <li className="inline-flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-[var(--s-info-bg)] border border-[var(--s-info-text)]/40" aria-hidden="true" />60–79%</li>
-              <li className="inline-flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-[var(--s-err-bg)] border border-[var(--s-err-text)]/40" aria-hidden="true" />&lt; 60%</li>
-              <li className="inline-flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-[var(--s-warn-bg)] border border-[var(--s-warn-text)]/40" aria-hidden="true" />{t("รอตรวจ", "Pending")}</li>
-              <li className="inline-flex items-center gap-1.5"><span className="w-3 h-3 rounded border border-dashed border-[var(--s-err-text)]/60" aria-hidden="true" />{t("ไม่ส่ง", "Missing")}</li>
+              <li className="inline-flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-[var(--s-ok-bg)] border border-[var(--s-ok-bd)]" aria-hidden="true" />≥ 80%</li>
+              <li className="inline-flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-[var(--s-info-bg)] border border-[var(--s-info-bd)]" aria-hidden="true" />60–79%</li>
+              <li className="inline-flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-[var(--s-err-bg)] border border-[var(--s-err-bd)]" aria-hidden="true" />&lt; 60%</li>
+              <li className="inline-flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-[var(--s-warn-bg)] border border-[var(--s-warn-bd)]" aria-hidden="true" />{t("รอตรวจ", "Pending")}</li>
+              <li className="inline-flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-[var(--s-err-bg)] border border-[var(--s-err-bd)]" aria-hidden="true" />{t("ไม่ส่ง", "Missing")}</li>
             </ul>
           </div>
 
@@ -489,7 +496,7 @@ export default function ScoreBookPage() {
             size="sm"
           >
             {!stored && (
-              <p className="text-xs text-[var(--s-warn-text)] bg-[var(--s-warn-bg)] rounded-lg px-3 py-2 mb-4 leading-relaxed">
+              <p className="text-xs text-[var(--s-warn-text)] bg-[var(--s-warn-bg)] border border-[var(--s-warn-bd)] rounded-lg px-3 py-2 mb-4 leading-relaxed">
                 {t(
                   "ประมาณจากน้ำหนักของเกณฑ์ — งานนี้ยังไม่มีคะแนนรายเกณฑ์ที่บันทึกไว้",
                   "Estimated from the criteria weights — this submission has no per-criterion scores saved yet",
