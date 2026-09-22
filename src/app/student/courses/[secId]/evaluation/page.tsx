@@ -219,7 +219,13 @@ export default function StudentEvaluationPage() {
                   <tbody key={g.key}>
                     {showGroupHeaders && (
                       <tr>
-                        <td colSpan={2} className="px-4 py-2 bg-[var(--bg-subtle)] border-b border-[var(--border-subtle)]">
+                        {/* --bg-subtle is reserved for row hover, never a static fill (DESIGN.md §9b) — the
+                            teal `--accent` label read fine on white/--bg-surface (5.48:1) but washed out
+                            on --bg-subtle's pale blue (4.58:1, same cool hue family), which is exactly the
+                            table header/footer bug from 22/9 repeating itself in new code. Matches the
+                            teacher Score Book's own column-group header (`headBase`), which was never
+                            tinted either. */}
+                        <td colSpan={2} className="px-4 py-2 bg-[var(--bg-surface)] border-b border-[var(--border-subtle)]">
                           <div className="flex items-center justify-between gap-3">
                             <span className="text-xs font-semibold uppercase tracking-wider text-[var(--accent)]">
                               {g.category ? <><span>{g.category.name}</span> · {g.category.weight}%</> : t("ยังไม่ระบุหมวด", "Uncategorized")}
