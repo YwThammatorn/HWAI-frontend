@@ -94,6 +94,7 @@ Treat this section as a reasonable starting shape, not a spec pulled from workin
 |---|---|---|---|
 | `getStudents` | `GET /api/courses/:courseId/students` | — | `Student[]` |
 | `addStudents` | `POST /api/courses/:courseId/students` | `Omit<Student, "id"\|"courseId">[]` | `Student[]` |
+| `updateStudent` | `PATCH /api/students/:id` | `Partial<Omit<Student, "id"\|"courseId">>` | `Student` |
 | `removeStudent` | `DELETE /api/students/:id` | — | `void` |
 
 ### Cohort students (account-level) — `lib/api/cohort-students.ts`

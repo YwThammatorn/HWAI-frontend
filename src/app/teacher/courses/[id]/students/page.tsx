@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useCourses } from "@/lib/courses";
-import { useStudents } from "@/lib/students";
+import { useStudents, type Student } from "@/lib/students";
 import { useCohortStudents } from "@/lib/cohort-students";
 import { useLanguage } from "@/context/LanguageContext";
 import EnrollStudentModal from "@/components/EnrollStudentModal";
@@ -17,7 +17,7 @@ export default function StudentsRosterPage() {
   const { id } = useParams<{ id: string }>();
   const { t } = useLanguage();
   const { getCourse } = useCourses();
-  const { getStudentsByCourse } = useStudents();
+  const { getStudentsByCourse, updateStudent, removeStudent } = useStudents();
   const { findByStudentId } = useCohortStudents();
   const [addOpen, setAddOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -31,6 +31,33 @@ export default function StudentsRosterPage() {
   const students = getStudentsByCourse(id);
   // "#" is the student's place on the roster, so it must not change while sorting or filtering.
   const rosterNo = new Map(students.map((s, i) => [s.id, i + 1]));
+
+  // Status (22-23/9/2569): per-section enrollment status, NOT CohortStudent.status (account-level
+  // active/inactive — a different field, see lib/students.ts's own comment on enrollmentStatus). The
+  // teacher toggles between "enrolled" and "withdrawn"; "added-midterm" is a historical marker
+  // addStudents() already sets on its own (roster non-empty at add time) and isn't a toggle target —
+  // re-enrolling from withdrawn always lands on plain "enrolled".
+  function statusLabel(status: Student["enrollmentStatus"]) {
+    if (status === "withdrawn") return t("ถอนแล้ว", "Withdrawn");
+    if (status === "added-midterm") return t("เพิ่มกลางเทอม", "Added mid-term");
+    return t("ลงทะเบียน", "Enrolled");
+  }
+  function statusToneClasses(status: Student["enrollmentStatus"]) {
+    if (status === "withdrawn") return "bg-[var(--s-err-bg)] text-[var(--s-err-text)] border-[var(--s-err-bd)]";
+    if (status === "added-midterm") return "bg-[var(--s-info-bg)] text-[var(--s-info-text)] border-[var(--s-info-bd)]";
+    return "bg-[var(--s-ok-bg)] text-[var(--s-ok-text)] border-[var(--s-ok-bd)]";
+  }
+  function handleWithdraw(s: Student) {
+    if (!window.confirm(t(`ถอน ${s.firstName} ${s.lastName} ออกจากวิชานี้?`, `Withdraw ${s.firstName} ${s.lastName} from this course?`))) return;
+    updateStudent(s.id, { enrollmentStatus: "withdrawn" });
+  }
+  function handleReEnroll(s: Student) {
+    updateStudent(s.id, { enrollmentStatus: "enrolled" });
+  }
+  function handleDelete(s: Student) {
+    if (!window.confirm(t(`ลบ ${s.firstName} ${s.lastName} ออกจากรายชื่อนักศึกษาถาวร?`, `Permanently remove ${s.firstName} ${s.lastName} from this course's roster?`))) return;
+    removeStudent(s.id);
+  }
 
   const q = search.trim().toLowerCase();
   const visible = students.filter((s) => {
@@ -153,8 +180,9 @@ export default function StudentsRosterPage() {
           ) : (
             <div>
               <div className="overflow-x-auto">
-                {/* Same column layout as the admin Students tab: ID · Title · Name (first + last together) · Email.
-                    The honorific lives on the central student record, so it is looked up by student ID. */}
+                {/* Same base column layout as the admin Students tab: ID · Title · Name (first + last
+                    together) · Email. The honorific and Program live on the central student record, so
+                    they're looked up by student ID. Cohort/Status/Actions added 23/9/2569. */}
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-[var(--border-subtle)]">
@@ -165,23 +193,79 @@ export default function StudentsRosterPage() {
                       <SortableTh label={t("ชื่อ-นามสกุล", "Name")} dir={sort?.key === "name" ? sort.dir : undefined} onClick={() => cycleSort("name")}
                         hint={t("คลิกเพื่อเรียงตามชื่อ (ก–ฮ → ฮ–ก → ลำดับเดิม)", "Click to sort by name (A–Z → Z–A → roster order)")} />
                       <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("อีเมล", "Email")}</th>
+                      <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("รุ่น", "Cohort")}</th>
+                      <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("สาขา", "Program")}</th>
+                      <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("สถานะ", "Status")}</th>
+                      <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("จัดการ", "Actions")}</th>
                     </tr>
                   </thead>
                   <tbody>
                     {visible.length === 0 && (
                       <tr>
-                        <td colSpan={5} className="px-4 py-8 text-center text-sm text-[var(--text-muted)]">{t("ไม่พบผลการค้นหา", "No results found")}</td>
+                        <td colSpan={9} className="px-4 py-8 text-center text-sm text-[var(--text-muted)]">{t("ไม่พบผลการค้นหา", "No results found")}</td>
                       </tr>
                     )}
-                    {visible.map((s) => (
-                      <tr key={s.id} className="border-b border-[var(--border-subtle)] last:border-b-0 transition-colors hover:bg-[var(--bg-subtle)]">
-                        <td className="px-4 py-2 text-xs text-[var(--text-muted)] tabular-nums">{rosterNo.get(s.id)}</td>
-                        <td className="px-4 py-2 text-[var(--text-secondary)] tabular-nums">{s.studentId}</td>
-                        <td className="px-4 py-2 text-[var(--text-secondary)]">{findByStudentId(s.studentId)?.title || "-"}</td>
-                        <td className="px-4 py-2 font-medium text-[var(--text-primary)]">{s.firstName} {s.lastName}</td>
-                        <td className="px-4 py-2 text-[var(--text-secondary)]">{s.email || "—"}</td>
-                      </tr>
-                    ))}
+                    {visible.map((s) => {
+                      const status = s.enrollmentStatus ?? "enrolled";
+                      const withdrawn = status === "withdrawn";
+                      return (
+                        <tr key={s.id} className="border-b border-[var(--border-subtle)] last:border-b-0 transition-colors hover:bg-[var(--bg-subtle)]">
+                          <td className="px-4 py-2 text-xs text-[var(--text-muted)] tabular-nums">{rosterNo.get(s.id)}</td>
+                          <td className="px-4 py-2 text-[var(--text-secondary)] tabular-nums">{s.studentId}</td>
+                          <td className="px-4 py-2 text-[var(--text-secondary)]">{findByStudentId(s.studentId)?.title || "-"}</td>
+                          <td className="px-4 py-2 font-medium text-[var(--text-primary)]">{s.firstName} {s.lastName}</td>
+                          <td className="px-4 py-2 text-[var(--text-secondary)]">{s.email || "—"}</td>
+                          <td className="px-4 py-2 text-[var(--text-secondary)]">{s.cohort || "—"}</td>
+                          <td className="px-4 py-2 text-[var(--text-secondary)]">{findByStudentId(s.studentId)?.program || "—"}</td>
+                          <td className="px-4 py-2">
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold border ${statusToneClasses(status)}`}>
+                              {statusLabel(status)}
+                            </span>
+                          </td>
+                          <td className="px-4 py-2">
+                            <div className="flex items-center gap-1">
+                              {withdrawn ? (
+                                <button
+                                  type="button"
+                                  onClick={() => handleReEnroll(s)}
+                                  aria-label={t(`ลงทะเบียนกลับ ${s.firstName} ${s.lastName}`, `Re-enroll ${s.firstName} ${s.lastName}`)}
+                                  title={t("ลงทะเบียนกลับ", "Re-enroll")}
+                                  className="min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg text-[var(--text-secondary)] hover:text-[var(--s-ok-text)] hover:bg-[var(--s-ok-bg)] transition-colors"
+                                >
+                                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                  </svg>
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => handleWithdraw(s)}
+                                  aria-label={t(`ถอน ${s.firstName} ${s.lastName}`, `Withdraw ${s.firstName} ${s.lastName}`)}
+                                  title={t("ถอนออกจากวิชา", "Withdraw")}
+                                  className="min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg text-[var(--text-secondary)] hover:text-[var(--s-warn-text)] hover:bg-[var(--s-warn-bg)] transition-colors"
+                                >
+                                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+                                  </svg>
+                                </button>
+                              )}
+                              <button
+                                type="button"
+                                onClick={() => handleDelete(s)}
+                                aria-label={t(`ลบ ${s.firstName} ${s.lastName} ออกจากวิชา`, `Remove ${s.firstName} ${s.lastName} from the course`)}
+                                title={t("ลบออกจากวิชา", "Remove")}
+                                className="min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg text-[var(--text-secondary)] hover:text-[var(--s-err-text)] hover:bg-[var(--s-err-bg)] transition-colors"
+                              >
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                                  <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                                  <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+                                </svg>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

@@ -41,6 +41,12 @@ export default function StudentProvider({ children }: { children: React.ReactNod
     [students, persist]
   );
 
+  const updateStudent = useCallback(
+    (id: string, data: Partial<Omit<Student, "id" | "courseId">>) =>
+      persist(students.map((s) => (s.id === id ? { ...s, ...data } : s))),
+    [students, persist]
+  );
+
   const removeStudent = useCallback(
     (id: string) => persist(students.filter((s) => s.id !== id)),
     [students, persist]
@@ -52,7 +58,7 @@ export default function StudentProvider({ children }: { children: React.ReactNod
   );
 
   return (
-    <StudentContext.Provider value={{ students, addStudents, removeStudent, getStudentsByCourse }}>
+    <StudentContext.Provider value={{ students, addStudents, updateStudent, removeStudent, getStudentsByCourse }}>
       {children}
     </StudentContext.Provider>
   );

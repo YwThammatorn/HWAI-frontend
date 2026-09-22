@@ -23,6 +23,7 @@ export interface Student {
 export interface StudentContextValue {
   students: Student[];
   addStudents: (courseId: string, incoming: Omit<Student, "id" | "courseId">[]) => void;
+  updateStudent: (id: string, data: Partial<Omit<Student, "id" | "courseId">>) => void;
   removeStudent: (id: string) => void;
   getStudentsByCourse: (courseId: string) => Student[];
 }

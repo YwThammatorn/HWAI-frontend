@@ -33,6 +33,15 @@ export async function addStudents(courseId: string, incoming: Omit<Student, "id"
   return added;
 }
 
+export async function updateStudent(id: string, data: Partial<Omit<Student, "id" | "courseId">>): Promise<Student> {
+  // return client.patch<Student>(`/api/students/${id}`, data);
+  const items = read().map((s) => (s.id === id ? { ...s, ...data } : s));
+  write(items);
+  const updated = items.find((s) => s.id === id);
+  if (!updated) throw new Error(`Student ${id} not found`);
+  return updated;
+}
+
 export async function removeStudent(id: string): Promise<void> {
   // return client.delete<void>(`/api/students/${id}`);
   write(read().filter((s) => s.id !== id));
