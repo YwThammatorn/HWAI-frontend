@@ -118,6 +118,36 @@ the shared cool hue makes it look worse than the number alone suggests. Fixed by
 tinted either. Verified with fresh screenshots (both themes) before pushing; suite unaffected (43/7
 skipped on the touched test files).
 
+## Unrelated (22/9): finished the API layer skeleton for a backend dev — `src/lib/api/` + `API_CONTRACT.md`
+User: "อยากให้เตรียมพร้อมไว้ เพื่อให้ backend dev ทำงานต่อได้ง่ายขึ้น โดยที่ไม่กระทบภาพรวมตอนนี้" — prepare
+`src/lib/api/` (a "Phase 1: localStorage, swap to `client.*()` later" skeleton scaffolded once on 21/8,
+covering only `assignments`/`courses`/`auth`/`notifications` and **not imported anywhere in the app**)
+so a backend dev has a real contract to build against, without touching today's behaviour. Went through
+Plan Mode (wide surface — 12 new files) after an Explore pass mapped every data-layer Provider.
+- **Added 11 more `lib/api/<domain>.ts` files** (`students`, `cohort-students`, `grading-categories`,
+  `curriculum`, `managed-teachers`, `section-roles`, `student-groups`, `weekly-plan`,
+  `teaching-materials`, `announcements`, `clo`, `grading-assignments`), each mirroring its real
+  Provider's CRUD 1:1, same "commented real call + working localStorage fallback" pattern as the
+  existing `assignments.ts`/`courses.ts`. "Collaborators" isn't its own entity (it's `SectionRole` +
+  `ManagedTeacher.courseIds`) so it has no separate file. `lib/api/index.ts` barrel updated.
+- **Fixed 2 drifted existing files**: `auth.ts` had its own `AuthUser` shape that didn't match the real
+  one in `AuthContext.tsx` (missing `studentId`/`roles`/`accountEmail`, no `"student"`/`"admin"` role) —
+  now imports the real type so it can't drift again; `register()` no longer unconditionally throws.
+  `notifications.ts` is flagged with a header comment as **speculative** — no live Provider backs it at
+  all (the feature is flag-disabled and was never persisted even when on), unlike every other file here.
+- **New `API_CONTRACT.md`** (repo root): one doc per domain (resource, suggested REST path, each
+  function → verb/request/response, generated straight from the `lib/api/*.ts` signatures), the auth
+  header convention, the `ApiError` shape, and explicit open gaps (no `token` field exists on `AuthUser`
+  yet; file uploads aren't covered; wiring the Providers to actually call this layer is a named,
+  deliberately-not-started follow-up).
+- **Scope boundary, on purpose**: did *not* wire any Provider to call through `lib/api/*` — every
+  Provider still reads/writes `localStorage` directly, exactly as before. That's the real behaviour-risk
+  refactor (adding loading/error state that exists nowhere today) and belongs to whenever there's an
+  actual backend to test against, not "preparation." Verified by `grep -rl "from \"@/lib/api" src`
+  outside `lib/api/` staying empty, and a full suite run before/after landing on the exact same
+  344 passed / 30 skipped.
+- Verified: tsc clean; lint clean on every new/touched file.
+
 ## Not done / open
 - Score Book is read-only by design; if the teacher wants to type scores into cells, that is a new decision (Grading pages own edits today).
 - `gradeLetter` still exists locally in the two per-assignment results pages (the Score Book uses `lib/scoreBook.ts`); could be unified later.

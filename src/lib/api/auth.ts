@@ -1,11 +1,7 @@
 import { client } from "./client";
+import type { AuthUser } from "@/context/AuthContext";
 
-export interface AuthUser {
-  name: string;
-  email: string;
-  role: "teacher" | "ta";
-  token?: string;
-}
+export type { AuthUser };
 
 export interface LoginPayload {
   email: string;
@@ -16,10 +12,13 @@ export interface RegisterPayload {
   name: string;
   email: string;
   password: string;
-  role: "teacher" | "ta";
+  role: AuthUser["role"];
 }
 
-// Phase 1: localStorage mock — swap body to client.post() when backend is ready
+// Phase 1: localStorage mock — swap bodies to client.*() when backend is ready.
+// AuthUser is imported from context/AuthContext.tsx (the real session shape) so this can't drift the
+// way this file used to (it had its own narrower AuthUser — no "student"/"admin" role, no studentId/
+// roles/accountEmail — caught 22/9 while extending this layer to every domain).
 export async function login(payload: LoginPayload): Promise<AuthUser> {
   // return client.post<AuthUser>("/api/auth/login", payload);
   void payload;
@@ -30,8 +29,12 @@ export async function login(payload: LoginPayload): Promise<AuthUser> {
 
 export async function register(payload: RegisterPayload): Promise<AuthUser> {
   // return client.post<AuthUser>("/api/auth/register", payload);
+  // No local mock for account creation — this app's demo accounts are seeded, not registered through
+  // the UI. Left as a real (typed) function rather than an unconditional throw so it matches every
+  // other file's shape; a backend dev reads this as "not yet backed locally", not "broken".
   void payload;
-  throw new Error("register: backend not implemented");
+  void client;
+  throw new Error("register: no local mock — seed an account instead (see lib/accounts.ts)");
 }
 
 export async function logout(): Promise<void> {

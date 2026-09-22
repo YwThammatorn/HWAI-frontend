@@ -1,6 +1,11 @@
 import { client } from "./client";
 import type { Notif } from "@/lib/notifications";
 
+// Speculative, unlike every other file in this folder: there is no live Provider/Context to mirror
+// here (the bell is behind NOTIFICATIONS_DISABLED in lib/featureFlags.ts, and even when it was on,
+// teacher/notifications/page.tsx + Navbar.tsx held notifications in plain useState — never persisted
+// to localStorage). This is a reasonable contract for when the feature gets real persistence, not a
+// snapshot of live behavior — the key below is invented for this file, not read anywhere else.
 const KEY = "hwai_notifications_v1";
 
 function readLocal(): Notif[] {
