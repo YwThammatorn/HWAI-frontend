@@ -76,9 +76,10 @@ test.describe("P2 — Teacher Grade Adjustment", () => {
     await seedGrading(page);
     await page.goto(`${BASE}/teacher/courses/c-p2/assignments/a-p2/grading`);
     await page.waitForLoadState("networkidle");
-    // AI scores displayed in greyed cells
-    await expect(page.getByText("72")).toBeVisible();
-    await expect(page.getByText("55")).toBeVisible();
+    // AI Score merged into the Score column (22/9/2569) — the empty instructor-score input shows
+    // the AI score as its placeholder, rather than a separate always-visible cell.
+    await expect(page.getByLabel(/Instructor score for สมชาย ใจดี/i)).toHaveAttribute("placeholder", "72");
+    await expect(page.getByLabel(/Instructor score for สมหญิง ดีมาก/i)).toHaveAttribute("placeholder", "55");
   });
 
   test("instructor score input accepts a number", async ({ page }) => {

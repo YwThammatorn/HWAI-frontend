@@ -7,12 +7,13 @@ import { useCourses, PRESET_COLORS } from "@/lib/courses";
 import { useCurriculum } from "@/lib/curriculum";
 import { useLanguage } from "@/context/LanguageContext";
 import { CourseIcon, COURSE_ICON_KEYS, type CourseIconKey } from "@/components/CourseIcon";
+import CourseBanner from "@/components/CourseBanner";
 
 export default function CourseSettingsPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const { t } = useLanguage();
-  const { getCourse, updateCourse, removeCourse } = useCourses();
+  const { getCourse, updateCourse } = useCourses();
   const { curriculumVersions, courseTemplates } = useCurriculum();
   const CONFIRM_MSG = t("การเปลี่ยนแปลงจะไม่ถูกบันทึก\nต้องการออกจากหน้านี้หรือไม่?", "Unsaved changes.\nLeave this page?");
   const course = getCourse(id);
@@ -92,16 +93,10 @@ export default function CourseSettingsPage() {
     router.push("/teacher/courses");
   }
 
-  function handleDelete() {
-    if (!confirm(t(`ลบ "${course?.name}" ถาวร? ไม่สามารถกู้คืนได้`, `Permanently delete "${course?.name}"? Cannot be undone.`))) return;
-    removeCourse(id);
-    router.push("/teacher/courses");
-  }
-
   const isValid = name.trim().length > 0;
 
   return (
-      <main className="w-full max-w-[860px] mx-auto px-8 py-8">
+      <main className="w-full px-8 py-8">
         {/* Back */}
         <button onClick={() => navAway("/teacher/courses")} className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-[var(--accent)] mb-6 transition-colors">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -215,26 +210,24 @@ export default function CourseSettingsPage() {
                 </div>
               </div>
 
-              {/* Live preview */}
+              {/* Live preview — reuses the real My Courses card banner (22/9/2569: was its own
+                  hand-rolled swatch with the name in a separate white box below; now the code+name
+                  sit up in the colour band itself, exactly like the actual card will render, same
+                  contrast logic included). */}
               <div className="flex flex-col">
                 <p className="text-sm font-medium text-[var(--text-primary)] mb-2.5">{t("ตัวอย่าง", "Preview")}</p>
-                <div className="w-48 rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
-                  <div className="h-20 relative" style={{ background: coverColor }}>
-                    <div className="absolute bottom-2 left-2 w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center">
-                      <CourseIcon iconKey={icon} size={14} className="text-white" />
-                    </div>
-                  </div>
-                  <div className="bg-white p-3">
-                    <p className="text-xs font-bold text-[var(--text-primary)] truncate">{name || t("ชื่อรายวิชา", "Course Name")}</p>
-                  </div>
+                <div className="w-64 rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
+                  <CourseBanner coverColor={coverColor} icon={icon} name={name || t("ชื่อรายวิชา", "Course Name")} code={course.code} />
                 </div>
               </div>
             </div>
           </section>
 
-          {/* Danger Zone */}
-          <section className="bg-white rounded-2xl border border-[var(--s-err-bd)] shadow-sm p-6">
-            <h2 className="text-sm font-semibold text-[var(--s-err-text)] uppercase tracking-wider mb-4">{t("โซนอันตราย", "Danger Zone")}</h2>
+          {/* Danger Zone — Delete removed 22/9/2569: only admin can permanently delete a course now
+              (admin/courses/page.tsx already has its own delete flow); teachers can still archive
+              their own course (reversible) but no longer see a path to permanent deletion here. */}
+          <section className="bg-white rounded-2xl border border-orange-200 shadow-sm p-6">
+            <h2 className="text-sm font-semibold text-orange-600 uppercase tracking-wider mb-4">{t("โซนอันตราย", "Danger Zone")}</h2>
             <div className="flex gap-3">
               <button
                 type="button"
@@ -243,15 +236,8 @@ export default function CourseSettingsPage() {
               >
                 {t("จัดเก็บรายวิชา", "Archive Course")}
               </button>
-              <button
-                type="button"
-                onClick={handleDelete}
-                className="px-4 py-2 text-sm font-medium rounded-xl border border-[var(--s-err-bd)] text-[var(--s-err-text)] hover:bg-[var(--s-err-bg)] transition-colors"
-              >
-                {t("ลบถาวร", "Delete Permanently")}
-              </button>
             </div>
-            <p className="text-xs text-gray-500 mt-3">{t("Archive จะซ่อนรายวิชา — สามารถ restore ได้ภายหลัง. Delete จะลบถาวร", "Archive hides the course — you can restore it later. Delete is permanent.")}</p>
+            <p className="text-xs text-gray-500 mt-3">{t("Archive จะซ่อนรายวิชา — สามารถ restore ได้ภายหลัง. การลบรายวิชาถาวรทำได้โดยแอดมินเท่านั้น", "Archive hides the course — you can restore it later. Permanently deleting a course is admin-only.")}</p>
           </section>
 
           {/* Actions */}

@@ -141,10 +141,16 @@ test.describe("Assignments page is planning only", () => {
     await expect(wait).toContainText("No rubric");
   });
 
-  test("the only bridge to grading is a quiet Grade → link; the row menu still has Edit / Delete", async ({ page }) => {
+  test("clicking the row opens the detail page (the Grade → link was removed, redundant with it); the row menu still has Edit / Delete", async ({ page }) => {
     await open(page, "/assignments");
-    const row = planRow(page, "Review Me");
-    await expect(row.getByRole("link", { name: /Grade/ })).toHaveAttribute("href", "/teacher/courses/c-gs/assignments/a-review/grading");
+    let row = planRow(page, "Review Me");
+    await expect(row.getByRole("link", { name: /Grade/ })).toHaveCount(0);
+    // Click somewhere in the row that isn't the title link or the action menu — still navigates to
+    // detail. The due-date calendar icon is always rendered and well clear of the action cluster.
+    await row.locator("svg").first().click();
+    await expect(page).toHaveURL("/teacher/courses/c-gs/assignments/a-review");
+    await page.goBack();
+    row = planRow(page, "Review Me");
     await row.getByRole("button", { name: /Actions for Review Me/ }).click();
     await expect(page.getByRole("menuitem", { name: "Edit" })).toHaveAttribute("href", "/teacher/courses/c-gs/assignments/a-review/edit");
     await expect(page.getByRole("menuitem", { name: "Delete" })).toBeVisible();

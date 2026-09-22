@@ -548,7 +548,10 @@ test.describe("Course Settings", () => {
     await expect(page.getByRole("heading", { name: /edit existing course/i })).toBeVisible();
     await expect(page.locator("text=/Danger Zone/i")).toBeVisible();
     await expect(page.getByRole("button", { name: /archive course/i })).toBeVisible();
-    await expect(page.getByRole("button", { name: /delete permanently/i })).toBeVisible();
+    // Delete removed 22/9/2569 — teachers can archive (reversible) but only admin can permanently
+    // delete a course now (admin/courses/page.tsx has its own delete flow).
+    await expect(page.getByRole("button", { name: /delete permanently/i })).toHaveCount(0);
+    await expect(page.locator("text=/admin-only/i")).toBeVisible();
   });
 
   test("Save Changes button present", async ({ page }) => {

@@ -148,19 +148,10 @@ function GradeRow({
         {new Date(rep.submittedAt).toLocaleDateString("th-TH", { day: "numeric", month: "short" })}
       </td>
 
-      {/* AI Score */}
-      <td className="px-4 py-3 text-sm tabular-nums">
-        {rep.aiScore !== null ? (
-          <span className={isModified ? "text-gray-400 line-through" : "text-[var(--text-primary)] font-semibold"}>
-            {rep.aiScore}
-          </span>
-        ) : (
-          <span className="text-gray-300">—</span>
-        )}
-        <span className="text-gray-300 text-xs">/{maxPoints}</span>
-      </td>
-
-      {/* Instructor score input */}
+      {/* Score — merged AI + Instructor Score into one column (22/9/2569): the input already showed
+          the AI score as its placeholder when empty, so a separate "AI Score" column next to it was
+          showing the same number twice. Once the instructor overrides it, the AI score is kept
+          visible as a small "AI: N" hint so it isn't lost from the row entirely. */}
       <td className="px-4 py-3">
         <div className="flex items-center gap-1.5">
           <input
@@ -180,6 +171,10 @@ function GradeRow({
                 : "border-gray-200 bg-white text-[var(--text-primary)]"
             }`}
           />
+          <span className="text-gray-300 text-xs">/{maxPoints}</span>
+          {isModified && rep.aiScore !== null && (
+            <span className="text-[10px] text-gray-400 whitespace-nowrap">{t(`AI: ${rep.aiScore}`, `AI: ${rep.aiScore}`)}</span>
+          )}
           {isModified && (
             <span className="text-[10px] font-bold text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded whitespace-nowrap">
               {t("แก้ไขแล้ว", "Edited")}
@@ -195,10 +190,15 @@ function GradeRow({
         </span>
       </td>
 
-      {/* Review / Recheck — opens the submission (moved here from the assignment detail page) */}
+      {/* Review / Recheck — opens the submission (moved here from the assignment detail page).
+          Styled as an outlined pill button (22/9/2569, was a plain text link that didn't read as
+          clickable) — matches the Re-grade button next to it. */}
       <td className="px-4 py-3 whitespace-nowrap">
         {(rep.status === "need_review" || rep.status === "graded") && (
-          <Link href={reviewHref} className="text-sm text-[var(--accent)] hover:underline font-medium">
+          <Link
+            href={reviewHref}
+            className="inline-flex items-center h-7 px-2.5 whitespace-nowrap rounded-lg border border-[var(--accent)]/30 text-xs font-medium text-[var(--accent)] hover:border-[var(--accent)] hover:bg-[var(--accent-bright)]/10 active:scale-[0.97] transition-all"
+          >
             {rep.status === "need_review"
               ? t("ตรวจสอบ", "Review")
               : isTeam ? t("ขอตรวจใหม่ทั้งทีม", "Recheck team") : t("ขอตรวจใหม่", "Recheck")}
@@ -395,8 +395,7 @@ function GradeAdjustmentTable({
               <tr className="bg-gray-50 border-b border-gray-100">
                 <th scope="col" className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">{t("นักศึกษา", "Student")}</th>
                 <th scope="col" className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">{t("วันที่ส่ง", "Submitted")}</th>
-                <th scope="col" className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">{t("คะแนน AI", "AI Score")}</th>
-                <th scope="col" className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">{t("คะแนนอาจารย์", "Instructor Score")}</th>
+                <th scope="col" className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">{t("คะแนน", "Score")}</th>
                 <th scope="col" className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">{t("สถานะ", "Status")}</th>
                 <th scope="col" className="px-4 py-2.5 w-32" aria-label={t("ตรวจสอบ", "Review")}></th>
                 <th scope="col" className="px-4 py-2.5 w-32" aria-label={t("Re-grade", "Re-grade")}></th>

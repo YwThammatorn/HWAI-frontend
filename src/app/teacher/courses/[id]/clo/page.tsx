@@ -150,7 +150,7 @@ export default function CLOPage() {
 
             {/* Table header */}
             <div className="grid gap-0 border-b border-gray-100" style={{ gridTemplateColumns: "88px 1fr 170px 76px" }}>
-              {[t("รหัส", "Code"), t("ข้อความ CLO", "CLO Text"), t("เกณฑ์ที่ผูก", "Linked Criteria"), ""].map((h, i) => (
+              {[t("รหัส", "Code"), t("ข้อความ CLO", "CLO Text"), t("เกณฑ์ที่ผูก", "Linked Criteria"), t("จัดการ", "Actions")].map((h, i) => (
                 <div key={i} className="px-4 py-3 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">{h}</div>
               ))}
             </div>
@@ -176,14 +176,16 @@ export default function CLOPage() {
                 {/* Text */}
                 <div className="px-4 text-sm text-[var(--text-primary)] leading-relaxed">{clo.text}</div>
 
-                {/* เกณฑ์ผูก */}
-                <div className="px-4 pt-0.5">
-                  <span className="inline-flex items-center gap-1 text-xs text-amber-500">
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                {/* เกณฑ์ผูก — min-w-0 + truncate: without it, a grid item's default min-width:auto lets
+                    this text overflow its 170px track and crowd into the Actions column next to it
+                    (flagged 22/9/2569). */}
+                <div className="px-4 pt-0.5 min-w-0">
+                  <span className="flex items-center gap-1 text-xs text-amber-500 min-w-0">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="shrink-0">
                       <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
                       <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
                     </svg>
-                    {t("ยังไม่มีเกณฑ์ผูก", "No linked criteria")}
+                    <span className="truncate">{t("ยังไม่มีเกณฑ์ผูก", "No linked criteria")}</span>
                   </span>
                 </div>
 

@@ -201,6 +201,47 @@ once: visually distinct from `--navbar-bg` (kept at the literal Sign-in-button t
 all. Kept identical between light/dark chrome-teal (the contrast fix applies to both, unlike navy's
 light-only distinction). Verified with fresh screenshots (both themes); full suite still 344/30.
 
+## Unrelated (22/9): batch of 10 small teacher-page UI fixes
+User sent a terse 10-item list. Investigated each live (screenshots / live scroll test) before touching
+anything, per two of them turning out to already work / need a different fix than the literal wording
+suggested:
+1. **Score Book sticky ID/Name columns** — already worked correctly (verified with a real horizontal
+   scroll test, 10 assignment columns); no code change.
+2. **CLO page: Actions column** — header cell was a literal `""` (no label) → added "จัดการ"/"Actions".
+   The "No linked criteria" warning text was overflowing into the action buttons' space — a classic
+   CSS Grid gotcha (a grid item's default `min-width: auto` lets long content overflow a fixed-px
+   track); fixed with `min-w-0` + `truncate` on that cell.
+3. **Teacher can no longer delete a course** — removed the "Delete Permanently" button + `handleDelete`
+   from `teacher/courses/[id]/settings/page.tsx`; Archive (reversible) stays. Admin already has its own
+   delete flow (`admin/courses/page.tsx`) — teachers are pointed there via the updated Danger Zone copy.
+   Updated `e2e/hwai.spec.ts`'s "Course Settings" test (asserted the button existed).
+4. **Teacher Settings layout now full-width** — was `max-w-[860px] mx-auto`, unlike every sibling
+   teacher page; now `w-full` to match.
+5. **Settings preview: text lifted into the colour band** — was a separate white box below the swatch;
+   now reuses the real `CourseBanner` component (the same one My Courses cards use), so the preview is
+   an exact live preview of the real card, not a hand-rolled approximation.
+6. **Assignment list row is now clickable through to detail** — was title-text-only before. Kept the
+   title's own real `<Link>` (keyboard/ctrl-click semantics) and added a convenience `onClick` on the
+   row `<div>` to the same destination; the action cluster (menu, was also "Grade →") gets
+   `stopPropagation` so it doesn't double-navigate.
+7. **Removed the "Grade →" link from the assignment list row** — a plain, low-visual-weight text link,
+   redundant now that the row itself opens detail (which has its own prominent "Go to grading").
+   Updated `tests/teacher-grading-split.spec.ts`'s row-bridge test accordingly.
+8. **Grading page: Review/Recheck now styled as a real button** — was a plain underlined text link next
+   to the outlined-pill "Re-grade" button; now matches its visual weight (outlined pill, `--accent`).
+9. **Grading page: merged "AI Score" + "Instructor Score" into one "Score" column** — the instructor
+   input already showed the AI score as its placeholder when empty, so the separate always-visible "AI
+   Score" cell was showing the same number twice. Once overridden, the AI score would otherwise
+   disappear from the row entirely — added a small "AI: N" hint next to the "Edited" badge so it stays
+   visible. Updated `tests/teacher-p2.spec.ts`'s "AI scores shown" test (was asserting bare visible text
+   "72"/"55"; now asserts the input's placeholder).
+10. **Removed the star-rating control from per-assignment Results' "AI Feedback" panel** — kept the
+    textarea + "Feedback Grading" button, dropped the 5-star `StarRating` component and its state.
+
+Verified: tsc clean; lint = baseline only on every touched file (confirmed pre-existing counts on `HEAD`
+where relevant — `AdminSidebar`/`ThemeProvider` refs error, grading page `Math.random` purity error).
+Screenshots for every visual change (both themes where relevant). Full suite: see below.
+
 ## Not done / open
 - Score Book is read-only by design; if the teacher wants to type scores into cells, that is a new decision (Grading pages own edits today).
 - `gradeLetter` still exists locally in the two per-assignment results pages (the Score Book uses `lib/scoreBook.ts`); could be unified later.

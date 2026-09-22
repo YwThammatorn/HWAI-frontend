@@ -41,25 +41,6 @@ function confidence(sub: Submission, max: number): { label: string; labelTh: str
   return { label: "Review", labelTh: "ตรวจสอบ", color: "#DC2626", pct: 48 };
 }
 
-function StarRating({ value, onChange }: { value: number; onChange: (v: number) => void }) {
-  const [hover, setHover] = useState(0);
-  return (
-    <div className="flex gap-1">
-      {[1, 2, 3, 4, 5].map((i) => (
-        <button
-          key={i}
-          onMouseEnter={() => setHover(i)}
-          onMouseLeave={() => setHover(0)}
-          onClick={() => onChange(i)}
-          className="text-2xl transition-transform hover:scale-110"
-        >
-          <span style={{ color: i <= (hover || value) ? "#F59E0B" : "#E5E7EB" }}>★</span>
-        </button>
-      ))}
-    </div>
-  );
-}
-
 export default function ResultsPage() {
   const { id, assignmentId } = useParams<{ id: string; assignmentId: string }>();
   const { t, lang } = useLanguage();
@@ -68,7 +49,6 @@ export default function ResultsPage() {
   const { getGroupsByAssignment } = useStudentGroups();
 
   const [search, setSearch] = useState("");
-  const [starRating, setStarRating] = useState(0);
   const [feedbackText, setFeedbackText] = useState("");
   const [feedbackSent, setFeedbackSent] = useState(false);
 
@@ -519,14 +499,11 @@ export default function ResultsPage() {
               </div>
             )}
 
-            {/* AI Feedback */}
+            {/* AI Feedback — star rating removed 22/9/2569 */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
               <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-4">
                 {t("ให้ Feedback AI", "Provide AI Feedback")}
               </p>
-              <div className="flex justify-center mb-3">
-                <StarRating value={starRating} onChange={setStarRating} />
-              </div>
               <textarea
                 value={feedbackText}
                 onChange={(e) => setFeedbackText(e.target.value)}

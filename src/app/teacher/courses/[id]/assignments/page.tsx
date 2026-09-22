@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCourses } from "@/lib/courses";
 import { useStudents } from "@/lib/students";
@@ -21,6 +21,7 @@ function fmtDate(dateStr: string) {
 // checking submissions (stats, progress, Start Grading) lives on the Grading page.
 export default function AssignmentsPage() {
   const { id } = useParams<{ id: string }>();
+  const router = useRouter();
   const { t } = useLanguage();
   const { getCourse } = useCourses();
   const { getStudentsByCourse } = useStudents();
@@ -166,7 +167,14 @@ export default function AssignmentsPage() {
               const criteriaCount = rubric?.criteria.length ?? 0;
               return (
                 <div key={a.id} className="border-b border-[var(--border-subtle)] last:border-b-0">
-                  <div className="flex items-center px-5 py-4 hover:bg-[var(--bg-subtle)] transition-colors">
+                  {/* Whole row opens the detail page (22/9/2569 — was title-text-only before). The
+                      title keeps its own real <Link> (keyboard tab target, ctrl/middle-click new tab);
+                      this onClick is a mouse convenience on top of that, same destination either way.
+                      The action cluster on the right stops propagation so its own links/menu still work. */}
+                  <div
+                    onClick={() => router.push(`/teacher/courses/${id}/assignments/${a.id}`)}
+                    className="flex items-center px-5 py-4 hover:bg-[var(--bg-subtle)] transition-colors cursor-pointer"
+                  >
                     <div className="flex-1 min-w-0">
                       <Link
                         href={`/teacher/courses/${id}/assignments/${a.id}`}
@@ -216,14 +224,11 @@ export default function AssignmentsPage() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3 shrink-0 ml-4">
-                      {/* The only bridge to the Grading page */}
-                      <Link
-                        href={`/teacher/courses/${id}/assignments/${a.id}/grading`}
-                        className="text-sm font-medium text-[var(--accent)] hover:underline whitespace-nowrap"
-                      >
-                        {t("ไปตรวจงาน", "Grade")} →
-                      </Link>
+                    {/* stopPropagation: this cluster's own links/menu shouldn't also trigger the row's
+                        click-through to the detail page above. "Grade →" removed 22/9/2569 — it was a
+                        plain text link, not a prominent action, and is now redundant with the row
+                        itself being clickable through to detail (which has its own "Go to grading"). */}
+                    <div className="flex items-center gap-3 shrink-0 ml-4" onClick={(e) => e.stopPropagation()}>
                       {/* ▼ dropdown menu */}
                       <div className="relative" ref={openMenu === a.id ? menuRef : undefined}>
                         <button
