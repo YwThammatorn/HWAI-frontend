@@ -27,7 +27,7 @@ function NavItem({
         "flex items-center gap-3 rounded-xl font-medium transition-colors min-h-[44px]",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--sidebar-bg)]",
         small ? "px-3 py-1.5 text-xs" : "px-3 py-2.5 text-sm",
-        active ? "bg-[var(--accent-bright)]/20 text-[var(--nav-active-text)]" : "text-white/55 hover:text-white hover:bg-white/8",
+        active ? "bg-[var(--nav-active-bg)] text-[var(--nav-active-text)]" : "text-white/55 hover:text-white hover:bg-white/8",
       ].join(" ")}
     >
       {icon}

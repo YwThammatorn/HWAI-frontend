@@ -225,19 +225,18 @@ Pill shape (`radius:99px`), always with a `background:currentColor` dot before t
 
 ## 8. Navigation Sidebar
 
-`--bg-nav` (`#1A2D45`, unchanged both themes — this is the one surface that deliberately doesn't flip). Text sits on it via dedicated `--nav-text` / `--nav-text-muted` tokens, not the app's regular `--text-*` tokens — the sidebar is always-dark regardless of theme, so it needs its own always-legible pair.
+Two separate tokens drive this, not `--bg-nav` (which is a general-purpose navy reused in ~15 unrelated places — tab active-states, filter chips, cards — a sidebar/navbar re-theme must never touch it): `--navbar-bg` (the Navbar top bar) and `--sidebar-bg` (the 3 portal sidebars — `ProfileSidebar.tsx`/`AdminSidebar.tsx`/`StudentSidebar.tsx`). Both default to the same navy as `--bg-nav` and, like it, don't flip with light/dark — the chrome is always-dark by default. Sidebar text sits on it via dedicated `--nav-text` / `--nav-text-muted` tokens (and `--nav-active-text` for the active item), not the app's regular `--text-*` tokens, for the same reason.
 
 ```css
 .nav-item { padding: 8px 16px; color: var(--nav-text-muted); }
-.nav-item:hover { background: rgba(255,255,255,.05); color: var(--nav-text); }
+.nav-item:hover { background: rgba(255,255,255,.08); color: var(--nav-text); }
 .nav-item.active {
-  background: var(--nav-active-bg);         /* rgba(78,168,160,.18) */
-  color: var(--nav-text);
-  border-right: 2px solid var(--accent);
+  background: var(--nav-active-bg);   /* rgba(78,168,160,.2) navy · rgba(0,0,0,.18-.2) teal, see below */
+  color: var(--nav-active-text);
 }
 ```
 
-Active state is marked two ways at once (background tint **and** right border), not color alone — same WCAG reasoning as the badge dot in §6.
+**Chrome theme toggle (22/9/2569)** — advisor feedback: try the same teal as the Sign-in button (`--accent-solid`) for the navbar/sidebar instead of navy. That's a deliberate, opt-in exception to §1's "everything calm stays within ~40° of navy" rule, not a replacement of it — `data-nav-theme="teal"` on `<html>`, toggled from Navbar next to the light/dark button (`ThemeProvider.tsx`'s `navTheme`/`toggleNavTheme`, persisted to `localStorage["hwai-nav-theme"]`, **default `"navy"`** so nobody sees a different site unless they opt in). Only repaints `--navbar-bg`/`--sidebar-bg`/`--nav-active-bg`/`--nav-active-text`. The active-item highlight recipe flips direction in teal mode: navy *lightens* the row (`--accent-bright` at 20% opacity) because the base is near-black; teal is already mid-lightness, so lightening it further leaves no contrast headroom for any text color (verified: ~4.24:1 max, even with white) — teal mode instead *darkens* the row (black at 18-20% opacity), which keeps plenty of margin (6-7:1) and still reads as a highlight.
 
 ## 9. Accent strip pattern
 

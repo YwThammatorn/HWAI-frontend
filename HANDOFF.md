@@ -148,6 +148,43 @@ Plan Mode (wide surface — 12 new files) after an Explore pass mapped every dat
   344 passed / 30 skipped.
 - Verified: tsc clean; lint clean on every new/touched file.
 
+## Unrelated (22/9): toggleable teal chrome theme for Navbar + the 3 portal sidebars
+Advisor feedback: try the site's navbar/sidebar in the same teal as the "Sign in" button
+(`--accent-solid`, `#0F766E`/`#12817A`) instead of the fixed navy, with a toggle like the existing
+light/dark button. Went through Plan Mode — found a real risk first: `--bg-nav` (today's navy token) is
+reused in ~15 unrelated places (tab active-states, filter chips, cards across teacher pages), and a
+past `globals.css` comment already warns repointing it "would have reskinned half the teacher portal
+by accident." `--sidebar-bg` was cleanly scoped (confirmed by grep — only the 3 sidebar files).
+- **New `--navbar-bg` token** (`globals.css`) — the Navbar's own top-bar fill split off `--bg-nav`, the
+  same move already made once for `--sidebar-bg` (9/9/2569). Starts equal to `--bg-nav`'s value in both
+  themes, so the split alone is a no-op.
+- **`[data-nav-theme="teal"]` / `[data-theme="dark"][data-nav-theme="teal"]` override blocks** —
+  repaint only `--navbar-bg`, `--sidebar-bg`, `--nav-active-bg`, `--nav-active-text`. `--bg-nav` itself
+  and its ~14 other consumers are never touched.
+- **`--nav-active-text` recomputed for teal, not reused from navy** — plain white already clears
+  4.5:1 against the flat teal fill (4.76:1 light / 4.73:1 dark), verified by hand.
+- **`--nav-active-bg` found a genuine contrast dead-end and had to change direction**: navy's active-row
+  highlight *lightens* the row (`--accent-bright`/20% over near-black) — composited over teal (already
+  mid-lightness) that overshoots to where no text colour, not even white, can reach 4.5:1 again (max
+  ~4.24:1, verified by hand). Fixed by *darkening* the row in teal mode instead (black at 18-20%
+  opacity) — 6-7:1 margin, still reads as a clear highlight. This token was also previously unused (the
+  3 sidebars had `bg-[var(--accent-bright)]/20` hardcoded inline) — wired all 4 occurrences
+  (`ProfileSidebar.tsx` ×1, `AdminSidebar.tsx` ×1, `StudentSidebar.tsx` ×2) onto `--nav-active-bg` so
+  the toggle can repaint them; value set to match the old hardcoded opacity exactly (`.2`, not the
+  token's stale pre-existing `.18`) so navy mode is pixel-identical to before.
+- **`ThemeProvider.tsx`**: added a second, independent preference (`navTheme: "navy"|"teal"`,
+  `toggleNavTheme()`) to the same context as light/dark, persisted to its own
+  `localStorage["hwai-nav-theme"]` key, applied via a second `data-nav-theme` attribute on `<html>` in
+  the same effect. **Default `"navy"`** — opt-in, nobody sees a different site unless they toggle it.
+- **`Navbar.tsx`**: new toggle button, identical visual treatment to the light/dark one, right next to
+  it (paint-drop icon, filled when teal is active).
+- Verified live in the browser pane, all 4 combinations (navy/teal × light/dark) — teal reads as a
+  deliberate brand colour at full-surface scale, not garish; active-nav-item text clearly legible in
+  both themes. Default navy+light/navy+dark screenshots pixel-match the pre-change look.
+- tsc clean; lint = 2 pre-existing baseline errors only (`AdminSidebar.tsx` unrelated collapsed-state
+  effect, `ThemeProvider.tsx`'s original `setPreference` call — confirmed both existed on `HEAD` before
+  this change, this change added zero new ones).
+
 ## Not done / open
 - Score Book is read-only by design; if the teacher wants to type scores into cells, that is a new decision (Grading pages own edits today).
 - `gradeLetter` still exists locally in the two per-assignment results pages (the Score Book uses `lib/scoreBook.ts`); could be unified later.

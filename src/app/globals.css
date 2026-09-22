@@ -87,6 +87,13 @@
   --bg-stripe-hover: #D3D8DE;
   --bg-nav:        #1A2D45;
 
+  /* Navbar's own top-bar fill — split off from --bg-nav (22/9/2569) the same way --sidebar-bg was
+     (see below): --bg-nav is a general-purpose "navy" reused in ~15 unrelated places (dashboard/course
+     tab active-states, filter chips, cards) that a chrome-theme toggle must never touch. Starts equal
+     to --bg-nav so this split alone changes nothing; [data-nav-theme="teal"] below is what actually
+     recolours it. */
+  --navbar-bg:     #1A2D45;
+
   /* Shared portal-sidebar theme (9/9/2569) — NOT --bg-nav. --bg-nav turned out
      to be reused as a general-purpose "navy" accent across ~15 other places
      (Navbar, AdminShell/StudentShell headers, dashboard cards, tab
@@ -120,7 +127,11 @@
   /* Nav sidebar — always-dark surface, needs its own always-legible text pair */
   --nav-text:       #D4EEF0;
   --nav-text-muted: #A8BCCE;
-  --nav-active-bg:  rgba(78,168,160,.18);
+  /* The active-nav-item highlight (22/9/2569): was previously unused — the 3 sidebar components had
+     bg-[var(--accent-bright)]/20 hardcoded inline instead. Wired them onto this token so a chrome-theme
+     toggle can repaint it without touching those files; value updated to match that exact colour+opacity
+     (was .18 here vs the real .20 in code) so this change alone is a no-op in navy mode. */
+  --nav-active-bg:  rgba(78, 168, 160, 0.2);
 
   --disabled-bg:     #EEF1F5;
   --disabled-text:   #A0AEBC;
@@ -168,6 +179,7 @@
   --bg-stripe:       #1E2E40;
   --bg-stripe-hover: #27394E;
   --bg-nav:        #0A1218;
+  --navbar-bg:     #0A1218;
   /* Dark mode keeps its existing (already much darker) sidebar look —
      the 3 candidate colors were only ever proposed for light mode. */
   --sidebar-bg:        #0A1218;
@@ -187,7 +199,7 @@
 
   --nav-text:       #D4EEF0;
   --nav-text-muted: #A8BCCE;
-  --nav-active-bg:  rgba(78,168,160,.18);
+  --nav-active-bg:  rgba(78, 168, 160, 0.2);
 
   --disabled-bg:     #1A2634;
   --disabled-text:   #4A6070;
@@ -213,6 +225,38 @@
   --role-ta-bg:     #211C3A;
   --role-ta-text:   #B8A8E8;
   --role-ta-border: #3A2F5C;
+}
+
+/* ── Chrome theme toggle (22/9/2569) ─────────────────────────────────────────
+   Advisor feedback: try the Navbar/sidebar in the same teal as the "Sign in" button
+   (--accent-solid) instead of the fixed navy. That cuts against §1's "everything calm
+   stays within ~40° of navy, hot colour is reserved for the one moment it needs
+   attention" principle, so this is opt-in (data-nav-theme="teal", default "navy" =
+   today's look, toggled from Navbar next to the light/dark button — see ThemeProvider.tsx)
+   rather than a replacement. Only repaints --navbar-bg / --sidebar-bg / --nav-active-bg /
+   --nav-active-text — never --bg-nav, which ~15 unrelated tab/chip/card backgrounds still
+   read (see the --navbar-bg comment above for why that split was necessary first).
+
+   --nav-active-text: recomputed for teal, NOT reused from navy's #99D2CC/#4EA8A0 — those
+   were tuned against --accent-bright/20 over near-black navy. Over the flat teal itself,
+   plain white already clears 4.5:1 (4.76:1 light, 4.73:1 dark) so no dedicated colour is
+   needed. --nav-active-bg is the one that actually broke: the navy recipe LIGHTENS the
+   active row (accent-bright at 20% opacity) — composited over already-mid-lightness teal
+   that overshoots to where NO text colour (not even white) can reach 4.5:1 again (verified:
+   max possible ~4.24:1). Darkening the row instead (black at 18-20%) keeps it legible with
+   plenty of margin (6-7:1) and still reads as a highlight against the teal. */
+[data-nav-theme="teal"] {
+  --navbar-bg:       #0F766E;
+  --sidebar-bg:      #0F766E;
+  --nav-active-bg:   rgba(0, 0, 0, 0.18);
+  --nav-active-text: #FFFFFF;
+}
+
+[data-theme="dark"][data-nav-theme="teal"] {
+  --navbar-bg:       #12817A;
+  --sidebar-bg:      #12817A;
+  --nav-active-bg:   rgba(0, 0, 0, 0.2);
+  --nav-active-text: #FFFFFF;
 }
 
 body {

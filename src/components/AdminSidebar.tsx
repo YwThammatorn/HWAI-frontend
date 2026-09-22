@@ -113,7 +113,7 @@ export default function AdminSidebar() {
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--sidebar-bg)]",
                     collapsed ? "justify-center px-0" : "px-3",
                     active
-                      ? "bg-[var(--accent-bright)]/20 text-[var(--nav-active-text)]"
+                      ? "bg-[var(--nav-active-bg)] text-[var(--nav-active-text)]"
                       : "text-white/55 hover:text-white hover:bg-white/8",
                   ].join(" ")}
                 >

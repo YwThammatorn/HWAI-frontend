@@ -3,6 +3,10 @@ import { createContext, useContext, useLayoutEffect, useState } from "react";
 
 export type ThemePreference = "light" | "dark" | "system";
 type EffectiveTheme = "light" | "dark";
+// Chrome (Navbar + the 3 portal sidebars) colour — independent of light/dark. "navy" is today's
+// look; "teal" is the advisor-suggested variant (22/9/2569, matches --accent-solid / the Sign-in
+// button). See globals.css's "Chrome theme toggle" block for what it actually repaints.
+export type NavTheme = "navy" | "teal";
 
 interface ThemeContextValue {
   preference: ThemePreference;
@@ -11,6 +15,8 @@ interface ThemeContextValue {
   savePreference: (p: ThemePreference) => void;
   revertPreference: () => void;
   toggleTheme: () => void;
+  navTheme: NavTheme;
+  toggleNavTheme: () => void;
 }
 
 const ThemeContext = createContext<ThemeContextValue>({
@@ -20,6 +26,8 @@ const ThemeContext = createContext<ThemeContextValue>({
   savePreference: () => {},
   revertPreference: () => {},
   toggleTheme: () => {},
+  navTheme: "navy",
+  toggleNavTheme: () => {},
 });
 
 export function useTheme() {
@@ -37,9 +45,14 @@ function applyToDom(effective: EffectiveTheme) {
   document.documentElement.setAttribute("data-theme", effective);
 }
 
+function applyNavThemeToDom(navTheme: NavTheme) {
+  document.documentElement.setAttribute("data-nav-theme", navTheme);
+}
+
 export default function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [preference, setPreference] = useState<ThemePreference>("light");
   const [effectiveTheme, setEffectiveTheme] = useState<EffectiveTheme>("light");
+  const [navTheme, setNavTheme] = useState<NavTheme>("navy");
 
   useLayoutEffect(() => {
     // Default = "light" (not OS) if nothing stored yet
@@ -48,6 +61,12 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
     setPreference(stored);
     setEffectiveTheme(effective);
     applyToDom(effective);
+
+    // Chrome colour — separate preference, separate key. Default "navy" (unchanged look) if nothing
+    // stored, so nobody sees a different site unless they opt in.
+    const storedNav = (localStorage.getItem("hwai-nav-theme") as NavTheme | null) ?? "navy";
+    setNavTheme(storedNav);
+    applyNavThemeToDom(storedNav);
   }, []);
 
   function applyPreference(p: ThemePreference) {
@@ -72,8 +91,17 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
     savePreference(next);
   }
 
+  function toggleNavTheme() {
+    const next: NavTheme = navTheme === "navy" ? "teal" : "navy";
+    setNavTheme(next);
+    applyNavThemeToDom(next);
+    localStorage.setItem("hwai-nav-theme", next);
+  }
+
   return (
-    <ThemeContext.Provider value={{ preference, effectiveTheme, applyPreference, savePreference, revertPreference, toggleTheme }}>
+    <ThemeContext.Provider
+      value={{ preference, effectiveTheme, applyPreference, savePreference, revertPreference, toggleTheme, navTheme, toggleNavTheme }}
+    >
       {children}
     </ThemeContext.Provider>
   );
