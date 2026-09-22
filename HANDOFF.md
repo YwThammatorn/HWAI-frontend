@@ -54,6 +54,12 @@ of the exact region the teacher screenshotted, light + dark, before sending it b
 user before iterating again — I spent two rounds fixing the wrong element (chip borders) because I assumed the
 crop from the first report was about the same cells as the earlier conversation, instead of confirming.
 
+## Follow-up (22/9): dialed the chip border back down (pushed 9e3db2d)
+With the header/footer background fixed, the 2px chip border from the previous round read as heavier
+than the rest of the app. Kept the saturated `--s-*-text` colour (the original pale `--s-*-bd` was
+proven too weak) but thinned every chip/legend/notice border back to a plain 1px. User confirmed the
+header/footer fix looked correct before asking for this.
+
 ## Not done / open
 - Score Book is read-only by design; if the teacher wants to type scores into cells, that is a new decision (Grading pages own edits today).
 - `gradeLetter` still exists locally in the two per-assignment results pages (the Score Book uses `lib/scoreBook.ts`); could be unified later.
