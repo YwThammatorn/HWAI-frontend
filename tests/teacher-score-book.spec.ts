@@ -53,8 +53,19 @@ const sub = (id: string, assignmentId: string, studentId: string, status: "grade
   submittedAt: "2026-01-05T10:00:00.000Z", fileUrl: null, aiScore: score, instructorScore: status === "graded" ? score : null,
   instructorComment: "", externalUseConsent: false, status, updatedAt: "2026-01-05T10:00:00.000Z", ...extra,
 });
+// HW 1 has a rubric (Correctness 70%/70pts, Style 30%/30pts). s-1-1 has real per-criterion scores
+// (65 + 25 = 90, matching its total) — the "exact" case; s-1-2 was graded before criterionScores
+// existed, so its breakdown has to be estimated from the weights (round(0.7*70)=49, round(0.3*70)=21).
+const RUBRICS = [{
+  id: "r-hw1", assignmentId: "hw1", name: "HW 1 rubric", createdAt: NOW, updatedAt: NOW,
+  criteria: [
+    { id: "crit-correct", name: "Correctness", description: "", maxPoints: 70, weight: 70, levels: [] },
+    { id: "crit-style", name: "Style", description: "", maxPoints: 30, weight: 30, levels: [] },
+  ],
+}];
 const SUBMISSIONS = [
-  sub("s-1-1", "hw1", "69070101", "graded", 90), sub("s-1-2", "hw1", "69070102", "graded", 70), sub("s-1-3", "hw1", "69070103", "graded", 50), sub("s-1-4", "hw1", "69070104", "need_review", 60),
+  sub("s-1-1", "hw1", "69070101", "graded", 90, { criterionScores: { "crit-correct": 65, "crit-style": 25 } }),
+  sub("s-1-2", "hw1", "69070102", "graded", 70), sub("s-1-3", "hw1", "69070103", "graded", 50), sub("s-1-4", "hw1", "69070104", "need_review", 60),
   sub("s-2-1", "hw2", "69070101", "graded", 45), sub("s-2-2", "hw2", "69070102", "graded", 25), sub("s-2-3", "hw2", "69070103", "not_graded", null),
   sub("s-p-1", "proj", "69070101", "graded", 80, { groupId: "g1" }), sub("s-p-2", "proj", "69070102", "graded", 80, { groupId: "g1" }), sub("s-p-3", "proj", "69070103", "need_review", 60),
 ];
@@ -75,9 +86,9 @@ async function seed(page: Page, o: Opts = {}) {
     localStorage.setItem("hwai_students_v1", JSON.stringify(d.empty === "students" ? [] : d.roster));
     localStorage.setItem("hwai_grading_categories_v1", JSON.stringify(d.cats));
     localStorage.setItem("hwai_assignments_v1", JSON.stringify(d.empty === "assignments" ? [] : d.assignments));
-    localStorage.setItem("hwai_rubrics_v1", "[]");
+    localStorage.setItem("hwai_rubrics_v1", JSON.stringify(d.empty === "assignments" ? [] : d.rubrics));
     localStorage.setItem("hwai_submissions_v1", JSON.stringify(d.empty === "assignments" ? [] : d.submissions));
-  }, { lang: o.lang ?? "en", role: o.role ?? "teacher", empty: o.empty, course: COURSE, teacher: TEACHER, cohort: COHORT, roster: ROSTER, cats: CATS, assignments: ASSIGNMENTS, submissions: SUBMISSIONS });
+  }, { lang: o.lang ?? "en", role: o.role ?? "teacher", empty: o.empty, course: COURSE, teacher: TEACHER, cohort: COHORT, roster: ROSTER, cats: CATS, assignments: ASSIGNMENTS, rubrics: RUBRICS, submissions: SUBMISSIONS });
 }
 
 async function open(page: Page, o: Opts = {}, url = "/teacher/courses/c-sb/results") {
@@ -165,6 +176,77 @@ test.describe("Score Book — cells", () => {
     await expect(cell(page, "69070101", "hw1").getByRole("link")).toHaveAttribute("href", "/teacher/courses/c-sb/assignments/hw1/recheck?sub=s-1-1");
     await expect(cell(page, "69070104", "hw1").getByRole("link")).toHaveAttribute("href", "/teacher/courses/c-sb/assignments/hw1/recheck?sub=s-1-4");
     await expect(cell(page, "69070105", "hw1").getByRole("link")).toHaveCount(0);
+  });
+});
+
+// The teacher asked for the Score Book's number to be grounded in the rubric, not just the total —
+// each graded cell whose assignment has a rubric gets a small expand control that opens the
+// per-criterion breakdown without leaving the page.
+test.describe("Score Book — rubric breakdown", () => {
+  const expandBtn = (page: Page, studentId: string, col: keyof typeof COL) => cell(page, studentId, col).getByRole("button");
+
+  test("only graded cells on a ruled assignment get an expand control", async ({ page }) => {
+    await open(page);
+    await expect(expandBtn(page, "69070101", "hw1")).toBeVisible();   // hw1 has a rubric, this cell is graded
+    await expect(expandBtn(page, "69070104", "hw1")).toHaveCount(0);  // pending — nothing graded to expand
+    await expect(expandBtn(page, "69070105", "hw1")).toHaveCount(0);  // missing
+    await expect(expandBtn(page, "69070101", "hw2")).toHaveCount(0);  // hw2 has no rubric at all
+    await expect(expandBtn(page, "69070101", "proj")).toHaveCount(0); // neither does the project
+  });
+
+  test("clicking the score still opens recheck; the expand control opens a breakdown instead, without navigating", async ({ page }) => {
+    await open(page);
+    await expect(cell(page, "69070101", "hw1").getByRole("link")).toHaveAttribute("href", "/teacher/courses/c-sb/assignments/hw1/recheck?sub=s-1-1");
+    await expandBtn(page, "69070101", "hw1").click();
+    await expect(page).toHaveURL(/\/results$/); // did not navigate
+    await expect(page.getByRole("dialog", { name: "HW 1" })).toBeVisible();
+  });
+
+  test("a submission with real per-criterion scores shows them exactly, no estimate notice", async ({ page }) => {
+    await open(page);
+    await expandBtn(page, "69070101", "hw1").click();
+    const dialog = page.getByRole("dialog", { name: "HW 1" });
+    await expect(dialog).toContainText("Mr. Somchai Jaidee");
+    await expect(dialog).toContainText("69070101");
+    await expect(dialog.getByRole("row", { name: /Correctness/ })).toContainText("70%");
+    await expect(dialog.getByRole("row", { name: /Correctness/ })).toContainText("65 / 70");
+    await expect(dialog.getByRole("row", { name: /^Style/ })).toContainText("30%");
+    await expect(dialog.getByRole("row", { name: /^Style/ })).toContainText("25 / 30");
+    await expect(dialog.getByRole("row", { name: /Total/ })).toContainText("90 / 100");
+    await expect(dialog.getByText(/Estimated/i)).toHaveCount(0);
+  });
+
+  test("a submission graded before criterionScores existed is estimated from the weights, and says so", async ({ page }) => {
+    await open(page);
+    await expandBtn(page, "69070102", "hw1").click();
+    const dialog = page.getByRole("dialog", { name: "HW 1" });
+    await expect(dialog.getByText(/Estimated from the criteria weights/i)).toBeVisible();
+    await expect(dialog.getByRole("row", { name: /Correctness/ })).toContainText("49 / 70");  // round(0.7 * 70)
+    await expect(dialog.getByRole("row", { name: /^Style/ })).toContainText("21 / 30");        // round(0.3 * 70)
+    await expect(dialog.getByRole("row", { name: /Total/ })).toContainText("70 / 100");
+  });
+
+  test("closes on Escape and on the close button", async ({ page }) => {
+    await open(page);
+    await expandBtn(page, "69070101", "hw1").click();
+    const dialog = page.getByRole("dialog", { name: "HW 1" });
+    await expect(dialog).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(dialog).toHaveCount(0);
+    await expandBtn(page, "69070101", "hw1").click();
+    await page.getByRole("button", { name: "Close" }).click();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+  });
+
+  test("Thai UI: column labels and the estimate notice", async ({ page }) => {
+    await open(page, { lang: "th" });
+    await expandBtn(page, "69070102", "hw1").click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog.getByText("เกณฑ์", { exact: true })).toBeVisible();
+    await expect(dialog.getByText("น้ำหนัก", { exact: true })).toBeVisible();
+    await expect(dialog.getByText("คะแนน", { exact: true })).toBeVisible();
+    await expect(dialog.getByText("รวม", { exact: true })).toBeVisible();
+    await expect(dialog.getByText(/ประมาณจากน้ำหนักของเกณฑ์/)).toBeVisible();
   });
 });
 
@@ -330,5 +412,31 @@ test.describe("Score Book — wide matrix, empty states, Thai", () => {
     await expect(cell(page, "69070104", "hw1")).toContainText("รอตรวจ");
     await expect(cell(page, "69070105", "hw1")).toContainText("ไม่ส่ง");
     await expect(page.getByRole("columnheader", { name: /ไม่มีหมวด/ })).toBeVisible();
+  });
+});
+
+// End-to-end: grading a submission on the recheck page persists the per-criterion scores, and the
+// Score Book's breakdown then shows exactly what was typed — not a weight-based guess.
+test.describe("Score Book — a real recheck feeds the breakdown", () => {
+  test("editing a criterion on recheck and saving shows that exact score in the Score Book", async ({ page }) => {
+    await seed(page);
+    // s-1-4 (student 69070104, hw1) starts as need_review with aiScore 60 and no stored criterionScores.
+    await page.goto(`${BASE}/teacher/courses/c-sb/assignments/hw1/recheck?sub=s-1-4`);
+    await page.waitForLoadState("networkidle");
+    const correctness = page.locator("div.rounded-xl", { hasText: "Correctness" }).getByRole("spinbutton");
+    await expect(correctness).toHaveValue("42"); // round(0.7 * 60), the weight-split starting point
+    await correctness.fill("60");
+    await page.getByRole("button", { name: "Save Changes" }).click();
+
+    await page.goto(`${BASE}/teacher/courses/c-sb/results`);
+    await page.waitForLoadState("networkidle");
+    const chip = cell(page, "69070104", "hw1").getByRole("link");
+    await expect(chip).toHaveText("78"); // 60 (edited) + 18 (untouched Style, round(0.3*60))
+    await cell(page, "69070104", "hw1").getByRole("button").click();
+    const dialog = page.getByRole("dialog", { name: "HW 1" });
+    await expect(dialog.getByRole("row", { name: /Correctness/ })).toContainText("60 / 70");
+    await expect(dialog.getByRole("row", { name: /^Style/ })).toContainText("18 / 30");
+    await expect(dialog.getByRole("row", { name: /Total/ })).toContainText("78 / 100");
+    await expect(dialog.getByText(/Estimated/i)).toHaveCount(0); // it's a real recorded score now, not a guess
   });
 });
