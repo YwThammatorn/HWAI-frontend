@@ -27,15 +27,16 @@ const GRADE_W = 84;
 const HEAD1_H = 45; // height of the category row (h-10 at the 4.5px spacing unit), where row 2 sticks
 
 // DESIGN.md §6 "Status Badges" pairs a pale bg with the equally-pale `-bd` border token — reads fine
-// for a one-off inline pill, but in a dense scannable grid a 1px `-bd` border is nearly the same
-// lightness as the `-bg` fill next to it, so the chip still reads as "barely there" (flagged twice
-// by the teacher, 21/9/2569, after the first pass and again after re-checking on a real screen).
-// A data table needs a stronger edge: 2px in the saturated `-text` token, which is what actually
-// carries the colour, not the soft `-bd` tone.
+// for a one-off inline pill, but in a dense scannable grid that border is nearly the same lightness
+// as the `-bg` fill next to it, so the chip reads as "barely there" (flagged 21/9/2569). The real
+// blending culprit turned out to be the table's header/footer background (see the fix on
+// stickyHead/headBase below), not this chip border — so this stays a plain 1px in the saturated
+// `-text` token (visible, still restrained) rather than the heavier 2px used while both issues
+// were still being told apart.
 const TONE: Record<ScoreTone, string> = {
-  ok: "bg-[var(--s-ok-bg)] text-[var(--s-ok-text)] border-2 border-[var(--s-ok-text)]",
-  info: "bg-[var(--s-info-bg)] text-[var(--s-info-text)] border-2 border-[var(--s-info-text)]",
-  err: "bg-[var(--s-err-bg)] text-[var(--s-err-text)] border-2 border-[var(--s-err-text)]",
+  ok: "bg-[var(--s-ok-bg)] text-[var(--s-ok-text)] border border-[var(--s-ok-text)]",
+  info: "bg-[var(--s-info-bg)] text-[var(--s-info-text)] border border-[var(--s-info-text)]",
+  err: "bg-[var(--s-err-bg)] text-[var(--s-err-text)] border border-[var(--s-err-text)]",
 };
 
 const TEAM_GLYPH = (
@@ -181,7 +182,7 @@ export default function ScoreBookPage() {
         return (
           <Link
             href={recheck(cell.submissionId)}
-            className={`${chip} bg-[var(--s-warn-bg)] text-[var(--s-warn-text)] border-2 border-[var(--s-warn-text)] hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition`}
+            className={`${chip} bg-[var(--s-warn-bg)] text-[var(--s-warn-text)] border border-[var(--s-warn-text)] hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition`}
           >
             <span className="w-1.5 h-1.5 rounded-full bg-current" aria-hidden="true" />
             {t("รอตรวจ", "Pending")}
@@ -191,7 +192,7 @@ export default function ScoreBookPage() {
         // Filled + bordered like every other tinted status pill (DESIGN.md §6) — an outline-only
         // treatment on a white cell reads as almost nothing there, which is the opposite of "missing".
         return (
-          <span className={`${chip} bg-[var(--s-err-bg)] text-[var(--s-err-text)] border-2 border-[var(--s-err-text)] font-medium`}>
+          <span className={`${chip} bg-[var(--s-err-bg)] text-[var(--s-err-text)] border border-[var(--s-err-text)] font-medium`}>
             <span className="w-1.5 h-1.5 rounded-full bg-current" aria-hidden="true" />
             {t("ไม่ส่ง", "Missing")}
           </span>
@@ -319,11 +320,11 @@ export default function ScoreBookPage() {
             </div>
             {/* Swatches use the exact same bg/border tokens as the cells they explain (DESIGN.md §6). */}
             <ul className="flex items-center gap-3 text-xs text-[var(--text-secondary)]" aria-label={t("คำอธิบายสี", "Legend")}>
-              <li className="inline-flex items-center gap-1.5"><span className="w-4 h-4 rounded bg-[var(--s-ok-bg)] border-2 border-[var(--s-ok-text)]" aria-hidden="true" />≥ 80%</li>
-              <li className="inline-flex items-center gap-1.5"><span className="w-4 h-4 rounded bg-[var(--s-info-bg)] border-2 border-[var(--s-info-text)]" aria-hidden="true" />60–79%</li>
-              <li className="inline-flex items-center gap-1.5"><span className="w-4 h-4 rounded bg-[var(--s-err-bg)] border-2 border-[var(--s-err-text)]" aria-hidden="true" />&lt; 60%</li>
-              <li className="inline-flex items-center gap-1.5"><span className="w-4 h-4 rounded bg-[var(--s-warn-bg)] border-2 border-[var(--s-warn-text)]" aria-hidden="true" />{t("รอตรวจ", "Pending")}</li>
-              <li className="inline-flex items-center gap-1.5"><span className="w-4 h-4 rounded bg-[var(--s-err-bg)] border-2 border-[var(--s-err-text)]" aria-hidden="true" />{t("ไม่ส่ง", "Missing")}</li>
+              <li className="inline-flex items-center gap-1.5"><span className="w-4 h-4 rounded bg-[var(--s-ok-bg)] border border-[var(--s-ok-text)]" aria-hidden="true" />≥ 80%</li>
+              <li className="inline-flex items-center gap-1.5"><span className="w-4 h-4 rounded bg-[var(--s-info-bg)] border border-[var(--s-info-text)]" aria-hidden="true" />60–79%</li>
+              <li className="inline-flex items-center gap-1.5"><span className="w-4 h-4 rounded bg-[var(--s-err-bg)] border border-[var(--s-err-text)]" aria-hidden="true" />&lt; 60%</li>
+              <li className="inline-flex items-center gap-1.5"><span className="w-4 h-4 rounded bg-[var(--s-warn-bg)] border border-[var(--s-warn-text)]" aria-hidden="true" />{t("รอตรวจ", "Pending")}</li>
+              <li className="inline-flex items-center gap-1.5"><span className="w-4 h-4 rounded bg-[var(--s-err-bg)] border border-[var(--s-err-text)]" aria-hidden="true" />{t("ไม่ส่ง", "Missing")}</li>
             </ul>
           </div>
 
@@ -504,7 +505,7 @@ export default function ScoreBookPage() {
             size="sm"
           >
             {!stored && (
-              <p className="text-xs text-[var(--s-warn-text)] bg-[var(--s-warn-bg)] border-2 border-[var(--s-warn-text)] rounded-lg px-3 py-2 mb-4 leading-relaxed">
+              <p className="text-xs text-[var(--s-warn-text)] bg-[var(--s-warn-bg)] border border-[var(--s-warn-text)] rounded-lg px-3 py-2 mb-4 leading-relaxed">
                 {t(
                   "ประมาณจากน้ำหนักของเกณฑ์ — งานนี้ยังไม่มีคะแนนรายเกณฑ์ที่บันทึกไว้",
                   "Estimated from the criteria weights — this submission has no per-criterion scores saved yet",
