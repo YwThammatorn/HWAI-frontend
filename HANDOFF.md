@@ -108,6 +108,16 @@ AskUserQuestion: adopt the full graded/pending/missing/not-due cell model (not j
   +13 new, 0 changed-behaviour regressions beyond the one deliberate Lab 2 update) via Playwright's own
   `webServer` on an unpiped log.
 
+## Follow-up (22/9): student category header blended into its own text (pushed a351947)
+User flagged (screenshot) the "Homework · 50%" section-header row — teal `--accent` text on the
+group-header row's `--bg-subtle` fill read as washed out. Same class of bug as the 22/9 header/footer
+fix, this time in the *new* student code: `--bg-subtle` is reserved for row hover, not a static fill
+(DESIGN.md §9b) — 4.58:1 contrast on that pale-blue fill vs. 5.48:1 on plain white/`--bg-surface`, and
+the shared cool hue makes it look worse than the number alone suggests. Fixed by switching the row to
+`--bg-surface` (no tint), matching the teacher Score Book's own column-group header, which was never
+tinted either. Verified with fresh screenshots (both themes) before pushing; suite unaffected (43/7
+skipped on the touched test files).
+
 ## Not done / open
 - Score Book is read-only by design; if the teacher wants to type scores into cells, that is a new decision (Grading pages own edits today).
 - `gradeLetter` still exists locally in the two per-assignment results pages (the Score Book uses `lib/scoreBook.ts`); could be unified later.
