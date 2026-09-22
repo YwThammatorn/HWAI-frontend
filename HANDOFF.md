@@ -40,6 +40,20 @@ User: "คะแนนที่โชว์ตอนหน้า result อิ�
 ## Follow-up (21/9): status-chip contrast fix (pushed b493fc2)
 User flagged (screenshot): Score Book chips ("58", "Pending", "Missing", grade letters) blended into the white table — barely visible. Root cause: every tinted cell used only `--s-*-bg` + text, no `--s-*-bd` border, even though DESIGN.md §6 defines the `.badge` pattern with a border on every status pill (the `-bg` tints are calibrated against `--bg-card`, not a plain white/dark surface). Fixed: added a solid border in the matching `-bd` token (e.g. `border-[var(--s-ok-bd)]`) to the `TONE` map (graded chips + Grade column, since both reuse it), the Pending pill, the legend swatches (now literally the same tokens as the cells), and the rubric-breakdown modal's "estimated" notice. Missing also changed from a transparent dashed outline (the *least* visible option) to a filled pill with a dot, matching Pending's shape. DESIGN.md §9b updated with this as a named pitfall. Suite still 331 passed / 30 skipped; screenshots confirm all 5 tones (ok/info/err/pending/missing) are now clearly bordered in both themes.
 
+## Follow-up (22/9): the real "blending" was the table header/footer background, not the score chips (pushed f18624b)
+After two rounds of strengthening the score-chip borders (still not enough per the teacher), they sent a cropped
+screenshot of specifically the search-box-to-table-header region — the chips were never the issue; the sticky
+header row (and footer) used `--bg-subtle` (#E4ECF3) sitting right at the card's edge, one shade off the page's
+own `--bg-app` (#EEF2F7). On a real screen those two near-identical pale blues read as one continuous field, so
+the whole card had no visible boundary. Checked the actual precedent (admin Students tab, teacher roster) instead
+of re-deriving from DESIGN.md prose: neither tints its header — both keep it the same white/surface as the body,
+differentiated by a border + muted uppercase text; `--bg-subtle` is reserved for row hover only. Switched every
+structural header/footer cell in the Score Book from `--bg-subtle` to `--bg-surface`. Verified with a pixel-crop
+of the exact region the teacher screenshotted, light + dark, before sending it back.
+**Lesson**: when a colour complaint persists after a plausible-looking fix, get the exact crop/region from the
+user before iterating again — I spent two rounds fixing the wrong element (chip borders) because I assumed the
+crop from the first report was about the same cells as the earlier conversation, instead of confirming.
+
 ## Not done / open
 - Score Book is read-only by design; if the teacher wants to type scores into cells, that is a new decision (Grading pages own edits today).
 - `gradeLetter` still exists locally in the two per-assignment results pages (the Score Book uses `lib/scoreBook.ts`); could be unified later.
