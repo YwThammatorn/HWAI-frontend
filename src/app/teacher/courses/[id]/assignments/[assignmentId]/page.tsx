@@ -182,35 +182,43 @@ export default function ViewAssignmentPage() {
               </Link>
             </div>
             {rubric && rubric.criteria.length > 0 ? (
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-[var(--border-subtle)]">
-                    <th scope="col" className="px-5 py-2 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("เกณฑ์", "Criterion")}</th>
-                    <th scope="col" className="px-4 py-2 text-right text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("น้ำหนัก", "Weight")}</th>
-                    <th scope="col" className="px-4 py-2 text-right text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("ระดับ", "Levels")}</th>
-                  </tr>
-                </thead>
-                <tbody>
+              <div className="p-5">
+                {/* Same card-per-criterion layout as the student's read-only rubric view
+                    (student/courses/[secId]/classwork/[actId]/page.tsx) — asked for 23/9/2569 so
+                    teachers see the rubric the way students do, level descriptions included, not just
+                    a compact weight/level-count table. */}
+                <div className="flex flex-col gap-3">
                   {rubric.criteria.map((c) => (
-                    <tr key={c.id} className="border-b border-[var(--border-subtle)] last:border-b-0">
-                      <td className="px-5 py-3 align-top">
-                        <p className="font-medium text-[var(--text-primary)]">{c.name}</p>
-                        {c.description && <p className="text-xs text-[var(--text-secondary)] mt-0.5 line-clamp-2">{c.description}</p>}
-                      </td>
-                      <td className="px-4 py-3 text-right tabular-nums text-[var(--text-primary)] align-top">{c.weight}%</td>
-                      <td className="px-4 py-3 text-right tabular-nums text-[var(--text-secondary)] align-top">{c.levels.length}</td>
-                    </tr>
+                    <div key={c.id} className="rounded-xl border border-[var(--border-subtle)] p-3">
+                      <div className="flex items-start justify-between gap-3 mb-1">
+                        <p className="text-sm font-semibold text-[var(--text-primary)]">{c.name}</p>
+                        <span className="shrink-0 text-xs font-semibold text-[var(--accent)] tabular-nums">
+                          {c.weight}% · {c.maxPoints} {t("คะแนน", "pts")}
+                        </span>
+                      </div>
+                      {c.description && (
+                        <p className="text-xs text-[var(--text-muted)] mb-2">{c.description}</p>
+                      )}
+                      {c.levels.length > 0 && (
+                        <div className="grid gap-2 mt-2 [grid-template-columns:repeat(auto-fit,minmax(140px,1fr))]">
+                          {c.levels.map((lvl, i) => (
+                            <div key={i} className="rounded-lg bg-[var(--bg-app)] p-2">
+                              <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">{lvl.label}</p>
+                              {lvl.description && (
+                                <p className="text-[11px] text-[var(--text-secondary)] mt-0.5 leading-snug">{lvl.description}</p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   ))}
-                </tbody>
-                <tfoot>
-                  {/* --bg-subtle is reserved for row hover, never a static fill (DESIGN.md §9b). */}
-                  <tr className="border-t border-[var(--border-subtle)] bg-[var(--bg-surface)]">
-                    <td className="px-5 py-2 text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider">{t("รวม", "Total")}</td>
-                    <td className={`px-4 py-2 text-right tabular-nums font-semibold ${totalWeight === 100 ? "text-[var(--s-ok-text)]" : "text-[var(--s-warn-text)]"}`}>{totalWeight}%</td>
-                    <td />
-                  </tr>
-                </tfoot>
-              </table>
+                </div>
+                {/* Teacher-only: the weight-total sanity check students don't need to see. */}
+                <p className={`mt-3 text-xs font-semibold uppercase tracking-wider text-right ${totalWeight === 100 ? "text-[var(--s-ok-text)]" : "text-[var(--s-warn-text)]"}`}>
+                  {t("รวม", "Total")} {totalWeight}%
+                </p>
+              </div>
             ) : (
               <div className="px-5 py-8 text-center">
                 <p className="text-sm font-medium text-[var(--s-warn-text)]">{t("ยังไม่มี Rubric", "No rubric yet")}</p>

@@ -277,7 +277,9 @@ test.describe("Assignment detail is planning only", () => {
     for (const gone of ["Submissions", "Average Grade", "Search students...", "Filter: All Status", "Student Name"]) {
       await expect(page.getByText(gone, { exact: false })).toHaveCount(0);
     }
-    await expect(page.locator("main table")).toHaveCount(1); // only the rubric table
+    // Rubric card is no longer a <table> either (student-style cards, 23/9/2569) — no tables on this
+    // planning-only page at all now.
+    await expect(page.locator("main table")).toHaveCount(0);
   });
 
   test("rubric card lists criteria with weights and a 100% total; a missing rubric is flagged", async ({ page }) => {
@@ -285,7 +287,8 @@ test.describe("Assignment detail is planning only", () => {
     const rubric = page.getByRole("region", { name: "Rubric" });
     await expect(rubric).toContainText("Quality");
     await expect(rubric).toContainText("1 criteria");
-    await expect(rubric.getByRole("row", { name: /Total/ })).toContainText("100%");
+    // Rubric card is now the same student-style layout (card-per-criterion, not a table) — 23/9/2569.
+    await expect(rubric.getByText(/Total 100%/)).toBeVisible();
     await expect(rubric.getByRole("link", { name: "Edit Rubric" })).toHaveAttribute("href", "/teacher/courses/c-gs/assignments/a-done/edit");
 
     await page.goto(`${BASE}/teacher/courses/c-gs/assignments/a-review`);
