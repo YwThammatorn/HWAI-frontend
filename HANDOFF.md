@@ -68,6 +68,46 @@ every chip/legend/notice border in the Score Book (TONE map, Pending/Missing pil
 rubric-breakdown estimated notice) from e.g. `border-[var(--s-ok-text)]` back to `border-[var(--s-ok-bd)]`;
 text stays the saturated `-text` token. tsc clean, lint clean, `teacher-score-book.spec.ts` 27/27, full suite unchanged.
 
+## Follow-up (22/9): student Evaluation page adapts the Score Book (pushed next commit)
+User: "role student ลองนำเอา grade book จากฝั่ง teacher มา ประยุกต์ใส่ที่ฝั่ง student หน่อย" — bring the
+teacher Score Book's concept/visual language to the student's own `/evaluation` page. Confirmed via
+AskUserQuestion: adopt the full graded/pending/missing/not-due cell model (not just the old flat
+"Pending"), and rebuild as a table (not just re-colour the existing per-category cards).
+- **Shared code extracted first** (both screens now single-sourced, was inline-duplicated before):
+  `SCORE_TONE_CLASSES` / `PENDING_CHIP_CLASSES` / `MISSING_CHIP_CLASSES` moved from the teacher page
+  into `lib/scoreBook.ts`; the rubric-breakdown `Modal` block moved into a new
+  `src/components/RubricBreakdownModal.tsx`. Teacher page updated to import both — behaviourally
+  identical (its 64 existing tests still pass unchanged).
+- **New page** (`src/app/student/courses/[secId]/evaluation/page.tsx`, full rewrite): a single-row
+  table (rows = assignments, grouped by category header rows — axes swapped vs. the teacher's
+  students-×-assignments matrix, since there's only one student). Cell states/tones/legend/rubric
+  breakdown are the exact `buildScoreBook()` logic the teacher page uses, called with a one-element
+  `students` array. Category-level numbers (percent, earned/possible pts) and the weighted "Total so
+  far" stay on `computeCategoryGradeRows`/`computeTotalSoFar` — unchanged from before this redesign, so
+  the teacher-page cross-check test and the exact tested strings ("80%", "80/100 pts", "40.0%", "Based
+  on 1/2 categories graded") didn't need to move. Added a letter-grade badge next to the total (new).
+  h1 label kept as "ผลการประเมิน"/"Evaluation" (renaming to "Score Book" would break a regex-based
+  test and wasn't asked for — this is a layout/visual adoption, not a rename).
+- **One existing test deliberately updated**: `tests/student-p4.spec.ts`'s "Lab 2" fixture (due
+  2026-01-20, no submission) is genuinely overdue against the real test-run clock, so under the new
+  3-state model it now shows "Missing" instead of the old catch-all "Pending" — the one behaviour
+  change the user explicitly accepted when choosing the 3-state option.
+- New `tests/student-score-book.spec.ts` (13): cell states/colours, category section headers (incl.
+  "Not graded yet" and the uncategorized "Excluded from the total" bucket, skipped entirely when it's
+  the *only* group — the no-categories fallback case), rubric breakdown (exact vs. estimated), total +
+  letter, stat cards, empty state, TH/EN, assignment-name links to classwork.
+- **Gotcha hit while writing this**: the category header's first pass combined name+weight into one
+  span (`"Midterm · 50%"`), which silently broke `student-p4.spec.ts`'s pre-existing exact-text
+  match on `"Midterm"` alone — fixed by nesting the name in its own inner `<span>` so both an exact
+  match on the name and a substring match on the combined text still work. Caught by running the
+  *existing* test files alongside the new one before considering this done, not just the new suite.
+- DESIGN.md §9b: fixed a stale line that still said the table header sits on `--bg-subtle` (true
+  before the 22/9 header/footer fix, not since); added a note that this pattern covers a single-row
+  table too, no sticky/matrix machinery needed at that scale.
+- Verified: tsc clean; lint clean on every touched file; full suite 344 passed / 30 skipped (361 → 374,
+  +13 new, 0 changed-behaviour regressions beyond the one deliberate Lab 2 update) via Playwright's own
+  `webServer` on an unpiped log.
+
 ## Not done / open
 - Score Book is read-only by design; if the teacher wants to type scores into cells, that is a new decision (Grading pages own edits today).
 - `gradeLetter` still exists locally in the two per-assignment results pages (the Score Book uses `lib/scoreBook.ts`); could be unified later.

@@ -8,14 +8,14 @@ import { useStudents } from "@/lib/students";
 import { useCohortStudents } from "@/lib/cohort-students";
 import { useAssignments, type Assignment } from "@/lib/assignments";
 import { useGradingCategories } from "@/lib/gradingCategories";
-import { buildScoreBook, scoreBookToCsv, toneForPct, type ScoreCell, type ScoreTone, type ScoreBookRow } from "@/lib/scoreBook";
+import { buildScoreBook, scoreBookToCsv, toneForPct, SCORE_TONE_CLASSES, PENDING_CHIP_CLASSES, MISSING_CHIP_CLASSES, type ScoreCell, type ScoreBookRow } from "@/lib/scoreBook";
 import { useLanguage } from "@/context/LanguageContext";
 import SearchInput from "@/components/SearchInput";
 import FilterSelect from "@/components/FilterSelect";
 import SortableTh from "@/components/SortableTh";
 import StatCard from "@/components/StatCard";
 import EmptyState from "@/components/EmptyState";
-import Modal from "@/components/Modal";
+import RubricBreakdownModal from "@/components/RubricBreakdownModal";
 
 type SortKey = "id" | "name" | "total";
 
@@ -25,18 +25,6 @@ const NAME_W = 232;
 const TOTAL_W = 132;
 const GRADE_W = 84;
 const HEAD1_H = 45; // height of the category row (h-10 at the 4.5px spacing unit), where row 2 sticks
-
-// DESIGN.md §6 "Status Badges" pairs a pale bg with the equally-pale `-bd` border token. Once the
-// real blending culprit was found and fixed (the table's header/footer background — see
-// stickyHead/headBase below — not this chip border), the pale `-bd` token reads fine again on its
-// own: the card now has a visible boundary, so a subtle 1px chip border no longer has to carry
-// contrast on its own. Reverted here to the DESIGN.md-standard `-bd` token (22/9), after briefly
-// trying `-text` (saturated) at 1px and 2px while the header/footer bug was still being chased.
-const TONE: Record<ScoreTone, string> = {
-  ok: "bg-[var(--s-ok-bg)] text-[var(--s-ok-text)] border border-[var(--s-ok-bd)]",
-  info: "bg-[var(--s-info-bg)] text-[var(--s-info-text)] border border-[var(--s-info-bd)]",
-  err: "bg-[var(--s-err-bg)] text-[var(--s-err-text)] border border-[var(--s-err-bd)]",
-};
 
 const TEAM_GLYPH = (
   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
@@ -153,7 +141,7 @@ export default function ScoreBookPage() {
             <Link
               href={recheck(cell.submissionId)}
               title={t("เปิดดู/ตรวจใหม่", "Open / recheck")}
-              className={`${chip} ${TONE[toneForPct(cell.pct)]} hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition`}
+              className={`${chip} ${SCORE_TONE_CLASSES[toneForPct(cell.pct)]} hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition`}
             >
               {assignment.submissionType === "group" && <span aria-label={t("คะแนนทีม", "Team score")}>{TEAM_GLYPH}</span>}
               {Number.isInteger(cell.score) ? cell.score : cell.score.toFixed(1)}
@@ -181,7 +169,7 @@ export default function ScoreBookPage() {
         return (
           <Link
             href={recheck(cell.submissionId)}
-            className={`${chip} bg-[var(--s-warn-bg)] text-[var(--s-warn-text)] border border-[var(--s-warn-bd)] hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition`}
+            className={`${chip} ${PENDING_CHIP_CLASSES} hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition`}
           >
             <span className="w-1.5 h-1.5 rounded-full bg-current" aria-hidden="true" />
             {t("รอตรวจ", "Pending")}
@@ -191,7 +179,7 @@ export default function ScoreBookPage() {
         // Filled + bordered like every other tinted status pill (DESIGN.md §6) — an outline-only
         // treatment on a white cell reads as almost nothing there, which is the opposite of "missing".
         return (
-          <span className={`${chip} bg-[var(--s-err-bg)] text-[var(--s-err-text)] border border-[var(--s-err-bd)] font-medium`}>
+          <span className={`${chip} ${MISSING_CHIP_CLASSES} font-medium`}>
             <span className="w-1.5 h-1.5 rounded-full bg-current" aria-hidden="true" />
             {t("ไม่ส่ง", "Missing")}
           </span>
@@ -319,11 +307,11 @@ export default function ScoreBookPage() {
             </div>
             {/* Swatches use the exact same bg/border tokens as the cells they explain (DESIGN.md §6). */}
             <ul className="flex items-center gap-3 text-xs text-[var(--text-secondary)]" aria-label={t("คำอธิบายสี", "Legend")}>
-              <li className="inline-flex items-center gap-1.5"><span className="w-4 h-4 rounded bg-[var(--s-ok-bg)] border border-[var(--s-ok-bd)]" aria-hidden="true" />≥ 80%</li>
-              <li className="inline-flex items-center gap-1.5"><span className="w-4 h-4 rounded bg-[var(--s-info-bg)] border border-[var(--s-info-bd)]" aria-hidden="true" />60–79%</li>
-              <li className="inline-flex items-center gap-1.5"><span className="w-4 h-4 rounded bg-[var(--s-err-bg)] border border-[var(--s-err-bd)]" aria-hidden="true" />&lt; 60%</li>
-              <li className="inline-flex items-center gap-1.5"><span className="w-4 h-4 rounded bg-[var(--s-warn-bg)] border border-[var(--s-warn-bd)]" aria-hidden="true" />{t("รอตรวจ", "Pending")}</li>
-              <li className="inline-flex items-center gap-1.5"><span className="w-4 h-4 rounded bg-[var(--s-err-bg)] border border-[var(--s-err-bd)]" aria-hidden="true" />{t("ไม่ส่ง", "Missing")}</li>
+              <li className="inline-flex items-center gap-1.5"><span className={`w-4 h-4 rounded ${SCORE_TONE_CLASSES.ok}`} aria-hidden="true" />≥ 80%</li>
+              <li className="inline-flex items-center gap-1.5"><span className={`w-4 h-4 rounded ${SCORE_TONE_CLASSES.info}`} aria-hidden="true" />60–79%</li>
+              <li className="inline-flex items-center gap-1.5"><span className={`w-4 h-4 rounded ${SCORE_TONE_CLASSES.err}`} aria-hidden="true" />&lt; 60%</li>
+              <li className="inline-flex items-center gap-1.5"><span className={`w-4 h-4 rounded ${PENDING_CHIP_CLASSES}`} aria-hidden="true" />{t("รอตรวจ", "Pending")}</li>
+              <li className="inline-flex items-center gap-1.5"><span className={`w-4 h-4 rounded ${MISSING_CHIP_CLASSES}`} aria-hidden="true" />{t("ไม่ส่ง", "Missing")}</li>
             </ul>
           </div>
 
@@ -449,7 +437,7 @@ export default function ScoreBookPage() {
                         style={{ right: 0, width: GRADE_W, minWidth: GRADE_W }}
                       >
                         {r.letter && r.normalized !== null ? (
-                          <span className={`inline-flex items-center justify-center min-w-[2rem] h-7 px-2 rounded-lg text-sm font-bold ${TONE[toneForPct(r.normalized)]}`}>{r.letter}</span>
+                          <span className={`inline-flex items-center justify-center min-w-[2rem] h-7 px-2 rounded-lg text-sm font-bold ${SCORE_TONE_CLASSES[toneForPct(r.normalized)]}`}>{r.letter}</span>
                         ) : (
                           <span className="text-[var(--text-muted)]">—</span>
                         )}
@@ -496,52 +484,15 @@ export default function ScoreBookPage() {
         const student = breakdown.row.student;
         const studentLine = `${student.title ? `${student.title} ` : ""}${student.firstName} ${student.lastName}`;
         return (
-          <Modal
+          <RubricBreakdownModal
             open
             onClose={() => setBreakdown(null)}
-            title={breakdown.assignment.name}
-            description={t(`${studentLine} · รหัส ${student.studentId}`, `${studentLine} · ID ${student.studentId}`)}
-            size="sm"
-          >
-            {!stored && (
-              <p className="text-xs text-[var(--s-warn-text)] bg-[var(--s-warn-bg)] border border-[var(--s-warn-bd)] rounded-lg px-3 py-2 mb-4 leading-relaxed">
-                {t(
-                  "ประมาณจากน้ำหนักของเกณฑ์ — งานนี้ยังไม่มีคะแนนรายเกณฑ์ที่บันทึกไว้",
-                  "Estimated from the criteria weights — this submission has no per-criterion scores saved yet",
-                )}
-              </p>
-            )}
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-[var(--border-subtle)]">
-                  <th scope="col" className="pb-2 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("เกณฑ์", "Criterion")}</th>
-                  <th scope="col" className="pb-2 text-right text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("น้ำหนัก", "Weight")}</th>
-                  <th scope="col" className="pb-2 text-right text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("คะแนน", "Points")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rubric.criteria.map((c) => {
-                  const earned = stored?.[c.id] ?? Math.round((c.weight / 100) * cell.score);
-                  return (
-                    <tr key={c.id} className="border-b border-[var(--border-subtle)] last:border-b-0">
-                      <td className="py-2.5 pr-2 text-[var(--text-primary)]">{c.name}</td>
-                      <td className="py-2.5 text-right tabular-nums text-[var(--text-secondary)]">{c.weight}%</td>
-                      <td className="py-2.5 text-right tabular-nums font-medium text-[var(--text-primary)]">{earned} / {c.maxPoints}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-              <tfoot>
-                <tr>
-                  <td className="pt-2.5 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">{t("รวม", "Total")}</td>
-                  <td />
-                  <td className="pt-2.5 text-right tabular-nums font-bold text-[var(--text-primary)]">
-                    {Number.isInteger(cell.score) ? cell.score : cell.score.toFixed(1)} / {cell.max}
-                  </td>
-                </tr>
-              </tfoot>
-            </table>
-          </Modal>
+            assignmentName={breakdown.assignment.name}
+            subtitle={t(`${studentLine} · รหัส ${student.studentId}`, `${studentLine} · ID ${student.studentId}`)}
+            rubric={rubric}
+            cell={cell}
+            storedCriterionScores={stored}
+          />
         );
       })()}
     </main>

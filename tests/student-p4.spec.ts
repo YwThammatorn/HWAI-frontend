@@ -247,7 +247,10 @@ test.describe("P5 — Student Evaluation: weighted grade breakdown", () => {
     await expect(page.getByText("80%", { exact: true })).toBeVisible();
     await expect(page.getByText("80/100 pts")).toBeVisible();
     await expect(page.getByText("Lab 2")).toBeVisible();
-    await expect(page.getByText("Pending").first()).toBeVisible();
+    // Lab 2's due date (2026-01-20) is in the past relative to the real test-run clock, so under the
+    // redesigned Evaluation page's 3-state cell model (adapted from the teacher Score Book, 22/9/2569)
+    // it's genuinely overdue with nothing handed in — "Missing", not the old catch-all "Pending".
+    await expect(page.getByText("Missing").first()).toBeVisible();
 
     // Midterm: nothing graded yet.
     await expect(page.getByText("Midterm", { exact: true })).toBeVisible();

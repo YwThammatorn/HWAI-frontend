@@ -19,8 +19,8 @@
 
 ## Current active task
 _(อัปเดตช่องนี้ทุกครั้งที่เริ่ม task ใหม่ — ดูรายละเอียดที่ HANDOFF.md)_
-- Task: Teacher — split Assignments (planning) / Grading (checking), Results → Score Book
-- Status: all 4 sub-tasks done and pushed (Grading page, planning-only Assignments + detail, Score Book) — see HANDOFF.md for what is open
+- Task: Student — adapt the teacher Score Book into the student's own Evaluation page
+- Status: done and pushed (single-row table, same cell tones/legend/rubric breakdown as the teacher page, shared code extracted to `lib/scoreBook.ts` + `RubricBreakdownModal`) — see HANDOFF.md for what is open
 
 # i18n Rule (TH/EN Language Toggle)
 

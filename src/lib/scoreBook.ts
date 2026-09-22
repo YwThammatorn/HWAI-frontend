@@ -22,6 +22,18 @@ export function toneForPct(pct: number): ScoreTone {
   return "err";
 }
 
+// Shared chip/legend classes for every screen that renders a ScoreCell (teacher Score Book, student
+// Evaluation). Single source of truth for the DESIGN.md §6/§9b pattern (pale `-bg` fill + the matching
+// `-bd` border, never a wildcard token string — see HANDOFF.md for why that matters) so the two screens
+// can never drift apart, and a future colour fix only has to happen in one place.
+export const SCORE_TONE_CLASSES: Record<ScoreTone, string> = {
+  ok: "bg-[var(--s-ok-bg)] text-[var(--s-ok-text)] border border-[var(--s-ok-bd)]",
+  info: "bg-[var(--s-info-bg)] text-[var(--s-info-text)] border border-[var(--s-info-bd)]",
+  err: "bg-[var(--s-err-bg)] text-[var(--s-err-text)] border border-[var(--s-err-bd)]",
+};
+export const PENDING_CHIP_CLASSES = "bg-[var(--s-warn-bg)] text-[var(--s-warn-text)] border border-[var(--s-warn-bd)]";
+export const MISSING_CHIP_CLASSES = "bg-[var(--s-err-bg)] text-[var(--s-err-text)] border border-[var(--s-err-bd)]";
+
 export type ScoreCell =
   | { kind: "graded"; score: number; max: number; pct: number; submissionId: string }
   | { kind: "pending"; submissionId: string }   // handed in, not graded yet (needs review / not graded)
