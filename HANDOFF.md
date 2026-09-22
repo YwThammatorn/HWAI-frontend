@@ -29,9 +29,18 @@ Plan file: `C:\Users\ASUS\.claude\plans\lively-tinkering-mitten.md` (approved 21
 ## Verified
 tsc clean; lint on touched files = the one pre-existing `react-hooks/purity` (Math.random in the mock re-grade); full suite 324 passed / 30 skipped; screenshots light + dark for Grading, Assignments, detail, per-assignment grading, Score Book; Score Book total for 69070101 (36.0 on the mock course; 83.0 in the test seed) equals the student Evaluation page.
 
+## Follow-up (21/9, after the 4 sub-tasks): rubric-grounded scores (pushed 82488b4)
+User: "คะแนนที่โชว์ตอนหน้า result อิงตามคะแนน rubric ด้วย" — the Score Book's number should be traceable to the rubric, not just a bare total.
+- `Submission.criterionScores?: Record<criterionId, number>` (new field, `lib/assignments.ts`) — the recheck page now saves it alongside `instructorScore` whenever a grade is saved (`updateSubmission` Pick type extended in 3 places: `lib/assignments.ts`, `lib/api/assignments.ts`, `AssignmentProvider.tsx`).
+- Score Book: every **graded** cell whose assignment has a rubric gets a small chevron button next to the score chip (separate control, not nested in the `<Link>`, so clicking the score still opens recheck). Click opens a `Modal` (size sm) with criterion / weight / points-earned-out-of and a total row.
+- Breakdown source: `submission.criterionScores` if present (exact — what recheck actually saved); otherwise estimated by splitting the total by criterion weight (`Math.round((c.weight/100) * cell.score)` — same formula the recheck page itself starts a fresh grade from), with a visible "Estimated from the criteria weights…" notice. Old/legacy submissions (graded before this existed) always fall into the estimated path.
+- No changes to `lib/scoreBook.ts` — `ScoreCell` already carried `submissionId`; the page looks up the full `Submission` and the course's `Rubric` itself via `useAssignments()`.
+- Tests: `tests/teacher-score-book.spec.ts` "Score Book — rubric breakdown" (6) + "a real recheck feeds the breakdown" (1, actually edits a criterion on the recheck page, saves, and checks the Score Book shows the exact edited number). Suite 331 passed / 30 skipped.
+
 ## Not done / open
 - Score Book is read-only by design; if the teacher wants to type scores into cells, that is a new decision (Grading pages own edits today).
 - `gradeLetter` still exists locally in the two per-assignment results pages (the Score Book uses `lib/scoreBook.ts`); could be unified later.
+- Group assignments: recheck already fans the saved score out to every teammate's `Submission`, so `criterionScores` is saved per teammate too — not specifically re-verified beyond the individual-assignment test above.
 - The mock re-grade on the per-assignment Grading page still uses `Math.random` (pre-existing lint error).
 - Hook still runs the whole e2e suite per edit (~2 min); user hasn't chosen a lighter `TEST_CMD`.
 
