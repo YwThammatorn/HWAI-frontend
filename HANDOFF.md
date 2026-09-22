@@ -60,6 +60,14 @@ than the rest of the app. Kept the saturated `--s-*-text` colour (the original p
 proven too weak) but thinned every chip/legend/notice border back to a plain 1px. User confirmed the
 header/footer fix looked correct before asking for this.
 
+## Follow-up (22/9): reverted the chip border to the DESIGN.md-standard `-bd` token
+User asked to go back to the pale `-bd` border. With the real bug (header/footer bg) fixed, the
+`-bd` token — the actual DESIGN.md §6 "Status Badges" pattern — reads fine on its own: the table now
+has a visible card boundary, so the chip border no longer has to carry contrast by itself. Swapped
+every chip/legend/notice border in the Score Book (TONE map, Pending/Missing pills, legend swatches,
+rubric-breakdown estimated notice) from e.g. `border-[var(--s-ok-text)]` back to `border-[var(--s-ok-bd)]`;
+text stays the saturated `-text` token. tsc clean, lint clean, `teacher-score-book.spec.ts` 27/27, full suite unchanged.
+
 ## Not done / open
 - Score Book is read-only by design; if the teacher wants to type scores into cells, that is a new decision (Grading pages own edits today).
 - `gradeLetter` still exists locally in the two per-assignment results pages (the Score Book uses `lib/scoreBook.ts`); could be unified later.
