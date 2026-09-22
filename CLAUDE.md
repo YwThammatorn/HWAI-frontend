@@ -19,8 +19,8 @@
 
 ## Current active task
 _(อัปเดตช่องนี้ทุกครั้งที่เริ่ม task ใหม่ — ดูรายละเอียดที่ HANDOFF.md)_
-- Task: Student — adapt the teacher Score Book into the student's own Evaluation page
-- Status: done and pushed (single-row table, same cell tones/legend/rubric breakdown as the teacher page, shared code extracted to `lib/scoreBook.ts` + `RubricBreakdownModal`) — see HANDOFF.md for what is open
+- Task: 2nd batch of 7 teacher feedback items — 4 sub-tasks (plan: `C:\Users\ASUS\.claude\plans\lively-tinkering-mitten.md`)
+- Status: sub-tasks 1–3 done and pushed (rubric-card parity, Students table columns+delete, Finalize Grading + Score Book lock); sub-task 4 (isExam + points-based rubric) not started — see HANDOFF.md
 
 # i18n Rule (TH/EN Language Toggle)
 

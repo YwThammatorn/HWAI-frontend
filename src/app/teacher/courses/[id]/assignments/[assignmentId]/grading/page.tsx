@@ -438,7 +438,7 @@ export default function GradingProgressPage() {
   const { id, assignmentId } = useParams<{ id: string; assignmentId: string }>();
   const { t } = useLanguage();
   const { getCourse } = useCourses();
-  const { getAssignment, getSubmissionsByAssignment, updateSubmission } = useAssignments();
+  const { getAssignment, getSubmissionsByAssignment, updateSubmission, updateAssignment } = useAssignments();
   const { getGroupsByAssignment } = useStudentGroups();
   const { getStudentsByCourse } = useStudents();
 
@@ -477,6 +477,14 @@ export default function GradingProgressPage() {
       : null;
   const pct = total > 0 ? (processed / total) * 100 : 0;
   const isDone = total > 0 && processed === total;
+  const finalized = !!assignment.gradingFinalized;
+
+  function handleFinishGrading() {
+    updateAssignment(assignmentId, { gradingFinalized: true });
+  }
+  function handleReopenGrading() {
+    updateAssignment(assignmentId, { gradingFinalized: false });
+  }
 
   function handleSaveChanges(changes: Record<string, number | null>) {
     Object.entries(changes).forEach(([subId, score]) => {
@@ -536,17 +544,40 @@ export default function GradingProgressPage() {
               </svg>
               {t("แก้ไขงาน", "Edit Assignment")}
             </Link>
-            {isDone ? (
-              <Link
-                href={`/teacher/courses/${id}/assignments/${assignmentId}/results`}
+            {isDone && finalized ? (
+              <>
+                <Link
+                  href={`/teacher/courses/${id}/assignments/${assignmentId}/results`}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-semibold transition-colors"
+                >
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                    <polyline points="9 11 12 14 22 4"/>
+                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                  </svg>
+                  {t("ดูผลลัพธ์", "View Results")}
+                </Link>
+                {/* Safety valve (23/9/2569) — finalizing was never meant to be a one-way door. */}
+                <button
+                  type="button"
+                  onClick={handleReopenGrading}
+                  className="text-xs text-gray-400 hover:text-[var(--text-secondary)] hover:underline transition-colors"
+                >
+                  {t("เปิดตรวจใหม่", "Reopen grading")}
+                </button>
+              </>
+            ) : isDone ? (
+              // Grading finished at 100% but not yet finalized: the teacher must actively confirm
+              // before Score Book locks and View Results becomes reachable (23/9/2569).
+              <button
+                type="button"
+                onClick={handleFinishGrading}
                 className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-semibold transition-colors"
               >
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                  <polyline points="9 11 12 14 22 4"/>
-                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                  <polyline points="20 6 9 17 4 12"/>
                 </svg>
-                {t("ดูผลลัพธ์", "View Results")}
-              </Link>
+                {t("เสร็จสิ้นการตรวจ", "Finish Grading")}
+              </button>
             ) : (
               <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[var(--accent-bright)]/60 text-[var(--text-primary)] text-sm font-semibold select-none">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
@@ -640,13 +671,22 @@ export default function GradingProgressPage() {
                   </span>
                 </p>
               )}
-              {isDone && (
+              {isDone && finalized && (
                 <Link
                   href={`/teacher/courses/${id}/assignments/${assignmentId}/results`}
                   className="inline-flex items-center gap-2 mt-4 px-5 py-2.5 bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-semibold rounded-xl transition-colors"
                 >
                   {t("ดูผลลัพธ์", "View Results")} →
                 </Link>
+              )}
+              {isDone && !finalized && (
+                <button
+                  type="button"
+                  onClick={handleFinishGrading}
+                  className="inline-flex items-center gap-2 mt-4 px-5 py-2.5 bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-semibold rounded-xl transition-colors"
+                >
+                  {t("เสร็จสิ้นการตรวจ", "Finish Grading")}
+                </button>
               )}
             </div>
           </div>

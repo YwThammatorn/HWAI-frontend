@@ -132,8 +132,13 @@ test.describe("Grading Progress", () => {
     ).toBeVisible();
   });
 
-  test("fully-graded assignment shows View Results link", async ({ page }) => {
+  test("fully-graded assignment shows Finish Grading, then View Results once finalized", async ({ page }) => {
+    // Finalize Grading (23/9/2569): a 100%-graded assignment isn't finalized yet by default —
+    // the teacher must click "Finish Grading" before "View Results" appears.
     await waitReady(page, "/teacher/courses/seed-1/assignments/a-seed-1-1/grading");
+    const finishBtn = page.getByRole("button", { name: /finish grading/i }).first();
+    await expect(finishBtn).toBeVisible();
+    await finishBtn.click();
     await expect(
       page.getByRole("link", { name: /view results/i }).first()
     ).toBeVisible();

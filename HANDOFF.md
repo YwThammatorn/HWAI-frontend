@@ -242,8 +242,80 @@ Verified: tsc clean; lint = baseline only on every touched file (confirmed pre-e
 where relevant — `AdminSidebar`/`ThemeProvider` refs error, grading page `Math.random` purity error).
 Screenshots for every visual change (both themes where relevant). Full suite: see below.
 
+## Unrelated (23/9): 2nd batch of 7 teacher feedback items — new plan, 4 sub-tasks (3 done, 1 open)
+User sent 7 more items prefixed by an explicit standing instruction: "ส่วนนี้งงตรงไหน หรือไม่เคลียร์ ให้ถามฉันก่อนนะ"
+(ask first if anything is unclear). 3 of the 7 were unambiguous and folded straight into the plan; 4 needed
+clarification — asked via AskUserQuestion across 3 rounds, including surfacing a real architecture conflict
+(weight-based vs points-based rubric) instead of silently picking the safer option. Plan file:
+`C:\Users\ASUS\.claude\plans\lively-tinkering-mitten.md` (approved). Ordered smallest-risk-first; each
+sub-task = code + tests + tsc/lint + full suite + commit.
+
+### Sub-task 1 (pushed d4a55e4): assignment detail rubric card → student-style view
+`…/assignments/[assignmentId]/page.tsx`'s Rubric section (was a compact Criterion/Weight/Levels-count table)
+now reuses the exact card-per-criterion layout the student classwork page already has — name+weight chip,
+description, a grid of level label+description cards — plus a small `Total {totalWeight}%` sanity line kept
+below it and the "Edit Rubric" link kept in the section header (teacher-only chrome the student view lacks).
+
+### Sub-task 2 (pushed e1f864b): teacher Students table — Cohort/Program/Status columns + delete
+Table grew from 5 to 9 columns. Clarified via AskUserQuestion: "Status" = **per-section enrollment status**
+(`enrolled`/`withdrawn`/`added-midterm`, already on `Student` as `enrollmentStatus`) — not the unrelated
+account-level `CohortStudent.status` (`active`/`inactive`). "(delete)" in the user's list meant a **delete-
+from-course** button, confirmed over the alternative reading (deactivate).
+- Added `updateStudent` to `StudentContextValue`/`StudentProvider.tsx` (didn't exist before — only
+  `addStudents`/`removeStudent`/`getStudentsByCourse`) + the matching `lib/api/students.ts` mirror.
+- New columns: Cohort (`s.cohort`), Program (cross-referenced from `findByStudentId`, same live-lookup
+  pattern already used for `title`), Status (tone-colored badge, `--s-ok/err/info-*`).
+- Actions column: conditional withdraw⇄re-enroll icon button (confirm only on withdraw, matching the
+  admin activate/deactivate asymmetry) + a delete icon button (confirm always, wired to the already-
+  existing `removeStudent`).
+- Updated `tests/teacher-roster-table.spec.ts`'s 2 column-header-list assertions (5→9 columns, both
+  languages) + added ~14 new tests for the 3 new behaviors.
+
+### Sub-task 3 (this commit): Finalize Grading + Score Book view-only lock
+Clarified via AskUserQuestion: the Score Book has no "final" concept today, so "shouldn't be editable from
+here unless not-yet-final" needed a real mechanism — user chose adding a **"Finish Grading" button** on the
+per-assignment Grading page over the alternative (an implicit 100%-triggers-lock rule), because implicit
+locking would surprise a teacher who wants to keep tweaking scores past 100% before calling it done.
+- `Assignment.gradingFinalized?: boolean` (`lib/assignments.ts`) — absent/false = still open, no migration
+  needed since `updateAssignment` already accepts any partial patch.
+- Per-assignment Grading page: once `isDone` (100% processed) and not yet finalized, both the header pill
+  and the progress-circle block show a **"Finish Grading"** button (`handleFinishGrading` →
+  `updateAssignment(id, {gradingFinalized: true})`). Once finalized, both show **"View Results"** plus a
+  small, quiet **"Reopen grading"** text link (`handleReopenGrading` → sets it back to `false`) — a safety
+  valve so a teacher is never permanently stuck if they need to correct something later; not explicitly
+  requested but a cheap addition given the "Finish Grading" button already exists.
+- Score Book (`renderCell`): `"graded"`/`"pending"` cells on a finalized assignment render as a plain
+  `<span>` (no `<Link>`) — same shape already used for `"missing"` — instead of the clickable link to
+  recheck. Not-yet-finalized assignments keep the existing clickable behavior regardless of percent graded.
+  The rubric-breakdown chevron button stays available either way (it's a separate control, not the score
+  link, so it doesn't defeat the lock).
+- Tests: new self-contained `test.describe("Score Book — a finalized assignment is view-only", …)` block
+  in `tests/teacher-score-book.spec.ts` (own fixture, course `c-fz`, so it doesn't disturb the main
+  fixture's hand-worked numbers) — 2 tests, checks the locked cell has no link role and that clicking it
+  doesn't navigate. **Gotcha**: first draft hardcoded the locked/unlocked `<td>` index assuming array
+  order; `lib/scoreBook.ts`'s `byDue` actually sorts columns by `dueDate` then `name` — with both
+  fixture assignments sharing a due date, "Finalized Assignment" sorts before "Open Assignment"
+  alphabetically, so the indices were swapped. Fixed by reading the real column order from a failing
+  test's accessibility-tree dump instead of re-guessing.
+- Verified: tsc clean; lint clean (only the pre-existing `Math.random` purity error on the Grading page,
+  confirmed present on `HEAD`); screenshots both themes for both Grading-page button states + the Score
+  Book (the lock is behavior-only, not visually distinct — confirmed by the passing tests, not by eye);
+  a stray "0%" in one dark-mode screenshot was the `CircleProgress` component's own 80ms mount-in
+  animation caught mid-transition by the screenshot timing, not a real bug (re-screenshotted after a
+  longer wait → 100%, consistent with the not-yet-finalized state).
+
+### Sub-task 4 (not started): isExam + points-based rubric rework
+Largest remaining piece — confirmed via AskUserQuestion to be the *bigger* of two options after surfacing
+a real conflict: today's rubric editor is weight-based (criteria % must sum to 100, each criterion's
+`maxPoints` is *derived* from `assignment.maxPoints × weight%`). "Remove the manual max-score field, derive
+it from the rubric instead" requires inverting that — criteria get a real points input, `weight` becomes
+the derived/display value, `assignment.maxPoints` gets written from the rubric's point-sum at save time.
+Touches `RubricCriteriaEditor.tsx`, the New Assignment form, the Edit Assignment form, and the standalone
+rubric-editor route. Full scope in the plan file above.
+
 ## Not done / open
-- Score Book is read-only by design; if the teacher wants to type scores into cells, that is a new decision (Grading pages own edits today).
+- Sub-task 4 above (isExam + points-based rubric) — not started.
+- Score Book is read-only by design; if the teacher wants to type scores into cells, that is a new decision (Grading pages own edits today). Finalized assignments are additionally locked from click-through (23/9, this batch).
 - `gradeLetter` still exists locally in the two per-assignment results pages (the Score Book uses `lib/scoreBook.ts`); could be unified later.
 - Group assignments: recheck already fans the saved score out to every teammate's `Submission`, so `criterionScores` is saved per teammate too — not specifically re-verified beyond the individual-assignment test above.
 - The mock re-grade on the per-assignment Grading page still uses `Math.random` (pre-existing lint error).

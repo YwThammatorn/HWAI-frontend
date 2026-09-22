@@ -440,3 +440,60 @@ test.describe("Score Book — a real recheck feeds the breakdown", () => {
     await expect(dialog.getByText(/Estimated/i)).toHaveCount(0); // it's a real recorded score now, not a guess
   });
 });
+
+// Finalize Grading (23/9/2569): once a teacher clicks "Finish Grading" on the per-assignment Grading
+// page, that assignment's column in the Score Book becomes view-only — no more click-through to
+// recheck, for any cell state. Not-yet-finalized assignments keep the existing clickable behaviour
+// regardless of how much of them is graded. Self-contained fixture (own seed), separate from the main
+// suite above so it doesn't disturb the hand-worked numbers documented at the top of this file.
+test.describe("Score Book — a finalized assignment is view-only", () => {
+  const NOW2 = "2026-01-01T00:00:00.000Z";
+  const COURSE2 = { id: "c-fz", name: "Programming", description: "", status: "active", source: "manual", coverColor: "#0F766E", iconColor: "#0F766E", courseTemplateId: "ct-fz", term: 1, academicYear: 2569, sectionNumber: "1", code: "01076112", schedule: "Mon", room: "811", createdAt: NOW2, updatedAt: NOW2 };
+  const TEACHER2 = { id: "t-fz", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", role: "teacher", status: "active", courseIds: ["c-fz"] };
+  const asg2 = (id: string, name: string, finalized: boolean) => ({
+    id, courseId: "c-fz", name, description: "", dueDate: "2026-01-10", maxPoints: 100, acceptsFiles: true, fileTypes: [],
+    submissionType: "individual", maxGroupSize: null, rubricIds: [], createdAt: NOW2, updatedAt: NOW2, gradingFinalized: finalized,
+  });
+  const ASSIGNMENTS2 = [asg2("open1", "Open Assignment", false), asg2("done1", "Finalized Assignment", true)];
+  const ROSTER2 = [{ id: "r-fz-1", courseId: "c-fz", studentId: "69070101", firstName: "Somchai", lastName: "Jaidee", email: "69070101@kmitl.ac.th", cohort: "CE69", sequenceNumber: 1, enrollmentStatus: "enrolled" }];
+  const sub2 = (id: string, assignmentId: string) => ({
+    id, assignmentId, studentId: "69070101", studentName: "Somchai Jaidee", email: "69070101@kmitl.ac.th",
+    submittedAt: "2026-01-05T10:00:00.000Z", fileUrl: null, aiScore: 90, instructorScore: 90, instructorComment: "",
+    externalUseConsent: false, status: "graded", updatedAt: "2026-01-05T10:00:00.000Z",
+  });
+  const SUBMISSIONS2 = [sub2("s-open1", "open1"), sub2("s-done1", "done1")];
+
+  async function openFz(page: Page) {
+    await page.addInitScript((d) => {
+      localStorage.setItem("hwai_lang", "en");
+      localStorage.setItem("hwai_user", JSON.stringify({ name: "Somsak", email: "somsak@kmitl.ac.th", role: "teacher" }));
+      localStorage.setItem("hwai_courses_v2", JSON.stringify([d.course]));
+      localStorage.setItem("hwai_managed_teachers_v1", JSON.stringify([d.teacher]));
+      localStorage.setItem("hwai_students_v1", JSON.stringify(d.roster));
+      localStorage.setItem("hwai_grading_categories_v1", "[]");
+      localStorage.setItem("hwai_assignments_v1", JSON.stringify(d.assignments));
+      localStorage.setItem("hwai_rubrics_v1", "[]");
+      localStorage.setItem("hwai_submissions_v1", JSON.stringify(d.submissions));
+    }, { course: COURSE2, teacher: TEACHER2, roster: ROSTER2, assignments: ASSIGNMENTS2, submissions: SUBMISSIONS2 });
+    await page.goto(`${BASE}/teacher/courses/c-fz/results`);
+    await page.waitForLoadState("networkidle");
+  }
+  test("a finalized assignment's score is plain text, not a link; a non-finalized one is still clickable", async ({ page }) => {
+    await openFz(page);
+    const row = page.locator("main tbody tr", { hasText: "69070101" });
+    // book.groups sorts columns by dueDate then name (src/lib/scoreBook.ts byDue) — both assignments
+    // share a due date, so "Finalized Assignment" sorts before "Open Assignment" (td 2, then td 3).
+    const doneCell = row.locator("td").nth(2);
+    const openCell = row.locator("td").nth(3);
+    await expect(doneCell.getByRole("link")).toHaveCount(0);
+    await expect(doneCell).toContainText("90");
+    await expect(openCell.getByRole("link")).toHaveText("90");
+  });
+
+  test("clicking a locked cell does nothing — no navigation to recheck", async ({ page }) => {
+    await openFz(page);
+    const doneCell = page.locator("main tbody tr", { hasText: "69070101" }).locator("td").nth(2);
+    await doneCell.click();
+    await expect(page).toHaveURL(`${BASE}/teacher/courses/c-fz/results`);
+  });
+});

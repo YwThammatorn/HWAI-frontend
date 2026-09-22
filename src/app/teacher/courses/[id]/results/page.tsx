@@ -134,19 +134,34 @@ export default function ScoreBookPage() {
     const chip = "inline-flex items-center justify-center gap-1 min-w-[3.5rem] h-8 px-2 rounded-lg text-sm font-semibold tabular-nums whitespace-nowrap";
     const rubric = rubricsByAssignment.get(assignment.id);
     const hasRubric = !!rubric && rubric.criteria.length > 0;
+    // Score Book is view-only once the teacher finishes grading an assignment (23/9/2569) — no more
+    // click-through to recheck for that column, whichever state a cell is in. Not-yet-finished
+    // assignments keep the existing clickable behaviour regardless of how much of them is graded.
+    const locked = !!assignment.gradingFinalized;
     switch (cell.kind) {
       case "graded":
         return (
           <div className="inline-flex items-center gap-1">
-            <Link
-              href={recheck(cell.submissionId)}
-              title={t("เปิดดู/ตรวจใหม่", "Open / recheck")}
-              className={`${chip} ${SCORE_TONE_CLASSES[toneForPct(cell.pct)]} hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition`}
-            >
-              {assignment.submissionType === "group" && <span aria-label={t("คะแนนทีม", "Team score")}>{TEAM_GLYPH}</span>}
-              {Number.isInteger(cell.score) ? cell.score : cell.score.toFixed(1)}
-            </Link>
-            {/* Score comes from the rubric — expand to see what each criterion earned (21/9/2569) */}
+            {locked ? (
+              <span
+                title={t("ตรวจเสร็จสิ้นแล้ว — ดูได้อย่างเดียว", "Grading finished — view only")}
+                className={`${chip} ${SCORE_TONE_CLASSES[toneForPct(cell.pct)]}`}
+              >
+                {assignment.submissionType === "group" && <span aria-label={t("คะแนนทีม", "Team score")}>{TEAM_GLYPH}</span>}
+                {Number.isInteger(cell.score) ? cell.score : cell.score.toFixed(1)}
+              </span>
+            ) : (
+              <Link
+                href={recheck(cell.submissionId)}
+                title={t("เปิดดู/ตรวจใหม่", "Open / recheck")}
+                className={`${chip} ${SCORE_TONE_CLASSES[toneForPct(cell.pct)]} hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition`}
+              >
+                {assignment.submissionType === "group" && <span aria-label={t("คะแนนทีม", "Team score")}>{TEAM_GLYPH}</span>}
+                {Number.isInteger(cell.score) ? cell.score : cell.score.toFixed(1)}
+              </Link>
+            )}
+            {/* Score comes from the rubric — expand to see what each criterion earned (21/9/2569).
+                Still available when locked: viewing the breakdown isn't editing. */}
             {hasRubric && (
               <button
                 type="button"
@@ -166,7 +181,12 @@ export default function ScoreBookPage() {
           </div>
         );
       case "pending":
-        return (
+        return locked ? (
+          <span className={`${chip} ${PENDING_CHIP_CLASSES}`}>
+            <span className="w-1.5 h-1.5 rounded-full bg-current" aria-hidden="true" />
+            {t("รอตรวจ", "Pending")}
+          </span>
+        ) : (
           <Link
             href={recheck(cell.submissionId)}
             className={`${chip} ${PENDING_CHIP_CLASSES} hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition`}

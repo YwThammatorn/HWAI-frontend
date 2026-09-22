@@ -31,6 +31,10 @@ export interface Assignment {
   submissionType: "individual" | "group";
   maxGroupSize: number | null;
   rubricIds: string[];
+  /** Teacher clicked "Finish Grading" on the Grading page once every submission was processed
+   *  (23/9/2569) — locks the assignment's cells in the Score Book to view-only (no more click-through
+   *  to recheck). Absent/false = still open; reversible via "Reopen grading" so nobody gets stuck. */
+  gradingFinalized?: boolean;
   createdAt: string;
   updatedAt: string;
 }
