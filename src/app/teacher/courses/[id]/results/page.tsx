@@ -201,8 +201,13 @@ export default function ScoreBookPage() {
     }
   }
 
-  const stickyHead = "sticky z-30 bg-[var(--bg-subtle)]";
-  const headBase = "bg-[var(--bg-subtle)] text-xs font-semibold text-[var(--text-muted)] whitespace-nowrap";
+  // The established table pattern (admin Students tab, teacher roster) keeps the header the same
+  // white/surface as the body and differentiates it with a border + muted uppercase text, never a
+  // tinted fill — bg-subtle is reserved for hover. A tinted header here sat right at the card's top
+  // edge, one shade off the page's own pale background, and visually fused with it (flagged by the
+  // teacher on a real screen, 21/9/2569 — this is what "still blending" actually meant).
+  const stickyHead = "sticky z-30 bg-[var(--bg-surface)]";
+  const headBase = "bg-[var(--bg-surface)] text-xs font-semibold text-[var(--text-muted)] whitespace-nowrap";
   const headCaps = "uppercase tracking-wider"; // category / summary labels; assignment names keep their own case
 
   return (
@@ -349,7 +354,7 @@ export default function ScoreBookPage() {
                       dir={sort?.key === "id" ? sort.dir : undefined}
                       onClick={() => cycleSort("id")}
                       hint={t("คลิกเพื่อเรียงตามรหัส (น้อย→มาก → มาก→น้อย → ลำดับเดิม)", "Click to sort by student ID (ascending → descending → roster order)")}
-                      className={`${stickyHead} left-0 bg-[var(--bg-subtle)] border-b border-[var(--border-subtle)]`}
+                      className={`${stickyHead} left-0 border-b border-[var(--border-subtle)]`}
                       style={{ top: HEAD1_H, width: ID_W, minWidth: ID_W }}
                     />
                     <SortableTh
@@ -357,7 +362,7 @@ export default function ScoreBookPage() {
                       dir={sort?.key === "name" ? sort.dir : undefined}
                       onClick={() => cycleSort("name")}
                       hint={t("คลิกเพื่อเรียงตามชื่อ (ก–ฮ → ฮ–ก → ลำดับเดิม)", "Click to sort by name (A–Z → Z–A → roster order)")}
-                      className={`${stickyHead} bg-[var(--bg-subtle)] border-b border-[var(--border-subtle)]`}
+                      className={`${stickyHead} border-b border-[var(--border-subtle)]`}
                       style={{ top: HEAD1_H, left: ID_W, width: NAME_W, minWidth: NAME_W }}
                     />
                     {columns.map((a) => (
@@ -384,7 +389,7 @@ export default function ScoreBookPage() {
                       dir={sort?.key === "total" ? sort.dir : undefined}
                       onClick={() => cycleSort("total")}
                       hint={t("คลิกเพื่อเรียงตามคะแนนรวม (มาก→น้อย → น้อย→มาก → ลำดับเดิม)", "Click to sort by total (high → low → low → high → roster order)")}
-                      className={`${stickyHead} bg-[var(--bg-subtle)] border-b border-l border-[var(--border-subtle)]`}
+                      className={`${stickyHead} border-b border-l border-[var(--border-subtle)]`}
                       style={{ top: HEAD1_H, right: GRADE_W, width: TOTAL_W, minWidth: TOTAL_W }}
                     />
                     <th
@@ -454,18 +459,18 @@ export default function ScoreBookPage() {
                 </tbody>
                 <tfoot>
                   <tr>
-                    <td colSpan={2} className="sticky left-0 bottom-0 z-20 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] bg-[var(--bg-subtle)] border-t border-[var(--border-subtle)]">
+                    <td colSpan={2} className="sticky left-0 bottom-0 z-20 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] bg-[var(--bg-surface)] border-t border-[var(--border-subtle)]">
                       {t("เฉลี่ยทั้งห้อง", "Class average")}
                     </td>
                     {columns.map((a) => {
                       const avg = book.columnAverages[a.id];
                       return (
-                        <td key={a.id} className="sticky bottom-0 z-10 px-3 py-2 tabular-nums text-[var(--text-secondary)] bg-[var(--bg-subtle)] border-t border-l border-[var(--border-subtle)]">
+                        <td key={a.id} className="sticky bottom-0 z-10 px-3 py-2 tabular-nums text-[var(--text-secondary)] bg-[var(--bg-surface)] border-t border-l border-[var(--border-subtle)]">
                           {avg === null ? "—" : `${Math.round(avg)}%`}
                         </td>
                       );
                     })}
-                    <td colSpan={2} className="sticky right-0 bottom-0 z-20 px-4 py-2 tabular-nums text-[var(--text-secondary)] bg-[var(--bg-subtle)] border-t border-l border-[var(--border-subtle)]">
+                    <td colSpan={2} className="sticky right-0 bottom-0 z-20 px-4 py-2 tabular-nums text-[var(--text-secondary)] bg-[var(--bg-surface)] border-t border-l border-[var(--border-subtle)]">
                       {book.classAverage === null ? "—" : `${book.classAverage.toFixed(1)}%`}
                     </td>
                   </tr>
