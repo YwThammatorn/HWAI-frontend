@@ -244,17 +244,29 @@
    active row (accent-bright at 20% opacity) — composited over already-mid-lightness teal
    that overshoots to where NO text colour (not even white) can reach 4.5:1 again (verified:
    max possible ~4.24:1). Darkening the row instead (black at 18-20%) keeps it legible with
-   plenty of margin (6-7:1) and still reads as a highlight against the teal. */
+   plenty of margin (6-7:1) and still reads as a highlight against the teal.
+
+   --sidebar-bg deliberately != --navbar-bg here (follow-up, 22/9/2569: user wanted the two
+   surfaces to read as visually distinct, the way --bg-nav/--sidebar-bg already do in navy).
+   It's not just a lighter/darker pick of the same flat teal, either — the flat teal
+   (#0F766E) is already light enough (relative luminance 0.14, much higher than navy's ~0.02
+   at a comparable "visual" darkness, because green/teal hues weigh heavily in the luminance
+   formula) that the sidebar's existing text-white/55 inactive-nav-item treatment — which
+   clears 4.6:1 on navy — drops to ~2.8:1 on flat teal. A *darker* teal for the sidebar fixes
+   both asks at once: visually distinct from the navbar, and back over 4.5:1 for that
+   existing white/55 text (verified 4.6-4.7:1) without having to touch the 3 sidebar
+   components. Kept identical between light/dark chrome-teal (unlike navy, where the
+   distinction only exists in light mode) since the contrast fix applies in both. */
 [data-nav-theme="teal"] {
   --navbar-bg:       #0F766E;
-  --sidebar-bg:      #0F766E;
+  --sidebar-bg:      #084541;
   --nav-active-bg:   rgba(0, 0, 0, 0.18);
   --nav-active-text: #FFFFFF;
 }
 
 [data-theme="dark"][data-nav-theme="teal"] {
   --navbar-bg:       #12817A;
-  --sidebar-bg:      #12817A;
+  --sidebar-bg:      #084541;
   --nav-active-bg:   rgba(0, 0, 0, 0.2);
   --nav-active-text: #FFFFFF;
 }

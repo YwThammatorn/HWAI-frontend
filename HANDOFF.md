@@ -185,6 +185,22 @@ by accident." `--sidebar-bg` was cleanly scoped (confirmed by grep — only the 
   effect, `ThemeProvider.tsx`'s original `setPreference` call — confirmed both existed on `HEAD` before
   this change, this change added zero new ones).
 
+### Follow-up (22/9): sidebar and navbar needed to look different in teal too (pushed next commit)
+User: "สีระหว่าง navbar กับ sidebar มันน่าจะแตกต่างกันหน่อย เหมือนเวอร์ชั่นสีน้ำเงินอ่ะ" — both had shipped
+as the exact same flat teal; navy's own navbar/sidebar aren't identical either (`#1A2D45` vs `#243C5A`).
+Checking navy's actual relationship (sidebar *lighter* than navbar) exposed a real bug rather than just
+a copy-paste job: teal's relative luminance (0.14) is already much higher than navy's (~0.02) at a
+comparable "visual" darkness — hue affects the luminance formula heavily, green/teal weighs more than
+blue. The 3 sidebars' existing `text-white/55` inactive-nav-item treatment clears 4.6:1 on navy but
+drops to ~2.8:1 on the flat teal that had already shipped — an accessibility regression that predates
+this specific complaint, just not caught by the original round's verification (which checked the
+*active* state's math and a visual screenshot pass, not this specific opacity-blended case). Fixed by
+giving `--sidebar-bg` its own, *darker* teal (`#084541`) rather than a lighter one — solves both at
+once: visually distinct from `--navbar-bg` (kept at the literal Sign-in-button teal), and back over
+4.5:1 for the existing white/55 text (verified 4.6-4.7:1) without touching the 3 sidebar components at
+all. Kept identical between light/dark chrome-teal (the contrast fix applies to both, unlike navy's
+light-only distinction). Verified with fresh screenshots (both themes); full suite still 344/30.
+
 ## Not done / open
 - Score Book is read-only by design; if the teacher wants to type scores into cells, that is a new decision (Grading pages own edits today).
 - `gradeLetter` still exists locally in the two per-assignment results pages (the Score Book uses `lib/scoreBook.ts`); could be unified later.
