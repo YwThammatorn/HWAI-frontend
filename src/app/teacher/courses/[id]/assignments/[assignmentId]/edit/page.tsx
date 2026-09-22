@@ -39,6 +39,7 @@ export default function EditAssignmentPage() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState("");
+  const [isExam, setIsExam] = useState(false);
   const [maxPoints, setMaxPoints] = useState("100");
   const [categoryId, setCategoryId] = useState("");
   const [acceptsFiles, setAcceptsFiles] = useState(true);
@@ -52,7 +53,7 @@ export default function EditAssignmentPage() {
   const [newRubricName, setNewRubricName] = useState("");
 
   const origRef = useRef({
-    name: "", description: "", dueDate: "", maxPoints: "", categoryId: "",
+    name: "", description: "", dueDate: "", isExam: false, maxPoints: "", categoryId: "",
     acceptsFiles: true, fileTypesJson: "[]",
     submissionType: "individual" as "individual" | "group",
     maxGroupSizeStr: "",
@@ -67,6 +68,7 @@ export default function EditAssignmentPage() {
         name: assignment.name,
         description: assignment.description,
         dueDate: assignment.dueDate,
+        isExam: assignment.isExam ?? false,
         maxPoints: String(assignment.maxPoints),
         categoryId: assignment.categoryId ?? "",
         acceptsFiles: assignment.acceptsFiles ?? true,
@@ -77,6 +79,7 @@ export default function EditAssignmentPage() {
       setName(orig.name);
       setDescription(orig.description);
       setDueDate(orig.dueDate);
+      setIsExam(orig.isExam);
       setMaxPoints(orig.maxPoints);
       setCategoryId(orig.categoryId);
       setAcceptsFiles(orig.acceptsFiles);
@@ -98,6 +101,7 @@ export default function EditAssignmentPage() {
       name !== origRef.current.name ||
       description !== origRef.current.description ||
       dueDate !== origRef.current.dueDate ||
+      isExam !== origRef.current.isExam ||
       maxPoints !== origRef.current.maxPoints ||
       categoryId !== origRef.current.categoryId ||
       acceptsFiles !== origRef.current.acceptsFiles ||
@@ -136,12 +140,13 @@ export default function EditAssignmentPage() {
       description: description.trim(),
       attachments: att.items,
       dueDate,
-      maxPoints: parseInt(maxPoints) || 100,
+      maxPoints: isExam ? (parseInt(maxPoints) || 100) : rubricTotalPoints,
       categoryId: categoryId || undefined,
       acceptsFiles,
       fileTypes: acceptsFiles ? fileTypes : [],
       submissionType,
       maxGroupSize: submissionType === "group" && maxGroupSize ? parseInt(maxGroupSize) : null,
+      isExam,
     });
     att.commit();
     setSaved(true);
@@ -195,6 +200,11 @@ export default function EditAssignmentPage() {
     );
   }
 
+  // The rubric is authoritative for a non-exam assignment's max score (23/9/2569) — this is the
+  // live value shown read-only here; it's kept in sync on the actual assignment record whenever
+  // the rubric editor is saved (rubrics/[rubricId]/page.tsx), and re-synced here too so toggling
+  // isExam off can't leave maxPoints stale before the teacher ever opens the rubric editor.
+  const rubricTotalPoints = linkedRubrics[0]?.criteria.reduce((sum, c) => sum + c.maxPoints, 0) ?? 0;
   const isValid = name.trim().length > 0 && dueDate !== "" && (!acceptsFiles || fileTypes.length > 0);
 
   return (
@@ -265,22 +275,32 @@ export default function EditAssignmentPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">{t("คะแนนเต็ม", "Max Score")}</label>
-                <div className="flex gap-1.5 mb-2 flex-wrap">
-                  {[10, 15, 25, 100].map((p) => (
-                    <button key={p} type="button" onClick={() => setMaxPoints(String(p))}
-                      className={["px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors",
-                        maxPoints === String(p) ? "bg-[var(--accent-solid)] text-[var(--accent-solid-text)] border-[var(--accent)]" : "border-gray-200 text-gray-500 hover:border-[var(--accent)] hover:text-[var(--accent)]"
-                      ].join(" ")}>
-                      {p}
-                    </button>
-                  ))}
-                </div>
-                <input
-                  type="number" min="1" max="1000" value={maxPoints}
-                  onChange={(e) => setMaxPoints(e.target.value)}
-                  placeholder={t("หรือพิมพ์เอง", "or type...")}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
-                />
+                {isExam ? (
+                  <>
+                    <div className="flex gap-1.5 mb-2 flex-wrap">
+                      {[10, 15, 25, 100].map((p) => (
+                        <button key={p} type="button" onClick={() => setMaxPoints(String(p))}
+                          className={["px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors",
+                            maxPoints === String(p) ? "bg-[var(--accent-solid)] text-[var(--accent-solid-text)] border-[var(--accent)]" : "border-gray-200 text-gray-500 hover:border-[var(--accent)] hover:text-[var(--accent)]"
+                          ].join(" ")}>
+                          {p}
+                        </button>
+                      ))}
+                    </div>
+                    <input
+                      type="number" min="1" max="1000" value={maxPoints}
+                      onChange={(e) => setMaxPoints(e.target.value)}
+                      placeholder={t("หรือพิมพ์เอง", "or type...")}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
+                    />
+                  </>
+                ) : (
+                  <div className="w-full px-3.5 py-2.5 rounded-xl border border-gray-100 bg-gray-50 text-sm text-gray-600">
+                    {linkedRubrics.length > 0
+                      ? t(`รวม ${rubricTotalPoints} คะแนน (จาก Rubric)`, `Total: ${rubricTotalPoints} pts (from the rubric)`)
+                      : t("—  (ยังไม่มี Rubric)", "—  (no rubric yet)")}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -304,6 +324,22 @@ export default function EditAssignmentPage() {
           {/* Submission Settings */}
           <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
             <SectionHeader icon="upload" label={t("การรับและรูปแบบงาน", "Submission Settings")} />
+
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-sm font-medium text-[var(--text-primary)]">{t("งานประเภทสอบ", "Exam Assignment")}</p>
+                <p className="text-xs text-gray-500 mt-0.5">{t("เปิดไว้เพื่อกำหนดคะแนนเต็มเอง — งานประเภทนี้ไม่ใช้ rubric", "Turn on to set the max score manually — no rubric is used for this type")}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsExam(v => !v)}
+                aria-label={t("งานประเภทสอบ", "Exam Assignment")}
+                aria-pressed={isExam}
+                className={["relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none", isExam ? "bg-[var(--accent)]" : "bg-[var(--border-subtle)]"].join(" ")}
+              >
+                <span className={["inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform", isExam ? "translate-x-6" : "translate-x-1"].join(" ")} />
+              </button>
+            </div>
 
             <div className="flex items-center justify-between mb-4">
               <div>
@@ -366,7 +402,8 @@ export default function EditAssignmentPage() {
             </div>
           </section>
 
-          {/* Rubric section */}
+          {/* Rubric section — exam assignments are scored manually and don't use one */}
+          {!isExam && (
           <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2">
@@ -467,6 +504,7 @@ export default function EditAssignmentPage() {
               </div>
             )}
           </section>
+          )}
 
           {/* Danger Zone */}
           <section className="bg-white rounded-2xl border border-[var(--s-err-bd)] shadow-sm p-6">

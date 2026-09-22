@@ -171,17 +171,24 @@ export default function ViewAssignmentPage() {
             <div className="flex items-center justify-between gap-4 px-5 py-4 border-b border-[var(--border-subtle)]">
               <div>
                 <h2 id="rubric-heading" className="text-base font-bold text-[var(--text-primary)]">{t("เกณฑ์การให้คะแนน", "Rubric")}</h2>
-                {rubric && (
+                {!assignment.isExam && rubric && (
                   <p className="text-xs text-[var(--text-secondary)] mt-0.5">
                     {rubric.criteria.length} {t("เกณฑ์", "criteria")} · {assignment.maxPoints} {t("คะแนน", "pts")}
                   </p>
                 )}
               </div>
-              <Link href={editHref} className="text-sm font-medium text-[var(--accent)] hover:underline shrink-0">
-                {rubric ? t("แก้ไข Rubric", "Edit Rubric") : t("เพิ่ม Rubric", "Add Rubric")}
-              </Link>
+              {!assignment.isExam && (
+                <Link href={editHref} className="text-sm font-medium text-[var(--accent)] hover:underline shrink-0">
+                  {rubric ? t("แก้ไข Rubric", "Edit Rubric") : t("เพิ่ม Rubric", "Add Rubric")}
+                </Link>
+              )}
             </div>
-            {rubric && rubric.criteria.length > 0 ? (
+            {assignment.isExam ? (
+              <div className="px-5 py-8 text-center">
+                <p className="text-sm font-medium text-[var(--text-secondary)]">{t("งานประเภทสอบ", "Exam Assignment")}</p>
+                <p className="text-xs text-[var(--text-muted)] mt-1">{t("ให้คะแนนเต็มโดยตรง ไม่ใช้ rubric", "Graded on a manually set max score — no rubric is used")}</p>
+              </div>
+            ) : rubric && rubric.criteria.length > 0 ? (
               <div className="p-5">
                 {/* Same card-per-criterion layout as the student's read-only rubric view
                     (student/courses/[secId]/classwork/[actId]/page.tsx) — asked for 23/9/2569 so

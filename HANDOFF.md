@@ -304,17 +304,66 @@ locking would surprise a teacher who wants to keep tweaking scores past 100% bef
   animation caught mid-transition by the screenshot timing, not a real bug (re-screenshotted after a
   longer wait → 100%, consistent with the not-yet-finalized state).
 
-### Sub-task 4 (not started): isExam + points-based rubric rework
-Largest remaining piece — confirmed via AskUserQuestion to be the *bigger* of two options after surfacing
-a real conflict: today's rubric editor is weight-based (criteria % must sum to 100, each criterion's
-`maxPoints` is *derived* from `assignment.maxPoints × weight%`). "Remove the manual max-score field, derive
-it from the rubric instead" requires inverting that — criteria get a real points input, `weight` becomes
-the derived/display value, `assignment.maxPoints` gets written from the rubric's point-sum at save time.
-Touches `RubricCriteriaEditor.tsx`, the New Assignment form, the Edit Assignment form, and the standalone
-rubric-editor route. Full scope in the plan file above.
+### Sub-task 4 (done, pushed): isExam + points-based rubric rework
+Confirmed via AskUserQuestion to be the *bigger* of two options after surfacing a real conflict: the
+rubric editor was weight-based (criteria % must sum to 100, each criterion's `maxPoints` *derived* from
+`assignment.maxPoints × weight%`). "Remove the manual max-score field, derive it from the rubric instead"
+required inverting that.
+- **`Assignment.isExam?: boolean`** (`lib/assignments.ts`) — exam-type assignments keep today's manual
+  max-score entry and never get a rubric (`rubricIds` stays `[]`).
+- **`RubricCriteriaEditor.tsx` core rework**: `CriterionDraft.weight` → `.points` (a real input, not
+  derived); `criteriaWeightOk`/`criteriaTotalWeight` → `criteriaPointsOk`/`criteriaTotalPoints` (≥1
+  criterion, each with points > 0 — no forced total, points are free-form unlike weights);
+  `finalizeCriteria(criteria, untitled)` dropped its `maxPoints` param — it now computes
+  `weight = round(points/total × 100)` per criterion as the *derived* display value and
+  `maxPoints = points` as the stored value. Every existing consumer of `RubricCriterion.{weight,
+  maxPoints}` (rubric cards, `RubricBreakdownModal`, `lib/scoreBook.ts`, CSV) kept working unchanged —
+  only how those two fields get populated inverted. AI Rubric Assistant's mock suggestions now propose
+  points (same 40/30/20/10 numbers, reinterpreted).
+- **New Assignment form**: added an **Exam Assignment** toggle (Submission Settings, `aria-label="Exam
+  Assignment"` for testability) next to Accept Files. Off (default): Max Score becomes a read-only "Total:
+  N pts (from the rubric below)" display, `RubricCriteriaEditor` is the only way to set points, `maxPoints
+  = criteriaTotalPoints(criteria)` at submit — this is also item 6 from the original 7-item list ("block
+  creating an assignment without a filled-in rubric"), satisfied because Create stays disabled until every
+  criterion has points > 0. On: unchanged manual Max Score input, rubric section hidden entirely, empty
+  `rubricIds`.
+- **Edit Assignment form**: same toggle. Off: Max Score is a read-only live total from the linked rubric's
+  current criteria (`linkedRubrics[0]?.criteria.reduce(...)`, "—" if none yet); that same live total is
+  what actually gets saved as `assignment.maxPoints` on this form's own Save (so toggling isExam off can't
+  leave `maxPoints` stale before the teacher ever opens the rubric editor). On: manual input, as today.
+  Rubric section hidden entirely when isExam.
+- **Standalone rubric editor** (`rubrics/[rubricId]/page.tsx`): switched to the points-based editor/
+  `finalizeCriteria`; Save now **also** calls `updateAssignment(assignmentId, {maxPoints: newTotalPoints})`
+  — the sync step that keeps the ~15 other `assignment.maxPoints` read-sites (Score Book, grading table
+  bounds, CSV, student pages…) correct without touching any of them, guarded by `!assignment.isExam` so a
+  direct-URL visit to an exam assignment's (nonexistent, in practice) rubric can't clobber its manually-set
+  score.
+- **Teacher assignment-detail page**: rubric section is isExam-aware — shows a neutral "Exam Assignment /
+  Graded on a manually set max score — no rubric is used" note instead of the amber "No rubric yet"
+  warning (which is factually wrong for a deliberately-rubric-less exam) and hides the now-meaningless
+  "Edit/Add Rubric" link.
+- **Recheck page — closed a real gap found while implementing, not in the original plan text**: with no
+  rubric, the per-criterion scoring UI rendered nothing and silently graded every exam submission 0
+  (`scores` stayed `[]`, `totalScore` was always 0) — there was no way to actually grade an isExam
+  submission. Added a manual "Enter this submission's total score directly" input (own `manualScore`
+  state, same init-from-`aiScore`/Reset-to-Default pattern as the rubric path) shown whenever `!rubric`.
+  `totalScore`/`totalMax` now branch on `rubric` presence; `handleSave` unchanged (already just uses
+  `totalScore`).
+- Tests: rewrote `tests/assignment-create-rubric.spec.ts` for the points model (labels, "N pts total",
+  the 0-points block message) + a new "Exam Assignment toggle hides the rubric…" end-to-end test. Verified
+  live in the browser beyond the automated suite: create → rubric points → assignment.maxPoints synced
+  (100); standalone rubric editor add-criterion+save → maxPoints re-synced (150); isExam assignment →
+  recheck's manual-score input → save → `submission.instructorScore` persisted correctly, status →
+  "graded". Full suite 355 passed / 30 skipped.
+- **Lint note**: `edit/page.tsx`'s pre-existing baseline (15 problems / 14 errors, all `react-hooks/refs`
+  from a `useRef`-based `isDirty` computation that reads `origRef.current.*` directly during render — an
+  existing anti-pattern used for every one of that form's ~9 tracked fields) grew by exactly 1 error when
+  `isExam` was added as a 10th tracked field the same way. Same rule, same pre-existing pattern extended
+  by one field — not a new category of issue. Fixing it properly means restructuring that whole form's
+  dirty-tracking (out of scope, never done for the other 9). Every other touched file matched its baseline
+  exactly (0 new anywhere else).
 
 ## Not done / open
-- Sub-task 4 above (isExam + points-based rubric) — not started.
 - Score Book is read-only by design; if the teacher wants to type scores into cells, that is a new decision (Grading pages own edits today). Finalized assignments are additionally locked from click-through (23/9, this batch).
 - `gradeLetter` still exists locally in the two per-assignment results pages (the Score Book uses `lib/scoreBook.ts`); could be unified later.
 - Group assignments: recheck already fans the saved score out to every teammate's `Submission`, so `criterionScores` is saved per teammate too — not specifically re-verified beyond the individual-assignment test above.

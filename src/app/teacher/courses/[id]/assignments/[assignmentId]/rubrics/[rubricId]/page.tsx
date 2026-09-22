@@ -7,7 +7,7 @@ import { useCourses } from "@/lib/courses";
 import { useAssignments } from "@/lib/assignments";
 import { useLanguage } from "@/context/LanguageContext";
 import RubricCriteriaEditor, {
-  CriterionDraft, toDraft, criteriaWeightOk, finalizeCriteria,
+  CriterionDraft, toDraft, criteriaPointsOk, finalizeCriteria,
 } from "@/components/RubricCriteriaEditor";
 
 export default function RubricEditorPage() {
@@ -15,7 +15,7 @@ export default function RubricEditorPage() {
   const router = useRouter();
   const { t } = useLanguage();
   const { getCourse } = useCourses();
-  const { getAssignment, getRubric, updateRubric } = useAssignments();
+  const { getAssignment, getRubric, updateRubric, updateAssignment } = useAssignments();
 
   const course = getCourse(id);
   const assignment = getAssignment(assignmentId);
@@ -59,14 +59,22 @@ export default function RubricEditorPage() {
     router.push(to);
   }
 
-  const weightOk = criteriaWeightOk(criteria);
+  const pointsOk = criteriaPointsOk(criteria);
 
   function handleSave() {
-    if (!weightOk) return;
+    if (!pointsOk) return;
+    const finalized = finalizeCriteria(criteria, t("ไม่มีชื่อ", "Untitled"));
     updateRubric(rubricId, {
       name: rubricName.trim() || rubric?.name || "Rubric",
-      criteria: finalizeCriteria(criteria, assignment?.maxPoints ?? 100, t("ไม่มีชื่อ", "Untitled")),
+      criteria: finalized,
     });
+    // The rubric is authoritative for the assignment's max score (23/9/2569) — keep them in
+    // sync here so the ~15 places that read assignment.maxPoints as a plain number stay correct.
+    // Skipped for isExam assignments, whose max score is set manually on the Edit form instead.
+    if (!assignment?.isExam) {
+      const total = finalized.reduce((sum, c) => sum + c.maxPoints, 0);
+      updateAssignment(assignmentId, { maxPoints: total });
+    }
     setSaved(true);
     setTimeout(() => router.push(`/teacher/courses/${id}/assignments/${assignmentId}/edit`), 800);
   }
@@ -126,7 +134,6 @@ export default function RubricEditorPage() {
       <RubricCriteriaEditor
         criteria={criteria}
         setCriteria={setCriteria}
-        maxPoints={assignment.maxPoints}
         assignmentName={assignment.name}
       />
 
@@ -139,18 +146,18 @@ export default function RubricEditorPage() {
           {t("ยกเลิก", "Discard")}
         </button>
         <div className="flex items-center gap-3">
-          {!weightOk && (
+          {!pointsOk && (
             <span className="text-xs text-amber-500">
-              {t("น้ำหนักรวมต้องเท่ากับ 100%", "Total weight must equal 100%")}
+              {t("ทุกเกณฑ์ต้องมีคะแนนมากกว่า 0", "Every criterion needs more than 0 points")}
             </span>
           )}
           <button
             onClick={handleSave}
-            disabled={!weightOk || saved}
+            disabled={!pointsOk || saved}
             className={`px-6 py-2.5 rounded-xl text-sm font-semibold transition-all ${
               saved
                 ? "bg-green-500 text-white"
-                : weightOk
+                : pointsOk
                   ? "bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)]"
                   : "bg-gray-100 text-gray-300 cursor-not-allowed"
             }`}

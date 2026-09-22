@@ -35,6 +35,10 @@ export interface Assignment {
    *  (23/9/2569) — locks the assignment's cells in the Score Book to view-only (no more click-through
    *  to recheck). Absent/false = still open; reversible via "Reopen grading" so nobody gets stuck. */
   gradingFinalized?: boolean;
+  /** Exam-type assignment (23/9/2569): scored with a manually-set max score, no rubric at all —
+   *  `rubricIds` stays empty and `maxPoints` is user-entered instead of derived from a rubric's
+   *  point total. Absent/false = the normal rubric-graded assignment. */
+  isExam?: boolean;
   createdAt: string;
   updatedAt: string;
 }

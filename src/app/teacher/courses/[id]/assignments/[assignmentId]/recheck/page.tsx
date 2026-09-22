@@ -47,25 +47,31 @@ export default function RecheckPage() {
 
   const [zoom, setZoom] = useState(100);
   const [scores, setScores] = useState<CriterionScore[]>([]);
+  // Exam-type assignments have no rubric (23/9/2569) — the whole score is typed in directly here.
+  const [manualScore, setManualScore] = useState(0);
   const [saved, setSaved] = useState(false);
   const [comment, setComment] = useState(submission?.instructorComment ?? "");
   // Per-criterion notes ("why I changed this score"), keyed by criterion id
   const [criterionComments, setCriterionComments] = useState<Record<string, string>>(submission?.criterionComments ?? {});
 
   useEffect(() => {
-    if (!rubric || !submission) return;
+    if (!submission) return;
     const aiScore = submission.instructorScore ?? submission.aiScore ?? 0;
-    const initial: CriterionScore[] = rubric.criteria.map((c: RubricCriterion) => {
-      const pts = Math.round((c.weight / 100) * aiScore);
-      return {
-        criterionId: c.id,
-        score: pts,
-        maxPoints: c.maxPoints,
-        aiFeedback: genFeedback(c.name, pts / c.maxPoints >= 0.7 ? "high" : "low"),
-        edited: false,
-      };
-    });
-    setScores(initial);
+    if (rubric) {
+      const initial: CriterionScore[] = rubric.criteria.map((c: RubricCriterion) => {
+        const pts = Math.round((c.weight / 100) * aiScore);
+        return {
+          criterionId: c.id,
+          score: pts,
+          maxPoints: c.maxPoints,
+          aiFeedback: genFeedback(c.name, pts / c.maxPoints >= 0.7 ? "high" : "low"),
+          edited: false,
+        };
+      });
+      setScores(initial);
+    } else {
+      setManualScore(aiScore);
+    }
     setCriterionComments(submission.criterionComments ?? {});
   }, [rubric?.id, submission?.id]);
 
@@ -83,8 +89,8 @@ export default function RecheckPage() {
     );
   }
 
-  const totalScore = scores.reduce((sum, s) => sum + s.score, 0);
-  const totalMax = scores.reduce((sum, s) => sum + s.maxPoints, 0) || assignment.maxPoints;
+  const totalScore = rubric ? scores.reduce((sum, s) => sum + s.score, 0) : manualScore;
+  const totalMax = rubric ? (scores.reduce((sum, s) => sum + s.maxPoints, 0) || assignment.maxPoints) : assignment.maxPoints;
   const aiScore = submission.aiScore ?? 0;
   const aiPct = (aiScore / assignment.maxPoints) * 100;
   const aiConfidence = aiPct >= 85
@@ -101,15 +107,19 @@ export default function RecheckPage() {
   }
 
   function resetToDefault() {
-    if (!rubric || !submission) return;
+    if (!submission) return;
     const aiScore = submission.aiScore ?? 0;
-    setScores(rubric.criteria.map((c: RubricCriterion) => ({
-      criterionId: c.id,
-      score: Math.round((c.weight / 100) * aiScore),
-      maxPoints: c.maxPoints,
-      aiFeedback: genFeedback(c.name, (Math.round((c.weight / 100) * aiScore)) / c.maxPoints >= 0.7 ? "high" : "low"),
-      edited: false,
-    })));
+    if (rubric) {
+      setScores(rubric.criteria.map((c: RubricCriterion) => ({
+        criterionId: c.id,
+        score: Math.round((c.weight / 100) * aiScore),
+        maxPoints: c.maxPoints,
+        aiFeedback: genFeedback(c.name, (Math.round((c.weight / 100) * aiScore)) / c.maxPoints >= 0.7 ? "high" : "low"),
+        edited: false,
+      })));
+    } else {
+      setManualScore(aiScore);
+    }
     setComment(submission.instructorComment ?? "");
     setCriterionComments(submission.criterionComments ?? {});
     setSaved(false);
@@ -257,6 +267,32 @@ export default function RecheckPage() {
 
           {/* Criteria */}
           <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
+            {!rubric && (
+              <div className="rounded-xl border border-gray-100 bg-white p-4">
+                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">
+                  {t("งานประเภทสอบ — ไม่มี rubric", "Exam assignment — no rubric")}
+                </p>
+                <p className="text-xs text-gray-500 mb-3">
+                  {t("พิมพ์คะแนนรวมของงานนี้โดยตรง", "Enter this submission's total score directly")}
+                </p>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    min={0}
+                    max={assignment.maxPoints}
+                    value={manualScore}
+                    onChange={(e) => {
+                      const v = Math.max(0, Math.min(assignment.maxPoints, parseInt(e.target.value) || 0));
+                      setManualScore(v);
+                      setSaved(false);
+                    }}
+                    aria-label={t("คะแนนรวม", "Total score")}
+                    className="w-20 text-center text-sm font-bold text-[var(--text-primary)] border border-gray-200 rounded-lg px-1 py-1.5 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
+                  />
+                  <span className="text-xs text-gray-400">/ {assignment.maxPoints}</span>
+                </div>
+              </div>
+            )}
             {scores.map((s) => {
               const c = criteriaMap[s.criterionId];
               if (!c) return null;

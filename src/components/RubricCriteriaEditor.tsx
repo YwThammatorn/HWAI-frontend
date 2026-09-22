@@ -24,7 +24,7 @@ export interface CriterionDraft {
   id: string;
   name: string;
   description: string;
-  weight: string;
+  points: string;
   levels: CriterionLevel[];
 }
 
@@ -39,31 +39,37 @@ export function toDraft(c: RubricCriterion): CriterionDraft {
     id: c.id,
     name: c.name,
     description: c.description,
-    weight: String(c.weight),
+    points: String(c.maxPoints),
     levels: c.levels?.length ? c.levels : defaultLevels(),
   };
 }
 
-export function newCriterionDraft(name: string, weight = "0"): CriterionDraft {
-  return { id: crypto.randomUUID(), name, description: "", weight, levels: defaultLevels() };
+export function newCriterionDraft(name: string, points = "0"): CriterionDraft {
+  return { id: crypto.randomUUID(), name, description: "", points, levels: defaultLevels() };
 }
 
-export function criteriaTotalWeight(criteria: CriterionDraft[]): number {
-  return criteria.reduce((sum, c) => sum + (parseFloat(c.weight) || 0), 0);
+export function criteriaTotalPoints(criteria: CriterionDraft[]): number {
+  return criteria.reduce((sum, c) => sum + (Math.round(parseFloat(c.points)) || 0), 0);
 }
 
-export function criteriaWeightOk(criteria: CriterionDraft[]): boolean {
-  return Math.abs(criteriaTotalWeight(criteria) - 100) <= 0.5;
+/** At least one criterion, each actually worth something — points are free-form
+ *  (unlike the old weight model, there's no forced total to hit). */
+export function criteriaPointsOk(criteria: CriterionDraft[]): boolean {
+  return criteria.length > 0 && criteria.every((c) => (Math.round(parseFloat(c.points)) || 0) > 0);
 }
 
-/** Drafts -> persisted criteria (points derived from the assignment's max score). */
-export function finalizeCriteria(criteria: CriterionDraft[], maxPoints: number, untitled: string): RubricCriterion[] {
-  return criteria.map((c) => ({
+/** Drafts -> persisted criteria. Points are now the source of truth (23/9/2569); weight is
+ *  derived from each criterion's share of the total, purely for display on the read-only
+ *  rubric views that still show a percentage. */
+export function finalizeCriteria(criteria: CriterionDraft[], untitled: string): RubricCriterion[] {
+  const pts = criteria.map((c) => Math.round(parseFloat(c.points)) || 0);
+  const total = pts.reduce((sum, p) => sum + p, 0);
+  return criteria.map((c, i) => ({
     id: c.id,
     name: c.name.trim() || untitled,
     description: c.description.trim(),
-    weight: parseFloat(c.weight) || 0,
-    maxPoints: Math.round(maxPoints * ((parseFloat(c.weight) || 0) / 100)),
+    weight: total > 0 ? Math.round((pts[i] / total) * 100) : 0,
+    maxPoints: pts[i],
     levels: c.levels,
   }));
 }
@@ -115,23 +121,20 @@ function levelDescription(i: number, total: number, name: string, lang: string):
 export default function RubricCriteriaEditor({
   criteria,
   setCriteria,
-  maxPoints,
   assignmentName,
 }: {
   criteria: CriterionDraft[];
   setCriteria: Dispatch<SetStateAction<CriterionDraft[]>>;
-  /** Assignment's full score — only used for the "≈ N pts" hint per criterion. */
-  maxPoints: number;
   assignmentName: string;
 }) {
   const { lang, t } = useLanguage();
   const [aiOpen, setAiOpen] = useState(false);
   const [generating, setGenerating] = useState<Record<string, boolean>>({});
-  const [aiSuggestions, setAiSuggestions] = useState<{ name: string; description: string; weight: number }[]>([]);
+  const [aiSuggestions, setAiSuggestions] = useState<{ name: string; description: string; points: number }[]>([]);
   const [aiLoading, setAiLoading] = useState(false);
 
-  const totalWeight = criteriaTotalWeight(criteria);
-  const weightOk = criteriaWeightOk(criteria);
+  const totalPoints = criteriaTotalPoints(criteria);
+  const pointsOk = criteriaPointsOk(criteria);
 
   function updateCriterion(cid: string, field: keyof Omit<CriterionDraft, "id" | "levels">, value: string) {
     setCriteria((prev) => prev.map((c) => (c.id === cid ? { ...c, [field]: value } : c)));
@@ -190,16 +193,16 @@ export default function RubricCriteriaEditor({
       setAiSuggestions(
         lang === "en"
           ? [
-              { name: "Content Completeness", description: "Covers all key points as required", weight: 40 },
-              { name: "Accuracy", description: "Information and analysis are academically correct", weight: 30 },
-              { name: "Presentation & Structure", description: "Content organized systematically and clearly", weight: 20 },
-              { name: "Creativity", description: "Shows initiative and analytical perspective", weight: 10 },
+              { name: "Content Completeness", description: "Covers all key points as required", points: 40 },
+              { name: "Accuracy", description: "Information and analysis are academically correct", points: 30 },
+              { name: "Presentation & Structure", description: "Content organized systematically and clearly", points: 20 },
+              { name: "Creativity", description: "Shows initiative and analytical perspective", points: 10 },
             ]
           : [
-              { name: "ความครบถ้วนของเนื้อหา", description: "ครอบคลุมประเด็นสำคัญทั้งหมดตามที่กำหนด", weight: 40 },
-              { name: "ความถูกต้องและแม่นยำ", description: "ข้อมูลและการวิเคราะห์มีความถูกต้องตามหลักวิชา", weight: 30 },
-              { name: "การนำเสนอและโครงสร้าง", description: "จัดเรียงเนื้อหาได้อย่างเป็นระบบและชัดเจน", weight: 20 },
-              { name: "ความคิดสร้างสรรค์", description: "แสดงความคิดริเริ่มและมุมมองเชิงวิเคราะห์", weight: 10 },
+              { name: "ความครบถ้วนของเนื้อหา", description: "ครอบคลุมประเด็นสำคัญทั้งหมดตามที่กำหนด", points: 40 },
+              { name: "ความถูกต้องและแม่นยำ", description: "ข้อมูลและการวิเคราะห์มีความถูกต้องตามหลักวิชา", points: 30 },
+              { name: "การนำเสนอและโครงสร้าง", description: "จัดเรียงเนื้อหาได้อย่างเป็นระบบและชัดเจน", points: 20 },
+              { name: "ความคิดสร้างสรรค์", description: "แสดงความคิดริเริ่มและมุมมองเชิงวิเคราะห์", points: 10 },
             ]
       );
       setAiLoading(false);
@@ -211,7 +214,7 @@ export default function RubricCriteriaEditor({
       id: crypto.randomUUID(),
       name: s.name,
       description: s.description,
-      weight: String(s.weight),
+      points: String(s.points),
       levels: lang === "en"
         ? [
             { label: "ดีเยี่ยม", description: `Excellent ${s.name.toLowerCase()}` },
@@ -239,13 +242,13 @@ export default function RubricCriteriaEditor({
 
   return (
     <>
-      {/* Weight total + tools */}
+      {/* Points total + tools */}
       <div className="flex items-stretch gap-3 mb-5 flex-wrap">
         <div className={`flex-1 min-w-[280px] flex items-center justify-between px-5 py-3 rounded-xl text-sm font-medium ${
-          weightOk ? "bg-teal-50 text-teal-700 border border-teal-100" : "bg-amber-50 text-amber-700 border border-amber-100"
+          pointsOk ? "bg-teal-50 text-teal-700 border border-teal-100" : "bg-amber-50 text-amber-700 border border-amber-100"
         }`}>
           <div className="flex items-center gap-2">
-            {weightOk ? (
+            {pointsOk ? (
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                 <polyline points="20 6 9 17 4 12"/>
               </svg>
@@ -256,15 +259,12 @@ export default function RubricCriteriaEditor({
               </svg>
             )}
             <span>
-              {weightOk
-                ? t("น้ำหนักรวมครบ 100% พร้อมบันทึก", "Total weight is 100% — ready to save")
-                : t(
-                    `น้ำหนักรวมปัจจุบัน ${totalWeight.toFixed(0)}% — ต้องรวมได้ 100% เพื่อบันทึก`,
-                    `Current total weight is ${totalWeight.toFixed(0)}% — must equal 100% to save`
-                  )}
+              {pointsOk
+                ? t("ทุกเกณฑ์มีคะแนนแล้ว พร้อมบันทึก", "Every criterion has points — ready to save")
+                : t("ทุกเกณฑ์ต้องมีคะแนนมากกว่า 0", "Every criterion needs more than 0 points")}
             </span>
           </div>
-          <span className="font-mono text-base font-bold">{totalWeight.toFixed(0)} / 100%</span>
+          <span className="font-mono text-base font-bold">{t(`รวม ${totalPoints} คะแนน`, `${totalPoints} pts total`)}</span>
         </div>
         <div className="flex items-center gap-3 shrink-0">
           <button
@@ -295,7 +295,7 @@ export default function RubricCriteriaEditor({
       {/* Criteria list */}
       <div className="space-y-4">
         {criteria.map((c, idx) => {
-          const pts = Math.round(maxPoints * ((parseFloat(c.weight) || 0) / 100));
+          const pctOfTotal = totalPoints > 0 ? Math.round(((Math.round(parseFloat(c.points)) || 0) / totalPoints) * 100) : 0;
           return (
             <div key={c.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
               <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-50">
@@ -309,25 +309,24 @@ export default function RubricCriteriaEditor({
                 />
                 <div className="flex items-center gap-2 shrink-0">
                   <span className="text-xs text-gray-500 uppercase tracking-wider font-medium">
-                    {t("น้ำหนัก", "Weight")}
+                    {t("คะแนน", "Points")}
                   </span>
                   <div className="flex items-center gap-1">
                     <input
                       type="number"
                       min={0}
-                      max={100}
-                      value={c.weight}
-                      onChange={(e) => updateCriterion(c.id, "weight", e.target.value)}
-                      aria-label={t("น้ำหนัก (%)", "Weight (%)")}
+                      value={c.points}
+                      onChange={(e) => updateCriterion(c.id, "points", e.target.value)}
+                      aria-label={t("คะแนน", "Points")}
                       className={`w-14 text-center text-sm font-semibold border rounded-lg px-2 py-1 outline-none focus:ring-2 transition-colors ${
-                        parseFloat(c.weight) > 0
+                        (Math.round(parseFloat(c.points)) || 0) > 0
                           ? "border-[var(--accent)] text-[var(--accent)] focus:ring-[var(--accent)]/30"
                           : "border-gray-200 text-gray-500 focus:ring-gray-200"
                       }`}
                     />
-                    <span className="text-xs text-gray-500 font-medium">%</span>
+                    <span className="text-xs text-gray-500 font-medium">{t("คะแนน", "pts")}</span>
                   </div>
-                  <span className="text-xs text-gray-300 font-mono">≈ {pts} pts</span>
+                  <span className="text-xs text-gray-300 font-mono">≈ {pctOfTotal}%</span>
                   <button
                     type="button"
                     onClick={() => generateLevels(c.id)}
@@ -501,7 +500,7 @@ export default function RubricCriteriaEditor({
                           <p className="text-sm font-semibold text-[var(--text-primary)]">{s.name}</p>
                           <p className="text-xs text-gray-400 truncate">{s.description}</p>
                         </div>
-                        <span className="text-xs font-semibold text-[var(--accent)] shrink-0">{s.weight}%</span>
+                        <span className="text-xs font-semibold text-[var(--accent)] shrink-0">{s.points} {t("คะแนน", "pts")}</span>
                       </div>
                     ))}
                   </div>

@@ -7,7 +7,7 @@ import { useAssignments, Assignment } from "@/lib/assignments";
 import { useGradingCategories } from "@/lib/gradingCategories";
 import { useLanguage } from "@/context/LanguageContext";
 import { AttachmentsEditor, useAttachmentsDraft } from "@/components/AssignmentAttachments";
-import RubricCriteriaEditor, { CriterionDraft, newCriterionDraft, criteriaWeightOk, finalizeCriteria } from "@/components/RubricCriteriaEditor";
+import RubricCriteriaEditor, { CriterionDraft, newCriterionDraft, criteriaPointsOk, criteriaTotalPoints, finalizeCriteria } from "@/components/RubricCriteriaEditor";
 
 export default function NewAssignmentPage() {
   const { id } = useParams<{ id: string }>();
@@ -31,6 +31,7 @@ export default function NewAssignmentPage() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState("");
+  const [isExam, setIsExam] = useState(false);
   const [maxPoints, setMaxPoints] = useState("100");
   const [acceptsFiles, setAcceptsFiles] = useState(true);
   const [fileTypes, setFileTypes] = useState<Assignment["fileTypes"]>(["figma", "pdf"]);
@@ -49,7 +50,7 @@ export default function NewAssignmentPage() {
   const todayStr = new Date().toISOString().split("T")[0];
 
   const isDirty =
-    name.trim() !== "" || description.trim() !== "" || dueDate !== "" || maxPoints !== "100" ||
+    name.trim() !== "" || description.trim() !== "" || dueDate !== "" || isExam || maxPoints !== "100" ||
     submissionType !== "individual" || maxGroupSize !== "" || att.items.length > 0 ||
     (rubricTouched && JSON.stringify(criteria) !== initialCriteriaJson);
 
@@ -78,7 +79,7 @@ export default function NewAssignmentPage() {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!isValid) return;
-    const points = parseInt(maxPoints) || 100;
+    const points = isExam ? (parseInt(maxPoints) || 100) : criteriaTotalPoints(criteria);
     const a = addAssignment({
       courseId: id,
       name: name.trim(),
@@ -92,19 +93,24 @@ export default function NewAssignmentPage() {
       submissionType,
       maxGroupSize: submissionType === "group" && maxGroupSize ? parseInt(maxGroupSize) : null,
       rubricIds: [],
+      isExam,
     });
-    const rubric = addRubric({
-      assignmentId: a.id,
-      name: t("เกณฑ์การให้คะแนน", "Grading Rubric"),
-      criteria: finalizeCriteria(criteria, points, t("ไม่มีชื่อ", "Untitled")),
-    });
-    updateAssignment(a.id, { rubricIds: [rubric.id] });
+    if (!isExam) {
+      const rubric = addRubric({
+        assignmentId: a.id,
+        name: t("เกณฑ์การให้คะแนน", "Grading Rubric"),
+        criteria: finalizeCriteria(criteria, t("ไม่มีชื่อ", "Untitled")),
+      });
+      updateAssignment(a.id, { rubricIds: [rubric.id] });
+    }
     att.commit();
     router.push(`/teacher/courses/${id}/assignments/${a.id}`);
   }
 
-  const weightOk = criteriaWeightOk(criteria);
-  const isValid = name.trim().length > 0 && dueDate !== "" && (!acceptsFiles || fileTypes.length > 0) && weightOk;
+  const totalPoints = criteriaTotalPoints(criteria);
+  const pointsOk = criteriaPointsOk(criteria);
+  const isValid = name.trim().length > 0 && dueDate !== "" && (!acceptsFiles || fileTypes.length > 0) &&
+    (isExam ? (parseInt(maxPoints) || 0) > 0 : pointsOk);
 
   return (
       <main className="w-full px-8 py-8">
@@ -191,22 +197,30 @@ export default function NewAssignmentPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">{t("คะแนนเต็ม", "Max Score")}</label>
-                <div className="flex gap-1.5 mb-2 flex-wrap">
-                  {[10, 15, 25, 100].map((p) => (
-                    <button key={p} type="button" onClick={() => setMaxPoints(String(p))}
-                      className={["px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors",
-                        maxPoints === String(p) ? "bg-[var(--accent-solid)] text-[var(--accent-solid-text)] border-[var(--accent)]" : "border-gray-200 text-gray-500 hover:border-[var(--accent)] hover:text-[var(--accent)]"
-                      ].join(" ")}>
-                      {p}
-                    </button>
-                  ))}
-                </div>
-                <input
-                  type="number" min="1" max="1000" value={maxPoints}
-                  onChange={(e) => setMaxPoints(e.target.value)}
-                  placeholder={t("หรือพิมพ์เอง", "or type...")}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
-                />
+                {isExam ? (
+                  <>
+                    <div className="flex gap-1.5 mb-2 flex-wrap">
+                      {[10, 15, 25, 100].map((p) => (
+                        <button key={p} type="button" onClick={() => setMaxPoints(String(p))}
+                          className={["px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors",
+                            maxPoints === String(p) ? "bg-[var(--accent-solid)] text-[var(--accent-solid-text)] border-[var(--accent)]" : "border-gray-200 text-gray-500 hover:border-[var(--accent)] hover:text-[var(--accent)]"
+                          ].join(" ")}>
+                          {p}
+                        </button>
+                      ))}
+                    </div>
+                    <input
+                      type="number" min="1" max="1000" value={maxPoints}
+                      onChange={(e) => setMaxPoints(e.target.value)}
+                      placeholder={t("หรือพิมพ์เอง", "or type...")}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
+                    />
+                  </>
+                ) : (
+                  <div className="w-full px-3.5 py-2.5 rounded-xl border border-gray-100 bg-gray-50 text-sm text-gray-600">
+                    {t(`รวม ${totalPoints} คะแนน (จาก Rubric ด้านล่าง)`, `Total: ${totalPoints} pts (from the rubric below)`)}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -230,6 +244,28 @@ export default function NewAssignmentPage() {
           {/* Submission Settings */}
           <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
             <SectionHeader icon="upload" label={t("การรับและรูปแบบงาน", "Submission Settings")} />
+
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-sm font-medium text-[var(--text-primary)]">{t("งานประเภทสอบ", "Exam Assignment")}</p>
+                <p className="text-xs text-gray-500 mt-0.5">{t("เปิดไว้เพื่อกำหนดคะแนนเต็มเอง — งานประเภทนี้ไม่ใช้ rubric", "Turn on to set the max score manually — no rubric is used for this type")}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsExam(v => !v)}
+                aria-label={t("งานประเภทสอบ", "Exam Assignment")}
+                aria-pressed={isExam}
+                className={[
+                  "relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none",
+                  isExam ? "bg-[var(--accent)]" : "bg-[var(--border-subtle)]",
+                ].join(" ")}
+              >
+                <span className={[
+                  "inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform",
+                  isExam ? "translate-x-6" : "translate-x-1",
+                ].join(" ")} />
+              </button>
+            </div>
 
             <div className="flex items-center justify-between mb-4">
               <div>
@@ -317,28 +353,29 @@ export default function NewAssignmentPage() {
           </div>
 
           {/* Rubric */}
-          <section className="mt-8" aria-labelledby="rubric-heading">
-            <div className="flex items-center gap-2 mb-1.5">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent-bright)" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
-              </svg>
-              <h2 id="rubric-heading" className="text-base font-semibold text-[var(--text-primary)]">{t("เกณฑ์การให้คะแนน (Rubric)", "Grading Rubric")}</h2>
-            </div>
-            <p className="text-sm text-gray-500 mb-5">
-              {t("ตั้งเกณฑ์ที่ HWAI Agent จะใช้ตรวจงานนี้ น้ำหนักรวมต้องได้ 100%", "Set the criteria the HWAI Agent will grade this assignment with. Weights must total 100%.")}
-            </p>
-            <RubricCriteriaEditor
-              criteria={criteria}
-              setCriteria={(u) => { setRubricTouched(true); setCriteria(u); }}
-              maxPoints={parseInt(maxPoints) || 100}
-              assignmentName={name.trim()}
-            />
-          </section>
+          {!isExam && (
+            <section className="mt-8" aria-labelledby="rubric-heading">
+              <div className="flex items-center gap-2 mb-1.5">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent-bright)" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                  <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                </svg>
+                <h2 id="rubric-heading" className="text-base font-semibold text-[var(--text-primary)]">{t("เกณฑ์การให้คะแนน (Rubric)", "Grading Rubric")}</h2>
+              </div>
+              <p className="text-sm text-gray-500 mb-5">
+                {t("ตั้งเกณฑ์ที่ HWAI Agent จะใช้ตรวจงานนี้ พร้อมคะแนนของแต่ละเกณฑ์ — คะแนนเต็มของชิ้นงานจะมาจากผลรวมนี้", "Set the criteria the HWAI Agent will grade this assignment with, each with its own points. The assignment's max score is the sum.")}
+              </p>
+              <RubricCriteriaEditor
+                criteria={criteria}
+                setCriteria={(u) => { setRubricTouched(true); setCriteria(u); }}
+                assignmentName={name.trim()}
+              />
+            </section>
+          )}
 
           {/* Actions */}
           <div className="flex items-center justify-end gap-3 mt-8 pt-6 pb-4 border-t border-gray-100">
-            {!weightOk && (
-              <span className="text-xs text-amber-600 mr-auto">{t("น้ำหนักเกณฑ์รวมต้องเท่ากับ 100% ก่อนสร้างชิ้นงาน", "Rubric weights must total 100% before you can create the assignment")}</span>
+            {!isExam && !pointsOk && (
+              <span className="text-xs text-amber-600 mr-auto">{t("ทุกเกณฑ์ต้องมีคะแนนมากกว่า 0 ก่อนสร้างชิ้นงาน", "Every criterion needs more than 0 points before you can create the assignment")}</span>
             )}
             <button
               type="button"
