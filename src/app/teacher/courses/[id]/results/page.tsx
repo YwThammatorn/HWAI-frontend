@@ -26,7 +26,7 @@ const TOTAL_W = 132;
 const GRADE_W = 84;
 const HEAD1_H = 45; // height of the category row (h-10 at the 4.5px spacing unit), where row 2 sticks
 
-// DESIGN.md §6 "Status Badges": every tinted status pill carries a matching --s-*-bd border —
+// DESIGN.md §6 "Status Badges": every tinted status pill carries a matching border token (--s-ok-bd / --s-warn-bd / --s-err-bd / --s-info-bd) —
 // the pale bg tints read fine on --bg-card but wash out (blend) against a plain white/surface
 // table cell without one. Missed on the first pass; the teacher flagged it (21/9/2569).
 const TONE: Record<ScoreTone, string> = {
