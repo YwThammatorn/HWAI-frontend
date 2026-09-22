@@ -128,11 +128,15 @@ export default function RecheckPage() {
         .map(([cid, text]) => [cid, text.trim()] as const)
         .filter(([, text]) => text),
     );
+    // Score Book shows a per-criterion breakdown (21/9/2569) — persist what each criterion actually
+    // earned, not just the total, so that breakdown reflects a real edit instead of a weight guess.
+    const criterionScores = Object.fromEntries(scores.map((s) => [s.criterionId, s.score]));
     teammates.forEach((s) => {
       updateSubmission(s.id, {
         instructorScore: totalScore,
         instructorComment: comment,
         criterionComments: notes,
+        criterionScores,
         status: "graded",
       });
     });

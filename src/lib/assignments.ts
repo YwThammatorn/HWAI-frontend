@@ -53,6 +53,11 @@ export interface Submission {
   /** Per-criterion note, keyed by RubricCriterion.id — typically why the
    *  instructor moved a criterion's score away from the AI's suggestion. */
   criterionComments?: Record<string, string>;
+  /** Per-criterion points earned, keyed by RubricCriterion.id — saved whenever the recheck
+   *  page saves a score. Absent on submissions graded before this existed or given no rubric;
+   *  callers that need a breakdown for those fall back to splitting the total by criterion weight
+   *  (the same math the recheck page itself starts from — see RecheckPage's initial-scores effect). */
+  criterionScores?: Record<string, number>;
   // Security: student work must not leave faculty without explicit consent
   externalUseConsent: boolean;
   status: "not_graded" | "need_review" | "graded";
@@ -113,7 +118,7 @@ export interface AssignmentContextValue {
   getAssignment: (id: string) => Assignment | undefined;
   getAssignmentsByCourse: (courseId: string) => Assignment[];
   addSubmission: (data: Omit<Submission, "id" | "updatedAt">) => Submission;
-  updateSubmission: (id: string, data: Partial<Pick<Submission, "aiScore" | "instructorScore" | "instructorComment" | "criterionComments" | "status" | "fileUrl" | "attachments">>) => void;
+  updateSubmission: (id: string, data: Partial<Pick<Submission, "aiScore" | "instructorScore" | "instructorComment" | "criterionComments" | "criterionScores" | "status" | "fileUrl" | "attachments">>) => void;
   getSubmissionsByAssignment: (assignmentId: string) => Submission[];
   addRubric: (data: Omit<Rubric, "id" | "createdAt" | "updatedAt">) => Rubric;
   updateRubric: (id: string, data: Partial<Omit<Rubric, "id" | "assignmentId" | "createdAt" | "updatedAt">>) => void;
