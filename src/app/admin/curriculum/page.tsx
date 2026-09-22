@@ -172,7 +172,9 @@ function CourseTemplateImportModal({
             <div className="rounded-xl border border-[var(--border-subtle)] overflow-hidden">
               <div className="overflow-x-auto max-h-72">
                 <table className="w-full text-xs">
-                  <thead className="bg-[var(--bg-subtle)] sticky top-0">
+                  {/* --bg-subtle is reserved for row hover, never a static header fill (DESIGN.md §9b) —
+                      --text-muted drops below 4.5:1 on it. */}
+                  <thead className="bg-[var(--bg-surface)] sticky top-0 border-b border-[var(--border-subtle)]">
                     <tr>
                       <th className="px-3 py-2 text-left font-semibold text-[var(--text-muted)]">{t("รหัสวิชา", "Code")}</th>
                       <th className="px-3 py-2 text-left font-semibold text-[var(--text-muted)]">{t("ชื่อวิชา", "Name")}</th>

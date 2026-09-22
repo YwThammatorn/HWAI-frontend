@@ -203,7 +203,8 @@ export default function ViewAssignmentPage() {
                   ))}
                 </tbody>
                 <tfoot>
-                  <tr className="border-t border-[var(--border-subtle)] bg-[var(--bg-subtle)]">
+                  {/* --bg-subtle is reserved for row hover, never a static fill (DESIGN.md §9b). */}
+                  <tr className="border-t border-[var(--border-subtle)] bg-[var(--bg-surface)]">
                     <td className="px-5 py-2 text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider">{t("รวม", "Total")}</td>
                     <td className={`px-4 py-2 text-right tabular-nums font-semibold ${totalWeight === 100 ? "text-[var(--s-ok-text)]" : "text-[var(--s-warn-text)]"}`}>{totalWeight}%</td>
                     <td />

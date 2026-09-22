@@ -105,7 +105,8 @@ function GradingCategoriesCard({ categories, totalWeight }: { categories: Gradin
     <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-6">
       <h2 className="text-base font-bold text-[var(--text-primary)] mb-5">{t("สัดส่วนคะแนน", "Grading Categories")}</h2>
       <div className="rounded-xl border border-[var(--border-subtle)] overflow-hidden">
-        <div className="grid border-b border-[var(--border-subtle)] bg-[var(--bg-subtle)]" style={{ gridTemplateColumns: COLS }}>
+        {/* --bg-subtle is reserved for row hover, never a static header fill (DESIGN.md §9b). */}
+        <div className="grid border-b border-[var(--border-subtle)] bg-[var(--bg-surface)]" style={{ gridTemplateColumns: COLS }}>
           <div className="px-3 py-2.5 text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("หัวข้อ", "Category")}</div>
           <div className="px-3 py-2.5 text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("น้ำหนัก (%)", "Weight (%)")}</div>
         </div>
