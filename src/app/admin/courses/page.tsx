@@ -489,15 +489,21 @@ function CourseRow({
             <p className="text-[10px] text-[var(--text-muted)]">{t("นักศึกษา", "students")}</p>
           </div>
           <div className="flex items-center gap-1">
+            {/* Given a real label + border (23/9/2569, was an icon-only button identical in weight
+                to Edit/Archive/Delete) — a tooltip-only "Add Section" was easy to miss entirely
+                among 4 unlabeled icons; this is the one action here that isn't a standard CRUD
+                verb a teacher already expects, so it earns visible text. */}
             {onAddSection && (
               <button
                 onClick={() => onAddSection(course)}
-                title={t("เพิ่ม Section", "Add Section")}
-                className="w-7 h-7 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--accent)] hover:bg-[var(--accent-bright)]/10 transition-colors"
+                aria-label={t("เพิ่ม Section", "Add Section")}
+                title={t("เพิ่ม Section ใหม่จากวิชานี้", "Add a new section from this course")}
+                className="flex items-center gap-1 h-7 px-2 rounded-lg border border-[var(--accent)]/30 text-[var(--accent)] text-[11px] font-medium hover:border-[var(--accent)] hover:bg-[var(--accent-bright)]/10 transition-colors mr-1"
               >
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                  <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
                 </svg>
+                {t("Section", "Section")}
               </button>
             )}
             <button
