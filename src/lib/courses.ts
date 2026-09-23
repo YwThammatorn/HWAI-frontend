@@ -7,7 +7,7 @@ export type CourseStatus = "active" | "archived";
 export type CourseSource = "manual" | "google" | "teams";
 export type GradingSource = "ta" | "ai" | "blind";
 export type PublishMode = "auto" | "manual";
-export type Term = 1 | 2 | "summer";
+export type Term = 1 | 2 | 3 | "summer";
 
 /**
  * `Course` is, in practice, section-shaped: it represents one offering of a

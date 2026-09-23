@@ -165,12 +165,13 @@ function CourseModal({
               />
               <select
                 value={term}
-                onChange={(e) => setTerm(e.target.value === "" ? "" : e.target.value === "summer" ? "summer" : (Number(e.target.value) as 1 | 2))}
+                onChange={(e) => setTerm(e.target.value === "" ? "" : e.target.value === "summer" ? "summer" : (Number(e.target.value) as 1 | 2 | 3))}
                 className="h-9 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-2.5 text-xs text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
               >
                 <option value="">{t("เทอม", "Term")}</option>
                 <option value="1">{t("เทอม 1", "Term 1")}</option>
                 <option value="2">{t("เทอม 2", "Term 2")}</option>
+                <option value="3">{t("เทอม 3", "Term 3")}</option>
                 <option value="summer">{t("ภาคฤดูร้อน", "Summer")}</option>
               </select>
               <input
@@ -332,7 +333,7 @@ function CourseAssignPanel({ course }: { course: Course }) {
   return (
     <div className="flex flex-col gap-2 p-4 bg-[var(--bg-app)] rounded-b-2xl border-t border-[var(--border-subtle)]">
       <div className="flex items-center gap-2">
-        <p className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">{t("อาจารย์ผู้สอน", "Teaching Staff")}</p>
+        <p className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">{t("อาจารย์ผู้สอน", "Teacher")}</p>
         {assignedTeachers.length > 0 && (
           <span className="text-[10px] font-bold text-[var(--accent)] bg-[var(--accent-bright)]/15 px-1.5 py-0.5 rounded-full tabular-nums">
             {assignedTeachers.length}

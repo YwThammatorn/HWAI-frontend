@@ -260,13 +260,12 @@ function TeacherModal({ open, onClose }: {
   const [title, setTitle] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState<"teacher" | "ta">("teacher");
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{ name?: string; email?: string }>({});
 
   useEffect(() => {
     if (open) {
-      setTitle(""); setName(""); setEmail(""); setRole("teacher"); setErrors({});
+      setTitle(""); setName(""); setEmail(""); setErrors({});
     }
   }, [open]);
 
@@ -293,7 +292,9 @@ function TeacherModal({ open, onClose }: {
     const errs = validate();
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
     setLoading(true);
-    addTeacher({ title: title.trim() || undefined, name: name.trim(), email: email.trim().toLowerCase(), role });
+    // TAs are assigned per-course via Collaborators now, not at account-creation time here
+    // (23/9/2569) — every teacher added through this modal starts as a plain "teacher".
+    addTeacher({ title: title.trim() || undefined, name: name.trim(), email: email.trim().toLowerCase(), role: "teacher" });
     setLoading(false);
     onClose();
   }
@@ -334,14 +335,6 @@ function TeacherModal({ open, onClose }: {
             aria-invalid={!!errors.email} aria-required="true"
             className="h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-app)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]" />
           {errors.email && <p id="teacher-email-err" role="alert" className="text-xs text-[var(--s-err-text)]">{errors.email}</p>}
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="teacher-role" className="text-sm font-medium text-[var(--text-primary)]">{t("ตำแหน่ง", "Role")}</label>
-          <select id="teacher-role" value={role} onChange={(e) => setRole(e.target.value as "teacher" | "ta")}
-            className="h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-app)] px-3 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]">
-            <option value="teacher">{t("อาจารย์", "Teacher")}</option>
-            <option value="ta">{t("ผู้ช่วยสอน (TA)", "Teaching Assistant (TA)")}</option>
-          </select>
         </div>
         <div className="flex justify-end gap-2 pt-1">
           <button type="button" onClick={onClose}

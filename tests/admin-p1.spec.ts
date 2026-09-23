@@ -350,8 +350,8 @@ test.describe("P1c — Admin Courses (/admin/courses)", () => {
     await expect(courseBtn).toHaveAttribute("aria-expanded", "false");
     await courseBtn.click();
     await expect(courseBtn).toHaveAttribute("aria-expanded", "true");
-    // Panel title "Teaching Staff" visible in expanded section
-    await expect(page.getByText("Teaching Staff")).toBeVisible();
+    // Panel title "Teacher" visible in expanded section (23/9/2569: was "Teaching Staff")
+    await expect(page.getByText("Teacher", { exact: true })).toBeVisible();
   });
 
   test("seeded teacher appears as unchecked checkbox in expanded panel", async ({
