@@ -29,6 +29,22 @@ change how the app behaves today, and extending an already-unused layer can't.
 function's signature is already the async contract every future caller will use. No caller changes
 needed *at that point*; wiring the Providers to actually call these functions is the separate follow-up.
 
+## Admin backend wiring (HWAI-backend)
+
+The admin domains — **courses, curriculum (versions + course templates), managed teachers, cohort
+students** — are implemented by the Express/Prisma backend in `../HWAI-backend` (see its README).
+Their `lib/api/*.ts` files now make the real `client.*()` calls, and their Providers
+(`CourseProvider`, `CurriculumProvider`, `ManagedTeacherProvider`, `CohortStudentProvider`) use them
+**only when `NEXT_PUBLIC_API_URL` is set** (e.g. `NEXT_PUBLIC_API_URL=http://localhost:4000` in
+`.env.local`). Unset, everything stays on localStorage exactly as before — the Playwright suites
+depend on that.
+
+In API mode those Providers keep their synchronous context API: they update state optimistically with a
+client-generated id (the backend accepts `id` on create), then push the write through
+`enqueueWrite()` (`lib/api/sync.ts`), a single sequential queue so dependent writes made in the same
+tick (create course → assign teacher) reach the server in order. A failed write shows an alert and
+reloads that domain from the server. Every other domain below is still localStorage-only.
+
 ## Auth
 
 - `Authorization: Bearer <token>` header, added automatically by `src/lib/api/client.ts` when a token

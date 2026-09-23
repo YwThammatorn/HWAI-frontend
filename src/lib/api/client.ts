@@ -1,5 +1,12 @@
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
 
+/**
+ * True when NEXT_PUBLIC_API_URL points at HWAI-backend (e.g. "http://localhost:4000"). The admin-domain
+ * Providers (courses, curriculum, managed teachers, cohort students) then load/save through the API;
+ * unset, every Provider keeps using localStorage as before (the Playwright suites rely on that).
+ */
+export const API_ENABLED = BASE_URL !== "";
+
 export class ApiError extends Error {
   constructor(
     public status: number,

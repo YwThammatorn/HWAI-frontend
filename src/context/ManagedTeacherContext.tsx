@@ -1,9 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { ManagedTeacherContext, ManagedTeacher, splitTeacherTitle } from "@/lib/managed-teachers";
 import { useSectionRoles } from "@/lib/section-roles";
 import { useGradingAssignments } from "@/lib/grading-assignments";
+import { API_ENABLED } from "@/lib/api/client";
+import { enqueueWrite } from "@/lib/api/sync";
+import * as api from "@/lib/api/managed-teachers";
 
 const STORAGE_KEY = "hwai_managed_teachers_v1";
 
@@ -16,7 +19,16 @@ export default function ManagedTeacherProvider({ children }: { children: React.R
   const { removeRolesByAccount } = useSectionRoles();
   const { removeAssignmentsByTa } = useGradingAssignments();
 
+  // API mode: reload from the server — on mount, and after a failed write (see api/sync.ts).
+  const resync = useCallback(() => {
+    api.getManagedTeachers().then(setTeachers, (err) => console.error("[api] load managed teachers", err));
+  }, []);
+
   useEffect(() => {
+    if (API_ENABLED) {
+      resync();
+      return;
+    }
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
@@ -34,41 +46,52 @@ export default function ManagedTeacherProvider({ children }: { children: React.R
     } catch {
       // ignore corrupt storage
     }
-  }, []);
+  }, [resync]);
 
   function persist(next: ManagedTeacher[]) {
     setTeachers(next);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    if (!API_ENABLED) localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  }
+
+  /** API mode only: send a write to the server after the optimistic local update. */
+  function sync(task: () => Promise<unknown>) {
+    if (API_ENABLED) enqueueWrite(task, resync);
   }
 
   function addTeacher(data: Omit<ManagedTeacher, "id" | "courseIds" | "status">): ManagedTeacher {
     const teacher: ManagedTeacher = { ...data, id: uuid(), courseIds: [], status: "active" };
     persist([...teachers, teacher]);
+    sync(() => api.addManagedTeacher({ ...data, id: teacher.id }));
     return teacher;
   }
 
   function importTeachers(data: Omit<ManagedTeacher, "id" | "courseIds" | "status">[]): ManagedTeacher[] {
     const newTeachers = data.map((d) => ({ ...d, id: uuid(), courseIds: [] as string[], status: "active" as const }));
     persist([...teachers, ...newTeachers]);
+    sync(() => api.importManagedTeachers(newTeachers.map(({ id, title, name, email, role }) => ({ id, title, name, email, role }))));
     return newTeachers;
   }
 
   function updateTeacher(id: string, data: Partial<Omit<ManagedTeacher, "id">>) {
     persist(teachers.map((t) => (t.id === id ? { ...t, ...data } : t)));
+    sync(() => api.updateManagedTeacher(id, data));
   }
 
   function removeTeacher(id: string) {
     persist(teachers.filter((t) => t.id !== id));
+    sync(() => api.removeManagedTeacher(id));
     removeRolesByAccount(id); // cascade
     removeAssignmentsByTa(id); // cascade
   }
 
   function deactivateTeacher(id: string) {
     persist(teachers.map((t) => (t.id === id ? { ...t, status: "inactive" as const } : t)));
+    sync(() => api.setManagedTeacherStatus(id, "inactive"));
   }
 
   function activateTeacher(id: string) {
     persist(teachers.map((t) => (t.id === id ? { ...t, status: "active" as const } : t)));
+    sync(() => api.setManagedTeacherStatus(id, "active"));
   }
 
   function getTeacher(id: string) {
@@ -83,6 +106,7 @@ export default function ManagedTeacherProvider({ children }: { children: React.R
           : t
       )
     );
+    sync(() => api.assignTeacherToCourse(teacherId, courseId));
   }
 
   function unassignFromCourse(teacherId: string, courseId: string) {
@@ -93,6 +117,7 @@ export default function ManagedTeacherProvider({ children }: { children: React.R
           : t
       )
     );
+    sync(() => api.unassignTeacherFromCourse(teacherId, courseId));
   }
 
   function getTeachersByCourse(courseId: string) {
