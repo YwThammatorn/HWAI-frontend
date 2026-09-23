@@ -71,7 +71,6 @@ export default function NewCoursePage() {
       name: name.trim(),
       description: description.trim(),
       status: "active",
-      source: "manual",
       coverColor,
       icon,
       ...(selectedTemplate && { courseTemplateId: selectedTemplate.id, code: selectedTemplate.code }),

@@ -8,7 +8,7 @@ const BASE = "http://localhost:3000";
 
 const NOW = "2026-01-01T00:00:00.000Z";
 const COURSE = {
-  id: "c-tb3", name: "Programming", description: "", status: "active", source: "manual",
+  id: "c-tb3", name: "Programming", description: "", status: "active",
   coverColor: "#2DD4BF", courseTemplateId: "ct-tb3", term: 1, academicYear: 2569,
   sectionNumber: "1", code: "01076112", schedule: "Mon 9:00-12:00", room: "811", createdAt: NOW, updatedAt: NOW,
 };

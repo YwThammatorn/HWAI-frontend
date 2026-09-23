@@ -18,7 +18,7 @@ const BASE = "http://localhost:3000";
 
 const NOW = "2026-01-01T00:00:00.000Z";
 const COURSE = {
-  id: "c-sb", name: "Programming", description: "", status: "active", source: "manual",
+  id: "c-sb", name: "Programming", description: "", status: "active",
   coverColor: "#0F766E", courseTemplateId: "ct-sb", term: 1, academicYear: 2569,
   sectionNumber: "1", code: "01076112", schedule: "Mon", room: "811", createdAt: NOW, updatedAt: NOW,
 };
@@ -448,7 +448,7 @@ test.describe("Score Book — a real recheck feeds the breakdown", () => {
 // suite above so it doesn't disturb the hand-worked numbers documented at the top of this file.
 test.describe("Score Book — a finalized assignment is view-only", () => {
   const NOW2 = "2026-01-01T00:00:00.000Z";
-  const COURSE2 = { id: "c-fz", name: "Programming", description: "", status: "active", source: "manual", coverColor: "#0F766E", courseTemplateId: "ct-fz", term: 1, academicYear: 2569, sectionNumber: "1", code: "01076112", schedule: "Mon", room: "811", createdAt: NOW2, updatedAt: NOW2 };
+  const COURSE2 = { id: "c-fz", name: "Programming", description: "", status: "active", coverColor: "#0F766E", courseTemplateId: "ct-fz", term: 1, academicYear: 2569, sectionNumber: "1", code: "01076112", schedule: "Mon", room: "811", createdAt: NOW2, updatedAt: NOW2 };
   const TEACHER2 = { id: "t-fz", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", role: "teacher", status: "active", courseIds: ["c-fz"] };
   const asg2 = (id: string, name: string, finalized: boolean) => ({
     id, courseId: "c-fz", name, description: "", dueDate: "2026-01-10", maxPoints: 100, acceptsFiles: true, fileTypes: [],

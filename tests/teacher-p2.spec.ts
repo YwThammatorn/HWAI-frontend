@@ -6,7 +6,7 @@ const BASE = "http://localhost:3000";
 
 interface CourseSeed {
   id: string; name: string; description: string;
-  status: "active" | "archived"; source: string;
+  status: "active" | "archived";
   coverColor: string;
   createdAt: string; updatedAt: string;
 }
@@ -29,7 +29,7 @@ interface SubmissionSeed {
 
 const COURSE: CourseSeed = {
   id: "c-p2", name: "Software Engineering", description: "SE",
-  status: "active", source: "manual", coverColor: "#2DD4BF",
+  status: "active", coverColor: "#2DD4BF",
   createdAt: "2026-01-01T00:00:00.000Z", updatedAt: "2026-01-01T00:00:00.000Z",
 };
 

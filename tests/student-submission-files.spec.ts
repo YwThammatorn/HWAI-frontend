@@ -7,7 +7,7 @@ const BASE = "http://localhost:3000";
 
 const NOW = "2026-01-01T00:00:00.000Z";
 const COURSE = {
-  id: "c-sf", name: "Hardware Lab", description: "", status: "active", source: "manual",
+  id: "c-sf", name: "Hardware Lab", description: "", status: "active",
   coverColor: "#2DD4BF", createdAt: NOW, updatedAt: NOW,
 };
 const ASSIGNMENT = {

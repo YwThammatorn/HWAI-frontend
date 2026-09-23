@@ -17,13 +17,13 @@ const ANNOUNCEMENTS_DISABLED = true;
 
 const COURSE_A = {
   id: "c-sp4-a", name: "UI/UX Design", description: "Human-centered design fundamentals",
-  status: "active", source: "manual", coverColor: "#2DD4BF",
+  status: "active", coverColor: "#2DD4BF",
   createdAt: "2026-01-01T00:00:00.000Z", updatedAt: "2026-01-01T00:00:00.000Z",
 };
 
 const COURSE_B = {
   id: "c-sp4-b", name: "Data Structures", description: "DS course",
-  status: "active", source: "manual", coverColor: "#F97316",
+  status: "active", coverColor: "#F97316",
   createdAt: "2026-01-01T00:00:00.000Z", updatedAt: "2026-01-01T00:00:00.000Z",
 };
 

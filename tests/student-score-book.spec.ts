@@ -19,7 +19,7 @@ const BASE = "http://localhost:3000";
 
 const NOW = "2026-01-01T00:00:00.000Z";
 const COURSE = {
-  id: "c-sesb", name: "Programming", description: "", status: "active", source: "manual",
+  id: "c-sesb", name: "Programming", description: "", status: "active",
   coverColor: "#0F766E", courseTemplateId: "ct-sesb", term: 1, academicYear: 2569,
   sectionNumber: "1", code: "01076112", schedule: "Mon", room: "811", createdAt: NOW, updatedAt: NOW,
 };

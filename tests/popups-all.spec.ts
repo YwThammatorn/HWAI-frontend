@@ -8,7 +8,7 @@ const BASE = "http://localhost:3000";
 
 const NOW = "2026-01-01T00:00:00.000Z";
 const COURSE = {
-  id: "c-po", name: "Capstone Studio", description: "", status: "active", source: "manual",
+  id: "c-po", name: "Capstone Studio", description: "", status: "active",
   coverColor: "#0F766E", createdAt: NOW, updatedAt: NOW,
 };
 const TEACHER = { id: "t-po", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", role: "teacher", status: "active", courseIds: ["c-po"] };

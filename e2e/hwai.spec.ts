@@ -623,7 +623,6 @@ async function withManyCourses(page: Page) {
       name: `Pagination Course ${i + 1}`,
       description: "",
       status: "active",
-      source: "manual",
       coverColor: "#2DD4BF",
       createdAt: now,
       updatedAt: now,

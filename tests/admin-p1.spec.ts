@@ -27,7 +27,6 @@ interface CourseSeed {
   name: string;
   description: string;
   status: "active" | "archived";
-  source: string;
   coverColor: string;
   createdAt: string;
   updatedAt: string;
@@ -126,7 +125,6 @@ const COURSE_1: CourseSeed = {
   name: "Software Engineering",
   description: "SE course",
   status: "active",
-  source: "manual",
   coverColor: "#2DD4BF",
   createdAt: "2026-01-01T00:00:00.000Z",
   updatedAt: "2026-01-01T00:00:00.000Z",

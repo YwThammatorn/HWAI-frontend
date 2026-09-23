@@ -28,12 +28,6 @@ export default function StudentHome() {
   const { getTeachersByCourse } = useManagedTeachers();
   const { announcements } = useAnnouncements();
 
-  const sourceLabel: Record<string, string> = {
-    manual: t("เพิ่มเอง", "Manually Added"),
-    google: "Google Classroom",
-    teams: "Microsoft Teams",
-  };
-
   const firstName = user?.name.split(" ")[0] ?? "";
 
   const enrolledCourses = useMemo(() => {
@@ -212,7 +206,7 @@ export default function StudentHome() {
                       ? course.sectionNumber
                         ? `${course.code} · ${t("กลุ่ม", "Sec.")} ${course.sectionNumber}`
                         : course.code
-                      : sourceLabel[course.source] ?? course.source;
+                      : null;
                     const termLabel = course.academicYear && course.term ? `${course.term}/${course.academicYear}` : null;
                     const instructor = getTeachersByCourse(course.id)[0];
                     const instructorLabel = instructor ? `${instructor.title ? `${instructor.title} ` : ""}${instructor.name}` : null;
@@ -233,9 +227,10 @@ export default function StudentHome() {
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold text-[var(--text-primary)] truncate">{course.name}</p>
                           <div className="flex items-center gap-1.5 mt-0.5 text-xs text-[var(--text-muted)] flex-wrap">
-                            <span className="truncate">{codeLabel}</span>
-                            {termLabel && (<><span aria-hidden="true">·</span><span>{termLabel}</span></>)}
-                            <span aria-hidden="true">·</span>
+                            {codeLabel && <span className="truncate">{codeLabel}</span>}
+                            {codeLabel && termLabel && <span aria-hidden="true">·</span>}
+                            {termLabel && <span>{termLabel}</span>}
+                            {(codeLabel || termLabel) && <span aria-hidden="true">·</span>}
                             <span>{t(`${assignments.length} งาน`, `${assignments.length} assignment(s)`)}</span>
                           </div>
                           {(instructorLabel || course.schedule || roomLabel) && (

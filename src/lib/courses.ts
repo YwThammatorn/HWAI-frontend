@@ -4,7 +4,6 @@ import { createContext, useContext } from "react";
 import type { CourseIconKey } from "@/components/CourseIcon";
 
 export type CourseStatus = "active" | "archived";
-export type CourseSource = "manual" | "google" | "teams";
 export type GradingSource = "ta" | "ai" | "blind";
 export type PublishMode = "auto" | "manual";
 export type Term = 1 | 2 | "summer";
@@ -26,7 +25,6 @@ export interface Course {
   name: string;
   description: string;
   status: CourseStatus;
-  source: CourseSource;
   coverColor: string;
   /** Which glyph to show on the course card's identity strip — optional, falls back to "book" */
   icon?: CourseIconKey;
@@ -76,7 +74,6 @@ export const SEED_COURSES: Course[] = [
     name: "UX/UI Design",
     description: "",
     status: "active",
-    source: "manual",
     coverColor: "#0F766E",
     createdAt: "2026-07-01T00:00:00.000Z",
     updatedAt: "2026-07-01T00:00:00.000Z",
@@ -88,7 +85,6 @@ export const SEED_COURSES: Course[] = [
     name: "Interaction Design",
     description: "",
     status: "active",
-    source: "manual",
     coverColor: "#5B4E96",
     createdAt: "2026-07-01T00:00:00.000Z",
     updatedAt: "2026-07-01T00:00:00.000Z",

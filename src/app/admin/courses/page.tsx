@@ -72,7 +72,7 @@ function CourseModal({
       ...(sectionNumber.trim() !== "" && { sectionNumber: sectionNumber.trim() }),
     };
     if (mode === "create") {
-      const created = addCourse({ name: trimmed, description, coverColor, status: "active", source: "manual", ...sectionFields });
+      const created = addCourse({ name: trimmed, description, coverColor, status: "active", ...sectionFields });
       assignToCourse(teacherId, created.id);
     } else if (course) {
       updateCourse(course.id, { name: trimmed, description, coverColor, ...sectionFields });

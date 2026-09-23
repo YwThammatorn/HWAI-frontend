@@ -8,7 +8,7 @@ const BASE = "http://localhost:3000";
 
 const NOW = "2026-01-01T00:00:00.000Z";
 const mk = (id: string, name: string, code: string, cover: string, extra: Record<string, unknown> = {}) => ({
-  id, name, description: "", status: "active", source: "manual", coverColor: cover,
+  id, name, description: "", status: "active", coverColor: cover,
   courseTemplateId: `ct-${id}`, term: 1, academicYear: 2569, sectionNumber: "2", code,
   schedule: "Mon 9:00-12:00", room: "811", createdAt: NOW, updatedAt: NOW, ...extra,
 });

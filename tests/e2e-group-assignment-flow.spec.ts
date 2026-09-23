@@ -13,7 +13,7 @@ const BASE = "http://localhost:3000";
 
 const COURSE = {
   id: "c-e2e", name: "Interaction Design", description: "",
-  status: "active", source: "manual", coverColor: "#2DD4BF",
+  status: "active", coverColor: "#2DD4BF",
   createdAt: "2026-01-01T00:00:00.000Z", updatedAt: "2026-01-01T00:00:00.000Z",
 };
 

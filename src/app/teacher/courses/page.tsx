@@ -190,15 +190,8 @@ function CourseCard({ course, studentCount, allGraded, activeAssignments, isArch
   onRestore: () => void;
 }) {
   const { t } = useLanguage();
-  const sourceLabel: Record<string, { label: string; dot: string }> = {
-    manual: { label: t("เพิ่มเอง", "Manually Added"), dot: "" },
-    google: { label: "Google Classroom", dot: "#34D399" },
-    teams: { label: "Microsoft Teams", dot: "#60A5FA" },
-  };
-  const src = sourceLabel[course.source] ?? { label: course.source, dot: "" };
-
-  // Manual courses without a code show nothing; imported ones fall back to their source name
-  const codeLabel = course.code || (course.source === "manual" ? "" : src.label);
+  // Courses without a code show nothing
+  const codeLabel = course.code ?? "";
   const termLabel = course.academicYear && course.term ? `${course.term}/${course.academicYear}` : "—";
 
   const cardContent = (

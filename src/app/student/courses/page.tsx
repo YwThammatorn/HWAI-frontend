@@ -20,12 +20,6 @@ export default function StudentCoursesPage() {
   const { getAssignmentsByCourse } = useAssignments();
   const { getTeachersByCourse } = useManagedTeachers();
 
-  const sourceLabel: Record<string, string> = {
-    manual: t("เพิ่มเอง", "Manually Added"),
-    google: "Google Classroom",
-    teams: "Microsoft Teams",
-  };
-
   const enrolledCourses = useMemo(() => {
     if (!user?.studentId) return [];
     return students
@@ -61,7 +55,7 @@ export default function StudentCoursesPage() {
             {enrolledCourses.map((course) => {
               const assignments = getAssignmentsByCourse(course.id);
               // Same rule as the teacher card: the code stands alone, Section is its own field below
-              const codeLabel = course.code || (course.source === "manual" ? "" : sourceLabel[course.source] ?? course.source);
+              const codeLabel = course.code ?? "";
               const termLabel = course.academicYear && course.term ? `${course.term}/${course.academicYear}` : "—";
               const instructor = getTeachersByCourse(course.id)[0];
               const instructorLabel = instructor ? `${instructor.title ? `${instructor.title} ` : ""}${instructor.name}` : null;
