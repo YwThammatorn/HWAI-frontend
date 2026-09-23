@@ -101,7 +101,7 @@ test.describe("P5 — Teacher submissions table: group assignments merge into te
 
     await expect(page.getByText("Prototype Pals")).toBeVisible();
     await expect(page.getByText("Fah Test, Beam Suk")).toBeVisible();
-    await expect(page.getByRole("link", { name: /recheck team/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /^Grade team$/i })).toBeVisible();
 
     // Unteamed submission still gets its own row.
     await expect(page.getByText("Solo Student")).toBeVisible();
@@ -115,7 +115,7 @@ test.describe("P5 — Teacher submissions table: group assignments merge into te
     await page.goto(`${BASE}/teacher/courses/c-tp5/assignments/a-tp5-2/grading`);
     await page.waitForLoadState("networkidle");
     await expect(page.getByText("Fah Test")).toBeVisible();
-    await expect(page.getByRole("link", { name: /^review$/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /^Grade$/i })).toBeVisible();
     await expect(page.getByText(/Showing 1–1 of 1 submission/i)).toBeVisible();
   });
 });

@@ -293,18 +293,18 @@ test.describe("History", () => {
   });
 });
 
-// ── 9. Rubric Editor ──────────────────────────────────────────────────────────
+// ── 9. Rubric Editor (23/9/2569 round 3: inline on the Edit Assignment page now, no separate route) ──
 
 test.describe("Rubric Editor", () => {
   test.beforeEach(async ({ page }) => { await withAuth(page); });
 
   test("page loads with rubric criteria", async ({ page }) => {
-    await waitReady(page, "/teacher/courses/seed-1/assignments/a-seed-1-1/rubrics/r-seed-1-1");
-    await expect(page.locator("h1, h2").first()).toBeVisible();
+    await waitReady(page, "/teacher/courses/seed-1/assignments/a-seed-1-1/edit");
+    await expect(page.getByRole("heading", { name: /grading rubric/i })).toBeVisible();
   });
 
   test("AI Rubric Assistant button opens modal", async ({ page }) => {
-    await waitReady(page, "/teacher/courses/seed-1/assignments/a-seed-1-1/rubrics/r-seed-1-1");
+    await waitReady(page, "/teacher/courses/seed-1/assignments/a-seed-1-1/edit");
     const aiBtn = page.getByRole("button", { name: /AI Rubric Assistant/i });
     await expect(aiBtn).toBeVisible();
     await aiBtn.click();
@@ -314,7 +314,7 @@ test.describe("Rubric Editor", () => {
   });
 
   test("Generate button visible per criterion", async ({ page }) => {
-    await waitReady(page, "/teacher/courses/seed-1/assignments/a-seed-1-1/rubrics/r-seed-1-1");
+    await waitReady(page, "/teacher/courses/seed-1/assignments/a-seed-1-1/edit");
     await expect(page.getByRole("button", { name: /generate/i }).first()).toBeVisible();
   });
 });

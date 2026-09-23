@@ -105,7 +105,7 @@ test("cold start: a student forms a team, submits, the teacher grades once, and 
   await expect(page.getByText("Poster Squad")).toBeVisible();
   await page.getByRole("button", { name: /Re-grade team Poster Squad/i }).click();
   await page.waitForTimeout(2000); // mock re-grade takes 1.5s
-  await page.getByRole("link", { name: /Recheck team/i }).click();
+  await page.getByRole("link", { name: /Grade team/i }).click();
   await page.waitForLoadState("networkidle");
   await page.getByLabel(/Total score/i).fill("88");
   await page.getByRole("button", { name: /Save Changes/i }).click();

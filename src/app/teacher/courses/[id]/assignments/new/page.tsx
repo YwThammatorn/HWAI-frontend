@@ -48,6 +48,10 @@ export default function NewAssignmentPage() {
   const course = getCourse(id);
   const categories = getCategoriesByCourse(id);
   const todayStr = new Date().toISOString().split("T")[0];
+  // Either toggle alone is enough to skip the rubric and enter a max score by hand — an exam has no
+  // rubric because it's graded as a whole, a no-file assignment has no rubric because there's nothing
+  // for AI to check against it (23/9/2569 round 3). Independent toggles, either can combine with the other.
+  const needsManualScore = isExam || !acceptsFiles;
 
   const isDirty =
     name.trim() !== "" || description.trim() !== "" || dueDate !== "" || isExam || maxPoints !== "100" ||
@@ -79,7 +83,7 @@ export default function NewAssignmentPage() {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!isValid) return;
-    const points = isExam ? (parseInt(maxPoints) || 100) : criteriaTotalPoints(criteria);
+    const points = needsManualScore ? (parseInt(maxPoints) || 100) : criteriaTotalPoints(criteria);
     const a = addAssignment({
       courseId: id,
       name: name.trim(),
@@ -95,7 +99,7 @@ export default function NewAssignmentPage() {
       rubricIds: [],
       isExam,
     });
-    if (!isExam) {
+    if (!needsManualScore) {
       const rubric = addRubric({
         assignmentId: a.id,
         name: t("เกณฑ์การให้คะแนน", "Grading Rubric"),
@@ -110,7 +114,7 @@ export default function NewAssignmentPage() {
   const totalPoints = criteriaTotalPoints(criteria);
   const pointsOk = criteriaPointsOk(criteria);
   const isValid = name.trim().length > 0 && dueDate !== "" && (!acceptsFiles || fileTypes.length > 0) &&
-    (isExam ? (parseInt(maxPoints) || 0) > 0 : pointsOk);
+    (needsManualScore ? (parseInt(maxPoints) || 0) > 0 : pointsOk);
 
   return (
       <main className="w-full px-8 py-8">
@@ -197,7 +201,7 @@ export default function NewAssignmentPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">{t("คะแนนเต็ม", "Max Score")}</label>
-                {isExam ? (
+                {needsManualScore ? (
                   <>
                     <div className="flex gap-1.5 mb-2 flex-wrap">
                       {[10, 15, 25, 100].map((p) => (
@@ -275,6 +279,8 @@ export default function NewAssignmentPage() {
               <button
                 type="button"
                 onClick={() => setAcceptsFiles(v => !v)}
+                aria-label={t("รับไฟล์จากนักศึกษา", "Accept Files")}
+                aria-pressed={acceptsFiles}
                 className={[
                   "relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none",
                   acceptsFiles ? "bg-[var(--accent)]" : "bg-[var(--border-subtle)]",
@@ -353,7 +359,7 @@ export default function NewAssignmentPage() {
           </div>
 
           {/* Rubric */}
-          {!isExam && (
+          {!needsManualScore && (
             <section className="mt-8" aria-labelledby="rubric-heading">
               <div className="flex items-center gap-2 mb-1.5">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent-bright)" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
@@ -379,7 +385,7 @@ export default function NewAssignmentPage() {
               warning looked like it wasn't showing at all. basis-full forces it onto its own full-width
               line above the buttons at any viewport size. */}
           <div className="flex flex-wrap items-center justify-end gap-3 mt-8 pt-6 pb-4 border-t border-gray-100">
-            {!isExam && !pointsOk && (
+            {!needsManualScore && !pointsOk && (
               <span className="text-xs text-amber-600 basis-full text-left">{t("ทุกเกณฑ์ต้องมีคะแนนมากกว่า 0 ก่อนสร้างชิ้นงาน", "Every criterion needs more than 0 points before you can create the assignment")}</span>
             )}
             <button
