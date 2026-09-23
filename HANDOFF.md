@@ -462,6 +462,47 @@ Cohort column is unused, remove it).
   Re-verified live this round: setting a criterion's points to 0 disables Create and shows "Every
   criterion needs more than 0 points before you can create the assignment" right next to the button.
 
+## Unrelated (23/9): 3 corrections after the user tried the above round live
+### CLO page: user wanted full-bleed after all (pushed 641802a)
+The previous round capped the page to `max-w-[960px]` to fix the stretched-text-column bug; user asked
+for the page frame back to full width to match every other course page. Reverted `<main>` to `w-full`,
+but kept the table itself un-stretched: dropped `w-full` from the `<table>` (so it sizes to its own
+content instead of being forced to fill the card) and added `max-w-[560px]` to the CLO Text `<td>` (so a
+long CLO description still wraps sanely instead of pulling the table wide on its own). Verified at
+1600px: `<main>` 1351px, the white card 1279px (both full-bleed, matching siblings), but the actual
+`<table>` sizes to 932px and sits left-aligned inside the card — code/text/badge/actions stay visually
+grouped, no more big dead gap.
+
+### Recheck "Save Changes" now returns to where the teacher came from (pushed 239b95a)
+Was `router.push(.../results)`, hardcoded. Recheck has 3 real entry points — the Grading page's Review/
+Recheck link, the per-assignment Results drill-down, and the course-level Score Book — so a fixed
+destination was wrong for at least two of them. Changed to `router.back()` (real browser session
+history, so it works regardless of which of the 3 it was opened from). Verified live: clicked Review
+from the Grading page, saved, landed back on Grading — not Results. No test asserted the old redirect
+target, so nothing needed updating.
+
+### The "must fill in the rubric" warning: a real bug, found by trying it at real size (pushed 0db68e2)
+User: "ไม่เจอว่ามีข้อความสีส้มขึ้นนะ" (never saw the orange message). My own verification had only used
+`get_page_text` (which just confirms the text exists in the DOM) and a full-width screenshot — neither
+would have caught this. Reproduced by actually looking at a screenshot at a realistic width: the warning
+`<span>` shared a plain flex row with the Cancel/Create (or Discard/Save) buttons with no `flex-wrap`,
+so on a narrower viewport it got flex-shrunk down to almost nothing and wrapped **one word per line**,
+crammed against the sidebar — technically present, completely unreadable. Root cause was identical on
+both the New Assignment form and the standalone rubric editor (the second one nested the span inside an
+even smaller flex group next to just the Save button, same class of bug). Fixed both with `flex-wrap` on
+the container + `basis-full` on the warning span, forcing it onto its own full-width line above the
+buttons at any viewport width. Verified with a real screenshot this time, at the same narrow width that
+originally reproduced it.
+**Lesson for next time**: `get_page_text` confirms a message exists; it says nothing about whether it's
+actually legible. When a user says they didn't see something despite the DOM having it, check a real
+screenshot at a real (non-huge) viewport before concluding it's a user-side miss.
+
+Full suite 351 passed / 30 skipped after all three (one earlier run this round showed 11 failures / 8
+flaky across totally unrelated files — admin, auth, course cards — that self-resolved on a clean rerun;
+almost certainly resource contention from having the browser pane open during the run, not a real
+regression; the two files actually touched this round passed cleanly in isolation before the clean
+full rerun confirmed it).
+
 ## Not done / open
 - Score Book is read-only by design; if the teacher wants to type scores into cells, that is a new decision (Grading pages own edits today). Finalized assignments are additionally locked from click-through (23/9, this batch).
 - `gradeLetter` still exists locally in the two per-assignment results pages (the Score Book uses `lib/scoreBook.ts`); could be unified later.
