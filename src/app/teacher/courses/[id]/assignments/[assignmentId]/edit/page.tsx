@@ -238,6 +238,11 @@ export default function EditAssignmentPage() {
           onSubmit={handleSave}
           onKeyDown={(e) => { if (e.key === "Enter" && (e.target as HTMLElement).tagName === "INPUT") e.preventDefault(); }}
         >
+          {/* Column pairing (23/9/2569): matches New Assignment's own layout — General Info +
+              Submission Settings on the left, Description + Deadline & Score on the right, not
+              the "content vs. config" grouping it looks like. Submission Settings is the tallest
+              card, General Info the shortest, so pairing them keeps both columns roughly the
+              same total height instead of the old grouping, which left the right column taller. */}
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 items-start">
           <div className="space-y-5">
 
@@ -252,86 +257,6 @@ export default function EditAssignmentPage() {
               className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
               required
             />
-          </section>
-
-          {/* Description */}
-          <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-            <SectionHeader icon="doc" label={t("รายละเอียดชิ้นงาน", "Description")} />
-            <textarea
-              value={description} onChange={(e) => setDescription(e.target.value)}
-              rows={4}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] resize-none transition-colors"
-            />
-            <AttachmentsEditor items={att.items} onChange={att.setItems} />
-          </section>
-
-          </div>
-          <div className="space-y-5">
-
-          {/* Details */}
-          <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-            <SectionHeader icon="cal" label={t("กำหนดเวลาและคะแนน", "Deadline & Score")} />
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">
-                  {t("วันครบกำหนด", "Due Date")} <span className="text-[var(--s-err-text)]">*</span>
-                </label>
-                <div className="relative">
-                  <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-                  </svg>
-                  <input
-                    type="date" value={dueDate} min={minDate}
-                    onChange={(e) => setDueDate(e.target.value)}
-                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
-                    required
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">{t("คะแนนเต็ม", "Max Score")}</label>
-                {needsManualScore ? (
-                  <>
-                    <div className="flex gap-1.5 mb-2 flex-wrap">
-                      {[10, 15, 25, 100].map((p) => (
-                        <button key={p} type="button" onClick={() => setMaxPoints(String(p))}
-                          className={["px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors",
-                            maxPoints === String(p) ? "bg-[var(--accent-solid)] text-[var(--accent-solid-text)] border-[var(--accent)]" : "border-gray-200 text-gray-500 hover:border-[var(--accent)] hover:text-[var(--accent)]"
-                          ].join(" ")}>
-                          {p}
-                        </button>
-                      ))}
-                    </div>
-                    <input
-                      type="number" min="1" max="1000" value={maxPoints}
-                      onChange={(e) => setMaxPoints(e.target.value)}
-                      placeholder={t("หรือพิมพ์เอง", "or type...")}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
-                    />
-                  </>
-                ) : (
-                  <div className="w-full px-3.5 py-2.5 rounded-xl border border-gray-100 bg-gray-50 text-sm text-gray-600">
-                    {t(`รวม ${totalPoints} คะแนน (จาก Rubric ด้านล่าง)`, `Total: ${totalPoints} pts (from the rubric below)`)}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {categories.length > 0 && (
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">{t("หมวดงาน (สัดส่วนคะแนน)", "Grading Category")}</label>
-                <select
-                  value={categoryId}
-                  onChange={(e) => setCategoryId(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
-                >
-                  <option value="">{t("ไม่ระบุ", "None")}</option>
-                  {categories.map((c) => (
-                    <option key={c.id} value={c.id}>{c.name} ({c.weight}%)</option>
-                  ))}
-                </select>
-              </div>
-            )}
           </section>
 
           {/* Submission Settings */}
@@ -415,6 +340,73 @@ export default function EditAssignmentPage() {
                 </div>
               )}
             </div>
+          </section>
+
+          </div>
+          <div className="space-y-5">
+
+          {/* Description */}
+          <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+            <SectionHeader icon="doc" label={t("รายละเอียดชิ้นงาน", "Description")} />
+            <textarea
+              value={description} onChange={(e) => setDescription(e.target.value)}
+              rows={4}
+              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] resize-none transition-colors"
+            />
+            <AttachmentsEditor items={att.items} onChange={att.setItems} />
+          </section>
+
+          {/* Details */}
+          <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+            <SectionHeader icon="cal" label={t("กำหนดเวลาและคะแนน", "Deadline & Score")} />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">
+                  {t("วันครบกำหนด", "Due Date")} <span className="text-[var(--s-err-text)]">*</span>
+                </label>
+                <div className="relative">
+                  <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                  </svg>
+                  <input
+                    type="date" value={dueDate} min={minDate}
+                    onChange={(e) => setDueDate(e.target.value)}
+                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
+                    required
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">{t("คะแนนเต็ม", "Max Score")}</label>
+                {needsManualScore ? (
+                  <input
+                    type="number" min="1" max="1000" value={maxPoints}
+                    onChange={(e) => setMaxPoints(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
+                  />
+                ) : (
+                  <div className="w-full px-3.5 py-2.5 rounded-xl border border-gray-100 bg-gray-50 text-sm text-gray-600">
+                    {t(`รวม ${totalPoints} คะแนน (จาก Rubric ด้านล่าง)`, `Total: ${totalPoints} pts (from the rubric below)`)}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {categories.length > 0 && (
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">{t("หมวดงาน (สัดส่วนคะแนน)", "Grading Category")}</label>
+                <select
+                  value={categoryId}
+                  onChange={(e) => setCategoryId(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
+                >
+                  <option value="">{t("ไม่ระบุ", "None")}</option>
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.id}>{c.name} ({c.weight}%)</option>
+                  ))}
+                </select>
+              </div>
+            )}
           </section>
 
           </div>
