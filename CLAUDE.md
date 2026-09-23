@@ -19,8 +19,8 @@
 
 ## Current active task
 _(อัปเดตช่องนี้ทุกครั้งที่เริ่ม task ใหม่ — ดูรายละเอียดที่ HANDOFF.md)_
-- Task: 2nd batch of 7 teacher feedback items — 4 sub-tasks (plan: `C:\Users\ASUS\.claude\plans\lively-tinkering-mitten.md`)
-- Status: **all 4 sub-tasks done and pushed** (rubric-card parity, Students table columns+delete, Finalize Grading + Score Book lock, isExam + points-based rubric) — see HANDOFF.md
+- Task: follow-up feedback round (23/9) — CLO page mockup+layout, Grade Adjustment reverted to read-only (corrects a 22/9 misreading), Students table Program/Cohort cleanup, mock data variety (`c-mock-1`)
+- Status: **done and pushed** (966e512, 1c37712, 34be2b4 + eff6819 mock data) — see HANDOFF.md. Previous task (2nd batch of 7 items, 4 sub-tasks) also fully done and pushed.
 
 # i18n Rule (TH/EN Language Toggle)
 
