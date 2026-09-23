@@ -19,8 +19,8 @@
 
 ## Current active task
 _(อัปเดตช่องนี้ทุกครั้งที่เริ่ม task ใหม่ — ดูรายละเอียดที่ HANDOFF.md)_
-- Task: follow-up feedback round (23/9) — CLO page mockup+layout, Grade Adjustment reverted to read-only (corrects a 22/9 misreading), Students table Program/Cohort cleanup, mock data variety (`c-mock-1`)
-- Status: **done and pushed** (966e512, 1c37712, 34be2b4 + eff6819 mock data) — see HANDOFF.md. Previous task (2nd batch of 7 items, 4 sub-tasks) also fully done and pushed.
+- Task: round 3 feedback (23/9) — unify Grading page's Review/Recheck into one "Grade" link (shown on every row, no more AI-score gate), Re-grade hidden for no-file assignments, `needsManualScore = isExam || !acceptsFiles` on New/Edit, Edit Assignment absorbs rubric editing inline (standalone `rubrics/[rubricId]` route deleted), recheck's AI Confidence panel hidden pre-AI-grading
+- Status: **done and pushed** (78f51fa, e91bc24, 0b7d4bc) — see HANDOFF.md. All prior rounds also fully done and pushed.
 
 # i18n Rule (TH/EN Language Toggle)
 

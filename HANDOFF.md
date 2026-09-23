@@ -1,6 +1,8 @@
 # HANDOFF — Teacher: Assignments / Grading split + Score Book
 
-Plan file: `C:\Users\ASUS\.claude\plans\lively-tinkering-mitten.md` (approved 21/9/2569). **All 4 sub-tasks are done and pushed.**
+Plan file: `C:\Users\ASUS\.claude\plans\lively-tinkering-mitten.md` — now on its 3rd plan (21/9 batch of
+4, 23/9 batch of 4 items, done and pushed; the file was overwritten in place each round per its own
+"this replaces it" convention, so only the latest plan text is preserved there).
 
 ## Goal
 - **Assignments** = planning only. **Grading** = checking only (takes over every stat Assignments used to show).
@@ -502,6 +504,54 @@ flaky across totally unrelated files — admin, auth, course cards — that self
 almost certainly resource contention from having the browser pane open during the run, not a real
 regression; the two files actually touched this round passed cleanly in isolation before the clean
 full rerun confirmed it).
+
+## Unrelated (23/9): round 3 — 4 more teacher feedback items, unify Grade link, Edit absorbs rubric, no-file assignments skip AI
+User sent 4 more items with the same "ask first if unclear" standing instruction. One item (reverse
+weight→pts) was already fully implemented by the previous round — explained back, no code change. The
+other 3 took several rounds of `AskUserQuestion` to pin down; one round the user explicitly said they
+were still confused and asked to be walked through it slowly one question at a time rather than given
+option lists — worth remembering for future rounds when a first clarifying question doesn't land.
+
+### Grading page: one "Grade" link on every row, Re-grade hidden for no-file assignments (pushed 78f51fa)
+The Review/Recheck link (label changed by status, hidden until an AI score existed) is now one
+"ตรวจ"/"Grade" label shown on every row regardless of status — the user's actual desired flow (walked
+through step by step) turned out to already match what existed (Re-grade per row → open the link to
+check some → Finish Grading to confirm); the only real gap was that the link was unreachable before an
+AI pass happened, which blocked grading a no-AI assignment by hand at all. Re-grade (AI) itself is now
+hidden when `!assignment.acceptsFiles` — nothing for AI to check. `GradeRow`/`GradeAdjustmentTable`
+gained a new `acceptsFiles` prop threaded from `assignment.acceptsFiles`.
+
+### `needsManualScore = isExam || !acceptsFiles`; Edit Assignment absorbs rubric editing inline (pushed e91bc24)
+Two independent toggles that both mean "no rubric, manual max score" now share one derived boolean on
+both `assignments/new/page.tsx` and `.../edit/page.tsx` — was `isExam`-only. Edit Assignment's rubric
+section used to be a separate list of rubric *shells* (add/delete/rename) linking out to a standalone
+`rubrics/[rubricId]` route to actually edit criteria; it now embeds `RubricCriteriaEditor` inline exactly
+like New Assignment, assuming a single rubric (`linkedRubrics[0]`) like every other rubric-reading spot
+in the app already does. The standalone route is deleted (grepped — no other reference). Edit's `<main>`
+also switched from a centred `max-w-[700px]` column to full width, matching New and every sibling page.
+**Edge case found while implementing**: a legacy/seeded assignment with zero rubrics linked (not exam,
+accepts files) would otherwise get stuck with Save permanently disabled (`criteria` seeded as `[]`,
+`criteriaPointsOk([])` is always false) — fixed by seeding one default 100-pt criterion when there's
+nothing to load from, same fallback New Assignment already starts every fresh form with, and by having
+`handleSave` create a rubric via `addRubric` (not just `updateRubric`) when none exists yet.
+
+### Recheck: AI Confidence panel hidden when a submission has no AI score yet (pushed 0b7d4bc)
+Since the Grade link is reachable before any AI pass now, recheck opens on genuinely un-scored
+submissions for the first time — the AI Confidence badge would show a misleading "Low / 0%" there.
+Guarded on `submission.aiScore !== null`; shows a plain "not yet AI-graded" note otherwise. Also fixed
+the manual-score panel's label (`!rubric` fallback, built for isExam), which unconditionally said "Exam
+assignment — no rubric" even when reached via the acceptsFiles-off path instead — now branches on which
+of the two actually applies.
+
+Verified: tsc clean; lint baseline grew by exactly 1 (Edit page's pre-existing `react-hooks/refs`
+ref-comparison pattern, extended by the new `criteria` field — same as how `isExam` extended it last
+round). Full suite 358 passed / 30 skipped (was 351 before this round: +7 net after also catching 2 more
+`Recheck`/`Review`-label test assertions the first commit had missed, surfaced only by a full-suite run,
+not the per-file runs during that sub-task). Live-verified in the browser: a no-file assignment's Grading
+page shows the Grade link with no Re-grade button on a `not_graded` row; opening it lands on recheck with
+"Not yet AI-graded — grading manually" and a working manual Total Score input that persists
+(`instructorScore`, `status: "graded"`) on Save; Edit Assignment's inline rubric editor renders an
+existing rubric's real criteria (points, % hints, AI Rubric Assistant) exactly like New Assignment's.
 
 ## Not done / open
 - Score Book is read-only by design; if the teacher wants to type scores into cells, that is a new decision (Grading pages own edits today). Finalized assignments are additionally locked from click-through (23/9, this batch).
