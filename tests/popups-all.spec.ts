@@ -210,7 +210,8 @@ test.describe("Popup behaviour worth its own check", () => {
     await goto(page, "/admin/curriculum");
     await page.getByRole("button", { name: "New Curriculum" }).first().click();
     const dialog = page.getByRole("dialog", { name: "New Curriculum Version" });
-    await expect(dialog.getByRole("button", { name: "Create Version" })).toBeDisabled(); // needs a label
+    // Label now auto-fills from Program + Year (23/9/2569), so Create Version starts enabled.
+    await expect(dialog.getByRole("button", { name: "Create Version" })).toBeEnabled();
     await dialog.locator("input").first().fill("CE 2570");
     await dialog.getByRole("button", { name: "Create Version" }).click();
     await expect(dialog).toHaveCount(0);
