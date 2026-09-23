@@ -336,6 +336,47 @@ test.describe("P1c — Admin Courses (/admin/courses)", () => {
     await expect(page.getByText("Teacher", { exact: true })).toBeVisible();
   });
 
+  test("+ Add Section duplicates the course into a new one, teacher and section left blank", async ({ page }) => {
+    await seedPage(page, { teachers: [TEACHER_1], courses: [COURSE_1] });
+    await gotoPage(page, "/admin/courses");
+    await page.getByRole("button", { name: "Add Section" }).click();
+    const dialog = page.getByRole("dialog", { name: "Add Section" });
+    await expect(dialog.getByText('Adding a section to "Software Engineering"')).toBeVisible();
+    await expect(dialog.getByPlaceholder("e.g. UX/UI Design")).toHaveValue("Software Engineering");
+    await expect(dialog.getByLabel("Primary Teacher")).toHaveValue("");
+    await expect(dialog.getByRole("button", { name: "Create Course" })).toBeDisabled();
+
+    await dialog.getByLabel("Primary Teacher").fill("John");
+    await dialog.getByRole("option", { name: "John Smith" }).click();
+    await dialog.getByRole("button", { name: "Create Course" }).click();
+    await expect(dialog).toHaveCount(0);
+
+    const courses = await page.evaluate(() => JSON.parse(localStorage.getItem("hwai_courses_v2") ?? "[]"));
+    expect(courses).toHaveLength(2);
+    const added = courses.find((c: { id: string }) => c.id !== COURSE_1.id);
+    expect(added).toMatchObject({ name: "Software Engineering", description: "SE course" });
+    expect(added.sectionNumber).toBeUndefined();
+  });
+
+  test("New Course: Primary Teacher is an autocomplete, not a dropdown of every teacher", async ({ page }) => {
+    await seedPage(page, { teachers: [TEACHER_1] });
+    await gotoPage(page, "/admin/courses");
+    await page.getByRole("button", { name: "New Course" }).first().click();
+    const dialog = page.getByRole("dialog", { name: "New Course" });
+    await dialog.getByPlaceholder("e.g. UX/UI Design").fill("Web Design");
+    await expect(dialog.getByRole("button", { name: "Create Course" })).toBeDisabled();
+
+    const teacherField = dialog.getByLabel("Primary Teacher");
+    await teacherField.fill("John");
+    await dialog.getByRole("option", { name: "John Smith" }).click();
+    await expect(dialog.getByRole("button", { name: "Create Course" })).toBeEnabled();
+    await dialog.getByRole("button", { name: "Create Course" }).click();
+    await expect(dialog).toHaveCount(0);
+
+    const courses = await page.evaluate(() => JSON.parse(localStorage.getItem("hwai_courses_v2") ?? "[]"));
+    expect(courses.map((c: { name: string }) => c.name)).toContain("Web Design");
+  });
+
   test("seeded teacher appears as unchecked checkbox in expanded panel", async ({
     page,
   }) => {

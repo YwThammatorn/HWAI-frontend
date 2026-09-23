@@ -17,10 +17,15 @@ import { useStudents } from "@/lib/students";
 function CourseModal({
   mode,
   course,
+  duplicateFrom,
   onClose,
 }: {
   mode: "create" | "edit";
   course?: Course;
+  /** "+ Add Section" (23/9/2569): create-mode only, pre-fills from an existing course — same
+   *  template/term/year — but never sectionNumber or the teacher, which the admin must set fresh
+   *  for the new section. */
+  duplicateFrom?: Course;
   onClose: () => void;
 }) {
   const { t } = useLanguage();
@@ -28,20 +33,28 @@ function CourseModal({
   const { curriculumVersions, courseTemplates, getCourseTemplatesByCurriculum } = useCurriculum();
   const { teachers, assignToCourse } = useManagedTeachers();
 
-  const [name, setName] = useState(course?.name ?? "");
-  const [description, setDescription] = useState(course?.description ?? "");
-  const [coverColor, setCoverColor] = useState(course?.coverColor ?? PRESET_COLORS[0]);
-  const [teacherId, setTeacherId] = useState("");
+  const seed = course ?? duplicateFrom;
+  const [name, setName] = useState(seed?.name ?? "");
+  const [description, setDescription] = useState(seed?.description ?? "");
+  const [coverColor, setCoverColor] = useState(seed?.coverColor ?? PRESET_COLORS[0]);
+  // Autocomplete (23/9/2569, was a plain <select> of every teacher) — SearchInput only ever
+  // hands back the typed/picked display string, not an id, so teacherId is resolved from it
+  // here rather than being its own directly-set state.
+  const [teacherQuery, setTeacherQuery] = useState("");
+  const teacherDisplayName = (tc: { title?: string; name: string }) => tc.title ? `${tc.title} ${tc.name}` : tc.name;
+  const teacherId = teachers.find((tc) => teacherDisplayName(tc) === teacherQuery.trim())?.id ?? "";
   const nameRef = useRef<HTMLInputElement>(null);
 
   const activeCurriculumVersions = curriculumVersions.filter((v) => v.effectiveTo === undefined);
-  const existingTemplate = course?.courseTemplateId ? courseTemplates.find((ct) => ct.id === course.courseTemplateId) : undefined;
+  const existingTemplate = seed?.courseTemplateId ? courseTemplates.find((ct) => ct.id === seed.courseTemplateId) : undefined;
   const [curriculumVersionId, setCurriculumVersionId] = useState(existingTemplate?.curriculumVersionId ?? "");
-  const [courseTemplateId, setCourseTemplateId] = useState(course?.courseTemplateId ?? "");
+  const [courseTemplateId, setCourseTemplateId] = useState(seed?.courseTemplateId ?? "");
   const courseTemplateOptions = curriculumVersionId ? getCourseTemplatesByCurriculum(curriculumVersionId) : [];
   const currentAcademicYear = new Date().getFullYear() + 543;
-  const [academicYear, setAcademicYear] = useState(String(course?.academicYear ?? currentAcademicYear));
-  const [term, setTerm] = useState<Term | "">(course?.term ?? "");
+  const [academicYear, setAcademicYear] = useState(String(seed?.academicYear ?? currentAcademicYear));
+  const [term, setTerm] = useState<Term | "">(seed?.term ?? "");
+  // sectionNumber is deliberately NOT seeded from duplicateFrom — that's the one field the admin
+  // must always fill in fresh for a new section (see the prop doc above).
   const [sectionNumber, setSectionNumber] = useState(course?.sectionNumber ?? "");
 
   function handleCurriculumChange(id: string) {
@@ -81,7 +94,9 @@ function CourseModal({
   }
 
   return (
-    <Modal open onClose={onClose} size="md" title={mode === "create" ? t("สร้างรายวิชาใหม่", "New Course") : t("แก้ไขรายวิชา", "Edit Course")}
+    <Modal open onClose={onClose} size="md"
+      title={mode === "create" ? (duplicateFrom ? t("เพิ่ม Section ใหม่", "Add Section") : t("สร้างรายวิชาใหม่", "New Course")) : t("แก้ไขรายวิชา", "Edit Course")}
+      description={duplicateFrom ? t(`เพิ่ม section ให้ "${duplicateFrom.name}" — เลือกอาจารย์และกรอกเลข section ใหม่ก่อนบันทึก`, `Adding a section to "${duplicateFrom.name}" — pick a teacher and fill in the new section number before saving`) : undefined}
       footer={
         <>
           <button onClick={onClose} className="h-10 px-5 rounded-xl border border-[var(--border)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors">
@@ -165,14 +180,13 @@ function CourseModal({
               />
               <select
                 value={term}
-                onChange={(e) => setTerm(e.target.value === "" ? "" : e.target.value === "summer" ? "summer" : (Number(e.target.value) as 1 | 2 | 3))}
+                onChange={(e) => setTerm(e.target.value === "" ? "" : (Number(e.target.value) as 1 | 2 | 3))}
                 className="h-9 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-2.5 text-xs text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
               >
                 <option value="">{t("เทอม", "Term")}</option>
                 <option value="1">{t("เทอม 1", "Term 1")}</option>
                 <option value="2">{t("เทอม 2", "Term 2")}</option>
                 <option value="3">{t("เทอม 3", "Term 3")}</option>
-                <option value="summer">{t("ภาคฤดูร้อน", "Summer")}</option>
               </select>
               <input
                 value={sectionNumber}
@@ -206,17 +220,17 @@ function CourseModal({
             <label className="text-xs font-semibold text-[var(--text-muted)]">
               {t("อาจารย์ประจำวิชา", "Primary Teacher")} <span className="text-[var(--s-err-text)]">*</span>
             </label>
-            <select
-              value={teacherId}
-              onChange={(e) => setTeacherId(e.target.value)}
-              required
-              className="h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
-            >
-              <option value="">{t("เลือกอาจารย์ประจำวิชา...", "Select a teacher...")}</option>
-              {teachers.map((tc) => (
-                <option key={tc.id} value={tc.id}>{tc.title ? `${tc.title} ` : ""}{tc.name}</option>
-              ))}
-            </select>
+            <SearchInput
+              value={teacherQuery}
+              onChange={setTeacherQuery}
+              placeholder={t("พิมพ์ชื่ออาจารย์...", "Type a teacher's name...")}
+              ariaLabel={t("อาจารย์ประจำวิชา", "Primary Teacher")}
+              suggestions={teachers.map(teacherDisplayName)}
+              className="w-full"
+            />
+            {teacherQuery.trim() !== "" && !teacherId && (
+              <p className="text-[11px] text-[var(--s-err-text)]">{t("ไม่พบอาจารย์ชื่อนี้ — เลือกจากรายการที่แนะนำ", "No teacher by that name — pick one from the suggestions")}</p>
+            )}
             {teachers.length === 0 && (
               <p className="text-[11px] text-[var(--s-err-text)]">{t("ยังไม่มีอาจารย์ในระบบ — ไปเพิ่มที่หน้าจัดการอาจารย์ก่อน", "No teachers yet — add one on the User Management page first")}</p>
             )}
@@ -412,10 +426,14 @@ type RowAction = { type: "archive" | "restore" | "delete"; course: Course } | nu
 function CourseRow({
   course,
   onEdit,
+  onAddSection,
   onAction,
 }: {
   course: Course;
   onEdit: (c: Course) => void;
+  /** "+ Add Section" (23/9/2569) — omitted for archived rows, duplicating an archived course
+   *  as a new active one isn't a meaningful action. */
+  onAddSection?: (c: Course) => void;
   onAction: (a: RowAction) => void;
 }) {
   const { t } = useLanguage();
@@ -471,6 +489,17 @@ function CourseRow({
             <p className="text-[10px] text-[var(--text-muted)]">{t("นักศึกษา", "students")}</p>
           </div>
           <div className="flex items-center gap-1">
+            {onAddSection && (
+              <button
+                onClick={() => onAddSection(course)}
+                title={t("เพิ่ม Section", "Add Section")}
+                className="w-7 h-7 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--accent)] hover:bg-[var(--accent-bright)]/10 transition-colors"
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                </svg>
+              </button>
+            )}
             <button
               onClick={() => onEdit(course)}
               title={t("แก้ไขรายวิชา", "Edit course")}
@@ -524,6 +553,10 @@ export default function AdminCoursesPage() {
   const { courses, updateCourse, removeCourse } = useCourses();
   const [modalMode, setModalMode] = useState<"create" | "edit" | null>(null);
   const [editTarget, setEditTarget] = useState<Course | undefined>(undefined);
+  // "+ Add Section" (23/9/2569): duplicates an existing course as a new one, pre-filled from it —
+  // there's no separate Section entity (see lib/courses.ts), Course already carries the section
+  // fields directly, so a new section is just another Course sharing the same template/term/year.
+  const [duplicateFrom, setDuplicateFrom] = useState<Course | undefined>(undefined);
   const [confirm, setConfirm] = useState<RowAction>(null);
 
   const activeCourses = courses.filter((c) => c.status === "active");
@@ -667,6 +700,7 @@ export default function AdminCoursesPage() {
                     key={course.id}
                     course={course}
                     onEdit={(c) => { setEditTarget(c); setModalMode("edit"); }}
+                    onAddSection={(c) => { setEditTarget(undefined); setDuplicateFrom(c); setModalMode("create"); }}
                     onAction={handleAction}
                   />
                 ))
@@ -700,7 +734,8 @@ export default function AdminCoursesPage() {
         <CourseModal
           mode={modalMode}
           course={editTarget}
-          onClose={() => setModalMode(null)}
+          duplicateFrom={duplicateFrom}
+          onClose={() => { setModalMode(null); setDuplicateFrom(undefined); }}
         />
       )}
       {confirm && confirmConfig && (
