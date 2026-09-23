@@ -29,7 +29,6 @@ interface CourseSeed {
   status: "active" | "archived";
   source: string;
   coverColor: string;
-  iconColor: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -129,7 +128,6 @@ const COURSE_1: CourseSeed = {
   status: "active",
   source: "manual",
   coverColor: "#2DD4BF",
-  iconColor: "#2DD4BF",
   createdAt: "2026-01-01T00:00:00.000Z",
   updatedAt: "2026-01-01T00:00:00.000Z",
 };

@@ -8,7 +8,7 @@ const BASE = "http://localhost:3000";
 const NOW = "2026-01-01T00:00:00.000Z";
 const COURSE = {
   id: "c-sf", name: "Hardware Lab", description: "", status: "active", source: "manual",
-  coverColor: "#2DD4BF", iconColor: "#2DD4BF", createdAt: NOW, updatedAt: NOW,
+  coverColor: "#2DD4BF", createdAt: NOW, updatedAt: NOW,
 };
 const ASSIGNMENT = {
   id: "a-sf", courseId: "c-sf", name: "Hardware Lab Training", description: "Upload your report",

@@ -72,10 +72,10 @@ function CourseModal({
       ...(sectionNumber.trim() !== "" && { sectionNumber: sectionNumber.trim() }),
     };
     if (mode === "create") {
-      const created = addCourse({ name: trimmed, description, coverColor, iconColor: coverColor, status: "active", source: "manual", ...sectionFields });
+      const created = addCourse({ name: trimmed, description, coverColor, status: "active", source: "manual", ...sectionFields });
       assignToCourse(teacherId, created.id);
     } else if (course) {
-      updateCourse(course.id, { name: trimmed, description, coverColor, iconColor: coverColor, ...sectionFields });
+      updateCourse(course.id, { name: trimmed, description, coverColor, ...sectionFields });
     }
     onClose();
   }

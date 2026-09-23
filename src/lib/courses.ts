@@ -28,7 +28,6 @@ export interface Course {
   status: CourseStatus;
   source: CourseSource;
   coverColor: string;
-  iconColor: string;
   /** Which glyph to show on the course card's identity strip — optional, falls back to "book" */
   icon?: CourseIconKey;
   createdAt: string;
@@ -79,7 +78,6 @@ export const SEED_COURSES: Course[] = [
     status: "active",
     source: "manual",
     coverColor: "#0F766E",
-    iconColor: "#0F766E",
     createdAt: "2026-07-01T00:00:00.000Z",
     updatedAt: "2026-07-01T00:00:00.000Z",
     schedule: "จันทร์ 13:00-16:00",
@@ -92,7 +90,6 @@ export const SEED_COURSES: Course[] = [
     status: "active",
     source: "manual",
     coverColor: "#5B4E96",
-    iconColor: "#5B4E96",
     createdAt: "2026-07-01T00:00:00.000Z",
     updatedAt: "2026-07-01T00:00:00.000Z",
     schedule: "พฤหัสบดี 9:00-12:00",

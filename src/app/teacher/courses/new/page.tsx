@@ -73,7 +73,6 @@ export default function NewCoursePage() {
       status: "active",
       source: "manual",
       coverColor,
-      iconColor: coverColor,
       icon,
       ...(selectedTemplate && { courseTemplateId: selectedTemplate.id, code: selectedTemplate.code }),
       ...(year !== undefined && !isNaN(year) && { academicYear: year }),

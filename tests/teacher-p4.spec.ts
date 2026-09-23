@@ -17,7 +17,7 @@ const ANNOUNCEMENTS_DISABLED = true;
 
 const COURSE = {
   id: "c-p4", name: "UI/UX Design", description: "Human-centered design fundamentals",
-  status: "active", source: "manual", coverColor: "#2DD4BF", iconColor: "#2DD4BF",
+  status: "active", source: "manual", coverColor: "#2DD4BF",
   courseTemplateId: "ct-p4", term: 1, academicYear: 2569, sectionNumber: "1",
   code: "01076036", schedule: "Mon 9:00-12:00", room: "305",
   createdAt: "2026-01-01T00:00:00.000Z", updatedAt: "2026-01-01T00:00:00.000Z",

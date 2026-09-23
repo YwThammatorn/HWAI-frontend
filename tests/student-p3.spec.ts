@@ -10,7 +10,7 @@ const ANNOUNCEMENTS_DISABLED = true;
 
 const COURSE = {
   id: "c-p3", name: "Data Structures", description: "DS course",
-  status: "active", source: "manual", coverColor: "#F97316", iconColor: "#F97316",
+  status: "active", source: "manual", coverColor: "#F97316",
   createdAt: "2026-01-01T00:00:00.000Z", updatedAt: "2026-01-01T00:00:00.000Z",
 };
 

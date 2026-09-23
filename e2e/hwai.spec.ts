@@ -625,7 +625,6 @@ async function withManyCourses(page: Page) {
       status: "active",
       source: "manual",
       coverColor: "#2DD4BF",
-      iconColor: "#2DD4BF",
       createdAt: now,
       updatedAt: now,
     }));

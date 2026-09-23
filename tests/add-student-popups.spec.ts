@@ -9,7 +9,7 @@ const BASE = "http://localhost:3000";
 const NOW = "2026-01-01T00:00:00.000Z";
 const COURSE = {
   id: "c-as", name: "Programming", description: "", status: "active", source: "manual",
-  coverColor: "#2DD4BF", iconColor: "#2DD4BF", createdAt: NOW, updatedAt: NOW,
+  coverColor: "#2DD4BF", createdAt: NOW, updatedAt: NOW,
 };
 const TEACHER = { id: "t-as", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", role: "teacher", status: "active", courseIds: ["c-as"] };
 const COHORT = [

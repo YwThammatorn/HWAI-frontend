@@ -9,7 +9,7 @@ const NOW = "2026-01-01T00:00:00.000Z";
 
 const COURSE = {
   id: "c-att", name: "Web Design", description: "", status: "active", source: "manual",
-  coverColor: "#2DD4BF", iconColor: "#2DD4BF", courseTemplateId: "ct-att", term: 1, academicYear: 2569,
+  coverColor: "#2DD4BF", courseTemplateId: "ct-att", term: 1, academicYear: 2569,
   sectionNumber: "1", code: "01076099", schedule: "-", room: "-", createdAt: NOW, updatedAt: NOW,
 };
 

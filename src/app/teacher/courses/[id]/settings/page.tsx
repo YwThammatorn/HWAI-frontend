@@ -80,7 +80,6 @@ export default function CourseSettingsPage() {
       name: name.trim(),
       description: description.trim(),
       coverColor,
-      iconColor: coverColor,
       icon,
     });
     setSaved(true);
