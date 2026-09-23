@@ -336,14 +336,14 @@ test.describe("Per-assignment grading page took over the stats and the submissio
     await expect(statCard(page, "Avg. Score")).toBeVisible();
   });
 
-  test("lists every submission with a Review / Recheck link to the recheck page", async ({ page }) => {
+  test("lists every submission with a Grade link to the recheck page, including not-yet-graded rows", async ({ page }) => {
+    // (23/9/2569 round 3) The link is one consistent label shown on every row regardless of status —
+    // was gated on need_review/graded, hidden until an AI score existed.
     await open(page, "/assignments/a-review/grading");
     await expect(page.locator("main tbody tr")).toHaveCount(3);
-    await expect(page.getByRole("link", { name: "Review", exact: true })).toHaveAttribute("href", "/teacher/courses/c-gs/assignments/a-review/recheck?sub=s3");
-    await expect(page.getByRole("link", { name: "Recheck", exact: true })).toHaveAttribute("href", "/teacher/courses/c-gs/assignments/a-review/recheck?sub=s4");
-    // the not-graded row has nothing to review yet
+    await expect(page.getByRole("link", { name: "Grade", exact: true }).first()).toHaveAttribute("href", "/teacher/courses/c-gs/assignments/a-review/recheck?sub=s3");
     const notGraded = page.locator("main tbody tr", { hasText: "Student 64070703" });
-    await expect(notGraded.getByRole("link")).toHaveCount(0);
+    await expect(notGraded.getByRole("link", { name: "Grade", exact: true })).toHaveAttribute("href", "/teacher/courses/c-gs/assignments/a-review/recheck?sub=s5");
     await expect(page.getByText("Showing 1–3 of 3 submissions")).toBeVisible();
   });
 

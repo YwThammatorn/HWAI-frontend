@@ -144,10 +144,12 @@ test.describe("Grading Progress", () => {
     ).toBeVisible();
   });
 
-  // moved here from the old assignment detail page (21/9/2569)
-  test("submissions table shows Recheck links for graded rows", async ({ page }) => {
+  // moved here from the old assignment detail page (21/9/2569); the link is one consistent "Grade"
+  // label shown on every row regardless of status now (23/9/2569 round 3), was "Recheck" only for
+  // already-graded rows.
+  test("submissions table shows a Grade link for every row", async ({ page }) => {
     await waitReady(page, "/teacher/courses/seed-1/assignments/a-seed-1-1/grading");
-    await expect(page.getByRole("link", { name: /recheck/i }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: "Grade", exact: true }).first()).toBeVisible();
   });
 
   test("search box is present and accepts input", async ({ page }) => {

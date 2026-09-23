@@ -78,13 +78,16 @@ function GradeRow({
   rowState,
   onRegrade,
   reviewHref,
+  acceptsFiles,
 }: {
   row: SubmissionRow;
   maxPoints: number;
   rowState: RowState;
   onRegrade: () => void;
-  /** Where "Review" / "Recheck" opens this row's submission (recheck page, keyed by the representative submission). */
+  /** Where the Grade link opens this row's submission (recheck page, keyed by the representative submission). */
   reviewHref: string;
+  /** Re-grade (AI) only makes sense when there's a file for it to check (23/9/2569 round 3). */
+  acceptsFiles: boolean;
 }) {
   const { t } = useLanguage();
   const rep = row.subs[0];
@@ -171,42 +174,43 @@ function GradeRow({
         </span>
       </td>
 
-      {/* Review / Recheck — opens the submission (moved here from the assignment detail page).
-          Styled as an outlined pill button (22/9/2569, was a plain text link that didn't read as
-          clickable) — matches the Re-grade button next to it. */}
+      {/* Grade — opens the submission (moved here from the assignment detail page). Always visible
+          regardless of status (23/9/2569 round 3, was gated on need_review/graded, i.e. required an
+          AI score to exist first — a teacher couldn't jump straight into a no-AI assignment to enter a
+          score by hand). One consistent label instead of the old status-dependent Review/Recheck text.
+          Styled as an outlined pill button (22/9/2569) — matches the Re-grade button next to it. */}
       <td className="px-4 py-3 whitespace-nowrap">
-        {(rep.status === "need_review" || rep.status === "graded") && (
-          <Link
-            href={reviewHref}
-            className="inline-flex items-center h-7 px-2.5 whitespace-nowrap rounded-lg border border-[var(--accent)]/30 text-xs font-medium text-[var(--accent)] hover:border-[var(--accent)] hover:bg-[var(--accent-bright)]/10 active:scale-[0.97] transition-all"
-          >
-            {rep.status === "need_review"
-              ? t("ตรวจสอบ", "Review")
-              : isTeam ? t("ขอตรวจใหม่ทั้งทีม", "Recheck team") : t("ขอตรวจใหม่", "Recheck")}
-          </Link>
-        )}
+        <Link
+          href={reviewHref}
+          className="inline-flex items-center h-7 px-2.5 whitespace-nowrap rounded-lg border border-[var(--accent)]/30 text-xs font-medium text-[var(--accent)] hover:border-[var(--accent)] hover:bg-[var(--accent-bright)]/10 active:scale-[0.97] transition-all"
+        >
+          {isTeam ? t("ตรวจทั้งทีม", "Grade team") : t("ตรวจ", "Grade")}
+        </Link>
       </td>
 
-      {/* Re-grade button */}
+      {/* Re-grade (AI) button — hidden when the assignment doesn't accept files (23/9/2569 round 3,
+          nothing for AI to check); the teacher grades those entirely by hand via the Grade link above. */}
       <td className="px-4 py-3">
-        <button
-          onClick={onRegrade}
-          disabled={rowState.regrading}
-          aria-label={isTeam ? t(`Re-grade team ${row.teamName}`, `Re-grade team ${row.teamName}`) : t(`Re-grade ${rep.studentName}`, `Re-grade ${rep.studentName}`)}
-          className="flex items-center gap-1.5 h-7 px-2.5 whitespace-nowrap rounded-lg border border-gray-200 text-xs font-medium text-gray-500 hover:border-[var(--accent-bright)] hover:text-[var(--accent)] hover:bg-[var(--accent-bright)]/5 active:scale-[0.97] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-all"
-        >
-          {rowState.regrading ? (
-            <svg className="animate-spin" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
-              <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
-            </svg>
-          ) : (
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-              <polyline points="1 4 1 10 7 10"/>
-              <path d="M3.51 15a9 9 0 1 0 .49-4.56"/>
-            </svg>
-          )}
-          {t("Re-grade", "Re-grade")}
-        </button>
+        {acceptsFiles && (
+          <button
+            onClick={onRegrade}
+            disabled={rowState.regrading}
+            aria-label={isTeam ? t(`Re-grade team ${row.teamName}`, `Re-grade team ${row.teamName}`) : t(`Re-grade ${rep.studentName}`, `Re-grade ${rep.studentName}`)}
+            className="flex items-center gap-1.5 h-7 px-2.5 whitespace-nowrap rounded-lg border border-gray-200 text-xs font-medium text-gray-500 hover:border-[var(--accent-bright)] hover:text-[var(--accent)] hover:bg-[var(--accent-bright)]/5 active:scale-[0.97] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-all"
+          >
+            {rowState.regrading ? (
+              <svg className="animate-spin" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+              </svg>
+            ) : (
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                <polyline points="1 4 1 10 7 10"/>
+                <path d="M3.51 15a9 9 0 1 0 .49-4.56"/>
+              </svg>
+            )}
+            {t("Re-grade", "Re-grade")}
+          </button>
+        )}
       </td>
     </tr>
   );
@@ -223,6 +227,7 @@ function GradeAdjustmentTable({
   assignmentId,
   isGroup,
   onSaveAll,
+  acceptsFiles,
 }: {
   rows: SubmissionRow[];
   maxPoints: number;
@@ -230,6 +235,7 @@ function GradeAdjustmentTable({
   assignmentId: string;
   isGroup: boolean;
   onSaveAll: (changes: Record<string, number | null>) => void;
+  acceptsFiles: boolean;
 }) {
   const { t } = useLanguage();
 
@@ -269,8 +275,8 @@ function GradeAdjustmentTable({
           <h2 className="text-sm font-bold text-[var(--text-primary)]">{t("ปรับคะแนน", "Grade Adjustment")}</h2>
           <p className="text-xs text-gray-400 mt-0.5">
             {t(
-              `${rows.length} รายการ — กด "ตรวจสอบ/ขอตรวจใหม่" เพื่อแก้คะแนนรายเกณฑ์ หรือกด Re-grade เพื่อให้ AI ตรวจใหม่ทั้งชิ้น`,
-              `${rows.length} row(s) — open Review/Recheck to edit per-criterion scores, or Re-grade to have AI re-check the whole submission`
+              `${rows.length} รายการ — กด "ตรวจ" เพื่อแก้คะแนนรายเกณฑ์ หรือกด Re-grade เพื่อให้ AI ตรวจใหม่ทั้งชิ้น`,
+              `${rows.length} row(s) — open Grade to edit per-criterion scores, or Re-grade to have AI re-check the whole submission`
             )}
           </p>
         </div>
@@ -313,7 +319,7 @@ function GradeAdjustmentTable({
                 <th scope="col" className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">{t("วันที่ส่ง", "Submitted")}</th>
                 <th scope="col" className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">{t("คะแนน", "Score")}</th>
                 <th scope="col" className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">{t("สถานะ", "Status")}</th>
-                <th scope="col" className="px-4 py-2.5 w-32" aria-label={t("ตรวจสอบ", "Review")}></th>
+                <th scope="col" className="px-4 py-2.5 w-32" aria-label={t("ตรวจ", "Grade")}></th>
                 <th scope="col" className="px-4 py-2.5 w-32" aria-label={t("Re-grade", "Re-grade")}></th>
               </tr>
             </thead>
@@ -331,6 +337,7 @@ function GradeAdjustmentTable({
                   rowState={rowStates[row.key] ?? { regrading: false }}
                   onRegrade={() => handleRegrade(row)}
                   reviewHref={`/teacher/courses/${courseId}/assignments/${assignmentId}/recheck?sub=${row.subs[0].id}`}
+                  acceptsFiles={acceptsFiles}
                 />
               ))}
             </tbody>
@@ -615,6 +622,7 @@ export default function GradingProgressPage() {
           assignmentId={assignmentId}
           isGroup={isGroupAssignment}
           onSaveAll={handleSaveChanges}
+          acceptsFiles={assignment.acceptsFiles ?? true}
         />
       </main>
   );

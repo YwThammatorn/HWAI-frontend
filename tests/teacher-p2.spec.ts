@@ -16,6 +16,7 @@ interface AssignmentSeed {
   description: string; dueDate: string; maxPoints: number;
   submissionType: "individual" | "group";
   attachments: unknown[]; createdAt: string; updatedAt: string;
+  acceptsFiles?: boolean;
 }
 
 interface SubmissionSeed {
@@ -101,13 +102,16 @@ test.describe("P2 — Teacher Grade Adjustment", () => {
     await expect(row.getByText("AI: 72")).toBeVisible();
   });
 
-  test("Review/Recheck link is the only way to grade — it goes to the per-submission recheck page", async ({ page }) => {
+  test("Grade link is the only way to edit a score, and shows on every row regardless of status", async ({ page }) => {
     await seedGrading(page);
     await page.goto(`${BASE}/teacher/courses/c-p2/assignments/a-p2/grading`);
     await page.waitForLoadState("networkidle");
-    // Neither seeded submission is need_review/graded yet, so no Review/Recheck link shows —
-    // this just confirms the table renders without one until a submission reaches that state.
-    await expect(page.getByRole("link", { name: /Review|Recheck/i })).toHaveCount(0);
+    // Both seeded submissions are not_graded (no AI score yet) — the Grade link (23/9/2569 round 3,
+    // was gated on need_review/graded, hidden until an AI score existed) now shows for every row so a
+    // teacher can jump straight into grading without waiting on/needing an AI pass.
+    const links = page.getByRole("link", { name: /^Grade$/i });
+    await expect(links).toHaveCount(2);
+    await expect(links.first()).toHaveAttribute("href", /\/recheck\?sub=sub-1/);
   });
 
   test("Re-grade button shows spinner then updates score", async ({ page }) => {
@@ -122,6 +126,22 @@ test.describe("P2 — Teacher Grade Adjustment", () => {
     // After completion, score cell updates (wait up to 3s)
     await page.waitForTimeout(2000);
     await expect(regradeBtn).toBeEnabled();
+  });
+
+  test("an assignment that doesn't accept files has no Re-grade button, but the Grade link still works on a not_graded row", async ({ page }) => {
+    await page.addInitScript((data) => {
+      localStorage.setItem("hwai_lang", "en");
+      localStorage.setItem("hwai_user", JSON.stringify({ name: "Dr. Smith", email: "smith@kmitl.ac.th", role: "teacher" }));
+      localStorage.setItem("hwai_courses_v2", JSON.stringify([data.course]));
+      localStorage.setItem("hwai_assignments_v1", JSON.stringify([{ ...data.assignment, acceptsFiles: false }]));
+      localStorage.setItem("hwai_submissions_v1", JSON.stringify([data.subA, data.subB]));
+    }, { course: COURSE, assignment: ASSIGNMENT, subA: SUBMISSION_A, subB: SUBMISSION_B });
+    await page.goto(`${BASE}/teacher/courses/c-p2/assignments/a-p2/grading`);
+    await page.waitForLoadState("networkidle");
+    await expect(page.getByRole("button", { name: /re.grade/i })).toHaveCount(0);
+    const links = page.getByRole("link", { name: /^Grade$/i });
+    await expect(links).toHaveCount(2);
+    await expect(links.first()).toHaveAttribute("href", /\/recheck\?sub=sub-1/);
   });
 
 });
