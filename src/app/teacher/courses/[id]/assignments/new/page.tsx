@@ -373,9 +373,14 @@ export default function NewAssignmentPage() {
           )}
 
           {/* Actions */}
-          <div className="flex items-center justify-end gap-3 mt-8 pt-6 pb-4 border-t border-gray-100">
+          {/* flex-wrap + basis-full (23/9/2569): on a narrower viewport, a plain inline sibling next
+              to the two buttons got flex-shrunk down to almost nothing and wrapped one word per line,
+              crammed against the sidebar — unreadable, which is why the "must fill in the rubric"
+              warning looked like it wasn't showing at all. basis-full forces it onto its own full-width
+              line above the buttons at any viewport size. */}
+          <div className="flex flex-wrap items-center justify-end gap-3 mt-8 pt-6 pb-4 border-t border-gray-100">
             {!isExam && !pointsOk && (
-              <span className="text-xs text-amber-600 mr-auto">{t("ทุกเกณฑ์ต้องมีคะแนนมากกว่า 0 ก่อนสร้างชิ้นงาน", "Every criterion needs more than 0 points before you can create the assignment")}</span>
+              <span className="text-xs text-amber-600 basis-full text-left">{t("ทุกเกณฑ์ต้องมีคะแนนมากกว่า 0 ก่อนสร้างชิ้นงาน", "Every criterion needs more than 0 points before you can create the assignment")}</span>
             )}
             <button
               type="button"

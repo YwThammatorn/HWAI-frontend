@@ -138,40 +138,41 @@ export default function RubricEditorPage() {
       />
 
       {/* Footer actions */}
-      <div className="flex items-center justify-between mt-8 pt-6 border-t border-gray-100">
+      {/* flex-wrap + basis-full (23/9/2569): the warning used to share a small flex row with just the
+          Save button and had no room to wrap normally on a narrower viewport — it got squeezed into a
+          one-word-per-line column, unreadable. basis-full puts it on its own full-width line instead. */}
+      <div className="flex flex-wrap items-center justify-between gap-3 mt-8 pt-6 border-t border-gray-100">
+        {!pointsOk && (
+          <span className="text-xs text-amber-500 basis-full text-left order-first">
+            {t("ทุกเกณฑ์ต้องมีคะแนนมากกว่า 0", "Every criterion needs more than 0 points")}
+          </span>
+        )}
         <button
           onClick={() => navAway(`/teacher/courses/${id}/assignments/${assignmentId}/edit`)}
           className="px-5 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-500 hover:bg-gray-50 transition-colors"
         >
           {t("ยกเลิก", "Discard")}
         </button>
-        <div className="flex items-center gap-3">
-          {!pointsOk && (
-            <span className="text-xs text-amber-500">
-              {t("ทุกเกณฑ์ต้องมีคะแนนมากกว่า 0", "Every criterion needs more than 0 points")}
+        <button
+          onClick={handleSave}
+          disabled={!pointsOk || saved}
+          className={`px-6 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+            saved
+              ? "bg-green-500 text-white"
+              : pointsOk
+                ? "bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)]"
+                : "bg-gray-100 text-gray-300 cursor-not-allowed"
+          }`}
+        >
+          {saved ? (
+            <span className="flex items-center gap-2">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              {t("บันทึกแล้ว", "Saved!")}
             </span>
-          )}
-          <button
-            onClick={handleSave}
-            disabled={!pointsOk || saved}
-            className={`px-6 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-              saved
-                ? "bg-green-500 text-white"
-                : pointsOk
-                  ? "bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)]"
-                  : "bg-gray-100 text-gray-300 cursor-not-allowed"
-            }`}
-          >
-            {saved ? (
-              <span className="flex items-center gap-2">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                  <polyline points="20 6 9 17 4 12"/>
-                </svg>
-                {t("บันทึกแล้ว", "Saved!")}
-              </span>
-            ) : t("บันทึก Rubric", "Save Rubric")}
-          </button>
-        </div>
+          ) : t("บันทึก Rubric", "Save Rubric")}
+        </button>
       </div>
     </main>
   );
