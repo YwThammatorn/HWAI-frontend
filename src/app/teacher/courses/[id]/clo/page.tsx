@@ -91,11 +91,10 @@ export default function CLOPage() {
   const showEmpty = clos.length === 0 && formMode === "idle";
 
   return (
-      // Capped, not full-bleed (23/9/2569): CLO is a short list (code + one line of text), so on a
-      // wide screen a `w-full` table let the CLO Text column stretch to fill the leftover space —
-      // Linked Criteria/Actions then sat behind a huge blank gap, reading as pushed off to the right
-      // and detached from the row's actual content. A real table's natural fix.
-      <main className="w-full max-w-[960px] px-8 py-10">
+      // Full-bleed like the other course pages (23/9/2569 follow-up — user asked for this back after
+      // a first pass capped the page width). The table itself is capped instead (see below), so the
+      // page frame matches its siblings without the CLO Text column stretching to fill the page.
+      <main className="w-full px-8 py-10">
 
         {/* Back */}
         <button
@@ -155,8 +154,11 @@ export default function CLOPage() {
             {/* A real <table> (DESIGN.md §9b) instead of a fixed-column CSS grid — the grid's `1fr` text
                 column used to stretch edge-to-edge on a wide screen, leaving a large dead gap before the
                 Linked Criteria/Actions columns and making them read as detached, off to the right
-                (flagged 23/9/2569). A table's columns size to content instead. */}
-            <table className="w-full text-sm">
+                (flagged 23/9/2569). No `w-full` here on purpose: the page itself is full-bleed like its
+                siblings, but the table sizes to its own (short) content and sits left-aligned inside the
+                card instead of being stretched to fill it — CLO Text gets a max width so a long
+                paragraph still wraps sanely instead of forcing the row very wide. */}
+            <table className="text-sm">
               <thead>
                 <tr className="border-b border-[var(--border-subtle)]">
                   <th className="px-4 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider whitespace-nowrap">{t("รหัส", "Code")}</th>
@@ -183,7 +185,7 @@ export default function CLOPage() {
                     </td>
 
                     {/* Text */}
-                    <td className="px-4 py-4 align-top text-sm text-[var(--text-primary)] leading-relaxed">{clo.text}</td>
+                    <td className="px-4 py-4 align-top text-sm text-[var(--text-primary)] leading-relaxed max-w-[560px]">{clo.text}</td>
 
                     {/* เกณฑ์ผูก — always "not linked yet"; CLO↔criteria linking isn't built (deferred). */}
                     <td className="px-4 py-4 align-top whitespace-nowrap">
