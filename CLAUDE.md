@@ -19,8 +19,8 @@
 
 ## Current active task
 _(อัปเดตช่องนี้ทุกครั้งที่เริ่ม task ใหม่ — ดูรายละเอียดที่ HANDOFF.md)_
-- Task: round 3 feedback (23/9) — unify Grading page's Review/Recheck into one "Grade" link (shown on every row, no more AI-score gate), Re-grade hidden for no-file assignments, `needsManualScore = isExam || !acceptsFiles` on New/Edit, Edit Assignment absorbs rubric editing inline (standalone `rubrics/[rubricId]` route deleted), recheck's AI Confidence panel hidden pre-AI-grading
-- Status: **done and pushed** (78f51fa, e91bc24, 0b7d4bc) — see HANDOFF.md. All prior rounds also fully done and pushed.
+- Task: round 3 feedback (23/9) — unify Grading page's Review/Recheck into one "Grade" link (shown on every row, no more AI-score gate), Re-grade hidden for no-file assignments, `needsManualScore = isExam || !acceptsFiles` on New/Edit, Edit Assignment absorbs rubric editing inline + now fully matches New's 2-column layout/breadcrumb (standalone `rubrics/[rubricId]` route deleted), recheck's AI Confidence panel hidden pre-AI-grading
+- Status: **done and pushed** (78f51fa, e91bc24, 0b7d4bc, 3c18121) — see HANDOFF.md. All prior rounds also fully done and pushed.
 
 # i18n Rule (TH/EN Language Toggle)
 

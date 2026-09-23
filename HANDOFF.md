@@ -553,6 +553,19 @@ page shows the Grade link with no Re-grade button on a `not_graded` row; opening
 (`instructorScore`, `status: "graded"`) on Save; Edit Assignment's inline rubric editor renders an
 existing rubric's real criteria (points, % hints, AI Rubric Assistant) exactly like New Assignment's.
 
+## Unrelated (23/9): Edit Assignment layout now fully matches New Assignment (pushed 3c18121)
+User: "หน้า edit ให้ทำเหมือนหน้าตอน create assignment เลย" — round 3 above only merged the rubric
+editor and matched `<main>`'s max-width; the rest of Edit was still stacked single-column while New
+uses a 2-column grid. Converted Edit to the exact same structure: `grid grid-cols-1 xl:grid-cols-2`
+(General Info + Description left, Deadline & Score + Submission Settings right), replaced the old
+"Back to assignment" chevron button with the same breadcrumb component New uses (Courses / course /
+Assignments / current page), switched the Rubric section from a card to New's plain non-card style
+(icon+heading+description, full width below the grid), and added New's Enter-doesn't-submit guard on
+the form (rubric fields live here too now). Danger Zone (no New equivalent) stays a full-width card
+below Rubric. Verified live at 1600px: General Information x≈322, Deadline & Score x≈972 — genuinely
+two side-by-side columns, `<main>` maxWidth still `none`. Full suite 358/30 unaffected; lint baseline
+unchanged (16 errors, same as the previous round).
+
 ## Not done / open
 - Score Book is read-only by design; if the teacher wants to type scores into cells, that is a new decision (Grading pages own edits today). Finalized assignments are additionally locked from click-through (23/9, this batch).
 - `gradeLetter` still exists locally in the two per-assignment results pages (the Score Book uses `lib/scoreBook.ts`); could be unified later.
