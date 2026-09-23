@@ -151,7 +151,10 @@ export default function RecheckPage() {
       });
     });
     setSaved(true);
-    setTimeout(() => router.push(`/teacher/courses/${id}/assignments/${assignmentId}/results`), 1000);
+    // Go back to wherever the teacher opened this recheck from (23/9/2569, was always the per-assignment
+    // Results page) — recheck is reachable from the Grading page, the per-assignment Results drill-down,
+    // and the course-level Score Book, so a fixed destination was wrong for at least two of the three.
+    setTimeout(() => router.back(), 1000);
   }
 
   const criteriaMap = Object.fromEntries(
