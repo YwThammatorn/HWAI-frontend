@@ -32,6 +32,15 @@ export default function StudentsRosterPage() {
   // "#" is the student's place on the roster, so it must not change while sorting or filtering.
   const rosterNo = new Map(students.map((s, i) => [s.id, i + 1]));
 
+  // Display-only full names for the 3 known abbreviations (same map as admin/users.tsx — `program`
+  // isn't FK-enforced, see CohortStudent.program, so this is deliberately duplicated per-page rather
+  // than shared); falls back to the raw value for anything else.
+  const PROGRAM_LABEL: Record<string, string> = {
+    CE: t("วิศวกรรมคอมพิวเตอร์", "Computer Engineering"),
+    CECS: t("วิศวกรรมคอมพิวเตอร์และความมั่นคงปลอดภัยไซเบอร์", "Computer Engineering and Cybersecurity"),
+    CEI: t("วิศวกรรมคอมพิวเตอร์นานาชาติ", "Computer Engineering International"),
+  };
+
   // Status (22-23/9/2569): per-section enrollment status, NOT CohortStudent.status (account-level
   // active/inactive — a different field, see lib/students.ts's own comment on enrollmentStatus). The
   // teacher toggles between "enrolled" and "withdrawn"; "added-midterm" is a historical marker
@@ -182,7 +191,8 @@ export default function StudentsRosterPage() {
               <div className="overflow-x-auto">
                 {/* Same base column layout as the admin Students tab: ID · Title · Name (first + last
                     together) · Email. The honorific and Program live on the central student record, so
-                    they're looked up by student ID. Cohort/Status/Actions added 23/9/2569. */}
+                    they're looked up by student ID. Status/Actions added 23/9/2569; Cohort column
+                    dropped 23/9/2569 (unused — the sidebar already scopes to one course/cohort). */}
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-[var(--border-subtle)]">
@@ -193,7 +203,6 @@ export default function StudentsRosterPage() {
                       <SortableTh label={t("ชื่อ-นามสกุล", "Name")} dir={sort?.key === "name" ? sort.dir : undefined} onClick={() => cycleSort("name")}
                         hint={t("คลิกเพื่อเรียงตามชื่อ (ก–ฮ → ฮ–ก → ลำดับเดิม)", "Click to sort by name (A–Z → Z–A → roster order)")} />
                       <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("อีเมล", "Email")}</th>
-                      <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("รุ่น", "Cohort")}</th>
                       <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("สาขา", "Program")}</th>
                       <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("สถานะ", "Status")}</th>
                       <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("จัดการ", "Actions")}</th>
@@ -202,7 +211,7 @@ export default function StudentsRosterPage() {
                   <tbody>
                     {visible.length === 0 && (
                       <tr>
-                        <td colSpan={9} className="px-4 py-8 text-center text-sm text-[var(--text-muted)]">{t("ไม่พบผลการค้นหา", "No results found")}</td>
+                        <td colSpan={8} className="px-4 py-8 text-center text-sm text-[var(--text-muted)]">{t("ไม่พบผลการค้นหา", "No results found")}</td>
                       </tr>
                     )}
                     {visible.map((s) => {
@@ -215,8 +224,9 @@ export default function StudentsRosterPage() {
                           <td className="px-4 py-2 text-[var(--text-secondary)]">{findByStudentId(s.studentId)?.title || "-"}</td>
                           <td className="px-4 py-2 font-medium text-[var(--text-primary)]">{s.firstName} {s.lastName}</td>
                           <td className="px-4 py-2 text-[var(--text-secondary)]">{s.email || "—"}</td>
-                          <td className="px-4 py-2 text-[var(--text-secondary)]">{s.cohort || "—"}</td>
-                          <td className="px-4 py-2 text-[var(--text-secondary)]">{findByStudentId(s.studentId)?.program || "—"}</td>
+                          <td className="px-4 py-2 text-[var(--text-secondary)]">
+                            {(() => { const p = findByStudentId(s.studentId)?.program; return p ? (PROGRAM_LABEL[p] ?? p) : "—"; })()}
+                          </td>
                           <td className="px-4 py-2">
                             <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold border ${statusToneClasses(status)}`}>
                               {statusLabel(status)}

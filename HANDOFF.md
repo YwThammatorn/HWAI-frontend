@@ -391,6 +391,77 @@ documented gap in seed-commands.txt, not a bug).
   the only spec touching these fixtures, only visits `a-mock-1`-specific URLs). No app code changed — mock
   data only.
 
+## Unrelated (23/9): CLO page mockup+layout fix, Grade Adjustment reverted to read-only, Students table cleanup
+User feedback batch, several of them corrections to earlier work in this session.
+
+### CLO page: real mockup data + fixed a layout bug (screenshot: table content "leaning right")
+- `src/app/teacher/courses/[id]/clo/page.tsx`: the row list was a fixed-column CSS grid
+  (`88px 1fr 170px 76px`) — on a wide screen the `1fr` CLO Text column stretched to fill all
+  remaining space, leaving a large blank gap before the Linked Criteria/Actions columns, which read
+  as detached and pushed off to the right. Converted to a real `<table>` (DESIGN.md §9b, the pattern
+  every sibling table already uses) so columns size to content instead, **and** capped the page to
+  `max-w-[960px]` (was `w-full`) since a 4-row CLO list is inherently narrow content — confirmed live
+  at 1600px viewport: CLO Text column went from 867px (stretched) to 514px (content-sized), table
+  886px instead of spanning the full 1600px main.
+- Added real mock CLO data for the `c-mock-1` demo course (`public/mock-data/student-flow-mockup.json`
+  + `-en.json` + `test-data/` copies, `clos` array, 4 CLOs matching the course's own assignment content
+  — variables/quiz1, data structures/quiz2, functions/lab5, teamwork/group projects) — c-mock-1 had none
+  before (the 1-CLO gibberish row in the screenshot was the user's own manual test via "+ Add CLO").
+  **Also updated `test-data/seed-commands.txt`**: step [5] (TH) and [10] (EN) now also seed
+  `hwai_clos_v1` from the same fetch, and the reset-all command's key list includes it too — without
+  this the new `clos` data would sit in the JSON unused.
+- "Linked Criteria" always shows "No linked criteria" regardless of CLO — that's the real current app
+  state, not a bug: `CLO` (`lib/clo.ts`) has no criteria-linking field at all yet (deferred feature,
+  tracked since 19/9).
+
+### Grading page "Grade Adjustment": Score reverted to read-only (corrects the 22/9 change)
+User: the 22/9 "merge AI Score + Instructor Score into one editable column" was a **misreading** —
+the actual ask was to remove the Instructor Score column, full stop. The instructor only ever edits a
+score by opening Review/Recheck and adjusting it per criterion; this table should just show the
+current score, not offer a second, shortcut way to edit it.
+- `…/grading/page.tsx`: removed the editable `<input>` (and the whole "Save All" batch-save mechanic
+  that existed to persist it: `handleSaveAll`, `modifiedCount`, the per-row `instructorScore` string in
+  `RowState`, the header Save/​"Saved ✓" UI). The Score cell is now plain text: the instructor's saved
+  override if one exists, else the AI's own score (`rep.instructorScore ?? rep.aiScore`); "Edited" +
+  the amber tint + an "AI: N" hint still appear when a saved override differs from the AI score — same
+  visual signal as before, just driven by saved data instead of a live-typed value. Re-grade is
+  untouched (it already saves immediately per row, no "Save" step involved). Section description
+  updated to say so. Also fixed a pre-existing off-by-one `colSpan` (7 instead of 6) on the empty-state
+  row, noticed while touching this table.
+- Tests: rewrote the input-dependent parts of `teacher-p2.spec.ts` (dropped 4 tests that only existed
+  to verify the removed input/Save mechanics; added one for the read-only display + the saved-override
+  "Edited" state), `teacher-grading-split.spec.ts` ("filtering does not lose an edited score" → there's
+  no more live state to lose, replaced with a plain filter-round-trip row-count check),
+  `teacher-p5-group-grading.spec.ts` (team fan-out is now tested via Re-grade instead of the removed
+  manual save, since Re-grade already fans a team's score to every member), and the real end-to-end
+  `e2e-group-assignment-flow.spec.ts` (teacher grading step now goes Re-grade → Recheck → the recheck
+  page's own manual-total-score input, since this fixture's assignment has no rubric — matches the
+  corrected UX exactly and doubles as live coverage of the isExam-style no-rubric recheck fallback from
+  sub-task 4). Full suite green after (see final count below).
+
+### Teacher Students table: Program shown as its full name, Cohort column removed
+User: "program ใช้ตัวเต็มนะ แล้วก็เอา column cohort ออกคับ ไม่ได้ใช้แล้ว" (use the full program name;
+Cohort column is unused, remove it).
+- `…/students/page.tsx`: added a local `PROGRAM_LABEL` map (CE/CECS/CEI → full bilingual names) —
+  the exact same map `admin/users.tsx` already has inline for the same reason (`program` is a free-text
+  field, not FK-enforced, per that file's own comment) — deliberately duplicated per-page rather than
+  extracted into a shared module, matching that existing precedent instead of introducing a new one.
+  Dropped the Cohort `<th>`/`<td>` entirely (column count 9→8, `colSpan` on the empty-state row
+  updated). Verified live: Program column now reads "Computer Engineering" / "Computer Engineering and
+  Cybersecurity" / "Computer Engineering International" instead of "CE"/"CECS"/"CEI".
+- Tests: `tests/teacher-roster-table.spec.ts` column-header-list assertions (EN/TH) updated to 8
+  columns, Program assertion updated to the full name, all `.nth()` cell indices past Email shifted
+  down by one (Cohort's removal), describe block retitled "Program / Status".
+
+### Explaining two items the user asked about directly (no code changes, already shipped in sub-task 4)
+- **isExam**: see the sub-task 4 entry above — an `Assignment.isExam` toggle on the New/Edit Assignment
+  forms that swaps the rubric-derived Max Score for a manual one and skips the rubric entirely; verified
+  again live this round via the Grading page's Score column and the recheck page's manual-score fallback.
+- **Blocking "Add Assignment" without a filled-in rubric**: already implemented in sub-task 4
+  (`criteriaPointsOk` gates the Create button; the amber banner + a message next to Create explain why).
+  Re-verified live this round: setting a criterion's points to 0 disables Create and shows "Every
+  criterion needs more than 0 points before you can create the assignment" right next to the button.
+
 ## Not done / open
 - Score Book is read-only by design; if the teacher wants to type scores into cells, that is a new decision (Grading pages own edits today). Finalized assignments are additionally locked from click-through (23/9, this batch).
 - `gradeLetter` still exists locally in the two per-assignment results pages (the Score Book uses `lib/scoreBook.ts`); could be unified later.
