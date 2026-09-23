@@ -114,9 +114,8 @@ export default function ImportStudentsPage() {
 
   function handleImport() {
     setImporting(true);
-    addStudents(id, validRows.map(({ studentId, firstName, lastName, email, match }) => ({
+    addStudents(id, validRows.map(({ studentId, firstName, lastName, email }) => ({
       studentId, firstName, lastName, email,
-      cohort: match?.cohort,
       enrollmentStatus: "enrolled" as const,
     })));
     setImporting(false);

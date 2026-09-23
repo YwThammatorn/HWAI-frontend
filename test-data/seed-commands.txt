@@ -141,6 +141,6 @@ fetch('/mock-data/curriculum-mockup-en.json').then(r=>r.json()).then(d=>{localSt
 - teachers-mockup.json ใช้ courseId ที่ตรงกับ courses-mockup.json (c-mock-1..6) ทำ [2] ก่อน [3] เสมอ
 - student-flow-mockup.json ก็ใช้ courseId c-mock-1 เหมือนกัน ทำ [2] ก่อน [5] เสมอ
 - students_sample.csv ([3b]) กับ course-import-test.csv ([7]) เป็นคนละไฟล์ คนละหน้า แต่ ID ใช้ scheme เดียวกัน:
-  — [3b] คือ import นักศึกษาเข้า cohort กลางของระบบ (ผ่าน /admin/users, format 6 คอลัมน์ studentId,firstName,lastName,email,cohort,program)
+  — [3b] คือ import นักศึกษาเข้า cohort กลางของระบบ (ผ่าน /admin/users, format 5 คอลัมน์ studentId,firstName,lastName,email,program — cohort field ถูกเอาออกแล้ว 23/9/2569)
   — [7] คือ import นักศึกษาที่มีอยู่ใน cohort แล้ว เข้าไปลงทะเบียนวิชาใดวิชาหนึ่ง (ผ่านหน้า course ของอาจารย์, format 4 คอลัมน์ student_id,first_name,last_name,email)
   — ทำ [3b] เสร็จแล้ว คนที่เพิ่งนำเข้ามา (เช่น 69070109-118) ก็เอาไปใส่ใน CSV แบบ [7] เพื่อทดสอบ import เข้าวิชาต่อได้เลย

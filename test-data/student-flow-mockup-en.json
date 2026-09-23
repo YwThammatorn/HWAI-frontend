@@ -1,23 +1,23 @@
 {
   "cohortStudents": [
-    { "id": "cs-mock-1", "studentId": "69070101", "title": "Mr.", "firstName": "Somchai", "lastName": "Jaidee", "email": "69070101@kmitl.ac.th", "cohort": "CE69", "program": "CE", "status": "active" },
-    { "id": "cs-mock-2", "studentId": "69070102", "title": "Ms.", "firstName": "Suda", "lastName": "Wongsa", "email": "69070102@kmitl.ac.th", "cohort": "CE69", "program": "CECS", "status": "active" },
-    { "id": "cs-mock-3", "studentId": "69070103", "title": "Mr.", "firstName": "Anucha", "lastName": "Phanphet", "email": "69070103@kmitl.ac.th", "cohort": "CE69", "program": "CEI", "status": "active" },
-    { "id": "cs-mock-4", "studentId": "68020101", "title": "Mr.", "firstName": "Phurich", "lastName": "Wongsawat", "email": "68020101@kmitl.ac.th", "cohort": "CE68", "program": "CE", "status": "active" },
-    { "id": "cs-mock-5", "studentId": "67010101", "title": "Mr.", "firstName": "Nattawut", "lastName": "Srisuk", "email": "67010101@kmitl.ac.th", "cohort": "CE67", "program": "CE", "status": "inactive" },
-    { "id": "cs-mock-6", "studentId": "69070104", "title": "Mr.", "firstName": "Kamon", "lastName": "Poonsup", "email": "69070104@kmitl.ac.th", "cohort": "CE69", "program": "CE", "status": "active" },
-    { "id": "cs-mock-7", "studentId": "69070105", "title": "Ms.", "firstName": "Preeya", "lastName": "Saengthong", "email": "69070105@kmitl.ac.th", "cohort": "CE69", "program": "CECS", "status": "active" },
-    { "id": "cs-mock-8", "studentId": "69070106", "title": "Mr.", "firstName": "Theerapong", "lastName": "Mankong", "email": "69070106@kmitl.ac.th", "cohort": "CE69", "program": "CEI", "status": "active" },
-    { "id": "cs-mock-9", "studentId": "69070107", "title": "Ms.", "firstName": "Wanna", "lastName": "Chukiat", "email": "69070107@kmitl.ac.th", "cohort": "CE69", "program": "CE", "status": "active" },
-    { "id": "cs-mock-10", "studentId": "69070108", "title": "Mr.", "firstName": "Sittichai", "lastName": "Phongam", "email": "69070108@kmitl.ac.th", "cohort": "CE69", "program": "CE", "status": "active" },
-    { "id": "cs-mock-11", "studentId": "68020102", "title": "Ms.", "firstName": "Nantana", "lastName": "Thongdee", "email": "68020102@kmitl.ac.th", "cohort": "CE68", "program": "CE", "status": "active" },
-    { "id": "cs-mock-12", "studentId": "68020103", "title": "Mr.", "firstName": "Adisorn", "lastName": "Boonruang", "email": "68020103@kmitl.ac.th", "cohort": "CE68", "program": "CECS", "status": "active" },
-    { "id": "cs-mock-13", "studentId": "68020104", "title": "Ms.", "firstName": "Malee", "lastName": "Rungruang", "email": "68020104@kmitl.ac.th", "cohort": "CE68", "program": "CEI", "status": "active" }
+    { "id": "cs-mock-1", "studentId": "69070101", "title": "Mr.", "firstName": "Somchai", "lastName": "Jaidee", "email": "69070101@kmitl.ac.th", "program": "CE", "status": "active" },
+    { "id": "cs-mock-2", "studentId": "69070102", "title": "Ms.", "firstName": "Suda", "lastName": "Wongsa", "email": "69070102@kmitl.ac.th", "program": "CECS", "status": "active" },
+    { "id": "cs-mock-3", "studentId": "69070103", "title": "Mr.", "firstName": "Anucha", "lastName": "Phanphet", "email": "69070103@kmitl.ac.th", "program": "CEI", "status": "active" },
+    { "id": "cs-mock-4", "studentId": "68020101", "title": "Mr.", "firstName": "Phurich", "lastName": "Wongsawat", "email": "68020101@kmitl.ac.th", "program": "CE", "status": "active" },
+    { "id": "cs-mock-5", "studentId": "67010101", "title": "Mr.", "firstName": "Nattawut", "lastName": "Srisuk", "email": "67010101@kmitl.ac.th", "program": "CE", "status": "inactive" },
+    { "id": "cs-mock-6", "studentId": "69070104", "title": "Mr.", "firstName": "Kamon", "lastName": "Poonsup", "email": "69070104@kmitl.ac.th", "program": "CE", "status": "active" },
+    { "id": "cs-mock-7", "studentId": "69070105", "title": "Ms.", "firstName": "Preeya", "lastName": "Saengthong", "email": "69070105@kmitl.ac.th", "program": "CECS", "status": "active" },
+    { "id": "cs-mock-8", "studentId": "69070106", "title": "Mr.", "firstName": "Theerapong", "lastName": "Mankong", "email": "69070106@kmitl.ac.th", "program": "CEI", "status": "active" },
+    { "id": "cs-mock-9", "studentId": "69070107", "title": "Ms.", "firstName": "Wanna", "lastName": "Chukiat", "email": "69070107@kmitl.ac.th", "program": "CE", "status": "active" },
+    { "id": "cs-mock-10", "studentId": "69070108", "title": "Mr.", "firstName": "Sittichai", "lastName": "Phongam", "email": "69070108@kmitl.ac.th", "program": "CE", "status": "active" },
+    { "id": "cs-mock-11", "studentId": "68020102", "title": "Ms.", "firstName": "Nantana", "lastName": "Thongdee", "email": "68020102@kmitl.ac.th", "program": "CE", "status": "active" },
+    { "id": "cs-mock-12", "studentId": "68020103", "title": "Mr.", "firstName": "Adisorn", "lastName": "Boonruang", "email": "68020103@kmitl.ac.th", "program": "CECS", "status": "active" },
+    { "id": "cs-mock-13", "studentId": "68020104", "title": "Ms.", "firstName": "Malee", "lastName": "Rungruang", "email": "68020104@kmitl.ac.th", "program": "CEI", "status": "active" }
   ],
   "courseStudents": [
-    { "id": "s-roster-1", "courseId": "c-mock-1", "studentId": "69070101", "firstName": "Somchai", "lastName": "Jaidee", "email": "69070101@kmitl.ac.th", "cohort": "CE69", "sequenceNumber": 1, "enrollmentStatus": "enrolled" },
-    { "id": "s-roster-2", "courseId": "c-mock-1", "studentId": "69070102", "firstName": "Suda", "lastName": "Wongsa", "email": "69070102@kmitl.ac.th", "cohort": "CE69", "sequenceNumber": 2, "enrollmentStatus": "enrolled" },
-    { "id": "s-roster-3", "courseId": "c-mock-1", "studentId": "69070103", "firstName": "Anucha", "lastName": "Phanphet", "email": "69070103@kmitl.ac.th", "cohort": "CE69", "sequenceNumber": 3, "enrollmentStatus": "enrolled" }
+    { "id": "s-roster-1", "courseId": "c-mock-1", "studentId": "69070101", "firstName": "Somchai", "lastName": "Jaidee", "email": "69070101@kmitl.ac.th", "sequenceNumber": 1, "enrollmentStatus": "enrolled" },
+    { "id": "s-roster-2", "courseId": "c-mock-1", "studentId": "69070102", "firstName": "Suda", "lastName": "Wongsa", "email": "69070102@kmitl.ac.th", "sequenceNumber": 2, "enrollmentStatus": "enrolled" },
+    { "id": "s-roster-3", "courseId": "c-mock-1", "studentId": "69070103", "firstName": "Anucha", "lastName": "Phanphet", "email": "69070103@kmitl.ac.th", "sequenceNumber": 3, "enrollmentStatus": "enrolled" }
   ],
   "gradingCategories": [
     { "id": "gcat-seed-c1-1", "courseId": "c-mock-1", "name": "Assignments", "weight": 40, "createdAt": "2026-07-01T09:00:00.000Z", "updatedAt": "2026-07-01T09:00:00.000Z" },

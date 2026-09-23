@@ -52,14 +52,6 @@ export default function CohortStudentProvider({ children }: { children: React.Re
     return cohortStudents.find((s) => s.studentId === studentId);
   }
 
-  function getCohorts(): string[] {
-    return [...new Set(cohortStudents.map((s) => s.cohort))].sort();
-  }
-
-  function getStudentsByCohort(cohort: string) {
-    return cohortStudents.filter((s) => s.cohort === cohort);
-  }
-
   return (
     <CohortStudentContext.Provider
       value={{
@@ -68,8 +60,6 @@ export default function CohortStudentProvider({ children }: { children: React.Re
         updateCohortStudent,
         removeCohortStudent,
         findByStudentId,
-        getCohorts,
-        getStudentsByCohort,
       }}
     >
       {children}

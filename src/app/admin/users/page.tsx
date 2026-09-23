@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import { useManagedTeachers, ManagedTeacher, splitTeacherTitle } from "@/lib/managed-teachers";
-import { useCohortStudents, CohortStudent, cohortYearLabel } from "@/lib/cohort-students";
+import { useCohortStudents, CohortStudent } from "@/lib/cohort-students";
 import { getInitials } from "@/lib/utils";
 import { splitCsvLine } from "@/lib/csv";
 import EmptyState from "@/components/EmptyState";
@@ -509,13 +509,13 @@ function expectedStudentEmail(studentId: string) {
 
 interface ParsedStudentRow {
   studentId: string; title: string; firstName: string; lastName: string;
-  email: string; cohort: string; program: string;
+  email: string; program: string;
   error?: StudentRowError;
 }
 
 interface StudentParseResult { rows: ParsedStudentRow[]; totalErrors: number; }
 
-const REQUIRED_STUDENT_COLS = ["studentId", "firstName", "lastName", "email", "cohort", "program"] as const;
+const REQUIRED_STUDENT_COLS = ["studentId", "firstName", "lastName", "email", "program"] as const;
 
 function parseStudentCsv(raw: string): StudentParseResult {
   const text = raw.charCodeAt(0) === 0xfeff ? raw.slice(1) : raw;
@@ -531,7 +531,6 @@ function parseStudentCsv(raw: string): StudentParseResult {
       firstName: cells[colIndex.firstName] ?? "",
       lastName: cells[colIndex.lastName] ?? "",
       email: cells[colIndex.email] ?? "",
-      cohort: cells[colIndex.cohort] ?? "",
       program: cells[colIndex.program] ?? "",
     };
     const missing = REQUIRED_STUDENT_COLS.filter((k) => !row[k]);
@@ -572,7 +571,7 @@ function ImportStudentModal({ open, onClose }: { open: boolean; onClose: () => v
   function handleImport() {
     if (!validRows.length) return;
     setImporting(true);
-    addCohortStudents(validRows.map((r) => ({ studentId: r.studentId, title: r.title || undefined, firstName: r.firstName, lastName: r.lastName, email: r.email, cohort: r.cohort, program: r.program })));
+    addCohortStudents(validRows.map((r) => ({ studentId: r.studentId, title: r.title || undefined, firstName: r.firstName, lastName: r.lastName, email: r.email, program: r.program })));
     setImporting(false);
     setDone(true);
   }
@@ -624,7 +623,7 @@ function ImportStudentModal({ open, onClose }: { open: boolean; onClose: () => v
               <line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>
             </svg>
             <p className="text-sm font-semibold text-[var(--text-primary)]">{t("ลากไฟล์ CSV มาวาง หรือคลิกเลือก", "Drag CSV here or click to browse")}</p>
-            <p className="text-xs text-[var(--text-muted)] mt-1">{t("คอลัมน์: studentId, title, firstName, lastName, email, cohort, program (title ไม่บังคับ)", "Columns: studentId, title, firstName, lastName, email, cohort, program (title is optional)")}</p>
+            <p className="text-xs text-[var(--text-muted)] mt-1">{t("คอลัมน์: studentId, title, firstName, lastName, email, program (title ไม่บังคับ)", "Columns: studentId, title, firstName, lastName, email, program (title is optional)")}</p>
           </div>
         )}
         {!parseResult && !done && (
@@ -665,7 +664,7 @@ function ImportStudentModal({ open, onClose }: { open: boolean; onClose: () => v
                       <th className="px-3 py-2 text-left font-semibold text-[var(--text-muted)]">{t("รหัส", "ID")}</th>
                       <th className="px-3 py-2 text-left font-semibold text-[var(--text-muted)]">{t("ชื่อ", "First")}</th>
                       <th className="px-3 py-2 text-left font-semibold text-[var(--text-muted)]">{t("นามสกุล", "Last")}</th>
-                      <th className="px-3 py-2 text-left font-semibold text-[var(--text-muted)]">{t("cohort", "Cohort")}</th>
+                      <th className="px-3 py-2 text-left font-semibold text-[var(--text-muted)]">{t("สาขา", "Program")}</th>
                       <th className="px-3 py-2 text-left font-semibold text-[var(--text-muted)]">{t("สถานะ", "Status")}</th>
                     </tr>
                   </thead>
@@ -675,7 +674,7 @@ function ImportStudentModal({ open, onClose }: { open: boolean; onClose: () => v
                         <td className="px-3 py-1.5 text-[var(--text-primary)] tabular-nums">{row.studentId || "—"}</td>
                         <td className="px-3 py-1.5 text-[var(--text-primary)]">{row.firstName || "—"}</td>
                         <td className="px-3 py-1.5 text-[var(--text-primary)]">{row.lastName || "—"}</td>
-                        <td className="px-3 py-1.5 text-[var(--text-muted)]">{row.cohort || "—"}</td>
+                        <td className="px-3 py-1.5 text-[var(--text-muted)]">{row.program || "—"}</td>
                         <td className="px-3 py-1.5">
                           {row.error ? (
                             <span className="text-[var(--s-err-text)] font-medium">{studentRowErrorLabel(row.error)}</span>
@@ -1007,12 +1006,18 @@ function AddStudentModal({ open, onClose }: {
 }) {
   const { t } = useLanguage();
   const { addCohortStudents, findByStudentId } = useCohortStudents();
+  // Same 3-entry map as StudentsTab's own PROGRAM_LABEL below (and teacher/courses/[id]/students/page.tsx) —
+  // deliberately duplicated per component rather than extracted, matching this codebase's existing precedent.
+  const ADD_STUDENT_PROGRAM_LABEL: Record<string, string> = {
+    CE: t("วิศวกรรมคอมพิวเตอร์", "Computer Engineering"),
+    CECS: t("วิศวกรรมคอมพิวเตอร์และความมั่นคงปลอดภัยไซเบอร์", "Computer Engineering and Cybersecurity"),
+    CEI: t("วิศวกรรมคอมพิวเตอร์นานาชาติ", "Computer Engineering International"),
+  };
   const [studentId, setStudentId] = useState("");
   const [title, setTitle] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
-  const [cohort, setCohort] = useState("");
   const [program, setProgram] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
@@ -1020,7 +1025,7 @@ function AddStudentModal({ open, onClose }: {
   useEffect(() => {
     if (open) {
       setStudentId(""); setTitle(""); setFirstName(""); setLastName("");
-      setEmail(""); setCohort(""); setProgram(""); setErrors({});
+      setEmail(""); setProgram(""); setErrors({});
     }
   }, [open]);
 
@@ -1035,8 +1040,7 @@ function AddStudentModal({ open, onClose }: {
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) e.email = t("รูปแบบอีเมลไม่ถูกต้อง", "Invalid email format");
     else if (STUDENT_ID_RE.test(studentId.trim()) && email.trim().toLowerCase() !== expectedStudentEmail(studentId.trim()))
       e.email = t("อีเมลต้องเป็น รหัสนักศึกษา@kmitl.ac.th", "Email must be studentID@kmitl.ac.th");
-    if (!cohort.trim()) e.cohort = t("กรุณากรอก cohort", "Cohort is required");
-    if (!program.trim()) e.program = t("กรุณากรอกสาขา", "Program is required");
+    if (!program.trim()) e.program = t("กรุณาเลือกสาขา", "Program is required");
     return e;
   }
 
@@ -1047,7 +1051,7 @@ function AddStudentModal({ open, onClose }: {
     setLoading(true);
     addCohortStudents([{
       studentId: studentId.trim(), title: title.trim() || undefined, firstName: firstName.trim(), lastName: lastName.trim(),
-      email: email.trim().toLowerCase(), cohort: cohort.trim(), program: program.trim(),
+      email: email.trim().toLowerCase(), program: program.trim(),
     }]);
     setLoading(false);
     onClose();
@@ -1101,21 +1105,17 @@ function AddStudentModal({ open, onClose }: {
             placeholder="64070501@kmitl.ac.th" aria-invalid={!!errors.email} className={fieldClass} />
           {errors.email && <p role="alert" className="text-xs text-[var(--s-err-text)]">{errors.email}</p>}
         </div>
-        <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="scohort" className={labelClass}>{t("cohort", "Cohort")} <span aria-hidden="true" className="text-[var(--s-err-text)]">*</span></label>
-              <input id="scohort" type="text" value={cohort}
-                onChange={(e) => { setCohort(e.target.value); setErrors((p) => ({ ...p, cohort: "" })); }}
-                placeholder="CE69" aria-invalid={!!errors.cohort} className={fieldClass} />
-              {errors.cohort && <p role="alert" className="text-xs text-[var(--s-err-text)]">{errors.cohort}</p>}
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="sprogram" className={labelClass}>{t("สาขา", "Program")} <span aria-hidden="true" className="text-[var(--s-err-text)]">*</span></label>
-              <input id="sprogram" type="text" value={program}
-                onChange={(e) => { setProgram(e.target.value); setErrors((p) => ({ ...p, program: "" })); }}
-                placeholder="CE" aria-invalid={!!errors.program} className={fieldClass} />
-              {errors.program && <p role="alert" className="text-xs text-[var(--s-err-text)]">{errors.program}</p>}
-            </div>
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="sprogram" className={labelClass}>{t("สาขา", "Program")} <span aria-hidden="true" className="text-[var(--s-err-text)]">*</span></label>
+          <select id="sprogram" value={program}
+            onChange={(e) => { setProgram(e.target.value); setErrors((p) => ({ ...p, program: "" })); }}
+            aria-invalid={!!errors.program} className={fieldClass}>
+            <option value="">{t("เลือกสาขา...", "Select a program...")}</option>
+            {Object.entries(ADD_STUDENT_PROGRAM_LABEL).map(([abbr, label]) => (
+              <option key={abbr} value={abbr}>{label}</option>
+            ))}
+          </select>
+          {errors.program && <p role="alert" className="text-xs text-[var(--s-err-text)]">{errors.program}</p>}
         </div>
         <div className="flex justify-end gap-2 pt-1">
           <button type="button" onClick={onClose}
@@ -1144,7 +1144,6 @@ function StudentsTab() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deactivatingId, setDeactivatingId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  const [cohortFilter, setCohortFilter] = useState("CE69");
   const [programFilter, setProgramFilter] = useState("CE");
   // Sorting lives on the column headers (click Student ID / Name), one active
   // key at a time. Default = Student ID ascending; Name cycles asc → desc → back to default.
@@ -1168,7 +1167,6 @@ function StudentsTab() {
   const [draftFirstName, setDraftFirstName] = useState("");
   const [draftLastName, setDraftLastName] = useState("");
   const [draftEmail, setDraftEmail] = useState("");
-  const [draftCohort, setDraftCohort] = useState("");
   const [draftProgram, setDraftProgram] = useState("");
   const [draftErrors, setDraftErrors] = useState<Record<string, string>>({});
 
@@ -1179,7 +1177,6 @@ function StudentsTab() {
     setDraftFirstName(student.firstName);
     setDraftLastName(student.lastName);
     setDraftEmail(student.email);
-    setDraftCohort(student.cohort);
     setDraftProgram(student.program);
     setDraftErrors({});
   }
@@ -1203,8 +1200,7 @@ function StudentsTab() {
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(draftEmail.trim())) e.email = t("รูปแบบอีเมลไม่ถูกต้อง", "Invalid email format");
     else if (STUDENT_ID_RE.test(draftStudentId.trim()) && draftEmail.trim().toLowerCase() !== expectedStudentEmail(draftStudentId.trim()))
       e.email = t("อีเมลต้องเป็น รหัสนักศึกษา@kmitl.ac.th", "Email must be studentID@kmitl.ac.th");
-    if (!draftCohort.trim()) e.cohort = t("กรุณากรอก cohort", "Cohort is required");
-    if (!draftProgram.trim()) e.program = t("กรุณากรอกสาขา", "Program is required");
+    if (!draftProgram.trim()) e.program = t("กรุณาเลือกสาขา", "Program is required");
     return e;
   }
 
@@ -1213,12 +1209,11 @@ function StudentsTab() {
     if (Object.keys(errs).length > 0) { setDraftErrors(errs); return; }
     updateCohortStudent(editingRowId!, {
       studentId: draftStudentId.trim(), title: draftTitle.trim() || undefined, firstName: draftFirstName.trim(), lastName: draftLastName.trim(),
-      email: draftEmail.trim().toLowerCase(), cohort: draftCohort.trim(), program: draftProgram.trim(),
+      email: draftEmail.trim().toLowerCase(), program: draftProgram.trim(),
     });
     setEditingRowId(null);
   }
 
-  const cohorts = [...new Set(cohortStudents.map((s) => s.cohort))].sort();
   // Free-text field, not FK-enforced yet (see CohortStudent.program) — derive
   // options from what's actually in the data instead of hardcoding CECS/CEI/CE,
   // so the filter never hides a program someone typed slightly differently.
@@ -1232,13 +1227,12 @@ function StudentsTab() {
   };
 
   const filtered = cohortStudents.filter((s) => {
-    const matchCohort = cohortFilter === "all" || s.cohort === cohortFilter;
     const matchProgram = s.program === programFilter;
     const q = search.toLowerCase();
     const matchSearch = !q || s.studentId.includes(q) || s.firstName.toLowerCase().includes(q) ||
       s.lastName.toLowerCase().includes(q) || `${s.firstName} ${s.lastName}`.toLowerCase().includes(q) ||
       s.email.toLowerCase().includes(q);
-    return matchCohort && matchProgram && matchSearch;
+    return matchProgram && matchSearch;
   });
   filtered.sort((a, b) => {
     const cmp = sort.key === "name"
@@ -1246,7 +1240,7 @@ function StudentsTab() {
       : a.studentId.localeCompare(b.studentId, undefined, { numeric: true });
     return sort.dir === "asc" ? cmp : -cmp;
   });
-  useEffect(() => { setPage(1); }, [search, cohortFilter, programFilter, sort]);
+  useEffect(() => { setPage(1); }, [search, programFilter, sort]);
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
@@ -1268,8 +1262,7 @@ function StudentsTab() {
     setDeactivatingId(null);
   }
 
-  const COHORT_LABEL = t("cohort ทั้งหมด", "All cohorts");
-  const COL_COUNT = 8;
+  const COL_COUNT = 7;
 
   return (
     <div>
@@ -1284,21 +1277,6 @@ function StudentsTab() {
             rounded="full"
             suggestions={cohortStudents.map((s) => `${s.firstName} ${s.lastName}`)}
           />
-          {cohorts.length > 0 && (
-            <FilterSelect
-              value={cohortFilter}
-              onChange={setCohortFilter}
-              ariaLabel={t("กรองตาม cohort", "Filter by cohort")}
-              icon={
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-                </svg>
-              }
-            >
-              <option value="all">{COHORT_LABEL}</option>
-              {cohorts.map((c) => <option key={c} value={c}>{cohortYearLabel(c)}</option>)}
-            </FilterSelect>
-          )}
           {programs.length > 0 && (
             <FilterSelect
               value={programFilter}
@@ -1363,7 +1341,6 @@ function StudentsTab() {
                 <col className="w-[70px]" />
                 <col className="w-[16%]" />
                 <col className="w-[20%]" />
-                <col className="w-[80px]" />
                 <col className="w-[16%]" />
                 <col className="w-[100px]" />
                 <col className="w-[128px]" />
@@ -1376,7 +1353,6 @@ function StudentsTab() {
                   <SortableTh label={t("ชื่อ-นามสกุล", "Name")} dir={sort.key === "name" ? sort.dir : undefined} onClick={toggleNameSort}
                     hint={t("คลิกเพื่อเรียงตามชื่อ (ก–ฮ → ฮ–ก → กลับไปเรียงตามรหัส)", "Click to sort by name (A–Z → Z–A → back to ID order)")} />
                   <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("อีเมล", "Email")}</th>
-                  <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("Cohort", "Cohort")}</th>
                   <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("สาขา", "Program")}</th>
                   <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("สถานะ", "Status")}</th>
                   <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("การจัดการ", "Actions")}</th>
@@ -1437,19 +1413,13 @@ function StudentsTab() {
                         <td className="px-4 py-1">
                           {isEditing ? (
                             <div>
-                              <input value={draftCohort} onChange={(e) => { setDraftCohort(e.target.value); setDraftErrors((p) => ({ ...p, cohort: "" })); }}
-                                aria-label={t("cohort", "Cohort")} className={inputClass} />
-                              {draftErrors.cohort && <p role="alert" className="text-[10px] text-[var(--s-err-text)] mt-0.5">{draftErrors.cohort}</p>}
-                            </div>
-                          ) : (
-                            <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 whitespace-nowrap">{cohortYearLabel(student.cohort)}</span>
-                          )}
-                        </td>
-                        <td className="px-4 py-1">
-                          {isEditing ? (
-                            <div>
-                              <input value={draftProgram} onChange={(e) => { setDraftProgram(e.target.value); setDraftErrors((p) => ({ ...p, program: "" })); }}
-                                aria-label={t("สาขา", "Program")} className={inputClass} />
+                              <select value={draftProgram} onChange={(e) => { setDraftProgram(e.target.value); setDraftErrors((p) => ({ ...p, program: "" })); }}
+                                aria-label={t("สาขา", "Program")} className={inputClass}>
+                                <option value="">{t("เลือกสาขา...", "Select a program...")}</option>
+                                {Object.entries(PROGRAM_LABEL).map(([abbr, label]) => (
+                                  <option key={abbr} value={abbr}>{label}</option>
+                                ))}
+                              </select>
                               {draftErrors.program && <p role="alert" className="text-[10px] text-[var(--s-err-text)] mt-0.5">{draftErrors.program}</p>}
                             </div>
                           ) : (

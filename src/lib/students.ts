@@ -11,7 +11,6 @@ export interface Student {
   firstName: string;
   lastName: string;
   email: string;
-  cohort?: string; // e.g. "CE69"
   /** ลำดับนักศึกษาในวิชานี้ (มติที่ประชุม 4/9/2569) — คนใหม่ที่เพิ่มกลางเทอมได้เลขต่อท้าย
    *  ไม่ recompute ของเดิมเมื่อมีคนออก. Optional เพราะ record เก่ายังไม่มีค่านี้. */
   sequenceNumber?: number;

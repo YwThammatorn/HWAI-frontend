@@ -23,11 +23,10 @@ function write(items: CohortStudent[]): void {
 // removeCohortStudent cascades to section-roles and grading-assignments in the live Provider
 // (CohortStudentContext.tsx) — a real backend should do the same cascade server-side on delete, so
 // the frontend doesn't also need to call api/section-roles.ts / api/grading-assignments.ts separately.
-export async function getCohortStudents(cohort?: string): Promise<CohortStudent[]> {
-  // return client.get<CohortStudent[]>(cohort ? `/api/cohort-students?cohort=${cohort}` : "/api/cohort-students");
+export async function getCohortStudents(): Promise<CohortStudent[]> {
+  // return client.get<CohortStudent[]>("/api/cohort-students");
   void client;
-  const all = read();
-  return cohort ? all.filter((s) => s.cohort === cohort) : all;
+  return read();
 }
 
 export async function addCohortStudents(incoming: Omit<CohortStudent, "id">[]): Promise<CohortStudent[]> {

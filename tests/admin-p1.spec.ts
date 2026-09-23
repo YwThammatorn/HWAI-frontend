@@ -18,7 +18,6 @@ interface StudentSeed {
   firstName: string;
   lastName: string;
   email: string;
-  cohort: string;
   program: string;
 }
 
@@ -108,7 +107,6 @@ const STUDENT_1: StudentSeed = {
   firstName: "สมชาย",
   lastName: "ใจดี",
   email: "s64070501@email.kmitl.ac.th",
-  cohort: "CE69",
   program: "CE",
 };
 
@@ -118,7 +116,6 @@ const STUDENT_2: StudentSeed = {
   firstName: "สมหญิง",
   lastName: "ดีมาก",
   email: "s64070502@email.kmitl.ac.th",
-  cohort: "CE68",
   program: "CE",
 };
 
@@ -270,9 +267,6 @@ test.describe("P1b — Admin Students (/admin/students)", () => {
     await seedPage(page, { students: [STUDENT_1, STUDENT_2] });
     await gotoPage(page, "/admin/students");
     await openStudentsTab(page);
-    // Cohort filter now defaults to the current year (CE69), not "all" — STUDENT_2
-    // is CE68, so switch to "all" first since this test is about the search box, not the cohort filter.
-    await page.getByLabel("Filter by cohort").selectOption("all");
     // Both visible initially
     await expect(page.getByText("64070501", { exact: true })).toBeVisible();
     await expect(page.getByText("64070502", { exact: true })).toBeVisible();
@@ -282,18 +276,6 @@ test.describe("P1b — Admin Students (/admin/students)", () => {
     await page.getByPlaceholder("Search students...").fill("64070501");
     await expect(page.getByText("64070501", { exact: true })).toBeVisible();
     await expect(page.getByText("64070502", { exact: true })).not.toBeVisible();
-  });
-
-  test("cohort filter dropdown shows cohorts present in data", async ({ page }) => {
-    await seedPage(page, { students: [STUDENT_1, STUDENT_2] });
-    await gotoPage(page, "/admin/students");
-    await openStudentsTab(page);
-    // A second <select> (program/curriculum filter) was added 9/9/2569, so the
-    // cohort select now needs its own accessible name to stay locatable.
-    const select = page.getByLabel("Filter by cohort");
-    await expect(select).toBeVisible();
-    await expect(select.locator("option[value='CE69']")).toHaveCount(1);
-    await expect(select.locator("option[value='CE68']")).toHaveCount(1);
   });
 
   test("delete student → confirm dialog → confirmed → student removed", async ({
