@@ -48,6 +48,57 @@
       "dueDate": "2026-10-10", "maxPoints": 100, "categoryId": "gcat-seed-c1-1",
       "acceptsFiles": true, "fileTypes": ["pdf"], "submissionType": "group", "maxGroupSize": 2, "rubricIds": ["r-mock-3"],
       "createdAt": "2026-09-10T09:00:00.000Z", "updatedAt": "2026-09-10T09:00:00.000Z"
+    },
+    {
+      "id": "a-mock-4", "courseId": "c-mock-1",
+      "name": "Quiz 1: Variables and Data Types",
+      "description": "A short 5-question quiz on Python variables and data types, submit as a PDF file",
+      "dueDate": "2026-08-25", "maxPoints": 100, "categoryId": "gcat-seed-c1-1",
+      "acceptsFiles": true, "fileTypes": ["pdf"], "submissionType": "individual", "maxGroupSize": null, "rubricIds": ["r-mock-4"],
+      "gradingFinalized": true,
+      "createdAt": "2026-08-10T09:00:00.000Z", "updatedAt": "2026-08-27T10:00:00.000Z"
+    },
+    {
+      "id": "a-mock-5", "courseId": "c-mock-1",
+      "name": "Midterm Exam",
+      "description": "Written midterm exam covering variables, conditionals, and loops. Graded directly from the answer sheet, no rubric used.",
+      "dueDate": "2026-09-10", "maxPoints": 50, "categoryId": "gcat-seed-c1-2",
+      "acceptsFiles": true, "fileTypes": ["pdf"], "submissionType": "individual", "maxGroupSize": null, "rubricIds": [],
+      "isExam": true,
+      "createdAt": "2026-08-25T09:00:00.000Z", "updatedAt": "2026-09-11T10:00:00.000Z"
+    },
+    {
+      "id": "a-mock-6", "courseId": "c-mock-1",
+      "name": "Quiz 2: Data Structures",
+      "description": "A short quiz on Python Lists, Tuples, and Dicts, submit as a PDF file",
+      "dueDate": "2026-09-18", "maxPoints": 100, "categoryId": "gcat-seed-c1-1",
+      "acceptsFiles": true, "fileTypes": ["pdf"], "submissionType": "individual", "maxGroupSize": null, "rubricIds": ["r-mock-6"],
+      "createdAt": "2026-09-05T09:00:00.000Z", "updatedAt": "2026-09-05T09:00:00.000Z"
+    },
+    {
+      "id": "a-mock-7", "courseId": "c-mock-1",
+      "name": "Group Project 2: Meeting Room Booking System",
+      "description": "Pair up in teams of 2 and write a Python program to manage meeting room bookings (book/cancel/check availability), submit as a PDF with a work-division document",
+      "dueDate": "2026-10-15", "maxPoints": 100, "categoryId": "gcat-seed-c1-1",
+      "acceptsFiles": true, "fileTypes": ["pdf"], "submissionType": "group", "maxGroupSize": 2, "rubricIds": ["r-mock-7"],
+      "createdAt": "2026-09-15T09:00:00.000Z", "updatedAt": "2026-09-15T09:00:00.000Z"
+    },
+    {
+      "id": "a-mock-8", "courseId": "c-mock-1",
+      "name": "Lab 5: Writing Functions",
+      "description": "Write 3 Python functions per the given problems, with docstrings explaining each one, submit as a PDF file",
+      "dueDate": "2026-09-20", "maxPoints": 100, "categoryId": "gcat-seed-c1-1",
+      "acceptsFiles": true, "fileTypes": ["pdf"], "submissionType": "individual", "maxGroupSize": null, "rubricIds": ["r-mock-8"],
+      "createdAt": "2026-09-10T09:00:00.000Z", "updatedAt": "2026-09-10T09:00:00.000Z"
+    },
+    {
+      "id": "a-mock-9", "courseId": "c-mock-1",
+      "name": "Final Exam",
+      "description": "Written final exam covering the whole semester. Graded directly from the answer sheet, no rubric used.",
+      "dueDate": "2026-11-20", "maxPoints": 100, "categoryId": "gcat-seed-c1-3",
+      "acceptsFiles": true, "fileTypes": ["pdf"], "submissionType": "individual", "maxGroupSize": null, "rubricIds": [],
+      "isExam": true,
+      "createdAt": "2026-09-20T09:00:00.000Z", "updatedAt": "2026-09-20T09:00:00.000Z"
     }
   ],
   "rubrics": [
@@ -77,11 +128,58 @@
         { "id": "rc-9", "name": "Teamwork", "description": "Clear work-division document, both members contributed", "maxPoints": 20, "weight": 20, "levels": [{"label":"Excellent","description":"Clear, balanced division of work"},{"label":"Good","description":"Acceptable division of work"},{"label":"Needs Improvement","description":"No work-division document"}] }
       ],
       "createdAt": "2026-09-10T09:00:00.000Z", "updatedAt": "2026-09-10T09:00:00.000Z"
+    },
+    {
+      "id": "r-mock-4", "assignmentId": "a-mock-4", "name": "Grading Rubric: Quiz 1 - Variables and Data Types",
+      "criteria": [
+        { "id": "rc-10", "name": "Answer Correctness", "description": "Answers match the answer key", "maxPoints": 70, "weight": 70, "levels": [{"label":"Excellent","description":"All items correct"},{"label":"Good","description":"Mostly correct"},{"label":"Needs Improvement","description":"Several items incorrect"}] },
+        { "id": "rc-11", "name": "Answer Completeness", "description": "All questions answered, none left blank", "maxPoints": 30, "weight": 30, "levels": [{"label":"Excellent","description":"All questions answered"},{"label":"Good","description":"One question left blank"},{"label":"Needs Improvement","description":"Several questions left blank"}] }
+      ],
+      "createdAt": "2026-08-10T09:00:00.000Z", "updatedAt": "2026-08-10T09:00:00.000Z"
+    },
+    {
+      "id": "r-mock-6", "assignmentId": "a-mock-6", "name": "Grading Rubric: Quiz 2 - Data Structures",
+      "criteria": [
+        { "id": "rc-12", "name": "Understanding of Data Structures", "description": "Correctly understands List, Tuple, and Dict usage", "maxPoints": 60, "weight": 60, "levels": [{"label":"Excellent","description":"Understands and uses all correctly"},{"label":"Good","description":"Understands most of it"},{"label":"Needs Improvement","description":"Confuses the data types"}] },
+        { "id": "rc-13", "name": "Application", "description": "Applies the right structure to solve each problem", "maxPoints": 40, "weight": 40, "levels": [{"label":"Excellent","description":"Chose the appropriate type every time"},{"label":"Good","description":"Appropriate most of the time"},{"label":"Needs Improvement","description":"Chose an inappropriate type"}] }
+      ],
+      "createdAt": "2026-09-05T09:00:00.000Z", "updatedAt": "2026-09-05T09:00:00.000Z"
+    },
+    {
+      "id": "r-mock-7", "assignmentId": "a-mock-7", "name": "Grading Rubric: Group Project 2 - Meeting Room Booking System",
+      "criteria": [
+        { "id": "rc-14", "name": "Functional Correctness", "description": "Booking/cancelling/checking availability all work correctly", "maxPoints": 50, "weight": 50, "levels": [{"label":"Excellent","description":"All functions work correctly"},{"label":"Good","description":"Mostly correct, minor issues"},{"label":"Needs Improvement","description":"Core functions do not work correctly"}] },
+        { "id": "rc-15", "name": "Program Structure Design", "description": "Functions/modules divided appropriately and readable", "maxPoints": 30, "weight": 30, "levels": [{"label":"Excellent","description":"Clear structure, well-divided modules"},{"label":"Good","description":"Acceptable structure"},{"label":"Needs Improvement","description":"Code is mixed together with no structure"}] },
+        { "id": "rc-16", "name": "Teamwork", "description": "Clear work-division document, both members contributed", "maxPoints": 20, "weight": 20, "levels": [{"label":"Excellent","description":"Clear, balanced division of work"},{"label":"Good","description":"Acceptable division of work"},{"label":"Needs Improvement","description":"No work-division document"}] }
+      ],
+      "createdAt": "2026-09-15T09:00:00.000Z", "updatedAt": "2026-09-15T09:00:00.000Z"
+    },
+    {
+      "id": "r-mock-8", "assignmentId": "a-mock-8", "name": "Grading Rubric: Lab 5 - Writing Functions",
+      "criteria": [
+        { "id": "rc-17", "name": "Function Correctness", "description": "Functions produce correct results per the problem statement", "maxPoints": 70, "weight": 70, "levels": [{"label":"Excellent","description":"All functions correct"},{"label":"Good","description":"Mostly correct"},{"label":"Needs Improvement","description":"Several functions incorrect"}] },
+        { "id": "rc-18", "name": "Style & Documentation", "description": "Every function has a docstring explaining what it does", "maxPoints": 30, "weight": 30, "levels": [{"label":"Excellent","description":"Every function has a clear docstring"},{"label":"Good","description":"Some functions have a docstring"},{"label":"Needs Improvement","description":"No docstrings"}] }
+      ],
+      "createdAt": "2026-09-10T09:00:00.000Z", "updatedAt": "2026-09-10T09:00:00.000Z"
     }
   ],
   "submissions": [
     { "id": "sub-mock-1", "assignmentId": "a-mock-1", "studentId": "69070101", "studentName": "Somchai Jaidee", "email": "69070101@kmitl.ac.th", "submittedAt": "2026-09-04T14:30:00.000Z", "fileUrl": null, "aiScore": 88, "instructorScore": 90, "instructorComment": "Very well done, readable code", "externalUseConsent": true, "status": "graded", "updatedAt": "2026-09-06T10:00:00.000Z" },
     { "id": "sub-mock-2", "assignmentId": "a-mock-1", "studentId": "69070102", "studentName": "Suda Wongsa", "email": "69070102@kmitl.ac.th", "submittedAt": "2026-09-05T09:15:00.000Z", "fileUrl": null, "aiScore": 72, "instructorScore": null, "instructorComment": "", "externalUseConsent": true, "status": "need_review", "updatedAt": "2026-09-05T09:15:00.000Z" },
-    { "id": "sub-mock-3", "assignmentId": "a-mock-1", "studentId": "69070103", "studentName": "Anucha Phanphet", "email": "69070103@kmitl.ac.th", "submittedAt": "2026-09-05T23:50:00.000Z", "fileUrl": null, "aiScore": null, "instructorScore": null, "instructorComment": "", "externalUseConsent": true, "status": "not_graded", "updatedAt": "2026-09-05T23:50:00.000Z" }
+    { "id": "sub-mock-3", "assignmentId": "a-mock-1", "studentId": "69070103", "studentName": "Anucha Phanphet", "email": "69070103@kmitl.ac.th", "submittedAt": "2026-09-05T23:50:00.000Z", "fileUrl": null, "aiScore": null, "instructorScore": null, "instructorComment": "", "externalUseConsent": true, "status": "not_graded", "updatedAt": "2026-09-05T23:50:00.000Z" },
+
+    { "id": "sub-mock-4", "assignmentId": "a-mock-4", "studentId": "69070101", "studentName": "Somchai Jaidee", "email": "69070101@kmitl.ac.th", "submittedAt": "2026-08-24T15:00:00.000Z", "fileUrl": null, "aiScore": 85, "instructorScore": 85, "instructorComment": "", "externalUseConsent": true, "status": "graded", "updatedAt": "2026-08-27T10:00:00.000Z" },
+    { "id": "sub-mock-5", "assignmentId": "a-mock-4", "studentId": "69070102", "studentName": "Suda Wongsa", "email": "69070102@kmitl.ac.th", "submittedAt": "2026-08-24T18:20:00.000Z", "fileUrl": null, "aiScore": 76, "instructorScore": 78, "instructorComment": "", "externalUseConsent": true, "status": "graded", "updatedAt": "2026-08-27T10:00:00.000Z" },
+    { "id": "sub-mock-6", "assignmentId": "a-mock-4", "studentId": "69070103", "studentName": "Anucha Phanphet", "email": "69070103@kmitl.ac.th", "submittedAt": "2026-08-25T09:40:00.000Z", "fileUrl": null, "aiScore": 90, "instructorScore": 90, "instructorComment": "", "externalUseConsent": true, "status": "graded", "updatedAt": "2026-08-27T10:00:00.000Z" },
+
+    { "id": "sub-mock-7", "assignmentId": "a-mock-5", "studentId": "69070101", "studentName": "Somchai Jaidee", "email": "69070101@kmitl.ac.th", "submittedAt": "2026-09-10T11:00:00.000Z", "fileUrl": null, "aiScore": 42, "instructorScore": 42, "instructorComment": "", "externalUseConsent": true, "status": "graded", "updatedAt": "2026-09-11T10:00:00.000Z" },
+    { "id": "sub-mock-8", "assignmentId": "a-mock-5", "studentId": "69070102", "studentName": "Suda Wongsa", "email": "69070102@kmitl.ac.th", "submittedAt": "2026-09-10T11:05:00.000Z", "fileUrl": null, "aiScore": 35, "instructorScore": 38, "instructorComment": "Rechecked and added a few points back", "externalUseConsent": true, "status": "graded", "updatedAt": "2026-09-11T10:00:00.000Z" },
+    { "id": "sub-mock-9", "assignmentId": "a-mock-5", "studentId": "69070103", "studentName": "Anucha Phanphet", "email": "69070103@kmitl.ac.th", "submittedAt": "2026-09-10T11:10:00.000Z", "fileUrl": null, "aiScore": 45, "instructorScore": 45, "instructorComment": "", "externalUseConsent": true, "status": "graded", "updatedAt": "2026-09-11T10:00:00.000Z" },
+
+    { "id": "sub-mock-10", "assignmentId": "a-mock-6", "studentId": "69070101", "studentName": "Somchai Jaidee", "email": "69070101@kmitl.ac.th", "submittedAt": "2026-09-17T20:00:00.000Z", "fileUrl": null, "aiScore": 82, "instructorScore": 85, "instructorComment": "", "externalUseConsent": true, "status": "graded", "updatedAt": "2026-09-19T10:00:00.000Z" },
+    { "id": "sub-mock-11", "assignmentId": "a-mock-6", "studentId": "69070102", "studentName": "Suda Wongsa", "email": "69070102@kmitl.ac.th", "submittedAt": "2026-09-18T09:30:00.000Z", "fileUrl": null, "aiScore": 68, "instructorScore": null, "instructorComment": "", "externalUseConsent": true, "status": "need_review", "updatedAt": "2026-09-18T09:30:00.000Z" },
+
+    { "id": "sub-mock-12", "assignmentId": "a-mock-8", "studentId": "69070101", "studentName": "Somchai Jaidee", "email": "69070101@kmitl.ac.th", "submittedAt": "2026-09-19T16:40:00.000Z", "fileUrl": null, "aiScore": 90, "instructorScore": 92, "instructorComment": "", "externalUseConsent": true, "status": "graded", "updatedAt": "2026-09-21T10:00:00.000Z" },
+    { "id": "sub-mock-13", "assignmentId": "a-mock-8", "studentId": "69070102", "studentName": "Suda Wongsa", "email": "69070102@kmitl.ac.th", "submittedAt": "2026-09-19T21:15:00.000Z", "fileUrl": null, "aiScore": 75, "instructorScore": 75, "instructorComment": "", "externalUseConsent": true, "status": "graded", "updatedAt": "2026-09-21T10:00:00.000Z" }
   ]
 }

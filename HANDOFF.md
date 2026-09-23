@@ -363,6 +363,34 @@ required inverting that.
   dirty-tracking (out of scope, never done for the other 9). Every other touched file matched its baseline
   exactly (0 new anywhere else).
 
+## Unrelated (23/9): c-mock-1 mock data enriched with 6 more assignments, for variety + a real Score Book scroll
+User: "ลอง mockup ชิ้นงานเพิ่มได้ไหม ให้เห็นความหลากหลาย แล้วก็จะได้ดู score book sticky ด้วย" — the live demo
+course `c-mock-1` (seeded via `test-data/seed-commands.txt` step [5], not the Playwright-only `seed-1`/`seed-2`
+fixtures in `AssignmentProvider.tsx`) only had 3 assignments, all individual, all rubric-graded, all in the
+same "งานที่มอบหมาย" category — not enough columns to see the Score Book's sticky ID/Name/Total/Grade columns
+actually scroll, and its other 2 categories (สอบกลางภาค 25%, สอบปลายภาค 35%) had zero assignments (a known,
+documented gap in seed-commands.txt, not a bug).
+- Added **a-mock-4..a-mock-9** to `public/mock-data/student-flow-mockup.json` **and** `-en.json` (kept
+  byte-identical IDs per the file's own [10] convention), then copied both into `test-data/` to match —
+  confirmed via `git show HEAD:...` that the two copies were byte-identical before touching them.
+- Deliberately varied: **a-mock-5** (Midterm) and **a-mock-9** (Final) are `isExam: true` — the first live
+  showcase of this session's sub-task 4 feature in the demo data, one category each (previously empty).
+  **a-mock-4** (Quiz 1) is `gradingFinalized: true` — showcases the Score Book's view-only lock (sub-task
+  3) on real demo data. **a-mock-7** is a second group assignment. Due dates spread past/near/future
+  relative to today (2026-09-23) so the Score Book shows all its cell states at once: graded, pending
+  (a-mock-6 for 69070102), missing (a-mock-6 and a-mock-8 for 69070103 — no submission row at all, not
+  just ungraded), and not-yet-due dashes (a-mock-2/3/7/9).
+- Verified live (not just by reading the code): seeded `c-mock-1` in the browser pane via the same
+  `fetch(...).then(...)` pattern as seed-commands.txt step [5], confirmed the Score Book now shows "9 งาน" /
+  3 category groups / the category filter dropdown populated, scrolled the matrix and confirmed ID/Name
+  stay pinned left while Total/Grade stay pinned right (both light and dark theme), confirmed Quiz 1's
+  cells have no `<a>` (locked), and cross-checked the student Evaluation page for 69070101 shows the same
+  numbers split across all 3 categories now. `node -e` sanity check: TH/EN assignment+rubric+submission ID
+  sets match exactly, and every non-exam assignment's `maxPoints` equals its rubric's criteria point sum.
+- Full Playwright suite unaffected (no test hardcodes `c-mock-1`'s old 3-assignment count; `font-scale.spec.ts`,
+  the only spec touching these fixtures, only visits `a-mock-1`-specific URLs). No app code changed — mock
+  data only.
+
 ## Not done / open
 - Score Book is read-only by design; if the teacher wants to type scores into cells, that is a new decision (Grading pages own edits today). Finalized assignments are additionally locked from click-through (23/9, this batch).
 - `gradeLetter` still exists locally in the two per-assignment results pages (the Score Book uses `lib/scoreBook.ts`); could be unified later.
