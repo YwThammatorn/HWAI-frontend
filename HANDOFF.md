@@ -612,6 +612,23 @@ option). Plan file: `C:\Users\ASUS\.claude\plans\lively-tinkering-mitten.md`. Pu
   admin/courses, admin/curriculum are done (this session); `teacher/courses/[id]/clo/page.tsx` (a
   separate "make the CLO page less ugly" ask) is the peer session's, deliberately left untouched here.
 
+## Unrelated (23/9): teacher CLO page redesign (pushed daa27ef) — the peer session's half of the split above
+User: "teacher clo รูปที่แนบ ที่ 2 น่าเกลียดไปไหม ตั้งใจทำหน่อย" (screenshot: plain CODE/CLO TEXT/LINKED
+CRITERIA/ACTIONS table, every row repeating the identical amber "No linked criteria" warning).
+- One page-level info banner replaces the per-row warning — it's true of every CLO at once (the
+  CLO↔criteria linking feature doesn't exist yet, deferred since 19/9), not 4 separate facts.
+- Card-per-CLO (code badge + text + hover-reveal Edit/Delete) instead of a dense `<table>` — CLO text is
+  a full sentence, not tabular data; matches the card pattern already used for rubric criteria on the
+  assignment detail page. Edit/Delete only need to be visible on hover/focus, not permanently in their
+  own column.
+- Add/Edit CLO moved into the shared `Modal` component (DESIGN.md §9a) — the inline panel appended below
+  the table was the one form in this app still not using the centred-popup pattern everything else
+  converted to on 20/9.
+- Added a one-line subtitle explaining what a CLO is, for context a bare heading didn't give.
+- Verified: tsc/lint clean; ran `e2e/hwai.spec.ts` + `tests/teacher-batch-3.spec.ts` (the two files that
+  touch this page — neither asserts on table/inline-panel structure, both passed unchanged) plus a full
+  suite run, 359 passed / 30 skipped.
+
 ## Not done / open
 - Score Book is read-only by design; if the teacher wants to type scores into cells, that is a new decision (Grading pages own edits today). Finalized assignments are additionally locked from click-through (23/9, this batch).
 - `gradeLetter` still exists locally in the two per-assignment results pages (the Score Book uses `lib/scoreBook.ts`); could be unified later.
