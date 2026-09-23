@@ -91,7 +91,11 @@ export default function CLOPage() {
   const showEmpty = clos.length === 0 && formMode === "idle";
 
   return (
-      <main className="w-full px-8 py-10">
+      // Capped, not full-bleed (23/9/2569): CLO is a short list (code + one line of text), so on a
+      // wide screen a `w-full` table let the CLO Text column stretch to fill the leftover space —
+      // Linked Criteria/Actions then sat behind a huge blank gap, reading as pushed off to the right
+      // and detached from the row's actual content. A real table's natural fix.
+      <main className="w-full max-w-[960px] px-8 py-10">
 
         {/* Back */}
         <button
@@ -146,75 +150,82 @@ export default function CLOPage() {
             </button>
           </div>
         ) : (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-subtle)] shadow-sm overflow-hidden">
 
-            {/* Table header */}
-            <div className="grid gap-0 border-b border-gray-100" style={{ gridTemplateColumns: "88px 1fr 170px 76px" }}>
-              {[t("รหัส", "Code"), t("ข้อความ CLO", "CLO Text"), t("เกณฑ์ที่ผูก", "Linked Criteria"), t("จัดการ", "Actions")].map((h, i) => (
-                <div key={i} className="px-4 py-3 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">{h}</div>
-              ))}
-            </div>
-
-            {/* Table body */}
-            {clos.map((clo, idx) => (
-              <div
-                key={clo.id}
-                className={[
-                  "grid gap-0 items-start py-4 transition-colors",
-                  idx < clos.length - 1 ? "border-b border-gray-50" : "",
-                  editingId === clo.id ? "bg-[#F0FFFE] opacity-60" : "hover:bg-gray-50/50",
-                ].join(" ")}
-                style={{ gridTemplateColumns: "88px 1fr 170px 76px" }}
-              >
-                {/* Code */}
-                <div className="px-4">
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-lg bg-teal-50 text-[var(--accent)] text-xs font-bold font-mono">
-                    {clo.code}
-                  </span>
-                </div>
-
-                {/* Text */}
-                <div className="px-4 text-sm text-[var(--text-primary)] leading-relaxed">{clo.text}</div>
-
-                {/* เกณฑ์ผูก — min-w-0 + truncate: without it, a grid item's default min-width:auto lets
-                    this text overflow its 170px track and crowd into the Actions column next to it
-                    (flagged 22/9/2569). */}
-                <div className="px-4 pt-0.5 min-w-0">
-                  <span className="flex items-center gap-1 text-xs text-amber-500 min-w-0">
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="shrink-0">
-                      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-                      <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
-                    </svg>
-                    <span className="truncate">{t("ยังไม่มีเกณฑ์ผูก", "No linked criteria")}</span>
-                  </span>
-                </div>
-
-                {/* Actions */}
-                <div className="px-4 flex items-center gap-1">
-                  <button
-                    onClick={() => openEdit(clo)}
-                    disabled={editingId === clo.id}
-                    className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-[var(--text-primary)] transition-colors disabled:opacity-50"
-                    title={t("แก้ไข", "Edit")}
+            {/* A real <table> (DESIGN.md §9b) instead of a fixed-column CSS grid — the grid's `1fr` text
+                column used to stretch edge-to-edge on a wide screen, leaving a large dead gap before the
+                Linked Criteria/Actions columns and making them read as detached, off to the right
+                (flagged 23/9/2569). A table's columns size to content instead. */}
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-[var(--border-subtle)]">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider whitespace-nowrap">{t("รหัส", "Code")}</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider whitespace-nowrap">{t("ข้อความ CLO", "CLO Text")}</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider whitespace-nowrap">{t("เกณฑ์ที่ผูก", "Linked Criteria")}</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider whitespace-nowrap">{t("จัดการ", "Actions")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {clos.map((clo, idx) => (
+                  <tr
+                    key={clo.id}
+                    className={[
+                      "transition-colors",
+                      idx < clos.length - 1 ? "border-b border-[var(--border-subtle)]" : "",
+                      editingId === clo.id ? "bg-[#F0FFFE] opacity-60" : "hover:bg-[var(--bg-subtle)]",
+                    ].join(" ")}
                   >
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                    </svg>
-                  </button>
-                  <button
-                    onClick={() => handleDelete(clo)}
-                    className="p-1.5 rounded-lg hover:bg-[var(--s-err-bg)] text-gray-500 hover:text-[var(--s-err-text)] transition-colors"
-                    title={t("ลบ", "Delete")}
-                  >
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                      <polyline points="3 6 5 6 21 6"/>
-                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            ))}
+                    {/* Code */}
+                    <td className="px-4 py-4 align-top whitespace-nowrap">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-lg bg-teal-50 text-[var(--accent)] text-xs font-bold font-mono">
+                        {clo.code}
+                      </span>
+                    </td>
+
+                    {/* Text */}
+                    <td className="px-4 py-4 align-top text-sm text-[var(--text-primary)] leading-relaxed">{clo.text}</td>
+
+                    {/* เกณฑ์ผูก — always "not linked yet"; CLO↔criteria linking isn't built (deferred). */}
+                    <td className="px-4 py-4 align-top whitespace-nowrap">
+                      <span className="flex items-center gap-1 text-xs text-amber-500">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="shrink-0">
+                          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                          <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                        </svg>
+                        {t("ยังไม่มีเกณฑ์ผูก", "No linked criteria")}
+                      </span>
+                    </td>
+
+                    {/* Actions */}
+                    <td className="px-4 py-4 align-top whitespace-nowrap">
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => openEdit(clo)}
+                          disabled={editingId === clo.id}
+                          className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-[var(--text-primary)] transition-colors disabled:opacity-50"
+                          title={t("แก้ไข", "Edit")}
+                        >
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                          </svg>
+                        </button>
+                        <button
+                          onClick={() => handleDelete(clo)}
+                          className="p-1.5 rounded-lg hover:bg-[var(--s-err-bg)] text-gray-500 hover:text-[var(--s-err-text)] transition-colors"
+                          title={t("ลบ", "Delete")}
+                        >
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                            <polyline points="3 6 5 6 21 6"/>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                          </svg>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
 
             {/* Inline form panel */}
             {formMode !== "idle" && (

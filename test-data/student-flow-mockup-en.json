@@ -181,5 +181,11 @@
 
     { "id": "sub-mock-12", "assignmentId": "a-mock-8", "studentId": "69070101", "studentName": "Somchai Jaidee", "email": "69070101@kmitl.ac.th", "submittedAt": "2026-09-19T16:40:00.000Z", "fileUrl": null, "aiScore": 90, "instructorScore": 92, "instructorComment": "", "externalUseConsent": true, "status": "graded", "updatedAt": "2026-09-21T10:00:00.000Z" },
     { "id": "sub-mock-13", "assignmentId": "a-mock-8", "studentId": "69070102", "studentName": "Suda Wongsa", "email": "69070102@kmitl.ac.th", "submittedAt": "2026-09-19T21:15:00.000Z", "fileUrl": null, "aiScore": 75, "instructorScore": 75, "instructorComment": "", "externalUseConsent": true, "status": "graded", "updatedAt": "2026-09-21T10:00:00.000Z" }
+  ],
+  "clos": [
+    { "id": "clo-mock-1", "courseId": "c-mock-1", "code": "CLO1", "text": "Students can write Python programs to solve basic problems using variables, conditionals, and loops.", "createdAt": "2026-07-01T09:00:00.000Z", "updatedAt": "2026-07-01T09:00:00.000Z" },
+    { "id": "clo-mock-2", "courseId": "c-mock-1", "code": "CLO2", "text": "Students can design and use appropriate data structures (List, Tuple, Dictionary) for a given problem.", "createdAt": "2026-07-01T09:05:00.000Z", "updatedAt": "2026-07-01T09:05:00.000Z" },
+    { "id": "clo-mock-3", "courseId": "c-mock-1", "code": "CLO3", "text": "Students can write functions with proper error handling and documentation (docstrings).", "createdAt": "2026-07-01T09:10:00.000Z", "updatedAt": "2026-07-01T09:10:00.000Z" },
+    { "id": "clo-mock-4", "courseId": "c-mock-1", "code": "CLO4", "text": "Students can collaborate in a team to plan and develop a small program.", "createdAt": "2026-07-01T09:15:00.000Z", "updatedAt": "2026-07-01T09:15:00.000Z" }
   ]
 }
