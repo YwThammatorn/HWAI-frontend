@@ -238,13 +238,13 @@ export default function EditAssignmentPage() {
           onSubmit={handleSave}
           onKeyDown={(e) => { if (e.key === "Enter" && (e.target as HTMLElement).tagName === "INPUT") e.preventDefault(); }}
         >
-          {/* Column pairing (23/9/2569): matches New Assignment's own layout — General Info +
-              Submission Settings on the left, Description + Deadline & Score on the right, not
-              the "content vs. config" grouping it looks like. Submission Settings is the tallest
-              card, General Info the shortest, so pairing them keeps both columns roughly the
-              same total height instead of the old grouping, which left the right column taller. */}
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 items-start">
-          <div className="space-y-5">
+          {/* Row-aligned grid (23/9/2569 round 5): General Info + Description share row 1,
+              Submission Settings + Deadline & Score share row 2 — a flat 4-item grid (not
+              nested column divs) so each row's two cards stretch to the SAME height instead
+              of two independently-tall columns that drift out of alignment. Description's
+              textarea grows to fill whatever height row 1 ends up being (see flex-1 below),
+              so the card never has dead space cut off mid-box. Matches New Assignment's layout. */}
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
 
           {/* General Information */}
           <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
@@ -257,6 +257,16 @@ export default function EditAssignmentPage() {
               className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
               required
             />
+          </section>
+
+          {/* Description */}
+          <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col">
+            <SectionHeader icon="doc" label={t("รายละเอียดชิ้นงาน", "Description")} />
+            <textarea
+              value={description} onChange={(e) => setDescription(e.target.value)}
+              className="w-full flex-1 min-h-[100px] px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] resize-none transition-colors"
+            />
+            <AttachmentsEditor items={att.items} onChange={att.setItems} />
           </section>
 
           {/* Submission Settings */}
@@ -342,20 +352,6 @@ export default function EditAssignmentPage() {
             </div>
           </section>
 
-          </div>
-          <div className="space-y-5">
-
-          {/* Description */}
-          <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-            <SectionHeader icon="doc" label={t("รายละเอียดชิ้นงาน", "Description")} />
-            <textarea
-              value={description} onChange={(e) => setDescription(e.target.value)}
-              rows={4}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] resize-none transition-colors"
-            />
-            <AttachmentsEditor items={att.items} onChange={att.setItems} />
-          </section>
-
           {/* Details */}
           <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
             <SectionHeader icon="cal" label={t("กำหนดเวลาและคะแนน", "Deadline & Score")} />
@@ -409,7 +405,6 @@ export default function EditAssignmentPage() {
             )}
           </section>
 
-          </div>
           </div>
 
           {/* Rubric — same plain (non-card) section style as New Assignment, full width below the
