@@ -209,15 +209,21 @@ export default function EditAssignmentPage() {
   return (
       <main className="w-full px-8 py-8">
 
-        <button
-          onClick={() => navAway(`/teacher/courses/${id}/assignments/${assignmentId}`)}
-          className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-[var(--accent)] mb-6 transition-colors"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-            <polyline points="15 18 9 12 15 6"/>
-          </svg>
-          {t("กลับหน้าชิ้นงาน", "Back to assignment")}
-        </button>
+        {/* Breadcrumb (23/9/2569 round 4: replaced the old "Back to assignment" chevron button —
+            same exact structure as New Assignment's, per the user's "ทำเหมือนหน้าตอน create" ask). */}
+        <div className="flex items-center gap-2 text-sm text-gray-500 mb-6 flex-wrap">
+          <button type="button" onClick={() => navAway("/teacher/courses")} aria-label={t("วิชาทั้งหมด", "All Courses")} className="hover:text-[var(--accent)] transition-colors">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+          </button>
+          <span>/</span>
+          <button type="button" onClick={() => navAway(`/teacher/courses/${id}`)} className="hover:text-[var(--accent)] transition-colors">{course?.name ?? "..."}</button>
+          <span>/</span>
+          <button type="button" onClick={() => navAway(`/teacher/courses/${id}/assignments`)} className="hover:text-[var(--accent)] transition-colors">{t("ชิ้นงาน", "Assignments")}</button>
+          <span>/</span>
+          <span className="text-[var(--accent)] font-medium">{t("แก้ไขชิ้นงาน", "Edit Assignment")}</span>
+        </div>
 
         <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">{t("แก้ไขชิ้นงาน", "Edit Assignment")}</h1>
         <p className="text-sm text-gray-500 mb-8">
@@ -226,7 +232,14 @@ export default function EditAssignmentPage() {
           {t("ในวิชา", "in")} <span className="font-semibold text-[var(--text-primary)]">{course.name}</span>
         </p>
 
-        <form onSubmit={handleSave} className="space-y-5">
+        {/* Enter inside a text field must not submit the whole form (rubric fields live here too),
+            same guard as New Assignment. */}
+        <form
+          onSubmit={handleSave}
+          onKeyDown={(e) => { if (e.key === "Enter" && (e.target as HTMLElement).tagName === "INPUT") e.preventDefault(); }}
+        >
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 items-start">
+          <div className="space-y-5">
 
           {/* General Information */}
           <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
@@ -251,6 +264,9 @@ export default function EditAssignmentPage() {
             />
             <AttachmentsEditor items={att.items} onChange={att.setItems} />
           </section>
+
+          </div>
+          <div className="space-y-5">
 
           {/* Details */}
           <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
@@ -401,17 +417,18 @@ export default function EditAssignmentPage() {
             </div>
           </section>
 
-          {/* Rubric — editable inline now (23/9/2569 round 3, was a separate list-of-rubric-shells
-              UI linking out to a standalone route; mirrors New Assignment's own inline editor, kept
-              in the same card style as this page's other sections). Hidden for exam or no-file
-              assignments, same as New. */}
+          </div>
+          </div>
+
+          {/* Rubric — same plain (non-card) section style as New Assignment, full width below the
+              2-column grid. Hidden for exam or no-file assignments, same as New. */}
           {!needsManualScore && (
-            <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+            <section className="mt-8" aria-labelledby="rubric-heading">
               <div className="flex items-center gap-2 mb-1.5">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent-bright)" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                  <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                  <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
                 </svg>
-                <h2 className="text-sm font-semibold text-[var(--text-primary)]">{t("เกณฑ์การให้คะแนน (Rubric)", "Grading Rubric")}</h2>
+                <h2 id="rubric-heading" className="text-base font-semibold text-[var(--text-primary)]">{t("เกณฑ์การให้คะแนน (Rubric)", "Grading Rubric")}</h2>
               </div>
               <p className="text-sm text-gray-500 mb-5">
                 {t("ตั้งเกณฑ์ที่ HWAI Agent จะใช้ตรวจงานนี้ พร้อมคะแนนของแต่ละเกณฑ์ — คะแนนเต็มของชิ้นงานจะมาจากผลรวมนี้", "Set the criteria the HWAI Agent will grade this assignment with, each with its own points. The assignment's max score is the sum.")}
@@ -424,8 +441,9 @@ export default function EditAssignmentPage() {
             </section>
           )}
 
-          {/* Danger Zone */}
-          <section className="bg-white rounded-2xl border border-[var(--s-err-bd)] shadow-sm p-6">
+          {/* Danger Zone — New Assignment has no equivalent (nothing to delete yet); kept as its
+              own full-width card, same mt-8 rhythm as the Rubric section above it. */}
+          <section className="bg-white rounded-2xl border border-[var(--s-err-bd)] shadow-sm p-6 mt-8">
             <h2 className="text-sm font-semibold text-[var(--s-err-text)] uppercase tracking-wider mb-4">{t("โซนอันตราย", "Danger Zone")}</h2>
             <button
               type="button" onClick={handleDelete}
@@ -440,8 +458,8 @@ export default function EditAssignmentPage() {
 
           {/* Actions — flex-wrap + basis-full (23/9/2569): a plain inline sibling next to the two
               buttons gets flex-shrunk down to almost nothing on a narrower viewport (see New
-              Assignment's identical fix, same underlying pattern). */}
-          <div className="flex flex-wrap justify-end gap-3 pb-4">
+              Assignment's identical fix, same underlying pattern; same classes as New's own Actions row). */}
+          <div className="flex flex-wrap items-center justify-end gap-3 mt-8 pt-6 pb-4 border-t border-gray-100">
             {!needsManualScore && !pointsOk && (
               <span className="text-xs text-amber-600 basis-full text-left">{t("ทุกเกณฑ์ต้องมีคะแนนมากกว่า 0 ก่อนบันทึก", "Every criterion needs more than 0 points before you can save")}</span>
             )}

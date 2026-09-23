@@ -112,7 +112,7 @@ test.describe("Edit assignment — rubric editing absorbed inline", () => {
     await expect(page.locator("input[type='number']").first()).toBeVisible();
   });
 
-  test("layout is full width like the other course pages, matching New Assignment", async ({ page }) => {
+  test("layout is full width and two columns, matching New Assignment", async ({ page }) => {
     await page.setViewportSize({ width: 1600, height: 900 });
     await seedTeacher(page);
     await page.goto(`${BASE}/teacher/courses/c-erub/assignments/a-erub/edit`);
@@ -120,5 +120,12 @@ test.describe("Edit assignment — rubric editing absorbed inline", () => {
     const main = page.locator("main");
     const css = await main.evaluate((el) => { const c = getComputedStyle(el); return { maxWidth: c.maxWidth, marginLeft: c.marginLeft }; });
     expect(css).toEqual({ maxWidth: "none", marginLeft: "0px" });
+    // two form columns side by side on a wide screen, same as New Assignment
+    const a = await page.getByText("General Information").boundingBox();
+    const b = await page.getByText("Deadline & Score").boundingBox();
+    expect(b!.x).toBeGreaterThan(a!.x + 300);
+    // breadcrumb replaced the old "Back to assignment" chevron button
+    await expect(page.getByRole("button", { name: "Back to assignment" })).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: "Edit Assignment" })).toBeVisible();
   });
 });
