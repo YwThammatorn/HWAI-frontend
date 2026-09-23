@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useCourses } from "@/lib/courses";
@@ -69,7 +69,6 @@ function CircleProgress({ pct, className }: { pct: number; className?: string })
 // ── Grade adjustment row ───────────────────────────────────────────────────
 
 interface RowState {
-  instructorScore: string; // controlled input — string to allow empty
   regrading: boolean;
 }
 
@@ -77,14 +76,12 @@ function GradeRow({
   row,
   maxPoints,
   rowState,
-  onChange,
   onRegrade,
   reviewHref,
 }: {
   row: SubmissionRow;
   maxPoints: number;
   rowState: RowState;
-  onChange: (val: string) => void;
   onRegrade: () => void;
   /** Where "Review" / "Recheck" opens this row's submission (recheck page, keyed by the representative submission). */
   reviewHref: string;
@@ -93,11 +90,12 @@ function GradeRow({
   const rep = row.subs[0];
   const isTeam = !!row.teamName;
 
-  const parsedInstructor = rowState.instructorScore === "" ? null : parseFloat(rowState.instructorScore);
-  const isModified =
-    parsedInstructor !== null &&
-    !isNaN(parsedInstructor) &&
-    parsedInstructor !== rep.aiScore;
+  // Score here is read-only display only (23/9/2569, corrects the 22/9 merge — the instructor never
+  // edits a score inline in this table; the only place to change one is the per-criterion recheck page,
+  // reached via the Review/Recheck link below). The effective score is the instructor's saved override
+  // once one exists, else the AI's own score; "Edited" marks a submission where those two differ.
+  const displayScore = rep.instructorScore ?? rep.aiScore;
+  const isModified = rep.instructorScore !== null && rep.instructorScore !== rep.aiScore;
 
   const STATUS_MAP = {
     not_graded: { label: t("ยังไม่ได้ตรวจ", "Not graded"), cls: "bg-[var(--bg-subtle)] text-[var(--text-secondary)]" },
@@ -148,29 +146,12 @@ function GradeRow({
         {new Date(rep.submittedAt).toLocaleDateString("th-TH", { day: "numeric", month: "short" })}
       </td>
 
-      {/* Score — merged AI + Instructor Score into one column (22/9/2569): the input already showed
-          the AI score as its placeholder when empty, so a separate "AI Score" column next to it was
-          showing the same number twice. Once the instructor overrides it, the AI score is kept
-          visible as a small "AI: N" hint so it isn't lost from the row entirely. */}
+      {/* Score — read-only (23/9/2569). Editing happens only on the recheck page, per criterion. */}
       <td className="px-4 py-3">
         <div className="flex items-center gap-1.5">
-          <input
-            type="number"
-            min={0}
-            max={maxPoints}
-            step={0.5}
-            value={rowState.instructorScore}
-            onChange={(e) => onChange(e.target.value)}
-            placeholder={rep.aiScore !== null ? String(rep.aiScore) : "—"}
-            aria-label={isTeam
-              ? t(`คะแนนอาจารย์ของทีม ${row.teamName}`, `Instructor score for team ${row.teamName}`)
-              : t(`คะแนนอาจารย์ของ ${rep.studentName}`, `Instructor score for ${rep.studentName}`)}
-            className={`w-20 h-8 rounded-lg border text-sm text-center tabular-nums focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)] transition-colors ${
-              isModified
-                ? "border-amber-300 bg-amber-50 text-amber-700 font-semibold"
-                : "border-gray-200 bg-white text-[var(--text-primary)]"
-            }`}
-          />
+          <span className={`text-sm tabular-nums ${isModified ? "font-semibold text-amber-700" : "text-[var(--text-primary)]"}`}>
+            {displayScore !== null ? displayScore : "—"}
+          </span>
           <span className="text-gray-300 text-xs">/{maxPoints}</span>
           {isModified && rep.aiScore !== null && (
             <span className="text-[10px] text-gray-400 whitespace-nowrap">{t(`AI: ${rep.aiScore}`, `AI: ${rep.aiScore}`)}</span>
@@ -253,19 +234,9 @@ function GradeAdjustmentTable({
   const { t } = useLanguage();
 
   const [rowStates, setRowStates] = useState<Record<string, RowState>>(() =>
-    Object.fromEntries(
-      rows.map((row) => [
-        row.key,
-        {
-          instructorScore: row.subs[0].instructorScore !== null ? String(row.subs[0].instructorScore) : "",
-          regrading: false,
-        },
-      ])
-    )
+    Object.fromEntries(rows.map((row) => [row.key, { regrading: false }]))
   );
 
-  const [saving, setSaving] = useState(false);
-  const [savedMsg, setSavedMsg] = useState(false);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
 
@@ -278,51 +249,16 @@ function GradeAdjustmentTable({
   });
   const countBy = (st: Submission["status"]) => rows.filter((r) => r.subs[0].status === st).length;
 
-  const modifiedCount = useMemo(() => {
-    return rows.filter((row) => {
-      const val = rowStates[row.key]?.instructorScore ?? "";
-      const parsed = val === "" ? null : parseFloat(val);
-      return parsed !== null && !isNaN(parsed) && parsed !== row.subs[0].aiScore;
-    }).length;
-  }, [rowStates, rows]);
-
-  function updateRow(key: string, val: string) {
-    // Clamp to [0, maxPoints]
-    const parsed = parseFloat(val);
-    let clamped = val;
-    if (!isNaN(parsed)) clamped = String(Math.min(maxPoints, Math.max(0, parsed)));
-    setRowStates((prev) => ({ ...prev, [key]: { ...prev[key], instructorScore: clamped } }));
-  }
-
   async function handleRegrade(row: SubmissionRow) {
-    setRowStates((prev) => ({ ...prev, [row.key]: { ...prev[row.key], regrading: true } }));
+    setRowStates((prev) => ({ ...prev, [row.key]: { regrading: true } }));
     await new Promise((r) => setTimeout(r, 1500));
     // Mock: regenerate score within ±15% of maxPoints
     const newScore = Math.round(maxPoints * (0.55 + Math.random() * 0.4));
-    setRowStates((prev) => ({
-      ...prev,
-      [row.key]: { instructorScore: "", regrading: false },
-    }));
+    setRowStates((prev) => ({ ...prev, [row.key]: { regrading: false } }));
     // Every team member's submission gets the same re-graded score.
     const changes: Record<string, number> = {};
     row.subs.forEach((s) => { changes[s.id] = newScore; });
     onSaveAll(changes);
-  }
-
-  function handleSaveAll() {
-    setSaving(true);
-    const changes: Record<string, number | null> = {};
-    rows.forEach((row) => {
-      const val = rowStates[row.key]?.instructorScore ?? "";
-      const parsed = val === "" ? null : parseFloat(val);
-      if (parsed !== null && !isNaN(parsed) && parsed !== row.subs[0].aiScore) {
-        row.subs.forEach((s) => { changes[s.id] = parsed; });
-      }
-    });
-    onSaveAll(changes);
-    setSaving(false);
-    setSavedMsg(true);
-    setTimeout(() => setSavedMsg(false), 3000);
   }
 
   return (
@@ -333,30 +269,10 @@ function GradeAdjustmentTable({
           <h2 className="text-sm font-bold text-[var(--text-primary)]">{t("ปรับคะแนน", "Grade Adjustment")}</h2>
           <p className="text-xs text-gray-400 mt-0.5">
             {t(
-              `${rows.length} รายการ — พิมพ์ "คะแนนอาจารย์" เพื่อ override AI หรือกด Re-grade เพื่อให้ AI ตรวจใหม่`,
-              `${rows.length} row(s) — type an instructor score to override AI, or Re-grade to re-run AI`
+              `${rows.length} รายการ — กด "ตรวจสอบ/ขอตรวจใหม่" เพื่อแก้คะแนนรายเกณฑ์ หรือกด Re-grade เพื่อให้ AI ตรวจใหม่ทั้งชิ้น`,
+              `${rows.length} row(s) — open Review/Recheck to edit per-criterion scores, or Re-grade to have AI re-check the whole submission`
             )}
           </p>
-        </div>
-        <div className="flex items-center gap-3">
-          {savedMsg && (
-            <span role="status" className="text-xs font-semibold text-green-700 bg-green-50 border border-green-100 rounded-lg px-3 py-1.5">
-              {t("บันทึกแล้ว ✓", "Saved ✓")}
-            </span>
-          )}
-          <button
-            onClick={handleSaveAll}
-            disabled={modifiedCount === 0 || saving}
-            className="flex items-center gap-1.5 h-9 px-4 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
-          >
-            {saving ? (
-              t("กำลังบันทึก…", "Saving…")
-            ) : modifiedCount > 0 ? (
-              t(`บันทึก ${modifiedCount} รายการ`, `Save ${modifiedCount} change(s)`)
-            ) : (
-              t("บันทึกทั้งหมด", "Save All")
-            )}
-          </button>
         </div>
       </div>
 
@@ -404,7 +320,7 @@ function GradeAdjustmentTable({
             <tbody>
               {visibleRows.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-10 text-center text-sm text-[var(--text-muted)]">{t("ไม่พบผลการค้นหา", "No results found")}</td>
+                  <td colSpan={6} className="px-4 py-10 text-center text-sm text-[var(--text-muted)]">{t("ไม่พบผลการค้นหา", "No results found")}</td>
                 </tr>
               )}
               {visibleRows.map((row) => (
@@ -412,8 +328,7 @@ function GradeAdjustmentTable({
                   key={row.key}
                   row={row}
                   maxPoints={maxPoints}
-                  rowState={rowStates[row.key] ?? { instructorScore: "", regrading: false }}
-                  onChange={(val) => updateRow(row.key, val)}
+                  rowState={rowStates[row.key] ?? { regrading: false }}
                   onRegrade={() => handleRegrade(row)}
                   reviewHref={`/teacher/courses/${courseId}/assignments/${assignmentId}/recheck?sub=${row.subs[0].id}`}
                 />

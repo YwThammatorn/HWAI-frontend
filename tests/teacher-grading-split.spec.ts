@@ -371,14 +371,15 @@ test.describe("Per-assignment grading page took over the stats and the submissio
     await expect(page.locator("main tbody tr")).toHaveCount(3);
   });
 
-  test("filtering does not lose an edited score", async ({ page }) => {
+  test("filtering by status and back doesn't change the row count", async ({ page }) => {
+    // Score is read-only in this table (23/9/2569) — this used to check that a live-typed instructor
+    // score survived a filter round trip; there's no more live editing to lose, so this now just
+    // guards the filter tabs themselves against losing rows on the way back to "All".
     await open(page, "/assignments/a-review/grading");
-    const input = page.getByLabel("Instructor score for Student 64070701");
-    await input.fill("95");
-    await page.getByRole("tab", { name: /Graded/ }).click();   // row is filtered out …
-    await page.getByRole("tab", { name: /^All/ }).click();     // … and back
-    await expect(page.getByLabel("Instructor score for Student 64070701")).toHaveValue("95");
-    await expect(page.getByRole("button", { name: /Save 1 change/ })).toBeEnabled();
+    await expect(page.locator("main tbody tr")).toHaveCount(3);
+    await page.getByRole("tab", { name: /Graded/ }).click();
+    await page.getByRole("tab", { name: /^All/ }).click();
+    await expect(page.locator("main tbody tr")).toHaveCount(3);
   });
 
   test("breadcrumb goes Courses / course / Grading / assignment", async ({ page }) => {

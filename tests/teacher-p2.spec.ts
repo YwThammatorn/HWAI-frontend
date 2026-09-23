@@ -72,65 +72,42 @@ async function seedGrading(page: Page) {
 
 test.describe("P2 — Teacher Grade Adjustment", () => {
 
-  test("grading page loads with AI scores shown", async ({ page }) => {
+  // Score is read-only in this table (23/9/2569, corrects the 22/9 merge) — editing only happens on
+  // the recheck page, per criterion. The Score column just shows the current score: the instructor's
+  // saved override if one exists, else the AI's own score.
+
+  test("grading page loads with AI scores shown as read-only text, no editable input", async ({ page }) => {
     await seedGrading(page);
     await page.goto(`${BASE}/teacher/courses/c-p2/assignments/a-p2/grading`);
     await page.waitForLoadState("networkidle");
-    // AI Score merged into the Score column (22/9/2569) — the empty instructor-score input shows
-    // the AI score as its placeholder, rather than a separate always-visible cell.
-    await expect(page.getByLabel(/Instructor score for สมชาย ใจดี/i)).toHaveAttribute("placeholder", "72");
-    await expect(page.getByLabel(/Instructor score for สมหญิง ดีมาก/i)).toHaveAttribute("placeholder", "55");
+    await expect(page.getByRole("row", { name: /สมชาย ใจดี/i })).toContainText("72");
+    await expect(page.getByRole("row", { name: /สมหญิง ดีมาก/i })).toContainText("55");
+    await expect(page.locator("main table input[type='number']")).toHaveCount(0);
   });
 
-  test("instructor score input accepts a number", async ({ page }) => {
-    await seedGrading(page);
+  test("a submission with a saved instructor override shows Edited, and the AI's original score as a hint", async ({ page }) => {
+    await page.addInitScript((data) => {
+      localStorage.setItem("hwai_lang", "en");
+      localStorage.setItem("hwai_user", JSON.stringify({ name: "Dr. Smith", email: "smith@kmitl.ac.th", role: "teacher" }));
+      localStorage.setItem("hwai_courses_v2", JSON.stringify([data.course]));
+      localStorage.setItem("hwai_assignments_v1", JSON.stringify([data.assignment]));
+      localStorage.setItem("hwai_submissions_v1", JSON.stringify([{ ...data.subA, instructorScore: 85, status: "graded" }, data.subB]));
+    }, { course: COURSE, assignment: ASSIGNMENT, subA: SUBMISSION_A, subB: SUBMISSION_B });
     await page.goto(`${BASE}/teacher/courses/c-p2/assignments/a-p2/grading`);
     await page.waitForLoadState("networkidle");
-    // Find the first instructor score input and enter a value
-    const inputs = page.locator("input[type='number']");
-    await inputs.first().fill("85");
-    await expect(inputs.first()).toHaveValue("85");
+    const row = page.getByRole("row", { name: /สมชาย ใจดี/i });
+    await expect(row).toContainText("85");
+    await expect(row.getByText(/แก้ไขแล้ว|Edited/i)).toBeVisible();
+    await expect(row.getByText("AI: 72")).toBeVisible();
   });
 
-  test("row highlights amber after instructor score differs from AI score", async ({ page }) => {
+  test("Review/Recheck link is the only way to grade — it goes to the per-submission recheck page", async ({ page }) => {
     await seedGrading(page);
     await page.goto(`${BASE}/teacher/courses/c-p2/assignments/a-p2/grading`);
     await page.waitForLoadState("networkidle");
-    const inputs = page.locator("input[type='number']");
-    await inputs.first().fill("85");
-    // "แก้ไขแล้ว" / "Edited" badge appears
-    await expect(page.getByText(/แก้ไขแล้ว|Edited/i)).toBeVisible();
-  });
-
-  test("Save button is disabled when no changes made", async ({ page }) => {
-    await seedGrading(page);
-    await page.goto(`${BASE}/teacher/courses/c-p2/assignments/a-p2/grading`);
-    await page.waitForLoadState("networkidle");
-    // Save button disabled initially (no instructorScore edits)
-    const saveBtn = page.getByRole("button", { name: /บันทึก|Save/i }).last();
-    await expect(saveBtn).toBeDisabled();
-  });
-
-  test("Save button enables after editing instructor score", async ({ page }) => {
-    await seedGrading(page);
-    await page.goto(`${BASE}/teacher/courses/c-p2/assignments/a-p2/grading`);
-    await page.waitForLoadState("networkidle");
-    const inputs = page.locator("input[type='number']");
-    await inputs.first().fill("90");
-    const saveBtn = page.getByRole("button", { name: /บันทึก|Save/i }).last();
-    await expect(saveBtn).toBeEnabled();
-  });
-
-  test("clicking Save shows success confirmation", async ({ page }) => {
-    await seedGrading(page);
-    await page.goto(`${BASE}/teacher/courses/c-p2/assignments/a-p2/grading`);
-    await page.waitForLoadState("networkidle");
-    const inputs = page.locator("input[type='number']");
-    await inputs.first().fill("90");
-    const saveBtn = page.getByRole("button", { name: /บันทึก|Save/i }).last();
-    await saveBtn.click();
-    // Success indicator: "บันทึกแล้ว ✓" or similar
-    await expect(page.getByText(/บันทึกแล้ว|Saved/i)).toBeVisible();
+    // Neither seeded submission is need_review/graded yet, so no Review/Recheck link shows —
+    // this just confirms the table renders without one until a submission reaches that state.
+    await expect(page.getByRole("link", { name: /Review|Recheck/i })).toHaveCount(0);
   });
 
   test("Re-grade button shows spinner then updates score", async ({ page }) => {
@@ -145,15 +122,6 @@ test.describe("P2 — Teacher Grade Adjustment", () => {
     // After completion, score cell updates (wait up to 3s)
     await page.waitForTimeout(2000);
     await expect(regradeBtn).toBeEnabled();
-  });
-
-  test("instructor score is clamped to maxPoints (100)", async ({ page }) => {
-    await seedGrading(page);
-    await page.goto(`${BASE}/teacher/courses/c-p2/assignments/a-p2/grading`);
-    await page.waitForLoadState("networkidle");
-    const inputs = page.locator("input[type='number']");
-    await expect(inputs.first()).toHaveAttribute("max", "100");
-    await expect(inputs.first()).toHaveAttribute("min", "0");
   });
 
 });

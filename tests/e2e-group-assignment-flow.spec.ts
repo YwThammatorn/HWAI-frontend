@@ -95,13 +95,20 @@ test("cold start: a student forms a team, submits, the teacher grades once, and 
   await expect(page.getByText("Poster Squad")).toBeVisible();
   await expect(page.getByText(/awaiting grade/i)).toBeVisible();
 
-  // Teacher grades the merged team row once, from the real Grade Adjustment table.
+  // Teacher grades the merged team row once. Score is read-only in the Grade Adjustment table
+  // (23/9/2569) — grading a team happens via Re-grade (to get it out of "not graded" so Recheck
+  // appears) then Recheck, where the actual score is set. This assignment has no rubric, so Recheck
+  // falls back to a single "enter the total score directly" input (23/9/2569).
   await loginAs(page, { name: TEACHER.name, email: TEACHER.email, role: "teacher" });
   await page.goto(GRADING_URL);
   await page.waitForLoadState("networkidle");
   await expect(page.getByText("Poster Squad")).toBeVisible();
-  await page.getByLabel(/Instructor score for team Poster Squad/i).fill("88");
-  await page.getByRole("button", { name: /save/i }).click();
+  await page.getByRole("button", { name: /Re-grade team Poster Squad/i }).click();
+  await page.waitForTimeout(2000); // mock re-grade takes 1.5s
+  await page.getByRole("link", { name: /Recheck team/i }).click();
+  await page.waitForLoadState("networkidle");
+  await page.getByLabel(/Total score/i).fill("88");
+  await page.getByRole("button", { name: /Save Changes/i }).click();
   await expect(page.getByText(/saved/i)).toBeVisible();
 
   // Beam — who was never graded directly — sees the graded score.

@@ -174,7 +174,10 @@ test.describe("P5 — Results page merges by team", () => {
 });
 
 test.describe("P5 — Grade Adjustment table merges by team", () => {
-  test("entering an instructor score for a team row fans out to every member on save", async ({ page }) => {
+  // Score itself is read-only in this table (23/9/2569) — the only ways to grade a row are
+  // Re-grade (mock AI re-check) or the per-submission recheck page, both already fan a team's score
+  // out to every member; this checks Re-grade still does that through the merged team row.
+  test("re-grading a team row fans the new score out to every member, leaving other rows untouched", async ({ page }) => {
     await seedTeacher(page, {
       submissions: [
         teamSubmission("64070701", "Fah Test", "64070701@kmitl.ac.th", "not_graded"),
@@ -187,13 +190,16 @@ test.describe("P5 — Grade Adjustment table merges by team", () => {
     // 3 raw submissions collapse to 2 rows: the team (2 members) + the solo student.
     await expect(page.getByText(/2 row\(s\)/i)).toBeVisible();
 
-    await page.getByLabel(/Instructor score for team Prototype Pals/i).fill("95");
-    await page.getByRole("button", { name: /save/i }).click();
+    await page.getByRole("button", { name: /Re-grade team Prototype Pals/i }).click();
+    await page.waitForTimeout(2000); // mock re-grade takes 1.5s
 
     const subs = await page.evaluate(() => JSON.parse(localStorage.getItem("hwai_submissions_v1") ?? "[]"));
     const teamSubs = subs.filter((s: { groupId?: string }) => s.groupId === "sg-tp5-1");
     expect(teamSubs).toHaveLength(2);
-    expect(teamSubs.every((s: { instructorScore: number; status: string }) => s.instructorScore === 95 && s.status === "graded")).toBe(true);
+    const [first, second] = teamSubs;
+    expect(first.status).toBe("graded");
+    expect(second.status).toBe("graded");
+    expect(first.instructorScore).toBe(second.instructorScore); // same re-graded score for both members
     // Untouched solo submission stays as-is.
     const solo = subs.find((s: { id: string }) => s.id === "sub-tp5-solo");
     expect(solo.status).toBe("not_graded");
