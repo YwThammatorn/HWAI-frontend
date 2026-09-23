@@ -566,6 +566,52 @@ below Rubric. Verified live at 1600px: General Information x≈322, Deadline & S
 two side-by-side columns, `<main>` maxWidth still `none`. Full suite 358/30 unaffected; lint baseline
 unchanged (16 errors, same as the previous round).
 
+## Unrelated (23/9): admin batch — 11 items across Users / Courses / Curriculum, all done and pushed
+User sent 11 terse items grouped easy/medium/hard. 5 needed clarification (confirmed via
+`AskUserQuestion`, including one answer — cohort removal — that reversed the recommended/narrower
+option). Plan file: `C:\Users\ASUS\.claude\plans\lively-tinkering-mitten.md`. Pushed as
+`f71dcff`/`218ddd5`/`5d5e162`/`4c15664`(unrelated, same session)/`238abde`/`039ba4a`.
+
+- **Add Teacher role picker removed** (`admin/users/page.tsx` `TeacherModal`) — every teacher created
+  here now starts as plain `"teacher"`; TAs are assigned per-course via Collaborators instead, matching
+  what the page's own copy already said. Scope boundary: the inline row-edit role selector and CSV
+  import's role column are untouched (not what was asked).
+- **`cohort` field removed from the whole system**, not just the add-student form (user explicitly chose
+  this over the narrower option) — `CohortStudent.cohort`/`Student.cohort` deleted along with
+  `cohortYearLabel()`/`getCohorts()`/`getStudentsByCohort()`; Add Student/inline-edit/CSV import all drop
+  it; `public/cohort-students-template.csv`, `test-data/students_sample.csv`, and the 4 mock-data JSON
+  pairs (public + test-data) had the column/key stripped (verified byte-identical after).
+- **Program → real `<select>` dropdown** on Add Student (both add + inline-edit) and on admin Curriculum
+  (was a 3-button toggle, functionally constrained already but showing abbreviations) — full names as
+  labels via a small `PROGRAM_LABEL` map duplicated per-component, matching this codebase's established
+  precedent (not extracted to `src/lib`).
+- **Curriculum Label auto-defaults** to `"{program} {year}"` as a real typed-in value now (was only ever
+  placeholder ghost text) — a plain derived value gated on a `labelTouched` flag, not a `useEffect`, to
+  avoid a new `set-state-in-effect` lint error.
+- **Admin Courses: Term 3 added** (`Term` type widened `1|2|"summer"` → `1|2|3|"summer"`) and **Summer
+  removed from the create dropdown** (the type itself keeps `"summer"` for reading old data).
+- **Primary Teacher is now an autocomplete** (`SearchInput`, same component used elsewhere in the app)
+  instead of a plain `<select>` of every teacher — resolves the typed/picked display name back to a
+  `teacherId` locally since `SearchInput` only ever returns a string.
+- **"Teaching Staff" → "Teacher"** wording in the course-row expand panel.
+- **"+ Add Section"** — duplicates an existing course into a new course row (same template/term/year),
+  leaving `sectionNumber` and Primary Teacher blank for the admin to fill in fresh; no new `Section`
+  entity (a hard Course/Section split stays explicitly out of scope, per `lib/courses.ts`'s own comment).
+  Found already built on disk mid-session by a **peer Claude session working the same plan in the same
+  working directory** — only the button's discoverability needed fixing (was an unlabeled 13px icon
+  identical in weight to Edit/Archive/Delete; now a bordered "+ Section" pill with visible text,
+  `aria-label` kept as "Add Section" so the peer's existing test locator still resolves).
+- Verified: tsc clean throughout; lint baseline unchanged on every touched file (checked via
+  `git stash` + `eslint` diff before/after on each one); full suite 359 passed / 30 skipped; live-verified
+  in the browser: Add Teacher/Add Student forms, admin Students table (no Cohort column/filter), Primary
+  Teacher autocomplete end-to-end (type → pick suggestion → resolves to id → Create Course), Add Section
+  flow, Curriculum dropdown + Label auto-fill.
+- **Working-directory note**: this session shares a filesystem with another live Claude session also
+  working `admin/courses/page.tsx` off the same plan — coordinated via `SendMessage`/`ListAgents`
+  mid-session once both sessions' edits started landing in the same file. Current split: admin/users,
+  admin/courses, admin/curriculum are done (this session); `teacher/courses/[id]/clo/page.tsx` (a
+  separate "make the CLO page less ugly" ask) is the peer session's, deliberately left untouched here.
+
 ## Not done / open
 - Score Book is read-only by design; if the teacher wants to type scores into cells, that is a new decision (Grading pages own edits today). Finalized assignments are additionally locked from click-through (23/9, this batch).
 - `gradeLetter` still exists locally in the two per-assignment results pages (the Score Book uses `lib/scoreBook.ts`); could be unified later.

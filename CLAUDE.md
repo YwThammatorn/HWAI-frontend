@@ -19,8 +19,8 @@
 
 ## Current active task
 _(อัปเดตช่องนี้ทุกครั้งที่เริ่ม task ใหม่ — ดูรายละเอียดที่ HANDOFF.md)_
-- Task: round 3 feedback (23/9) — unify Grading page's Review/Recheck into one "Grade" link (shown on every row, no more AI-score gate), Re-grade hidden for no-file assignments, `needsManualScore = isExam || !acceptsFiles` on New/Edit, Edit Assignment absorbs rubric editing inline + now fully matches New's 2-column layout/breadcrumb (standalone `rubrics/[rubricId]` route deleted), recheck's AI Confidence panel hidden pre-AI-grading
-- Status: **done and pushed** (78f51fa, e91bc24, 0b7d4bc, 3c18121) — see HANDOFF.md. All prior rounds also fully done and pushed.
+- Task: admin batch (23/9) — 11 items across admin/users, admin/courses, admin/curriculum (cohort removed system-wide, role picker removed from Add Teacher, Program dropdowns, Term 3, Primary Teacher autocomplete, Add Section discoverability). **Parallel work note**: this repo had 2 Claude sessions active at once this round (coordinated via SendMessage) — this session owns admin/*; a peer session owns `teacher/courses/[id]/clo/page.tsx` (CLO page redesign), pushed separately.
+- Status: **done and pushed** (f71dcff, 218ddd5, 5d5e162, 238abde, 039ba4a) — see HANDOFF.md. All prior rounds also fully done and pushed.
 
 # i18n Rule (TH/EN Language Toggle)
 
