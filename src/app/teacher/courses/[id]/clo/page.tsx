@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useCourses } from "@/lib/courses";
 import { useCLOs, CLO } from "@/lib/clo";
 import { useLanguage } from "@/context/LanguageContext";
+import Modal from "@/components/Modal";
 
 export default function CLOPage() {
   const { id } = useParams<{ id: string }>();
@@ -13,7 +14,6 @@ export default function CLOPage() {
   const { getCourse } = useCourses();
   const { getCLOsByCourse, addCLO, updateCLO, removeCLO } = useCLOs();
 
-  const CONFIRM_LEAVE = t("มีข้อมูลที่ยังไม่ได้บันทึก\nต้องการออกจากหน้านี้หรือไม่?", "Unsaved changes.\nLeave this page?");
   const CONFIRM_CANCEL = t("การเปลี่ยนแปลงจะไม่ถูกบันทึก\nต้องการยกเลิกหรือไม่?", "Changes will not be saved.\nCancel editing?");
 
   const course = getCourse(id);
@@ -26,6 +26,7 @@ export default function CLOPage() {
 
   const formDirty = formMode !== "idle" && (formCode !== "" || formText !== "");
 
+  // Modal owns Esc/backdrop-close; this only guards a hard page navigation mid-edit.
   useEffect(() => {
     const handler = (e: BeforeUnloadEvent) => {
       if (formDirty) { e.preventDefault(); e.returnValue = ""; }
@@ -35,12 +36,11 @@ export default function CLOPage() {
   }, [formDirty]);
 
   function navAway(to: string) {
-    if (formDirty && !window.confirm(CONFIRM_LEAVE)) return;
+    if (formDirty && !window.confirm(t("มีข้อมูลที่ยังไม่ได้บันทึก\nต้องการออกจากหน้านี้หรือไม่?", "Unsaved changes.\nLeave this page?"))) return;
     router.push(to);
   }
 
   function openAdd() {
-    if (formMode !== "idle" && formDirty && !window.confirm(CONFIRM_CANCEL)) return;
     setEditingId(null);
     setFormCode(`CLO${clos.length + 1}`);
     setFormText("");
@@ -48,14 +48,13 @@ export default function CLOPage() {
   }
 
   function openEdit(clo: CLO) {
-    if (formMode !== "idle" && formDirty && !window.confirm(CONFIRM_CANCEL)) return;
     setEditingId(clo.id);
     setFormCode(clo.code);
     setFormText(clo.text);
     setFormMode("edit");
   }
 
-  function cancelForm() {
+  function closeForm() {
     if (formDirty && !window.confirm(CONFIRM_CANCEL)) return;
     setFormMode("idle");
     setEditingId(null);
@@ -88,12 +87,11 @@ export default function CLOPage() {
   }
 
   const isFormValid = formCode.trim().length > 0 && formText.trim().length > 0;
-  const showEmpty = clos.length === 0 && formMode === "idle";
+  const showEmpty = clos.length === 0;
 
   return (
-      // Full-bleed like the other course pages (23/9/2569 follow-up — user asked for this back after
-      // a first pass capped the page width). The table itself is capped instead (see below), so the
-      // page frame matches its siblings without the CLO Text column stretching to fill the page.
+      // Full-bleed like the other course pages (23/9/2569 — the page frame matches its siblings;
+      // the CLO content itself is capped where it needs to be, not the whole page).
       <main className="w-full px-8 py-10">
 
         {/* Back */}
@@ -108,25 +106,28 @@ export default function CLOPage() {
         </button>
 
         {/* Header */}
-        <div className="flex items-start justify-between mb-6">
-          <div>
+        <div className="flex items-start justify-between gap-4 mb-1">
+          <div className="min-w-0">
             <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">{t("ผลลัพธ์การเรียนรู้รายวิชา (CLO)", "Course Learning Outcomes (CLO)")}</h1>
             <p className="text-sm text-gray-500">{course.name}</p>
           </div>
-          <div className="flex items-center gap-2 mt-1">
-            <button
-              onClick={openAdd}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-medium transition-colors"
-            >
-              <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
-                <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
-              </svg>
-              {t("เพิ่ม CLO", "Add CLO")}
-            </button>
-          </div>
+          <button
+            onClick={openAdd}
+            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-semibold shadow-sm active:scale-[0.98] transition-all shrink-0"
+          >
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+              <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+            </svg>
+            {t("เพิ่ม CLO", "Add CLO")}
+          </button>
         </div>
+        <p className="text-sm text-[var(--text-muted)] max-w-2xl mb-8">
+          {t(
+            "สิ่งที่นักศึกษาควรทำได้เมื่อเรียนจบวิชานี้ ใช้เป็นฐานสำหรับวัด CLO Attainment และผูกกับเกณฑ์การให้คะแนนของแต่ละชิ้นงาน",
+            "What a student should be able to do after completing this course — the basis for measuring CLO Attainment and linking to each assignment's grading criteria."
+          )}
+        </p>
 
-        {/* Empty state */}
         {showEmpty ? (
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-14 text-center">
             <div className="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center mx-auto mb-4">
@@ -149,144 +150,120 @@ export default function CLOPage() {
             </button>
           </div>
         ) : (
-          <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-subtle)] shadow-sm overflow-hidden">
+          <>
+            {/* One page-level note instead of repeating the same warning on every card — CLO↔criteria
+                linking isn't built yet (deferred, tracked since 19/9), so it's true of all of them at
+                once, not a per-CLO fact worth saying 4 times over. */}
+            <div className="flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 mb-5">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#B45309" strokeWidth="2" strokeLinecap="round" className="shrink-0 mt-0.5">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+              <p className="text-xs text-amber-700 leading-relaxed">
+                {t("ยังไม่รองรับการผูก CLO เข้ากับเกณฑ์การให้คะแนนของชิ้นงาน — เป็นฟีเจอร์ที่วางแผนไว้ในอนาคต", "Linking a CLO to an assignment's grading criteria isn't available yet — planned for a future release")}
+              </p>
+            </div>
 
-            {/* A real <table> (DESIGN.md §9b) instead of a fixed-column CSS grid — the grid's `1fr` text
-                column used to stretch edge-to-edge on a wide screen, leaving a large dead gap before the
-                Linked Criteria/Actions columns and making them read as detached, off to the right
-                (flagged 23/9/2569). No `w-full` here on purpose: the page itself is full-bleed like its
-                siblings, but the table sizes to its own (short) content and sits left-aligned inside the
-                card instead of being stretched to fill it — CLO Text gets a max width so a long
-                paragraph still wraps sanely instead of forcing the row very wide. */}
-            <table className="text-sm">
-              <thead>
-                <tr className="border-b border-[var(--border-subtle)]">
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider whitespace-nowrap">{t("รหัส", "Code")}</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider whitespace-nowrap">{t("ข้อความ CLO", "CLO Text")}</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider whitespace-nowrap">{t("เกณฑ์ที่ผูก", "Linked Criteria")}</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider whitespace-nowrap">{t("จัดการ", "Actions")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {clos.map((clo, idx) => (
-                  <tr
-                    key={clo.id}
-                    className={[
-                      "transition-colors",
-                      idx < clos.length - 1 ? "border-b border-[var(--border-subtle)]" : "",
-                      editingId === clo.id ? "bg-[#F0FFFE] opacity-60" : "hover:bg-[var(--bg-subtle)]",
-                    ].join(" ")}
-                  >
-                    {/* Code */}
-                    <td className="px-4 py-4 align-top whitespace-nowrap">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-lg bg-teal-50 text-[var(--accent)] text-xs font-bold font-mono">
-                        {clo.code}
-                      </span>
-                    </td>
-
-                    {/* Text */}
-                    <td className="px-4 py-4 align-top text-sm text-[var(--text-primary)] leading-relaxed max-w-[560px]">{clo.text}</td>
-
-                    {/* เกณฑ์ผูก — always "not linked yet"; CLO↔criteria linking isn't built (deferred). */}
-                    <td className="px-4 py-4 align-top whitespace-nowrap">
-                      <span className="flex items-center gap-1 text-xs text-amber-500">
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="shrink-0">
-                          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-                          <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+            <div className="flex flex-col gap-3">
+              {clos.map((clo) => (
+                <div
+                  key={clo.id}
+                  className="group bg-white rounded-2xl border border-gray-100 shadow-sm p-5 hover:border-[var(--accent)]/30 transition-colors"
+                >
+                  <div className="flex items-start gap-4">
+                    <span className="shrink-0 inline-flex items-center h-7 px-2.5 rounded-lg bg-teal-50 text-[var(--accent)] text-xs font-bold font-mono tabular-nums">
+                      {clo.code}
+                    </span>
+                    <p className="flex-1 min-w-0 text-sm text-[var(--text-primary)] leading-relaxed pt-0.5">{clo.text}</p>
+                    <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
+                      <button
+                        onClick={() => openEdit(clo)}
+                        className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-[var(--text-primary)] transition-colors"
+                        title={t("แก้ไข", "Edit")}
+                        aria-label={t(`แก้ไข ${clo.code}`, `Edit ${clo.code}`)}
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                         </svg>
-                        {t("ยังไม่มีเกณฑ์ผูก", "No linked criteria")}
-                      </span>
-                    </td>
-
-                    {/* Actions */}
-                    <td className="px-4 py-4 align-top whitespace-nowrap">
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => openEdit(clo)}
-                          disabled={editingId === clo.id}
-                          className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-[var(--text-primary)] transition-colors disabled:opacity-50"
-                          title={t("แก้ไข", "Edit")}
-                        >
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                          </svg>
-                        </button>
-                        <button
-                          onClick={() => handleDelete(clo)}
-                          className="p-1.5 rounded-lg hover:bg-[var(--s-err-bg)] text-gray-500 hover:text-[var(--s-err-text)] transition-colors"
-                          title={t("ลบ", "Delete")}
-                        >
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                            <polyline points="3 6 5 6 21 6"/>
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-                          </svg>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-            {/* Inline form panel */}
-            {formMode !== "idle" && (
-              <div className="border-t-2 border-[var(--accent)]/20 bg-teal-50/40 p-6">
-                <p className="text-xs font-semibold text-[var(--accent)] uppercase tracking-wider mb-4">
-                  {formMode === "add" ? t("เพิ่ม CLO ใหม่", "Add New CLO") : `${t("แก้ไข", "Edit")} ${editingId ? clos.find(c => c.id === editingId)?.code : ""}`}
-                </p>
-                <div className="grid gap-3 mb-3" style={{ gridTemplateColumns: "104px 1fr" }}>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1.5">
-                      {t("รหัส", "Code")} <span className="text-[var(--s-err-text)]">*</span>
-                    </label>
-                    <input
-                      value={formCode}
-                      onChange={e => setFormCode(e.target.value)}
-                      placeholder="CLO1"
-                      className="w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-white text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1.5">
-                      {t("ข้อความ CLO", "CLO Text")} <span className="text-[var(--s-err-text)]">*</span>
-                    </label>
-                    <textarea
-                      value={formText}
-                      onChange={e => setFormText(e.target.value)}
-                      placeholder={t("นักศึกษาสามารถ...", "Students can...")}
-                      rows={2}
-                      className="w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] resize-none transition-colors"
-                    />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(clo)}
+                        className="p-2 rounded-lg hover:bg-[var(--s-err-bg)] text-gray-500 hover:text-[var(--s-err-text)] transition-colors"
+                        title={t("ลบ", "Delete")}
+                        aria-label={t(`ลบ ${clo.code}`, `Delete ${clo.code}`)}
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                          <polyline points="3 6 5 6 21 6"/>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                 </div>
+              ))}
+            </div>
 
-                <div className="flex justify-end gap-2">
-                  <button
-                    type="button"
-                    onClick={cancelForm}
-                    className="px-4 py-2 rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
-                  >
-                    {t("ยกเลิก", "Cancel")}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleSave}
-                    disabled={!isFormValid}
-                    className="px-4 py-2 rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {t("บันทึก", "Save")}
-                  </button>
-                </div>
-              </div>
-            )}
+            <p className="text-xs text-gray-500 mt-4 text-right">{clos.length} CLO</p>
+          </>
+        )}
+
+        {/* Add / Edit — a centred popup like every other form in this app (DESIGN.md §9a), was
+            an inline panel appended under the table; that was the one form left behind when the
+            rest of the app converted to Modal. */}
+        <Modal
+          open={formMode !== "idle"}
+          onClose={closeForm}
+          title={formMode === "add" ? t("เพิ่ม CLO ใหม่", "Add New CLO") : t(`แก้ไข ${editingId ? clos.find(c => c.id === editingId)?.code ?? "" : ""}`, `Edit ${editingId ? clos.find(c => c.id === editingId)?.code ?? "" : ""}`)}
+          size="sm"
+          footer={
+            <>
+              <button
+                type="button"
+                onClick={closeForm}
+                className="h-10 px-5 rounded-xl border border-[var(--border)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
+              >
+                {t("ยกเลิก", "Cancel")}
+              </button>
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={!isFormValid}
+                className="h-10 px-5 rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
+              >
+                {t("บันทึก", "Save")}
+              </button>
+            </>
+          }
+        >
+          <div className="flex flex-col gap-4">
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1.5">
+                {t("รหัส", "Code")} <span className="text-[var(--s-err-text)]">*</span>
+              </label>
+              <input
+                autoFocus
+                value={formCode}
+                onChange={e => setFormCode(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSave()}
+                placeholder="CLO1"
+                className="w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-white text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1.5">
+                {t("ข้อความ CLO", "CLO Text")} <span className="text-[var(--s-err-text)]">*</span>
+              </label>
+              <textarea
+                value={formText}
+                onChange={e => setFormText(e.target.value)}
+                placeholder={t("นักศึกษาสามารถ...", "Students can...")}
+                rows={3}
+                className="w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] resize-none transition-colors"
+              />
+            </div>
           </div>
-        )}
-
-        {/* Footer count */}
-        {clos.length > 0 && (
-          <p className="text-xs text-gray-500 mt-3 text-right">{clos.length} CLO</p>
-        )}
+        </Modal>
       </main>
   );
 }
