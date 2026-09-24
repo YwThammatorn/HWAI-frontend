@@ -228,7 +228,7 @@ function CourseCard({ course, studentCount, allGraded, activeAssignments, isArch
             </div>
             <div className="min-w-0">
               <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-0.5">{t("ภาคเรียนที่", "Term")}</p>
-              <p className="text-xs font-semibold text-[var(--accent)] truncate">{termLabel}</p>
+              <p className="text-xs font-semibold text-[var(--text-primary)] truncate">{termLabel}</p>
             </div>
           </div>
 
