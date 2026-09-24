@@ -83,13 +83,14 @@ export default function NewAssignmentPage() {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!isValid) return;
+    // An Exam has no deadline and students never submit it (25/9/2569)
     const points = needsManualScore ? (parseInt(maxPoints) || 100) : criteriaTotalPoints(criteria);
     const a = addAssignment({
       courseId: id,
       name: name.trim(),
       description: description.trim(),
       attachments: att.items.length > 0 ? att.items : undefined,
-      dueDate,
+      dueDate: isExam ? undefined : dueDate,
       maxPoints: points,
       categoryId: categoryId || undefined,
       acceptsFiles,
@@ -113,7 +114,7 @@ export default function NewAssignmentPage() {
 
   const totalPoints = criteriaTotalPoints(criteria);
   const pointsOk = criteriaPointsOk(criteria);
-  const isValid = name.trim().length > 0 && dueDate !== "" && (!acceptsFiles || fileTypes.length > 0) &&
+  const isValid = name.trim().length > 0 && (isExam || dueDate !== "") && (!acceptsFiles || fileTypes.length > 0) &&
     (needsManualScore ? (parseInt(maxPoints) || 0) > 0 : pointsOk);
 
   return (
@@ -292,8 +293,9 @@ export default function NewAssignmentPage() {
 
           {/* Details */}
           <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-            <SectionHeader icon="cal" label={t("กำหนดเวลาและคะแนน", "Deadline & Score")} />
-            <div className="grid grid-cols-2 gap-4">
+            <SectionHeader icon="cal" label={isExam ? t("คะแนน", "Score") : t("กำหนดเวลาและคะแนน", "Deadline & Score")} />
+            <div className={isExam ? "" : "grid grid-cols-2 gap-4"}>
+              {!isExam && (
               <div>
                 <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">
                   {t("วันครบกำหนด", "Due Date")} <span className="text-[var(--s-err-text)]">*</span>
@@ -310,6 +312,7 @@ export default function NewAssignmentPage() {
                   />
                 </div>
               </div>
+              )}
               <div>
                 <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">{t("คะแนนเต็ม", "Max Score")}</label>
                 {needsManualScore ? (

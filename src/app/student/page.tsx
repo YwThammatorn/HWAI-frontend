@@ -54,6 +54,7 @@ export default function StudentHome() {
     enrolledCourses.forEach((course) => {
       const assignments = getAssignmentsByCourse(course.id);
       assignments.forEach((a) => {
+        if (!a.dueDate) return; // an Exam has no deadline and nothing to submit
         const due = new Date(a.dueDate + "T23:59:59");
         const hoursLeft = (due.getTime() - now) / 3_600_000;
         if (hoursLeft <= 0) return;
@@ -78,6 +79,7 @@ export default function StudentHome() {
     enrolledCourses.forEach((course) => {
       const assignments = getAssignmentsByCourse(course.id);
       assignments.forEach((a) => {
+        if (!a.dueDate) return; // an Exam has no date to put on the calendar
         const due = new Date(a.dueDate + "T23:59:59");
         const allSubs = getSubmissionsByAssignment(a.id);
         const mySub = allSubs.find(

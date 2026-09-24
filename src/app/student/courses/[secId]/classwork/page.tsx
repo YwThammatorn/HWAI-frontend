@@ -21,8 +21,10 @@ function getWorkStatus(
   assignment: Assignment,
   submission: Submission | undefined
 ): AssignmentStatus {
+  // An Exam is never submitted: it's either scored or still waiting for the teacher (25/9/2569).
+  if (assignment.isExam) return submission?.status === "graded" ? "graded" : "awaiting_score";
   if (!submission) {
-    const due = new Date(assignment.dueDate + "T23:59:59");
+    const due = new Date((assignment.dueDate ?? "") + "T23:59:59");
     return new Date() > due ? "overdue" : "not_submitted";
   }
   if (submission.status === "graded") return "graded";
@@ -42,8 +44,8 @@ function ClassworkCard({
 }) {
   const { t } = useLanguage();
   const status = getWorkStatus(assignment, submission);
-  const due = new Date(assignment.dueDate + "T23:59:59");
-  const hoursLeft = (due.getTime() - Date.now()) / 3_600_000;
+  const due = assignment.dueDate ? new Date(assignment.dueDate + "T23:59:59") : null;
+  const hoursLeft = due ? (due.getTime() - Date.now()) / 3_600_000 : Infinity;
   const isUrgent = hoursLeft > 0 && hoursLeft < 24;
 
   const score = submission?.instructorScore ?? submission?.aiScore ?? null;
@@ -67,10 +69,14 @@ function ClassworkCard({
         <p className="text-sm font-semibold text-[var(--text-primary)] truncate">{assignment.name}</p>
         <div className="flex items-center gap-2 mt-1 flex-wrap">
           <span className="text-xs text-[var(--text-muted)]">
-            {t("กำหนดส่ง:", "Due:")} {" "}
-            <span className={isUrgent ? "font-semibold text-[var(--s-err-text)]" : ""}>
-              {due.toLocaleDateString("th-TH", { day: "numeric", month: "short" })}
-            </span>
+            {due ? (
+              <>
+                {t("กำหนดส่ง:", "Due:")} {" "}
+                <span className={isUrgent ? "font-semibold text-[var(--s-err-text)]" : ""}>
+                  {due.toLocaleDateString("th-TH", { day: "numeric", month: "short" })}
+                </span>
+              </>
+            ) : t("สอบ · ไม่ต้องส่งงาน", "Exam · nothing to submit")}
           </span>
           <AssignmentTypeBadge type={assignment.submissionType === "group" ? "group" : "individual"} />
           {isUrgent && (
@@ -153,22 +159,27 @@ export default function StudentClassworkPage() {
 
   // Grouped by urgency, top to bottom: due soon (or overdue) → not submitted → submitted.
   const now = new Date().getTime();
-  const { dueSoon, notSubmitted, submitted } = useMemo(() => {
+  const { dueSoon, notSubmitted, awaiting, submitted } = useMemo(() => {
     const dueSoon: Assignment[] = [];
     const notSubmitted: Assignment[] = [];
+    const awaiting: Assignment[] = [];
     const submitted: Assignment[] = [];
     assignments.forEach((a) => {
+      if (a.isExam) {
+        (mySubmissions.get(a.id)?.status === "graded" ? submitted : awaiting).push(a);
+        return;
+      }
       if (mySubmissions.has(a.id)) {
         submitted.push(a);
         return;
       }
-      const daysUntilDue = (new Date(a.dueDate + "T23:59:59").getTime() - now) / (24 * 3_600_000);
+      const daysUntilDue = (new Date((a.dueDate ?? "") + "T23:59:59").getTime() - now) / (24 * 3_600_000);
       (daysUntilDue <= DUE_SOON_DAYS ? dueSoon : notSubmitted).push(a);
     });
-    dueSoon.sort((a, b) => a.dueDate.localeCompare(b.dueDate));
-    notSubmitted.sort((a, b) => a.dueDate.localeCompare(b.dueDate));
+    dueSoon.sort((a, b) => (a.dueDate ?? "").localeCompare(b.dueDate ?? ""));
+    notSubmitted.sort((a, b) => (a.dueDate ?? "").localeCompare(b.dueDate ?? ""));
     submitted.sort((a, b) => (mySubmissions.get(b.id)?.submittedAt ?? "").localeCompare(mySubmissions.get(a.id)?.submittedAt ?? ""));
-    return { dueSoon, notSubmitted, submitted };
+    return { dueSoon, notSubmitted, awaiting, submitted };
   }, [assignments, mySubmissions, now]);
 
   const categories = useMemo(() => (course ? getCategoriesByCourse(secId) : []), [course, secId, getCategoriesByCourse]);
@@ -237,6 +248,20 @@ export default function StudentClassworkPage() {
                 </h2>
                 <div className="flex flex-col gap-3">
                   {notSubmitted.map((a) => (
+                    <ClassworkCard key={a.id} assignment={a} submission={mySubmissions.get(a.id)} courseId={secId} />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Exams: nothing to submit, waiting for the teacher's score */}
+            {awaiting.length > 0 && (
+              <section>
+                <h2 className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)] mb-3">
+                  {t(`รอคะแนนสอบ (${awaiting.length})`, `Awaiting score (${awaiting.length})`)}
+                </h2>
+                <div className="flex flex-col gap-3">
+                  {awaiting.map((a) => (
                     <ClassworkCard key={a.id} assignment={a} submission={mySubmissions.get(a.id)} courseId={secId} />
                   ))}
                 </div>

@@ -57,7 +57,9 @@ function ClassworkDetail() {
   const [linkValue, setLinkValue] = useState(() => previous.find((a) => a.kind === "link")?.ref ?? "");
   const files = useAttachmentsDraft(previous.filter((a) => a.kind !== "link"));
 
-  const isGroup = assignment?.submissionType === "group";
+  // An Exam is never submitted and never a team task (25/9/2569) — the student just waits for the score.
+  const isExam = !!assignment?.isExam;
+  const isGroup = !isExam && assignment?.submissionType === "group";
   const myGroup = isGroup ? getGroupForStudent(actId, studentId) : undefined;
   const roster = getStudentsByCourse(secId);
 
@@ -73,8 +75,8 @@ function ClassworkDetail() {
     );
   }
 
-  const due = new Date(assignment.dueDate + "T23:59:59");
-  const isPast = new Date() > due;
+  const due = assignment.dueDate ? new Date(assignment.dueDate + "T23:59:59") : null;
+  const isPast = !!due && new Date() > due;
   const isGraded = mySubmission?.status === "graded";
   const score = mySubmission?.instructorScore ?? mySubmission?.aiScore ?? null;
   // A link is always offered when the assignment accepts attachments at all —
@@ -179,10 +181,16 @@ function ClassworkDetail() {
                     <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
                     <line x1="3" y1="10" x2="21" y2="10"/>
                   </svg>
-                  <span className={isPast && !mySubmission ? "text-[var(--st-overdue-text)] font-semibold" : ""}>
-                    {t("กำหนดส่ง:", "Due:")} {due.toLocaleDateString("th-TH", { day: "numeric", month: "long", year: "numeric" })}
-                  </span>
-                  {isPast && !mySubmission && <AssignmentStatusBadge status="overdue" />}
+                  {due ? (
+                    <>
+                      <span className={isPast && !mySubmission ? "text-[var(--st-overdue-text)] font-semibold" : ""}>
+                        {t("กำหนดส่ง:", "Due:")} {due.toLocaleDateString("th-TH", { day: "numeric", month: "long", year: "numeric" })}
+                      </span>
+                      {isPast && !mySubmission && <AssignmentStatusBadge status="overdue" />}
+                    </>
+                  ) : (
+                    <span>{t("สอบ — ไม่ต้องส่งงาน", "Exam — nothing to submit")}</span>
+                  )}
                 </span>
                 <span className="text-[var(--text-muted)]">{t(`คะแนนเต็ม ${assignment.maxPoints} คะแนน`, `Max ${assignment.maxPoints} points`)}</span>
               </div>
@@ -309,8 +317,21 @@ function ClassworkDetail() {
                 </div>
               )}
 
+              {/* Exam, not scored yet: no submit form at all, just waiting for the teacher */}
+              {isExam && !isGraded && (
+                <div className={`p-3 rounded-xl border ${STATUS_STYLE.awaiting_score.panel}`}>
+                  <p className="flex items-center gap-1.5 text-xs font-semibold">
+                    <span className="w-1.5 h-1.5 rounded-full bg-current shrink-0" aria-hidden="true" />
+                    {t("รอรับคะแนนสอบ", "Waiting for your exam score")}
+                  </p>
+                  <p className="text-xs mt-1 leading-relaxed opacity-90">
+                    {t("ไม่ต้องส่งงานสำหรับการสอบนี้ — คะแนนจะแสดงที่นี่เมื่ออาจารย์บันทึกให้", "There's nothing to submit for this exam — your score will appear here once your teacher records it")}
+                  </p>
+                </div>
+              )}
+
               {/* Submitted (waiting) state */}
-              {(submitted || (mySubmission && !isGraded)) && (
+              {!isExam && (submitted || (mySubmission && !isGraded)) && (
                 <div className={`mb-4 p-3 rounded-xl border ${STATUS_STYLE.submitted.panel}`}>
                   <div className="flex items-center gap-2">
                     <div className="w-5 h-5 rounded-full bg-[var(--st-sent-text)]/15 flex items-center justify-center shrink-0">
@@ -332,7 +353,7 @@ function ClassworkDetail() {
               )}
 
               {/* No submission yet */}
-              {!mySubmission && !submitted && (
+              {!isExam && !mySubmission && !submitted && (
                 <div className={`mb-4 p-3 rounded-xl border border-dashed text-center ${STATUS_STYLE[isPast ? "overdue" : "not_submitted"].panel}`}>
                   <p className="text-xs font-medium">
                     {isGroup && !myGroup ? t("เข้าร่วมทีมก่อนถึงจะส่งงานได้", "Join a team before you can submit") : t("ยังไม่ได้ส่งงาน", "Not submitted yet")}
@@ -341,7 +362,7 @@ function ClassworkDetail() {
               )}
 
               {/* Attach a file or link — only for assignments configured to accept one */}
-              {!isGraded && !isPast && assignment.acceptsFiles && (
+              {!isExam && !isGraded && !isPast && assignment.acceptsFiles && (
                 <div className="mb-4 flex flex-col gap-3">
                   {mySubmission && (
                     <p className="text-xs text-[var(--text-muted)]">
@@ -378,7 +399,7 @@ function ClassworkDetail() {
               )}
 
               {/* Submit button (hidden if graded) */}
-              {!isGraded && !isPast && (
+              {!isExam && !isGraded && !isPast && (
                 <button
                   onClick={() => setConfirmOpen(true)}
                   disabled={submitting || !canSubmit}
@@ -396,7 +417,7 @@ function ClassworkDetail() {
                   {SUBMIT_BTN_LABEL}
                 </button>
               )}
-              {isPast && !mySubmission && (
+              {!isExam && isPast && !mySubmission && (
                 <p className="text-xs text-[var(--st-overdue-text)] text-center">{t("เกินกำหนดแล้ว ไม่สามารถส่งได้", "Past due — submission closed")}</p>
               )}
             </div>

@@ -76,7 +76,7 @@ export default function EditAssignmentPage() {
       const orig = {
         name: assignment.name,
         description: assignment.description,
-        dueDate: assignment.dueDate,
+        dueDate: assignment.dueDate ?? "",
         isExam: assignment.isExam ?? false,
         maxPoints: String(assignment.maxPoints),
         categoryId: assignment.categoryId ?? "",
@@ -151,7 +151,8 @@ export default function EditAssignmentPage() {
       name: name.trim(),
       description: description.trim(),
       attachments: att.items,
-      dueDate,
+      // An Exam has no deadline and students never submit it (25/9/2569)
+      dueDate: isExam ? undefined : dueDate,
       maxPoints: needsManualScore ? (parseInt(maxPoints) || 100) : criteriaTotalPoints(criteria),
       categoryId: categoryId || undefined,
       acceptsFiles,
@@ -203,7 +204,7 @@ export default function EditAssignmentPage() {
   const needsManualScore = isExam || !acceptsFiles;
   const totalPoints = criteriaTotalPoints(criteria);
   const pointsOk = criteriaPointsOk(criteria);
-  const isValid = name.trim().length > 0 && dueDate !== "" && (!acceptsFiles || fileTypes.length > 0) &&
+  const isValid = name.trim().length > 0 && (isExam || dueDate !== "") && (!acceptsFiles || fileTypes.length > 0) &&
     (needsManualScore ? (parseInt(maxPoints) || 0) > 0 : pointsOk);
 
   return (
@@ -354,8 +355,9 @@ export default function EditAssignmentPage() {
 
           {/* Details */}
           <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-            <SectionHeader icon="cal" label={t("กำหนดเวลาและคะแนน", "Deadline & Score")} />
-            <div className="grid grid-cols-2 gap-4">
+            <SectionHeader icon="cal" label={isExam ? t("คะแนน", "Score") : t("กำหนดเวลาและคะแนน", "Deadline & Score")} />
+            <div className={isExam ? "" : "grid grid-cols-2 gap-4"}>
+              {!isExam && (
               <div>
                 <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">
                   {t("วันครบกำหนด", "Due Date")} <span className="text-[var(--s-err-text)]">*</span>
@@ -372,6 +374,7 @@ export default function EditAssignmentPage() {
                   />
                 </div>
               </div>
+              )}
               <div>
                 <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">{t("คะแนนเต็ม", "Max Score")}</label>
                 {needsManualScore ? (

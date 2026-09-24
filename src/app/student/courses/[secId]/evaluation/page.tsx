@@ -256,7 +256,9 @@ export default function StudentEvaluationPage() {
                               {a.name}
                             </Link>
                             <span className="block text-xs text-[var(--text-muted)] tabular-nums">
-                              {t("กำหนดส่ง", "Due")} {new Date(a.dueDate + "T00:00:00").toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "numeric" })}
+                              {a.dueDate
+                                ? `${t("กำหนดส่ง", "Due")} ${new Date(a.dueDate + "T00:00:00").toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "numeric" })}`
+                                : t("สอบ", "Exam")}
                             </span>
                           </td>
                           <td className={`px-4 py-2.5 text-right ${isLastRow ? "" : "border-b border-[var(--border-subtle)]"}`}>

@@ -92,7 +92,8 @@ export function buildScoreBook(input: {
   const byAssignment = assignments.map((a) => a.id);
 
   // Columns: one group per category (in the order given), then "no category". Inside a group, by due date.
-  const byDue = (a: Assignment, b: Assignment) => a.dueDate.localeCompare(b.dueDate) || a.name.localeCompare(b.name);
+  // An Exam has no due date (25/9/2569) — it sorts after the dated work in its group.
+  const byDue = (a: Assignment, b: Assignment) => (a.dueDate ?? "9999-12-31").localeCompare(b.dueDate ?? "9999-12-31") || a.name.localeCompare(b.name);
   const groups: ScoreBookGroup[] = categories
     .map((category) => ({ key: category.id, category, columns: assignments.filter((a) => a.categoryId === category.id).sort(byDue) }))
     .filter((g) => g.columns.length > 0);
@@ -114,7 +115,7 @@ export function buildScoreBook(input: {
     for (const a of assignments) {
       const sub = subOf.get(`${a.id}::${student.studentId}`);
       if (!sub) {
-        if (a.dueDate < today) { cells[a.id] = { kind: "missing" }; missingCells++; } else cells[a.id] = { kind: "none" };
+        if (a.dueDate && a.dueDate < today) { cells[a.id] = { kind: "missing" }; missingCells++; } else cells[a.id] = { kind: "none" };
       } else if (sub.status === "graded") {
         const score = sub.instructorScore ?? sub.aiScore ?? 0;
         const pct = a.maxPoints > 0 ? (score / a.maxPoints) * 100 : 0;

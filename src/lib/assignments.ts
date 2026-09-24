@@ -23,7 +23,8 @@ export interface Assignment {
   description: string;
   /** Optional reference files/images/links from the teacher. Absent on assignments created before this existed. */
   attachments?: AssignmentAttachment[];
-  dueDate: string; // YYYY-MM-DD
+  /** YYYY-MM-DD. Absent for an Exam (isExam): it has no deadline and students never submit it. */
+  dueDate?: string;
   maxPoints: number;
   categoryId?: string; // FK -> GradingCategory, which % of the course grade this assignment counts toward
   acceptsFiles: boolean;

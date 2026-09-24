@@ -13,6 +13,8 @@ import { getInitials } from "@/lib/utils";
 import SearchInput from "@/components/SearchInput";
 import PillTabBar from "@/components/PillTabBar";
 import WithdrawnTabs, { type WithdrawnTab } from "@/components/WithdrawnTabs";
+import ExamScoreTable from "@/components/ExamScoreTable";
+import { useCohortStudents } from "@/lib/cohort-students";
 
 // ── Stat card ─────────────────────────────────────────────────────────────
 
@@ -361,7 +363,8 @@ export default function GradingProgressPage() {
   const { id, assignmentId } = useParams<{ id: string; assignmentId: string }>();
   const { t } = useLanguage();
   const { getCourse } = useCourses();
-  const { getAssignment, getSubmissionsByAssignment, updateSubmission, updateAssignment } = useAssignments();
+  const { getAssignment, getSubmissionsByAssignment, addSubmission, updateSubmission, updateAssignment } = useAssignments();
+  const { findByStudentId } = useCohortStudents();
   const { getGroupsByAssignment } = useStudentGroups();
   const { getStudentsByCourse } = useStudents();
   const [tabState, setTabState] = useState<WithdrawnTab>("active");
@@ -397,19 +400,30 @@ export default function GradingProgressPage() {
   const rowWithdrawn = (r: SubmissionRow) => r.subs.every((s) => withdrawnStudentIds.has(s.studentId));
   const rows = allRows.filter((r) => !rowWithdrawn(r));
   const withdrawnRows = allRows.filter(rowWithdrawn);
-  const activeCount = roster.filter((s) => !isWithdrawn(s)).length;
-  const tab: WithdrawnTab = withdrawnRows.length === 0 ? "active" : tabState;
+  const activeStudents = roster.filter((s) => !isWithdrawn(s));
+  const withdrawnStudents = roster.filter(isWithdrawn);
+  const activeCount = activeStudents.length;
+  // An Exam is never submitted (25/9/2569): its rows are the enrolled students themselves, and the
+  // teacher types each score in (ExamScoreTable). "Processed" then means "has a score".
+  const isExam = !!assignment.isExam;
+  const withdrawnCount = isExam ? withdrawnStudents.length : withdrawnRows.length;
+  const tab: WithdrawnTab = withdrawnCount === 0 ? "active" : tabState;
   const repSubs = rows.map((r) => r.subs[0]);
+  const gradedOf = new Map(submissions.filter((s) => s.status === "graded").map((s) => [s.studentId, s.instructorScore ?? s.aiScore ?? 0]));
+  const examScores = Object.fromEntries(gradedOf);
+  const activeScores = activeStudents.filter((s) => gradedOf.has(s.studentId)).map((s) => gradedOf.get(s.studentId) as number);
 
   const enrolled = activeCount;
-  const total = rows.length;
-  const processed = repSubs.filter((s) => s.status === "graded").length;
-  const needsReview = repSubs.filter((s) => s.status === "need_review").length;
+  const total = isExam ? activeCount : rows.length;
+  const processed = isExam ? activeScores.length : repSubs.filter((s) => s.status === "graded").length;
+  const needsReview = isExam ? 0 : repSubs.filter((s) => s.status === "need_review").length;
   const scoredSubs = repSubs.filter((s) => s.aiScore !== null);
-  const avgScore =
-    scoredSubs.length > 0
+  const avgScore = isExam
+    ? (activeScores.length > 0 ? activeScores.reduce((a, b) => a + b, 0) / activeScores.length : null)
+    : scoredSubs.length > 0
       ? scoredSubs.reduce((sum, s) => sum + (s.aiScore ?? 0), 0) / scoredSubs.length
       : null;
+  const topScore = activeScores.length > 0 ? Math.max(...activeScores) : null;
   const pct = total > 0 ? (processed / total) * 100 : 0;
   const isDone = total > 0 && processed === total;
   const finalized = !!assignment.gradingFinalized;
@@ -419,6 +433,35 @@ export default function GradingProgressPage() {
   }
   function handleReopenGrading() {
     updateAssignment(assignmentId, { gradingFinalized: false });
+  }
+
+  // Exam scores: a student who has no submission yet gets one created here (nothing to attach — they
+  // never submit), so the Score Book, Evaluation page and student view all read it the usual way.
+  function handleSaveExamScores(changes: Record<string, number | null>) {
+    Object.entries(changes).forEach(([studentId, score]) => {
+      const existing = submissions.find((s) => s.studentId === studentId);
+      if (existing) {
+        updateSubmission(existing.id, score === null
+          ? { instructorScore: null, aiScore: null, status: "not_graded" }
+          : { instructorScore: score, status: "graded" });
+        return;
+      }
+      if (score === null) return;
+      const stu = roster.find((s) => s.studentId === studentId);
+      addSubmission({
+        assignmentId,
+        studentId,
+        studentName: stu ? `${stu.firstName} ${stu.lastName}` : studentId,
+        email: stu?.email ?? "",
+        submittedAt: new Date().toISOString(),
+        fileUrl: null,
+        aiScore: null,
+        instructorScore: score,
+        instructorComment: "",
+        externalUseConsent: false,
+        status: "graded",
+      });
+    });
   }
 
   function handleSaveChanges(changes: Record<string, number | null>) {
@@ -459,11 +502,12 @@ export default function GradingProgressPage() {
             <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">{assignment.name}</h1>
             <div className="flex items-center gap-3 text-sm text-gray-400">
               <span>
-                {t("ส่งภายใน", "Due")}{" "}
-                {new Date(assignment.dueDate + "T00:00:00").toLocaleDateString("en-US", {
-                  month: "short", day: "numeric", year: "numeric",
-                })}{" "}
-                {t("เวลา 23:59 น.", "at 11:59 PM")}
+                {assignment.dueDate
+                  ? <>{t("ส่งภายใน", "Due")}{" "}{new Date(assignment.dueDate + "T00:00:00").toLocaleDateString("en-US", {
+                      month: "short", day: "numeric", year: "numeric",
+                    })}{" "}
+                    {t("เวลา 23:59 น.", "at 11:59 PM")}</>
+                  : t("สอบ · ไม่มีกำหนดส่ง", "Exam · no due date")}
               </span>
               <span className="font-medium text-[var(--accent)]">• {t("ตรวจงาน", "Grading")}</span>
             </div>
@@ -525,15 +569,15 @@ export default function GradingProgressPage() {
         </div>
 
         {/* Enrolled / Withdrawn — only appears once someone has withdrawn */}
-        <WithdrawnTabs tab={tab} onChange={setTabState} activeCount={rows.length} withdrawnCount={withdrawnRows.length} />
+        <WithdrawnTabs tab={tab} onChange={setTabState} activeCount={isExam ? activeCount : rows.length} withdrawnCount={withdrawnCount} />
 
         {tab === "active" && (<>
         {/* Stats */}
         <div className="grid grid-cols-4 gap-4 mb-6">
           <StatCard
-            label={t("ตรวจแล้ว", "Processed")}
+            label={isExam ? t("ให้คะแนนแล้ว", "Scored") : t("ตรวจแล้ว", "Processed")}
             value={processed}
-            sub={t("เสร็จสิ้น", "completed")}
+            sub={isExam ? t(`จาก ${total} คน`, `of ${total} students`) : t("เสร็จสิ้น", "completed")}
             color="var(--s-ok-text)"
             icon={
               <div className="w-7 h-7 rounded-full bg-[var(--s-ok-bg)] flex items-center justify-center">
@@ -544,9 +588,9 @@ export default function GradingProgressPage() {
             }
           />
           <StatCard
-            label={isGroupAssignment ? t("ทีมทั้งหมด", "Total Teams") : t("ส่งแล้ว", "Submitted")}
-            value={total}
-            sub={isGroupAssignment
+            label={isExam ? t("ยังไม่มีคะแนน", "Not scored yet") : isGroupAssignment ? t("ทีมทั้งหมด", "Total Teams") : t("ส่งแล้ว", "Submitted")}
+            value={isExam ? total - processed : total}
+            sub={isExam ? t("คน", "students") : isGroupAssignment
               ? t("ทีม", "team(s)")
               : enrolled > 0
                 ? t(`/ ${enrolled} · ยังไม่ส่ง ${Math.max(0, enrolled - total)}`, `/ ${enrolled} · ${Math.max(0, enrolled - total)} pending`)
@@ -561,11 +605,17 @@ export default function GradingProgressPage() {
             }
           />
           <StatCard
-            label={t("รอตรวจสอบ", "Needs Review")}
-            value={needsReview}
-            sub={t("รอดำเนินการ", "Pending")}
-            color="var(--s-warn-text)"
-            icon={
+            label={isExam ? t("คะแนนสูงสุด", "Highest") : t("รอตรวจสอบ", "Needs Review")}
+            value={isExam ? (topScore ?? "—") : needsReview}
+            sub={isExam ? t(`เต็ม ${assignment.maxPoints}`, `of ${assignment.maxPoints}`) : t("รอดำเนินการ", "Pending")}
+            color={isExam ? "var(--accent)" : "var(--s-warn-text)"}
+            icon={isExam ? (
+              <div className="w-7 h-7 rounded-lg bg-[var(--accent-subtle)] flex items-center justify-center">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>
+                </svg>
+              </div>
+            ) : (
               <div className="w-7 h-7 rounded-lg bg-[var(--s-warn-bg)] flex items-center justify-center">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--s-warn-text)" strokeWidth="2" strokeLinecap="round">
                   <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
@@ -573,7 +623,7 @@ export default function GradingProgressPage() {
                   <line x1="12" y1="17" x2="12.01" y2="17"/>
                 </svg>
               </div>
-            }
+            )}
           />
           <StatCard
             label={t("คะแนนเฉลี่ย", "Avg. Score")}
@@ -597,12 +647,12 @@ export default function GradingProgressPage() {
               </p>
               <p className="text-base font-semibold text-[var(--text-primary)]">
                 {total === 0
-                  ? t("ยังไม่มีการส่งงาน", "No Submissions Yet")
+                  ? (isExam ? t("ยังไม่มีนักศึกษาในวิชานี้", "No students yet") : t("ยังไม่มีการส่งงาน", "No Submissions Yet"))
                   : isDone
-                  ? t("ตรวจเสร็จแล้ว", "Grading Complete")
-                  : t("กำลังวิเคราะห์งาน", "Analyzing Submissions")}
+                  ? (isExam ? t("ให้คะแนนครบทุกคนแล้ว", "Everyone is scored") : t("ตรวจเสร็จแล้ว", "Grading Complete"))
+                  : (isExam ? t("กำลังกรอกคะแนน", "Entering scores") : t("กำลังวิเคราะห์งาน", "Analyzing Submissions"))}
               </p>
-              {!isDone && total > 0 && (
+              {!isDone && total > 0 && !isExam && (
                 <p className="text-sm text-gray-400 mt-1">
                   {t("เวลาที่เหลือโดยประมาณ:", "Estimated remaining time:")}{" "}
                   <span className="text-[var(--accent)] font-medium">
@@ -633,7 +683,21 @@ export default function GradingProgressPage() {
 
         </>)}
 
-        {/* Grade Adjustment table */}
+        {isExam ? (
+          <ExamScoreTable
+            key={tab}
+            students={tab === "active" ? activeStudents : withdrawnStudents}
+            titleOf={(sid) => findByStudentId(sid)?.title}
+            scores={examScores}
+            maxPoints={assignment.maxPoints}
+            readOnly={tab === "withdrawn" || finalized}
+            readOnlyReason={tab === "withdrawn"
+              ? t("นักศึกษาที่ถอนแล้ว — ดูอย่างเดียว", "Withdrawn students — view only")
+              : t("ตรวจเสร็จสิ้นแล้ว — กด “เปิดตรวจใหม่” ถ้าต้องแก้คะแนน", "Grading is finished — press “Reopen grading” to change scores")}
+            onSave={handleSaveExamScores}
+          />
+        ) : (
+        /* Grade Adjustment table */
         <GradeAdjustmentTable
           key={tab}
           rows={tab === "active" ? rows : withdrawnRows}
@@ -644,6 +708,7 @@ export default function GradingProgressPage() {
           onSaveAll={handleSaveChanges}
           acceptsFiles={assignment.acceptsFiles ?? true}
         />
+        )}
       </main>
   );
 }
