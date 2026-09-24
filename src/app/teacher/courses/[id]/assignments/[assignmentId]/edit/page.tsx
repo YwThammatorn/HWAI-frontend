@@ -423,7 +423,7 @@ export default function EditAssignmentPage() {
               <RubricCriteriaEditor
                 criteria={criteria}
                 setCriteria={setCriteria}
-                assignmentName={name.trim()} assignmentDescription={description}
+                assignmentName={name.trim()} assignmentDescription={description} assignmentAttachments={att.items}
               />
             </section>
           )}

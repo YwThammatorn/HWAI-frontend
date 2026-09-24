@@ -360,7 +360,7 @@ export default function NewAssignmentPage() {
               <RubricCriteriaEditor
                 criteria={criteria}
                 setCriteria={(u) => { setRubricTouched(true); setCriteria(u); }}
-                assignmentName={name.trim()} assignmentDescription={description}
+                assignmentName={name.trim()} assignmentDescription={description} assignmentAttachments={att.items}
               />
             </section>
           )}

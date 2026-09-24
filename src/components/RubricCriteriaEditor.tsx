@@ -2,7 +2,7 @@
 
 import { useState, Dispatch, SetStateAction } from "react";
 import { useLanguage } from "@/context/LanguageContext";
-import { RubricCriterion, CriterionLevel } from "@/lib/assignments";
+import { RubricCriterion, CriterionLevel, AssignmentAttachment } from "@/lib/assignments";
 import Modal from "@/components/Modal";
 
 // Shared by the "New Assignment" form and the standalone rubric editor page, so
@@ -129,12 +129,15 @@ export default function RubricCriteriaEditor({
   setCriteria,
   assignmentName,
   assignmentDescription = "",
+  assignmentAttachments = [],
 }: {
   criteria: CriterionDraft[];
   setCriteria: Dispatch<SetStateAction<CriterionDraft[]>>;
   assignmentName: string;
   /** Pre-fills the AI Rubric Assistant's brief together with the name, so the teacher doesn't retype it. */
   assignmentDescription?: string;
+  /** Attached files / images / links — their names and links go into the brief too. */
+  assignmentAttachments?: AssignmentAttachment[];
 }) {
   const { lang, t } = useLanguage();
   const [aiOpen, setAiOpen] = useState(false);
@@ -195,10 +198,22 @@ export default function RubricCriteriaEditor({
     }, 900);
   }
 
-  // The brief starts out as what the teacher already typed on this page (name + description), so the
-  // assistant is one click away instead of a blank form — they can still edit or replace it.
+  // What the teacher already entered on this page: name, description and the attachments' names / links
+  // (the assistant can't read file contents yet, so it only gets what they are called).
+  function assignmentBrief(): string {
+    const kindLabel = { file: t("ไฟล์", "file"), image: t("รูปภาพ", "image"), link: t("ลิงก์", "link") };
+    const attached = assignmentAttachments.map((a) => `${a.name} (${kindLabel[a.kind]}${a.source === "url" && a.ref !== a.name ? `: ${a.ref}` : ""})`);
+    return [
+      assignmentName.trim(),
+      assignmentDescription.trim(),
+      attached.length > 0 ? `${t("ไฟล์แนบ", "Attachments")}: ${attached.join(", ")}` : "",
+    ].filter(Boolean).join("\n");
+  }
+
+  // The brief starts out as that, so the assistant is one click away instead of a blank form; the
+  // "Fill from assignment" button pulls it again after the teacher has edited or cleared the brief.
   function openAiAssistant() {
-    setAiBrief([assignmentName.trim(), assignmentDescription.trim()].filter(Boolean).join("\n"));
+    setAiBrief(assignmentBrief());
     setAiSuggestions([]);
     setAiStep("brief");
     setAiOpen(true);
@@ -500,9 +515,27 @@ export default function RubricCriteriaEditor({
       >
         {aiStep === "brief" && (
           <div>
-            <label htmlFor="ai-brief" className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">
-              {t("ชิ้นงานนี้ต้องการวัดอะไร", "What should this assignment assess?")}
-            </label>
+            <div className="flex items-center justify-between gap-3 mb-1.5">
+              <label htmlFor="ai-brief" className="block text-sm font-medium text-[var(--text-primary)]">
+                {t("ชิ้นงานนี้ต้องการวัดอะไร", "What should this assignment assess?")}
+              </label>
+              <button
+                type="button"
+                onClick={() => {
+                  const pulled = assignmentBrief();
+                  // never clobber what they typed: empty → fill, otherwise add what's missing underneath
+                  setAiBrief((cur) => !cur.trim() ? pulled : cur.includes(pulled) ? cur : `${cur.trimEnd()}\n\n${pulled}`);
+                }}
+                disabled={!assignmentBrief()}
+                title={assignmentBrief() ? undefined : t("ยังไม่มีชื่อ คำอธิบาย หรือไฟล์แนบให้ดึง", "There's no name, description or attachment to pull yet")}
+                className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[var(--accent)] text-xs font-medium text-[var(--accent)] hover:bg-[var(--accent-subtle)] disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                {t("ดึงจากข้อมูลงาน", "Fill from assignment")}
+              </button>
+            </div>
             <textarea
               id="ai-brief"
               autoFocus
