@@ -168,17 +168,17 @@ export default function CLOPage() {
               {clos.map((clo) => (
                 <div
                   key={clo.id}
-                  className="group bg-white rounded-2xl border border-gray-100 shadow-sm p-5 hover:border-[var(--accent)]/30 transition-colors"
+                  className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5"
                 >
                   <div className="flex items-start gap-4">
                     <span className="shrink-0 inline-flex items-center h-7 px-2.5 rounded-lg bg-teal-50 text-[var(--accent)] text-xs font-bold font-mono tabular-nums">
                       {clo.code}
                     </span>
                     <p className="flex-1 min-w-0 text-sm text-[var(--text-primary)] leading-relaxed pt-0.5">{clo.text}</p>
-                    <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
+                    <div className="flex items-center gap-1 shrink-0">
                       <button
                         onClick={() => openEdit(clo)}
-                        className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-[var(--text-primary)] transition-colors"
+                        className="w-8 h-8 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--accent)] hover:bg-[var(--accent-bright)]/10 transition-colors"
                         title={t("แก้ไข", "Edit")}
                         aria-label={t(`แก้ไข ${clo.code}`, `Edit ${clo.code}`)}
                       >
@@ -189,7 +189,7 @@ export default function CLOPage() {
                       </button>
                       <button
                         onClick={() => handleDelete(clo)}
-                        className="p-2 rounded-lg hover:bg-[var(--s-err-bg)] text-gray-500 hover:text-[var(--s-err-text)] transition-colors"
+                        className="w-8 h-8 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--s-err-text)] hover:bg-[var(--s-err-bg)] transition-colors"
                         title={t("ลบ", "Delete")}
                         aria-label={t(`ลบ ${clo.code}`, `Delete ${clo.code}`)}
                       >
