@@ -97,9 +97,52 @@ test.describe("New assignment — rubric on the same page", () => {
     await page.goto(`${BASE}/teacher/courses/c-rub/assignments/new`);
     await page.waitForLoadState("networkidle");
     await page.getByRole("button", { name: /AI Rubric Assistant/i }).click();
+    await page.getByLabel("What should this assignment assess?").fill("A Figma landing page");
+    await page.getByRole("button", { name: "Generate criteria" }).click();
     await page.getByRole("button", { name: "Apply Suggestions" }).click({ timeout: 8000 });
     await expect(page.getByText("100 pts total")).toBeVisible();
     await expect(page.getByLabel("Criterion name")).toHaveCount(4);
+  });
+
+  test("AI assistant asks for a brief first, pre-filled from the name and description already typed", async ({ page }) => {
+    await page.goto(`${BASE}/teacher/courses/c-rub/assignments/new`);
+    await page.waitForLoadState("networkidle");
+    await page.getByPlaceholder(/User Research Report/i).fill("Landing page redesign");
+    await page.getByPlaceholder(/Describe the objectives/i).fill("Redesign the landing page in Figma and export a PDF");
+
+    await page.getByRole("button", { name: /AI Rubric Assistant/i }).click();
+    const dialog = page.getByRole("dialog", { name: "AI Rubric Assistant" });
+    const brief = dialog.getByLabel("What should this assignment assess?");
+    await expect(brief).toHaveValue("Landing page redesign\nRedesign the landing page in Figma and export a PDF");
+
+    // nothing is generated until the teacher says so, and an empty brief can't be sent
+    await expect(dialog.getByText("Content Completeness", { exact: true })).toHaveCount(0);
+    await brief.fill("");
+    await expect(dialog.getByRole("button", { name: "Generate criteria" })).toBeDisabled();
+    await brief.fill("Rubric for a Figma landing page");
+    await expect(dialog.getByRole("button", { name: "Generate criteria" })).toBeEnabled();
+  });
+
+  test("AI assistant previews every criterion's level rubric, and Apply keeps exactly those levels", async ({ page }) => {
+    await page.goto(`${BASE}/teacher/courses/c-rub/assignments/new`);
+    await page.waitForLoadState("networkidle");
+    await fillBasics(page);
+    await page.getByRole("button", { name: /AI Rubric Assistant/i }).click();
+    const dialog = page.getByRole("dialog", { name: "AI Rubric Assistant" });
+    await dialog.getByLabel("What should this assignment assess?").fill("Figma landing page");
+    await dialog.getByRole("button", { name: "Generate criteria" }).click();
+
+    await expect(dialog.getByText("Content Completeness", { exact: true })).toBeVisible({ timeout: 8000 });
+    // 4 criteria × 4 levels, each with its wording
+    for (const label of ["Excellent", "Good", "Fair", "Needs Improvement"]) {
+      await expect(dialog.getByText(label, { exact: true })).toHaveCount(4);
+    }
+    await expect(dialog.getByText(/Clearly demonstrates content completeness/i)).toBeVisible();
+
+    await dialog.getByRole("button", { name: "Apply Suggestions" }).click();
+    await expect(page.getByLabel("Criterion name")).toHaveCount(4);
+    await expect(page.getByLabel("Level name")).toHaveCount(16);
+    await expect(page.getByLabel(/Content Completeness — Excellent/)).toHaveValue(/Clearly demonstrates content completeness/i);
   });
 
   test("Exam Assignment toggle hides the rubric and switches to a manual max score", async ({ page }) => {

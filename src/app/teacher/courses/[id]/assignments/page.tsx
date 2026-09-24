@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCourses } from "@/lib/courses";
-import { useStudents } from "@/lib/students";
+import { useStudents, isWithdrawn } from "@/lib/students";
 import { useAssignments } from "@/lib/assignments";
 import { useGradingCategories } from "@/lib/gradingCategories";
 import { useLanguage } from "@/context/LanguageContext";
@@ -43,7 +43,7 @@ export default function AssignmentsPage() {
   }, []);
 
   const course = getCourse(id);
-  const students = getStudentsByCourse(id);
+  const students = getStudentsByCourse(id).filter((s) => !isWithdrawn(s));
   const assignments = getAssignmentsByCourse(id);
   const categories = getCategoriesByCourse(id);
   const today = new Date().toISOString().split("T")[0];

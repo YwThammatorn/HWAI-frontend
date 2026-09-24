@@ -308,8 +308,11 @@ test.describe("Rubric Editor", () => {
     const aiBtn = page.getByRole("button", { name: /AI Rubric Assistant/i });
     await expect(aiBtn).toBeVisible();
     await aiBtn.click();
+    // First step is the brief the teacher confirms; suggestions only appear after "Generate criteria".
+    await expect(page.getByRole("dialog", { name: "AI Rubric Assistant" })).toBeVisible();
+    await page.getByRole("button", { name: "Generate criteria" }).click();
     await expect(
-      page.locator("text=/กำลังวิเคราะห์|AI แนะนำ|Apply Suggestions/").first()
+      page.locator("text=/กำลังวิเคราะห์|Analyzing|AI แนะนำ|AI suggests|Apply Suggestions/").first()
     ).toBeVisible({ timeout: 8000 });
   });
 

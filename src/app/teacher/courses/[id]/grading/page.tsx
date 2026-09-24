@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useCourses } from "@/lib/courses";
-import { useStudents } from "@/lib/students";
+import { useStudents, isWithdrawn, withdrawnIds } from "@/lib/students";
 import { useAssignments, type Assignment, type Submission } from "@/lib/assignments";
 import { useGradingCategories } from "@/lib/gradingCategories";
 import { useLanguage } from "@/context/LanguageContext";
@@ -50,7 +50,10 @@ export default function CourseGradingPage() {
   const [search, setSearch] = useState("");
 
   const course = getCourse(id);
-  const students = getStudentsByCourse(id);
+  const roster = getStudentsByCourse(id);
+  // Withdrawn students are out of every class-level number here (24/9/2569) — see lib/students.ts withdrawnIds.
+  const students = roster.filter((s) => !isWithdrawn(s));
+  const withdrawn = withdrawnIds(roster);
   const assignments = getAssignmentsByCourse(id);
   const categories = getCategoriesByCourse(id);
   const today = new Date().toISOString().split("T")[0];
@@ -65,7 +68,7 @@ export default function CourseGradingPage() {
   }
 
   const items = assignments.map((a) => {
-    const subs = getSubmissionsByAssignment(a.id);
+    const subs = getSubmissionsByAssignment(a.id).filter((s) => !withdrawn.has(s.studentId));
     return { a, subs, p: progressOf(a, subs, today) };
   });
 

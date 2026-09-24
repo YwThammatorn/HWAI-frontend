@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useCourses } from "@/lib/courses";
-import { useStudents } from "@/lib/students";
+import { useStudents, isWithdrawn, withdrawnIds } from "@/lib/students";
 import { useAssignments } from "@/lib/assignments";
 import { useManagedTeachers } from "@/lib/managed-teachers";
 import { useGradingCategories, GradingCategory } from "@/lib/gradingCategories";
@@ -20,7 +20,10 @@ export default function CourseDetailPage() {
   const { getTeachersByCourse } = useManagedTeachers();
   const { getCategoriesByCourse, addCategory, updateCategory, removeCategory } = useGradingCategories();
   const course = getCourse(id);
-  const students = getStudentsByCourse(id);
+  const roster = getStudentsByCourse(id);
+  // Withdrawn students don't count toward the class numbers (24/9/2569).
+  const students = roster.filter((s) => !isWithdrawn(s));
+  const withdrawn = withdrawnIds(roster);
   const assignments = getAssignmentsByCourse(id);
   const instructor = course ? getTeachersByCourse(course.id)[0] : undefined;
   const categories = course ? getCategoriesByCourse(course.id) : [];
@@ -100,13 +103,13 @@ export default function CourseDetailPage() {
   }
 
   const activeAssignments = assignments.filter((a) => {
-    const subs = getSubmissionsByAssignment(a.id);
+    const subs = getSubmissionsByAssignment(a.id).filter((s) => !withdrawn.has(s.studentId));
     return subs.length > 0 && subs.some((s) => s.status !== "graded");
   }).length;
   const allGraded =
     assignments.length > 0 &&
     assignments.every((a) => {
-      const subs = getSubmissionsByAssignment(a.id);
+      const subs = getSubmissionsByAssignment(a.id).filter((s) => !withdrawn.has(s.studentId));
       return subs.length > 0 && subs.every((s) => s.status === "graded");
     });
 

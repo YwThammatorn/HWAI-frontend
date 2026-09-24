@@ -5,13 +5,14 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useCourses } from "@/lib/courses";
 import { useAssignments, type Submission } from "@/lib/assignments";
-import { useStudents } from "@/lib/students";
+import { useStudents, isWithdrawn } from "@/lib/students";
 import { useStudentGroups } from "@/lib/studentGroups";
 import { groupSubmissionsByTeam, SubmissionRow } from "@/lib/groupSubmissions";
 import { useLanguage } from "@/context/LanguageContext";
 import { getInitials } from "@/lib/utils";
 import SearchInput from "@/components/SearchInput";
 import PillTabBar from "@/components/PillTabBar";
+import WithdrawnTabs, { type WithdrawnTab } from "@/components/WithdrawnTabs";
 
 // ── Stat card ─────────────────────────────────────────────────────────────
 
@@ -363,6 +364,7 @@ export default function GradingProgressPage() {
   const { getAssignment, getSubmissionsByAssignment, updateSubmission, updateAssignment } = useAssignments();
   const { getGroupsByAssignment } = useStudentGroups();
   const { getStudentsByCourse } = useStudents();
+  const [tabState, setTabState] = useState<WithdrawnTab>("active");
 
   const course = getCourse(id);
   const assignment = getAssignment(assignmentId);
@@ -383,12 +385,23 @@ export default function GradingProgressPage() {
   // groupSubmissionsByTeam / TeamFormationModal / RecheckPage.handleSave.
   const isGroupAssignment = assignment.submissionType === "group";
   const groups = isGroupAssignment ? getGroupsByAssignment(assignmentId) : [];
-  const rows: SubmissionRow[] = isGroupAssignment
+  const allRows: SubmissionRow[] = isGroupAssignment
     ? groupSubmissionsByTeam(submissions, groups, t("ทีม", "Team"))
     : submissions.map((s) => ({ key: s.id, subs: [s] }));
+
+  // Withdrawn students' work is kept apart (24/9/2569): it never feeds the stats below, can't hold up
+  // "Finish Grading", and is only reachable from the Withdrawn tab. A team row counts as withdrawn only
+  // when every member has withdrawn.
+  const roster = getStudentsByCourse(id);
+  const withdrawnStudentIds = new Set(roster.filter(isWithdrawn).map((s) => s.studentId));
+  const rowWithdrawn = (r: SubmissionRow) => r.subs.every((s) => withdrawnStudentIds.has(s.studentId));
+  const rows = allRows.filter((r) => !rowWithdrawn(r));
+  const withdrawnRows = allRows.filter(rowWithdrawn);
+  const activeCount = roster.filter((s) => !isWithdrawn(s)).length;
+  const tab: WithdrawnTab = withdrawnRows.length === 0 ? "active" : tabState;
   const repSubs = rows.map((r) => r.subs[0]);
 
-  const enrolled = getStudentsByCourse(id).length;
+  const enrolled = activeCount;
   const total = rows.length;
   const processed = repSubs.filter((s) => s.status === "graded").length;
   const needsReview = repSubs.filter((s) => s.status === "need_review").length;
@@ -511,6 +524,10 @@ export default function GradingProgressPage() {
           </div>
         </div>
 
+        {/* Enrolled / Withdrawn — only appears once someone has withdrawn */}
+        <WithdrawnTabs tab={tab} onChange={setTabState} activeCount={rows.length} withdrawnCount={withdrawnRows.length} />
+
+        {tab === "active" && (<>
         {/* Stats */}
         <div className="grid grid-cols-4 gap-4 mb-6">
           <StatCard
@@ -614,9 +631,12 @@ export default function GradingProgressPage() {
           </div>
         </div>
 
+        </>)}
+
         {/* Grade Adjustment table */}
         <GradeAdjustmentTable
-          rows={rows}
+          key={tab}
+          rows={tab === "active" ? rows : withdrawnRows}
           maxPoints={assignment.maxPoints}
           courseId={id}
           assignmentId={assignmentId}

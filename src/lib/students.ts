@@ -19,6 +19,15 @@ export interface Student {
   enrollmentStatus?: EnrollmentStatus;
 }
 
+export const isWithdrawn = (s: Pick<Student, "enrollmentStatus">) => s.enrollmentStatus === "withdrawn";
+
+/** Students who withdrew from this roster (24/9/2569) — their scores and submissions are left out of
+ *  every class-level number (averages, counts, "graded" progress) and only shown on a separate
+ *  "Withdrawn" tab, the way archived courses sit apart from active ones. Pass ONE course's roster. */
+export function withdrawnIds(roster: Student[]): Set<string> {
+  return new Set(roster.filter(isWithdrawn).map((s) => s.studentId));
+}
+
 export interface StudentContextValue {
   students: Student[];
   addStudents: (courseId: string, incoming: Omit<Student, "id" | "courseId">[]) => void;
