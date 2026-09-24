@@ -114,7 +114,7 @@ export default function AdminSidebar() {
                     collapsed ? "justify-center px-0" : "px-3",
                     active
                       ? "bg-[var(--nav-active-bg)] text-[var(--nav-active-text)]"
-                      : "text-white/55 hover:text-white hover:bg-white/8",
+                      : "text-[var(--sidebar-text-muted)] hover:text-white hover:bg-white/8",
                   ].join(" ")}
                 >
                   {item.icon}
@@ -133,7 +133,7 @@ export default function AdminSidebar() {
           title={collapsed ? t("ขยาย sidebar", "Expand sidebar") : t("ย่อ sidebar", "Collapse sidebar")}
           aria-label={collapsed ? t("ขยาย sidebar", "Expand sidebar") : t("ย่อ sidebar", "Collapse sidebar")}
           className={[
-            "w-full min-h-[40px] flex items-center rounded-xl text-white/55 hover:text-white hover:bg-white/8 transition-colors",
+            "w-full min-h-[40px] flex items-center rounded-xl text-[var(--sidebar-text-muted)] hover:text-white hover:bg-white/8 transition-colors",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--sidebar-bg)]",
             collapsed ? "justify-center px-0" : "gap-2 px-3",
           ].join(" ")}

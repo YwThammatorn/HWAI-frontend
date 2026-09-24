@@ -27,7 +27,7 @@ function NavItem({
         "flex items-center gap-3 rounded-xl font-medium transition-colors min-h-[44px]",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--sidebar-bg)]",
         small ? "px-3 py-1.5 text-xs" : "px-3 py-2.5 text-sm",
-        active ? "bg-[var(--nav-active-bg)] text-[var(--nav-active-text)]" : "text-white/55 hover:text-white hover:bg-white/8",
+        active ? "bg-[var(--nav-active-bg)] text-[var(--nav-active-text)]" : "text-[var(--sidebar-text-muted)] hover:text-white hover:bg-white/8",
       ].join(" ")}
     >
       {icon}
@@ -234,7 +234,7 @@ export default function ProfileSidebar() {
       aria-label={t("เมนูผู้สอน", "Teacher navigation")}
       className="w-52 bg-[var(--sidebar-bg)] shrink-0 flex flex-col py-6 px-3 overflow-y-auto"
     >
-      <p className="text-white/55 text-[10px] font-semibold uppercase tracking-widest px-3 mb-2">
+      <p className="text-[var(--sidebar-text-muted)] text-[10px] font-semibold uppercase tracking-widest px-3 mb-2">
         {t("หลัก", "Main")}
       </p>
       <nav className="flex flex-col gap-0.5 mb-4">
@@ -247,7 +247,7 @@ export default function ProfileSidebar() {
       {activeCourseId && COURSE_NAV.length > 0 && (
         <>
           <div className="border-t border-white/10 my-1" />
-          <p className="text-white/55 text-[10px] font-semibold uppercase tracking-widest px-3 mt-4 mb-2 truncate">
+          <p className="text-[var(--sidebar-text-muted)] text-[10px] font-semibold uppercase tracking-widest px-3 mt-4 mb-2 truncate">
             {activeCourse?.name ?? t("รายวิชา", "Course")}
           </p>
           <nav className="flex flex-col gap-0.5 mb-4" aria-label={activeCourse?.name ?? t("รายวิชา", "Course")}>

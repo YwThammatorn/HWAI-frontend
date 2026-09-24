@@ -646,3 +646,9 @@ CRITERIA/ACTIONS table, every row repeating the identical amber "No linked crite
 - CLO cards and admin Curriculum course-template rows had Edit/Delete hidden until hover — no other page does that. Now always visible (`f6be954`, `a8cfd19`). No hover-reveal actions remain in `src`.
 - Teacher `/students/import` route DELETED; the same flow lives in `components/ImportCourseStudentsModal.tsx` (upload → preview → done, mount-on-open like `EnrollStudentModal`), opened from both Import buttons on the roster page. Behaviour unchanged: each ID is cross-checked against the cohort DB, real name/email win over the CSV's.
 - Tests moved from the route to the popup (`teacher-p4`, `add-student-popups`, `e2e/hwai`), plus a new "teacher · Import Students (CSV)" case in `popups-all`. Suite 360 passed / 30 skipped.
+
+## 24/9: navy/teal chrome theme for every role + navbar↔sidebar colours swapped
+- `NavThemeToggle.tsx` (shared) is now in the Teacher `Navbar`, `AdminShell` and `StudentShell` top bars. Admin/Student headers switched `--bg-nav` → `--navbar-bg` so they follow the theme (they never did before).
+- Swap ("ลองสลับสี", easy to revert — tokens only, `globals.css`): navy navbar `#243C5A` / sidebar `#1A2D45`; teal navbar `#084541` / sidebar `#0F766E` (both light and dark). Dark-navy is unchanged (both were already `#0A1218`).
+- The lighter teal sidebar broke the old hard-coded `text-white/55` (~2.8:1) → new `--sidebar-text-muted` token used by the 3 sidebars (0.55 navy, 0.9 teal ≈ 4.76:1, measured in-browser).
+- New `tests/nav-theme.spec.ts` (3 roles × navy default + teal switch/persist). Note the admin sidebar has a 200ms colour transition — assert with `toHaveCSS`, not a one-shot read.

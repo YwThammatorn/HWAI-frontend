@@ -8,6 +8,7 @@ import { useLanguage, LANGUAGE_TOGGLE_DISABLED } from "@/context/LanguageContext
 import { useTheme } from "./ThemeProvider";
 import AdminSidebar from "./AdminSidebar";
 import RoleSwitcher from "./RoleSwitcher";
+import NavThemeToggle from "./NavThemeToggle";
 import { getInitials } from "@/lib/utils";
 import { ADMIN_DASHBOARD_DISABLED, NOTIFICATIONS_DISABLED } from "@/lib/featureFlags";
 
@@ -39,7 +40,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
       </a>
 
       {/* Top bar */}
-      <header className="h-14 shrink-0 flex items-center px-6 bg-[var(--bg-nav)] text-white">
+      <header className="h-14 shrink-0 flex items-center px-6 bg-[var(--navbar-bg)] text-white">
         {/* Logo */}
         <Link href={ADMIN_DASHBOARD_DISABLED ? "/admin/users" : "/admin"} className="flex items-center gap-2 mr-8">
           <div className="w-8 h-8 rounded-lg bg-[#2DD4BF] flex items-center justify-center shrink-0">
@@ -95,6 +96,8 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
               </svg>
             )}
           </button>
+
+          <NavThemeToggle />
 
           {/* Notification bell */}
           {!NOTIFICATIONS_DISABLED && (

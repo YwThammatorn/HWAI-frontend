@@ -8,9 +8,10 @@ import { useLanguage, LANGUAGE_TOGGLE_DISABLED } from "@/context/LanguageContext
 import { INITIAL_NOTIFS } from "@/lib/notifications";
 import { NOTIFICATIONS_DISABLED } from "@/lib/featureFlags";
 import RoleSwitcher from "./RoleSwitcher";
+import NavThemeToggle from "./NavThemeToggle";
 
 export default function Navbar() {
-  const { effectiveTheme, toggleTheme, navTheme, toggleNavTheme } = useTheme();
+  const { effectiveTheme, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
   const { lang, toggleLang } = useLanguage();
   const router = useRouter();
@@ -83,18 +84,7 @@ export default function Navbar() {
         </button>
 
         {/* Chrome (navbar/sidebar) colour toggle — advisor feedback, 22/9/2569, off by default */}
-        <button
-          type="button"
-          onClick={toggleNavTheme}
-          aria-label={navTheme === "teal" ? "Switch to navy theme" : "Switch to teal theme"}
-          title={navTheme === "teal" ? "Switch to navy theme" : "Switch to teal theme"}
-          className="w-8 h-8 flex items-center justify-center rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors"
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 2C8 6 5 9.5 5 14a7 7 0 0 0 14 0c0-4.5-3-8-7-12z"/>
-            {navTheme === "teal" && <circle cx="12" cy="15" r="2.5" fill="currentColor" stroke="none" />}
-          </svg>
-        </button>
+        <NavThemeToggle />
 
         {!NOTIFICATIONS_DISABLED && (
           <Link href="/teacher/notifications" aria-label="Notifications" className="relative text-white/60 hover:text-white transition-colors">

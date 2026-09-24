@@ -52,7 +52,7 @@ export default function StudentSidebar({ courses = [] }: StudentSidebarProps) {
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--sidebar-bg)]",
                 isActive("/student", true)
                   ? "bg-[var(--nav-active-bg)] text-[var(--nav-active-text)]"
-                  : "text-white/55 hover:text-white hover:bg-white/8",
+                  : "text-[var(--sidebar-text-muted)] hover:text-white hover:bg-white/8",
               ].join(" ")}
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
@@ -68,7 +68,7 @@ export default function StudentSidebar({ courses = [] }: StudentSidebarProps) {
             <li>
               <ul role="list" className="mt-0.5 flex flex-col gap-0.5">
                 <li className="px-3 pt-2 pb-1">
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-white/55">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--sidebar-text-muted)]">
                     {courses.find((c) => c.secId === activeCourseId)?.name ?? t("รายวิชานี้", "This Course")}
                   </span>
                 </li>
@@ -85,7 +85,7 @@ export default function StudentSidebar({ courses = [] }: StudentSidebarProps) {
                           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]",
                           active
                             ? "bg-[var(--nav-active-bg)] text-[var(--nav-active-text)]"
-                            : "text-white/55 hover:text-white hover:bg-white/8",
+                            : "text-[var(--sidebar-text-muted)] hover:text-white hover:bg-white/8",
                         ].join(" ")}
                       >
                         {t(sub.labelTh, sub.labelEn)}
