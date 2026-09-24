@@ -53,7 +53,7 @@ test.describe("Teacher — Add Student (by ID) popup", () => {
     const dialog = await openPopup(page);
     await expect(dialog).toBeVisible();
     await assertCentred(page, dialog);
-    await expect(page.getByRole("link", { name: "Import CSV" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Import CSV" })).toBeVisible();
     await expect(dialog.getByLabel("Student ID")).toBeFocused();
   });
 

@@ -317,7 +317,7 @@ function ConfirmDialog({
 
 // ── Assign panel ──────────────────────────────────────────────────────────────
 // Teacher assignment only — student enrollment is now the teacher's own job
-// (CSV import on the course, teacher/courses/[id]/students/import), not
+// (CSV import popup on teacher/courses/[id]/students), not
 // admin's, so there's no add/remove student UI here anymore (10/9/2569).
 
 function CourseAssignPanel({ course }: { course: Course }) {

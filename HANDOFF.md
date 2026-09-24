@@ -641,3 +641,8 @@ CRITERIA/ACTIONS table, every row repeating the identical amber "No linked crite
 - Files are CRLF (`core.autocrlf=true`); node edit scripts must normalise `\r\n`; write scripts with the Write tool, not heredoc-with-backticks.
 - Playwright `addInitScript` re-runs on every navigation — guard seeding with `sessionStorage`.
 - Sticky table headers need explicit heights (`HEAD1_H` in the Score Book) so the second header row knows where to stick.
+
+## 24/9: row actions always visible (CLO, Curriculum) + teacher Import Students is a popup
+- CLO cards and admin Curriculum course-template rows had Edit/Delete hidden until hover — no other page does that. Now always visible (`f6be954`, `a8cfd19`). No hover-reveal actions remain in `src`.
+- Teacher `/students/import` route DELETED; the same flow lives in `components/ImportCourseStudentsModal.tsx` (upload → preview → done, mount-on-open like `EnrollStudentModal`), opened from both Import buttons on the roster page. Behaviour unchanged: each ID is cross-checked against the cohort DB, real name/email win over the CSV's.
+- Tests moved from the route to the popup (`teacher-p4`, `add-student-popups`, `e2e/hwai`), plus a new "teacher · Import Students (CSV)" case in `popups-all`. Suite 360 passed / 30 skipped.

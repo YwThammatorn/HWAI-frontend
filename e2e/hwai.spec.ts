@@ -596,15 +596,17 @@ test.describe("Collaborators Page", () => {
 test.describe("Student Import", () => {
   test.beforeEach(async ({ page }) => { await withAuth(page); });
 
-  test("page loads with CSV upload area", async ({ page }) => {
-    await waitReady(page, "/teacher/courses/seed-1/students/import");
-    // Should show CSV-related content
-    await expect(page.locator("text=/CSV|Import|upload/i").first()).toBeVisible();
+  test("Import CSV opens a popup with the upload area", async ({ page }) => {
+    await waitReady(page, "/teacher/courses/seed-1/students");
+    await page.getByRole("button", { name: /Import CSV|Import Students/ }).first().click();
+    await expect(page.getByRole("dialog", { name: "Import Students" })).toBeVisible();
+    await expect(page.getByText(/Drag CSV here/i)).toBeVisible();
   });
 
-  test("Download Template link is present", async ({ page }) => {
-    await waitReady(page, "/teacher/courses/seed-1/students/import");
-    await expect(page.getByRole("link", { name: /download/i }).first()).toBeVisible();
+  test("Download Template link is present in the popup", async ({ page }) => {
+    await waitReady(page, "/teacher/courses/seed-1/students");
+    await page.getByRole("button", { name: /Import CSV|Import Students/ }).first().click();
+    await expect(page.getByRole("dialog").getByRole("link", { name: /download/i }).first()).toBeVisible();
   });
 });
 

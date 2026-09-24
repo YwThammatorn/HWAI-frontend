@@ -81,7 +81,7 @@ fetch('/mock-data/student-flow-mockup.json').then(r=>r.json()).then(d=>{localSto
 
 [7] ทดสอบนำเข้านักศึกษาเข้าวิชา (teacher CSV import + cross-check กับระบบ)
     ต้องทำ [5] ก่อน (ให้มี cohort 13 คนใน hwai_cohort_students_v1)
-    ไปที่ /teacher/courses/c-mock-1/students/import -> อัปโหลด test-data/course-import-test.csv
+    ไปที่ /teacher/courses/c-mock-1/students -> กด "นำเข้าด้วย CSV" (popup) -> อัปโหลด test-data/course-import-test.csv
 
     ไฟล์นี้มี 12 แถว ตั้งใจใส่ชื่อ/อีเมลผิดในทุกแถวที่ยังไม่ลงวิชา เพื่อพิสูจน์ว่าระบบดึงชื่อจริงจากระบบมาแทน:
     - 10 แถวแรก (69070104-108, 68020101-104, 67010101) -> อยู่ใน cohort แล้ว ยังไม่ลงวิชาไหน

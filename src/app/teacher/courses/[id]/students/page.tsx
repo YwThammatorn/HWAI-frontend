@@ -8,6 +8,7 @@ import { useStudents, type Student } from "@/lib/students";
 import { useCohortStudents } from "@/lib/cohort-students";
 import { useLanguage } from "@/context/LanguageContext";
 import EnrollStudentModal from "@/components/EnrollStudentModal";
+import ImportCourseStudentsModal from "@/components/ImportCourseStudentsModal";
 import SearchInput from "@/components/SearchInput";
 import SortableTh from "@/components/SortableTh";
 
@@ -20,6 +21,7 @@ export default function StudentsRosterPage() {
   const { getStudentsByCourse, updateStudent, removeStudent } = useStudents();
   const { findByStudentId } = useCohortStudents();
   const [addOpen, setAddOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const [search, setSearch] = useState("");
   // Click a header to sort: ascending → descending → back to roster order (the default).
   const [sort, setSort] = useState<RosterSort>(null);
@@ -115,8 +117,9 @@ export default function StudentsRosterPage() {
             <p className="text-sm text-gray-500">{course.name}</p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            <Link
-              href={`/teacher/courses/${id}/students/import`}
+            <button
+              type="button"
+              onClick={() => setImportOpen(true)}
               className="inline-flex items-center gap-2 px-4 py-2.5 border border-gray-200 bg-white hover:bg-gray-50 text-gray-600 text-sm font-medium rounded-xl transition-colors"
             >
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -125,7 +128,7 @@ export default function StudentsRosterPage() {
                 <line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>
               </svg>
               {t("นำเข้าด้วย CSV", "Import CSV")}
-            </Link>
+            </button>
             <button
               type="button"
               onClick={() => setAddOpen(true)}
@@ -178,12 +181,13 @@ export default function StudentsRosterPage() {
                 >
                   {t("เพิ่มนักศึกษา", "Add Student")}
                 </button>
-                <Link
-                  href={`/teacher/courses/${id}/students/import`}
+                <button
+                  type="button"
+                  onClick={() => setImportOpen(true)}
                   className="inline-flex items-center gap-2 px-4 py-2 border border-gray-200 bg-white hover:bg-gray-50 text-gray-600 text-sm font-medium rounded-xl transition-colors"
                 >
                   {t("นำเข้านักศึกษา", "Import Students")}
-                </Link>
+                </button>
               </div>
             </div>
           ) : (
@@ -284,6 +288,7 @@ export default function StudentsRosterPage() {
         </div>
 
         {addOpen && <EnrollStudentModal courseId={id} courseName={course.name} onClose={() => setAddOpen(false)} />}
+        {importOpen && <ImportCourseStudentsModal courseId={id} courseName={course.name} onClose={() => setImportOpen(false)} />}
       </main>
   );
 }

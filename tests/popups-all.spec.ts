@@ -121,6 +121,11 @@ const CASES: PopupCase[] = [
     open: async (page) => { const b = page.getByRole("button", { name: "Add Student" }).first(); await b.click(); return b; },
   },
   {
+    name: "teacher · Import Students (CSV)", role: "teacher", path: "/teacher/courses/c-po/students", title: "Import Students",
+    extra: { hwai_cohort_students_v1: [] },
+    open: async (page) => { const b = page.getByRole("button", { name: "Import CSV" }).first(); await b.click(); return b; },
+  },
+  {
     name: "teacher · Add Collaborator", role: "teacher", path: "/teacher/courses/c-po/collaborators", title: "Add Collaborator",
     open: async (page) => { const b = page.getByRole("button", { name: "Add Collaborator" }).first(); await b.click(); return b; },
   },
