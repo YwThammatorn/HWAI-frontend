@@ -514,7 +514,7 @@ function CourseTemplateRow({
   onDelete: () => void;
 }) {
   return (
-    <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[var(--bg-subtle)] group transition-colors">
+    <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[var(--bg-subtle)] transition-colors">
       <div className="w-8 h-8 rounded-lg bg-[var(--accent-bright)]/20 text-[var(--accent)] text-[10px] font-bold flex items-center justify-center shrink-0 select-none tabular-nums" aria-hidden="true">
         {template.code.slice(-3)}
       </div>
@@ -522,7 +522,7 @@ function CourseTemplateRow({
         <p className="text-sm font-medium text-[var(--text-primary)] truncate">{template.name}</p>
         <p className="text-[11px] text-[var(--text-muted)] tabular-nums truncate">{template.code}</p>
       </div>
-      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+      <div className="flex items-center gap-1 shrink-0">
         <button
           onClick={onEdit}
           title="Edit"
