@@ -85,7 +85,7 @@ async function seed(page: Page, o: Opts = {}) {
     localStorage.setItem("hwai_cohort_students_v1", JSON.stringify(d.cohort));
     localStorage.setItem("hwai_students_v1", JSON.stringify(d.empty === "students" ? [] : d.roster));
     localStorage.setItem("hwai_grading_categories_v1", JSON.stringify(d.cats));
-    localStorage.setItem("hwai_assignments_v1", JSON.stringify(d.empty === "assignments" ? [] : d.assignments));
+    localStorage.setItem("hwai_assignments_v1", JSON.stringify(d.empty === "assignments" ? [] : d.role === "student" ? d.assignments.map((a: object) => ({ ...a, gradingFinalized: true })) : d.assignments)); // a student only sees announced scores
     localStorage.setItem("hwai_rubrics_v1", JSON.stringify(d.empty === "assignments" ? [] : d.rubrics));
     localStorage.setItem("hwai_submissions_v1", JSON.stringify(d.empty === "assignments" ? [] : d.submissions));
   }, { lang: o.lang ?? "en", role: o.role ?? "teacher", empty: o.empty, course: COURSE, teacher: TEACHER, cohort: COHORT, roster: ROSTER, cats: CATS, assignments: ASSIGNMENTS, rubrics: RUBRICS, submissions: SUBMISSIONS });

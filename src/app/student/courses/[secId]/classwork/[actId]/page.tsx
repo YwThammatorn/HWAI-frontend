@@ -6,7 +6,7 @@ import { useParams } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
 import { useCourses } from "@/lib/courses";
-import { useAssignments, submissionAttachments, AssignmentAttachment } from "@/lib/assignments";
+import { useAssignments, submissionAttachments, studentVisibleSubmission, AssignmentAttachment } from "@/lib/assignments";
 import { removeFile } from "@/lib/fileStorage";
 import { useStudents } from "@/lib/students";
 import { useStudentGroups } from "@/lib/studentGroups";
@@ -50,7 +50,10 @@ function ClassworkDetail() {
   const rubrics = getRubricsByAssignment(actId);
   const allSubs = getSubmissionsByAssignment(actId);
   const studentId = user?.studentId ?? user?.email ?? "";
-  const mySubmission = allSubs.find((s) => s.studentId === studentId);
+  const myRawSubmission = allSubs.find((s) => s.studentId === studentId);
+  // Until the teacher announces results the student sees no score — and can't overwrite a graded submission.
+  const mySubmission = myRawSubmission ? studentVisibleSubmission(assignment, myRawSubmission) : undefined;
+  const beingGraded = myRawSubmission?.status === "graded" && !assignment?.gradingFinalized;
 
   // Resubmitting starts from the previous submission: its files (each removable) and its link
   const previous = submissionAttachments(mySubmission);
@@ -78,6 +81,7 @@ function ClassworkDetail() {
   const due = assignment.dueDate ? new Date(assignment.dueDate + "T23:59:59") : null;
   const isPast = !!due && new Date() > due;
   const isGraded = mySubmission?.status === "graded";
+  const locked = isGraded || beingGraded;
   const score = mySubmission?.instructorScore ?? mySubmission?.aiScore ?? null;
   // A link is always offered when the assignment accepts attachments at all —
   // not just for fileTypes that include "figma" — since plenty of valid
@@ -362,7 +366,7 @@ function ClassworkDetail() {
               )}
 
               {/* Attach a file or link — only for assignments configured to accept one */}
-              {!isExam && !isGraded && !isPast && assignment.acceptsFiles && (
+              {!isExam && !locked && !isPast && assignment.acceptsFiles && (
                 <div className="mb-4 flex flex-col gap-3">
                   {mySubmission && (
                     <p className="text-xs text-[var(--text-muted)]">
@@ -399,7 +403,7 @@ function ClassworkDetail() {
               )}
 
               {/* Submit button (hidden if graded) */}
-              {!isExam && !isGraded && !isPast && (
+              {!isExam && !locked && !isPast && (
                 <button
                   onClick={() => setConfirmOpen(true)}
                   disabled={submitting || !canSubmit}

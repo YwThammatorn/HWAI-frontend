@@ -14,6 +14,7 @@ import SearchInput from "@/components/SearchInput";
 import PillTabBar from "@/components/PillTabBar";
 import WithdrawnTabs, { type WithdrawnTab } from "@/components/WithdrawnTabs";
 import ExamScoreTable from "@/components/ExamScoreTable";
+import Modal from "@/components/Modal";
 import { useCohortStudents } from "@/lib/cohort-students";
 
 // ── Stat card ─────────────────────────────────────────────────────────────
@@ -368,6 +369,7 @@ export default function GradingProgressPage() {
   const { getGroupsByAssignment } = useStudentGroups();
   const { getStudentsByCourse } = useStudents();
   const [tabState, setTabState] = useState<WithdrawnTab>("active");
+  const [announceOpen, setAnnounceOpen] = useState(false);
 
   const course = getCourse(id);
   const assignment = getAssignment(assignmentId);
@@ -428,10 +430,17 @@ export default function GradingProgressPage() {
   const isDone = total > 0 && processed === total;
   const finalized = !!assignment.gradingFinalized;
 
+  // "Finish" is also the announcement (25/9/2569): students see no score until this is confirmed
+  // (see studentVisibleSubmission), so it always goes through a confirm popup.
   function handleFinishGrading() {
     updateAssignment(assignmentId, { gradingFinalized: true });
+    setAnnounceOpen(false);
   }
   function handleReopenGrading() {
+    if (!window.confirm(
+      t("เปิดตรวจใหม่?", "Reopen grading?") + "\n" +
+      t("นักศึกษาจะไม่เห็นคะแนนของงานนี้อีกจนกว่าจะประกาศผลอีกครั้ง", "Students won't see scores for this assignment again until you announce the results once more.")
+    )) return;
     updateAssignment(assignmentId, { gradingFinalized: false });
   }
 
@@ -535,6 +544,10 @@ export default function GradingProgressPage() {
                   </svg>
                   {t("ดูผลลัพธ์", "View Results")}
                 </Link>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border bg-[var(--s-ok-bg)] text-[var(--s-ok-text)] border-[var(--s-ok-bd)]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-current" aria-hidden="true" />
+                  {t("ประกาศผลแล้ว", "Results announced")}
+                </span>
                 {/* Safety valve (23/9/2569) — finalizing was never meant to be a one-way door. */}
                 <button
                   type="button"
@@ -549,13 +562,13 @@ export default function GradingProgressPage() {
               // before Score Book locks and View Results becomes reachable (23/9/2569).
               <button
                 type="button"
-                onClick={handleFinishGrading}
+                onClick={() => setAnnounceOpen(true)}
                 className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-semibold transition-colors"
               >
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                   <polyline points="20 6 9 17 4 12"/>
                 </svg>
-                {t("เสร็จสิ้นการตรวจ", "Finish Grading")}
+                {t("เสร็จสิ้นและประกาศผล", "Finish & announce")}
               </button>
             ) : (
               <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[var(--accent-bright)]/60 text-[var(--text-primary)] text-sm font-semibold select-none">
@@ -671,10 +684,10 @@ export default function GradingProgressPage() {
               {isDone && !finalized && (
                 <button
                   type="button"
-                  onClick={handleFinishGrading}
+                  onClick={() => setAnnounceOpen(true)}
                   className="inline-flex items-center gap-2 mt-4 px-5 py-2.5 bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-semibold rounded-xl transition-colors"
                 >
-                  {t("เสร็จสิ้นการตรวจ", "Finish Grading")}
+                  {t("เสร็จสิ้นและประกาศผล", "Finish & announce")}
                 </button>
               )}
             </div>
@@ -709,6 +722,43 @@ export default function GradingProgressPage() {
           acceptsFiles={assignment.acceptsFiles ?? true}
         />
         )}
+        <Modal
+          open={announceOpen}
+          onClose={() => setAnnounceOpen(false)}
+          size="sm"
+          title={t("ประกาศผลให้นักศึกษา?", "Announce results to students?")}
+          description={assignment.name}
+          footer={
+            <>
+              <button
+                type="button"
+                onClick={() => setAnnounceOpen(false)}
+                className="h-10 px-5 rounded-xl border border-[var(--border)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
+              >
+                {t("ยังก่อน", "Not yet")}
+              </button>
+              <button
+                type="button"
+                onClick={handleFinishGrading}
+                className="h-10 px-5 rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-semibold active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
+              >
+                {t("ประกาศผล", "Announce results")}
+              </button>
+            </>
+          }
+        >
+          <p className="text-sm text-[var(--text-primary)] leading-relaxed">
+            {t(
+              `ตรวจครบแล้ว ${processed} จาก ${total} คน — นักศึกษาแต่ละคนจะเห็นคะแนนของตัวเองทันที`,
+              `All ${processed} of ${total} are graded. Each student will see their own score right away.`
+            )}
+          </p>
+          <ul className="mt-3 flex flex-col gap-1.5 text-sm text-[var(--text-secondary)] list-disc pl-5">
+            <li>{t("ตอนนี้นักศึกษาเห็นแค่ว่างานกำลังถูกตรวจ ยังไม่เห็นคะแนน", "Until now students only see that their work is being graded — no score")}</li>
+            <li>{t("คะแนนใน Score Book จะถูกล็อก (ดูอย่างเดียว)", "Scores in the Score Book are locked (view only)")}</li>
+            <li>{t("กด “เปิดตรวจใหม่” ได้ แต่นักศึกษาจะไม่เห็นคะแนนอีกจนกว่าจะประกาศใหม่", "You can reopen grading, but students won't see scores again until you announce once more")}</li>
+          </ul>
+        </Modal>
       </main>
   );
 }

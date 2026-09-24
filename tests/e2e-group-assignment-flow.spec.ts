@@ -46,7 +46,8 @@ async function seedStatic(page: Page) {
     localStorage.setItem("hwai_courses_v2", JSON.stringify([data.course]));
     localStorage.setItem("hwai_managed_teachers_v1", JSON.stringify([data.teacher]));
     localStorage.setItem("hwai_students_v1", JSON.stringify(data.roster));
-    localStorage.setItem("hwai_assignments_v1", JSON.stringify([data.assignment]));
+    // The assignment is seeded once too: the teacher's "Finish & announce" changes it (gradingFinalized)
+    if (!localStorage.getItem("hwai_assignments_v1")) localStorage.setItem("hwai_assignments_v1", JSON.stringify([data.assignment]));
     // Only seed these if absent — addInitScript re-runs on every navigation
     // within the test, and a plain overwrite here would silently wipe out
     // the team/submission the test creates through real UI actions on a
@@ -111,7 +112,22 @@ test("cold start: a student forms a team, submits, the teacher grades once, and 
   await page.getByRole("button", { name: /Save Changes/i }).click();
   await expect(page.getByText(/saved/i)).toBeVisible();
 
-  // Beam — who was never graded directly — sees the graded score.
+  // Graded is not announced yet: Beam still just sees "awaiting grade", no score.
+  await loginAs(page, BEAM);
+  await page.goto(CLASSWORK_URL);
+  await page.waitForLoadState("networkidle");
+  await expect(page.getByText(/awaiting grade/i)).toBeVisible();
+  await expect(page.getByText("88")).toHaveCount(0);
+
+  // The teacher finishes grading and announces the results (confirm popup) …
+  await loginAs(page, { name: TEACHER.name, email: TEACHER.email, role: "teacher" });
+  await page.goto(GRADING_URL);
+  await page.waitForLoadState("networkidle");
+  await page.getByRole("button", { name: /finish & announce/i }).first().click();
+  await page.getByRole("dialog", { name: "Announce results to students?" }).getByRole("button", { name: "Announce results" }).click();
+  await expect(page.getByText("Results announced")).toBeVisible();
+
+  // … and only then does Beam — who was never graded directly — see the graded score.
   await loginAs(page, BEAM);
   await page.goto(CLASSWORK_URL);
   await page.waitForLoadState("networkidle");

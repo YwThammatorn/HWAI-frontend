@@ -6,7 +6,7 @@ import { useParams } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
 import { useCourses } from "@/lib/courses";
-import { useAssignments, Assignment, Submission } from "@/lib/assignments";
+import { useAssignments, Assignment, Submission, studentVisibleSubmission } from "@/lib/assignments";
 import { useGradingCategories, GradingCategory } from "@/lib/gradingCategories";
 import AssignmentStatusBadge, { AssignmentStatus } from "@/components/AssignmentStatusBadge";
 import AssignmentTypeBadge from "@/components/AssignmentTypeBadge";
@@ -152,7 +152,7 @@ export default function StudentClassworkPage() {
     const map = new Map<string, Submission>();
     assignments.forEach((a) => {
       const sub = getSubmissionsByAssignment(a.id).find((s) => s.studentId === studentId);
-      if (sub) map.set(a.id, sub);
+      if (sub) map.set(a.id, studentVisibleSubmission(a, sub));
     });
     return map;
   }, [assignments, getSubmissionsByAssignment, studentId]);

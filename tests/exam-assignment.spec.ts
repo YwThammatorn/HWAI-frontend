@@ -28,7 +28,7 @@ const HOMEWORK = {
   submissionType: "individual", maxGroupSize: null, rubricIds: [], createdAt: NOW, updatedAt: NOW,
 };
 
-async function seed(page: Page, role: "teacher" | "student", extra: { submissions?: unknown[]; withHomework?: boolean } = {}) {
+async function seed(page: Page, role: "teacher" | "student", extra: { submissions?: unknown[]; withHomework?: boolean; announced?: boolean } = {}) {
   await page.addInitScript((d) => {
     if (sessionStorage.getItem("ex_seeded")) return;
     sessionStorage.setItem("ex_seeded", "1");
@@ -44,7 +44,7 @@ async function seed(page: Page, role: "teacher" | "student", extra: { submission
     localStorage.setItem("hwai_assignments_v1", JSON.stringify(d.withHomework ? [d.exam, d.homework] : [d.exam]));
     localStorage.setItem("hwai_rubrics_v1", JSON.stringify([]));
     localStorage.setItem("hwai_submissions_v1", JSON.stringify(d.submissions));
-  }, { role, course: COURSE, teacher: TEACHER, cohort: COHORT, roster: ROSTER, exam: EXAM, homework: HOMEWORK, submissions: extra.submissions ?? [], withHomework: !!extra.withHomework });
+  }, { role, course: COURSE, teacher: TEACHER, cohort: COHORT, roster: ROSTER, exam: extra.announced ? { ...EXAM, gradingFinalized: true } : EXAM, homework: HOMEWORK, submissions: extra.submissions ?? [], withHomework: !!extra.withHomework });
 }
 
 const graded = (studentId: string, score: number) => ({
@@ -118,10 +118,10 @@ test.describe("Exam — teacher enters the scores", () => {
     expect(subs[0]).toMatchObject({ assignmentId: "ex1", studentId: "69070301", instructorScore: 42, status: "graded", fileUrl: null });
     await expect(page.getByRole("row", { name: /Nok Exam/ }).getByText("Scored")).toBeVisible();
     await expect(page.getByRole("row", { name: /Pim Exam/ }).getByText("Not scored")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Finish Grading" })).toHaveCount(0); // Pim still has no score
+    await expect(page.getByRole("button", { name: "Finish & announce" })).toHaveCount(0); // Pim still has no score
   });
 
-  test("a score above the maximum is rejected, and Finish Grading appears once everyone is scored", async ({ page }) => {
+  test("a score above the maximum is rejected, and Finish & announce appears once everyone is scored", async ({ page }) => {
     await seed(page, "teacher", { submissions: [graded("69070301", 42)] });
     await page.goto(`${BASE}/teacher/courses/c-ex/assignments/ex1/grading`);
     await page.waitForLoadState("networkidle");
@@ -132,7 +132,7 @@ test.describe("Exam — teacher enters the scores", () => {
 
     await page.getByLabel("Score for Pim Exam").fill("37.5");
     await page.getByRole("button", { name: "Save scores" }).click();
-    await expect(page.getByRole("button", { name: "Finish Grading" }).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: "Finish & announce" }).first()).toBeVisible();
     const subs = await stored(page);
     expect(subs.find((s: { studentId: string }) => s.studentId === "69070302")).toMatchObject({ instructorScore: 37.5, status: "graded" });
   });
@@ -176,7 +176,7 @@ test.describe("Exam — student side", () => {
   });
 
   test("once the teacher records the score, the student sees it", async ({ page }) => {
-    await seed(page, "student", { submissions: [graded("69070301", 42)] });
+    await seed(page, "student", { submissions: [graded("69070301", 42)], announced: true });
     await page.goto(`${BASE}/student/courses/c-ex/classwork/ex1`);
     await page.waitForLoadState("networkidle");
     await expect(page.getByText("42/50")).toBeVisible();

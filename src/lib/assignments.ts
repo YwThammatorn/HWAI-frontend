@@ -88,6 +88,14 @@ export function submissionAttachments(sub: Submission | undefined): AssignmentAt
     : [];
 }
 
+/** What a STUDENT may see of a submission (25/9/2569). Scores are announced by the teacher's "Finish &
+ *  announce" (gradingFinalized) — until then a graded submission reads as plain "submitted, awaiting
+ *  grade": no score, no comment, no breakdown. Teacher-side code keeps using the raw submission. */
+export function studentVisibleSubmission(assignment: Assignment | undefined, sub: Submission): Submission {
+  if (sub.status !== "graded" || assignment?.gradingFinalized) return sub;
+  return { ...sub, status: "not_graded", aiScore: null, instructorScore: null, instructorComment: "", criterionScores: undefined, criterionComments: undefined };
+}
+
 export interface CriterionLevel {
   label: string;
   description: string;

@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
 import { useCourses } from "@/lib/courses";
-import { useAssignments, type Assignment } from "@/lib/assignments";
+import { useAssignments, studentVisibleSubmission, type Assignment } from "@/lib/assignments";
 import { useGradingCategories, computeCategoryGradeRows, computeTotalSoFar, type CategoryGradeRow } from "@/lib/gradingCategories";
 import { buildScoreBook, gradeLetter, toneForPct, SCORE_TONE_CLASSES, PENDING_CHIP_CLASSES, MISSING_CHIP_CLASSES, type ScoreCell } from "@/lib/scoreBook";
 import EmptyState from "@/components/EmptyState";
@@ -40,7 +40,7 @@ export default function StudentEvaluationPage() {
   const categories = useMemo(() => (course ? getCategoriesByCourse(secId) : []), [course, secId, getCategoriesByCourse]);
   const today = new Date().toISOString().split("T")[0];
 
-  const allSubmissions = useMemo(() => assignments.flatMap((a) => getSubmissionsByAssignment(a.id)), [assignments, getSubmissionsByAssignment]);
+  const allSubmissions = useMemo(() => assignments.flatMap((a) => getSubmissionsByAssignment(a.id).map((s) => studentVisibleSubmission(a, s))), [assignments, getSubmissionsByAssignment]);
   const submissionsById = useMemo(() => new Map(allSubmissions.map((s) => [s.id, s])), [allSubmissions]);
   const rubricsByAssignment = useMemo(() => new Map(assignments.map((a) => [a.id, getRubricsByAssignment(a.id)[0]])), [assignments, getRubricsByAssignment]);
 
