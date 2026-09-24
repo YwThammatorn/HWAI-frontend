@@ -29,7 +29,7 @@ function CourseModal({
   onClose: () => void;
 }) {
   const { t } = useLanguage();
-  const { addCourse, updateCourse } = useCourses();
+  const { courses, addCourse, updateCourse } = useCourses();
   const { curriculumVersions, courseTemplates, getCourseTemplatesByCurriculum } = useCurriculum();
   const { teachers, assignToCourse } = useManagedTeachers();
 
@@ -42,8 +42,38 @@ function CourseModal({
   // here rather than being its own directly-set state.
   const [teacherQuery, setTeacherQuery] = useState("");
   const teacherDisplayName = (tc: { title?: string; name: string }) => tc.title ? `${tc.title} ${tc.name}` : tc.name;
-  const teacherId = teachers.find((tc) => teacherDisplayName(tc) === teacherQuery.trim())?.id ?? "";
+  const resolveTeacherId = (query: string) => teachers.find((tc) => teacherDisplayName(tc) === query.trim())?.id ?? "";
+  const teacherId = resolveTeacherId(teacherQuery);
   const nameRef = useRef<HTMLInputElement>(null);
+
+  // Several sections of the same course can be opened at once (25/9/2569): the course details above
+  // are entered once, and each row here becomes its own Course row with its own section number and
+  // teacher. `teacherQuery` above is the shared teacher; "same teacher for all" (default) uses it for
+  // every row, otherwise each row carries its own.
+  interface SectionRow { key: string; number: string; teacherQuery: string }
+  const [rows, setRows] = useState<SectionRow[]>(() => [{ key: crypto.randomUUID(), number: "", teacherQuery: "" }]);
+  const [sameTeacher, setSameTeacher] = useState(true);
+  const shared = sameTeacher || rows.length === 1;
+  const rowTeacherId = (r: SectionRow) => (shared ? teacherId : resolveTeacherId(r.teacherQuery));
+
+  function addRow() {
+    setRows((prev) => {
+      const nums = prev.map((r) => parseInt(r.number, 10)).filter((n) => !isNaN(n));
+      const next = nums.length > 0 ? String(Math.max(...nums) + 1) : "";
+      return [...prev, { key: crypto.randomUUID(), number: next, teacherQuery }];
+    });
+  }
+  function updateRow(key: string, patch: Partial<SectionRow>) {
+    setRows((prev) => prev.map((r) => (r.key === key ? { ...r, ...patch } : r)));
+  }
+  function removeRow(key: string) {
+    setRows((prev) => (prev.length > 1 ? prev.filter((r) => r.key !== key) : prev));
+  }
+  function handleSameTeacherChange(same: boolean) {
+    setSameTeacher(same);
+    // Turning it off: start every row on the shared teacher so the admin only changes the ones that differ.
+    if (!same) setRows((prev) => prev.map((r) => (r.teacherQuery.trim() === "" ? { ...r, teacherQuery } : r)));
+  }
 
   const activeCurriculumVersions = curriculumVersions.filter((v) => v.effectiveTo === undefined);
   const existingTemplate = seed?.courseTemplateId ? courseTemplates.find((ct) => ct.id === seed.courseTemplateId) : undefined;
@@ -72,23 +102,47 @@ function CourseModal({
 
   useEffect(() => { nameRef.current?.focus(); }, []);
 
+  const selectedTemplate = courseTemplateOptions.find((ct) => ct.id === courseTemplateId);
+  const year = academicYear.trim() === "" ? undefined : parseInt(academicYear, 10);
+
+  // What's wrong with each new section row (create mode). With more than one row every section needs a
+  // number; a number can't repeat inside the popup, nor match a section of the same course that
+  // already exists for that year and term.
+  const rowError = (r: SectionRow): string => {
+    const n = r.number.trim();
+    if (rows.length > 1 && n === "") return t("ใส่เลข section", "Enter a section number");
+    if (n !== "") {
+      if (rows.filter((o) => o.number.trim().toLowerCase() === n.toLowerCase()).length > 1) return t("เลข section ซ้ำในรายการนี้", "Repeated in this list");
+      const clash = courses.some((c) =>
+        c.status !== "archived" && c.sectionNumber === n && c.academicYear === (year !== undefined && !isNaN(year) ? year : undefined) &&
+        c.term === (term === "" ? undefined : term) &&
+        (selectedTemplate ? c.courseTemplateId === selectedTemplate.id : c.name === name.trim()));
+      if (clash) return t("มี section นี้อยู่แล้ว", "This section already exists");
+    }
+    // A shared teacher is checked once, on its own field — not repeated under every row.
+    if (!shared && !rowTeacherId(r)) return t("เลือกอาจารย์", "Pick a teacher");
+    return "";
+  };
+  const rowErrors = mode === "create" ? Object.fromEntries(rows.map((r) => [r.key, rowError(r)])) : {};
+  const canSave = !!name.trim() && (mode === "edit" || ((!shared || !!teacherId) && rows.every((r) => !rowErrors[r.key])));
+
   function handleSave() {
     const trimmed = name.trim();
-    if (!trimmed) return;
-    if (mode === "create" && !teacherId) return;
-    const selectedTemplate = courseTemplateOptions.find((ct) => ct.id === courseTemplateId);
-    const year = academicYear.trim() === "" ? undefined : parseInt(academicYear, 10);
+    if (!canSave) return;
     const sectionFields = {
       ...(selectedTemplate && { courseTemplateId: selectedTemplate.id, code: selectedTemplate.code }),
       ...(year !== undefined && !isNaN(year) && { academicYear: year }),
       ...(term !== "" && { term }),
-      ...(sectionNumber.trim() !== "" && { sectionNumber: sectionNumber.trim() }),
     };
     if (mode === "create") {
-      const created = addCourse({ name: trimmed, description, coverColor, iconColor: coverColor, status: "active", source: "manual", ...sectionFields });
-      assignToCourse(teacherId, created.id);
+      rows.forEach((r) => {
+        const num = r.number.trim();
+        const created = addCourse({ name: trimmed, description, coverColor, iconColor: coverColor, status: "active", source: "manual", ...sectionFields, ...(num !== "" && { sectionNumber: num }) });
+        assignToCourse(rowTeacherId(r), created.id);
+      });
     } else if (course) {
-      updateCourse(course.id, { name: trimmed, description, coverColor, iconColor: coverColor, ...sectionFields });
+      const num = sectionNumber.trim();
+      updateCourse(course.id, { name: trimmed, description, coverColor, iconColor: coverColor, ...sectionFields, ...(num !== "" && { sectionNumber: num }) });
     }
     onClose();
   }
@@ -96,7 +150,7 @@ function CourseModal({
   return (
     <Modal open onClose={onClose} size="md"
       title={mode === "create" ? (duplicateFrom ? t("เพิ่ม Section ใหม่", "Add Section") : t("สร้างรายวิชาใหม่", "New Course")) : t("แก้ไขรายวิชา", "Edit Course")}
-      description={duplicateFrom ? t(`เพิ่ม section ให้ "${duplicateFrom.name}" — เลือกอาจารย์และกรอกเลข section ใหม่ก่อนบันทึก`, `Adding a section to "${duplicateFrom.name}" — pick a teacher and fill in the new section number before saving`) : undefined}
+      description={duplicateFrom ? t(`เพิ่ม section ให้ "${duplicateFrom.name}" — เลือกอาจารย์และกรอกเลข section ใหม่ก่อนบันทึก (เพิ่มได้หลาย section พร้อมกัน)`, `Adding sections to "${duplicateFrom.name}" — pick a teacher and fill in each new section number before saving (you can add several at once)`) : undefined}
       footer={
         <>
           <button onClick={onClose} className="h-10 px-5 rounded-xl border border-[var(--border)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors">
@@ -104,10 +158,12 @@ function CourseModal({
           </button>
           <button
             onClick={handleSave}
-            disabled={!name.trim() || (mode === "create" && !teacherId)}
+            disabled={!canSave}
             className="h-10 px-5 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] disabled:opacity-50 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
           >
-            {mode === "create" ? t("สร้างรายวิชา", "Create Course") : t("บันทึก", "Save")}
+            {mode === "create"
+              ? (rows.length > 1 ? t(`สร้าง ${rows.length} section`, `Create ${rows.length} sections`) : t("สร้างรายวิชา", "Create Course"))
+              : t("บันทึก", "Save")}
           </button>
         </>
       }
@@ -170,7 +226,7 @@ function CourseModal({
                 ))}
               </select>
             </div>
-            <div className="grid grid-cols-3 gap-2">
+            <div className={mode === "edit" ? "grid grid-cols-3 gap-2" : "grid grid-cols-2 gap-2"}>
               <input
                 type="number"
                 value={academicYear}
@@ -188,12 +244,15 @@ function CourseModal({
                 <option value="2">{t("เทอม 2", "Term 2")}</option>
                 <option value="3">{t("เทอม 3", "Term 3")}</option>
               </select>
-              <input
-                value={sectionNumber}
-                onChange={(e) => setSectionNumber(e.target.value)}
-                placeholder={t("Section", "Section")}
-                className="h-9 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-2.5 text-xs text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
-              />
+              {/* Editing one course keeps its single section field here; creating uses the Sections rows below */}
+              {mode === "edit" && (
+                <input
+                  value={sectionNumber}
+                  onChange={(e) => setSectionNumber(e.target.value)}
+                  placeholder={t("Section", "Section")}
+                  className="h-9 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-2.5 text-xs text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
+                />
+              )}
             </div>
           </div>
         )}
@@ -214,11 +273,12 @@ function CourseModal({
           <p className="text-[11px] text-[var(--text-muted)] mt-2">{t("อาจารย์ประจำวิชาจะเป็นผู้กำหนดข้อมูลนี้เองภายหลัง", "The course's teacher sets this themselves later")}</p>
         </div>
 
-        {/* Primary teacher — required at creation; reassign later via the course row's expand panel */}
-        {mode === "create" && (
+        {/* Primary teacher — required at creation; reassign later via the course row's expand panel.
+            Shared by every section below unless "same teacher for all" is switched off. */}
+        {mode === "create" && shared && (
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-semibold text-[var(--text-muted)]">
-              {t("อาจารย์ประจำวิชา", "Primary Teacher")} <span className="text-[var(--s-err-text)]">*</span>
+              {rows.length > 1 ? t("อาจารย์ประจำวิชา (ทุก section)", "Primary Teacher (all sections)") : t("อาจารย์ประจำวิชา", "Primary Teacher")} <span className="text-[var(--s-err-text)]">*</span>
             </label>
             <SearchInput
               value={teacherQuery}
@@ -234,6 +294,85 @@ function CourseModal({
             {teachers.length === 0 && (
               <p className="text-[11px] text-[var(--s-err-text)]">{t("ยังไม่มีอาจารย์ในระบบ — ไปเพิ่มที่หน้าจัดการอาจารย์ก่อน", "No teachers yet — add one on the User Management page first")}</p>
             )}
+          </div>
+        )}
+
+        {/* Sections — one row per section to open now; each becomes its own course row */}
+        {mode === "create" && (
+          <div className="flex flex-col gap-2.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-3.5">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold text-[var(--text-muted)]">{t("Section ที่จะเปิด", "Sections to open")}</p>
+                <p className="text-[11px] text-[var(--text-muted)] mt-0.5">
+                  {t("เปิดได้หลาย section พร้อมกัน — ข้อมูลวิชาด้านบนใช้ร่วมกัน", "Open several sections at once — the course details above are shared")}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={addRow}
+                className="shrink-0 inline-flex items-center gap-1.5 h-8 px-3 rounded-lg border border-[var(--accent)] text-xs font-medium text-[var(--accent)] hover:bg-[var(--accent-subtle)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
+              >
+                <svg width="11" height="11" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/></svg>
+                {t("เพิ่ม Section", "Add section")}
+              </button>
+            </div>
+
+            {rows.length > 1 && (
+              <label className="inline-flex items-center gap-2 text-xs text-[var(--text-secondary)] cursor-pointer w-fit">
+                <input
+                  type="checkbox"
+                  checked={sameTeacher}
+                  onChange={(e) => handleSameTeacherChange(e.target.checked)}
+                  className="w-4 h-4 accent-[var(--accent-solid)]"
+                />
+                {t("อาจารย์เหมือนกันทุก section", "Same teacher for all sections")}
+              </label>
+            )}
+
+            <ul className="flex flex-col gap-2">
+              {rows.map((r, i) => {
+                const err = rowErrors[r.key];
+                // Only nag once there's something to fix beyond "not filled in yet" on a pristine row
+                const showErr = !!err && (r.number.trim() !== "" || r.teacherQuery.trim() !== "" || rows.length > 1 || err === t("มี section นี้อยู่แล้ว", "This section already exists"));
+                return (
+                  <li key={r.key} className="flex flex-col gap-1">
+                    <div className="flex items-center gap-2">
+                      <input
+                        value={r.number}
+                        onChange={(e) => updateRow(r.key, { number: e.target.value })}
+                        placeholder={t("Section", "Section")}
+                        aria-label={t(`เลข section แถวที่ ${i + 1}`, `Section number, row ${i + 1}`)}
+                        aria-invalid={showErr && err !== t("เลือกอาจารย์", "Pick a teacher")}
+                        className="h-9 w-24 shrink-0 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-2.5 text-sm tabular-nums text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
+                      />
+                      {!shared && (
+                        <SearchInput
+                          value={r.teacherQuery}
+                          onChange={(v) => updateRow(r.key, { teacherQuery: v })}
+                          placeholder={t("พิมพ์ชื่ออาจารย์...", "Type a teacher's name...")}
+                          ariaLabel={t(`อาจารย์ section แถวที่ ${i + 1}`, `Teacher for section row ${i + 1}`)}
+                          suggestions={teachers.map(teacherDisplayName)}
+                          className="flex-1 min-w-0"
+                        />
+                      )}
+                      {shared && <span className="flex-1 min-w-0 text-xs text-[var(--text-muted)] truncate">{teacherQuery.trim() || t("ใช้อาจารย์ด้านบน", "Uses the teacher above")}</span>}
+                      {rows.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeRow(r.key)}
+                          aria-label={t(`ลบ section แถวที่ ${i + 1}`, `Remove section row ${i + 1}`)}
+                          title={t("ลบแถวนี้", "Remove this row")}
+                          className="w-8 h-8 shrink-0 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--s-err-text)] hover:bg-[var(--s-err-bg)] transition-colors"
+                        >
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        </button>
+                      )}
+                    </div>
+                    {showErr && <p role="alert" className="text-[11px] text-[var(--s-err-text)] pl-1">{err}</p>}
+                  </li>
+                );
+              })}
+            </ul>
           </div>
         )}
 

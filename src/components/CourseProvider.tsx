@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { CourseContext, Course, SEED_COURSES } from "@/lib/courses";
 
 const LS_KEY = "hwai_courses_v2";
@@ -15,17 +15,24 @@ export default function CourseProvider({ children }: { children: React.ReactNode
   // effect instead, which runs before AppShell's own auth-gate opens, so in
   // practice it's not visible. See [[project-hwai-meeting-20260826]].
   const [courses, setCourses] = useState<Course[]>([]);
+  // Always the newest list: several mutations in one handler (e.g. opening 3 sections at once) must
+  // build on each other instead of each starting from the same stale render's `courses`.
+  const latest = useRef<Course[]>([]);
 
   useEffect(() => {
     try {
       const raw = localStorage.getItem(LS_KEY);
-      setCourses(raw ? (JSON.parse(raw) as Course[]) : SEED_COURSES);
+      const loaded = raw ? (JSON.parse(raw) as Course[]) : SEED_COURSES;
+      latest.current = loaded;
+      setCourses(loaded);
     } catch {
+      latest.current = SEED_COURSES;
       setCourses(SEED_COURSES);
     }
   }, []);
 
   const persist = useCallback((next: Course[]) => {
+    latest.current = next;
     setCourses(next);
     localStorage.setItem(LS_KEY, JSON.stringify(next));
   }, []);
@@ -39,26 +46,26 @@ export default function CourseProvider({ children }: { children: React.ReactNode
         createdAt: now,
         updatedAt: now,
       };
-      persist([...courses, course]);
+      persist([...latest.current, course]);
       return course;
     },
-    [courses, persist]
+    [persist]
   );
 
   const updateCourse = useCallback(
     (id: string, data: Partial<Omit<Course, "id" | "createdAt">>) => {
       persist(
-        courses.map((c) =>
+        latest.current.map((c) =>
           c.id === id ? { ...c, ...data, updatedAt: new Date().toISOString() } : c
         )
       );
     },
-    [courses, persist]
+    [persist]
   );
 
   const removeCourse = useCallback(
-    (id: string) => persist(courses.filter((c) => c.id !== id)),
-    [courses, persist]
+    (id: string) => persist(latest.current.filter((c) => c.id !== id)),
+    [persist]
   );
 
   const getCourse = useCallback(

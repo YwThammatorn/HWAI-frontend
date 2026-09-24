@@ -341,7 +341,7 @@ test.describe("P1c — Admin Courses (/admin/courses)", () => {
     await gotoPage(page, "/admin/courses");
     await page.getByRole("button", { name: "Add Section" }).click();
     const dialog = page.getByRole("dialog", { name: "Add Section" });
-    await expect(dialog.getByText('Adding a section to "Software Engineering"')).toBeVisible();
+    await expect(dialog.getByText('Adding sections to "Software Engineering"')).toBeVisible();
     await expect(dialog.getByPlaceholder("e.g. UX/UI Design")).toHaveValue("Software Engineering");
     await expect(dialog.getByLabel("Primary Teacher")).toHaveValue("");
     await expect(dialog.getByRole("button", { name: "Create Course" })).toBeDisabled();
