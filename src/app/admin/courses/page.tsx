@@ -10,6 +10,8 @@ import EmptyState from "@/components/EmptyState";
 import StatCard from "@/components/StatCard";
 import Modal from "@/components/Modal";
 import SearchInput from "@/components/SearchInput";
+import FilterSelect from "@/components/FilterSelect";
+import { groupCourses, compareOfferings, curriculumKeyOf, NO_CURRICULUM_KEY, type SubjectGroup, type CurriculumGroup } from "@/lib/courseGroups";
 import { useStudents } from "@/lib/students";
 
 // ── Course create/edit (centred popup) ─────────────────────────────────────────────────
@@ -256,22 +258,6 @@ function CourseModal({
             </div>
           </div>
         )}
-
-        {/* Class Schedule & Room — the course's teacher sets these themselves, not admin */}
-        <div className="rounded-xl border border-dashed border-[var(--border-subtle)] bg-[var(--bg-subtle)] p-3">
-          <p className="text-xs font-semibold text-[var(--text-muted)] mb-2">{t("วันเวลาเรียน / ห้องเรียน", "Class Schedule / Room")}</p>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <p className="text-[11px] text-[var(--text-muted)]">{t("วันเวลาเรียน", "Schedule")}</p>
-              <p className="text-sm text-[var(--text-secondary)]">{course?.schedule || "-"}</p>
-            </div>
-            <div>
-              <p className="text-[11px] text-[var(--text-muted)]">{t("ห้องเรียน", "Room")}</p>
-              <p className="text-sm text-[var(--text-secondary)]">{course?.room || "-"}</p>
-            </div>
-          </div>
-          <p className="text-[11px] text-[var(--text-muted)] mt-2">{t("อาจารย์ประจำวิชาจะเป็นผู้กำหนดข้อมูลนี้เองภายหลัง", "The course's teacher sets this themselves later")}</p>
-        </div>
 
         {/* Primary teacher — required at creation; reassign later via the course row's expand panel.
             Shared by every section below unless "same teacher for all" is switched off. */}
@@ -558,21 +544,24 @@ function CourseAssignPanel({ course }: { course: Course }) {
   );
 }
 
-// ── Course row ────────────────────────────────────────────────────────────────
+// ── Course row (one section) ───────────────────────────────────────────────────────
 
 type RowAction = { type: "archive" | "restore" | "delete"; course: Course } | null;
+
+function termLabel(c: Course, t: (th: string, en: string) => string): string | null {
+  if (!c.academicYear) return null;
+  if (c.term === "summer") return t(`${c.academicYear} · ภาคฤดูร้อน`, `${c.academicYear} · Summer`);
+  if (c.term) return t(`${c.academicYear} · เทอม ${c.term}`, `${c.academicYear} · Term ${c.term}`);
+  return String(c.academicYear);
+}
 
 function CourseRow({
   course,
   onEdit,
-  onAddSection,
   onAction,
 }: {
   course: Course;
   onEdit: (c: Course) => void;
-  /** "+ Add Section" (23/9/2569) — omitted for archived rows, duplicating an archived course
-   *  as a new active one isn't a meaningful action. */
-  onAddSection?: (c: Course) => void;
   onAction: (a: RowAction) => void;
 }) {
   const { t } = useLanguage();
@@ -582,38 +571,38 @@ function CourseRow({
 
   const assignedTeachers = getTeachersByCourse(course.id);
   const enrolledCount = getStudentsByCourse(course.id).length;
-
+  const archived = course.status === "archived";
+  const term = termLabel(course, t);
+  const sectionText = course.sectionNumber ? `Sec ${course.sectionNumber}` : null;
 
   return (
-    <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] overflow-hidden">
-      {/* Row — flex row, NOT a button so action buttons can sit alongside */}
-      <div className="flex items-center gap-2 px-4 py-3 hover:bg-[var(--bg-subtle)] transition-colors">
-        {/* Accordion toggle — takes remaining space */}
+    <div>
+      {/* Row — flex row, NOT a button so action buttons can sit alongside. The subject's name lives in
+          the card header above, so this row only says which section / term it is. */}
+      <div className={`flex items-center gap-2 px-4 py-2.5 hover:bg-[var(--bg-subtle)] transition-colors ${archived ? "opacity-60" : ""}`}>
         <button
           onClick={() => setExpanded((v) => !v)}
           aria-expanded={expanded}
           aria-controls={`course-panel-${course.id}`}
+          aria-label={[course.name, sectionText, term].filter(Boolean).join(" · ")}
           className="flex items-center gap-3 flex-1 min-w-0 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] focus-visible:rounded-lg"
         >
-          <div className="w-9 h-9 rounded-xl shrink-0 flex items-center justify-center text-white font-bold text-xs" style={{ background: course.coverColor }} aria-hidden="true">
-            {course.name.charAt(0).toUpperCase()}
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1.5 min-w-0">
-              <p className="text-sm font-semibold text-[var(--text-primary)] truncate">{course.name}</p>
-              {course.code && (
-                <span className="text-[10px] font-semibold tabular-nums px-1.5 py-0.5 rounded-md bg-[var(--accent-bright)]/15 text-[var(--accent)] shrink-0">
-                  {course.code}{course.sectionNumber ? ` · Sec ${course.sectionNumber}` : ""}
-                </span>
-              )}
-            </div>
-            <p className="text-xs text-[var(--text-muted)] mt-0.5 truncate">
-              {assignedTeachers.length > 0 ? assignedTeachers.map((tc) => tc.name).join(", ") : t("ยังไม่มีอาจารย์ assigned", "No teachers assigned")}
-              {(course.schedule || course.room) && (
-                <> · {[course.schedule, course.room && t(`ห้อง ${course.room}`, `Room ${course.room}`)].filter(Boolean).join(" · ")}</>
-              )}
-            </p>
-          </div>
+          <span className={`w-16 shrink-0 text-center text-xs font-semibold tabular-nums px-2 py-0.5 rounded-md ${sectionText ? "bg-[var(--accent-bright)]/15 text-[var(--accent)]" : "text-[var(--text-muted)]"}`}>
+            {sectionText ?? t("ไม่ระบุ", "No sec")}
+          </span>
+          {term && (
+            <span className="shrink-0 text-xs tabular-nums px-2 py-0.5 rounded-md border border-[var(--border-subtle)] text-[var(--text-secondary)]">
+              {term}
+            </span>
+          )}
+          {archived && (
+            <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded-md bg-[var(--s-warn-bg)] text-[var(--s-warn-text)]">
+              {t("เก็บถาวร", "Archived")}
+            </span>
+          )}
+          <p className="flex-1 min-w-0 text-xs text-[var(--text-muted)] truncate">
+            {assignedTeachers.length > 0 ? assignedTeachers.map((tc) => tc.name).join(", ") : t("ยังไม่มีอาจารย์ assigned", "No teachers assigned")}
+          </p>
           <span className={`transition-transform duration-200 text-[var(--text-muted)] shrink-0 ${expanded ? "rotate-180" : ""}`} aria-hidden="true">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <polyline points="6 9 12 15 18 9"/>
@@ -623,31 +612,15 @@ function CourseRow({
 
         {/* Student count + action buttons — siblings, not children of toggle */}
         <div className="flex items-center gap-3 shrink-0">
-          <div className="text-right">
+          <div className="text-right w-16">
             <p className="text-xs font-semibold tabular-nums text-[var(--text-primary)]">{enrolledCount}</p>
             <p className="text-[10px] text-[var(--text-muted)]">{t("นักศึกษา", "students")}</p>
           </div>
           <div className="flex items-center gap-1">
-            {/* Given a real label + border (23/9/2569, was an icon-only button identical in weight
-                to Edit/Archive/Delete) — a tooltip-only "Add Section" was easy to miss entirely
-                among 4 unlabeled icons; this is the one action here that isn't a standard CRUD
-                verb a teacher already expects, so it earns visible text. */}
-            {onAddSection && (
-              <button
-                onClick={() => onAddSection(course)}
-                aria-label={t("เพิ่ม Section", "Add Section")}
-                title={t("เพิ่ม Section ใหม่จากวิชานี้", "Add a new section from this course")}
-                className="flex items-center gap-1 h-7 px-2 rounded-lg border border-[var(--accent)]/30 text-[var(--accent)] text-[11px] font-medium hover:border-[var(--accent)] hover:bg-[var(--accent-bright)]/10 transition-colors mr-1"
-              >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-                </svg>
-                {t("Section", "Section")}
-              </button>
-            )}
             <button
               onClick={() => onEdit(course)}
               title={t("แก้ไขรายวิชา", "Edit course")}
+              aria-label={t("แก้ไขรายวิชา", "Edit course")}
               className="w-7 h-7 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--accent)] hover:bg-[var(--accent-bright)]/10 transition-colors"
             >
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -656,11 +629,12 @@ function CourseRow({
               </svg>
             </button>
             <button
-              onClick={() => onAction({ type: course.status === "active" ? "archive" : "restore", course })}
-              title={course.status === "active" ? t("เก็บถาวร", "Archive") : t("คืนสถานะ", "Restore")}
+              onClick={() => onAction({ type: archived ? "restore" : "archive", course })}
+              title={archived ? t("คืนสถานะ", "Restore") : t("เก็บถาวร", "Archive")}
+              aria-label={archived ? t("คืนสถานะ", "Restore") : t("เก็บถาวร", "Archive")}
               className="w-7 h-7 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-amber-600 hover:bg-amber-50 transition-colors"
             >
-              {course.status === "active" ? (
+              {!archived ? (
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                   <polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/>
                 </svg>
@@ -673,6 +647,7 @@ function CourseRow({
             <button
               onClick={() => onAction({ type: "delete", course })}
               title={t("ลบรายวิชา", "Delete course")}
+              aria-label={t("ลบรายวิชา", "Delete course")}
               className="w-7 h-7 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--s-err-text)] hover:bg-[var(--s-err-bg)] transition-colors"
             >
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -691,11 +666,125 @@ function CourseRow({
   );
 }
 
+// ── One subject: its sections (and earlier terms) stacked in a single card ────────────────
+
+function SubjectCard({
+  subject,
+  onEdit,
+  onAddSection,
+  onAction,
+}: {
+  subject: SubjectGroup;
+  onEdit: (c: Course) => void;
+  onAddSection: (c: Course) => void;
+  onAction: (a: RowAction) => void;
+}) {
+  const { t } = useLanguage();
+  const first = subject.courses[0];
+  // "+ Section" copies the newest offering that's still open; a subject that is all archived has none
+  // (duplicating an archived course as a new active one isn't a meaningful action).
+  const source = subject.courses.find((c) => c.status === "active");
+  const n = subject.courses.length;
+
+  return (
+    <section aria-label={subject.name} className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] overflow-hidden">
+      <div className="flex items-center gap-3 px-4 py-3 border-b border-[var(--border-subtle)]">
+        <div className="w-9 h-9 rounded-xl shrink-0 flex items-center justify-center text-white font-bold text-xs" style={{ background: first.coverColor }} aria-hidden="true">
+          {subject.name.charAt(0).toUpperCase()}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <h3 className="text-sm font-semibold text-[var(--text-primary)] truncate">{subject.name}</h3>
+            {subject.code && (
+              <span className="text-[10px] font-semibold tabular-nums px-1.5 py-0.5 rounded-md bg-[var(--accent-bright)]/15 text-[var(--accent)] shrink-0">
+                {subject.code}
+              </span>
+            )}
+          </div>
+          <p className="text-xs text-[var(--text-muted)] mt-0.5">{t(`${n} section`, n === 1 ? "1 section" : `${n} sections`)}</p>
+        </div>
+        {/* A real label + border: a tooltip-only "Add Section" was easy to miss among icon buttons. */}
+        {source && (
+          <button
+            onClick={() => onAddSection(source)}
+            aria-label={t("เพิ่ม Section", "Add Section")}
+            title={t("เพิ่ม Section ใหม่จากวิชานี้", "Add a new section from this course")}
+            className="flex items-center gap-1 h-7 px-2 rounded-lg border border-[var(--accent)]/30 text-[var(--accent)] text-[11px] font-medium hover:border-[var(--accent)] hover:bg-[var(--accent-bright)]/10 transition-colors shrink-0"
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            {t("Section", "Section")}
+          </button>
+        )}
+      </div>
+      <div className="divide-y divide-[var(--border-subtle)]">
+        {subject.courses.map((course) => (
+          <CourseRow key={course.id} course={course} onEdit={onEdit} onAction={onAction} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+// ── One curriculum: a collapsible group of subjects ──────────────────────────────────────
+
+function CurriculumSection({
+  group,
+  open,
+  onToggle,
+  children,
+}: {
+  group: CurriculumGroup;
+  open: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+}) {
+  const { t } = useLanguage();
+  const sections = group.courseCount;
+  const subjects = group.subjects.length;
+  return (
+    <section aria-label={group.version?.label ?? t("ไม่ผูกหลักสูตร", "No curriculum")} className="flex flex-col gap-3">
+      <h2>
+        <button
+          onClick={onToggle}
+          aria-expanded={open}
+          className="flex items-center gap-3 w-full text-left rounded-xl px-2 py-1.5 hover:bg-[var(--bg-subtle)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
+        >
+          <span className={`text-[var(--text-muted)] transition-transform duration-200 ${open ? "" : "-rotate-90"}`} aria-hidden="true">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </span>
+          {group.version && (
+            <span className="text-[11px] font-bold tabular-nums px-2 py-0.5 rounded-md bg-[var(--accent-solid)] text-[var(--accent-solid-text)] shrink-0">
+              {group.version.program}
+            </span>
+          )}
+          <span className="text-sm font-semibold text-[var(--text-primary)] min-w-0 truncate">
+            {group.version?.label ?? t("ไม่ผูกหลักสูตร", "No curriculum")}
+          </span>
+          <span className="ml-auto shrink-0 text-xs text-[var(--text-muted)] tabular-nums">
+            {t(`${subjects} วิชา · ${sections} section`, `${subjects} ${subjects === 1 ? "subject" : "subjects"} · ${sections} ${sections === 1 ? "section" : "sections"}`)}
+          </span>
+        </button>
+      </h2>
+      {open && <div className="flex flex-col gap-3 pl-3 ml-3 border-l border-[var(--border-subtle)]">{children}</div>}
+    </section>
+  );
+}
+
 // ── Main page ─────────────────────────────────────────────────────────────────
+
+const FILTER_ICON = (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+  </svg>
+);
 
 export default function AdminCoursesPage() {
   const { t } = useLanguage();
   const { courses, updateCourse, removeCourse } = useCourses();
+  const { curriculumVersions, courseTemplates } = useCurriculum();
+  const { getTeachersByCourse } = useManagedTeachers();
   const [modalMode, setModalMode] = useState<"create" | "edit" | null>(null);
   const [editTarget, setEditTarget] = useState<Course | undefined>(undefined);
   // "+ Add Section" (23/9/2569): duplicates an existing course as a new one, pre-filled from it —
@@ -704,8 +793,54 @@ export default function AdminCoursesPage() {
   const [duplicateFrom, setDuplicateFrom] = useState<Course | undefined>(undefined);
   const [confirm, setConfirm] = useState<RowAction>(null);
 
+  // Filters (26/9/2569). Every option list is built from what actually exists, so a filter can never
+  // offer a choice that returns nothing.
+  const [search, setSearch] = useState("");
+  const [programFilter, setProgramFilter] = useState("all");
+  const [curriculumFilter, setCurriculumFilter] = useState("all");
+  const [termFilter, setTermFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+
   const activeCourses = courses.filter((c) => c.status === "active");
   const archivedCourses = courses.filter((c) => c.status === "archived");
+
+  const allGroups = groupCourses(courses, curriculumVersions, courseTemplates);
+  const programOptions = [...new Set(allGroups.flatMap((g) => (g.version ? [g.version.program] : [])))];
+  const curriculumOptions = allGroups.filter((g) => programFilter === "all" || g.version?.program === programFilter);
+  // a curriculum picked earlier that the program filter has since hidden counts as "all"
+  const effectiveCurriculum = curriculumOptions.some((g) => g.key === curriculumFilter) ? curriculumFilter : "all";
+  const termKey = (c: Course) => (c.academicYear && c.term ? `${c.academicYear}-${c.term}` : "");
+  const termOptions = [...new Map(courses.filter((c) => termKey(c)).sort(compareOfferings).map((c) => [termKey(c), c])).values()];
+
+  const q = search.trim().toLowerCase();
+  const filtersActive = q !== "" || programFilter !== "all" || effectiveCurriculum !== "all" || termFilter !== "all" || statusFilter !== "all";
+
+  const shown = courses.filter((c) => {
+    const key = curriculumKeyOf(c, courseTemplates);
+    const version = curriculumVersions.find((v) => v.id === key);
+    if (programFilter !== "all" && version?.program !== programFilter) return false;
+    if (effectiveCurriculum !== "all" && (version?.id ?? NO_CURRICULUM_KEY) !== effectiveCurriculum) return false;
+    if (termFilter !== "all" && termKey(c) !== termFilter) return false;
+    if (statusFilter !== "all" && c.status !== statusFilter) return false;
+    if (q) {
+      const hay = [c.name, c.code ?? "", ...getTeachersByCourse(c.id).map((tc) => tc.name)].join(" ").toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+  const groups = groupCourses(shown, curriculumVersions, courseTemplates);
+  const subjectCount = groups.reduce((n, g) => n + g.subjects.length, 0);
+  // while narrowing, every group stays open so nothing that matched is hidden behind a collapsed header
+  const isOpen = (key: string) => filtersActive || !collapsed.has(key);
+  const allCollapsed = groups.length > 0 && groups.every((g) => collapsed.has(g.key));
+
+  function clearFilters() {
+    setSearch(""); setProgramFilter("all"); setCurriculumFilter("all"); setTermFilter("all"); setStatusFilter("all");
+  }
+  function toggleGroup(key: string) {
+    setCollapsed((prev) => { const next = new Set(prev); if (next.has(key)) next.delete(key); else next.add(key); return next; });
+  }
 
   function handleAction(action: RowAction) {
     setConfirm(action);
@@ -830,48 +965,101 @@ export default function AdminCoursesPage() {
           }
         />
       ) : (
-        <div className="flex flex-col gap-6">
-          {/* Active */}
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)] mb-3">
-              {t(`รายวิชาที่เปิดสอน (${activeCourses.length})`, `Active courses (${activeCourses.length})`)}
-            </p>
-            <div className="flex flex-col gap-3">
-              {activeCourses.length === 0 ? (
-                <p className="text-sm text-[var(--text-muted)]">{t("ไม่มีรายวิชาที่เปิดสอน", "No active courses")}</p>
-              ) : (
-                activeCourses.map((course) => (
-                  <CourseRow
-                    key={course.id}
-                    course={course}
-                    onEdit={(c) => { setEditTarget(c); setModalMode("edit"); }}
-                    onAddSection={(c) => { setEditTarget(undefined); setDuplicateFrom(c); setModalMode("create"); }}
-                    onAction={handleAction}
-                  />
-                ))
-              )}
-            </div>
+        <>
+          {/* Filters */}
+          <div className="flex items-center gap-2 flex-wrap mb-3">
+            <SearchInput
+              value={search}
+              onChange={setSearch}
+              placeholder={t("ค้นหาวิชา, รหัส, อาจารย์...", "Search subject, code, teacher...")}
+              ariaLabel={t("ค้นหารายวิชา", "Search courses")}
+              className="w-72 shrink-0"
+              rounded="full"
+              suggestions={[...new Set(courses.flatMap((c) => [c.name, c.code ?? ""]).filter(Boolean))]}
+            />
+            <FilterSelect value={programFilter} onChange={setProgramFilter} ariaLabel={t("กรองตามสาขา", "Filter by program")} icon={FILTER_ICON}>
+              <option value="all">{t("ทุกสาขา", "All programs")}</option>
+              {programOptions.map((p) => <option key={p} value={p}>{p}</option>)}
+            </FilterSelect>
+            <FilterSelect value={effectiveCurriculum} onChange={setCurriculumFilter} ariaLabel={t("กรองตามหลักสูตร", "Filter by curriculum")} icon={FILTER_ICON}>
+              <option value="all">{t("ทุกหลักสูตร", "All curricula")}</option>
+              {curriculumOptions.map((g) => (
+                <option key={g.key} value={g.key}>{g.version ? `${g.version.program} · ${g.version.effectiveFrom}` : t("ไม่ผูกหลักสูตร", "No curriculum")}</option>
+              ))}
+            </FilterSelect>
+            <FilterSelect value={termFilter} onChange={setTermFilter} ariaLabel={t("กรองตามเทอม", "Filter by term")} icon={FILTER_ICON}>
+              <option value="all">{t("ทุกเทอม", "All terms")}</option>
+              {termOptions.map((c) => <option key={termKey(c)} value={termKey(c)}>{termLabel(c, t)}</option>)}
+            </FilterSelect>
+            <FilterSelect value={statusFilter} onChange={setStatusFilter} ariaLabel={t("กรองตามสถานะ", "Filter by status")} icon={FILTER_ICON}>
+              <option value="all">{t("ทุกสถานะ", "All statuses")}</option>
+              <option value="active">{t("เปิดสอน", "Active")}</option>
+              <option value="archived">{t("เก็บถาวร", "Archived")}</option>
+            </FilterSelect>
+            {filtersActive && (
+              <button
+                onClick={clearFilters}
+                className="h-9 px-3 rounded-lg text-sm font-medium text-[var(--accent)] hover:bg-[var(--accent-bright)]/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
+              >
+                {t("ล้างตัวกรอง", "Clear filters")}
+              </button>
+            )}
           </div>
 
-          {/* Archived */}
-          {archivedCourses.length > 0 && (
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)] mb-3">
-                {t(`รายวิชาที่เก็บถาวร (${archivedCourses.length})`, `Archived (${archivedCourses.length})`)}
-              </p>
-              <div className="flex flex-col gap-3 opacity-60">
-                {archivedCourses.map((course) => (
-                  <CourseRow
-                    key={course.id}
-                    course={course}
-                    onEdit={(c) => { setEditTarget(c); setModalMode("edit"); }}
-                    onAction={handleAction}
-                  />
-                ))}
-              </div>
+          <div className="flex items-center justify-between gap-3 mb-4 min-h-[28px]">
+            <p className="text-xs text-[var(--text-muted)] tabular-nums" aria-live="polite">
+              {t(
+                `${shown.length} section · ${subjectCount} วิชา · ${groups.length} หลักสูตร`,
+                `${shown.length} ${shown.length === 1 ? "section" : "sections"} · ${subjectCount} ${subjectCount === 1 ? "subject" : "subjects"} · ${groups.length} ${groups.length === 1 ? "curriculum" : "curricula"}`
+              )}
+            </p>
+            {groups.length > 1 && !filtersActive && (
+              <button
+                onClick={() => setCollapsed(allCollapsed ? new Set() : new Set(groups.map((g) => g.key)))}
+                className="text-xs font-medium text-[var(--accent)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] rounded"
+              >
+                {allCollapsed ? t("ขยายทั้งหมด", "Expand all") : t("ย่อทั้งหมด", "Collapse all")}
+              </button>
+            )}
+          </div>
+
+          {groups.length === 0 ? (
+            <EmptyState
+              iconColor="var(--accent-bright)"
+              icon={
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
+                  <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+              }
+              title={t("ไม่พบรายวิชาที่ตรงกับตัวกรอง", "No courses match these filters")}
+              description={t("ลองเปลี่ยนคำค้นหรือล้างตัวกรอง", "Try a different search or clear the filters")}
+              action={
+                <button
+                  onClick={clearFilters}
+                  className="h-9 px-4 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] transition-colors"
+                >
+                  {t("ล้างตัวกรอง", "Clear filters")}
+                </button>
+              }
+            />
+          ) : (
+            <div className="flex flex-col gap-5">
+              {groups.map((group) => (
+                <CurriculumSection key={group.key} group={group} open={isOpen(group.key)} onToggle={() => toggleGroup(group.key)}>
+                  {group.subjects.map((subject) => (
+                    <SubjectCard
+                      key={subject.key}
+                      subject={subject}
+                      onEdit={(c) => { setEditTarget(c); setModalMode("edit"); }}
+                      onAddSection={(c) => { setEditTarget(undefined); setDuplicateFrom(c); setModalMode("create"); }}
+                      onAction={handleAction}
+                    />
+                  ))}
+                </CurriculumSection>
+              ))}
             </div>
           )}
-        </div>
+        </>
       )}
 
       {/* Popups & dialogs */}
