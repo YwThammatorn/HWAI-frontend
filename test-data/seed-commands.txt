@@ -15,15 +15,15 @@ fetch('/mock-data/curriculum-mockup.json').then(r=>r.json()).then(d=>{localStora
 
 ---
 
-[2] รายวิชาที่เปิดสอน (6 วิชา, ลิงก์กับหลักสูตรด้านบน)
+[2] รายวิชาที่เปิดสอน (37 section ใน 24 วิชา — หลายเคสไว้ดูหน้า /admin/courses ดู [11] ว่ามีเคสอะไรบ้าง)
 
 fetch('/mock-data/courses-mockup.json').then(r=>r.json()).then(d=>{localStorage.setItem('hwai_courses_v2', JSON.stringify(d)); location.reload();});
 
 ---
 
-[3] อาจารย์ พร้อม assign เข้าวิชาแล้ว (5 คน — ต้องทำ [2] ก่อน จะได้ courseId ตรงกัน)
-    สมศักดิ์ เจริญสุข -> 2 วิชา, ประเสริฐ ดีเลิศ -> 1 วิชา, กานต์ ศรีสุวรรณ -> 2 วิชา,
-    นภาพร มานะ (TA) -> share วิชากับสมศักดิ์, วิทยา สมบูรณ์ (TA) -> ยังไม่ assign (ทดสอบ empty state)
+[3] อาจารย์ พร้อม assign เข้าวิชาแล้ว (8 คน — ต้องทำ [2] ก่อน จะได้ courseId ตรงกัน)
+    5 คนเดิม (สมศักดิ์ / ประเสริฐ / กานต์ / นภาพร TA / วิทยา TA ที่ไม่ได้ assign — ทดสอบ empty state)
+    + วรรณา ใจดี, ธนากร พงษ์ไทย, ปิยะ รักเรียน ที่รับหลาย section ข้ามหลักสูตร
 
 fetch('/mock-data/teachers-mockup.json').then(r=>r.json()).then(d=>{localStorage.setItem('hwai_managed_teachers_v1', JSON.stringify(d)); location.reload();});
 
@@ -128,6 +128,28 @@ fetch('/mock-data/curriculum-mockup-en.json').then(r=>r.json()).then(d=>{localSt
 
 ---
 
+[11] ดูหน้า /admin/courses หลายเคสพร้อมกัน — จัดกลุ่มตามหลักสูตร → วิชา (หลักสูตร + รายวิชา + อาจารย์ ชุดเดียว)
+     ไม่แตะข้อมูลนักศึกษา/งาน ใช้เฉพาะ 3 ไฟล์ด้านล่าง รันแล้วหน้าจะ reload เอง แล้วเปิด /admin/courses (login admin)
+     เคสที่ใส่ไว้ (c-mock-1..37 — 30 เปิดสอน / 7 เก็บถาวร):
+       - วิชาเดียวกันหลาย section (Computer Programming 3 sec, DSA 3 sec, OS 2 sec) — ต้องอยู่ในการ์ดเดียวกัน
+       - วิชาเดียวกันคนละเทอม/ปี (Senior Project 2569/1 + ที่เก็บถาวร 2568/1, DSA 2569/1 + 2569/2, Programming 2568/1+2)
+       - เทอม 3 (Database Systems 2569/3)
+       - section ไม่มีอาจารย์ (Programming Sec 3, ML, AI&ML, CEI ML) และหลายอาจารย์ใน section เดียว (UX/UI Sec 2 = อาจารย์ + TA)
+       - ชื่อวิชาเดียวกันแต่คนละหลักสูตร (UX/UI ใน CE 2569 / CECS 2565 / CEI 2568) — ต้องไม่ปนกัน
+       - หลักสูตรที่มีแต่ section เก็บถาวร (CE 2559, CECS 2560, CEI 2563) — ทดสอบตัวกรองสถานะ + ไม่มีปุ่ม + Section
+       - ไม่ผูกหลักสูตร: หัวข้อพิเศษ (ชื่อยาว 2 section) และ Git workshop ที่ไม่มีปี/เทอม/section เลย
+     ทดสอบ: ค้นหา (ชื่อ/รหัส/อาจารย์), กรองสาขา/หลักสูตร/เทอม/สถานะ, ย่อ-ขยายหลักสูตร, ปุ่ม + Section บนการ์ดวิชา
+
+     ภาษาไทย:
+
+fetch('/mock-data/curriculum-mockup.json').then(r=>r.json()).then(d=>{localStorage.setItem('hwai_curriculum_versions_v1', JSON.stringify(d.curriculumVersions)); localStorage.setItem('hwai_course_templates_v1', JSON.stringify(d.courseTemplates)); return fetch('/mock-data/courses-mockup.json').then(r=>r.json());}).then(d=>{localStorage.setItem('hwai_courses_v2', JSON.stringify(d)); return fetch('/mock-data/teachers-mockup.json').then(r=>r.json());}).then(d=>{localStorage.setItem('hwai_managed_teachers_v1', JSON.stringify(d)); localStorage.setItem('hwai_lang', 'th'); location.reload();});
+
+     English:
+
+fetch('/mock-data/curriculum-mockup-en.json').then(r=>r.json()).then(d=>{localStorage.setItem('hwai_curriculum_versions_v1', JSON.stringify(d.curriculumVersions)); localStorage.setItem('hwai_course_templates_v1', JSON.stringify(d.courseTemplates)); return fetch('/mock-data/courses-mockup-en.json').then(r=>r.json());}).then(d=>{localStorage.setItem('hwai_courses_v2', JSON.stringify(d)); return fetch('/mock-data/teachers-mockup-en.json').then(r=>r.json());}).then(d=>{localStorage.setItem('hwai_managed_teachers_v1', JSON.stringify(d)); localStorage.setItem('hwai_lang', 'en'); location.reload();});
+
+---
+
 [4] ล้างข้อมูลทั้งหมด (ถ้าอยากเริ่มใหม่)
 
 ['hwai_user','hwai_managed_teachers_v1','hwai_cohort_students_v1','hwai_courses_v2','hwai_curriculum_versions_v1','hwai_course_templates_v1','hwai_students_v1','hwai_grading_categories_v1','hwai_assignments_v1','hwai_rubrics_v1','hwai_submissions_v1','hwai_student_groups_v1','hwai_clos_v1'].forEach(k=>localStorage.removeItem(k)); location.reload();
@@ -138,7 +160,7 @@ fetch('/mock-data/curriculum-mockup-en.json').then(r=>r.json()).then(d=>{localSt
 - ไฟล์ json ต้นทางอยู่ใน public/mock-data/ (courses-mockup.json, curriculum-mockup.json, teachers-mockup.json, student-flow-mockup.json)
   ถ้าแก้ข้อมูล mock ให้แก้ที่ test-data/*.json ก่อน แล้ว copy ทับไฟล์ใน public/mock-data/ ด้วย
 - คำสั่งพวกนี้ทำงานเฉพาะตอน dev server รันอยู่ (npm run dev) เพราะ fetch ไปที่ localhost
-- teachers-mockup.json ใช้ courseId ที่ตรงกับ courses-mockup.json (c-mock-1..6) ทำ [2] ก่อน [3] เสมอ
+- teachers-mockup.json ใช้ courseId ที่ตรงกับ courses-mockup.json (c-mock-1..37; 1..6 เดิม ที่เหลือเพิ่ม 26/9/2569 สำหรับหน้า /admin/courses) ทำ [2] ก่อน [3] เสมอ
 - student-flow-mockup.json ก็ใช้ courseId c-mock-1 เหมือนกัน ทำ [2] ก่อน [5] เสมอ
 - students_sample.csv ([3b]) กับ course-import-test.csv ([7]) เป็นคนละไฟล์ คนละหน้า แต่ ID ใช้ scheme เดียวกัน:
   — [3b] คือ import นักศึกษาเข้า cohort กลางของระบบ (ผ่าน /admin/users, format 5 คอลัมน์ studentId,firstName,lastName,email,program — cohort field ถูกเอาออกแล้ว 23/9/2569)
