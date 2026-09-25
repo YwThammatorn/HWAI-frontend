@@ -190,3 +190,56 @@ test.describe("Admin Courses — no schedule / room, Add Section per subject", (
     await expect(page.getByRole("heading", { level: 2, name: "ไม่ผูกหลักสูตร" })).toBeVisible();
   });
 });
+
+// 26/9/2569 — the system has no TAs yet, and admin never assigns them: only teacher accounts are offered.
+test.describe("Admin Courses — teachers only, no TA", () => {
+  const TEACHERS = [
+    { id: "t-john", name: "John Smith", email: "john@kmitl.ac.th", role: "teacher", status: "active", courseIds: [] },
+    { id: "t-ta", name: "Alice Johnson", email: "alice@kmitl.ac.th", role: "ta", status: "active", courseIds: [] },
+  ];
+  const COURSE = { id: "c-x", name: "Web Design", description: "", status: "active", source: "manual", coverColor: "#0F766E", iconColor: "#0F766E", createdAt: "2026-01-01T00:00:00.000Z", updatedAt: "2026-01-01T00:00:00.000Z" };
+
+  async function seed(page: Page, teachers: unknown[]) {
+    await page.addInitScript((d) => {
+      localStorage.setItem("hwai_lang", "en");
+      localStorage.setItem("hwai_user", JSON.stringify({ name: "Admin", email: "admin@kmitl.ac.th", role: "admin" }));
+      localStorage.setItem("hwai_courses_v2", JSON.stringify([d.course]));
+      localStorage.setItem("hwai_managed_teachers_v1", JSON.stringify(d.teachers));
+    }, { course: COURSE, teachers });
+    await page.goto(`${BASE}/admin/courses`);
+    await page.waitForLoadState("networkidle");
+  }
+
+  test("the assign panel lists teachers, not TA accounts", async ({ page }) => {
+    await seed(page, TEACHERS);
+    await page.getByRole("button", { name: /Web Design/ }).click();
+    await expect(page.getByRole("checkbox", { name: /John Smith/ })).toBeVisible();
+    await expect(page.getByRole("checkbox", { name: /Alice Johnson/ })).toHaveCount(0);
+  });
+
+  test("a TA already on the course (older data) stays listed so it can be removed", async ({ page }) => {
+    await seed(page, [TEACHERS[0], { ...TEACHERS[1], courseIds: ["c-x"] }]);
+    await page.getByRole("button", { name: /Web Design/ }).click();
+    const box = page.getByRole("checkbox", { name: /Alice Johnson/ });
+    await expect(box).toBeChecked();
+    await box.click();
+    // once removed it is not offered again
+    await expect(box).toHaveCount(0);
+  });
+
+  test("New Course's Primary Teacher autocomplete does not offer a TA", async ({ page }) => {
+    await seed(page, TEACHERS);
+    await page.getByRole("button", { name: "New Course" }).first().click();
+    const dialog = page.getByRole("dialog", { name: "New Course" });
+    await dialog.getByLabel("Primary Teacher").fill("Alice");
+    await expect(dialog.getByRole("option", { name: "Alice Johnson" })).toHaveCount(0);
+    await dialog.getByLabel("Primary Teacher").fill("John");
+    await expect(dialog.getByRole("option", { name: "John Smith" })).toBeVisible();
+  });
+
+  test("the mock teachers have no TA", async () => {
+    for (const f of ["teachers-mockup.json", "teachers-mockup-en.json"]) {
+      expect(rd(f).filter((t: { role: string }) => t.role !== "teacher")).toEqual([]);
+    }
+  });
+});

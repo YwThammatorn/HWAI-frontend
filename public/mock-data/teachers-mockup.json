@@ -46,27 +46,6 @@
     ]
   },
   {
-    "id": "t-mock-4",
-    "title": "อ.",
-    "name": "นภาพร มานะ",
-    "email": "napaporn.m@kmitl.ac.th",
-    "role": "ta",
-    "status": "active",
-    "courseIds": [
-      "c-mock-1",
-      "c-mock-12"
-    ]
-  },
-  {
-    "id": "t-mock-5",
-    "title": "",
-    "name": "วิทยา สมบูรณ์",
-    "email": "witaya.s@kmitl.ac.th",
-    "role": "ta",
-    "status": "active",
-    "courseIds": []
-  },
-  {
     "id": "t-mock-6",
     "title": "ผศ.ดร.",
     "name": "วรรณา ใจดี",
@@ -80,7 +59,8 @@
       "c-mock-30",
       "c-mock-31",
       "c-mock-35",
-      "c-mock-36"
+      "c-mock-36",
+      "c-mock-12"
     ]
   },
   {

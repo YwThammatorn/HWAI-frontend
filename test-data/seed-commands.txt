@@ -21,9 +21,8 @@ fetch('/mock-data/courses-mockup.json').then(r=>r.json()).then(d=>{localStorage.
 
 ---
 
-[3] อาจารย์ พร้อม assign เข้าวิชาแล้ว (8 คน — ต้องทำ [2] ก่อน จะได้ courseId ตรงกัน)
-    5 คนเดิม (สมศักดิ์ / ประเสริฐ / กานต์ / นภาพร TA / วิทยา TA ที่ไม่ได้ assign — ทดสอบ empty state)
-    + วรรณา ใจดี, ธนากร พงษ์ไทย, ปิยะ รักเรียน ที่รับหลาย section ข้ามหลักสูตร
+[3] อาจารย์ พร้อม assign เข้าวิชาแล้ว (6 คน ทุกคนเป็น teacher — ระบบยังไม่มี TA และ admin ไม่ assign TA — ต้องทำ [2] ก่อน จะได้ courseId ตรงกัน)
+    สมศักดิ์ / ประเสริฐ / กานต์ + วรรณา ใจดี, ธนากร พงษ์ไทย, ปิยะ รักเรียน ที่รับหลาย section ข้ามหลักสูตร
 
 fetch('/mock-data/teachers-mockup.json').then(r=>r.json()).then(d=>{localStorage.setItem('hwai_managed_teachers_v1', JSON.stringify(d)); location.reload();});
 
@@ -134,7 +133,7 @@ fetch('/mock-data/curriculum-mockup-en.json').then(r=>r.json()).then(d=>{localSt
        - วิชาเดียวกันหลาย section (Computer Programming 3 sec, DSA 3 sec, OS 2 sec) — ต้องอยู่ในการ์ดเดียวกัน
        - วิชาเดียวกันคนละเทอม/ปี (Senior Project 2569/1 + ที่เก็บถาวร 2568/1, DSA 2569/1 + 2569/2, Programming 2568/1+2)
        - เทอม 3 (Database Systems 2569/3)
-       - section ไม่มีอาจารย์ (Programming Sec 3, ML, AI&ML, CEI ML) และหลายอาจารย์ใน section เดียว (UX/UI Sec 2 = อาจารย์ + TA)
+       - section ไม่มีอาจารย์ (Programming Sec 3, ML, AI&ML, CEI ML) และหลายอาจารย์ใน section เดียว (UX/UI Sec 2 = อาจารย์ 2 คน)
        - ชื่อวิชาเดียวกันแต่คนละหลักสูตร (UX/UI ใน CE 2569 / CECS 2565 / CEI 2568) — ต้องไม่ปนกัน
        - หลักสูตรที่มีแต่ section เก็บถาวร (CE 2559, CECS 2560, CEI 2563) — ทดสอบตัวกรองสถานะ + ไม่มีปุ่ม + Section
        - ไม่ผูกหลักสูตร: หัวข้อพิเศษ (ชื่อยาว 2 section) และ Git workshop ที่ไม่มีปี/เทอม/section เลย

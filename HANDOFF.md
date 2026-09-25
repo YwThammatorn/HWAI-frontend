@@ -704,3 +704,9 @@ CRITERIA/ACTIONS table, every row repeating the identical amber "No linked crite
 - `LANGUAGE_TOGGLE_DISABLED` in `context/LanguageContext.tsx` flipped `true` → `false` (it had been hidden since 15/9): the EN/TH button shows again in Navbar (teacher), AdminShell and StudentShell, next to the theme toggle. Default language is still English (15/9 change); the button label is the language currently on, the choice persists in `hwai_lang`.
 - `tests/language-toggle.spec.ts` (3 roles: visible, switches, survives reload). Suite 412 passed / 30 skipped.
 - Note: CLAUDE.md's i18n rule still says the default is "th" — the code default has been "en" since 15/9.
+
+## 26/9: Admin can't assign TAs; the mock has no TAs
+- `admin/courses/page.tsx`: Primary Teacher autocomplete (New/Add Section) and the row's assign panel offer **teacher accounts only** (`role === "teacher"`). A TA already attached to a course (older data) still shows in that course's panel so it can be unticked, and is not offered again afterwards. TAs remain a per-course thing added by the teacher on the Collaborators page (student accounts as section roles) — nothing on the teacher side changed.
+- Mock: `teachers-mockup(-en).json` (public + test-data) 8 → 6 accounts, all teachers (napaporn + witaya TAs removed); the two-people section (UX/UI Sec 2) is now two teachers. `seed-commands.txt` [3]/[11] updated.
+- Not touched (say if you want them gone too): `admin/users` still parses a `role` column in the teacher CSV import (`ta` rows import as TA accounts and show a TA badge) and the Users table still renders a TA badge for such accounts.
+- Tests: 4 more in `tests/admin-courses-groups.spec.ts`. Suite 416 passed / 30 skipped.

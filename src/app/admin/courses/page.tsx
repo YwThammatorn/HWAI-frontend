@@ -33,7 +33,9 @@ function CourseModal({
   const { t } = useLanguage();
   const { courses, addCourse, updateCourse } = useCourses();
   const { curriculumVersions, courseTemplates, getCourseTemplatesByCurriculum } = useCurriculum();
-  const { teachers, assignToCourse } = useManagedTeachers();
+  const { teachers: accounts, assignToCourse } = useManagedTeachers();
+  // Admin assigns teachers only — TAs are added per course by the teacher (Collaborators page), never here.
+  const teachers = accounts.filter((tc) => tc.role === "teacher");
 
   const seed = course ?? duplicateFrom;
   const [name, setName] = useState(seed?.name ?? "");
@@ -447,10 +449,12 @@ function ConfirmDialog({
 
 function CourseAssignPanel({ course }: { course: Course }) {
   const { t } = useLanguage();
-  const { teachers, assignToCourse, unassignFromCourse, getTeachersByCourse } = useManagedTeachers();
+  const { teachers: accounts, assignToCourse, unassignFromCourse, getTeachersByCourse } = useManagedTeachers();
   const { getStudentsByCourse } = useStudents();
 
   const assignedTeachers = getTeachersByCourse(course.id);
+  // Only teacher accounts are offered; one already on this course (older data) stays listed so it can be removed.
+  const teachers = accounts.filter((tc) => tc.role === "teacher" || assignedTeachers.some((a) => a.id === tc.id));
   const enrolledCount = getStudentsByCourse(course.id).length;
   const [teacherSearch, setTeacherSearch] = useState("");
 
