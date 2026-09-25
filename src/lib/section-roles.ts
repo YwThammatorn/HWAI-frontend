@@ -12,7 +12,7 @@ export interface SectionRolePermissions {
 
 /** Default permission sets by role — TA is deliberately restricted per the
  *  4/9/2569 meeting (decision #4): cannot manage roster or edit section
- *  settings; publishing scores depends on the section's publishMode.
+ *  settings, and does not publish scores (canPublishScores).
  *  Teacher/co-teacher get full access — see docs/phase1-model-validation.md
  *  S6 for why co-teacher must NOT inherit the TA defaults. */
 export function defaultPermissionsFor(role: SectionRoleType): SectionRolePermissions {

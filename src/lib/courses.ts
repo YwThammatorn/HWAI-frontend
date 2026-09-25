@@ -4,15 +4,12 @@ import { createContext, useContext } from "react";
 import type { CourseIconKey } from "@/components/CourseIcon";
 
 export type CourseStatus = "active" | "archived";
-export type GradingSource = "ta" | "ai" | "blind";
-export type PublishMode = "auto" | "manual";
 export type Term = 1 | 2 | 3 | "summer";
 
 /**
  * `Course` is, in practice, section-shaped: it represents one offering of a
  * subject in one term, not the abstract subject itself. The fields below
- * (courseTemplateId, academicYear, term, sectionNumber, gradingSource,
- * publishMode) are the Section concept from PLAN.md Phase 1, added directly
+ * (courseTemplateId, academicYear, term, sectionNumber) are the Section concept from PLAN.md Phase 1, added directly
  * onto the entity that 28+ files already consume rather than as a separate
  * split type — see docs/phase1-model-validation.md and PLAN.md Phase 4 for
  * why a hard Course/Section split was scoped out of this pass. All new
@@ -37,10 +34,6 @@ export interface Course {
   academicYear?: number;
   term?: Term;
   sectionNumber?: string;
-  /** อาจารย์เลือกต่อ section ว่าใช้คะแนนจาก TA, AI, หรือ blind test (มติที่ประชุม 4/9/2569) */
-  gradingSource?: GradingSource;
-  /** ประกาศคะแนนอัตโนมัติ หรือรอ approve — ตั้งค่าต่อ section (มติที่ประชุม 4/9/2569 decision #2) */
-  publishMode?: PublishMode;
   /** วันเวลาเรียน — free text, e.g. "จันทร์ 9:00-12:00" */
   schedule?: string;
   /** เลขห้องเรียน — free text, e.g. "811" */
