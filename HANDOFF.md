@@ -710,3 +710,8 @@ CRITERIA/ACTIONS table, every row repeating the identical amber "No linked crite
 - Mock: `teachers-mockup(-en).json` (public + test-data) 8 → 6 accounts, all teachers (napaporn + witaya TAs removed); the two-people section (UX/UI Sec 2) is now two teachers. `seed-commands.txt` [3]/[11] updated.
 - Not touched (say if you want them gone too): `admin/users` still parses a `role` column in the teacher CSV import (`ta` rows import as TA accounts and show a TA badge) and the Users table still renders a TA badge for such accounts.
 - Tests: 4 more in `tests/admin-courses-groups.spec.ts`. Suite 416 passed / 30 skipped.
+
+## 26/9: no TA in admin — the rest of it (teacher CSV import)
+- `admin/users/page.tsx`: the teacher CSV import rejects a row whose `role` is anything but `teacher` (a `ta` row shows "TA accounts can't be added here — the teacher adds TAs on the Collaborators page" and is skipped); the preview has no Role column; the popup says "Columns: name, email (title optional)"; the inline row edit no longer carries a role. `public/teachers-template.csv` is now `title,name,email`. `ManagedTeacher.role` still allows `"ta"` in the type (older stored data), nothing creates it.
+- Fixed on the way (pre-existing): the popup's "Added N teacher(s) (skipped M)" was recomputed after the accounts existed, so it always said "Added 0" — counts are now captured when Import is pressed.
+- KB (memory) updated for 24–26/9. Tests: `tests/admin-no-ta-import.spec.ts` (2). Suite 418 passed / 30 skipped; tsc clean; lint on `admin/users/page.tsx` unchanged (4 pre-existing errors).

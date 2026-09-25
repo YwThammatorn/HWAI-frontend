@@ -25,7 +25,6 @@ interface ParsedTeacherRow {
   title?: string;
   name: string;
   email: string;
-  role: "teacher" | "ta";
   error?: TeacherRowError;
 }
 
@@ -50,12 +49,13 @@ function parseTeacherCsv(raw: string): TeacherParseResult {
     const { title, name } = explicitTitle ? { title: explicitTitle, name: rawName } : splitTeacherTitle(rawName);
     const email = get("email") || get("อีเมล");
     const rawRole = (get("role") || get("ตำแหน่ง") || "teacher").toLowerCase().trim();
-    const role: "teacher" | "ta" = rawRole === "ta" ? "ta" : "teacher";
-    if (!name) return { title, name, email, role, error: { type: "missing_fields", fields: ["name"] } };
-    if (!email) return { title, name, email, role, error: { type: "missing_fields", fields: ["email"] } };
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { title, name, email, role, error: { type: "invalid_email" } };
-    if (!email.toLowerCase().endsWith("@kmitl.ac.th")) return { title, name, email, role, error: { type: "invalid_domain" } };
-    return { title, name, email, role };
+    // Admin creates teacher accounts only — TAs are added per course by the teacher (Collaborators page).
+    if (rawRole !== "teacher") return { title, name, email, error: { type: "invalid_role" } };
+    if (!name) return { title, name, email, error: { type: "missing_fields", fields: ["name"] } };
+    if (!email) return { title, name, email, error: { type: "missing_fields", fields: ["email"] } };
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { title, name, email, error: { type: "invalid_email" } };
+    if (!email.toLowerCase().endsWith("@kmitl.ac.th")) return { title, name, email, error: { type: "invalid_domain" } };
+    return { title, name, email };
   });
   return { rows, totalErrors: rows.filter((r) => r.error).length };
 }
@@ -72,6 +72,8 @@ function ImportTeacherModal({ open, onClose }: { open: boolean; onClose: () => v
   const [fileName, setFileName] = useState("");
   const [importing, setImporting] = useState(false);
   const [done, setDone] = useState(false);
+  // counted when the button is pressed: once the accounts exist, `newRows` (which excludes existing emails) drops to 0
+  const [result, setResult] = useState({ added: 0, skipped: 0 });
   const [dragOver, setDragOver] = useState(false);
 
   function handleFile(file: File) {
@@ -94,7 +96,8 @@ function ImportTeacherModal({ open, onClose }: { open: boolean; onClose: () => v
   function handleImport() {
     if (!newRows.length) return;
     setImporting(true);
-    importTeachers(newRows.map((row) => ({ title: row.title, name: row.name, email: row.email.toLowerCase(), role: row.role })));
+    setResult({ added: newRows.length, skipped: dupRows.length + errorRows.length });
+    importTeachers(newRows.map((row) => ({ title: row.title, name: row.name, email: row.email.toLowerCase(), role: "teacher" })));
     setImporting(false);
     setDone(true);
   }
@@ -111,7 +114,7 @@ function ImportTeacherModal({ open, onClose }: { open: boolean; onClose: () => v
     if (err.type === "missing_fields") return t(`ขาด: ${err.fields.join(", ")}`, `Missing: ${err.fields.join(", ")}`);
     if (err.type === "invalid_email") return t("อีเมลไม่ถูกต้อง", "Invalid email");
     if (err.type === "invalid_domain") return t("ต้องเป็น @kmitl.ac.th", "Must be @kmitl.ac.th");
-    return t("role ไม่ถูกต้อง", "Invalid role");
+    return t("บัญชี TA เพิ่มไม่ได้ที่นี่ — อาจารย์เพิ่มเองที่หน้าผู้ร่วมสอน", "TA accounts can't be added here — the teacher adds TAs on the Collaborators page");
   }
 
   if (!open) return null;
@@ -148,7 +151,7 @@ function ImportTeacherModal({ open, onClose }: { open: boolean; onClose: () => v
               <polyline points="14 2 14 8 20 8"/>
             </svg>
             <p className="text-sm font-semibold text-[var(--text-primary)]">{t("ลากไฟล์ CSV มาวาง หรือคลิกเลือก", "Drag CSV here or click to browse")}</p>
-            <p className="text-xs text-[var(--text-muted)] mt-1">{t("คอลัมน์: name, email, role (teacher/ta)", "Columns: name, email, role (teacher/ta)")}</p>
+            <p className="text-xs text-[var(--text-muted)] mt-1">{t("คอลัมน์: name, email (title ไม่บังคับ)", "Columns: name, email (title optional)")}</p>
           </div>
         )}
         {!parseResult && !done && (
@@ -191,7 +194,6 @@ function ImportTeacherModal({ open, onClose }: { open: boolean; onClose: () => v
                     <tr>
                       <th className="px-3 py-2 text-left font-semibold text-[var(--text-muted)]">{t("ชื่อ", "Name")}</th>
                       <th className="px-3 py-2 text-left font-semibold text-[var(--text-muted)]">{t("อีเมล", "Email")}</th>
-                      <th className="px-3 py-2 text-left font-semibold text-[var(--text-muted)]">{t("ตำแหน่ง", "Role")}</th>
                       <th className="px-3 py-2 text-left font-semibold text-[var(--text-muted)]">{t("สถานะ", "Status")}</th>
                     </tr>
                   </thead>
@@ -202,11 +204,6 @@ function ImportTeacherModal({ open, onClose }: { open: boolean; onClose: () => v
                         <tr key={idx} className={`border-t border-[var(--border-subtle)] ${row.error ? "bg-[var(--s-err-bg)]" : isDup ? "bg-[var(--s-warn-bg)]" : ""}`}>
                           <td className="px-3 py-2 text-[var(--text-primary)] max-w-[120px] truncate">{row.name || <span className="text-[var(--text-muted)] italic">—</span>}</td>
                           <td className="px-3 py-2 text-[var(--text-secondary)] max-w-[140px] truncate">{row.email || <span className="text-[var(--text-muted)] italic">—</span>}</td>
-                          <td className="px-3 py-2">
-                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${row.role === "ta" ? "bg-[var(--role-ta-bg)] text-[var(--role-ta-text)]" : "bg-[var(--accent-subtle)] text-[var(--accent)]"}`}>
-                              {row.role === "ta" ? "TA" : t("อาจารย์", "Teacher")}
-                            </span>
-                          </td>
                           <td className="px-3 py-2">
                             {row.error ? (
                               <span className="text-[var(--s-err-text)]">{teacherRowErrorLabel(row.error)}</span>
@@ -238,8 +235,8 @@ function ImportTeacherModal({ open, onClose }: { open: boolean; onClose: () => v
             </div>
             <p className="text-sm font-semibold text-[var(--text-primary)]">{t("นำเข้าสำเร็จ", "Import complete")}</p>
             <p className="text-xs text-[var(--text-muted)]">
-              {t(`เพิ่ม ${newRows.length} คน (ข้าม ${dupRows.length + errorRows.length} รายการ)`,
-                 `Added ${newRows.length} teacher(s) (skipped ${dupRows.length + errorRows.length})`)}
+              {t(`เพิ่ม ${result.added} คน (ข้าม ${result.skipped} รายการ)`,
+                 `Added ${result.added} teacher(s) (skipped ${result.skipped})`)}
             </p>
           </div>
         )}
@@ -737,7 +734,6 @@ function TeachersTab() {
   const [draftTitle, setDraftTitle] = useState("");
   const [draftName, setDraftName] = useState("");
   const [draftEmail, setDraftEmail] = useState("");
-  const [draftRole, setDraftRole] = useState<"teacher" | "ta">("teacher");
   const [draftErrors, setDraftErrors] = useState<{ name?: string; email?: string }>({});
 
   function startEdit(teacher: ManagedTeacher) {
@@ -745,7 +741,6 @@ function TeachersTab() {
     setDraftTitle(teacher.title ?? "");
     setDraftName(teacher.name);
     setDraftEmail(teacher.email);
-    setDraftRole(teacher.role);
     setDraftErrors({});
   }
 
@@ -775,7 +770,7 @@ function TeachersTab() {
   function saveEdit() {
     const errs = validateEdit();
     if (Object.keys(errs).length > 0) { setDraftErrors(errs); return; }
-    updateTeacher(editingRowId!, { title: draftTitle.trim() || undefined, name: draftName.trim(), email: draftEmail.trim().toLowerCase(), role: draftRole });
+    updateTeacher(editingRowId!, { title: draftTitle.trim() || undefined, name: draftName.trim(), email: draftEmail.trim().toLowerCase() });
     setEditingRowId(null);
   }
 
