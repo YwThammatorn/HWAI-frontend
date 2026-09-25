@@ -88,6 +88,12 @@ export function submissionAttachments(sub: Submission | undefined): AssignmentAt
     : [];
 }
 
+/** Student deadline thresholds (25/9/2569), one place so the pages agree: an unsubmitted assignment
+ *  due within DUE_SOON_DAYS sits in the "Due soon" group; under URGENT_HOURS it also turns red
+ *  ("Due soon!" badge on the card, red dot + date on the home page). */
+export const DUE_SOON_DAYS = 3;
+export const URGENT_HOURS = 48;
+
 /** What a STUDENT may see of a submission (25/9/2569). Scores are announced by the teacher's "Finish &
  *  announce" (gradingFinalized) — until then a graded submission reads as plain "submitted, awaiting
  *  grade": no score, no comment, no breakdown. Teacher-side code keeps using the raw submission. */

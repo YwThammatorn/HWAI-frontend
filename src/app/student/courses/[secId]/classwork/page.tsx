@@ -6,14 +6,11 @@ import { useParams } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
 import { useCourses } from "@/lib/courses";
-import { useAssignments, Assignment, Submission, studentVisibleSubmission } from "@/lib/assignments";
+import { useAssignments, Assignment, Submission, studentVisibleSubmission, DUE_SOON_DAYS, URGENT_HOURS } from "@/lib/assignments";
 import { useGradingCategories, GradingCategory } from "@/lib/gradingCategories";
 import AssignmentStatusBadge, { AssignmentStatus } from "@/components/AssignmentStatusBadge";
 import AssignmentTypeBadge from "@/components/AssignmentTypeBadge";
 
-// An unsubmitted assignment due within this many days (or already overdue)
-// is grouped into the "Due soon" section instead of "Not submitted".
-const DUE_SOON_DAYS = 3;
 
 // ── Status helper ──────────────────────────────────────────────────────────
 
@@ -46,7 +43,7 @@ function ClassworkCard({
   const status = getWorkStatus(assignment, submission);
   const due = assignment.dueDate ? new Date(assignment.dueDate + "T23:59:59") : null;
   const hoursLeft = due ? (due.getTime() - Date.now()) / 3_600_000 : Infinity;
-  const isUrgent = hoursLeft > 0 && hoursLeft < 24;
+  const isUrgent = hoursLeft > 0 && hoursLeft < URGENT_HOURS;
 
   const score = submission?.instructorScore ?? submission?.aiScore ?? null;
 

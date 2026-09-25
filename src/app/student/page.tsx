@@ -6,7 +6,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
 import { useStudents } from "@/lib/students";
 import { useCourses } from "@/lib/courses";
-import { useAssignments } from "@/lib/assignments";
+import { useAssignments, URGENT_HOURS } from "@/lib/assignments";
 import { useManagedTeachers } from "@/lib/managed-teachers";
 import { useAnnouncements, announcementReachesCourse } from "@/lib/announcements";
 import { CourseIcon } from "@/components/CourseIcon";
@@ -168,7 +168,7 @@ export default function StudentHome() {
               ) : (
                 <div className="flex flex-col gap-2">
                   {upcomingAssignments.map((item) => {
-                    const isUrgent = item.hoursLeft < 48;
+                    const isUrgent = item.hoursLeft < URGENT_HOURS;
                     const due = new Date(item.dueDate + "T23:59:59");
                     return (
                       <Link
