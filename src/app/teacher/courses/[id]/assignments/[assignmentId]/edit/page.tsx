@@ -155,10 +155,11 @@ export default function EditAssignmentPage() {
       dueDate: isExam ? undefined : dueDate,
       maxPoints: needsManualScore ? (parseInt(maxPoints) || 100) : criteriaTotalPoints(criteria),
       categoryId: categoryId || undefined,
-      acceptsFiles,
-      fileTypes: acceptsFiles ? fileTypes : [],
-      submissionType,
-      maxGroupSize: submissionType === "group" && maxGroupSize ? parseInt(maxGroupSize) : null,
+      // an exam isn't submitted at all, so its file / submission-type settings are fixed, not left at whatever the hidden controls held
+      acceptsFiles: isExam ? false : acceptsFiles,
+      fileTypes: acceptsFiles && !isExam ? fileTypes : [],
+      submissionType: isExam ? "individual" : submissionType,
+      maxGroupSize: !isExam && submissionType === "group" && maxGroupSize ? parseInt(maxGroupSize) : null,
       isExam,
     });
     if (!needsManualScore) {
@@ -204,7 +205,7 @@ export default function EditAssignmentPage() {
   const needsManualScore = isExam || !acceptsFiles;
   const totalPoints = criteriaTotalPoints(criteria);
   const pointsOk = criteriaPointsOk(criteria);
-  const isValid = name.trim().length > 0 && (isExam || dueDate !== "") && (!acceptsFiles || fileTypes.length > 0) &&
+  const isValid = name.trim().length > 0 && (isExam || dueDate !== "") && (isExam || !acceptsFiles || fileTypes.length > 0) &&
     (needsManualScore ? (parseInt(maxPoints) || 0) > 0 : pointsOk);
 
   return (
@@ -290,6 +291,12 @@ export default function EditAssignmentPage() {
               </button>
             </div>
 
+            {isExam ? (
+              <p className="text-xs text-gray-500 rounded-xl border border-dashed border-[var(--border-subtle)] px-4 py-3">
+                {t("งานสอบไม่ต้องส่งไฟล์ — นักศึกษาไม่ต้องทำอะไร อาจารย์กรอกคะแนนของทุกคนในหน้าตรวจงาน", "Students don't submit an exam — you enter everyone's score on the grading page")}
+              </p>
+            ) : (
+              <>
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-sm font-medium text-[var(--text-primary)]">{t("รับไฟล์จากนักศึกษา", "Accept Files")}</p>
@@ -351,6 +358,8 @@ export default function EditAssignmentPage() {
                 </div>
               )}
             </div>
+              </>
+            )}
           </section>
 
           {/* Details */}

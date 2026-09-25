@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
+import { dateLocale } from "@/lib/dateLocale";
 import { useAuth } from "@/context/AuthContext";
 import { useStudents } from "@/lib/students";
 import { useCourses } from "@/lib/courses";
@@ -183,7 +184,7 @@ export default function StudentHome() {
                         </div>
                         <div className="shrink-0 text-right">
                           <p className={`text-xs font-semibold ${isUrgent ? "text-[var(--s-err-text)]" : "text-[var(--text-muted)]"}`}>
-                            {due.toLocaleDateString("th-TH", { day: "numeric", month: "short" })}
+                            {due.toLocaleDateString(dateLocale(lang), { day: "numeric", month: "short" })}
                           </p>
                           {isUrgent && (
                             <p className="text-[10px] text-[var(--s-err-text)]">

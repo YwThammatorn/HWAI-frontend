@@ -95,7 +95,7 @@ export default function StudentCoursesPage() {
                         </div>
                         <div className="min-w-0">
                           <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wide mb-0.5">{t("ภาคเรียนที่", "Term")}</p>
-                          <p className="text-xs font-semibold text-[var(--accent)] truncate">{termLabel}</p>
+                          <p className="text-xs font-semibold text-[var(--text-primary)] truncate">{termLabel}</p>
                         </div>
                       </div>
 

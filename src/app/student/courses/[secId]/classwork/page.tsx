@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
+import { dateLocale } from "@/lib/dateLocale";
 import { useAuth } from "@/context/AuthContext";
 import { useCourses } from "@/lib/courses";
 import { useAssignments, Assignment, Submission, studentVisibleSubmission, DUE_SOON_DAYS, URGENT_HOURS } from "@/lib/assignments";
@@ -39,7 +40,7 @@ function ClassworkCard({
   submission: Submission | undefined;
   courseId: string;
 }) {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const status = getWorkStatus(assignment, submission);
   const due = assignment.dueDate ? new Date(assignment.dueDate + "T23:59:59") : null;
   const hoursLeft = due ? (due.getTime() - Date.now()) / 3_600_000 : Infinity;
@@ -70,7 +71,7 @@ function ClassworkCard({
               <>
                 {t("กำหนดส่ง:", "Due:")} {" "}
                 <span className={isUrgent ? "font-semibold text-[var(--s-err-text)]" : ""}>
-                  {due.toLocaleDateString("th-TH", { day: "numeric", month: "short" })}
+                  {due.toLocaleDateString(dateLocale(lang), { day: "numeric", month: "short" })}
                 </span>
               </>
             ) : t("สอบ · ไม่ต้องส่งงาน", "Exam · nothing to submit")}

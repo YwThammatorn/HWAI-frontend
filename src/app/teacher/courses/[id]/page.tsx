@@ -275,7 +275,7 @@ export default function CourseDetailPage() {
                 value={instructor ? `${instructor.title ? `${instructor.title} ` : ""}${instructor.name}` : undefined}
                 span2
               />
-              <DetailField label="Email" value={instructor?.email} span2 />
+              <DetailField label={t("อีเมล", "Email")} value={instructor?.email} span2 />
             </div>
             {detailsEditing && (
               <div className="flex justify-end gap-2 mt-5">

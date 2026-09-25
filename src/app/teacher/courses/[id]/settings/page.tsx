@@ -122,7 +122,7 @@ export default function CourseSettingsPage() {
                 {linkedCurriculum ? `${linkedCurriculum.program} — ${linkedCurriculum.label}` : t("หลักสูตรถูกลบไปแล้ว", "Curriculum version was removed")}
                 {course.academicYear && ` · ${t("ปีการศึกษา", "AY")} ${course.academicYear}`}
                 {course.term !== undefined && ` · ${TERM_LABEL[String(course.term)]}`}
-                {course.sectionNumber && ` · Section ${course.sectionNumber}`}
+                {course.sectionNumber && ` · ${t("กลุ่มเรียน", "Section")} ${course.sectionNumber}`}
               </p>
             </div>
           </div>

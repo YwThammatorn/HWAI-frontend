@@ -8,11 +8,12 @@ import { useStudents, isWithdrawn } from "@/lib/students";
 import { useAssignments } from "@/lib/assignments";
 import { useGradingCategories } from "@/lib/gradingCategories";
 import { useLanguage } from "@/context/LanguageContext";
+import { dateLocale } from "@/lib/dateLocale";
 import SearchInput from "@/components/SearchInput";
 import AssignmentTypeBadge from "@/components/AssignmentTypeBadge";
 
-function fmtDate(dateStr: string) {
-  return new Date(dateStr + "T00:00:00").toLocaleDateString("en-US", {
+function fmtDate(dateStr: string, lang: string) {
+  return new Date(dateStr + "T00:00:00").toLocaleDateString(dateLocale(lang), {
     month: "short", day: "numeric", year: "numeric",
   });
 }
@@ -22,7 +23,7 @@ function fmtDate(dateStr: string) {
 export default function AssignmentsPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const { getCourse } = useCourses();
   const { getStudentsByCourse } = useStudents();
   const { getAssignmentsByCourse, getRubricsByAssignment, removeAssignment } = useAssignments();
@@ -191,7 +192,7 @@ export default function AssignmentsPage() {
                         </svg>
                         <span className={`text-xs ${isPastDue ? "text-[var(--s-err-text)]" : "text-[var(--text-secondary)]"}`}>
                           {a.dueDate
-                            ? <>{isPastDue ? `${t("เลยกำหนด", "Past due")} — ` : ""}{t("กำหนดส่ง", "Due")} {fmtDate(a.dueDate)}</>
+                            ? <>{isPastDue ? `${t("เลยกำหนด", "Past due")} — ` : ""}{t("กำหนดส่ง", "Due")} {fmtDate(a.dueDate, lang)}</>
                             : t("สอบ · ไม่มีกำหนดส่ง", "Exam · no due date")}
                           <span className="text-[var(--text-muted)]"> · {a.maxPoints} {t("คะแนน", "pts")}</span>
                         </span>
@@ -216,7 +217,7 @@ export default function AssignmentsPage() {
                         )}
                         {rubric ? (
                           <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-[var(--s-info-bg)] text-[var(--s-info-text)] text-xs font-medium tabular-nums">
-                            {t("Rubric", "Rubric")} · {criteriaCount} {t("เกณฑ์", "criteria")}
+                            {t("เกณฑ์การให้คะแนน", "Rubric")} · {criteriaCount} {t("เกณฑ์", "criteria")}
                           </span>
                         ) : (
                           <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-[var(--s-warn-bg)] text-[var(--s-warn-text)] text-xs font-medium">

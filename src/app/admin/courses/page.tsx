@@ -577,7 +577,7 @@ function CourseRow({
   const enrolledCount = getStudentsByCourse(course.id).length;
   const archived = course.status === "archived";
   const term = termLabel(course, t);
-  const sectionText = course.sectionNumber ? `Sec ${course.sectionNumber}` : null;
+  const sectionText = course.sectionNumber ? t(`กลุ่ม ${course.sectionNumber}`, `Sec ${course.sectionNumber}`) : null;
 
   return (
     <div>
@@ -705,7 +705,7 @@ function SubjectCard({
               </span>
             )}
           </div>
-          <p className="text-xs text-[var(--text-muted)] mt-0.5">{t(`${n} section`, n === 1 ? "1 section" : `${n} sections`)}</p>
+          <p className="text-xs text-[var(--text-muted)] mt-0.5">{t(`${n} กลุ่มเรียน`, n === 1 ? "1 section" : `${n} sections`)}</p>
         </div>
         {/* A real label + border: a tooltip-only "Add Section" was easy to miss among icon buttons. */}
         {source && (
@@ -718,7 +718,7 @@ function SubjectCard({
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
               <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
             </svg>
-            {t("Section", "Section")}
+            {t("กลุ่มเรียน", "Section")}
           </button>
         )}
       </div>
@@ -767,7 +767,7 @@ function CurriculumSection({
             {group.version?.label ?? t("ไม่ผูกหลักสูตร", "No curriculum")}
           </span>
           <span className="ml-auto shrink-0 text-xs text-[var(--text-muted)] tabular-nums">
-            {t(`${subjects} วิชา · ${sections} section`, `${subjects} ${subjects === 1 ? "subject" : "subjects"} · ${sections} ${sections === 1 ? "section" : "sections"}`)}
+            {t(`${subjects} วิชา · ${sections} กลุ่มเรียน`, `${subjects} ${subjects === 1 ? "subject" : "subjects"} · ${sections} ${sections === 1 ? "section" : "sections"}`)}
           </span>
         </button>
       </h2>
@@ -1013,7 +1013,7 @@ export default function AdminCoursesPage() {
           <div className="flex items-center justify-between gap-3 mb-4 min-h-[28px]">
             <p className="text-xs text-[var(--text-muted)] tabular-nums" aria-live="polite">
               {t(
-                `${shown.length} section · ${subjectCount} วิชา · ${groups.length} หลักสูตร`,
+                `${shown.length} กลุ่มเรียน · ${subjectCount} วิชา · ${groups.length} หลักสูตร`,
                 `${shown.length} ${shown.length === 1 ? "section" : "sections"} · ${subjectCount} ${subjectCount === 1 ? "subject" : "subjects"} · ${groups.length} ${groups.length === 1 ? "curriculum" : "curricula"}`
               )}
             </p>
