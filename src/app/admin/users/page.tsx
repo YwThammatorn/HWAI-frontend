@@ -1140,6 +1140,7 @@ function StudentsTab() {
   const [deactivatingId, setDeactivatingId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [programFilter, setProgramFilter] = useState("CE");
+  const [statusFilter, setStatusFilter] = useState("all");   // all | active | inactive
   // Sorting lives on the column headers (click Student ID / Name), one active
   // key at a time. Default = Student ID ascending; Name cycles asc → desc → back to default.
   const [sort, setSort] = useState<{ key: "id" | "name"; dir: "asc" | "desc" }>({ key: "id", dir: "asc" });
@@ -1227,7 +1228,8 @@ function StudentsTab() {
     const matchSearch = !q || s.studentId.includes(q) || s.firstName.toLowerCase().includes(q) ||
       s.lastName.toLowerCase().includes(q) || `${s.firstName} ${s.lastName}`.toLowerCase().includes(q) ||
       s.email.toLowerCase().includes(q);
-    return matchProgram && matchSearch;
+    const matchStatus = statusFilter === "all" || (s.status === "inactive" ? "inactive" : "active") === statusFilter;
+    return matchProgram && matchSearch && matchStatus;
   });
   filtered.sort((a, b) => {
     const cmp = sort.key === "name"
@@ -1235,7 +1237,7 @@ function StudentsTab() {
       : a.studentId.localeCompare(b.studentId, undefined, { numeric: true });
     return sort.dir === "asc" ? cmp : -cmp;
   });
-  useEffect(() => { setPage(1); }, [search, programFilter, sort]);
+  useEffect(() => { setPage(1); }, [search, programFilter, statusFilter, sort]);
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
@@ -1286,6 +1288,20 @@ function StudentsTab() {
               {programs.map((p) => <option key={p} value={p}>{PROGRAM_LABEL[p] ?? p}</option>)}
             </FilterSelect>
           )}
+          <FilterSelect
+            value={statusFilter}
+            onChange={setStatusFilter}
+            ariaLabel={t("กรองตามสถานะ", "Filter by status")}
+            icon={
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="9"/><polyline points="8 12 11 15 16 9"/>
+              </svg>
+            }
+          >
+            <option value="all">{t("ทุกสถานะ", "All statuses")}</option>
+            <option value="active">{t("ปกติ", "Active")}</option>
+            <option value="inactive">{t("พ้นสภาพ", "Inactive")}</option>
+          </FilterSelect>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <button onClick={() => setImportOpen(true)}
@@ -1334,9 +1350,9 @@ function StudentsTab() {
               <colgroup>
                 <col className="w-[136px]" />
                 <col className="w-[70px]" />
-                <col className="w-[16%]" />
-                <col className="w-[20%]" />
-                <col className="w-[16%]" />
+                <col className="w-[14%]" />
+                <col className="w-[21%]" />
+                <col className="w-[22%]" />
                 <col className="w-[100px]" />
                 <col className="w-[128px]" />
               </colgroup>
@@ -1418,7 +1434,7 @@ function StudentsTab() {
                               {draftErrors.program && <p role="alert" className="text-[10px] text-[var(--s-err-text)] mt-0.5">{draftErrors.program}</p>}
                             </div>
                           ) : (
-                            <span className="text-xs text-[var(--text-secondary)] truncate" title={PROGRAM_LABEL[student.program] ?? student.program}>{PROGRAM_LABEL[student.program] ?? student.program}</span>
+                            <span className="block text-xs leading-snug text-[var(--text-secondary)] break-words" title={PROGRAM_LABEL[student.program] ?? student.program}>{PROGRAM_LABEL[student.program] ?? student.program}</span>
                           )}
                         </td>
                         <td className="px-4 py-1">

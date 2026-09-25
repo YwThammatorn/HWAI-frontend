@@ -722,3 +722,8 @@ CRITERIA/ACTIONS table, every row repeating the identical amber "No linked crite
 - **Labels**: teacher overview "Email" → อีเมล, settings preview "· Section N" → กลุ่มเรียน, assignment list "Rubric" → เกณฑ์การให้คะแนน (same wording as the detail page), admin Courses "Sec N" / "N section" / the "+ Section" button → กลุ่ม / กลุ่มเรียน. "PDF" left (proper noun); "CLO", CECS/CEI left (acronyms).
 - **Student My Courses card**: Term value colour `--accent` → `--text-primary` (teacher's was done 24/9).
 - Tests: `tests/exam-form-and-i18n.spec.ts` (8). Suite 426 passed / 30 skipped; tsc clean; lint on touched files 31 problems before and after (all pre-existing).
+
+## 26/9: admin Users → Students: Status filter + long Program names
+- **Status filter** (All / Active / Inactive; a student with no `status` counts as Active) next to the Program filter, combines with it and with search; page resets to 1 on change. Thai: ทุกสถานะ / ปกติ / พ้นสภาพ.
+- **Program column**: the full name used to be clipped mid-word ("…Cybersecu") — the `truncate` sat on an inline `<span>`, so no ellipsis ever applied and the cell just cut it. It now wraps (`block break-words`, still a `title` tooltip) and the columns were rebalanced (Name 14% / Email 21% / Program 22%) so "Computer Engineering and Cybersecurity" is two lines at 1280px. Chose wrapping over "…" because the rule here is no hover-only information; with a program filter on, every row shows the same program so the taller rows are uniform. Tried `line-clamp-2` first: it clipped the third line, so it is not used.
+- Tests: `tests/admin-students-status-filter.spec.ts` (4). Suite 430 passed / 30 skipped; tsc clean; lint on the page unchanged (4 pre-existing).
