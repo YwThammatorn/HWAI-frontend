@@ -99,7 +99,7 @@ test.describe("P4 — Course Landing: Details + Grading Categories", () => {
   test("details card shows code, section, schedule, room, instructor", async ({ page }) => {
     await page.goto(`${BASE}/teacher/courses/c-p4`);
     await page.waitForLoadState("networkidle");
-    await expect(page.getByText("01076036")).toBeVisible();
+    await expect(page.getByRole("main").getByText("01076036")).toBeVisible();
     await expect(page.getByText("Mon 9:00-12:00")).toBeVisible();
     await expect(page.getByText("305")).toBeVisible();
     await expect(page.getByText("ผศ.ดร. Chompoonuch Sanguan")).toBeVisible();

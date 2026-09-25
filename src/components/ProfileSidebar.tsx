@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
 import { useCourses } from "@/lib/courses";
-import { SidebarNavItem, SidebarSectionLabel, SidebarCourseName, SIDEBAR_CLASS, SIDEBAR_DIVIDER } from "@/components/SidebarParts";
+import { SidebarNavItem, SidebarSectionLabel, SidebarCourseHeader, SIDEBAR_CLASS } from "@/components/SidebarParts";
 import { WEEKLY_PLAN_DISABLED, MATERIALS_DISABLED, ANNOUNCEMENTS_DISABLED, GRADING_SPLIT_DISABLED, TEACHER_HISTORY_DISABLED, TEACHER_DASHBOARD_DISABLED } from "@/lib/featureFlags";
 
 const DASHBOARD_ICON = (
@@ -204,21 +204,29 @@ export default function ProfileSidebar() {
       aria-label={t("เมนูผู้สอน", "Teacher navigation")}
       className={SIDEBAR_CLASS}
     >
-      <SidebarSectionLabel>{t("หลัก", "Main")}</SidebarSectionLabel>
-      <nav className="flex flex-col gap-0.5 mb-4">
-        {MAIN_NAV.map((item) => (
-          <SidebarNavItem key={item.href} {...item} />
-        ))}
-      </nav>
-
-      {/* Per-course contextual navigation */}
-      {activeCourseId && COURSE_NAV.length > 0 && (
+      {/* Inside a course the sidebar is that course's (header block + its pages); "Back to main"
+          returns to the top-level list. Outside a course it is the top-level list. */}
+      {activeCourseId && COURSE_NAV.length > 0 ? (
         <>
-          {SIDEBAR_DIVIDER}
-          <SidebarCourseName>{activeCourse?.name ?? t("รายวิชา", "Course")}</SidebarCourseName>
+          <SidebarCourseHeader
+            backHref="/teacher/courses"
+            backLabel={t("กลับหน้าหลัก", "Back to main")}
+            code={activeCourse?.code}
+            name={activeCourse?.name ?? t("รายวิชา", "Course")}
+            section={activeCourse?.sectionNumber ? t(`กลุ่มเรียน ${activeCourse.sectionNumber}`, `Section ${activeCourse.sectionNumber}`) : undefined}
+          />
           <nav className="flex flex-col gap-0.5 mb-4" aria-label={activeCourse?.name ?? t("รายวิชา", "Course")}>
             {COURSE_NAV.map((item) => (
-              <SidebarNavItem key={item.href} {...item} small />
+              <SidebarNavItem key={item.href} {...item} />
+            ))}
+          </nav>
+        </>
+      ) : (
+        <>
+          <SidebarSectionLabel>{t("หลัก", "Main")}</SidebarSectionLabel>
+          <nav className="flex flex-col gap-0.5 mb-4">
+            {MAIN_NAV.map((item) => (
+              <SidebarNavItem key={item.href} {...item} />
             ))}
           </nav>
         </>

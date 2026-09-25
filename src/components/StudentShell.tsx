@@ -27,9 +27,9 @@ export default function StudentShell({ children }: { children: React.ReactNode }
       .filter((s) => s.studentId === user.studentId)
       .map((s) => {
         const course = getCourse(s.courseId);
-        return course ? { secId: course.id, name: course.name } : null;
+        return course ? { secId: course.id, name: course.name, code: course.code, sectionNumber: course.sectionNumber } : null;
       })
-      .filter((c): c is { secId: string; name: string } => c !== null);
+      .filter((c): c is { secId: string; name: string; code: string | undefined; sectionNumber: string | undefined } => c !== null);
   }, [students, user?.studentId, getCourse]);
 
   useEffect(() => {

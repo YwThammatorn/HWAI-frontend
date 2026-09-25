@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
 import { WEEKLY_PLAN_DISABLED, MATERIALS_DISABLED, ANNOUNCEMENTS_DISABLED } from "@/lib/featureFlags";
-import { SidebarNavItem, SidebarSectionLabel, SidebarCourseName, SIDEBAR_CLASS, SIDEBAR_DIVIDER } from "@/components/SidebarParts";
+import { SidebarNavItem, SidebarSectionLabel, SidebarCourseHeader, SIDEBAR_CLASS } from "@/components/SidebarParts";
 
 // Same layout, sizes and icon shapes as the teacher sidebar (25/9/2569) — both are built from
 // SidebarParts. Icons are module-level: no translated strings.
@@ -24,6 +24,8 @@ const SUB_ICONS: Record<string, React.ReactNode> = {
 interface CourseLink {
   secId: string;
   name: string;
+  code?: string;
+  sectionNumber?: string;
 }
 
 interface StudentSidebarProps {
@@ -51,27 +53,35 @@ export default function StudentSidebar({ courses = [] }: StudentSidebarProps) {
     { key: "evaluation", labelTh: "ผลการประเมิน", labelEn: "Evaluation" },
   ];
 
-  const courseName = courses.find((c) => c.secId === activeCourseId)?.name ?? t("รายวิชานี้", "This Course");
+  const activeCourse = courses.find((c) => c.secId === activeCourseId);
+  const courseName = activeCourse?.name ?? t("รายวิชานี้", "This Course");
 
   return (
     <aside aria-label={t("เมนูนักศึกษา", "Student navigation")} className={SIDEBAR_CLASS}>
-      <SidebarSectionLabel>{t("หลัก", "Main")}</SidebarSectionLabel>
-      <nav className="flex flex-col gap-0.5 mb-4">
-        <SidebarNavItem label={t("หน้าหลัก", "Home")} href="/student" active={isActive("/student", true)} icon={HOME_ICON} />
-      </nav>
-
-      {/* Per-course pages — only shown while inside a course */}
-      {activeCourseId && (
+      {/* Inside a course the sidebar is that course's — same header block as the teacher's */}
+      {activeCourseId ? (
         <>
-          {SIDEBAR_DIVIDER}
-          <SidebarCourseName>{courseName}</SidebarCourseName>
+          <SidebarCourseHeader
+            backHref="/student"
+            backLabel={t("กลับหน้าหลัก", "Back to main")}
+            code={activeCourse?.code}
+            name={courseName}
+            section={activeCourse?.sectionNumber ? t(`กลุ่มเรียน ${activeCourse.sectionNumber}`, `Section ${activeCourse.sectionNumber}`) : undefined}
+          />
           <nav className="flex flex-col gap-0.5 mb-4" aria-label={courseName}>
             {SUB_LINKS.map((sub) => {
               const href = `/student/courses/${activeCourseId}/${sub.key}`;
               return (
-                <SidebarNavItem key={sub.key} label={t(sub.labelTh, sub.labelEn)} href={href} active={isActive(href)} icon={SUB_ICONS[sub.key]} small />
+                <SidebarNavItem key={sub.key} label={t(sub.labelTh, sub.labelEn)} href={href} active={isActive(href)} icon={SUB_ICONS[sub.key]} />
               );
             })}
+          </nav>
+        </>
+      ) : (
+        <>
+          <SidebarSectionLabel>{t("หลัก", "Main")}</SidebarSectionLabel>
+          <nav className="flex flex-col gap-0.5 mb-4">
+            <SidebarNavItem label={t("หน้าหลัก", "Home")} href="/student" active={isActive("/student", true)} icon={HOME_ICON} />
           </nav>
         </>
       )}
