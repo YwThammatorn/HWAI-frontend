@@ -53,7 +53,7 @@ test.describe("Teacher — Add Student (by ID) popup", () => {
     const dialog = await openPopup(page);
     await expect(dialog).toBeVisible();
     await assertCentred(page, dialog);
-    await expect(page.getByRole("link", { name: "Import CSV" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Import CSV" })).toBeVisible();
     await expect(dialog.getByLabel("Student ID")).toBeFocused();
   });
 
@@ -62,7 +62,7 @@ test.describe("Teacher — Add Student (by ID) popup", () => {
     await dialog.getByLabel("Student ID").fill("64070501");
     await expect(dialog.getByText("Mr. Fah Test")).toBeVisible();
     await expect(dialog.getByText("64070501@kmitl.ac.th")).toBeVisible();
-    await expect(dialog.getByText("CE64 · CE")).toBeVisible();
+    await expect(dialog.getByText("CE", { exact: true })).toBeVisible();
 
     await dialog.getByRole("button", { name: "Add Student" }).click();
     await expect(dialog.getByRole("status")).toContainText("Fah Test was added to the course");
@@ -73,7 +73,7 @@ test.describe("Teacher — Add Student (by ID) popup", () => {
     expect(roster).toHaveLength(2);
     expect(roster[1]).toMatchObject({
       courseId: "c-as", studentId: "64070501", firstName: "Fah", lastName: "Test",
-      email: "64070501@kmitl.ac.th", cohort: "CE64", sequenceNumber: 2, enrollmentStatus: "added-midterm",
+      email: "64070501@kmitl.ac.th", sequenceNumber: 2, enrollmentStatus: "added-midterm",
     });
   });
 
@@ -176,13 +176,12 @@ test.describe("Admin — Add Student is a centred popup now", () => {
     await dialog.getByLabel("First Name").fill("Nok");
     await dialog.getByLabel("Last Name").fill("Sai");
     await dialog.getByLabel("Email").fill("69070199@kmitl.ac.th");
-    await dialog.getByLabel("Cohort").fill("CE69");
-    await dialog.getByLabel("Program").fill("CE");
+    await dialog.getByLabel("Program").selectOption("CE");
     await dialog.getByRole("button", { name: "Add Student" }).click();
     await expect(dialog).toHaveCount(0);
     const cohort = await page.evaluate(() => JSON.parse(localStorage.getItem("hwai_cohort_students_v1") ?? "[]"));
     expect(cohort).toHaveLength(1);
-    expect(cohort[0]).toMatchObject({ studentId: "69070199", firstName: "Nok", email: "69070199@kmitl.ac.th", cohort: "CE69", program: "CE" });
+    expect(cohort[0]).toMatchObject({ studentId: "69070199", firstName: "Nok", email: "69070199@kmitl.ac.th", program: "CE" });
   });
 
   test("Esc closes it", async ({ page }) => {

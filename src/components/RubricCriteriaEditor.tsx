@@ -2,7 +2,8 @@
 
 import { useState, Dispatch, SetStateAction } from "react";
 import { useLanguage } from "@/context/LanguageContext";
-import { RubricCriterion, CriterionLevel } from "@/lib/assignments";
+import { RubricCriterion, CriterionLevel, AssignmentAttachment } from "@/lib/assignments";
+import Modal from "@/components/Modal";
 
 // Shared by the "New Assignment" form and the standalone rubric editor page, so
 // both edit criteria exactly the same way. The parent owns the draft state and
@@ -118,20 +119,32 @@ function levelDescription(i: number, total: number, name: string, lang: string):
     : `แสดง ${n} ได้เพียงบางส่วน ยังไม่ตรงตามความคาดหวังหลายประการ`;
 }
 
+interface AiSuggestion { name: string; description: string; points: number; levels: CriterionLevel[] }
+
+// The assistant proposes a 4-step scale (best → worst) so each suggested criterion arrives as a real rubric.
+const AI_LEVEL_LABELS = ["ดีเยี่ยม", "ดี", "พอใช้", "ต้องปรับปรุง"];
+
 export default function RubricCriteriaEditor({
   criteria,
   setCriteria,
   assignmentName,
+  assignmentDescription = "",
+  assignmentAttachments = [],
 }: {
   criteria: CriterionDraft[];
   setCriteria: Dispatch<SetStateAction<CriterionDraft[]>>;
   assignmentName: string;
+  /** Pre-fills the AI Rubric Assistant's brief together with the name, so the teacher doesn't retype it. */
+  assignmentDescription?: string;
+  /** Attached files / images / links — their names and links go into the brief too. */
+  assignmentAttachments?: AssignmentAttachment[];
 }) {
   const { lang, t } = useLanguage();
   const [aiOpen, setAiOpen] = useState(false);
   const [generating, setGenerating] = useState<Record<string, boolean>>({});
-  const [aiSuggestions, setAiSuggestions] = useState<{ name: string; description: string; points: number }[]>([]);
-  const [aiLoading, setAiLoading] = useState(false);
+  const [aiSuggestions, setAiSuggestions] = useState<AiSuggestion[]>([]);
+  const [aiStep, setAiStep] = useState<"brief" | "loading" | "results">("brief");
+  const [aiBrief, setAiBrief] = useState("");
 
   const totalPoints = criteriaTotalPoints(criteria);
   const pointsOk = criteriaPointsOk(criteria);
@@ -185,47 +198,59 @@ export default function RubricCriteriaEditor({
     }, 900);
   }
 
+  // What the teacher already entered on this page: name, description and the attachments' names / links
+  // (the assistant can't read file contents yet, so it only gets what they are called).
+  function assignmentBrief(): string {
+    const kindLabel = { file: t("ไฟล์", "file"), image: t("รูปภาพ", "image"), link: t("ลิงก์", "link") };
+    const attached = assignmentAttachments.map((a) => `${a.name} (${kindLabel[a.kind]}${a.source === "url" && a.ref !== a.name ? `: ${a.ref}` : ""})`);
+    return [
+      assignmentName.trim(),
+      assignmentDescription.trim(),
+      attached.length > 0 ? `${t("ไฟล์แนบ", "Attachments")}: ${attached.join(", ")}` : "",
+    ].filter(Boolean).join("\n");
+  }
+
+  // The brief starts out as that, so the assistant is one click away instead of a blank form; the
+  // "Fill from assignment" button pulls it again after the teacher has edited or cleared the brief.
   function openAiAssistant() {
-    setAiOpen(true);
+    setAiBrief(assignmentBrief());
     setAiSuggestions([]);
-    setAiLoading(true);
+    setAiStep("brief");
+    setAiOpen(true);
+  }
+
+  function generateAiSuggestions() {
+    setAiStep("loading");
     setTimeout(() => {
-      setAiSuggestions(
-        lang === "en"
-          ? [
-              { name: "Content Completeness", description: "Covers all key points as required", points: 40 },
-              { name: "Accuracy", description: "Information and analysis are academically correct", points: 30 },
-              { name: "Presentation & Structure", description: "Content organized systematically and clearly", points: 20 },
-              { name: "Creativity", description: "Shows initiative and analytical perspective", points: 10 },
-            ]
-          : [
-              { name: "ความครบถ้วนของเนื้อหา", description: "ครอบคลุมประเด็นสำคัญทั้งหมดตามที่กำหนด", points: 40 },
-              { name: "ความถูกต้องและแม่นยำ", description: "ข้อมูลและการวิเคราะห์มีความถูกต้องตามหลักวิชา", points: 30 },
-              { name: "การนำเสนอและโครงสร้าง", description: "จัดเรียงเนื้อหาได้อย่างเป็นระบบและชัดเจน", points: 20 },
-              { name: "ความคิดสร้างสรรค์", description: "แสดงความคิดริเริ่มและมุมมองเชิงวิเคราะห์", points: 10 },
-            ]
-      );
-      setAiLoading(false);
+      const base = lang === "en"
+        ? [
+            { name: "Content Completeness", description: "Covers all key points as required", points: 40 },
+            { name: "Accuracy", description: "Information and analysis are academically correct", points: 30 },
+            { name: "Presentation & Structure", description: "Content organized systematically and clearly", points: 20 },
+            { name: "Creativity", description: "Shows initiative and analytical perspective", points: 10 },
+          ]
+        : [
+            { name: "ความครบถ้วนของเนื้อหา", description: "ครอบคลุมประเด็นสำคัญทั้งหมดตามที่กำหนด", points: 40 },
+            { name: "ความถูกต้องและแม่นยำ", description: "ข้อมูลและการวิเคราะห์มีความถูกต้องตามหลักวิชา", points: 30 },
+            { name: "การนำเสนอและโครงสร้าง", description: "จัดเรียงเนื้อหาได้อย่างเป็นระบบและชัดเจน", points: 20 },
+            { name: "ความคิดสร้างสรรค์", description: "แสดงความคิดริเริ่มและมุมมองเชิงวิเคราะห์", points: 10 },
+          ];
+      setAiSuggestions(base.map((b) => ({
+        ...b,
+        levels: AI_LEVEL_LABELS.map((label, i) => ({ label, description: levelDescription(i, AI_LEVEL_LABELS.length, b.name, lang) })),
+      })));
+      setAiStep("results");
     }, 1500);
   }
 
+  // Applies exactly what the preview showed, levels included.
   function applyAiSuggestions() {
     setCriteria(aiSuggestions.map((s) => ({
       id: crypto.randomUUID(),
       name: s.name,
       description: s.description,
       points: String(s.points),
-      levels: lang === "en"
-        ? [
-            { label: "ดีเยี่ยม", description: `Excellent ${s.name.toLowerCase()}` },
-            { label: "ดี", description: `Good ${s.name.toLowerCase()}` },
-            { label: "ต้องปรับปรุง", description: `${s.name} needs improvement` },
-          ]
-        : [
-            { label: "ดีเยี่ยม", description: `แสดง${s.name}ได้อย่างยอดเยี่ยม` },
-            { label: "ดี", description: `แสดง${s.name}ได้ในระดับที่ดี` },
-            { label: "ต้องปรับปรุง", description: `${s.name}ยังต้องพัฒนาเพิ่มเติม` },
-          ],
+      levels: s.levels.map((lv) => ({ ...lv })),
     })));
     setAiOpen(false);
   }
@@ -448,84 +473,147 @@ export default function RubricCriteriaEditor({
         {t("เพิ่มเกณฑ์ย่อยใหม่", "Add New Criterion")}
       </button>
 
-      {/* AI Rubric Assistant Modal */}
-      {aiOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setAiOpen(false)} />
-          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden">
-            <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
-              <div className="flex items-center gap-2">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--accent)">
-                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+      {/* AI Rubric Assistant — brief → suggestions (with each criterion's level rubric) */}
+      <Modal
+        open={aiOpen}
+        onClose={() => setAiOpen(false)}
+        size="lg"
+        title={t("AI ช่วยสร้างเกณฑ์", "AI Rubric Assistant")}
+        description={aiStep === "brief"
+          ? t("บอก AI ว่าชิ้นงานนี้ต้องการวัดอะไร — ดึงจากข้อมูลที่กรอกไว้ให้แล้ว แก้ได้", "Tell the AI what this assignment should assess — pre-filled from what you entered, edit freely")
+          : undefined}
+        footer={
+          aiStep === "brief" ? (
+            <>
+              <button type="button" onClick={() => setAiOpen(false)} className="h-10 px-5 rounded-xl border border-[var(--border)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors">
+                {t("ยกเลิก", "Cancel")}
+              </button>
+              <button
+                type="button"
+                onClick={generateAiSuggestions}
+                disabled={!aiBrief.trim()}
+                className="h-10 px-5 rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
+              >
+                {t("สร้างเกณฑ์", "Generate criteria")}
+              </button>
+            </>
+          ) : aiStep === "results" ? (
+            <>
+              <button type="button" onClick={() => setAiOpen(false)} className="h-10 px-5 rounded-xl border border-[var(--border)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors">
+                {t("ยกเลิก", "Cancel")}
+              </button>
+              <button
+                type="button"
+                onClick={applyAiSuggestions}
+                className="h-10 px-5 rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-semibold active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
+              >
+                {t("ใช้คำแนะนำ", "Apply Suggestions")}
+              </button>
+            </>
+          ) : undefined
+        }
+      >
+        {aiStep === "brief" && (
+          <div>
+            <div className="flex items-center justify-between gap-3 mb-1.5">
+              <label htmlFor="ai-brief" className="block text-sm font-medium text-[var(--text-primary)]">
+                {t("ชิ้นงานนี้ต้องการวัดอะไร", "What should this assignment assess?")}
+              </label>
+              <button
+                type="button"
+                onClick={() => {
+                  const pulled = assignmentBrief();
+                  // never clobber what they typed: empty → fill, otherwise add what's missing underneath
+                  setAiBrief((cur) => !cur.trim() ? pulled : cur.includes(pulled) ? cur : `${cur.trimEnd()}\n\n${pulled}`);
+                }}
+                disabled={!assignmentBrief()}
+                title={assignmentBrief() ? undefined : t("ยังไม่มีชื่อ คำอธิบาย หรือไฟล์แนบให้ดึง", "There's no name, description or attachment to pull yet")}
+                className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[var(--accent)] text-xs font-medium text-[var(--accent)] hover:bg-[var(--accent-subtle)] disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
                 </svg>
-                <h3 className="text-base font-bold text-[var(--text-primary)]">{t("AI ช่วยสร้างเกณฑ์", "AI Rubric Assistant")}</h3>
-              </div>
-              <button type="button" onClick={() => setAiOpen(false)} aria-label={t("ปิด", "Close")} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2.5" strokeLinecap="round">
-                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                </svg>
+                {t("ดึงจากข้อมูลงาน", "Fill from assignment")}
               </button>
             </div>
+            <textarea
+              id="ai-brief"
+              autoFocus
+              value={aiBrief}
+              onChange={(e) => setAiBrief(e.target.value)}
+              rows={6}
+              placeholder={t("เช่น รายงานวิเคราะห์ผู้ใช้ ต้องมีการสัมภาษณ์ สรุป insight และข้อเสนอแนะการออกแบบ", "e.g. A user-research report with interviews, key insights and design recommendations")}
+              className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] text-sm text-[var(--text-primary)] leading-relaxed resize-y focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
+            />
+            <p className="text-xs text-[var(--text-muted)] mt-1.5">
+              {t("ยิ่งระบุรายละเอียด (รูปแบบงาน สิ่งที่ต้องส่ง จุดที่เน้น) เกณฑ์ที่ได้จะยิ่งตรงงาน", "The more you say (format, deliverables, what matters), the closer the criteria will fit")}
+            </p>
+          </div>
+        )}
 
-            <div className="px-6 py-5">
-              {aiLoading ? (
-                <div className="flex flex-col items-center py-10 gap-4">
-                  <div className="w-12 h-12 rounded-full bg-teal-50 flex items-center justify-center">
-                    <svg className="animate-spin" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2">
-                      <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
-                    </svg>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-sm font-semibold text-[var(--text-primary)]">
-                      {t("กำลังวิเคราะห์ชิ้นงาน...", "Analyzing assignment...")}
-                    </p>
-                    <p className="text-xs text-gray-400 mt-1">
-                      {t("AI กำลังสร้างเกณฑ์ที่เหมาะสม", "AI is generating suitable criteria")}
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <>
-                  <p className="text-xs text-gray-400 mb-4">
-                    {t("AI แนะนำเกณฑ์ต่อไปนี้สำหรับ", "AI suggests the following criteria for")}{" "}
-                    <span className="font-medium text-[var(--text-primary)]">{assignmentName || t("ชิ้นงานนี้", "this assignment")}</span>
-                  </p>
-                  <div className="space-y-2 mb-5">
-                    {aiSuggestions.map((s, i) => (
-                      <div key={i} className="flex items-center gap-3 px-4 py-3 rounded-xl bg-teal-50/50 border border-teal-100">
-                        <div className="w-6 h-6 rounded-full bg-[var(--accent-solid)] flex items-center justify-center shrink-0">
-                          <span className="text-white text-[10px] font-bold">{i + 1}</span>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-[var(--text-primary)]">{s.name}</p>
-                          <p className="text-xs text-gray-400 truncate">{s.description}</p>
-                        </div>
-                        <span className="text-xs font-semibold text-[var(--accent)] shrink-0">{s.points} {t("คะแนน", "pts")}</span>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="flex gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setAiOpen(false)}
-                      className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-500 hover:bg-gray-50 transition-colors"
-                    >
-                      {t("ยกเลิก", "Cancel")}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={applyAiSuggestions}
-                      className="flex-1 py-2.5 rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-semibold transition-colors"
-                    >
-                      {t("ใช้คำแนะนำ", "Apply Suggestions")}
-                    </button>
-                  </div>
-                </>
-              )}
+        {aiStep === "loading" && (
+          <div className="flex flex-col items-center py-10 gap-4">
+            <div className="w-12 h-12 rounded-full bg-[var(--accent-subtle)] flex items-center justify-center">
+              <svg className="animate-spin" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" aria-hidden="true">
+                <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+              </svg>
+            </div>
+            <div className="text-center" role="status">
+              <p className="text-sm font-semibold text-[var(--text-primary)]">{t("กำลังวิเคราะห์ชิ้นงาน...", "Analyzing assignment...")}</p>
+              <p className="text-xs text-[var(--text-muted)] mt-1">{t("AI กำลังสร้างเกณฑ์และระดับคะแนนที่เหมาะสม", "AI is generating suitable criteria and levels")}</p>
             </div>
           </div>
-        </div>
-      )}
+        )}
+
+        {aiStep === "results" && (
+          <div>
+            <div className="flex items-start justify-between gap-3 mb-4">
+              <p className="text-sm text-[var(--text-secondary)] min-w-0">
+                {t("AI แนะนำเกณฑ์ต่อไปนี้สำหรับ", "AI suggests the following criteria for")}{" "}
+                <span className="font-medium text-[var(--text-primary)]">{assignmentName || t("ชิ้นงานนี้", "this assignment")}</span>
+              </p>
+              <button
+                type="button"
+                onClick={() => setAiStep("brief")}
+                className="shrink-0 text-xs font-medium text-[var(--accent)] hover:underline"
+              >
+                {t("แก้ข้อมูลที่ให้ AI", "Edit brief")}
+              </button>
+            </div>
+            <div className="space-y-3">
+              {aiSuggestions.map((s, i) => (
+                <div key={i} className="rounded-xl border border-[var(--border-subtle)] overflow-hidden">
+                  <div className="flex items-center gap-3 px-4 py-3">
+                    <div className="w-6 h-6 rounded-full bg-[var(--accent-solid)] flex items-center justify-center shrink-0">
+                      <span className="text-white text-[10px] font-bold">{i + 1}</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-[var(--text-primary)]">{s.name}</p>
+                      <p className="text-xs text-[var(--text-secondary)]">{s.description}</p>
+                    </div>
+                    <span className="text-xs font-semibold text-[var(--accent)] shrink-0 tabular-nums">{s.points} {t("คะแนน", "pts")}</span>
+                  </div>
+                  {/* Same 1px-gap divider trick as the editor's own level grid */}
+                  <div className="grid grid-cols-2 gap-px bg-[var(--border-subtle)] border-t border-[var(--border-subtle)]">
+                    {s.levels.map((lv, li) => {
+                      const col = levelTone(li, s.levels.length);
+                      return (
+                        <div key={li} className="bg-[var(--bg-surface)] px-4 py-3">
+                          <div className="flex items-center gap-1.5 mb-1">
+                            <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${col.dot}`} aria-hidden="true" />
+                            <span className={`text-xs font-semibold ${col.label}`}>{getDisplayLabel(lv.label, lang)}</span>
+                          </div>
+                          <p className="text-xs text-[var(--text-secondary)] leading-relaxed">{lv.description}</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </Modal>
     </>
   );
 }

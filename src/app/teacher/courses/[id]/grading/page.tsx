@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useCourses } from "@/lib/courses";
-import { useStudents } from "@/lib/students";
+import { useStudents, isWithdrawn, withdrawnIds } from "@/lib/students";
 import { useAssignments, type Assignment, type Submission } from "@/lib/assignments";
 import { useGradingCategories } from "@/lib/gradingCategories";
 import { useLanguage } from "@/context/LanguageContext";
@@ -23,12 +23,16 @@ function fmtDate(dateStr: string) {
 }
 
 /** What still needs doing on one assignment — the numbers every row and stat card is built from. */
-function progressOf(a: Assignment, subs: Submission[], today: string) {
+function progressOf(a: Assignment, subs: Submission[], today: string, enrolled: number) {
   const graded = subs.filter((s) => s.status === "graded");
   const needReview = subs.filter((s) => s.status === "need_review").length;
   const notGraded = subs.filter((s) => s.status === "not_graded").length;
-  const complete = subs.length > 0 && graded.length === subs.length;
-  const overdue = a.dueDate < today && subs.some((s) => s.status !== "graded");
+  // An Exam is never submitted (25/9/2569): it is complete once EVERY enrolled student has a score,
+  // and it can't be overdue because it has no due date.
+  const complete = a.isExam
+    ? enrolled > 0 && graded.length >= enrolled
+    : subs.length > 0 && graded.length === subs.length;
+  const overdue = !!a.dueDate && a.dueDate < today && subs.some((s) => s.status !== "graded");
   const scored = graded.map((s) => (s.instructorScore ?? s.aiScore ?? 0));
   const avgPct = scored.length > 0 && a.maxPoints > 0
     ? Math.round((scored.reduce((sum, v) => sum + v, 0) / scored.length / a.maxPoints) * 100)
@@ -50,7 +54,10 @@ export default function CourseGradingPage() {
   const [search, setSearch] = useState("");
 
   const course = getCourse(id);
-  const students = getStudentsByCourse(id);
+  const roster = getStudentsByCourse(id);
+  // Withdrawn students are out of every class-level number here (24/9/2569) — see lib/students.ts withdrawnIds.
+  const students = roster.filter((s) => !isWithdrawn(s));
+  const withdrawn = withdrawnIds(roster);
   const assignments = getAssignmentsByCourse(id);
   const categories = getCategoriesByCourse(id);
   const today = new Date().toISOString().split("T")[0];
@@ -65,8 +72,8 @@ export default function CourseGradingPage() {
   }
 
   const items = assignments.map((a) => {
-    const subs = getSubmissionsByAssignment(a.id);
-    return { a, subs, p: progressOf(a, subs, today) };
+    const subs = getSubmissionsByAssignment(a.id).filter((s) => !withdrawn.has(s.studentId));
+    return { a, subs, p: progressOf(a, subs, today, students.length) };
   });
 
   // Stat cards — the four that used to sit on the Assignments page, computed the same way.
@@ -88,7 +95,7 @@ export default function CourseGradingPage() {
   const visible = items
     .filter(matchesFilter)
     .filter((i) => !q || i.a.name.toLowerCase().includes(q))
-    .sort((x, y) => x.p.rank - y.p.rank || x.a.dueDate.localeCompare(y.a.dueDate));
+    .sort((x, y) => x.p.rank - y.p.rank || (x.a.dueDate ?? "9999-12-31").localeCompare(y.a.dueDate ?? "9999-12-31"));
 
   const tabs: { key: QueueFilter; label: string; count: number }[] = [
     { key: "all", label: t("ทั้งหมด", "All"), count: items.length },
@@ -236,7 +243,7 @@ export default function CourseGradingPage() {
                           {a.name}
                         </Link>
                         <div className="flex items-center gap-2 mt-1 flex-wrap text-xs text-[var(--text-secondary)]">
-                          <span>{t("กำหนดส่ง", "Due")} {fmtDate(a.dueDate)}</span>
+                          <span>{a.dueDate ? <>{t("กำหนดส่ง", "Due")} {fmtDate(a.dueDate)}</> : t("สอบ · ไม่มีกำหนดส่ง", "Exam · no due date")}</span>
                           {p.overdue && (
                             <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-[var(--s-err-bg)] text-[var(--s-err-text)] font-semibold">
                               {t("เลยกำหนด", "Overdue")}
@@ -255,7 +262,7 @@ export default function CourseGradingPage() {
                       <div className="w-72 shrink-0 hidden md:block">
                         <div className="flex items-baseline justify-between text-xs text-[var(--text-secondary)] mb-1.5">
                           <span className="tabular-nums">
-                            <span className="font-semibold text-[var(--text-primary)]">{total}</span> / {students.length} {t("ส่งแล้ว", "submitted")}
+                            <span className="font-semibold text-[var(--text-primary)]">{total}</span> / {students.length} {a.isExam ? t("ให้คะแนนแล้ว", "scored") : t("ส่งแล้ว", "submitted")}
                           </span>
                           {p.avgPct !== null && (
                             <span className="tabular-nums">{t("เฉลี่ย", "Avg")} <span className="font-semibold text-[var(--text-primary)]">{p.avgPct}%</span></span>

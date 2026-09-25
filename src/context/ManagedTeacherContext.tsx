@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { ManagedTeacherContext, ManagedTeacher, splitTeacherTitle } from "@/lib/managed-teachers";
 import { useSectionRoles } from "@/lib/section-roles";
 import { useGradingAssignments } from "@/lib/grading-assignments";
@@ -16,12 +16,21 @@ function uuid() {
 
 export default function ManagedTeacherProvider({ children }: { children: React.ReactNode }) {
   const [teachers, setTeachers] = useState<ManagedTeacher[]>([]);
+  // Newest list, so back-to-back mutations in one handler (assigning a teacher to 3 new sections)
+  // build on each other instead of each overwriting the last from a stale render's `teachers`.
+  const latest = useRef<ManagedTeacher[]>([]);
   const { removeRolesByAccount } = useSectionRoles();
   const { removeAssignmentsByTa } = useGradingAssignments();
 
   // API mode: reload from the server — on mount, and after a failed write (see api/sync.ts).
   const resync = useCallback(() => {
-    api.getManagedTeachers().then(setTeachers, (err) => console.error("[api] load managed teachers", err));
+    api.getManagedTeachers().then(
+      (loaded) => {
+        latest.current = loaded;
+        setTeachers(loaded);
+      },
+      (err) => console.error("[api] load managed teachers", err),
+    );
   }, []);
 
   useEffect(() => {
@@ -36,12 +45,14 @@ export default function ManagedTeacherProvider({ children }: { children: React.R
         // data on load so old localStorage doesn't resurrect the retired term.
         type Stored = Omit<ManagedTeacher, "status"> & { status?: "active" | "inactive" | "suspended" };
         const parsed = JSON.parse(stored) as Stored[];
-        setTeachers(parsed.map((tc) => {
+        const loaded = parsed.map((tc) => {
           // 10/9/2569: title used to be baked into `name` ("ผศ.สมศักดิ์ ...").
           // Split it out on load so old data gets the new separate field too.
           const { title, name } = tc.title ? { title: tc.title, name: tc.name } : splitTeacherTitle(tc.name);
-          return { ...tc, title, name, status: tc.status === "suspended" ? "inactive" : (tc.status ?? "active") };
-        }));
+          return { ...tc, title, name, status: tc.status === "suspended" ? "inactive" as const : (tc.status ?? "active") };
+        });
+        latest.current = loaded;
+        setTeachers(loaded);
       }
     } catch {
       // ignore corrupt storage
@@ -49,6 +60,7 @@ export default function ManagedTeacherProvider({ children }: { children: React.R
   }, [resync]);
 
   function persist(next: ManagedTeacher[]) {
+    latest.current = next;
     setTeachers(next);
     if (!API_ENABLED) localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
   }
@@ -60,37 +72,37 @@ export default function ManagedTeacherProvider({ children }: { children: React.R
 
   function addTeacher(data: Omit<ManagedTeacher, "id" | "courseIds" | "status">): ManagedTeacher {
     const teacher: ManagedTeacher = { ...data, id: uuid(), courseIds: [], status: "active" };
-    persist([...teachers, teacher]);
+    persist([...latest.current, teacher]);
     sync(() => api.addManagedTeacher({ ...data, id: teacher.id }));
     return teacher;
   }
 
   function importTeachers(data: Omit<ManagedTeacher, "id" | "courseIds" | "status">[]): ManagedTeacher[] {
     const newTeachers = data.map((d) => ({ ...d, id: uuid(), courseIds: [] as string[], status: "active" as const }));
-    persist([...teachers, ...newTeachers]);
+    persist([...latest.current, ...newTeachers]);
     sync(() => api.importManagedTeachers(newTeachers.map(({ id, title, name, email, role }) => ({ id, title, name, email, role }))));
     return newTeachers;
   }
 
   function updateTeacher(id: string, data: Partial<Omit<ManagedTeacher, "id">>) {
-    persist(teachers.map((t) => (t.id === id ? { ...t, ...data } : t)));
+    persist(latest.current.map((t) => (t.id === id ? { ...t, ...data } : t)));
     sync(() => api.updateManagedTeacher(id, data));
   }
 
   function removeTeacher(id: string) {
-    persist(teachers.filter((t) => t.id !== id));
+    persist(latest.current.filter((t) => t.id !== id));
     sync(() => api.removeManagedTeacher(id));
     removeRolesByAccount(id); // cascade
     removeAssignmentsByTa(id); // cascade
   }
 
   function deactivateTeacher(id: string) {
-    persist(teachers.map((t) => (t.id === id ? { ...t, status: "inactive" as const } : t)));
+    persist(latest.current.map((t) => (t.id === id ? { ...t, status: "inactive" as const } : t)));
     sync(() => api.setManagedTeacherStatus(id, "inactive"));
   }
 
   function activateTeacher(id: string) {
-    persist(teachers.map((t) => (t.id === id ? { ...t, status: "active" as const } : t)));
+    persist(latest.current.map((t) => (t.id === id ? { ...t, status: "active" as const } : t)));
     sync(() => api.setManagedTeacherStatus(id, "active"));
   }
 
@@ -100,7 +112,7 @@ export default function ManagedTeacherProvider({ children }: { children: React.R
 
   function assignToCourse(teacherId: string, courseId: string) {
     persist(
-      teachers.map((t) =>
+      latest.current.map((t) =>
         t.id === teacherId && !t.courseIds.includes(courseId)
           ? { ...t, courseIds: [...t.courseIds, courseId] }
           : t
@@ -111,7 +123,7 @@ export default function ManagedTeacherProvider({ children }: { children: React.R
 
   function unassignFromCourse(teacherId: string, courseId: string) {
     persist(
-      teachers.map((t) =>
+      latest.current.map((t) =>
         t.id === teacherId
           ? { ...t, courseIds: t.courseIds.filter((c) => c !== courseId) }
           : t

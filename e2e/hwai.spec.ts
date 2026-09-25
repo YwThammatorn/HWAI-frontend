@@ -132,22 +132,26 @@ test.describe("Grading Progress", () => {
     ).toBeVisible();
   });
 
-  test("fully-graded assignment shows Finish Grading, then View Results once finalized", async ({ page }) => {
+  test("fully-graded assignment shows Finish & announce, then View Results once finalized", async ({ page }) => {
     // Finalize Grading (23/9/2569): a 100%-graded assignment isn't finalized yet by default —
-    // the teacher must click "Finish Grading" before "View Results" appears.
+    // the teacher must click "Finish & announce" before "View Results" appears.
     await waitReady(page, "/teacher/courses/seed-1/assignments/a-seed-1-1/grading");
-    const finishBtn = page.getByRole("button", { name: /finish grading/i }).first();
+    const finishBtn = page.getByRole("button", { name: /finish & announce/i }).first();
     await expect(finishBtn).toBeVisible();
     await finishBtn.click();
+    // 25/9/2569: finishing is the announcement, so it asks first
+    await page.getByRole("dialog", { name: "Announce results to students?" }).getByRole("button", { name: "Announce results" }).click();
     await expect(
       page.getByRole("link", { name: /view results/i }).first()
     ).toBeVisible();
   });
 
-  // moved here from the old assignment detail page (21/9/2569)
-  test("submissions table shows Recheck links for graded rows", async ({ page }) => {
+  // moved here from the old assignment detail page (21/9/2569); the link is one consistent "Grade"
+  // label shown on every row regardless of status now (23/9/2569 round 3), was "Recheck" only for
+  // already-graded rows.
+  test("submissions table shows a Grade link for every row", async ({ page }) => {
     await waitReady(page, "/teacher/courses/seed-1/assignments/a-seed-1-1/grading");
-    await expect(page.getByRole("link", { name: /recheck/i }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: "Grade", exact: true }).first()).toBeVisible();
   });
 
   test("search box is present and accepts input", async ({ page }) => {
@@ -291,28 +295,31 @@ test.describe("History", () => {
   });
 });
 
-// ── 9. Rubric Editor ──────────────────────────────────────────────────────────
+// ── 9. Rubric Editor (23/9/2569 round 3: inline on the Edit Assignment page now, no separate route) ──
 
 test.describe("Rubric Editor", () => {
   test.beforeEach(async ({ page }) => { await withAuth(page); });
 
   test("page loads with rubric criteria", async ({ page }) => {
-    await waitReady(page, "/teacher/courses/seed-1/assignments/a-seed-1-1/rubrics/r-seed-1-1");
-    await expect(page.locator("h1, h2").first()).toBeVisible();
+    await waitReady(page, "/teacher/courses/seed-1/assignments/a-seed-1-1/edit");
+    await expect(page.getByRole("heading", { name: /grading rubric/i })).toBeVisible();
   });
 
   test("AI Rubric Assistant button opens modal", async ({ page }) => {
-    await waitReady(page, "/teacher/courses/seed-1/assignments/a-seed-1-1/rubrics/r-seed-1-1");
+    await waitReady(page, "/teacher/courses/seed-1/assignments/a-seed-1-1/edit");
     const aiBtn = page.getByRole("button", { name: /AI Rubric Assistant/i });
     await expect(aiBtn).toBeVisible();
     await aiBtn.click();
+    // First step is the brief the teacher confirms; suggestions only appear after "Generate criteria".
+    await expect(page.getByRole("dialog", { name: "AI Rubric Assistant" })).toBeVisible();
+    await page.getByRole("button", { name: "Generate criteria" }).click();
     await expect(
-      page.locator("text=/กำลังวิเคราะห์|AI แนะนำ|Apply Suggestions/").first()
+      page.locator("text=/กำลังวิเคราะห์|Analyzing|AI แนะนำ|AI suggests|Apply Suggestions/").first()
     ).toBeVisible({ timeout: 8000 });
   });
 
   test("Generate button visible per criterion", async ({ page }) => {
-    await waitReady(page, "/teacher/courses/seed-1/assignments/a-seed-1-1/rubrics/r-seed-1-1");
+    await waitReady(page, "/teacher/courses/seed-1/assignments/a-seed-1-1/edit");
     await expect(page.getByRole("button", { name: /generate/i }).first()).toBeVisible();
   });
 });
@@ -594,15 +601,17 @@ test.describe("Collaborators Page", () => {
 test.describe("Student Import", () => {
   test.beforeEach(async ({ page }) => { await withAuth(page); });
 
-  test("page loads with CSV upload area", async ({ page }) => {
-    await waitReady(page, "/teacher/courses/seed-1/students/import");
-    // Should show CSV-related content
-    await expect(page.locator("text=/CSV|Import|upload/i").first()).toBeVisible();
+  test("Import CSV opens a popup with the upload area", async ({ page }) => {
+    await waitReady(page, "/teacher/courses/seed-1/students");
+    await page.getByRole("button", { name: /Import CSV|Import Students/ }).first().click();
+    await expect(page.getByRole("dialog", { name: "Import Students" })).toBeVisible();
+    await expect(page.getByText(/Drag CSV here/i)).toBeVisible();
   });
 
-  test("Download Template link is present", async ({ page }) => {
-    await waitReady(page, "/teacher/courses/seed-1/students/import");
-    await expect(page.getByRole("link", { name: /download/i }).first()).toBeVisible();
+  test("Download Template link is present in the popup", async ({ page }) => {
+    await waitReady(page, "/teacher/courses/seed-1/students");
+    await page.getByRole("button", { name: /Import CSV|Import Students/ }).first().click();
+    await expect(page.getByRole("dialog").getByRole("link", { name: /download/i }).first()).toBeVisible();
   });
 });
 

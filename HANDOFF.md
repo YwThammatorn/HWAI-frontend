@@ -1,6 +1,8 @@
 # HANDOFF — Teacher: Assignments / Grading split + Score Book
 
-Plan file: `C:\Users\ASUS\.claude\plans\lively-tinkering-mitten.md` (approved 21/9/2569). **All 4 sub-tasks are done and pushed.**
+Plan file: `C:\Users\ASUS\.claude\plans\lively-tinkering-mitten.md` — now on its 3rd plan (21/9 batch of
+4, 23/9 batch of 4 items, done and pushed; the file was overwritten in place each round per its own
+"this replaces it" convention, so only the latest plan text is preserved there).
 
 ## Goal
 - **Assignments** = planning only. **Grading** = checking only (takes over every stat Assignments used to show).
@@ -363,6 +365,270 @@ required inverting that.
   dirty-tracking (out of scope, never done for the other 9). Every other touched file matched its baseline
   exactly (0 new anywhere else).
 
+## Unrelated (23/9): c-mock-1 mock data enriched with 6 more assignments, for variety + a real Score Book scroll
+User: "ลอง mockup ชิ้นงานเพิ่มได้ไหม ให้เห็นความหลากหลาย แล้วก็จะได้ดู score book sticky ด้วย" — the live demo
+course `c-mock-1` (seeded via `test-data/seed-commands.txt` step [5], not the Playwright-only `seed-1`/`seed-2`
+fixtures in `AssignmentProvider.tsx`) only had 3 assignments, all individual, all rubric-graded, all in the
+same "งานที่มอบหมาย" category — not enough columns to see the Score Book's sticky ID/Name/Total/Grade columns
+actually scroll, and its other 2 categories (สอบกลางภาค 25%, สอบปลายภาค 35%) had zero assignments (a known,
+documented gap in seed-commands.txt, not a bug).
+- Added **a-mock-4..a-mock-9** to `public/mock-data/student-flow-mockup.json` **and** `-en.json` (kept
+  byte-identical IDs per the file's own [10] convention), then copied both into `test-data/` to match —
+  confirmed via `git show HEAD:...` that the two copies were byte-identical before touching them.
+- Deliberately varied: **a-mock-5** (Midterm) and **a-mock-9** (Final) are `isExam: true` — the first live
+  showcase of this session's sub-task 4 feature in the demo data, one category each (previously empty).
+  **a-mock-4** (Quiz 1) is `gradingFinalized: true` — showcases the Score Book's view-only lock (sub-task
+  3) on real demo data. **a-mock-7** is a second group assignment. Due dates spread past/near/future
+  relative to today (2026-09-23) so the Score Book shows all its cell states at once: graded, pending
+  (a-mock-6 for 69070102), missing (a-mock-6 and a-mock-8 for 69070103 — no submission row at all, not
+  just ungraded), and not-yet-due dashes (a-mock-2/3/7/9).
+- Verified live (not just by reading the code): seeded `c-mock-1` in the browser pane via the same
+  `fetch(...).then(...)` pattern as seed-commands.txt step [5], confirmed the Score Book now shows "9 งาน" /
+  3 category groups / the category filter dropdown populated, scrolled the matrix and confirmed ID/Name
+  stay pinned left while Total/Grade stay pinned right (both light and dark theme), confirmed Quiz 1's
+  cells have no `<a>` (locked), and cross-checked the student Evaluation page for 69070101 shows the same
+  numbers split across all 3 categories now. `node -e` sanity check: TH/EN assignment+rubric+submission ID
+  sets match exactly, and every non-exam assignment's `maxPoints` equals its rubric's criteria point sum.
+- Full Playwright suite unaffected (no test hardcodes `c-mock-1`'s old 3-assignment count; `font-scale.spec.ts`,
+  the only spec touching these fixtures, only visits `a-mock-1`-specific URLs). No app code changed — mock
+  data only.
+
+## Unrelated (23/9): CLO page mockup+layout fix, Grade Adjustment reverted to read-only, Students table cleanup
+User feedback batch, several of them corrections to earlier work in this session.
+
+### CLO page: real mockup data + fixed a layout bug (screenshot: table content "leaning right")
+- `src/app/teacher/courses/[id]/clo/page.tsx`: the row list was a fixed-column CSS grid
+  (`88px 1fr 170px 76px`) — on a wide screen the `1fr` CLO Text column stretched to fill all
+  remaining space, leaving a large blank gap before the Linked Criteria/Actions columns, which read
+  as detached and pushed off to the right. Converted to a real `<table>` (DESIGN.md §9b, the pattern
+  every sibling table already uses) so columns size to content instead, **and** capped the page to
+  `max-w-[960px]` (was `w-full`) since a 4-row CLO list is inherently narrow content — confirmed live
+  at 1600px viewport: CLO Text column went from 867px (stretched) to 514px (content-sized), table
+  886px instead of spanning the full 1600px main.
+- Added real mock CLO data for the `c-mock-1` demo course (`public/mock-data/student-flow-mockup.json`
+  + `-en.json` + `test-data/` copies, `clos` array, 4 CLOs matching the course's own assignment content
+  — variables/quiz1, data structures/quiz2, functions/lab5, teamwork/group projects) — c-mock-1 had none
+  before (the 1-CLO gibberish row in the screenshot was the user's own manual test via "+ Add CLO").
+  **Also updated `test-data/seed-commands.txt`**: step [5] (TH) and [10] (EN) now also seed
+  `hwai_clos_v1` from the same fetch, and the reset-all command's key list includes it too — without
+  this the new `clos` data would sit in the JSON unused.
+- "Linked Criteria" always shows "No linked criteria" regardless of CLO — that's the real current app
+  state, not a bug: `CLO` (`lib/clo.ts`) has no criteria-linking field at all yet (deferred feature,
+  tracked since 19/9).
+
+### Grading page "Grade Adjustment": Score reverted to read-only (corrects the 22/9 change)
+User: the 22/9 "merge AI Score + Instructor Score into one editable column" was a **misreading** —
+the actual ask was to remove the Instructor Score column, full stop. The instructor only ever edits a
+score by opening Review/Recheck and adjusting it per criterion; this table should just show the
+current score, not offer a second, shortcut way to edit it.
+- `…/grading/page.tsx`: removed the editable `<input>` (and the whole "Save All" batch-save mechanic
+  that existed to persist it: `handleSaveAll`, `modifiedCount`, the per-row `instructorScore` string in
+  `RowState`, the header Save/​"Saved ✓" UI). The Score cell is now plain text: the instructor's saved
+  override if one exists, else the AI's own score (`rep.instructorScore ?? rep.aiScore`); "Edited" +
+  the amber tint + an "AI: N" hint still appear when a saved override differs from the AI score — same
+  visual signal as before, just driven by saved data instead of a live-typed value. Re-grade is
+  untouched (it already saves immediately per row, no "Save" step involved). Section description
+  updated to say so. Also fixed a pre-existing off-by-one `colSpan` (7 instead of 6) on the empty-state
+  row, noticed while touching this table.
+- Tests: rewrote the input-dependent parts of `teacher-p2.spec.ts` (dropped 4 tests that only existed
+  to verify the removed input/Save mechanics; added one for the read-only display + the saved-override
+  "Edited" state), `teacher-grading-split.spec.ts` ("filtering does not lose an edited score" → there's
+  no more live state to lose, replaced with a plain filter-round-trip row-count check),
+  `teacher-p5-group-grading.spec.ts` (team fan-out is now tested via Re-grade instead of the removed
+  manual save, since Re-grade already fans a team's score to every member), and the real end-to-end
+  `e2e-group-assignment-flow.spec.ts` (teacher grading step now goes Re-grade → Recheck → the recheck
+  page's own manual-total-score input, since this fixture's assignment has no rubric — matches the
+  corrected UX exactly and doubles as live coverage of the isExam-style no-rubric recheck fallback from
+  sub-task 4). Full suite green after (see final count below).
+
+### Teacher Students table: Program shown as its full name, Cohort column removed
+User: "program ใช้ตัวเต็มนะ แล้วก็เอา column cohort ออกคับ ไม่ได้ใช้แล้ว" (use the full program name;
+Cohort column is unused, remove it).
+- `…/students/page.tsx`: added a local `PROGRAM_LABEL` map (CE/CECS/CEI → full bilingual names) —
+  the exact same map `admin/users.tsx` already has inline for the same reason (`program` is a free-text
+  field, not FK-enforced, per that file's own comment) — deliberately duplicated per-page rather than
+  extracted into a shared module, matching that existing precedent instead of introducing a new one.
+  Dropped the Cohort `<th>`/`<td>` entirely (column count 9→8, `colSpan` on the empty-state row
+  updated). Verified live: Program column now reads "Computer Engineering" / "Computer Engineering and
+  Cybersecurity" / "Computer Engineering International" instead of "CE"/"CECS"/"CEI".
+- Tests: `tests/teacher-roster-table.spec.ts` column-header-list assertions (EN/TH) updated to 8
+  columns, Program assertion updated to the full name, all `.nth()` cell indices past Email shifted
+  down by one (Cohort's removal), describe block retitled "Program / Status".
+
+### Explaining two items the user asked about directly (no code changes, already shipped in sub-task 4)
+- **isExam**: see the sub-task 4 entry above — an `Assignment.isExam` toggle on the New/Edit Assignment
+  forms that swaps the rubric-derived Max Score for a manual one and skips the rubric entirely; verified
+  again live this round via the Grading page's Score column and the recheck page's manual-score fallback.
+- **Blocking "Add Assignment" without a filled-in rubric**: already implemented in sub-task 4
+  (`criteriaPointsOk` gates the Create button; the amber banner + a message next to Create explain why).
+  Re-verified live this round: setting a criterion's points to 0 disables Create and shows "Every
+  criterion needs more than 0 points before you can create the assignment" right next to the button.
+
+## Unrelated (23/9): 3 corrections after the user tried the above round live
+### CLO page: user wanted full-bleed after all (pushed 641802a)
+The previous round capped the page to `max-w-[960px]` to fix the stretched-text-column bug; user asked
+for the page frame back to full width to match every other course page. Reverted `<main>` to `w-full`,
+but kept the table itself un-stretched: dropped `w-full` from the `<table>` (so it sizes to its own
+content instead of being forced to fill the card) and added `max-w-[560px]` to the CLO Text `<td>` (so a
+long CLO description still wraps sanely instead of pulling the table wide on its own). Verified at
+1600px: `<main>` 1351px, the white card 1279px (both full-bleed, matching siblings), but the actual
+`<table>` sizes to 932px and sits left-aligned inside the card — code/text/badge/actions stay visually
+grouped, no more big dead gap.
+
+### Recheck "Save Changes" now returns to where the teacher came from (pushed 239b95a)
+Was `router.push(.../results)`, hardcoded. Recheck has 3 real entry points — the Grading page's Review/
+Recheck link, the per-assignment Results drill-down, and the course-level Score Book — so a fixed
+destination was wrong for at least two of them. Changed to `router.back()` (real browser session
+history, so it works regardless of which of the 3 it was opened from). Verified live: clicked Review
+from the Grading page, saved, landed back on Grading — not Results. No test asserted the old redirect
+target, so nothing needed updating.
+
+### The "must fill in the rubric" warning: a real bug, found by trying it at real size (pushed 0db68e2)
+User: "ไม่เจอว่ามีข้อความสีส้มขึ้นนะ" (never saw the orange message). My own verification had only used
+`get_page_text` (which just confirms the text exists in the DOM) and a full-width screenshot — neither
+would have caught this. Reproduced by actually looking at a screenshot at a realistic width: the warning
+`<span>` shared a plain flex row with the Cancel/Create (or Discard/Save) buttons with no `flex-wrap`,
+so on a narrower viewport it got flex-shrunk down to almost nothing and wrapped **one word per line**,
+crammed against the sidebar — technically present, completely unreadable. Root cause was identical on
+both the New Assignment form and the standalone rubric editor (the second one nested the span inside an
+even smaller flex group next to just the Save button, same class of bug). Fixed both with `flex-wrap` on
+the container + `basis-full` on the warning span, forcing it onto its own full-width line above the
+buttons at any viewport width. Verified with a real screenshot this time, at the same narrow width that
+originally reproduced it.
+**Lesson for next time**: `get_page_text` confirms a message exists; it says nothing about whether it's
+actually legible. When a user says they didn't see something despite the DOM having it, check a real
+screenshot at a real (non-huge) viewport before concluding it's a user-side miss.
+
+Full suite 351 passed / 30 skipped after all three (one earlier run this round showed 11 failures / 8
+flaky across totally unrelated files — admin, auth, course cards — that self-resolved on a clean rerun;
+almost certainly resource contention from having the browser pane open during the run, not a real
+regression; the two files actually touched this round passed cleanly in isolation before the clean
+full rerun confirmed it).
+
+## Unrelated (23/9): round 3 — 4 more teacher feedback items, unify Grade link, Edit absorbs rubric, no-file assignments skip AI
+User sent 4 more items with the same "ask first if unclear" standing instruction. One item (reverse
+weight→pts) was already fully implemented by the previous round — explained back, no code change. The
+other 3 took several rounds of `AskUserQuestion` to pin down; one round the user explicitly said they
+were still confused and asked to be walked through it slowly one question at a time rather than given
+option lists — worth remembering for future rounds when a first clarifying question doesn't land.
+
+### Grading page: one "Grade" link on every row, Re-grade hidden for no-file assignments (pushed 78f51fa)
+The Review/Recheck link (label changed by status, hidden until an AI score existed) is now one
+"ตรวจ"/"Grade" label shown on every row regardless of status — the user's actual desired flow (walked
+through step by step) turned out to already match what existed (Re-grade per row → open the link to
+check some → Finish Grading to confirm); the only real gap was that the link was unreachable before an
+AI pass happened, which blocked grading a no-AI assignment by hand at all. Re-grade (AI) itself is now
+hidden when `!assignment.acceptsFiles` — nothing for AI to check. `GradeRow`/`GradeAdjustmentTable`
+gained a new `acceptsFiles` prop threaded from `assignment.acceptsFiles`.
+
+### `needsManualScore = isExam || !acceptsFiles`; Edit Assignment absorbs rubric editing inline (pushed e91bc24)
+Two independent toggles that both mean "no rubric, manual max score" now share one derived boolean on
+both `assignments/new/page.tsx` and `.../edit/page.tsx` — was `isExam`-only. Edit Assignment's rubric
+section used to be a separate list of rubric *shells* (add/delete/rename) linking out to a standalone
+`rubrics/[rubricId]` route to actually edit criteria; it now embeds `RubricCriteriaEditor` inline exactly
+like New Assignment, assuming a single rubric (`linkedRubrics[0]`) like every other rubric-reading spot
+in the app already does. The standalone route is deleted (grepped — no other reference). Edit's `<main>`
+also switched from a centred `max-w-[700px]` column to full width, matching New and every sibling page.
+**Edge case found while implementing**: a legacy/seeded assignment with zero rubrics linked (not exam,
+accepts files) would otherwise get stuck with Save permanently disabled (`criteria` seeded as `[]`,
+`criteriaPointsOk([])` is always false) — fixed by seeding one default 100-pt criterion when there's
+nothing to load from, same fallback New Assignment already starts every fresh form with, and by having
+`handleSave` create a rubric via `addRubric` (not just `updateRubric`) when none exists yet.
+
+### Recheck: AI Confidence panel hidden when a submission has no AI score yet (pushed 0b7d4bc)
+Since the Grade link is reachable before any AI pass now, recheck opens on genuinely un-scored
+submissions for the first time — the AI Confidence badge would show a misleading "Low / 0%" there.
+Guarded on `submission.aiScore !== null`; shows a plain "not yet AI-graded" note otherwise. Also fixed
+the manual-score panel's label (`!rubric` fallback, built for isExam), which unconditionally said "Exam
+assignment — no rubric" even when reached via the acceptsFiles-off path instead — now branches on which
+of the two actually applies.
+
+Verified: tsc clean; lint baseline grew by exactly 1 (Edit page's pre-existing `react-hooks/refs`
+ref-comparison pattern, extended by the new `criteria` field — same as how `isExam` extended it last
+round). Full suite 358 passed / 30 skipped (was 351 before this round: +7 net after also catching 2 more
+`Recheck`/`Review`-label test assertions the first commit had missed, surfaced only by a full-suite run,
+not the per-file runs during that sub-task). Live-verified in the browser: a no-file assignment's Grading
+page shows the Grade link with no Re-grade button on a `not_graded` row; opening it lands on recheck with
+"Not yet AI-graded — grading manually" and a working manual Total Score input that persists
+(`instructorScore`, `status: "graded"`) on Save; Edit Assignment's inline rubric editor renders an
+existing rubric's real criteria (points, % hints, AI Rubric Assistant) exactly like New Assignment's.
+
+## Unrelated (23/9): Edit Assignment layout now fully matches New Assignment (pushed 3c18121)
+User: "หน้า edit ให้ทำเหมือนหน้าตอน create assignment เลย" — round 3 above only merged the rubric
+editor and matched `<main>`'s max-width; the rest of Edit was still stacked single-column while New
+uses a 2-column grid. Converted Edit to the exact same structure: `grid grid-cols-1 xl:grid-cols-2`
+(General Info + Description left, Deadline & Score + Submission Settings right), replaced the old
+"Back to assignment" chevron button with the same breadcrumb component New uses (Courses / course /
+Assignments / current page), switched the Rubric section from a card to New's plain non-card style
+(icon+heading+description, full width below the grid), and added New's Enter-doesn't-submit guard on
+the form (rubric fields live here too now). Danger Zone (no New equivalent) stays a full-width card
+below Rubric. Verified live at 1600px: General Information x≈322, Deadline & Score x≈972 — genuinely
+two side-by-side columns, `<main>` maxWidth still `none`. Full suite 358/30 unaffected; lint baseline
+unchanged (16 errors, same as the previous round).
+
+## Unrelated (23/9): admin batch — 11 items across Users / Courses / Curriculum, all done and pushed
+User sent 11 terse items grouped easy/medium/hard. 5 needed clarification (confirmed via
+`AskUserQuestion`, including one answer — cohort removal — that reversed the recommended/narrower
+option). Plan file: `C:\Users\ASUS\.claude\plans\lively-tinkering-mitten.md`. Pushed as
+`f71dcff`/`218ddd5`/`5d5e162`/`4c15664`(unrelated, same session)/`238abde`/`039ba4a`.
+
+- **Add Teacher role picker removed** (`admin/users/page.tsx` `TeacherModal`) — every teacher created
+  here now starts as plain `"teacher"`; TAs are assigned per-course via Collaborators instead, matching
+  what the page's own copy already said. Scope boundary: the inline row-edit role selector and CSV
+  import's role column are untouched (not what was asked).
+- **`cohort` field removed from the whole system**, not just the add-student form (user explicitly chose
+  this over the narrower option) — `CohortStudent.cohort`/`Student.cohort` deleted along with
+  `cohortYearLabel()`/`getCohorts()`/`getStudentsByCohort()`; Add Student/inline-edit/CSV import all drop
+  it; `public/cohort-students-template.csv`, `test-data/students_sample.csv`, and the 4 mock-data JSON
+  pairs (public + test-data) had the column/key stripped (verified byte-identical after).
+- **Program → real `<select>` dropdown** on Add Student (both add + inline-edit) and on admin Curriculum
+  (was a 3-button toggle, functionally constrained already but showing abbreviations) — full names as
+  labels via a small `PROGRAM_LABEL` map duplicated per-component, matching this codebase's established
+  precedent (not extracted to `src/lib`).
+- **Curriculum Label auto-defaults** to `"{program} {year}"` as a real typed-in value now (was only ever
+  placeholder ghost text) — a plain derived value gated on a `labelTouched` flag, not a `useEffect`, to
+  avoid a new `set-state-in-effect` lint error.
+- **Admin Courses: Term 3 added** (`Term` type widened `1|2|"summer"` → `1|2|3|"summer"`) and **Summer
+  removed from the create dropdown** (the type itself keeps `"summer"` for reading old data).
+- **Primary Teacher is now an autocomplete** (`SearchInput`, same component used elsewhere in the app)
+  instead of a plain `<select>` of every teacher — resolves the typed/picked display name back to a
+  `teacherId` locally since `SearchInput` only ever returns a string.
+- **"Teaching Staff" → "Teacher"** wording in the course-row expand panel.
+- **"+ Add Section"** — duplicates an existing course into a new course row (same template/term/year),
+  leaving `sectionNumber` and Primary Teacher blank for the admin to fill in fresh; no new `Section`
+  entity (a hard Course/Section split stays explicitly out of scope, per `lib/courses.ts`'s own comment).
+  Found already built on disk mid-session by a **peer Claude session working the same plan in the same
+  working directory** — only the button's discoverability needed fixing (was an unlabeled 13px icon
+  identical in weight to Edit/Archive/Delete; now a bordered "+ Section" pill with visible text,
+  `aria-label` kept as "Add Section" so the peer's existing test locator still resolves).
+- Verified: tsc clean throughout; lint baseline unchanged on every touched file (checked via
+  `git stash` + `eslint` diff before/after on each one); full suite 359 passed / 30 skipped; live-verified
+  in the browser: Add Teacher/Add Student forms, admin Students table (no Cohort column/filter), Primary
+  Teacher autocomplete end-to-end (type → pick suggestion → resolves to id → Create Course), Add Section
+  flow, Curriculum dropdown + Label auto-fill.
+- **Working-directory note**: this session shares a filesystem with another live Claude session also
+  working `admin/courses/page.tsx` off the same plan — coordinated via `SendMessage`/`ListAgents`
+  mid-session once both sessions' edits started landing in the same file. Current split: admin/users,
+  admin/courses, admin/curriculum are done (this session); `teacher/courses/[id]/clo/page.tsx` (a
+  separate "make the CLO page less ugly" ask) is the peer session's, deliberately left untouched here.
+
+## Unrelated (23/9): teacher CLO page redesign (pushed daa27ef) — the peer session's half of the split above
+User: "teacher clo รูปที่แนบ ที่ 2 น่าเกลียดไปไหม ตั้งใจทำหน่อย" (screenshot: plain CODE/CLO TEXT/LINKED
+CRITERIA/ACTIONS table, every row repeating the identical amber "No linked criteria" warning).
+- One page-level info banner replaces the per-row warning — it's true of every CLO at once (the
+  CLO↔criteria linking feature doesn't exist yet, deferred since 19/9), not 4 separate facts.
+- Card-per-CLO (code badge + text + hover-reveal Edit/Delete) instead of a dense `<table>` — CLO text is
+  a full sentence, not tabular data; matches the card pattern already used for rubric criteria on the
+  assignment detail page. Edit/Delete only need to be visible on hover/focus, not permanently in their
+  own column.
+- Add/Edit CLO moved into the shared `Modal` component (DESIGN.md §9a) — the inline panel appended below
+  the table was the one form in this app still not using the centred-popup pattern everything else
+  converted to on 20/9.
+- Added a one-line subtitle explaining what a CLO is, for context a bare heading didn't give.
+- Verified: tsc/lint clean; ran `e2e/hwai.spec.ts` + `tests/teacher-batch-3.spec.ts` (the two files that
+  touch this page — neither asserts on table/inline-panel structure, both passed unchanged) plus a full
+  suite run, 359 passed / 30 skipped.
+
 ## Not done / open
 - Score Book is read-only by design; if the teacher wants to type scores into cells, that is a new decision (Grading pages own edits today). Finalized assignments are additionally locked from click-through (23/9, this batch).
 - `gradeLetter` still exists locally in the two per-assignment results pages (the Score Book uses `lib/scoreBook.ts`); could be unified later.
@@ -375,3 +641,45 @@ required inverting that.
 - Files are CRLF (`core.autocrlf=true`); node edit scripts must normalise `\r\n`; write scripts with the Write tool, not heredoc-with-backticks.
 - Playwright `addInitScript` re-runs on every navigation — guard seeding with `sessionStorage`.
 - Sticky table headers need explicit heights (`HEAD1_H` in the Score Book) so the second header row knows where to stick.
+
+## 24/9: row actions always visible (CLO, Curriculum) + teacher Import Students is a popup
+- CLO cards and admin Curriculum course-template rows had Edit/Delete hidden until hover — no other page does that. Now always visible (`f6be954`, `a8cfd19`). No hover-reveal actions remain in `src`.
+- Teacher `/students/import` route DELETED; the same flow lives in `components/ImportCourseStudentsModal.tsx` (upload → preview → done, mount-on-open like `EnrollStudentModal`), opened from both Import buttons on the roster page. Behaviour unchanged: each ID is cross-checked against the cohort DB, real name/email win over the CSV's.
+- Tests moved from the route to the popup (`teacher-p4`, `add-student-popups`, `e2e/hwai`), plus a new "teacher · Import Students (CSV)" case in `popups-all`. Suite 360 passed / 30 skipped.
+
+## 24/9: navy/teal chrome theme for every role + navbar↔sidebar colours swapped
+- `NavThemeToggle.tsx` (shared) is now in the Teacher `Navbar`, `AdminShell` and `StudentShell` top bars. Admin/Student headers switched `--bg-nav` → `--navbar-bg` so they follow the theme (they never did before).
+- Swap ("ลองสลับสี", easy to revert — tokens only, `globals.css`): navy navbar `#243C5A` / sidebar `#1A2D45`; teal navbar `#084541` / sidebar `#0F766E` (both light and dark). Dark-navy is unchanged (both were already `#0A1218`).
+- The lighter teal sidebar broke the old hard-coded `text-white/55` (~2.8:1) → new `--sidebar-text-muted` token used by the 3 sidebars (0.55 navy, 0.9 teal ≈ 4.76:1, measured in-browser).
+- New `tests/nav-theme.spec.ts` (3 roles × navy default + teal switch/persist). Note the admin sidebar has a 200ms colour transition — assert with `toHaveCSS`, not a one-shot read.
+
+## 24/9: withdrawn students leave the class numbers + AI Rubric Assistant asks for a brief and shows levels
+- **Withdrawn students** (`lib/students.ts` `isWithdrawn` / `withdrawnIds`): out of every class-level number and hidden behind an "Enrolled / Withdrawn" `WithdrawnTabs` (built on `PillTabBar`, renders nothing until someone has withdrawn — user picked "hide like archive, separate tab"). Score Book (tab; withdrawn tab hides stat cards + class-average footer), per-assignment Grading (active rows feed the stats and `Finish Grading`; tab lists withdrawn), course Grading, course Overview, Assignments header and My Courses card (count + "All Graded"/"Active") all exclude them. Roster page still shows everyone (that is where you withdraw / re-enroll). A group row is "withdrawn" only if every member is.
+- **AI Rubric Assistant** (`RubricCriteriaEditor.tsx`): now a shared `Modal` with 3 steps — brief (textarea pre-filled from assignment name + description, new `assignmentDescription` prop passed by New and Edit; Generate disabled while empty) → loading → suggestions, each criterion with its 4-level rubric (Excellent/Good/Fair/Needs Improvement, 2×2). Apply keeps exactly the previewed levels (was 3 short generic ones). The brief doesn't change the mock output yet.
+- Tests: new `withdrawn-students.spec.ts` (6), 2 new + 1 updated AI assistant tests in `assignment-create-rubric.spec.ts`, `e2e/hwai.spec.ts` AI test updated. Suite 374 passed / 30 skipped.
+- Follow-up (24/9): AI Rubric Assistant brief got a **"Fill from assignment"** button (name + description + attachment names/links; `assignmentAttachments` prop from `att.items` on New and Edit). It never overwrites typed text — empty → fills, otherwise appends underneath, and a second click doesn't repeat. Disabled while there's nothing to pull. The assistant only sees attachment NAMES/links, not file contents (mock AI).
+
+## 25/9: Exam assignments — no due date, students never submit, teacher types every score
+- `Assignment.dueDate` is now optional; an Exam (`isExam`) has none. New/Edit Assignment hide Due Date when Exam is on and no longer require it (saved as `undefined`). Every reader handles a missing date: teacher list/detail/grading pages show "Exam · no due date", course Grading (`progressOf` takes `enrolled`: an exam is complete when EVERY enrolled student has a score, and can't be overdue), Score Book (`byDue` sorts exams last, a student with no score is "—" not "Missing"), student list/home/evaluation.
+- **Student**: new `awaiting_score` status ("Awaiting score", blue). Classwork list has an "Awaiting score (n)" section; detail page has no attach/submit/team UI, just "Waiting for your exam score", then the score once recorded. Exams never appear in the home page's upcoming list or calendar.
+- **Teacher score entry** (user picked "one table with a box for every student"): the exam's Grading page shows `ExamScoreTable` (every enrolled student, score box `/ max`, validates 0..max, Save scores). Saving creates a graded `Submission` (no file) for anyone who has none, so Score Book / Evaluation / the student view read it as usual; clearing a box makes it `not_graded`. Locked after "Finish Grading" (Reopen to edit). Withdrawn students sit on the Withdrawn tab, read-only. Stat cards adapt (Scored / Not scored yet / Highest / Avg).
+- Not done (not asked): an exam still shows the Accept Files / file types / Submission Type controls on the teacher form — meaningless for an exam. Recheck (per-submission) still works if reached from the Score Book.
+- Tests: `tests/exam-assignment.spec.ts` (9). Suite 385 passed / 30 skipped.
+
+## 25/9: "Finish Grading" → "Finish & announce" — students see scores only after it (user picked real announcement)
+- **Semantics changed**: `Assignment.gradingFinalized` is now also the release flag. Until it's true a STUDENT sees a graded submission as plain "Submitted — awaiting grade" (or "Awaiting score" for an exam): no score, no teacher comment, no rubric breakdown, no Evaluation cell — via `studentVisibleSubmission()` in `lib/assignments.ts`, applied on the student classwork list, detail page and Evaluation page. Teacher-side code keeps the raw submission. The detail page also blocks resubmitting while `beingGraded`, otherwise a resubmit would overwrite the grade.
+- **Teacher**: the button (grading page header + progress card) is "Finish & announce" and opens a `Modal` ("Announce results to students?": how many are graded, what students see now, that Score Book locks, that reopening hides scores again) with "Not yet" / "Announce results". Once done: green "Results announced" badge + View Results; "Reopen grading" now `window.confirm`s with the warning that students lose sight of the scores.
+- **Demo data**: the 4 `student-flow-mockup*.json` copies now mark `a-mock-1/5/6/8` `gradingFinalized: true` (a-mock-4 already was) so the demo student still sees their scores; the teacher seed course (`seed-1`) is left un-announced on purpose (its e2e test clicks Finish).
+- **Tests**: `tests/announce-results.spec.ts` (5). Student specs (`student-p3/p4/score-book`, `teacher-score-book` student role) seed assignments as announced; `e2e-group-assignment-flow` now goes teacher-grades → Beam still sees "awaiting grade" → teacher announces → Beam sees 88 (its `seedStatic` had to stop re-seeding the assignment on every navigation). Suite 390 passed / 30 skipped.
+- Open: a student who submits AFTER an assignment was announced doesn't get a fresh un-announce (the flag is per assignment, not per submission) — fine for now.
+
+## 25/9: admin New Course opens several sections at once
+- Asked first (user said "ลองถามฉันก่อน"); answers: course details entered once + a **Sections** list at the bottom (rows = section number, plus a teacher when not shared), **"same teacher for all sections" checkbox** (default on; turning it off seeds every row with the shared teacher), and **only section number + teacher per row** (schedule/room stay the teacher's job).
+- `admin/courses/page.tsx` `CourseModal` (create mode): `rows` state, `+ Add section` numbers on from the last one, remove ✕ (needs 2+ rows), button reads "Create N sections". Validation: with 2+ rows every section needs a number; no repeats in the list; no clash with an existing non-archived section of the same course (template, or name) + year + term; a shared teacher is validated once on its own field. Edit mode is unchanged (single section field stays in the curriculum grid). The "+ Add Section" flow gets the rows too.
+- **Real bug found and fixed on the way**: `CourseProvider` and `ManagedTeacherContext` built every mutation from the render's stale `courses`/`teachers`, so calling `addCourse` (or `assignToCourse`) several times in one handler kept only the last. Both now mutate a `latest` ref, so back-to-back calls compose. Any other provider with the same `persist([...state, x])` pattern has the same latent problem the moment something batches (students/assignments providers not audited).
+- Tests: `tests/admin-multi-section.spec.ts` (6). Suite 396 passed / 30 skipped.
+
+## 25/9: Teacher + Student sidebars share one pattern (`components/SidebarParts.tsx`)
+- Student sidebar now gets icons on the course pages (same shapes as the teacher's) and a 14px semibold course heading (user approved the size from a screenshot). Then checked against the teacher sidebar and found they differed in width (student w-56 vs teacher w-52), padding, item/icon sizes, the "Main" caption and the divider before the course block — so both are built from `SidebarParts` (`SIDEBAR_CLASS`, `SidebarNavItem` (main + `small`), `SidebarSectionLabel`, `SidebarCourseName`, `SIDEBAR_DIVIDER`). The teacher sidebar's local `NavItem` moved there; its course name went from a 10px uppercase caption to the same heading (line-clamp-3). AdminSidebar (collapsible) deliberately stays separate.
+- Student sidebar is 224→208px design width (both render 234px at the app's scaled root font size).
+- `tests/sidebar-parity.spec.ts` compares the two roles' width, heading size/weight, item size/height and icon size (absolute px are scaled by the type scale, so it asserts equality, not numbers). Suite 397 passed / 30 skipped.

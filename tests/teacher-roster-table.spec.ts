@@ -46,10 +46,10 @@ async function open(page: Page, lang: "en" | "th" = "en") {
 }
 
 test.describe("Teacher roster table", () => {
-  test("columns are #, Student ID, Title, Name, Email, Cohort, Program, Status, Actions — no separate first/last name columns", async ({ page }) => {
+  test("columns are #, Student ID, Title, Name, Email, Program, Status, Actions — no separate first/last name columns", async ({ page }) => {
     await open(page);
     const heads = page.getByRole("columnheader");
-    await expect(heads).toHaveText(["#", "Student ID", "Title", "Name", "Email", "Cohort", "Program", "Status", "Actions"]);
+    await expect(heads).toHaveText(["#", "Student ID", "Title", "Name", "Email", "Program", "Status", "Actions"]);
     await expect(page.getByRole("columnheader", { name: "First Name" })).toHaveCount(0);
     await expect(page.getByRole("columnheader", { name: "Last Name" })).toHaveCount(0);
   });
@@ -87,7 +87,7 @@ test.describe("Teacher roster table", () => {
 
   test("Thai UI labels the columns คำนำหน้า and ชื่อ-นามสกุล", async ({ page }) => {
     await open(page, "th");
-    await expect(page.getByRole("columnheader")).toHaveText(["#", "รหัสนักศึกษา", "คำนำหน้า", "ชื่อ-นามสกุล", "อีเมล", "รุ่น", "สาขา", "สถานะ", "จัดการ"]);
+    await expect(page.getByRole("columnheader")).toHaveText(["#", "รหัสนักศึกษา", "คำนำหน้า", "ชื่อ-นามสกุล", "อีเมล", "สาขา", "สถานะ", "จัดการ"]);
   });
 });
 
@@ -220,34 +220,34 @@ test.describe("Teacher roster — table edge", () => {
   });
 });
 
-// Cohort / Program / Status / delete (23/9/2569): teacher-requested columns. Cohort comes straight off
-// the roster row; Program is looked up live from the central cohort record (same pattern as Title);
-// Status is the per-section EnrollmentStatus, not CohortStudent's account-level active/inactive.
+// Program / Status / delete (23/9/2569, Program relabelled to the full name 23/9/2569 follow-up):
+// Program is looked up live from the central cohort record (same pattern as Title) and shown as its
+// full name, not the raw abbreviation (same PROGRAM_LABEL map as admin/users.tsx). Status is the
+// per-section EnrollmentStatus, not CohortStudent's account-level active/inactive. The Cohort column
+// itself was dropped the same follow-up — unused, the sidebar already scopes to one course.
 const rowCells = (page: Page, studentId: string) => page.getByRole("row", { name: new RegExp(studentId) }).getByRole("cell");
 
-test.describe("Teacher roster — Cohort / Program / Status", () => {
-  test("Cohort comes from the roster row; Program is looked up from the central record; a student missing from it shows a dash", async ({ page }) => {
+test.describe("Teacher roster — Program / Status", () => {
+  test("Program is looked up from the central record and shown as its full name; a student missing from it shows a dash", async ({ page }) => {
     await open(page);
     const somchai = rowCells(page, "69070101");
-    await expect(somchai.nth(5)).toHaveText("CE69");
-    await expect(somchai.nth(6)).toHaveText("CE");
+    await expect(somchai.nth(5)).toHaveText("Computer Engineering");
     const ghost = rowCells(page, "69079999");
-    await expect(ghost.nth(5)).toHaveText("CE69"); // still the roster's own cohort copy
-    await expect(ghost.nth(6)).toHaveText("—"); // not in the central list — no program to look up
+    await expect(ghost.nth(5)).toHaveText("—"); // not in the central list — no program to look up
   });
 
   test("status badge shows Enrolled by default; missing enrollmentStatus also reads as Enrolled", async ({ page }) => {
     await open(page);
-    await expect(rowCells(page, "69070101").nth(7)).toHaveText("Enrolled");
+    await expect(rowCells(page, "69070101").nth(6)).toHaveText("Enrolled");
   });
 
   test("withdrawing a student asks for confirmation, then flips the badge and the toggle icon", async ({ page }) => {
     await open(page);
     const row = page.getByRole("row", { name: /69070101/ });
-    await expect(row.getByRole("cell").nth(7)).toHaveText("Enrolled");
+    await expect(row.getByRole("cell").nth(6)).toHaveText("Enrolled");
     page.once("dialog", (d) => d.accept());
     await row.getByRole("button", { name: /Withdraw Somchai Jaidee/ }).click();
-    await expect(row.getByRole("cell").nth(7)).toHaveText("Withdrawn");
+    await expect(row.getByRole("cell").nth(6)).toHaveText("Withdrawn");
     await expect(row.getByRole("button", { name: /Re-enroll Somchai Jaidee/ })).toBeVisible();
   });
 
@@ -256,7 +256,7 @@ test.describe("Teacher roster — Cohort / Program / Status", () => {
     const row = page.getByRole("row", { name: /69070101/ });
     page.once("dialog", (d) => d.dismiss());
     await row.getByRole("button", { name: /Withdraw Somchai Jaidee/ }).click();
-    await expect(row.getByRole("cell").nth(7)).toHaveText("Enrolled");
+    await expect(row.getByRole("cell").nth(6)).toHaveText("Enrolled");
   });
 
   test("re-enrolling a withdrawn student needs no confirmation", async ({ page }) => {
@@ -268,15 +268,15 @@ test.describe("Teacher roster — Cohort / Program / Status", () => {
     });
     await page.reload();
     await page.waitForLoadState("networkidle");
-    await expect(row.getByRole("cell").nth(7)).toHaveText("Withdrawn");
+    await expect(row.getByRole("cell").nth(6)).toHaveText("Withdrawn");
     await row.getByRole("button", { name: /Re-enroll Malee Suksan/ }).click(); // no dialog listener — must not hang
-    await expect(row.getByRole("cell").nth(7)).toHaveText("Enrolled");
+    await expect(row.getByRole("cell").nth(6)).toHaveText("Enrolled");
   });
 
   test("Thai UI: status labels and confirm copy", async ({ page }) => {
     await open(page, "th");
     const row = page.getByRole("row", { name: /69070101/ });
-    await expect(row.getByRole("cell").nth(7)).toHaveText("ลงทะเบียน");
+    await expect(row.getByRole("cell").nth(6)).toHaveText("ลงทะเบียน");
     page.once("dialog", (d) => { expect(d.message()).toContain("ถอน"); d.dismiss(); });
     await row.getByRole("button", { name: /ถอน Somchai Jaidee/ }).click();
   });

@@ -11,7 +11,6 @@ export interface CohortStudent {
   firstName: string;
   lastName: string;
   email: string;
-  cohort: string;   // e.g. "CE69"
   program: string;  // e.g. "CE"
   /** Account-level status per meeting decision #1 (4/9/2569) — reflects
    *  พ้นสภาพ/ลาออก/จบ, separate from per-section enrollment status.
@@ -29,16 +28,6 @@ export interface CohortStudentContextValue {
   updateCohortStudent: (id: string, data: Partial<Omit<CohortStudent, "id">>) => void;
   removeCohortStudent: (id: string) => void;
   findByStudentId: (studentId: string) => CohortStudent | undefined;
-  getCohorts: () => string[];
-  getStudentsByCohort: (cohort: string) => CohortStudent[];
-}
-
-// Converts a cohort code like "CE69" to its Buddhist-calendar admission
-// year "2569" for display. Falls back to the raw value if it doesn't match
-// the expected <prefix><2-digit year> pattern.
-export function cohortYearLabel(cohort: string): string {
-  const m = cohort.match(/(\d{2})$/);
-  return m ? `25${m[1]}` : cohort;
 }
 
 export const CohortStudentContext = createContext<CohortStudentContextValue | null>(null);

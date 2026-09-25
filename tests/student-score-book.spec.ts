@@ -30,7 +30,9 @@ const CATS = [
 ];
 const asg = (id: string, name: string, dueDate: string, maxPoints: number, extra: Record<string, unknown> = {}) => ({
   id, courseId: "c-sesb", name, description: "", dueDate, maxPoints, acceptsFiles: true, fileTypes: [],
-  submissionType: "individual", maxGroupSize: null, rubricIds: [], createdAt: NOW, updatedAt: NOW, ...extra,
+  submissionType: "individual", maxGroupSize: null, rubricIds: [], createdAt: NOW, updatedAt: NOW,
+  gradingFinalized: true, // students only see scores once the teacher announces them (25/9/2569)
+  ...extra,
 });
 const ASSIGNMENTS = [
   asg("hw1", "HW 1", "2026-01-10", 100, { categoryId: "cat-hw" }),

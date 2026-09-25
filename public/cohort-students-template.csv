@@ -1,4 +1,4 @@
-studentId,title,firstName,lastName,email,cohort,program
-65070001,นาย,สมชาย,ใจดี,65070001@kmitl.ac.th,CE69,CE
-65070002,นางสาว,สมหญิง,รักเรียน,65070002@kmitl.ac.th,CE69,CECS
-65070003,นาย,วิชัย,สุขสันต์,65070003@kmitl.ac.th,CE69,CEI
+studentId,title,firstName,lastName,email,program
+65070001,นาย,สมชาย,ใจดี,65070001@kmitl.ac.th,CE
+65070002,นางสาว,สมหญิง,รักเรียน,65070002@kmitl.ac.th,CECS
+65070003,นาย,วิชัย,สุขสันต์,65070003@kmitl.ac.th,CEI

@@ -40,7 +40,6 @@ export default function EnrollStudentModal({ courseId, courseName, onClose }: {
       firstName: match.firstName,
       lastName: match.lastName,
       email: match.email,
-      cohort: match.cohort,
     }]);
     setAdded(match);
   }
@@ -113,7 +112,7 @@ export default function EnrollStudentModal({ courseId, courseName, onClose }: {
               <div className="min-w-0">
                 <p className="text-sm font-semibold text-[var(--text-primary)] truncate">{match.title ? `${match.title} ` : ""}{match.firstName} {match.lastName}</p>
                 <p className="text-xs text-[var(--text-secondary)] truncate">{match.email}</p>
-                <p className="text-xs text-[var(--text-secondary)]">{[match.cohort, match.program].filter(Boolean).join(" · ")}</p>
+                <p className="text-xs text-[var(--text-secondary)]">{match.program}</p>
               </div>
             </div>
           )}

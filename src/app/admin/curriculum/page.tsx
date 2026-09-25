@@ -243,14 +243,32 @@ function CurriculumModal({
   const { t } = useLanguage();
   const { addCurriculumVersion, updateCurriculumVersion } = useCurriculum();
 
+  // Same 3-entry map pattern already duplicated per-component elsewhere in this codebase
+  // (admin/users.tsx's AddStudentModal/StudentsTab, teacher/courses/[id]/students/page.tsx).
+  const PROGRAM_LABEL: Record<Program, string> = {
+    CE: t("วิศวกรรมคอมพิวเตอร์", "Computer Engineering"),
+    CECS: t("วิศวกรรมคอมพิวเตอร์และความมั่นคงปลอดภัยไซเบอร์", "Computer Engineering and Cybersecurity"),
+    CEI: t("วิศวกรรมคอมพิวเตอร์นานาชาติ", "Computer Engineering International"),
+  };
+
   const currentYear = new Date().getFullYear() + 543; // พ.ศ.
   const [program, setProgram] = useState<Program>(version?.program ?? "CE");
-  const [label, setLabel] = useState(version?.label ?? "");
+  const [manualLabel, setManualLabel] = useState(version?.label ?? "");
+  // Edit mode starts with a real, previously-chosen label — don't let the auto-default
+  // below silently overwrite it just because the admin changes the program.
+  const [labelTouched, setLabelTouched] = useState(mode === "edit");
   const [effectiveFrom, setEffectiveFrom] = useState(String(version?.effectiveFrom ?? currentYear));
   const [effectiveTo, setEffectiveTo] = useState(version?.effectiveTo != null ? String(version.effectiveTo) : "");
   const labelRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => { labelRef.current?.focus(); }, []);
+
+  // Default the Label text from Program + Year (23/9/2569) — was only ever shown as
+  // placeholder ghost text before, never actually written into the field. A plain derived
+  // value (not an effect writing back into state) so it updates immediately as Program/Year
+  // change, and stops the moment the admin edits the label by hand (labelTouched) — same
+  // "don't clobber what they typed" intent as New Assignment's rubricTouched elsewhere.
+  const label = labelTouched ? manualLabel : `${program} ${effectiveFrom || currentYear}`;
 
   const fromNum = parseInt(effectiveFrom, 10);
   const toNum = effectiveTo.trim() === "" ? undefined : parseInt(effectiveTo, 10);
@@ -290,23 +308,15 @@ function CurriculumModal({
           <label className="text-xs font-semibold text-[var(--text-muted)]">
             {t("หลักสูตร", "Program")} <span className="text-[var(--s-err-text)]">*</span>
           </label>
-          <div className="grid grid-cols-3 gap-2">
+          <select
+            value={program}
+            onChange={(e) => setProgram(e.target.value as Program)}
+            className="h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
+          >
             {PROGRAMS.map((p) => (
-              <button
-                key={p}
-                type="button"
-                onClick={() => setProgram(p)}
-                aria-pressed={program === p}
-                className={`h-10 rounded-xl border text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] ${
-                  program === p
-                    ? "border-[var(--accent-bright)] bg-[var(--accent-bright)]/10 text-[var(--accent)]"
-                    : "border-[var(--border-subtle)] text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)]"
-                }`}
-              >
-                {p}
-              </button>
+              <option key={p} value={p}>{PROGRAM_LABEL[p]}</option>
             ))}
-          </div>
+          </select>
         </div>
 
         {/* Label */}
@@ -317,12 +327,11 @@ function CurriculumModal({
           <input
             ref={labelRef}
             value={label}
-            onChange={(e) => setLabel(e.target.value)}
+            onChange={(e) => { setManualLabel(e.target.value); setLabelTouched(true); }}
             onKeyDown={(e) => e.key === "Enter" && handleSave()}
-            placeholder={t(`เช่น ${program} ${currentYear}`, `e.g. ${program} ${currentYear}`)}
             className="h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
           />
-          <p className="text-[11px] text-[var(--text-muted)]">{t("ระบุรุ่น/สาขาให้ชัด — cohort อย่างเดียวไม่พอสำหรับแยกหลักสูตร", "Be specific about batch/track — cohort alone isn't enough to distinguish curriculum")}</p>
+          <p className="text-[11px] text-[var(--text-muted)]">{t("ระบุรุ่น/สาขาให้ชัด — เช่น เพิ่มปีหรือแทร็กต่อท้าย", "Be specific about batch/track — e.g. add the year or a track suffix")}</p>
         </div>
 
         {/* Effective years */}
@@ -505,7 +514,7 @@ function CourseTemplateRow({
   onDelete: () => void;
 }) {
   return (
-    <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[var(--bg-subtle)] group transition-colors">
+    <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[var(--bg-subtle)] transition-colors">
       <div className="w-8 h-8 rounded-lg bg-[var(--accent-bright)]/20 text-[var(--accent)] text-[10px] font-bold flex items-center justify-center shrink-0 select-none tabular-nums" aria-hidden="true">
         {template.code.slice(-3)}
       </div>
@@ -513,7 +522,7 @@ function CourseTemplateRow({
         <p className="text-sm font-medium text-[var(--text-primary)] truncate">{template.name}</p>
         <p className="text-[11px] text-[var(--text-muted)] tabular-nums truncate">{template.code}</p>
       </div>
-      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+      <div className="flex items-center gap-1 shrink-0">
         <button
           onClick={onEdit}
           title="Edit"

@@ -11,13 +11,21 @@ export interface Student {
   firstName: string;
   lastName: string;
   email: string;
-  cohort?: string; // e.g. "CE69"
   /** ลำดับนักศึกษาในวิชานี้ (มติที่ประชุม 4/9/2569) — คนใหม่ที่เพิ่มกลางเทอมได้เลขต่อท้าย
    *  ไม่ recompute ของเดิมเมื่อมีคนออก. Optional เพราะ record เก่ายังไม่มีค่านี้. */
   sequenceNumber?: number;
   /** สถานะการลงทะเบียนต่อวิชา — แยกจาก CohortStudent.status ซึ่งเป็น account-level
    *  (มติที่ประชุม 4/9/2569 decision #1) */
   enrollmentStatus?: EnrollmentStatus;
+}
+
+export const isWithdrawn = (s: Pick<Student, "enrollmentStatus">) => s.enrollmentStatus === "withdrawn";
+
+/** Students who withdrew from this roster (24/9/2569) — their scores and submissions are left out of
+ *  every class-level number (averages, counts, "graded" progress) and only shown on a separate
+ *  "Withdrawn" tab, the way archived courses sit apart from active ones. Pass ONE course's roster. */
+export function withdrawnIds(roster: Student[]): Set<string> {
+  return new Set(roster.filter(isWithdrawn).map((s) => s.studentId));
 }
 
 export interface StudentContextValue {

@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCourses } from "@/lib/courses";
-import { useStudents } from "@/lib/students";
+import { useStudents, isWithdrawn } from "@/lib/students";
 import { useAssignments } from "@/lib/assignments";
 import { useGradingCategories } from "@/lib/gradingCategories";
 import { useLanguage } from "@/context/LanguageContext";
@@ -43,7 +43,7 @@ export default function AssignmentsPage() {
   }, []);
 
   const course = getCourse(id);
-  const students = getStudentsByCourse(id);
+  const students = getStudentsByCourse(id).filter((s) => !isWithdrawn(s));
   const assignments = getAssignmentsByCourse(id);
   const categories = getCategoriesByCourse(id);
   const today = new Date().toISOString().split("T")[0];
@@ -161,7 +161,7 @@ export default function AssignmentsPage() {
         ) : (
           <>
             {visible.map((a) => {
-              const isPastDue = a.dueDate < today;
+              const isPastDue = !!a.dueDate && a.dueDate < today;
               const category = a.categoryId ? categories.find((c) => c.id === a.categoryId) : undefined;
               const rubric = getRubricsByAssignment(a.id)[0];
               const criteriaCount = rubric?.criteria.length ?? 0;
@@ -190,7 +190,9 @@ export default function AssignmentsPage() {
                           <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
                         </svg>
                         <span className={`text-xs ${isPastDue ? "text-[var(--s-err-text)]" : "text-[var(--text-secondary)]"}`}>
-                          {isPastDue ? `${t("เลยกำหนด", "Past due")} — ` : ""}{t("กำหนดส่ง", "Due")} {fmtDate(a.dueDate)}
+                          {a.dueDate
+                            ? <>{isPastDue ? `${t("เลยกำหนด", "Past due")} — ` : ""}{t("กำหนดส่ง", "Due")} {fmtDate(a.dueDate)}</>
+                            : t("สอบ · ไม่มีกำหนดส่ง", "Exam · no due date")}
                           <span className="text-[var(--text-muted)]"> · {a.maxPoints} {t("คะแนน", "pts")}</span>
                         </span>
                       </div>

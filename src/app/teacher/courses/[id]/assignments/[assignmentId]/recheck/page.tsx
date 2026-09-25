@@ -151,7 +151,10 @@ export default function RecheckPage() {
       });
     });
     setSaved(true);
-    setTimeout(() => router.push(`/teacher/courses/${id}/assignments/${assignmentId}/results`), 1000);
+    // Go back to wherever the teacher opened this recheck from (23/9/2569, was always the per-assignment
+    // Results page) — recheck is reachable from the Grading page, the per-assignment Results drill-down,
+    // and the course-level Score Book, so a fixed destination was wrong for at least two of the three.
+    setTimeout(() => router.back(), 1000);
   }
 
   const criteriaMap = Object.fromEntries(
@@ -245,24 +248,35 @@ export default function RecheckPage() {
             <h2 className="text-base font-bold text-[var(--text-primary)] mb-3">
               {t("ตรวจสอบการให้คะแนน", "Grading Review")}
             </h2>
-            {/* AI confidence */}
-            <div className="flex items-center gap-2 mb-1">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" className="text-[var(--accent)]">
-                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-              </svg>
-              <span className="text-xs font-medium text-[var(--text-primary)]">
-                {t("ความมั่นใจ AI", "AI Confidence")}:{" "}
-                <span style={{ color: aiConfidence.color }} className="font-semibold">
-                  {lang === "th" ? aiConfidence.labelTh : aiConfidence.label} ({aiConfidence.pct}%)
-                </span>
-              </span>
-            </div>
-            <div className="h-1.5 rounded-full bg-gray-100 overflow-hidden">
-              <div
-                className="h-full rounded-full transition-all"
-                style={{ width: `${aiConfidence.pct}%`, backgroundColor: aiConfidence.color }}
-              />
-            </div>
+            {/* AI confidence — only meaningful once AI has actually scored this submission (23/9/2569
+                round 3: the Grade link is now reachable before that happens too, e.g. a not_graded row
+                or a no-file assignment that's never AI-graded at all — showing "Low confidence" there
+                would be misleading, since there's no AI score behind it). */}
+            {submission.aiScore !== null ? (
+              <>
+                <div className="flex items-center gap-2 mb-1">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" className="text-[var(--accent)]">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                  </svg>
+                  <span className="text-xs font-medium text-[var(--text-primary)]">
+                    {t("ความมั่นใจ AI", "AI Confidence")}:{" "}
+                    <span style={{ color: aiConfidence.color }} className="font-semibold">
+                      {lang === "th" ? aiConfidence.labelTh : aiConfidence.label} ({aiConfidence.pct}%)
+                    </span>
+                  </span>
+                </div>
+                <div className="h-1.5 rounded-full bg-gray-100 overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all"
+                    style={{ width: `${aiConfidence.pct}%`, backgroundColor: aiConfidence.color }}
+                  />
+                </div>
+              </>
+            ) : (
+              <p className="text-xs text-gray-400">
+                {t("ยังไม่ผ่านการตรวจของ AI — ให้คะแนนด้วยตนเอง", "Not yet AI-graded — grading manually")}
+              </p>
+            )}
           </div>
 
           {/* Criteria */}
@@ -270,7 +284,14 @@ export default function RecheckPage() {
             {!rubric && (
               <div className="rounded-xl border border-gray-100 bg-white p-4">
                 <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">
-                  {t("งานประเภทสอบ — ไม่มี rubric", "Exam assignment — no rubric")}
+                  {/* A no-rubric assignment reaches here for either reason now (23/9/2569 round 3):
+                      isExam, or acceptsFiles turned off — the old label always said "exam", which was
+                      wrong for the second case. */}
+                  {assignment.isExam
+                    ? t("งานประเภทสอบ — ไม่มี rubric", "Exam assignment — no rubric")
+                    : !assignment.acceptsFiles
+                    ? t("ไม่รับไฟล์ — ไม่มี rubric", "No file submission — no rubric")
+                    : t("ยังไม่มี rubric", "No rubric yet")}
                 </p>
                 <p className="text-xs text-gray-500 mb-3">
                   {t("พิมพ์คะแนนรวมของงานนี้โดยตรง", "Enter this submission's total score directly")}

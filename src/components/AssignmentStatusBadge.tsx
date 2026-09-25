@@ -3,7 +3,7 @@
 import { useLanguage } from "@/context/LanguageContext";
 
 /** What a student's own assignment is doing right now. Colours live in globals.css (--st-*). */
-export type AssignmentStatus = "not_submitted" | "submitted" | "graded" | "overdue";
+export type AssignmentStatus = "not_submitted" | "submitted" | "graded" | "overdue" | "awaiting_score";
 
 // Full class strings (not built dynamically) so Tailwind can see them.
 export const STATUS_STYLE: Record<AssignmentStatus, { chip: string; panel: string }> = {
@@ -12,6 +12,11 @@ export const STATUS_STYLE: Record<AssignmentStatus, { chip: string; panel: strin
     panel: "bg-[var(--st-todo-bg)] text-[var(--st-todo-text)] border-[var(--st-todo-text)]/30",
   },
   submitted: {
+    chip: "bg-[var(--st-sent-bg)] text-[var(--st-sent-text)]",
+    panel: "bg-[var(--st-sent-bg)] text-[var(--st-sent-text)] border-[var(--st-sent-text)]/25",
+  },
+  // An Exam (25/9/2569): nothing for the student to submit — they just wait for the teacher's score.
+  awaiting_score: {
     chip: "bg-[var(--st-sent-bg)] text-[var(--st-sent-text)]",
     panel: "bg-[var(--st-sent-bg)] text-[var(--st-sent-text)] border-[var(--st-sent-text)]/25",
   },
@@ -32,6 +37,7 @@ export function useStatusLabel() {
       case "not_submitted": return t("ยังไม่ส่ง", "Not submitted");
       case "submitted": return t("ส่งแล้ว", "Submitted");
       case "graded": return t("มีคะแนนแล้ว", "Graded");
+      case "awaiting_score": return t("รอคะแนน", "Awaiting score");
       case "overdue": return t("เกินกำหนด", "Overdue");
     }
   };

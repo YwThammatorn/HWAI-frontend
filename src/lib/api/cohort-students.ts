@@ -5,10 +5,8 @@ import type { CohortStudent } from "@/lib/cohort-students";
 // Backed by HWAI-backend. Mirrors CohortStudentContextValue (src/lib/cohort-students.ts) — the
 // account-level student record (cross-course), distinct from the per-section Student roster row (see
 // api/students.ts). `id` is optional on create — the Provider sends a client-generated one.
-export async function getCohortStudents(cohort?: string): Promise<CohortStudent[]> {
-  return client.get<CohortStudent[]>(
-    cohort ? `/api/cohort-students?cohort=${encodeURIComponent(cohort)}` : "/api/cohort-students",
-  );
+export async function getCohortStudents(): Promise<CohortStudent[]> {
+  return client.get<CohortStudent[]>("/api/cohort-students");
 }
 
 export async function addCohortStudents(incoming: (Omit<CohortStudent, "id"> & { id?: string })[]): Promise<CohortStudent[]> {

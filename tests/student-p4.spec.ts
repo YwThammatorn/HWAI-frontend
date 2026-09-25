@@ -162,11 +162,11 @@ const CATEGORIES = [
 ];
 
 const EVAL_ASSIGNMENTS = [
-  { id: "a-sp5-1", courseId: "c-sp4-a", name: "Lab 1", description: "", dueDate: "2026-01-10", maxPoints: 100, categoryId: "gc-sp5-1", acceptsFiles: true, fileTypes: [], submissionType: "individual", maxGroupSize: null, rubricIds: [], createdAt: "2026-01-01T00:00:00.000Z", updatedAt: "2026-01-01T00:00:00.000Z" },
-  { id: "a-sp5-2", courseId: "c-sp4-a", name: "Lab 2", description: "", dueDate: "2026-01-20", maxPoints: 100, categoryId: "gc-sp5-1", acceptsFiles: true, fileTypes: [], submissionType: "individual", maxGroupSize: null, rubricIds: [], createdAt: "2026-01-01T00:00:00.000Z", updatedAt: "2026-01-01T00:00:00.000Z" },
-  { id: "a-sp5-3", courseId: "c-sp4-a", name: "Midterm Exam", description: "", dueDate: "2026-02-01", maxPoints: 100, categoryId: "gc-sp5-2", acceptsFiles: false, fileTypes: [], submissionType: "individual", maxGroupSize: null, rubricIds: [], createdAt: "2026-01-01T00:00:00.000Z", updatedAt: "2026-01-01T00:00:00.000Z" },
+  { id: "a-sp5-1", courseId: "c-sp4-a", name: "Lab 1", description: "", dueDate: "2026-01-10", maxPoints: 100, categoryId: "gc-sp5-1", acceptsFiles: true, fileTypes: [], submissionType: "individual", maxGroupSize: null, rubricIds: [], gradingFinalized: true, createdAt: "2026-01-01T00:00:00.000Z", updatedAt: "2026-01-01T00:00:00.000Z" },
+  { id: "a-sp5-2", courseId: "c-sp4-a", name: "Lab 2", description: "", dueDate: "2026-01-20", maxPoints: 100, categoryId: "gc-sp5-1", acceptsFiles: true, fileTypes: [], submissionType: "individual", maxGroupSize: null, rubricIds: [], gradingFinalized: true, createdAt: "2026-01-01T00:00:00.000Z", updatedAt: "2026-01-01T00:00:00.000Z" },
+  { id: "a-sp5-3", courseId: "c-sp4-a", name: "Midterm Exam", description: "", dueDate: "2026-02-01", maxPoints: 100, categoryId: "gc-sp5-2", acceptsFiles: false, fileTypes: [], submissionType: "individual", maxGroupSize: null, rubricIds: [], gradingFinalized: true, createdAt: "2026-01-01T00:00:00.000Z", updatedAt: "2026-01-01T00:00:00.000Z" },
   // No categoryId at all — should land in the "Uncategorized" bucket.
-  { id: "a-sp5-4", courseId: "c-sp4-a", name: "Bonus Quiz", description: "", dueDate: "2026-01-05", maxPoints: 10, acceptsFiles: false, fileTypes: [], submissionType: "individual", maxGroupSize: null, rubricIds: [], createdAt: "2026-01-01T00:00:00.000Z", updatedAt: "2026-01-01T00:00:00.000Z" },
+  { id: "a-sp5-4", courseId: "c-sp4-a", name: "Bonus Quiz", description: "", dueDate: "2026-01-05", maxPoints: 10, acceptsFiles: false, fileTypes: [], submissionType: "individual", maxGroupSize: null, rubricIds: [], gradingFinalized: true, createdAt: "2026-01-01T00:00:00.000Z", updatedAt: "2026-01-01T00:00:00.000Z" },
 ];
 
 const EVAL_SUBMISSION_GRADED = {

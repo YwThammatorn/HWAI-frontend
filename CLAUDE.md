@@ -19,8 +19,8 @@
 
 ## Current active task
 _(อัปเดตช่องนี้ทุกครั้งที่เริ่ม task ใหม่ — ดูรายละเอียดที่ HANDOFF.md)_
-- Task: 2nd batch of 7 teacher feedback items — 4 sub-tasks (plan: `C:\Users\ASUS\.claude\plans\lively-tinkering-mitten.md`)
-- Status: **all 4 sub-tasks done and pushed** (rubric-card parity, Students table columns+delete, Finalize Grading + Score Book lock, isExam + points-based rubric) — see HANDOFF.md
+- Task: admin batch (23/9) — 11 items across admin/users, admin/courses, admin/curriculum (cohort removed system-wide, role picker removed from Add Teacher, Program dropdowns, Term 3, Primary Teacher autocomplete, Add Section discoverability). **Parallel work note**: this repo had 2 Claude sessions active at once this round (coordinated via SendMessage) — this session owns admin/*; a peer session owns `teacher/courses/[id]/clo/page.tsx` (CLO page redesign), pushed separately.
+- Status: **done and pushed** (f71dcff, 218ddd5, 5d5e162, 238abde, 039ba4a) — see HANDOFF.md. All prior rounds also fully done and pushed.
 
 # i18n Rule (TH/EN Language Toggle)
 

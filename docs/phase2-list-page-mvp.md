@@ -34,7 +34,7 @@ Cross-check กับ route จริงในโค้ด (`find src/app -name 
 | `/teacher/courses/[id]/clo` | MVP | CLO tracking — ตอบข้อ 3 ผูก Section |
 | `/teacher/courses/[id]/collaborators` | MVP | จัดการ TA/co-teacher — จำเป็นสำหรับ SectionRole |
 | `/teacher/courses/[id]/settings` | MVP | ต้องมี publishMode + gradingSource ต่อ Section |
-| `/teacher/courses/[id]/students/import` | MVP | อาจารย์เพิ่มนักศึกษาเอง (มติประชุม 4/9) |
+| ~~`/teacher/courses/[id]/students/import`~~ → popup บนหน้า `/students` (24/9/2569) | MVP | อาจารย์เพิ่มนักศึกษาเอง (มติประชุม 4/9) |
 | Grading-split config (ใหม่ ยังไม่สร้าง) | MVP | แบ่งงานตรวจ TA — PLAN.md Phase 5 |
 | AI Calibration Report (ใหม่ ยังไม่สร้าง) | MVP | หัวใจโครงงาน — ตอบข้อ 7 |
 | `/teacher/profile` | MVP | จำเป็นพื้นฐาน |

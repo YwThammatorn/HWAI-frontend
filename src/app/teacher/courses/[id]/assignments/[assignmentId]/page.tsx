@@ -37,7 +37,7 @@ export default function ViewAssignmentPage() {
   }
 
   const today = new Date().toISOString().split("T")[0];
-  const isPastDue = assignment.dueDate < today;
+  const isPastDue = !!assignment.dueDate && assignment.dueDate < today;
   const category = assignment.categoryId
     ? getCategoriesByCourse(id).find((c) => c.id === assignment.categoryId)
     : undefined;
@@ -48,14 +48,19 @@ export default function ViewAssignmentPage() {
   const fileTypeLabel = (ft: string) => (ft === "figma" ? "Figma" : ft === "pdf" ? "PDF" : t("รูปภาพ", "Image"));
 
   const detailRows: { label: string; value: React.ReactNode }[] = [
-    {
-      label: t("กำหนดส่ง", "Due date"),
-      value: (
-        <span className={isPastDue ? "text-[var(--s-err-text)]" : undefined}>
-          {fmtDate(assignment.dueDate)} {t("เวลา 23:59 น.", "at 11:59 PM")}
-        </span>
-      ),
-    },
+    assignment.dueDate
+      ? {
+          label: t("กำหนดส่ง", "Due date"),
+          value: (
+            <span className={isPastDue ? "text-[var(--s-err-text)]" : undefined}>
+              {fmtDate(assignment.dueDate)} {t("เวลา 23:59 น.", "at 11:59 PM")}
+            </span>
+          ),
+        }
+      : {
+          label: t("กำหนดส่ง", "Due date"),
+          value: <span>{t("ไม่มี — นักศึกษาไม่ต้องส่งงาน รอรับคะแนนอย่างเดียว", "None — students don't submit; they just receive their score")}</span>,
+        },
     { label: t("คะแนนเต็ม", "Max points"), value: <span className="tabular-nums">{assignment.maxPoints}</span> },
     {
       label: t("หมวดคะแนน", "Grading category"),
@@ -110,7 +115,9 @@ export default function ViewAssignmentPage() {
           <h1 className="text-2xl font-bold text-[var(--text-primary)]">{assignment.name}</h1>
           <div className="flex items-center gap-2 mt-1.5 text-sm flex-wrap">
             <span className={isPastDue ? "text-[var(--s-err-text)]" : "text-[var(--text-secondary)]"}>
-              {isPastDue ? `${t("เลยกำหนด", "Past due")} — ` : ""}{t("กำหนดส่ง", "Due")} {fmtDate(assignment.dueDate)}
+              {assignment.dueDate
+                ? <>{isPastDue ? `${t("เลยกำหนด", "Past due")} — ` : ""}{t("กำหนดส่ง", "Due")} {fmtDate(assignment.dueDate)}</>
+                : t("สอบ · ไม่มีกำหนดส่ง", "Exam · no due date")}
             </span>
             {category && (
               <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-[var(--accent-subtle)] text-[var(--accent)] text-xs font-medium tabular-nums">

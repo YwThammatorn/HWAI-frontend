@@ -249,9 +249,11 @@ test.describe("P4 — Students Roster + CSV Import Cross-Check", () => {
     await expect(page.getByText("64070777")).toBeVisible();
   });
 
-  test("CSV import cross-checks each row against the cohort database", async ({ page }) => {
-    await page.goto(`${BASE}/teacher/courses/c-p4/students/import`);
+  test("CSV import (popup) cross-checks each row against the cohort database", async ({ page }) => {
+    await page.goto(`${BASE}/teacher/courses/c-p4/students`);
     await page.waitForLoadState("networkidle");
+    await page.getByRole("button", { name: "Import CSV" }).click();
+    await expect(page.getByRole("dialog", { name: "Import Students" })).toBeVisible();
 
     const csv = [
       "student_id,first_name,last_name,email",
@@ -276,8 +278,10 @@ test.describe("P4 — Students Roster + CSV Import Cross-Check", () => {
   });
 
   test("importing enrolls only the valid, unenrolled, in-cohort row", async ({ page }) => {
-    await page.goto(`${BASE}/teacher/courses/c-p4/students/import`);
+    await page.goto(`${BASE}/teacher/courses/c-p4/students`);
     await page.waitForLoadState("networkidle");
+    await page.getByRole("button", { name: "Import CSV" }).click();
+    await expect(page.getByRole("dialog", { name: "Import Students" })).toBeVisible();
 
     const csv = [
       "student_id,first_name,last_name,email",

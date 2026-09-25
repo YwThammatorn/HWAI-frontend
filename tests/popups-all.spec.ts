@@ -121,6 +121,11 @@ const CASES: PopupCase[] = [
     open: async (page) => { const b = page.getByRole("button", { name: "Add Student" }).first(); await b.click(); return b; },
   },
   {
+    name: "teacher · Import Students (CSV)", role: "teacher", path: "/teacher/courses/c-po/students", title: "Import Students",
+    extra: { hwai_cohort_students_v1: [] },
+    open: async (page) => { const b = page.getByRole("button", { name: "Import CSV" }).first(); await b.click(); return b; },
+  },
+  {
     name: "teacher · Add Collaborator", role: "teacher", path: "/teacher/courses/c-po/collaborators", title: "Add Collaborator",
     open: async (page) => { const b = page.getByRole("button", { name: "Add Collaborator" }).first(); await b.click(); return b; },
   },
@@ -210,7 +215,8 @@ test.describe("Popup behaviour worth its own check", () => {
     await goto(page, "/admin/curriculum");
     await page.getByRole("button", { name: "New Curriculum" }).first().click();
     const dialog = page.getByRole("dialog", { name: "New Curriculum Version" });
-    await expect(dialog.getByRole("button", { name: "Create Version" })).toBeDisabled(); // needs a label
+    // Label now auto-fills from Program + Year (23/9/2569), so Create Version starts enabled.
+    await expect(dialog.getByRole("button", { name: "Create Version" })).toBeEnabled();
     await dialog.locator("input").first().fill("CE 2570");
     await dialog.getByRole("button", { name: "Create Version" }).click();
     await expect(dialog).toHaveCount(0);

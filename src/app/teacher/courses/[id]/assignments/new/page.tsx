@@ -48,6 +48,10 @@ export default function NewAssignmentPage() {
   const course = getCourse(id);
   const categories = getCategoriesByCourse(id);
   const todayStr = new Date().toISOString().split("T")[0];
+  // Either toggle alone is enough to skip the rubric and enter a max score by hand — an exam has no
+  // rubric because it's graded as a whole, a no-file assignment has no rubric because there's nothing
+  // for AI to check against it (23/9/2569 round 3). Independent toggles, either can combine with the other.
+  const needsManualScore = isExam || !acceptsFiles;
 
   const isDirty =
     name.trim() !== "" || description.trim() !== "" || dueDate !== "" || isExam || maxPoints !== "100" ||
@@ -79,13 +83,14 @@ export default function NewAssignmentPage() {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!isValid) return;
-    const points = isExam ? (parseInt(maxPoints) || 100) : criteriaTotalPoints(criteria);
+    // An Exam has no deadline and students never submit it (25/9/2569)
+    const points = needsManualScore ? (parseInt(maxPoints) || 100) : criteriaTotalPoints(criteria);
     const a = addAssignment({
       courseId: id,
       name: name.trim(),
       description: description.trim(),
       attachments: att.items.length > 0 ? att.items : undefined,
-      dueDate,
+      dueDate: isExam ? undefined : dueDate,
       maxPoints: points,
       categoryId: categoryId || undefined,
       acceptsFiles,
@@ -95,7 +100,7 @@ export default function NewAssignmentPage() {
       rubricIds: [],
       isExam,
     });
-    if (!isExam) {
+    if (!needsManualScore) {
       const rubric = addRubric({
         assignmentId: a.id,
         name: t("เกณฑ์การให้คะแนน", "Grading Rubric"),
@@ -109,8 +114,8 @@ export default function NewAssignmentPage() {
 
   const totalPoints = criteriaTotalPoints(criteria);
   const pointsOk = criteriaPointsOk(criteria);
-  const isValid = name.trim().length > 0 && dueDate !== "" && (!acceptsFiles || fileTypes.length > 0) &&
-    (isExam ? (parseInt(maxPoints) || 0) > 0 : pointsOk);
+  const isValid = name.trim().length > 0 && (isExam || dueDate !== "") && (!acceptsFiles || fileTypes.length > 0) &&
+    (needsManualScore ? (parseInt(maxPoints) || 0) > 0 : pointsOk);
 
   return (
       <main className="w-full px-8 py-8">
@@ -141,8 +146,13 @@ export default function NewAssignmentPage() {
           onSubmit={handleSubmit}
           onKeyDown={(e) => { if (e.key === "Enter" && (e.target as HTMLElement).tagName === "INPUT") e.preventDefault(); }}
         >
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 items-start">
-          <div className="space-y-5">
+          {/* Row-aligned grid (23/9/2569 round 5): General Info + Description share row 1,
+              Submission Settings + Deadline & Score share row 2 — a flat 4-item grid (not
+              nested column divs) so each row's two cards stretch to the SAME height instead
+              of two independently-tall columns that drift out of alignment. Description's
+              textarea grows to fill whatever height row 1 ends up being (see flex-1 below),
+              so the card never has dead space cut off mid-box. */}
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
 
           {/* General Information */}
           <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
@@ -160,85 +170,15 @@ export default function NewAssignmentPage() {
           </section>
 
           {/* Description */}
-          <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+          <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col">
             <SectionHeader icon="doc" label={t("รายละเอียดชิ้นงาน", "Description")} />
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder={t("อธิบายวัตถุประสงค์ รูปแบบไฟล์ที่ต้องส่ง เกณฑ์เบื้องต้น ฯลฯ", "Describe the objectives, file format, grading criteria, etc.")}
-              rows={4}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] resize-none transition-colors"
+              className="w-full flex-1 min-h-[100px] px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] resize-none transition-colors"
             />
             <AttachmentsEditor items={att.items} onChange={att.setItems} />
-          </section>
-
-          </div>
-          <div className="space-y-5">
-
-          {/* Details */}
-          <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-            <SectionHeader icon="cal" label={t("กำหนดเวลาและคะแนน", "Deadline & Score")} />
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">
-                  {t("วันครบกำหนด", "Due Date")} <span className="text-[var(--s-err-text)]">*</span>
-                </label>
-                <div className="relative">
-                  <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-                  </svg>
-                  <input
-                    type="date" value={dueDate} min={todayStr}
-                    onChange={(e) => setDueDate(e.target.value)}
-                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
-                    required
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">{t("คะแนนเต็ม", "Max Score")}</label>
-                {isExam ? (
-                  <>
-                    <div className="flex gap-1.5 mb-2 flex-wrap">
-                      {[10, 15, 25, 100].map((p) => (
-                        <button key={p} type="button" onClick={() => setMaxPoints(String(p))}
-                          className={["px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors",
-                            maxPoints === String(p) ? "bg-[var(--accent-solid)] text-[var(--accent-solid-text)] border-[var(--accent)]" : "border-gray-200 text-gray-500 hover:border-[var(--accent)] hover:text-[var(--accent)]"
-                          ].join(" ")}>
-                          {p}
-                        </button>
-                      ))}
-                    </div>
-                    <input
-                      type="number" min="1" max="1000" value={maxPoints}
-                      onChange={(e) => setMaxPoints(e.target.value)}
-                      placeholder={t("หรือพิมพ์เอง", "or type...")}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
-                    />
-                  </>
-                ) : (
-                  <div className="w-full px-3.5 py-2.5 rounded-xl border border-gray-100 bg-gray-50 text-sm text-gray-600">
-                    {t(`รวม ${totalPoints} คะแนน (จาก Rubric ด้านล่าง)`, `Total: ${totalPoints} pts (from the rubric below)`)}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {categories.length > 0 && (
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">{t("หมวดงาน (สัดส่วนคะแนน)", "Grading Category")}</label>
-                <select
-                  value={categoryId}
-                  onChange={(e) => setCategoryId(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
-                >
-                  <option value="">{t("ไม่ระบุ", "None")}</option>
-                  {categories.map((c) => (
-                    <option key={c.id} value={c.id}>{c.name} ({c.weight}%)</option>
-                  ))}
-                </select>
-              </div>
-            )}
           </section>
 
           {/* Submission Settings */}
@@ -275,6 +215,8 @@ export default function NewAssignmentPage() {
               <button
                 type="button"
                 onClick={() => setAcceptsFiles(v => !v)}
+                aria-label={t("รับไฟล์จากนักศึกษา", "Accept Files")}
+                aria-pressed={acceptsFiles}
                 className={[
                   "relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none",
                   acceptsFiles ? "bg-[var(--accent)]" : "bg-[var(--border-subtle)]",
@@ -349,11 +291,65 @@ export default function NewAssignmentPage() {
             </div>
           </section>
 
-          </div>
+          {/* Details */}
+          <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+            <SectionHeader icon="cal" label={isExam ? t("คะแนน", "Score") : t("กำหนดเวลาและคะแนน", "Deadline & Score")} />
+            <div className={isExam ? "" : "grid grid-cols-2 gap-4"}>
+              {!isExam && (
+              <div>
+                <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">
+                  {t("วันครบกำหนด", "Due Date")} <span className="text-[var(--s-err-text)]">*</span>
+                </label>
+                <div className="relative">
+                  <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                  </svg>
+                  <input
+                    type="date" value={dueDate} min={todayStr}
+                    onChange={(e) => setDueDate(e.target.value)}
+                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
+                    required
+                  />
+                </div>
+              </div>
+              )}
+              <div>
+                <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">{t("คะแนนเต็ม", "Max Score")}</label>
+                {needsManualScore ? (
+                  <input
+                    type="number" min="1" max="1000" value={maxPoints}
+                    onChange={(e) => setMaxPoints(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
+                  />
+                ) : (
+                  <div className="w-full px-3.5 py-2.5 rounded-xl border border-gray-100 bg-gray-50 text-sm text-gray-600">
+                    {t(`รวม ${totalPoints} คะแนน (จาก Rubric ด้านล่าง)`, `Total: ${totalPoints} pts (from the rubric below)`)}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {categories.length > 0 && (
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">{t("หมวดงาน (สัดส่วนคะแนน)", "Grading Category")}</label>
+                <select
+                  value={categoryId}
+                  onChange={(e) => setCategoryId(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
+                >
+                  <option value="">{t("ไม่ระบุ", "None")}</option>
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.id}>{c.name} ({c.weight}%)</option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </section>
+
           </div>
 
           {/* Rubric */}
-          {!isExam && (
+          {!needsManualScore && (
             <section className="mt-8" aria-labelledby="rubric-heading">
               <div className="flex items-center gap-2 mb-1.5">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent-bright)" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
@@ -367,15 +363,20 @@ export default function NewAssignmentPage() {
               <RubricCriteriaEditor
                 criteria={criteria}
                 setCriteria={(u) => { setRubricTouched(true); setCriteria(u); }}
-                assignmentName={name.trim()}
+                assignmentName={name.trim()} assignmentDescription={description} assignmentAttachments={att.items}
               />
             </section>
           )}
 
           {/* Actions */}
-          <div className="flex items-center justify-end gap-3 mt-8 pt-6 pb-4 border-t border-gray-100">
-            {!isExam && !pointsOk && (
-              <span className="text-xs text-amber-600 mr-auto">{t("ทุกเกณฑ์ต้องมีคะแนนมากกว่า 0 ก่อนสร้างชิ้นงาน", "Every criterion needs more than 0 points before you can create the assignment")}</span>
+          {/* flex-wrap + basis-full (23/9/2569): on a narrower viewport, a plain inline sibling next
+              to the two buttons got flex-shrunk down to almost nothing and wrapped one word per line,
+              crammed against the sidebar — unreadable, which is why the "must fill in the rubric"
+              warning looked like it wasn't showing at all. basis-full forces it onto its own full-width
+              line above the buttons at any viewport size. */}
+          <div className="flex flex-wrap items-center justify-end gap-3 mt-8 pt-6 pb-4 border-t border-gray-100">
+            {!needsManualScore && !pointsOk && (
+              <span className="text-xs text-amber-600 basis-full text-left">{t("ทุกเกณฑ์ต้องมีคะแนนมากกว่า 0 ก่อนสร้างชิ้นงาน", "Every criterion needs more than 0 points before you can create the assignment")}</span>
             )}
             <button
               type="button"

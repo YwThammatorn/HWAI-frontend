@@ -65,7 +65,7 @@ fetch('/mock-data/teachers-mockup.json').then(r=>r.json()).then(d=>{localStorage
     ล็อกอินเป็นนักศึกษาด้วยอีเมล 69070101@kmitl.ac.th (รหัสผ่านอะไรก็ได้ 4 ตัวขึ้นไป) จะเห็นวิชา+งานนี้
     และหน้า "ผลการประเมิน" จะโชว์ยอดรวมถ่วงน้ำหนักจริง (90/100 ในหมวด 40% -> Total so far 36.0%)
 
-fetch('/mock-data/student-flow-mockup.json').then(r=>r.json()).then(d=>{localStorage.setItem('hwai_cohort_students_v1', JSON.stringify(d.cohortStudents)); localStorage.setItem('hwai_students_v1', JSON.stringify(d.courseStudents)); localStorage.setItem('hwai_grading_categories_v1', JSON.stringify(d.gradingCategories)); localStorage.setItem('hwai_assignments_v1', JSON.stringify(d.assignments)); localStorage.setItem('hwai_rubrics_v1', JSON.stringify(d.rubrics)); localStorage.setItem('hwai_submissions_v1', JSON.stringify(d.submissions)); if(!localStorage.getItem('hwai_student_groups_v1')) localStorage.setItem('hwai_student_groups_v1', '[]'); location.reload();});
+fetch('/mock-data/student-flow-mockup.json').then(r=>r.json()).then(d=>{localStorage.setItem('hwai_cohort_students_v1', JSON.stringify(d.cohortStudents)); localStorage.setItem('hwai_students_v1', JSON.stringify(d.courseStudents)); localStorage.setItem('hwai_grading_categories_v1', JSON.stringify(d.gradingCategories)); localStorage.setItem('hwai_assignments_v1', JSON.stringify(d.assignments)); localStorage.setItem('hwai_rubrics_v1', JSON.stringify(d.rubrics)); localStorage.setItem('hwai_submissions_v1', JSON.stringify(d.submissions)); localStorage.setItem('hwai_clos_v1', JSON.stringify(d.clos)); if(!localStorage.getItem('hwai_student_groups_v1')) localStorage.setItem('hwai_student_groups_v1', '[]'); location.reload();});
 
 ---
 
@@ -81,7 +81,7 @@ fetch('/mock-data/student-flow-mockup.json').then(r=>r.json()).then(d=>{localSto
 
 [7] ทดสอบนำเข้านักศึกษาเข้าวิชา (teacher CSV import + cross-check กับระบบ)
     ต้องทำ [5] ก่อน (ให้มี cohort 13 คนใน hwai_cohort_students_v1)
-    ไปที่ /teacher/courses/c-mock-1/students/import -> อัปโหลด test-data/course-import-test.csv
+    ไปที่ /teacher/courses/c-mock-1/students -> กด "นำเข้าด้วย CSV" (popup) -> อัปโหลด test-data/course-import-test.csv
 
     ไฟล์นี้มี 12 แถว ตั้งใจใส่ชื่อ/อีเมลผิดในทุกแถวที่ยังไม่ลงวิชา เพื่อพิสูจน์ว่าระบบดึงชื่อจริงจากระบบมาแทน:
     - 10 แถวแรก (69070104-108, 68020101-104, 67010101) -> อยู่ใน cohort แล้ว ยังไม่ลงวิชาไหน
@@ -121,7 +121,7 @@ localStorage.setItem('hwai_submissions_v1', JSON.stringify(JSON.parse(localStora
      ต่างกันแค่ชื่อคน/ชื่อวิชา/หลักสูตร/หมวดคะแนน/งาน/rubric เป็นภาษาอังกฤษล้วน ไม่มีข้อความไทยเลย
      ตั้ง hwai_lang เป็น "en" ให้ด้วยในตัวเดียว (UI labels จะเป็นอังกฤษด้วย ไม่ใช่แค่ข้อมูล)
 
-fetch('/mock-data/curriculum-mockup-en.json').then(r=>r.json()).then(d=>{localStorage.setItem('hwai_curriculum_versions_v1', JSON.stringify(d.curriculumVersions)); localStorage.setItem('hwai_course_templates_v1', JSON.stringify(d.courseTemplates)); return fetch('/mock-data/courses-mockup-en.json').then(r=>r.json());}).then(d=>{localStorage.setItem('hwai_courses_v2', JSON.stringify(d)); return fetch('/mock-data/teachers-mockup-en.json').then(r=>r.json());}).then(d=>{localStorage.setItem('hwai_managed_teachers_v1', JSON.stringify(d)); return fetch('/mock-data/student-flow-mockup-en.json').then(r=>r.json());}).then(d=>{localStorage.setItem('hwai_cohort_students_v1', JSON.stringify(d.cohortStudents)); localStorage.setItem('hwai_students_v1', JSON.stringify(d.courseStudents)); localStorage.setItem('hwai_grading_categories_v1', JSON.stringify(d.gradingCategories)); localStorage.setItem('hwai_assignments_v1', JSON.stringify(d.assignments)); localStorage.setItem('hwai_rubrics_v1', JSON.stringify(d.rubrics)); localStorage.setItem('hwai_submissions_v1', JSON.stringify(d.submissions)); if(!localStorage.getItem('hwai_student_groups_v1')) localStorage.setItem('hwai_student_groups_v1', '[]'); localStorage.setItem('hwai_lang', 'en'); location.reload();});
+fetch('/mock-data/curriculum-mockup-en.json').then(r=>r.json()).then(d=>{localStorage.setItem('hwai_curriculum_versions_v1', JSON.stringify(d.curriculumVersions)); localStorage.setItem('hwai_course_templates_v1', JSON.stringify(d.courseTemplates)); return fetch('/mock-data/courses-mockup-en.json').then(r=>r.json());}).then(d=>{localStorage.setItem('hwai_courses_v2', JSON.stringify(d)); return fetch('/mock-data/teachers-mockup-en.json').then(r=>r.json());}).then(d=>{localStorage.setItem('hwai_managed_teachers_v1', JSON.stringify(d)); return fetch('/mock-data/student-flow-mockup-en.json').then(r=>r.json());}).then(d=>{localStorage.setItem('hwai_cohort_students_v1', JSON.stringify(d.cohortStudents)); localStorage.setItem('hwai_students_v1', JSON.stringify(d.courseStudents)); localStorage.setItem('hwai_grading_categories_v1', JSON.stringify(d.gradingCategories)); localStorage.setItem('hwai_assignments_v1', JSON.stringify(d.assignments)); localStorage.setItem('hwai_rubrics_v1', JSON.stringify(d.rubrics)); localStorage.setItem('hwai_submissions_v1', JSON.stringify(d.submissions)); localStorage.setItem('hwai_clos_v1', JSON.stringify(d.clos)); if(!localStorage.getItem('hwai_student_groups_v1')) localStorage.setItem('hwai_student_groups_v1', '[]'); localStorage.setItem('hwai_lang', 'en'); location.reload();});
 
      ล็อกอิน: somsak.c@kmitl.ac.th (teacher), 69070101@kmitl.ac.th (student) — รหัสผ่านอะไรก็ได้ตามเงื่อนไขเดิม
      อยากกลับไทย ก็รัน [1]/[2]/[3]/[5] เดิมทับได้เลย (คนละไฟล์ json แต่ id ชนกันพอดี ข้อมูลจะสลับกลับเป็นไทยทั้งชุด)
@@ -130,7 +130,7 @@ fetch('/mock-data/curriculum-mockup-en.json').then(r=>r.json()).then(d=>{localSt
 
 [4] ล้างข้อมูลทั้งหมด (ถ้าอยากเริ่มใหม่)
 
-['hwai_user','hwai_managed_teachers_v1','hwai_cohort_students_v1','hwai_courses_v2','hwai_curriculum_versions_v1','hwai_course_templates_v1','hwai_students_v1','hwai_grading_categories_v1','hwai_assignments_v1','hwai_rubrics_v1','hwai_submissions_v1','hwai_student_groups_v1'].forEach(k=>localStorage.removeItem(k)); location.reload();
+['hwai_user','hwai_managed_teachers_v1','hwai_cohort_students_v1','hwai_courses_v2','hwai_curriculum_versions_v1','hwai_course_templates_v1','hwai_students_v1','hwai_grading_categories_v1','hwai_assignments_v1','hwai_rubrics_v1','hwai_submissions_v1','hwai_student_groups_v1','hwai_clos_v1'].forEach(k=>localStorage.removeItem(k)); location.reload();
 
 ---
 
@@ -141,6 +141,6 @@ fetch('/mock-data/curriculum-mockup-en.json').then(r=>r.json()).then(d=>{localSt
 - teachers-mockup.json ใช้ courseId ที่ตรงกับ courses-mockup.json (c-mock-1..6) ทำ [2] ก่อน [3] เสมอ
 - student-flow-mockup.json ก็ใช้ courseId c-mock-1 เหมือนกัน ทำ [2] ก่อน [5] เสมอ
 - students_sample.csv ([3b]) กับ course-import-test.csv ([7]) เป็นคนละไฟล์ คนละหน้า แต่ ID ใช้ scheme เดียวกัน:
-  — [3b] คือ import นักศึกษาเข้า cohort กลางของระบบ (ผ่าน /admin/users, format 6 คอลัมน์ studentId,firstName,lastName,email,cohort,program)
+  — [3b] คือ import นักศึกษาเข้า cohort กลางของระบบ (ผ่าน /admin/users, format 5 คอลัมน์ studentId,firstName,lastName,email,program — cohort field ถูกเอาออกแล้ว 23/9/2569)
   — [7] คือ import นักศึกษาที่มีอยู่ใน cohort แล้ว เข้าไปลงทะเบียนวิชาใดวิชาหนึ่ง (ผ่านหน้า course ของอาจารย์, format 4 คอลัมน์ student_id,first_name,last_name,email)
   — ทำ [3b] เสร็จแล้ว คนที่เพิ่งนำเข้ามา (เช่น 69070109-118) ก็เอาไปใส่ใน CSV แบบ [7] เพื่อทดสอบ import เข้าวิชาต่อได้เลย

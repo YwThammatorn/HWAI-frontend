@@ -1,17 +1,21 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useCourses } from "@/lib/courses";
 import { useAssignments, type Submission } from "@/lib/assignments";
-import { useStudents } from "@/lib/students";
+import { useStudents, isWithdrawn } from "@/lib/students";
 import { useStudentGroups } from "@/lib/studentGroups";
 import { groupSubmissionsByTeam, SubmissionRow } from "@/lib/groupSubmissions";
 import { useLanguage } from "@/context/LanguageContext";
 import { getInitials } from "@/lib/utils";
 import SearchInput from "@/components/SearchInput";
 import PillTabBar from "@/components/PillTabBar";
+import WithdrawnTabs, { type WithdrawnTab } from "@/components/WithdrawnTabs";
+import ExamScoreTable from "@/components/ExamScoreTable";
+import Modal from "@/components/Modal";
+import { useCohortStudents } from "@/lib/cohort-students";
 
 // ── Stat card ─────────────────────────────────────────────────────────────
 
@@ -69,7 +73,6 @@ function CircleProgress({ pct, className }: { pct: number; className?: string })
 // ── Grade adjustment row ───────────────────────────────────────────────────
 
 interface RowState {
-  instructorScore: string; // controlled input — string to allow empty
   regrading: boolean;
 }
 
@@ -77,27 +80,29 @@ function GradeRow({
   row,
   maxPoints,
   rowState,
-  onChange,
   onRegrade,
   reviewHref,
+  acceptsFiles,
 }: {
   row: SubmissionRow;
   maxPoints: number;
   rowState: RowState;
-  onChange: (val: string) => void;
   onRegrade: () => void;
-  /** Where "Review" / "Recheck" opens this row's submission (recheck page, keyed by the representative submission). */
+  /** Where the Grade link opens this row's submission (recheck page, keyed by the representative submission). */
   reviewHref: string;
+  /** Re-grade (AI) only makes sense when there's a file for it to check (23/9/2569 round 3). */
+  acceptsFiles: boolean;
 }) {
   const { t } = useLanguage();
   const rep = row.subs[0];
   const isTeam = !!row.teamName;
 
-  const parsedInstructor = rowState.instructorScore === "" ? null : parseFloat(rowState.instructorScore);
-  const isModified =
-    parsedInstructor !== null &&
-    !isNaN(parsedInstructor) &&
-    parsedInstructor !== rep.aiScore;
+  // Score here is read-only display only (23/9/2569, corrects the 22/9 merge — the instructor never
+  // edits a score inline in this table; the only place to change one is the per-criterion recheck page,
+  // reached via the Review/Recheck link below). The effective score is the instructor's saved override
+  // once one exists, else the AI's own score; "Edited" marks a submission where those two differ.
+  const displayScore = rep.instructorScore ?? rep.aiScore;
+  const isModified = rep.instructorScore !== null && rep.instructorScore !== rep.aiScore;
 
   const STATUS_MAP = {
     not_graded: { label: t("ยังไม่ได้ตรวจ", "Not graded"), cls: "bg-[var(--bg-subtle)] text-[var(--text-secondary)]" },
@@ -148,29 +153,12 @@ function GradeRow({
         {new Date(rep.submittedAt).toLocaleDateString("th-TH", { day: "numeric", month: "short" })}
       </td>
 
-      {/* Score — merged AI + Instructor Score into one column (22/9/2569): the input already showed
-          the AI score as its placeholder when empty, so a separate "AI Score" column next to it was
-          showing the same number twice. Once the instructor overrides it, the AI score is kept
-          visible as a small "AI: N" hint so it isn't lost from the row entirely. */}
+      {/* Score — read-only (23/9/2569). Editing happens only on the recheck page, per criterion. */}
       <td className="px-4 py-3">
         <div className="flex items-center gap-1.5">
-          <input
-            type="number"
-            min={0}
-            max={maxPoints}
-            step={0.5}
-            value={rowState.instructorScore}
-            onChange={(e) => onChange(e.target.value)}
-            placeholder={rep.aiScore !== null ? String(rep.aiScore) : "—"}
-            aria-label={isTeam
-              ? t(`คะแนนอาจารย์ของทีม ${row.teamName}`, `Instructor score for team ${row.teamName}`)
-              : t(`คะแนนอาจารย์ของ ${rep.studentName}`, `Instructor score for ${rep.studentName}`)}
-            className={`w-20 h-8 rounded-lg border text-sm text-center tabular-nums focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)] transition-colors ${
-              isModified
-                ? "border-amber-300 bg-amber-50 text-amber-700 font-semibold"
-                : "border-gray-200 bg-white text-[var(--text-primary)]"
-            }`}
-          />
+          <span className={`text-sm tabular-nums ${isModified ? "font-semibold text-amber-700" : "text-[var(--text-primary)]"}`}>
+            {displayScore !== null ? displayScore : "—"}
+          </span>
           <span className="text-gray-300 text-xs">/{maxPoints}</span>
           {isModified && rep.aiScore !== null && (
             <span className="text-[10px] text-gray-400 whitespace-nowrap">{t(`AI: ${rep.aiScore}`, `AI: ${rep.aiScore}`)}</span>
@@ -190,42 +178,43 @@ function GradeRow({
         </span>
       </td>
 
-      {/* Review / Recheck — opens the submission (moved here from the assignment detail page).
-          Styled as an outlined pill button (22/9/2569, was a plain text link that didn't read as
-          clickable) — matches the Re-grade button next to it. */}
+      {/* Grade — opens the submission (moved here from the assignment detail page). Always visible
+          regardless of status (23/9/2569 round 3, was gated on need_review/graded, i.e. required an
+          AI score to exist first — a teacher couldn't jump straight into a no-AI assignment to enter a
+          score by hand). One consistent label instead of the old status-dependent Review/Recheck text.
+          Styled as an outlined pill button (22/9/2569) — matches the Re-grade button next to it. */}
       <td className="px-4 py-3 whitespace-nowrap">
-        {(rep.status === "need_review" || rep.status === "graded") && (
-          <Link
-            href={reviewHref}
-            className="inline-flex items-center h-7 px-2.5 whitespace-nowrap rounded-lg border border-[var(--accent)]/30 text-xs font-medium text-[var(--accent)] hover:border-[var(--accent)] hover:bg-[var(--accent-bright)]/10 active:scale-[0.97] transition-all"
-          >
-            {rep.status === "need_review"
-              ? t("ตรวจสอบ", "Review")
-              : isTeam ? t("ขอตรวจใหม่ทั้งทีม", "Recheck team") : t("ขอตรวจใหม่", "Recheck")}
-          </Link>
-        )}
+        <Link
+          href={reviewHref}
+          className="inline-flex items-center h-7 px-2.5 whitespace-nowrap rounded-lg border border-[var(--accent)]/30 text-xs font-medium text-[var(--accent)] hover:border-[var(--accent)] hover:bg-[var(--accent-bright)]/10 active:scale-[0.97] transition-all"
+        >
+          {isTeam ? t("ตรวจทั้งทีม", "Grade team") : t("ตรวจ", "Grade")}
+        </Link>
       </td>
 
-      {/* Re-grade button */}
+      {/* Re-grade (AI) button — hidden when the assignment doesn't accept files (23/9/2569 round 3,
+          nothing for AI to check); the teacher grades those entirely by hand via the Grade link above. */}
       <td className="px-4 py-3">
-        <button
-          onClick={onRegrade}
-          disabled={rowState.regrading}
-          aria-label={isTeam ? t(`Re-grade team ${row.teamName}`, `Re-grade team ${row.teamName}`) : t(`Re-grade ${rep.studentName}`, `Re-grade ${rep.studentName}`)}
-          className="flex items-center gap-1.5 h-7 px-2.5 whitespace-nowrap rounded-lg border border-gray-200 text-xs font-medium text-gray-500 hover:border-[var(--accent-bright)] hover:text-[var(--accent)] hover:bg-[var(--accent-bright)]/5 active:scale-[0.97] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-all"
-        >
-          {rowState.regrading ? (
-            <svg className="animate-spin" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
-              <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
-            </svg>
-          ) : (
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-              <polyline points="1 4 1 10 7 10"/>
-              <path d="M3.51 15a9 9 0 1 0 .49-4.56"/>
-            </svg>
-          )}
-          {t("Re-grade", "Re-grade")}
-        </button>
+        {acceptsFiles && (
+          <button
+            onClick={onRegrade}
+            disabled={rowState.regrading}
+            aria-label={isTeam ? t(`Re-grade team ${row.teamName}`, `Re-grade team ${row.teamName}`) : t(`Re-grade ${rep.studentName}`, `Re-grade ${rep.studentName}`)}
+            className="flex items-center gap-1.5 h-7 px-2.5 whitespace-nowrap rounded-lg border border-gray-200 text-xs font-medium text-gray-500 hover:border-[var(--accent-bright)] hover:text-[var(--accent)] hover:bg-[var(--accent-bright)]/5 active:scale-[0.97] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-all"
+          >
+            {rowState.regrading ? (
+              <svg className="animate-spin" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+              </svg>
+            ) : (
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                <polyline points="1 4 1 10 7 10"/>
+                <path d="M3.51 15a9 9 0 1 0 .49-4.56"/>
+              </svg>
+            )}
+            {t("Re-grade", "Re-grade")}
+          </button>
+        )}
       </td>
     </tr>
   );
@@ -242,6 +231,7 @@ function GradeAdjustmentTable({
   assignmentId,
   isGroup,
   onSaveAll,
+  acceptsFiles,
 }: {
   rows: SubmissionRow[];
   maxPoints: number;
@@ -249,23 +239,14 @@ function GradeAdjustmentTable({
   assignmentId: string;
   isGroup: boolean;
   onSaveAll: (changes: Record<string, number | null>) => void;
+  acceptsFiles: boolean;
 }) {
   const { t } = useLanguage();
 
   const [rowStates, setRowStates] = useState<Record<string, RowState>>(() =>
-    Object.fromEntries(
-      rows.map((row) => [
-        row.key,
-        {
-          instructorScore: row.subs[0].instructorScore !== null ? String(row.subs[0].instructorScore) : "",
-          regrading: false,
-        },
-      ])
-    )
+    Object.fromEntries(rows.map((row) => [row.key, { regrading: false }]))
   );
 
-  const [saving, setSaving] = useState(false);
-  const [savedMsg, setSavedMsg] = useState(false);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
 
@@ -278,51 +259,16 @@ function GradeAdjustmentTable({
   });
   const countBy = (st: Submission["status"]) => rows.filter((r) => r.subs[0].status === st).length;
 
-  const modifiedCount = useMemo(() => {
-    return rows.filter((row) => {
-      const val = rowStates[row.key]?.instructorScore ?? "";
-      const parsed = val === "" ? null : parseFloat(val);
-      return parsed !== null && !isNaN(parsed) && parsed !== row.subs[0].aiScore;
-    }).length;
-  }, [rowStates, rows]);
-
-  function updateRow(key: string, val: string) {
-    // Clamp to [0, maxPoints]
-    const parsed = parseFloat(val);
-    let clamped = val;
-    if (!isNaN(parsed)) clamped = String(Math.min(maxPoints, Math.max(0, parsed)));
-    setRowStates((prev) => ({ ...prev, [key]: { ...prev[key], instructorScore: clamped } }));
-  }
-
   async function handleRegrade(row: SubmissionRow) {
-    setRowStates((prev) => ({ ...prev, [row.key]: { ...prev[row.key], regrading: true } }));
+    setRowStates((prev) => ({ ...prev, [row.key]: { regrading: true } }));
     await new Promise((r) => setTimeout(r, 1500));
     // Mock: regenerate score within ±15% of maxPoints
     const newScore = Math.round(maxPoints * (0.55 + Math.random() * 0.4));
-    setRowStates((prev) => ({
-      ...prev,
-      [row.key]: { instructorScore: "", regrading: false },
-    }));
+    setRowStates((prev) => ({ ...prev, [row.key]: { regrading: false } }));
     // Every team member's submission gets the same re-graded score.
     const changes: Record<string, number> = {};
     row.subs.forEach((s) => { changes[s.id] = newScore; });
     onSaveAll(changes);
-  }
-
-  function handleSaveAll() {
-    setSaving(true);
-    const changes: Record<string, number | null> = {};
-    rows.forEach((row) => {
-      const val = rowStates[row.key]?.instructorScore ?? "";
-      const parsed = val === "" ? null : parseFloat(val);
-      if (parsed !== null && !isNaN(parsed) && parsed !== row.subs[0].aiScore) {
-        row.subs.forEach((s) => { changes[s.id] = parsed; });
-      }
-    });
-    onSaveAll(changes);
-    setSaving(false);
-    setSavedMsg(true);
-    setTimeout(() => setSavedMsg(false), 3000);
   }
 
   return (
@@ -333,30 +279,10 @@ function GradeAdjustmentTable({
           <h2 className="text-sm font-bold text-[var(--text-primary)]">{t("ปรับคะแนน", "Grade Adjustment")}</h2>
           <p className="text-xs text-gray-400 mt-0.5">
             {t(
-              `${rows.length} รายการ — พิมพ์ "คะแนนอาจารย์" เพื่อ override AI หรือกด Re-grade เพื่อให้ AI ตรวจใหม่`,
-              `${rows.length} row(s) — type an instructor score to override AI, or Re-grade to re-run AI`
+              `${rows.length} รายการ — กด "ตรวจ" เพื่อแก้คะแนนรายเกณฑ์ หรือกด Re-grade เพื่อให้ AI ตรวจใหม่ทั้งชิ้น`,
+              `${rows.length} row(s) — open Grade to edit per-criterion scores, or Re-grade to have AI re-check the whole submission`
             )}
           </p>
-        </div>
-        <div className="flex items-center gap-3">
-          {savedMsg && (
-            <span role="status" className="text-xs font-semibold text-green-700 bg-green-50 border border-green-100 rounded-lg px-3 py-1.5">
-              {t("บันทึกแล้ว ✓", "Saved ✓")}
-            </span>
-          )}
-          <button
-            onClick={handleSaveAll}
-            disabled={modifiedCount === 0 || saving}
-            className="flex items-center gap-1.5 h-9 px-4 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
-          >
-            {saving ? (
-              t("กำลังบันทึก…", "Saving…")
-            ) : modifiedCount > 0 ? (
-              t(`บันทึก ${modifiedCount} รายการ`, `Save ${modifiedCount} change(s)`)
-            ) : (
-              t("บันทึกทั้งหมด", "Save All")
-            )}
-          </button>
         </div>
       </div>
 
@@ -397,14 +323,14 @@ function GradeAdjustmentTable({
                 <th scope="col" className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">{t("วันที่ส่ง", "Submitted")}</th>
                 <th scope="col" className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">{t("คะแนน", "Score")}</th>
                 <th scope="col" className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">{t("สถานะ", "Status")}</th>
-                <th scope="col" className="px-4 py-2.5 w-32" aria-label={t("ตรวจสอบ", "Review")}></th>
+                <th scope="col" className="px-4 py-2.5 w-32" aria-label={t("ตรวจ", "Grade")}></th>
                 <th scope="col" className="px-4 py-2.5 w-32" aria-label={t("Re-grade", "Re-grade")}></th>
               </tr>
             </thead>
             <tbody>
               {visibleRows.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-10 text-center text-sm text-[var(--text-muted)]">{t("ไม่พบผลการค้นหา", "No results found")}</td>
+                  <td colSpan={6} className="px-4 py-10 text-center text-sm text-[var(--text-muted)]">{t("ไม่พบผลการค้นหา", "No results found")}</td>
                 </tr>
               )}
               {visibleRows.map((row) => (
@@ -412,10 +338,10 @@ function GradeAdjustmentTable({
                   key={row.key}
                   row={row}
                   maxPoints={maxPoints}
-                  rowState={rowStates[row.key] ?? { instructorScore: "", regrading: false }}
-                  onChange={(val) => updateRow(row.key, val)}
+                  rowState={rowStates[row.key] ?? { regrading: false }}
                   onRegrade={() => handleRegrade(row)}
                   reviewHref={`/teacher/courses/${courseId}/assignments/${assignmentId}/recheck?sub=${row.subs[0].id}`}
+                  acceptsFiles={acceptsFiles}
                 />
               ))}
             </tbody>
@@ -438,9 +364,12 @@ export default function GradingProgressPage() {
   const { id, assignmentId } = useParams<{ id: string; assignmentId: string }>();
   const { t } = useLanguage();
   const { getCourse } = useCourses();
-  const { getAssignment, getSubmissionsByAssignment, updateSubmission, updateAssignment } = useAssignments();
+  const { getAssignment, getSubmissionsByAssignment, addSubmission, updateSubmission, updateAssignment } = useAssignments();
+  const { findByStudentId } = useCohortStudents();
   const { getGroupsByAssignment } = useStudentGroups();
   const { getStudentsByCourse } = useStudents();
+  const [tabState, setTabState] = useState<WithdrawnTab>("active");
+  const [announceOpen, setAnnounceOpen] = useState(false);
 
   const course = getCourse(id);
   const assignment = getAssignment(assignmentId);
@@ -461,29 +390,87 @@ export default function GradingProgressPage() {
   // groupSubmissionsByTeam / TeamFormationModal / RecheckPage.handleSave.
   const isGroupAssignment = assignment.submissionType === "group";
   const groups = isGroupAssignment ? getGroupsByAssignment(assignmentId) : [];
-  const rows: SubmissionRow[] = isGroupAssignment
+  const allRows: SubmissionRow[] = isGroupAssignment
     ? groupSubmissionsByTeam(submissions, groups, t("ทีม", "Team"))
     : submissions.map((s) => ({ key: s.id, subs: [s] }));
-  const repSubs = rows.map((r) => r.subs[0]);
 
-  const enrolled = getStudentsByCourse(id).length;
-  const total = rows.length;
-  const processed = repSubs.filter((s) => s.status === "graded").length;
-  const needsReview = repSubs.filter((s) => s.status === "need_review").length;
+  // Withdrawn students' work is kept apart (24/9/2569): it never feeds the stats below, can't hold up
+  // "Finish Grading", and is only reachable from the Withdrawn tab. A team row counts as withdrawn only
+  // when every member has withdrawn.
+  const roster = getStudentsByCourse(id);
+  const withdrawnStudentIds = new Set(roster.filter(isWithdrawn).map((s) => s.studentId));
+  const rowWithdrawn = (r: SubmissionRow) => r.subs.every((s) => withdrawnStudentIds.has(s.studentId));
+  const rows = allRows.filter((r) => !rowWithdrawn(r));
+  const withdrawnRows = allRows.filter(rowWithdrawn);
+  const activeStudents = roster.filter((s) => !isWithdrawn(s));
+  const withdrawnStudents = roster.filter(isWithdrawn);
+  const activeCount = activeStudents.length;
+  // An Exam is never submitted (25/9/2569): its rows are the enrolled students themselves, and the
+  // teacher types each score in (ExamScoreTable). "Processed" then means "has a score".
+  const isExam = !!assignment.isExam;
+  const withdrawnCount = isExam ? withdrawnStudents.length : withdrawnRows.length;
+  const tab: WithdrawnTab = withdrawnCount === 0 ? "active" : tabState;
+  const repSubs = rows.map((r) => r.subs[0]);
+  const gradedOf = new Map(submissions.filter((s) => s.status === "graded").map((s) => [s.studentId, s.instructorScore ?? s.aiScore ?? 0]));
+  const examScores = Object.fromEntries(gradedOf);
+  const activeScores = activeStudents.filter((s) => gradedOf.has(s.studentId)).map((s) => gradedOf.get(s.studentId) as number);
+
+  const enrolled = activeCount;
+  const total = isExam ? activeCount : rows.length;
+  const processed = isExam ? activeScores.length : repSubs.filter((s) => s.status === "graded").length;
+  const needsReview = isExam ? 0 : repSubs.filter((s) => s.status === "need_review").length;
   const scoredSubs = repSubs.filter((s) => s.aiScore !== null);
-  const avgScore =
-    scoredSubs.length > 0
+  const avgScore = isExam
+    ? (activeScores.length > 0 ? activeScores.reduce((a, b) => a + b, 0) / activeScores.length : null)
+    : scoredSubs.length > 0
       ? scoredSubs.reduce((sum, s) => sum + (s.aiScore ?? 0), 0) / scoredSubs.length
       : null;
+  const topScore = activeScores.length > 0 ? Math.max(...activeScores) : null;
   const pct = total > 0 ? (processed / total) * 100 : 0;
   const isDone = total > 0 && processed === total;
   const finalized = !!assignment.gradingFinalized;
 
+  // "Finish" is also the announcement (25/9/2569): students see no score until this is confirmed
+  // (see studentVisibleSubmission), so it always goes through a confirm popup.
   function handleFinishGrading() {
     updateAssignment(assignmentId, { gradingFinalized: true });
+    setAnnounceOpen(false);
   }
   function handleReopenGrading() {
+    if (!window.confirm(
+      t("เปิดตรวจใหม่?", "Reopen grading?") + "\n" +
+      t("นักศึกษาจะไม่เห็นคะแนนของงานนี้อีกจนกว่าจะประกาศผลอีกครั้ง", "Students won't see scores for this assignment again until you announce the results once more.")
+    )) return;
     updateAssignment(assignmentId, { gradingFinalized: false });
+  }
+
+  // Exam scores: a student who has no submission yet gets one created here (nothing to attach — they
+  // never submit), so the Score Book, Evaluation page and student view all read it the usual way.
+  function handleSaveExamScores(changes: Record<string, number | null>) {
+    Object.entries(changes).forEach(([studentId, score]) => {
+      const existing = submissions.find((s) => s.studentId === studentId);
+      if (existing) {
+        updateSubmission(existing.id, score === null
+          ? { instructorScore: null, aiScore: null, status: "not_graded" }
+          : { instructorScore: score, status: "graded" });
+        return;
+      }
+      if (score === null) return;
+      const stu = roster.find((s) => s.studentId === studentId);
+      addSubmission({
+        assignmentId,
+        studentId,
+        studentName: stu ? `${stu.firstName} ${stu.lastName}` : studentId,
+        email: stu?.email ?? "",
+        submittedAt: new Date().toISOString(),
+        fileUrl: null,
+        aiScore: null,
+        instructorScore: score,
+        instructorComment: "",
+        externalUseConsent: false,
+        status: "graded",
+      });
+    });
   }
 
   function handleSaveChanges(changes: Record<string, number | null>) {
@@ -524,11 +511,12 @@ export default function GradingProgressPage() {
             <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">{assignment.name}</h1>
             <div className="flex items-center gap-3 text-sm text-gray-400">
               <span>
-                {t("ส่งภายใน", "Due")}{" "}
-                {new Date(assignment.dueDate + "T00:00:00").toLocaleDateString("en-US", {
-                  month: "short", day: "numeric", year: "numeric",
-                })}{" "}
-                {t("เวลา 23:59 น.", "at 11:59 PM")}
+                {assignment.dueDate
+                  ? <>{t("ส่งภายใน", "Due")}{" "}{new Date(assignment.dueDate + "T00:00:00").toLocaleDateString("en-US", {
+                      month: "short", day: "numeric", year: "numeric",
+                    })}{" "}
+                    {t("เวลา 23:59 น.", "at 11:59 PM")}</>
+                  : t("สอบ · ไม่มีกำหนดส่ง", "Exam · no due date")}
               </span>
               <span className="font-medium text-[var(--accent)]">• {t("ตรวจงาน", "Grading")}</span>
             </div>
@@ -556,6 +544,10 @@ export default function GradingProgressPage() {
                   </svg>
                   {t("ดูผลลัพธ์", "View Results")}
                 </Link>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border bg-[var(--s-ok-bg)] text-[var(--s-ok-text)] border-[var(--s-ok-bd)]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-current" aria-hidden="true" />
+                  {t("ประกาศผลแล้ว", "Results announced")}
+                </span>
                 {/* Safety valve (23/9/2569) — finalizing was never meant to be a one-way door. */}
                 <button
                   type="button"
@@ -570,13 +562,13 @@ export default function GradingProgressPage() {
               // before Score Book locks and View Results becomes reachable (23/9/2569).
               <button
                 type="button"
-                onClick={handleFinishGrading}
+                onClick={() => setAnnounceOpen(true)}
                 className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-semibold transition-colors"
               >
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                   <polyline points="20 6 9 17 4 12"/>
                 </svg>
-                {t("เสร็จสิ้นการตรวจ", "Finish Grading")}
+                {t("เสร็จสิ้นและประกาศผล", "Finish & announce")}
               </button>
             ) : (
               <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[var(--accent-bright)]/60 text-[var(--text-primary)] text-sm font-semibold select-none">
@@ -589,12 +581,16 @@ export default function GradingProgressPage() {
           </div>
         </div>
 
+        {/* Enrolled / Withdrawn — only appears once someone has withdrawn */}
+        <WithdrawnTabs tab={tab} onChange={setTabState} activeCount={isExam ? activeCount : rows.length} withdrawnCount={withdrawnCount} />
+
+        {tab === "active" && (<>
         {/* Stats */}
         <div className="grid grid-cols-4 gap-4 mb-6">
           <StatCard
-            label={t("ตรวจแล้ว", "Processed")}
+            label={isExam ? t("ให้คะแนนแล้ว", "Scored") : t("ตรวจแล้ว", "Processed")}
             value={processed}
-            sub={t("เสร็จสิ้น", "completed")}
+            sub={isExam ? t(`จาก ${total} คน`, `of ${total} students`) : t("เสร็จสิ้น", "completed")}
             color="var(--s-ok-text)"
             icon={
               <div className="w-7 h-7 rounded-full bg-[var(--s-ok-bg)] flex items-center justify-center">
@@ -605,9 +601,9 @@ export default function GradingProgressPage() {
             }
           />
           <StatCard
-            label={isGroupAssignment ? t("ทีมทั้งหมด", "Total Teams") : t("ส่งแล้ว", "Submitted")}
-            value={total}
-            sub={isGroupAssignment
+            label={isExam ? t("ยังไม่มีคะแนน", "Not scored yet") : isGroupAssignment ? t("ทีมทั้งหมด", "Total Teams") : t("ส่งแล้ว", "Submitted")}
+            value={isExam ? total - processed : total}
+            sub={isExam ? t("คน", "students") : isGroupAssignment
               ? t("ทีม", "team(s)")
               : enrolled > 0
                 ? t(`/ ${enrolled} · ยังไม่ส่ง ${Math.max(0, enrolled - total)}`, `/ ${enrolled} · ${Math.max(0, enrolled - total)} pending`)
@@ -622,11 +618,17 @@ export default function GradingProgressPage() {
             }
           />
           <StatCard
-            label={t("รอตรวจสอบ", "Needs Review")}
-            value={needsReview}
-            sub={t("รอดำเนินการ", "Pending")}
-            color="var(--s-warn-text)"
-            icon={
+            label={isExam ? t("คะแนนสูงสุด", "Highest") : t("รอตรวจสอบ", "Needs Review")}
+            value={isExam ? (topScore ?? "—") : needsReview}
+            sub={isExam ? t(`เต็ม ${assignment.maxPoints}`, `of ${assignment.maxPoints}`) : t("รอดำเนินการ", "Pending")}
+            color={isExam ? "var(--accent)" : "var(--s-warn-text)"}
+            icon={isExam ? (
+              <div className="w-7 h-7 rounded-lg bg-[var(--accent-subtle)] flex items-center justify-center">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>
+                </svg>
+              </div>
+            ) : (
               <div className="w-7 h-7 rounded-lg bg-[var(--s-warn-bg)] flex items-center justify-center">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--s-warn-text)" strokeWidth="2" strokeLinecap="round">
                   <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
@@ -634,7 +636,7 @@ export default function GradingProgressPage() {
                   <line x1="12" y1="17" x2="12.01" y2="17"/>
                 </svg>
               </div>
-            }
+            )}
           />
           <StatCard
             label={t("คะแนนเฉลี่ย", "Avg. Score")}
@@ -658,12 +660,12 @@ export default function GradingProgressPage() {
               </p>
               <p className="text-base font-semibold text-[var(--text-primary)]">
                 {total === 0
-                  ? t("ยังไม่มีการส่งงาน", "No Submissions Yet")
+                  ? (isExam ? t("ยังไม่มีนักศึกษาในวิชานี้", "No students yet") : t("ยังไม่มีการส่งงาน", "No Submissions Yet"))
                   : isDone
-                  ? t("ตรวจเสร็จแล้ว", "Grading Complete")
-                  : t("กำลังวิเคราะห์งาน", "Analyzing Submissions")}
+                  ? (isExam ? t("ให้คะแนนครบทุกคนแล้ว", "Everyone is scored") : t("ตรวจเสร็จแล้ว", "Grading Complete"))
+                  : (isExam ? t("กำลังกรอกคะแนน", "Entering scores") : t("กำลังวิเคราะห์งาน", "Analyzing Submissions"))}
               </p>
-              {!isDone && total > 0 && (
+              {!isDone && total > 0 && !isExam && (
                 <p className="text-sm text-gray-400 mt-1">
                   {t("เวลาที่เหลือโดยประมาณ:", "Estimated remaining time:")}{" "}
                   <span className="text-[var(--accent)] font-medium">
@@ -682,25 +684,81 @@ export default function GradingProgressPage() {
               {isDone && !finalized && (
                 <button
                   type="button"
-                  onClick={handleFinishGrading}
+                  onClick={() => setAnnounceOpen(true)}
                   className="inline-flex items-center gap-2 mt-4 px-5 py-2.5 bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-semibold rounded-xl transition-colors"
                 >
-                  {t("เสร็จสิ้นการตรวจ", "Finish Grading")}
+                  {t("เสร็จสิ้นและประกาศผล", "Finish & announce")}
                 </button>
               )}
             </div>
           </div>
         </div>
 
-        {/* Grade Adjustment table */}
+        </>)}
+
+        {isExam ? (
+          <ExamScoreTable
+            key={tab}
+            students={tab === "active" ? activeStudents : withdrawnStudents}
+            titleOf={(sid) => findByStudentId(sid)?.title}
+            scores={examScores}
+            maxPoints={assignment.maxPoints}
+            readOnly={tab === "withdrawn" || finalized}
+            readOnlyReason={tab === "withdrawn"
+              ? t("นักศึกษาที่ถอนแล้ว — ดูอย่างเดียว", "Withdrawn students — view only")
+              : t("ตรวจเสร็จสิ้นแล้ว — กด “เปิดตรวจใหม่” ถ้าต้องแก้คะแนน", "Grading is finished — press “Reopen grading” to change scores")}
+            onSave={handleSaveExamScores}
+          />
+        ) : (
+        /* Grade Adjustment table */
         <GradeAdjustmentTable
-          rows={rows}
+          key={tab}
+          rows={tab === "active" ? rows : withdrawnRows}
           maxPoints={assignment.maxPoints}
           courseId={id}
           assignmentId={assignmentId}
           isGroup={isGroupAssignment}
           onSaveAll={handleSaveChanges}
+          acceptsFiles={assignment.acceptsFiles ?? true}
         />
+        )}
+        <Modal
+          open={announceOpen}
+          onClose={() => setAnnounceOpen(false)}
+          size="sm"
+          title={t("ประกาศผลให้นักศึกษา?", "Announce results to students?")}
+          description={assignment.name}
+          footer={
+            <>
+              <button
+                type="button"
+                onClick={() => setAnnounceOpen(false)}
+                className="h-10 px-5 rounded-xl border border-[var(--border)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
+              >
+                {t("ยังก่อน", "Not yet")}
+              </button>
+              <button
+                type="button"
+                onClick={handleFinishGrading}
+                className="h-10 px-5 rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-semibold active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
+              >
+                {t("ประกาศผล", "Announce results")}
+              </button>
+            </>
+          }
+        >
+          <p className="text-sm text-[var(--text-primary)] leading-relaxed">
+            {t(
+              `ตรวจครบแล้ว ${processed} จาก ${total} คน — นักศึกษาแต่ละคนจะเห็นคะแนนของตัวเองทันที`,
+              `All ${processed} of ${total} are graded. Each student will see their own score right away.`
+            )}
+          </p>
+          <ul className="mt-3 flex flex-col gap-1.5 text-sm text-[var(--text-secondary)] list-disc pl-5">
+            <li>{t("ตอนนี้นักศึกษาเห็นแค่ว่างานกำลังถูกตรวจ ยังไม่เห็นคะแนน", "Until now students only see that their work is being graded — no score")}</li>
+            <li>{t("คะแนนใน Score Book จะถูกล็อก (ดูอย่างเดียว)", "Scores in the Score Book are locked (view only)")}</li>
+            <li>{t("กด “เปิดตรวจใหม่” ได้ แต่นักศึกษาจะไม่เห็นคะแนนอีกจนกว่าจะประกาศใหม่", "You can reopen grading, but students won't see scores again until you announce once more")}</li>
+          </ul>
+        </Modal>
       </main>
   );
 }

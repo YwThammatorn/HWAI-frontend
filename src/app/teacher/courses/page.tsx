@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useCourses } from "@/lib/courses";
-import { useStudents } from "@/lib/students";
+import { useStudents, isWithdrawn, withdrawnIds } from "@/lib/students";
 import { useAssignments } from "@/lib/assignments";
 import { useManagedTeachers } from "@/lib/managed-teachers";
 import { useSectionRoles } from "@/lib/section-roles";
@@ -58,14 +58,18 @@ export default function CoursesPage() {
   const courseStats = useMemo(() => {
     return courses.reduce<Record<string, { studentCount: number; allGraded: boolean; activeAssignments: number }>>((acc, c) => {
       const assignments = getAssignmentsByCourse(c.id);
+      // Withdrawn students are out of the card's numbers (24/9/2569).
+      const roster = getStudentsByCourse(c.id);
+      const withdrawn = withdrawnIds(roster);
+      const liveSubs = (assignmentId: string) => getSubmissionsByAssignment(assignmentId).filter((s) => !withdrawn.has(s.studentId));
       acc[c.id] = {
-        studentCount: getStudentsByCourse(c.id).length,
+        studentCount: roster.filter((s) => !isWithdrawn(s)).length,
         allGraded: assignments.length > 0 && assignments.every((a) => {
-          const subs = getSubmissionsByAssignment(a.id);
+          const subs = liveSubs(a.id);
           return subs.length > 0 && subs.every((s) => s.status === "graded");
         }),
         activeAssignments: assignments.filter((a) =>
-          getSubmissionsByAssignment(a.id).some((s) => s.status !== "graded")
+          liveSubs(a.id).some((s) => s.status !== "graded")
         ).length,
       };
       return acc;
@@ -221,7 +225,7 @@ function CourseCard({ course, studentCount, allGraded, activeAssignments, isArch
             </div>
             <div className="min-w-0">
               <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-0.5">{t("ภาคเรียนที่", "Term")}</p>
-              <p className="text-xs font-semibold text-[var(--accent)] truncate">{termLabel}</p>
+              <p className="text-xs font-semibold text-[var(--text-primary)] truncate">{termLabel}</p>
             </div>
           </div>
 

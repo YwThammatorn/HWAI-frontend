@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCourses } from "@/lib/courses";
-import { useStudents } from "@/lib/students";
+import { useStudents, isWithdrawn } from "@/lib/students";
 import { useCohortStudents } from "@/lib/cohort-students";
 import { useAssignments, type Assignment } from "@/lib/assignments";
 import { useGradingCategories } from "@/lib/gradingCategories";
@@ -16,6 +16,7 @@ import SortableTh from "@/components/SortableTh";
 import StatCard from "@/components/StatCard";
 import EmptyState from "@/components/EmptyState";
 import RubricBreakdownModal from "@/components/RubricBreakdownModal";
+import WithdrawnTabs, { type WithdrawnTab } from "@/components/WithdrawnTabs";
 
 type SortKey = "id" | "name" | "total";
 
@@ -44,6 +45,7 @@ export default function ScoreBookPage() {
   const { getCategoriesByCourse } = useGradingCategories();
 
   const [search, setSearch] = useState("");
+  const [tabState, setTabState] = useState<WithdrawnTab>("active");
   const [categoryFilter, setCategoryFilter] = useState("all");
   // Which cell's rubric breakdown popup is open (null = closed).
   const [breakdown, setBreakdown] = useState<{ row: ScoreBookRow; assignment: Assignment } | null>(null);
@@ -58,7 +60,13 @@ export default function ScoreBookPage() {
   }
 
   const course = getCourse(id);
-  const roster = getStudentsByCourse(id);
+  // Withdrawn students sit on their own tab and never count toward the class numbers (24/9/2569) —
+  // the book below is built from ONE group at a time, so averages/graded % only ever cover that group.
+  const fullRoster = getStudentsByCourse(id);
+  const withdrawnRoster = fullRoster.filter(isWithdrawn);
+  const activeRoster = fullRoster.filter((s) => !isWithdrawn(s));
+  const tab: WithdrawnTab = withdrawnRoster.length === 0 ? "active" : tabState;
+  const roster = tab === "active" ? activeRoster : withdrawnRoster;
   const assignments = getAssignmentsByCourse(id);
   const categories = getCategoriesByCourse(id);
   const today = new Date().toISOString().split("T")[0];
@@ -255,6 +263,8 @@ export default function ScoreBookPage() {
         </button>
       </div>
 
+      <WithdrawnTabs tab={tab} onChange={setTabState} activeCount={activeRoster.length} withdrawnCount={withdrawnRoster.length} />
+
       {assignments.length === 0 || roster.length === 0 ? (
         <EmptyState
           iconColor="var(--accent-bright)"
@@ -278,8 +288,8 @@ export default function ScoreBookPage() {
         />
       ) : (
         <>
-          {/* Summary */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          {/* Summary — class numbers, so not shown for the withdrawn group */}
+          {tab === "active" && <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <StatCard
               label={t("นักศึกษา", "Students")} value={roster.length} color="var(--s-info-text)" bg="var(--s-info-bg)"
               icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>}
@@ -298,7 +308,7 @@ export default function ScoreBookPage() {
               onClick={() => router.push(`/teacher/courses/${id}/grading`)}
               icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="M5 3h14l-2 7H7L5 3z"/><path d="M7 10l-2 11h14L17 10"/></svg>}
             />
-          </div>
+          </div>}
 
           {/* Toolbar + legend */}
           <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
@@ -465,7 +475,8 @@ export default function ScoreBookPage() {
                     </tr>
                   ))}
                 </tbody>
-                <tfoot>
+                {/* class averages only make sense for the enrolled group */}
+                {tab === "active" && <tfoot>
                   <tr>
                     <td colSpan={2} className="sticky left-0 bottom-0 z-20 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] bg-[var(--bg-surface)] border-t border-[var(--border-subtle)]">
                       {t("เฉลี่ยทั้งห้อง", "Class average")}
@@ -482,7 +493,7 @@ export default function ScoreBookPage() {
                       {book.classAverage === null ? "—" : `${book.classAverage.toFixed(1)}%`}
                     </td>
                   </tr>
-                </tfoot>
+                </tfoot>}
               </table>
             </div>
           </div>

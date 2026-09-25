@@ -24,7 +24,7 @@ const ASSIGNMENT_OPEN = {
 const ASSIGNMENT_GRADED = {
   id: "a-graded", courseId: "c-p3", name: "Lab 0: Setup",
   description: "Install dev tools", dueDate: "2026-01-15",
-  maxPoints: 10, submissionType: "individual",
+  maxPoints: 10, submissionType: "individual", gradingFinalized: true,
   attachments: [], createdAt: "2026-01-01T00:00:00.000Z", updatedAt: "2026-01-01T00:00:00.000Z",
 };
 
@@ -145,7 +145,7 @@ test.describe("P3b — Assignment status colours", () => {
 
   test("list badges use the orange / blue / green / red status colours", async ({ page }) => {
     await seedStudent(page);
-    const mk = (id: string, name: string, dueDate: string) => ({ ...ASSIGNMENT_OPEN, id, name, dueDate });
+    const mk = (id: string, name: string, dueDate: string) => ({ ...ASSIGNMENT_OPEN, id, name, dueDate, gradingFinalized: true });
     await page.addInitScript((data) => {
       localStorage.setItem("hwai_assignments_v1", JSON.stringify(data.assignments));
       localStorage.setItem("hwai_submissions_v1", JSON.stringify(data.submissions));

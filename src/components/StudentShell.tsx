@@ -10,6 +10,7 @@ import { useStudents } from "@/lib/students";
 import { useCourses } from "@/lib/courses";
 import StudentSidebar from "./StudentSidebar";
 import RoleSwitcher from "./RoleSwitcher";
+import NavThemeToggle from "./NavThemeToggle";
 import { getInitials } from "@/lib/utils";
 
 export default function StudentShell({ children }: { children: React.ReactNode }) {
@@ -54,7 +55,7 @@ export default function StudentShell({ children }: { children: React.ReactNode }
       </a>
 
       {/* Top bar */}
-      <header className="h-14 shrink-0 flex items-center px-6 bg-[var(--bg-nav)] text-white">
+      <header className="h-14 shrink-0 flex items-center px-6 bg-[var(--navbar-bg)] text-white">
         {/* Logo */}
         <Link href="/student" className="flex items-center gap-2 mr-8">
           <div className="w-8 h-8 rounded-lg bg-[#2DD4BF] flex items-center justify-center shrink-0">
@@ -110,6 +111,8 @@ export default function StudentShell({ children }: { children: React.ReactNode }
               </svg>
             )}
           </button>
+
+          <NavThemeToggle />
 
           {/* Avatar + name + logout */}
           <div className="flex items-center gap-2">

@@ -18,7 +18,6 @@ interface StudentSeed {
   firstName: string;
   lastName: string;
   email: string;
-  cohort: string;
   program: string;
 }
 
@@ -106,7 +105,6 @@ const STUDENT_1: StudentSeed = {
   firstName: "สมชาย",
   lastName: "ใจดี",
   email: "s64070501@email.kmitl.ac.th",
-  cohort: "CE69",
   program: "CE",
 };
 
@@ -116,7 +114,6 @@ const STUDENT_2: StudentSeed = {
   firstName: "สมหญิง",
   lastName: "ดีมาก",
   email: "s64070502@email.kmitl.ac.th",
-  cohort: "CE68",
   program: "CE",
 };
 
@@ -266,9 +263,6 @@ test.describe("P1b — Admin Students (/admin/students)", () => {
     await seedPage(page, { students: [STUDENT_1, STUDENT_2] });
     await gotoPage(page, "/admin/students");
     await openStudentsTab(page);
-    // Cohort filter now defaults to the current year (CE69), not "all" — STUDENT_2
-    // is CE68, so switch to "all" first since this test is about the search box, not the cohort filter.
-    await page.getByLabel("Filter by cohort").selectOption("all");
     // Both visible initially
     await expect(page.getByText("64070501", { exact: true })).toBeVisible();
     await expect(page.getByText("64070502", { exact: true })).toBeVisible();
@@ -278,18 +272,6 @@ test.describe("P1b — Admin Students (/admin/students)", () => {
     await page.getByPlaceholder("Search students...").fill("64070501");
     await expect(page.getByText("64070501", { exact: true })).toBeVisible();
     await expect(page.getByText("64070502", { exact: true })).not.toBeVisible();
-  });
-
-  test("cohort filter dropdown shows cohorts present in data", async ({ page }) => {
-    await seedPage(page, { students: [STUDENT_1, STUDENT_2] });
-    await gotoPage(page, "/admin/students");
-    await openStudentsTab(page);
-    // A second <select> (program/curriculum filter) was added 9/9/2569, so the
-    // cohort select now needs its own accessible name to stay locatable.
-    const select = page.getByLabel("Filter by cohort");
-    await expect(select).toBeVisible();
-    await expect(select.locator("option[value='CE69']")).toHaveCount(1);
-    await expect(select.locator("option[value='CE68']")).toHaveCount(1);
   });
 
   test("delete student → confirm dialog → confirmed → student removed", async ({
@@ -346,8 +328,49 @@ test.describe("P1c — Admin Courses (/admin/courses)", () => {
     await expect(courseBtn).toHaveAttribute("aria-expanded", "false");
     await courseBtn.click();
     await expect(courseBtn).toHaveAttribute("aria-expanded", "true");
-    // Panel title "Teaching Staff" visible in expanded section
-    await expect(page.getByText("Teaching Staff")).toBeVisible();
+    // Panel title "Teacher" visible in expanded section (23/9/2569: was "Teaching Staff")
+    await expect(page.getByText("Teacher", { exact: true })).toBeVisible();
+  });
+
+  test("+ Add Section duplicates the course into a new one, teacher and section left blank", async ({ page }) => {
+    await seedPage(page, { teachers: [TEACHER_1], courses: [COURSE_1] });
+    await gotoPage(page, "/admin/courses");
+    await page.getByRole("button", { name: "Add Section" }).click();
+    const dialog = page.getByRole("dialog", { name: "Add Section" });
+    await expect(dialog.getByText('Adding sections to "Software Engineering"')).toBeVisible();
+    await expect(dialog.getByPlaceholder("e.g. UX/UI Design")).toHaveValue("Software Engineering");
+    await expect(dialog.getByLabel("Primary Teacher")).toHaveValue("");
+    await expect(dialog.getByRole("button", { name: "Create Course" })).toBeDisabled();
+
+    await dialog.getByLabel("Primary Teacher").fill("John");
+    await dialog.getByRole("option", { name: "John Smith" }).click();
+    await dialog.getByRole("button", { name: "Create Course" }).click();
+    await expect(dialog).toHaveCount(0);
+
+    const courses = await page.evaluate(() => JSON.parse(localStorage.getItem("hwai_courses_v2") ?? "[]"));
+    expect(courses).toHaveLength(2);
+    const added = courses.find((c: { id: string }) => c.id !== COURSE_1.id);
+    expect(added).toMatchObject({ name: "Software Engineering", description: "SE course" });
+    expect(added.sectionNumber).toBeUndefined();
+  });
+
+  test("New Course: Primary Teacher is an autocomplete, not a dropdown of every teacher", async ({ page }) => {
+    await seedPage(page, { teachers: [TEACHER_1] });
+    await gotoPage(page, "/admin/courses");
+    await page.getByRole("button", { name: "New Course" }).first().click();
+    const dialog = page.getByRole("dialog", { name: "New Course" });
+    await dialog.getByPlaceholder("e.g. UX/UI Design").fill("Web Design");
+    await expect(dialog.getByRole("button", { name: "Create Course" })).toBeDisabled();
+
+    const teacherField = dialog.getByLabel("Primary Teacher");
+    await teacherField.fill("John");
+    await dialog.getByRole("option", { name: "John Smith" }).click();
+    await expect(dialog.getByRole("button", { name: "Create Course" })).toBeEnabled();
+    await dialog.getByRole("button", { name: "Create Course" }).click();
+    await expect(dialog).toHaveCount(0);
+
+    const courses = await page.evaluate(() => JSON.parse(localStorage.getItem("hwai_courses_v2") ?? "[]"));
+    expect(courses.map((c: { name: string }) => c.name)).toContain("Web Design");
   });
 
   test("seeded teacher appears as unchecked checkbox in expanded panel", async ({

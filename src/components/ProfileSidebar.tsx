@@ -1,40 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
 import { useCourses } from "@/lib/courses";
+import { SidebarNavItem, SidebarSectionLabel, SidebarCourseName, SIDEBAR_CLASS, SIDEBAR_DIVIDER } from "@/components/SidebarParts";
 import { WEEKLY_PLAN_DISABLED, MATERIALS_DISABLED, ANNOUNCEMENTS_DISABLED, GRADING_SPLIT_DISABLED, TEACHER_HISTORY_DISABLED, TEACHER_DASHBOARD_DISABLED } from "@/lib/featureFlags";
-
-function NavItem({
-  label,
-  href,
-  icon,
-  active,
-  small,
-}: {
-  label: string;
-  href: string;
-  icon: React.ReactNode;
-  active: boolean;
-  small?: boolean;
-}) {
-  return (
-    <Link
-      href={href}
-      aria-current={active ? "page" : undefined}
-      className={[
-        "flex items-center gap-3 rounded-xl font-medium transition-colors min-h-[44px]",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--sidebar-bg)]",
-        small ? "px-3 py-1.5 text-xs" : "px-3 py-2.5 text-sm",
-        active ? "bg-[var(--nav-active-bg)] text-[var(--nav-active-text)]" : "text-white/55 hover:text-white hover:bg-white/8",
-      ].join(" ")}
-    >
-      {icon}
-      {label}
-    </Link>
-  );
-}
 
 const DASHBOARD_ICON = (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -232,27 +202,23 @@ export default function ProfileSidebar() {
   return (
     <aside
       aria-label={t("เมนูผู้สอน", "Teacher navigation")}
-      className="w-52 bg-[var(--sidebar-bg)] shrink-0 flex flex-col py-6 px-3 overflow-y-auto"
+      className={SIDEBAR_CLASS}
     >
-      <p className="text-white/55 text-[10px] font-semibold uppercase tracking-widest px-3 mb-2">
-        {t("หลัก", "Main")}
-      </p>
+      <SidebarSectionLabel>{t("หลัก", "Main")}</SidebarSectionLabel>
       <nav className="flex flex-col gap-0.5 mb-4">
         {MAIN_NAV.map((item) => (
-          <NavItem key={item.href} {...item} />
+          <SidebarNavItem key={item.href} {...item} />
         ))}
       </nav>
 
       {/* Per-course contextual navigation */}
       {activeCourseId && COURSE_NAV.length > 0 && (
         <>
-          <div className="border-t border-white/10 my-1" />
-          <p className="text-white/55 text-[10px] font-semibold uppercase tracking-widest px-3 mt-4 mb-2 truncate">
-            {activeCourse?.name ?? t("รายวิชา", "Course")}
-          </p>
+          {SIDEBAR_DIVIDER}
+          <SidebarCourseName>{activeCourse?.name ?? t("รายวิชา", "Course")}</SidebarCourseName>
           <nav className="flex flex-col gap-0.5 mb-4" aria-label={activeCourse?.name ?? t("รายวิชา", "Course")}>
             {COURSE_NAV.map((item) => (
-              <NavItem key={item.href} {...item} small />
+              <SidebarNavItem key={item.href} {...item} small />
             ))}
           </nav>
         </>
