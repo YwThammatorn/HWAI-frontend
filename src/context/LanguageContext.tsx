@@ -4,10 +4,9 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 
 export type Lang = "th" | "en";
 
-/** Language-toggle button hidden app-wide at the user's request (15/9/2569,
- *  temporary — plan to bring it back later). Flip to false to restore the
- *  button in Navbar/AdminShell/StudentShell; t() itself is unaffected. */
-export const LANGUAGE_TOGGLE_DISABLED = true;
+/** Language-toggle button in Navbar/AdminShell/StudentShell. It was hidden at the user's request
+ *  on 15/9/2569 and brought back on 26/9/2569; flip to true to hide it again. t() is unaffected. */
+export const LANGUAGE_TOGGLE_DISABLED = false;
 
 interface LanguageContextValue {
   lang: Lang;
