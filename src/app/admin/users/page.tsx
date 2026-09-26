@@ -1140,8 +1140,9 @@ function StudentsTab() {
   const [deactivatingId, setDeactivatingId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [programFilter, setProgramFilter] = useState("CE");
-  // Active / Inactive tabs (26/9/2569), like Active / Archived courses — Active first, Inactive one click away
-  const [statusTab, setStatusTab] = useState<"active" | "inactive">("active");
+  // Inactive students are hidden until asked for (26/9/2569): one "Show inactive" switch in the filter row,
+  // not a second tab bar under the Teachers/Students one. When on, they follow the active students, dimmed.
+  const [showInactive, setShowInactive] = useState(false);
   // Sorting lives on the column headers (click Student ID / Name), one active
   // key at a time. Default = Student ID ascending; Name cycles asc → desc → back to default.
   const [sort, setSort] = useState<{ key: "id" | "name"; dir: "asc" | "desc" }>({ key: "id", dir: "asc" });
@@ -1233,15 +1234,17 @@ function StudentsTab() {
   });
   const isInactiveStudent = (s: { status?: string }) => s.status === "inactive";
   const inactiveCount = inProgramAndSearch.filter(isInactiveStudent).length;
-  const activeCount = inProgramAndSearch.length - inactiveCount;
-  const filtered = inProgramAndSearch.filter((s) => isInactiveStudent(s) === (statusTab === "inactive"));
+  const filtered = inProgramAndSearch.filter((s) => showInactive || !isInactiveStudent(s));
   filtered.sort((a, b) => {
+    // active students first, then the inactive ones (only present while the switch is on)
+    const byStatus = Number(isInactiveStudent(a)) - Number(isInactiveStudent(b));
+    if (byStatus !== 0) return byStatus;
     const cmp = sort.key === "name"
       ? `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`, "th")
       : a.studentId.localeCompare(b.studentId, undefined, { numeric: true });
     return sort.dir === "asc" ? cmp : -cmp;
   });
-  useEffect(() => { setPage(1); }, [search, programFilter, statusTab, sort]);
+  useEffect(() => { setPage(1); }, [search, programFilter, showInactive, sort]);
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
@@ -1292,6 +1295,20 @@ function StudentsTab() {
               {programs.map((p) => <option key={p} value={p}>{PROGRAM_LABEL[p] ?? p}</option>)}
             </FilterSelect>
           )}
+          <button
+            type="button"
+            role="switch"
+            aria-checked={showInactive}
+            onClick={() => setShowInactive((v) => !v)}
+            disabled={inactiveCount === 0}
+            className="flex items-center gap-2 h-9 px-3 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-sm text-[var(--text-primary)] hover:border-[var(--accent-bright)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] disabled:opacity-50 disabled:pointer-events-none transition-colors whitespace-nowrap"
+          >
+            <span aria-hidden="true" className={`relative inline-flex h-4 w-7 shrink-0 items-center rounded-full transition-colors ${showInactive ? "bg-[var(--accent)]" : "bg-[var(--border)]"}`}>
+              <span className={`inline-block h-3 w-3 rounded-full bg-white shadow transition-transform ${showInactive ? "translate-x-3.5" : "translate-x-0.5"}`} />
+            </span>
+            {t("แสดงที่พ้นสภาพ", "Show inactive")}
+            <span className="text-xs tabular-nums text-[var(--text-muted)]">({inactiveCount})</span>
+          </button>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <button onClick={() => setImportOpen(true)}
@@ -1312,20 +1329,6 @@ function StudentsTab() {
           </button>
         </div>
       </div>
-
-      {cohortStudents.length > 0 && (
-        <div className="mb-4">
-          <PillTabBar
-            ariaLabel={t("สถานะนักศึกษา", "Student status")}
-            activeKey={statusTab}
-            onChange={(k) => setStatusTab(k as "active" | "inactive")}
-            tabs={[
-              { key: "active", label: t("ปกติ", "Active"), count: activeCount },
-              { key: "inactive", label: t("พ้นสภาพ", "Inactive"), count: inactiveCount },
-            ]}
-          />
-        </div>
-      )}
 
       {cohortStudents.length === 0 ? (
         <EmptyState
@@ -1377,7 +1380,9 @@ function StudentsTab() {
                 {filtered.length === 0 ? (
                   <tr>
                     <td colSpan={COL_COUNT} className="px-4 py-8 text-center text-sm text-[var(--text-muted)]">
-                      {!search && statusTab === "inactive" ? t("ไม่มีนักศึกษาที่พ้นสภาพ", "No inactive students") : t("ไม่พบผลการค้นหา", "No results found")}
+                      {!search && !showInactive && inactiveCount > 0
+                        ? t("ทุกคนในสาขานี้พ้นสภาพแล้ว — เปิด “แสดงที่พ้นสภาพ” เพื่อดู", "Everyone in this program is inactive — turn on “Show inactive” to see them")
+                        : t("ไม่พบผลการค้นหา", "No results found")}
                     </td>
                   </tr>
                 ) : (
@@ -1388,7 +1393,7 @@ function StudentsTab() {
                     return (
                       <tr
                         key={student.id}
-                        className="border-b border-[var(--border-subtle)] transition-colors hover:bg-[var(--bg-subtle)]"
+                        className={`border-b border-[var(--border-subtle)] transition-colors hover:bg-[var(--bg-subtle)] ${isInactive ? "opacity-70" : ""}`}
                       >
                         <td className="px-4 py-1 text-[var(--text-secondary)] tabular-nums truncate">
                           {isEditing ? (
