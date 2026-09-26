@@ -1131,10 +1131,74 @@ function AddStudentModal({ open, onClose }: {
 // STUDENTS TAB
 // ═══════════════════════════════════════════════════════════════
 
+// ═══════════════════════════════════════════════════════════════
+// STUDENTS — Deactivate a whole batch (centred popup)
+// ═══════════════════════════════════════════════════════════════
+
+/** A batch (รุ่น) is the admission year at the front of the student ID: 67010101 → batch 67. */
+const batchOf = (studentId: string) => studentId.slice(0, 2);
+
+function DeactivateBatchModal({ open, onClose, students, onConfirm }: {
+  open: boolean;
+  onClose: () => void;
+  students: { id: string; studentId: string; program: string; status?: string }[];
+  onConfirm: (batch: string, ids: string[]) => void;
+}) {
+  const { t } = useLanguage();
+  // only batches that still have someone active are worth offering, oldest first (the one that just graduated)
+  const active = students.filter((s) => s.status !== "inactive");
+  const batches = [...new Set(active.map((s) => batchOf(s.studentId)))].sort();
+  const [picked, setPicked] = useState("");
+  const batch = batches.includes(picked) ? picked : batches[0] ?? "";
+  const inBatch = active.filter((s) => batchOf(s.studentId) === batch);
+  const byProgram = Object.entries(inBatch.reduce<Record<string, number>>((acc, s) => ({ ...acc, [s.program]: (acc[s.program] ?? 0) + 1 }), {}));
+
+  return (
+    <Modal open={open} onClose={onClose} size="md" title={t("ปิดใช้งานทั้งรุ่น", "Deactivate a whole batch")}
+      description={t("ใช้เมื่อนักศึกษารุ่นนั้นจบแล้ว — ทุกคนในรุ่นจะเปลี่ยนเป็น “พ้นสภาพ”", "For when a batch has graduated — everyone in it becomes “Inactive”")}
+      footer={
+        <>
+          <button onClick={onClose}
+            className="h-10 px-5 rounded-xl border border-[var(--border)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors">
+            {t("ยกเลิก", "Cancel")}
+          </button>
+          <button onClick={() => onConfirm(batch, inBatch.map((s) => s.id))} disabled={inBatch.length === 0}
+            className="h-10 px-5 rounded-xl bg-amber-700 text-white text-sm font-semibold hover:bg-amber-800 active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors">
+            {t(`ปิดใช้งาน ${inBatch.length} คน`, `Deactivate ${inBatch.length} student${inBatch.length === 1 ? "" : "s"}`)}
+          </button>
+        </>
+      }
+    >
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="batch-select" className="text-xs font-semibold text-[var(--text-muted)]">{t("รุ่น (เลขสองหลักแรกของรหัสนักศึกษา)", "Batch (first two digits of the student ID)")}</label>
+          <select id="batch-select" value={batch} onChange={(e) => setPicked(e.target.value)}
+            className="h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-3 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]">
+            {batches.map((b) => {
+              const n = active.filter((s) => batchOf(s.studentId) === b).length;
+              return <option key={b} value={b}>{t(`รุ่น ${b} — ปกติ ${n} คน`, `Batch ${b} — ${n} active`)}</option>;
+            })}
+          </select>
+        </div>
+        <p className="text-sm text-[var(--text-secondary)]">
+          {t(`นักศึกษา ${inBatch.length} คนของรุ่น ${batch}`, `${inBatch.length} student${inBatch.length === 1 ? "" : "s"} of batch ${batch}`)}
+          {byProgram.length > 0 && <span className="text-[var(--text-muted)]"> ({byProgram.map(([p, n]) => `${p} ${n}`).join(" · ")})</span>}
+        </p>
+        <p className="text-xs text-[var(--text-muted)]">
+          {t("ข้อมูลและรายวิชาที่เคยลงยังอยู่ครบ เปิดใช้งานคืนทีละคนได้ หรือกด “เลิกทำ” ทันทีหลังจากนี้", "Their records and course enrolments stay. You can activate people again one by one, or press “Undo” right after.")}
+        </p>
+      </div>
+    </Modal>
+  );
+}
+
 function StudentsTab() {
   const { t } = useLanguage();
-  const { cohortStudents, updateCohortStudent, removeCohortStudent, findByStudentId } = useCohortStudents();
+  const { cohortStudents, updateCohortStudent, updateCohortStudents, removeCohortStudent, findByStudentId } = useCohortStudents();
   const [importOpen, setImportOpen] = useState(false);
+  const [batchOpen, setBatchOpen] = useState(false);
+  // what the last "deactivate a batch" did, so it can be undone in one click
+  const [batchNotice, setBatchNotice] = useState<{ batch: string; ids: string[] } | null>(null);
   const [addOpen, setAddOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deactivatingId, setDeactivatingId] = useState<string | null>(null);
@@ -1309,6 +1373,17 @@ function StudentsTab() {
             {t("แสดงที่พ้นสภาพ", "Show inactive")}
             <span className="text-xs tabular-nums text-[var(--text-muted)]">({inactiveCount})</span>
           </button>
+          <button
+            type="button"
+            onClick={() => setBatchOpen(true)}
+            disabled={!cohortStudents.some((s) => s.status !== "inactive")}
+            className="flex items-center gap-2 h-9 px-3 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-sm font-medium text-[var(--text-secondary)] hover:border-[var(--accent-bright)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] disabled:opacity-50 disabled:pointer-events-none transition-colors whitespace-nowrap"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
+            </svg>
+            {t("ปิดใช้งานทั้งรุ่น", "Deactivate batch")}
+          </button>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <button onClick={() => setImportOpen(true)}
@@ -1329,6 +1404,24 @@ function StudentsTab() {
           </button>
         </div>
       </div>
+
+      {batchNotice && (
+        <div role="status" className="mb-4 flex items-center gap-3 rounded-xl border border-[var(--s-ok-bd)] bg-[var(--s-ok-bg)] px-4 py-2.5 text-sm text-[var(--s-ok-text)]">
+          <span className="flex-1">
+            {t(`ปิดใช้งานนักศึกษารุ่น ${batchNotice.batch} แล้ว ${batchNotice.ids.length} คน`, `Deactivated ${batchNotice.ids.length} student${batchNotice.ids.length === 1 ? "" : "s"} of batch ${batchNotice.batch}`)}
+          </span>
+          <button
+            onClick={() => { updateCohortStudents(batchNotice.ids, { status: "active" }); setBatchNotice(null); }}
+            className="font-semibold underline underline-offset-2 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] rounded"
+          >
+            {t("เลิกทำ", "Undo")}
+          </button>
+          <button onClick={() => setBatchNotice(null)} aria-label={t("ปิด", "Dismiss")}
+            className="w-6 h-6 flex items-center justify-center rounded hover:bg-black/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+      )}
 
       {cohortStudents.length === 0 ? (
         <EmptyState
@@ -1542,6 +1635,12 @@ function StudentsTab() {
 
       <ImportStudentModal open={importOpen} onClose={() => setImportOpen(false)} />
       <AddStudentModal open={addOpen} onClose={() => setAddOpen(false)} />
+      <DeactivateBatchModal
+        open={batchOpen}
+        onClose={() => setBatchOpen(false)}
+        students={cohortStudents}
+        onConfirm={(batch, ids) => { updateCohortStudents(ids, { status: "inactive" }); setBatchNotice({ batch, ids }); setBatchOpen(false); }}
+      />
 
       {deletingStudent && (
         <>

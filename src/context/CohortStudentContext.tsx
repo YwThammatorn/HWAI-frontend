@@ -42,6 +42,11 @@ export default function CohortStudentProvider({ children }: { children: React.Re
     persist(cohortStudents.map((s) => (s.id === id ? { ...s, ...data } : s)));
   }
 
+  function updateCohortStudents(ids: string[], data: Partial<Omit<CohortStudent, "id">>) {
+    const set = new Set(ids);
+    persist(cohortStudents.map((s) => (set.has(s.id) ? { ...s, ...data } : s)));
+  }
+
   function removeCohortStudent(id: string) {
     persist(cohortStudents.filter((s) => s.id !== id));
     removeRolesByAccount(id); // cascade
@@ -58,6 +63,7 @@ export default function CohortStudentProvider({ children }: { children: React.Re
         cohortStudents,
         addCohortStudents,
         updateCohortStudent,
+        updateCohortStudents,
         removeCohortStudent,
         findByStudentId,
       }}

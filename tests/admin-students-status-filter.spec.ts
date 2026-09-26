@@ -98,3 +98,75 @@ test("Thai UI: the switch is Thai", async ({ page }) => {
   await open(page, "th");
   await expect(page.getByRole("switch", { name: /แสดงที่พ้นสภาพ/ })).toBeVisible();
 });
+
+// 26/9/2569 — "a batch has graduated": deactivate every active student whose ID starts with the batch's two digits.
+test.describe("Deactivate a whole batch", () => {
+  const S = (id: string, program: string, status?: string) => ({
+    id: `s-${id}`, studentId: id, firstName: `N${id.slice(-3)}`, lastName: "Test", email: `${id}@kmitl.ac.th`, program, ...(status ? { status } : {}),
+  });
+  const BATCHES = [
+    S("67010101", "CE"), S("67010102", "CE"), S("67020101", "CECS"), S("67010103", "CE", "inactive"),   // batch 67: 3 active + 1 already inactive
+    S("68010101", "CE"), S("68010102", "CEI"),                                                          // batch 68: 2 active
+    S("69010101", "CE"),                                                                                // batch 69: 1 active
+  ];
+  const stored = (page: Page) => page.evaluate(() => JSON.parse(localStorage.getItem("hwai_cohort_students_v1") ?? "[]") as { studentId: string; status?: string }[]);
+
+  test("the popup offers each batch that still has active students, oldest first, with counts", async ({ page }) => {
+    await open(page, "en", BATCHES);
+    await page.getByRole("button", { name: "Deactivate batch" }).click();
+    const dialog = page.getByRole("dialog", { name: "Deactivate a whole batch" });
+    const options = dialog.getByLabel(/Batch \(first two digits/).locator("option");
+    await expect(options).toHaveText(["Batch 67 — 3 active", "Batch 68 — 2 active", "Batch 69 — 1 active"]);
+    // the oldest is preselected; the breakdown shows which programs are in it
+    await expect(dialog.getByText("3 students of batch 67")).toBeVisible();
+    await expect(dialog.getByText("(CE 2 · CECS 1)")).toBeVisible();
+    await dialog.getByLabel(/Batch \(first two digits/).selectOption("68");
+    await expect(dialog.getByRole("button", { name: "Deactivate 2 students" })).toBeVisible();
+  });
+
+  test("confirming deactivates only that batch's active students, across programs, and leaves the rest alone", async ({ page }) => {
+    await open(page, "en", BATCHES);
+    await page.getByLabel("Filter by program").selectOption("CE");
+    await page.getByRole("button", { name: "Deactivate batch" }).click();
+    const dialog = page.getByRole("dialog", { name: "Deactivate a whole batch" });
+    await dialog.getByRole("button", { name: "Deactivate 3 students" }).click();
+    await expect(dialog).toHaveCount(0);
+
+    await expect(page.getByRole("status")).toContainText("Deactivated 3 students of batch 67");
+    const after = await stored(page);
+    expect(after.filter((s) => s.studentId.startsWith("67")).every((s) => s.status === "inactive")).toBe(true);   // incl. the CECS one, and none lost in the batch write
+    expect(after.filter((s) => !s.studentId.startsWith("67")).every((s) => s.status !== "inactive")).toBe(true);
+
+    // the CE list now shows the CE students of batches 68 and 69 only; batch 67's CE students are under "Show inactive"
+    await expect(rows(page)).toHaveCount(2);
+    await expect(toggle(page)).toContainText("(3)");
+    await toggle(page).click();
+    await expect(rows(page)).toHaveCount(5);
+  });
+
+  test("Undo brings the batch back in one click, but not the student who was already inactive", async ({ page }) => {
+    await open(page, "en", BATCHES);
+    await page.getByRole("button", { name: "Deactivate batch" }).click();
+    await page.getByRole("dialog").getByRole("button", { name: "Deactivate 3 students" }).click();
+    await page.getByRole("status").getByRole("button", { name: "Undo" }).click();
+    await expect(page.getByRole("status")).toHaveCount(0);
+
+    const after = await stored(page);
+    expect(after.filter((s) => s.studentId.startsWith("67")).map((s) => [s.studentId, s.status ?? "active"]).sort())
+      .toEqual([["67010101", "active"], ["67010102", "active"], ["67010103", "inactive"], ["67020101", "active"]]);
+  });
+
+  test("with nobody active the button is disabled", async ({ page }) => {
+    await open(page, "en", [S("67010101", "CE", "inactive")]);
+    await expect(page.getByRole("button", { name: "Deactivate batch" })).toBeDisabled();
+  });
+
+  test("Thai UI", async ({ page }) => {
+    await open(page, "th", BATCHES);
+    await page.getByRole("button", { name: "ปิดใช้งานทั้งรุ่น" }).click();
+    const dialog = page.getByRole("dialog", { name: "ปิดใช้งานทั้งรุ่น" });
+    await expect(dialog.getByText("รุ่น 67 — ปกติ 3 คน")).toBeAttached();
+    await dialog.getByRole("button", { name: "ปิดใช้งาน 3 คน" }).click();
+    await expect(page.getByRole("status")).toContainText("ปิดใช้งานนักศึกษารุ่น 67 แล้ว 3 คน");
+  });
+});

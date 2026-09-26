@@ -26,6 +26,8 @@ export interface CohortStudentContextValue {
   cohortStudents: CohortStudent[];
   addCohortStudents: (incoming: Omit<CohortStudent, "id">[]) => void;
   updateCohortStudent: (id: string, data: Partial<Omit<CohortStudent, "id">>) => void;
+  /** Same change for several students at once: one write, so it cannot lose updates the way looping updateCohortStudent would. */
+  updateCohortStudents: (ids: string[], data: Partial<Omit<CohortStudent, "id">>) => void;
   removeCohortStudent: (id: string) => void;
   findByStudentId: (studentId: string) => CohortStudent | undefined;
 }

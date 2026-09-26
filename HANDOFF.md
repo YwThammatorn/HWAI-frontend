@@ -737,3 +737,10 @@ CRITERIA/ACTIONS table, every row repeating the identical amber "No linked crite
 - Considered and not chosen: Active/Inactive/All select (what we had first — a dropdown hides the fact that inactive students exist); a status column filter; merging into the top-level tabs.
 - Known: at 1280px the Import CSV / Add Student buttons wrap onto a second row (search + program + switch + buttons no longer fit on one line); fine from ~1440px.
 - Tests: `tests/admin-students-status-filter.spec.ts` (5, rewritten). Suite 431 passed / 30 skipped; tsc clean; lint on the page unchanged (4 pre-existing).
+
+## 26/9: admin Students — deactivate a whole batch (รุ่น)
+- New **"Deactivate batch"** button in the Students filter row (after "Show inactive"). Opens a popup (`DeactivateBatchModal`): pick a batch, see who is in it, confirm. A batch = the first two digits of the student ID (67010101 → batch 67, the same scheme as the mock CE67/68/69). It lists only batches that still have active students, oldest first (the one that just graduated is preselected), with "Batch 67 — 3 active" and a per-program breakdown ("CE 2 · CECS 1"). It acts on the **whole batch across programs**, not just the program currently filtered. Confirm = amber "Deactivate N students".
+- After it runs a green notice ("Deactivated 3 students of batch 67") appears above the table with **Undo**, which reactivates exactly those students (anyone who was already inactive stays inactive). Records and course enrolments are untouched; individual Activate still works.
+- `CohortStudentContext` gets `updateCohortStudents(ids, patch)` — one write for many students (same stale-closure family as the CourseProvider bug: looping `updateCohortStudent` would have kept only the last change).
+- Button disabled when nobody is active. Cohort is still not a stored field (removed 23/9), it is derived from the ID.
+- Tests: 5 more in `tests/admin-students-status-filter.spec.ts` (offers/counts, only that batch across programs and all rows saved, Undo, disabled, Thai). Suite 436 passed / 30 skipped; tsc clean; lint unchanged (5 pre-existing).
