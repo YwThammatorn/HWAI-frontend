@@ -1140,7 +1140,8 @@ function StudentsTab() {
   const [deactivatingId, setDeactivatingId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [programFilter, setProgramFilter] = useState("CE");
-  const [statusFilter, setStatusFilter] = useState("all");   // all | active | inactive
+  // Active / Inactive tabs (26/9/2569), like Active / Archived courses — Active first, Inactive one click away
+  const [statusTab, setStatusTab] = useState<"active" | "inactive">("active");
   // Sorting lives on the column headers (click Student ID / Name), one active
   // key at a time. Default = Student ID ascending; Name cycles asc → desc → back to default.
   const [sort, setSort] = useState<{ key: "id" | "name"; dir: "asc" | "desc" }>({ key: "id", dir: "asc" });
@@ -1222,22 +1223,25 @@ function StudentsTab() {
     CEI: t("วิศวกรรมคอมพิวเตอร์นานาชาติ", "Computer Engineering International"),
   };
 
-  const filtered = cohortStudents.filter((s) => {
+  const inProgramAndSearch = cohortStudents.filter((s) => {
     const matchProgram = s.program === programFilter;
     const q = search.toLowerCase();
     const matchSearch = !q || s.studentId.includes(q) || s.firstName.toLowerCase().includes(q) ||
       s.lastName.toLowerCase().includes(q) || `${s.firstName} ${s.lastName}`.toLowerCase().includes(q) ||
       s.email.toLowerCase().includes(q);
-    const matchStatus = statusFilter === "all" || (s.status === "inactive" ? "inactive" : "active") === statusFilter;
-    return matchProgram && matchSearch && matchStatus;
+    return matchProgram && matchSearch;
   });
+  const isInactiveStudent = (s: { status?: string }) => s.status === "inactive";
+  const inactiveCount = inProgramAndSearch.filter(isInactiveStudent).length;
+  const activeCount = inProgramAndSearch.length - inactiveCount;
+  const filtered = inProgramAndSearch.filter((s) => isInactiveStudent(s) === (statusTab === "inactive"));
   filtered.sort((a, b) => {
     const cmp = sort.key === "name"
       ? `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`, "th")
       : a.studentId.localeCompare(b.studentId, undefined, { numeric: true });
     return sort.dir === "asc" ? cmp : -cmp;
   });
-  useEffect(() => { setPage(1); }, [search, programFilter, statusFilter, sort]);
+  useEffect(() => { setPage(1); }, [search, programFilter, statusTab, sort]);
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
@@ -1288,20 +1292,6 @@ function StudentsTab() {
               {programs.map((p) => <option key={p} value={p}>{PROGRAM_LABEL[p] ?? p}</option>)}
             </FilterSelect>
           )}
-          <FilterSelect
-            value={statusFilter}
-            onChange={setStatusFilter}
-            ariaLabel={t("กรองตามสถานะ", "Filter by status")}
-            icon={
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="9"/><polyline points="8 12 11 15 16 9"/>
-              </svg>
-            }
-          >
-            <option value="all">{t("ทุกสถานะ", "All statuses")}</option>
-            <option value="active">{t("ปกติ", "Active")}</option>
-            <option value="inactive">{t("พ้นสภาพ", "Inactive")}</option>
-          </FilterSelect>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <button onClick={() => setImportOpen(true)}
@@ -1322,6 +1312,20 @@ function StudentsTab() {
           </button>
         </div>
       </div>
+
+      {cohortStudents.length > 0 && (
+        <div className="mb-4">
+          <PillTabBar
+            ariaLabel={t("สถานะนักศึกษา", "Student status")}
+            activeKey={statusTab}
+            onChange={(k) => setStatusTab(k as "active" | "inactive")}
+            tabs={[
+              { key: "active", label: t("ปกติ", "Active"), count: activeCount },
+              { key: "inactive", label: t("พ้นสภาพ", "Inactive"), count: inactiveCount },
+            ]}
+          />
+        </div>
+      )}
 
       {cohortStudents.length === 0 ? (
         <EmptyState
@@ -1373,7 +1377,7 @@ function StudentsTab() {
                 {filtered.length === 0 ? (
                   <tr>
                     <td colSpan={COL_COUNT} className="px-4 py-8 text-center text-sm text-[var(--text-muted)]">
-                      {t("ไม่พบผลการค้นหา", "No results found")}
+                      {!search && statusTab === "inactive" ? t("ไม่มีนักศึกษาที่พ้นสภาพ", "No inactive students") : t("ไม่พบผลการค้นหา", "No results found")}
                     </td>
                   </tr>
                 ) : (

@@ -2,7 +2,7 @@ import { test, expect, Page } from "@playwright/test";
 
 const BASE = "http://localhost:3000";
 
-// 26/9/2569 — admin Users → Students: a Status filter (All / Active / Inactive), and a long program name
+// 26/9/2569 — admin Users → Students: Active / Inactive tabs (Active first, like Active / Archived courses), and a long program name
 // (Computer Engineering and Cybersecurity) wraps onto two lines instead of being clipped mid-word.
 
 const mk = (n: number, program: string, status?: string) => ({
@@ -26,33 +26,57 @@ async function open(page: Page, lang: "en" | "th" = "en") {
 
 const rows = (page: Page) => page.getByRole("row").filter({ hasText: "Test" });
 
-test("Status filter narrows the students to Active or Inactive, alongside the program filter", async ({ page }) => {
+test("Active is the default tab; Inactive students sit one click away, with counts", async ({ page }) => {
   await open(page);
   await page.getByLabel("Filter by program").selectOption("CECS");
-  await expect(rows(page)).toHaveCount(3);
+  const tabs = page.getByRole("tablist", { name: "Student status" });
+  await expect(tabs.getByRole("tab", { name: /Active/ })).toHaveAttribute("aria-selected", "true");
+  await expect(tabs.getByRole("tab", { name: /^Active/ })).toContainText("2");     // a student with no status counts as Active
+  await expect(tabs.getByRole("tab", { name: /^Inactive/ })).toContainText("1");
 
-  const status = page.getByLabel("Filter by status");
-  await expect(status).toHaveValue("all");
-  await status.selectOption("inactive");
+  // the default view: only the two active students, no Inactive badge anywhere
+  await expect(rows(page)).toHaveCount(2);
+  await expect(rows(page).getByText("Inactive", { exact: true })).toHaveCount(0);
+
+  await tabs.getByRole("tab", { name: /^Inactive/ }).click();
   await expect(rows(page)).toHaveCount(1);
   await expect(rows(page).first()).toContainText("Name2");
   await expect(rows(page).first().getByText("Inactive")).toBeVisible();
 
-  await status.selectOption("active");                // a student with no status counts as Active
+  await tabs.getByRole("tab", { name: /^Active/ }).click();
   await expect(rows(page)).toHaveCount(2);
-  await expect(rows(page).getByText("Inactive", { exact: true })).toHaveCount(0);
-
-  await page.getByLabel("Filter by program").selectOption("CE");   // the status stays while the program changes
-  await expect(rows(page)).toHaveCount(1);
-  await expect(rows(page).first()).toContainText("Name4");
 });
 
-test("Status filter combines with search and shows the empty message when nothing matches", async ({ page }) => {
+test("the tab counts follow the program filter and the search", async ({ page }) => {
   await open(page);
-  await page.getByLabel("Filter by program").selectOption("CECS");
-  await page.getByLabel("Filter by status").selectOption("inactive");
-  await page.getByPlaceholder("Search students...").fill("Name1");
+  const tabs = page.getByRole("tablist", { name: "Student status" });
+  await page.getByLabel("Filter by program").selectOption("CE");            // Name4 active, Name5 inactive
+  await expect(tabs.getByRole("tab", { name: /^Active/ })).toContainText("1");
+  await expect(tabs.getByRole("tab", { name: /^Inactive/ })).toContainText("1");
+
+  await page.getByPlaceholder("Search students...").fill("Name4");
+  await expect(tabs.getByRole("tab", { name: /^Inactive/ })).toContainText("0");
+  await page.getByRole("heading", { level: 1 }).click();                       // click away: closes the search suggestions
+  await tabs.getByRole("tab", { name: /^Inactive/ }).click();
+  await expect(page.getByText("No results found")).toBeVisible();          // searching → the usual message
+});
+
+test("deactivating moves a student to the Inactive tab, activating brings them back", async ({ page }) => {
+  await open(page);
+  await page.getByLabel("Filter by program").selectOption("CE");
+  const tabs = page.getByRole("tablist", { name: "Student status" });
+
+  await page.getByRole("button", { name: "Deactivate Name4 Test" }).click();
+  await page.getByRole("button", { name: "Deactivate", exact: true }).click();
+  await expect(rows(page)).toHaveCount(0);                                    // Active tab is now empty
   await expect(page.getByText("No results found")).toBeVisible();
+  await expect(tabs.getByRole("tab", { name: /^Inactive/ })).toContainText("2");
+
+  await tabs.getByRole("tab", { name: /^Inactive/ }).click();
+  await expect(rows(page)).toHaveCount(2);
+  await page.getByRole("button", { name: "Activate Name4 Test" }).click();
+  await expect(rows(page)).toHaveCount(1);                                    // only Name5 is left here
+  await expect(tabs.getByRole("tab", { name: /^Active/ })).toContainText("1");
 });
 
 test("a long program name wraps and shows in full instead of being clipped", async ({ page }) => {
@@ -69,9 +93,9 @@ test("a long program name wraps and shows in full instead of being clipped", asy
   await expect(cell).toHaveAttribute("title", "Computer Engineering and Cybersecurity");
 });
 
-test("Thai UI: the filter and its options are Thai", async ({ page }) => {
+test("Thai UI: the tabs are Thai", async ({ page }) => {
   await open(page, "th");
-  const status = page.getByLabel("กรองตามสถานะ");
-  await expect(status).toBeVisible();
-  await expect(status.locator("option")).toHaveText(["ทุกสถานะ", "ปกติ", "พ้นสภาพ"]);
+  const tabs = page.getByRole("tablist", { name: "สถานะนักศึกษา" });
+  await expect(tabs.getByRole("tab", { name: /^ปกติ/ })).toBeVisible();
+  await expect(tabs.getByRole("tab", { name: /^พ้นสภาพ/ })).toBeVisible();
 });
