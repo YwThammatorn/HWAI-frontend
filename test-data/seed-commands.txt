@@ -71,7 +71,7 @@ fetch('/mock-data/student-flow-mockup.json').then(r=>r.json()).then(d=>{localSto
 [6] รีเซ็ตแค่ "ผลตรวจ" กลับไปที่ค่าเริ่มต้น (เผื่อทดสอบส่งงานซ้ำๆ)
     ใช้ตอนทดสอบ role student แล้วกดส่งงาน "โปรเจกต์เล็ก: เครื่องคิดเลข" (a-mock-2) ไปแล้ว
     อยากให้กลับไปเป็น "ยังไม่ส่ง" เพื่อลองกดส่งใหม่อีกรอบ — ไม่กระทบ cohort/รายวิชา/งาน/rubric เลย
-    แก้แค่ hwai_submissions_v1 กลับไปเป็น 3 รายการเดิมของ a-mock-1 (ตรวจแล้ว/รอตรวจ/ยังไม่ตรวจ)
+    แก้แค่ hwai_submissions_v1 กลับไปเป็นผลตรวจตั้งต้นทั้งชุดของ student-flow-mockup (13 รายการ — ตรวจแล้ว 7 รายการมีคะแนนรายเกณฑ์ ดู [13])
     ส่วน a-mock-2 จะไม่มี submission อยู่เลย เหมือนตอนเริ่มต้น
 
 fetch('/mock-data/student-flow-mockup.json').then(r=>r.json()).then(d=>{localStorage.setItem('hwai_submissions_v1', JSON.stringify(d.submissions)); location.reload();});
@@ -165,6 +165,23 @@ fetch('/mock-data/students-mockup.json').then(r=>r.json()).then(d=>{localStorage
      English:
 
 fetch('/mock-data/students-mockup-en.json').then(r=>r.json()).then(d=>{localStorage.setItem('hwai_cohort_students_v1', JSON.stringify(d)); localStorage.setItem('hwai_lang', 'en'); location.reload();});
+
+---
+
+[13] คะแนนรายเกณฑ์ (rubric) ของนักศึกษา — เฉพาะผลตรวจ (submissions) ของ [5]/[10]
+     ผลตรวจที่ "ตรวจแล้ว" ทั้ง 7 รายการใน student-flow-mockup มี criterionScores (คะแนนแต่ละเกณฑ์ รวมเท่ากับคะแนนรวม และไม่เกินคะแนนเต็มของเกณฑ์นั้น)
+     นักศึกษาเห็นที่ /student/courses/c-mock-1/classwork/<งาน> (การ์ดเกณฑ์แสดง "56 / 60" + แถบ) และในป๊อปอัปของหน้า Evaluation (ไม่มีข้อความ "ประมาณ" อีก)
+     ล็อกอิน 69070101@kmitl.ac.th → งาน "แบบฝึกหัด Python เบื้องต้น" (90 = 56 + 18 + 16), "Quiz 1" (85), "Quiz 2" (85), "Lab 5" (92)
+     ถ้าเคยรัน [5] หรือ [10] ไว้แล้ว รันตัวนี้ตัวเดียวพอ — เขียนทับเฉพาะ hwai_submissions_v1 ไม่แตะรายชื่อนักศึกษาที่ใส่ด้วย [12]
+     (ยังไม่เคยรัน [5] ให้รัน [2] แล้ว [5] ก่อน)
+
+     ภาษาไทย (คำสั่งเดียวกับ [6]):
+
+fetch('/mock-data/student-flow-mockup.json').then(r=>r.json()).then(d=>{localStorage.setItem('hwai_submissions_v1', JSON.stringify(d.submissions)); location.reload();});
+
+     English:
+
+fetch('/mock-data/student-flow-mockup-en.json').then(r=>r.json()).then(d=>{localStorage.setItem('hwai_submissions_v1', JSON.stringify(d.submissions)); location.reload();});
 
 ---
 
