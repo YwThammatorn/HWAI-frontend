@@ -228,3 +228,49 @@ test.describe("Students mock data (batches 66-69)", () => {
     await expect(dialog.getByRole("button", { name: "Deactivate 2 students" })).toBeVisible();
   });
 });
+
+// 26/9/2569 — the Status column header sorts on click, like Student ID and Name.
+test.describe("Sort by the Status column", () => {
+  const header = (page: Page) => page.getByRole("columnheader", { name: /Status/ });
+  const ids = (page: Page) => rows(page).evaluateAll((els) => els.map((e) => e.textContent?.match(/Name\d/)?.[0]));
+
+  test("Active first → Inactive first → back to the default, and the first click shows the inactive students", async ({ page }) => {
+    await open(page);
+    await page.getByLabel("Filter by program").selectOption("CECS");     // Name1 active, Name2 inactive, Name3 active
+    await expect(toggle(page)).toHaveAttribute("aria-checked", "false");
+    await expect(header(page)).toHaveAttribute("aria-sort", "none");
+    expect(await ids(page)).toEqual(["Name1", "Name3"]);
+
+    await header(page).getByRole("button").click();                          // 1st click: Active first (and Show inactive turns on)
+    await expect(header(page)).toHaveAttribute("aria-sort", "ascending");
+    await expect(toggle(page)).toHaveAttribute("aria-checked", "true");
+    expect(await ids(page)).toEqual(["Name1", "Name3", "Name2"]);
+
+    await header(page).getByRole("button").click();                          // 2nd: Inactive first
+    await expect(header(page)).toHaveAttribute("aria-sort", "descending");
+    expect(await ids(page)).toEqual(["Name2", "Name1", "Name3"]);
+
+    await header(page).getByRole("button").click();                          // 3rd: back to Student ID order
+    await expect(header(page)).toHaveAttribute("aria-sort", "none");
+    await expect(page.getByRole("columnheader", { name: /Student ID/ })).toHaveAttribute("aria-sort", "ascending");
+    expect(await ids(page)).toEqual(["Name1", "Name3", "Name2"]);            // default = active first, then inactive, by ID
+  });
+
+  test("sorting by another column replaces the status sort", async ({ page }) => {
+    await open(page);
+    await page.getByLabel("Filter by program").selectOption("CECS");
+    await header(page).getByRole("button").click();
+    await page.getByRole("columnheader", { name: /^Name/ }).getByRole("button").click();
+    await expect(header(page)).toHaveAttribute("aria-sort", "none");
+    await expect(page.getByRole("columnheader", { name: /^Name/ })).toHaveAttribute("aria-sort", "ascending");
+  });
+
+  test("with nobody inactive the click just sorts (nothing to show)", async ({ page }) => {
+    await open(page, "en", [mk(1, "CECS"), mk(3, "CECS")]);
+    await page.getByLabel("Filter by program").selectOption("CECS");
+    await header(page).getByRole("button").click();
+    await expect(header(page)).toHaveAttribute("aria-sort", "ascending");
+    await expect(toggle(page)).toBeDisabled();
+    await expect(rows(page)).toHaveCount(2);
+  });
+});

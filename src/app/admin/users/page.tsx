@@ -1229,9 +1229,9 @@ function StudentsTab() {
   // Inactive students are hidden until asked for (26/9/2569): one "Show inactive" switch in the filter row,
   // not a second tab bar under the Teachers/Students one. When on, they follow the active students, dimmed.
   const [showInactive, setShowInactive] = useState(false);
-  // Sorting lives on the column headers (click Student ID / Name), one active
-  // key at a time. Default = Student ID ascending; Name cycles asc → desc → back to default.
-  const [sort, setSort] = useState<{ key: "id" | "name"; dir: "asc" | "desc" }>({ key: "id", dir: "asc" });
+  // Sorting lives on the column headers (click Student ID / Name / Status), one active
+  // key at a time. Default = Student ID ascending; Name and Status cycle asc → desc → back to default.
+  const [sort, setSort] = useState<{ key: "id" | "name" | "status"; dir: "asc" | "desc" }>({ key: "id", dir: "asc" });
   function toggleIdSort() {
     setSort((s) => ({ key: "id", dir: s.key === "id" && s.dir === "asc" ? "desc" : "asc" }));
   }
@@ -1240,6 +1240,15 @@ function StudentsTab() {
       if (s.key !== "name") return { key: "name", dir: "asc" };
       return s.dir === "asc" ? { key: "name", dir: "desc" } : { key: "id", dir: "asc" };
     });
+  }
+  // Status: Active first → Inactive first → back to the default. Sorting by status only shows anything
+  // when inactive students are on the list, so the first click also switches "Show inactive" on.
+  function toggleStatusSort() {
+    setSort((s) => {
+      if (s.key !== "status") return { key: "status", dir: "asc" };
+      return s.dir === "asc" ? { key: "status", dir: "desc" } : { key: "id", dir: "asc" };
+    });
+    if (sort.key !== "status") setShowInactive(true);
   }
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 10;
@@ -1322,8 +1331,13 @@ function StudentsTab() {
   const inactiveCount = inProgramAndSearch.filter(isInactiveStudent).length;
   const filtered = inProgramAndSearch.filter((s) => showInactive || !isInactiveStudent(s));
   filtered.sort((a, b) => {
-    // active students first, then the inactive ones (only present while the switch is on)
     const byStatus = Number(isInactiveStudent(a)) - Number(isInactiveStudent(b));
+    // sorted by the Status column: that decides the order (then Student ID); otherwise active students
+    // come first and the inactive ones follow (they are only on the list while the switch is on)
+    if (sort.key === "status") {
+      if (byStatus !== 0) return sort.dir === "asc" ? byStatus : -byStatus;
+      return a.studentId.localeCompare(b.studentId, undefined, { numeric: true });
+    }
     if (byStatus !== 0) return byStatus;
     const cmp = sort.key === "name"
       ? `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`, "th")
@@ -1488,7 +1502,8 @@ function StudentsTab() {
                     hint={t("คลิกเพื่อเรียงตามชื่อ (ก–ฮ → ฮ–ก → กลับไปเรียงตามรหัส)", "Click to sort by name (A–Z → Z–A → back to ID order)")} />
                   <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("อีเมล", "Email")}</th>
                   <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("สาขา", "Program")}</th>
-                  <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("สถานะ", "Status")}</th>
+                  <SortableTh label={t("สถานะ", "Status")} dir={sort.key === "status" ? sort.dir : undefined} onClick={toggleStatusSort}
+                    hint={t("คลิกเพื่อเรียงตามสถานะ (ปกติก่อน → พ้นสภาพก่อน → กลับไปเรียงตามรหัส) — จะเปิดแสดงคนที่พ้นสภาพให้ด้วย", "Click to sort by status (Active first → Inactive first → back to Student ID) — also shows inactive students")} />
                   <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("การจัดการ", "Actions")}</th>
                 </tr>
               </thead>
