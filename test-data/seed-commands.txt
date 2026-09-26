@@ -149,6 +149,25 @@ fetch('/mock-data/curriculum-mockup-en.json').then(r=>r.json()).then(d=>{localSt
 
 ---
 
+[12] นักศึกษาหลายรุ่น (รุ่น 66–69) ไว้ดูหน้า /admin/users > Students — ตัวกรองสาขา/พ้นสภาพ และปุ่ม "ปิดใช้งานทั้งรุ่น"
+     57 คน ครบ 3 สาขา (CE / CECS / CEI) — ใส่ทับเฉพาะรายชื่อนักศึกษากลาง (hwai_cohort_students_v1) ไม่แตะอย่างอื่น
+       รุ่น 66: 12 คน (พ้นสภาพ 2)  — รุ่นที่ใกล้จบ  | รุ่น 67: 12 คน (พ้นสภาพ 2, มี 1 คนไม่มีคำนำหน้า)
+       รุ่น 68: 13 คน (พ้นสภาพ 1)  | รุ่น 69: 20 คน (พ้นสภาพ 1)
+     13 คนเดิมของ [5] (cs-mock-1..13: 69070101-108, 68020101-104, 67010101) อยู่ครบ ข้อมูลเหมือนเดิมทุกอย่าง
+     จึงรันหลัง [5] ได้ และ login / การลงทะเบียนวิชาของ [5] ยังใช้ได้ (ถ้ารัน [5] ทีหลัง รายชื่อจะกลับเป็น 13 คน)
+     รหัสของ 44 คนใหม่ไม่ชนกับ students_sample.csv ([3b]) และ course-import-test.csv ([7]) — ยังใช้ทดสอบ import ได้ตามเดิม
+     ทดสอบ: ปุ่ม "ปิดใช้งานทั้งรุ่น" เลือกรุ่น 66 แล้วเลือกสาขา, สวิตช์ "แสดงที่พ้นสภาพ", เลือกสาขาเป็นชื่อเต็มในตาราง
+
+     ภาษาไทย:
+
+fetch('/mock-data/students-mockup.json').then(r=>r.json()).then(d=>{localStorage.setItem('hwai_cohort_students_v1', JSON.stringify(d)); localStorage.setItem('hwai_lang', 'th'); location.reload();});
+
+     English:
+
+fetch('/mock-data/students-mockup-en.json').then(r=>r.json()).then(d=>{localStorage.setItem('hwai_cohort_students_v1', JSON.stringify(d)); localStorage.setItem('hwai_lang', 'en'); location.reload();});
+
+---
+
 [4] ล้างข้อมูลทั้งหมด (ถ้าอยากเริ่มใหม่)
 
 ['hwai_user','hwai_managed_teachers_v1','hwai_cohort_students_v1','hwai_courses_v2','hwai_curriculum_versions_v1','hwai_course_templates_v1','hwai_students_v1','hwai_grading_categories_v1','hwai_assignments_v1','hwai_rubrics_v1','hwai_submissions_v1','hwai_student_groups_v1','hwai_clos_v1'].forEach(k=>localStorage.removeItem(k)); location.reload();

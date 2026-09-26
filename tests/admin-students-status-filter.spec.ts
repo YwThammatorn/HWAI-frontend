@@ -1,4 +1,5 @@
 import { test, expect, Page } from "@playwright/test";
+import fs from "fs";
 
 const BASE = "http://localhost:3000";
 
@@ -90,7 +91,7 @@ test("a long program name wraps and shows in full instead of being clipped", asy
     lines: Math.round(e.getBoundingClientRect().height / parseFloat(getComputedStyle(e).lineHeight)),
   }));
   expect(fits.sideways).toBe(false);
-  expect(fits.lines).toBeLessThanOrEqual(2);
+  expect(fits.lines).toBeLessThanOrEqual(3);   // 1280px viewport: wraps, never cut off
   await expect(cell).toHaveAttribute("title", "Computer Engineering and Cybersecurity");
 });
 
@@ -198,5 +199,32 @@ test.describe("Deactivate a whole batch", () => {
     await expect(dialog.getByText("รุ่น 67 — ปกติ 3 คน")).toBeAttached();
     await dialog.getByRole("button", { name: "ปิดใช้งาน 3 คน" }).click();
     await expect(page.getByRole("status")).toContainText("ปิดใช้งานนักศึกษารุ่น 67 แล้ว 3 คน");
+  });
+});
+
+// 26/9/2569 — the students mock (console command [12] in test-data/seed-commands.txt): batches 66-69 in all 3 programs.
+test.describe("Students mock data (batches 66-69)", () => {
+  const rdJson = (f: string) => JSON.parse(fs.readFileSync(`public/mock-data/${f}`, "utf8"));
+
+  test("the file is consistent: unique ids, email = studentId, the 13 students of the flow mock are unchanged", async () => {
+    for (const [file, flowFile] of [["students-mockup.json", "student-flow-mockup.json"], ["students-mockup-en.json", "student-flow-mockup-en.json"]]) {
+      const all = rdJson(file) as { id: string; studentId: string; email: string; program: string; status: string }[];
+      expect(new Set(all.map((s) => s.studentId)).size).toBe(all.length);
+      expect(new Set(all.map((s) => s.id)).size).toBe(all.length);
+      for (const s of all) expect(s.email).toBe(`${s.studentId}@kmitl.ac.th`);
+      expect(new Set(all.map((s) => s.studentId.slice(0, 2)))).toEqual(new Set(["66", "67", "68", "69"]));
+      expect(new Set(all.map((s) => s.program))).toEqual(new Set(["CE", "CECS", "CEI"]));
+      // what [5] (student-flow) enrols and logs in still exists with the same data
+      for (const orig of rdJson(flowFile).cohortStudents) expect(all.find((s) => s.id === orig.id)).toEqual(orig);
+    }
+  });
+
+  test("loaded into the app, the batch popup offers 66, 67, 68 and 69 with the right active counts", async ({ page }) => {
+    await open(page, "en", rdJson("students-mockup-en.json"));
+    await page.getByRole("button", { name: "Deactivate batch" }).click();
+    const dialog = page.getByRole("dialog", { name: "Deactivate a whole batch" });
+    await expect(dialog.getByLabel(/^Batch/).locator("option")).toHaveText(["Batch 66 — 10 active", "Batch 67 — 10 active", "Batch 68 — 12 active", "Batch 69 — 19 active"]);
+    await dialog.getByLabel("Program").selectOption({ label: "Computer Engineering International — 2" });
+    await expect(dialog.getByRole("button", { name: "Deactivate 2 students" })).toBeVisible();
   });
 });

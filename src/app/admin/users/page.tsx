@@ -1471,12 +1471,12 @@ function StudentsTab() {
             <div className="overflow-y-auto max-h-[calc(100vh-380px)]">
             <table className="w-full text-sm table-fixed">
               <colgroup>
-                <col className="w-[136px]" />
-                <col className="w-[70px]" />
-                <col className="w-[14%]" />
-                <col className="w-[21%]" />
-                <col className="w-[22%]" />
-                <col className="w-[100px]" />
+                <col className="w-[108px]" />
+                <col className="w-[92px]" />
+                <col className="w-[18%]" />
+                <col className="w-[18%]" />
+                <col className="w-[19%]" />
+                <col className="w-[96px]" />
                 <col className="w-[128px]" />
               </colgroup>
               <thead className="sticky top-0 z-10">
