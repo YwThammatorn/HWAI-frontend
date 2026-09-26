@@ -185,6 +185,25 @@ fetch('/mock-data/student-flow-mockup-en.json').then(r=>r.json()).then(d=>{local
 
 ---
 
+[14] ประวัติรายวิชาของนักศึกษา — ไว้ดู "รายวิชาของฉัน" (เทอมปัจจุบัน) กับ "รายวิชาที่เรียนผ่านไปแล้ว" ของ role student
+     นักศึกษา 68020101 (ภูริช วงศ์สวัสดิ์ — login 68020101@kmitl.ac.th ต้องมีในรายชื่อจาก [5] หรือ [12]) จะมี:
+       - เทอมปัจจุบัน (1/2569): c-mock-1 การเขียนโปรแกรมคอมพิวเตอร์ (ของ [2]/[5])
+       - เรียนผ่านแล้ว 3 วิชา เทอม 2568: การเขียนโปรแกรมฯ เทอม 1 (88% เกรด A), การเขียนโปรแกรมฯ เทอม 2 (63% เกรด C), โครงสร้างข้อมูลฯ เทอม 1 (73% เกรด B)
+         แต่ละวิชามี 3 หมวดงาน (แล็บ, แบบทดสอบย่อย, สอบ) ตรวจและประกาศผลแล้วทั้งหมด
+       - ถอนแล้ว 1 วิชา: โครงงานวิศวกรรมคอมพิวเตอร์ (2568/1) — ขึ้นป้าย "ถอนแล้ว" ไม่มีเกรด
+     ต้องทำ [2] ก่อน (c-mock-17/18/19/6 มาจากไฟล์ courses-mockup ชุดที่มี 37 วิชา) — คำสั่งนี้ "เพิ่ม" ต่อท้ายข้อมูลเดิม (ข้าม id ที่มีอยู่แล้ว) จึงรันซ้ำได้ ไม่ทับข้อมูลจาก [5]/[12]
+     "เทอมปัจจุบัน" ตอนนี้ดูจากวันที่ตามปฏิทินการศึกษาทั่วไป (ส.ค.–ธ.ค. เทอม 1, ม.ค.–พ.ค. เทอม 2, มิ.ย.–ก.ค. เทอม 3) — ระบบเทอมจริงให้ admin ตั้งค่า เก็บไว้ทำทีหลัง
+
+     ภาษาไทย:
+
+fetch('/mock-data/student-history-mockup.json').then(r=>r.json()).then(d=>{const put=(k,items)=>{const cur=JSON.parse(localStorage.getItem(k)||'[]');const ids=new Set(cur.map(x=>x.id));localStorage.setItem(k,JSON.stringify([...cur,...items.filter(x=>!ids.has(x.id))]));}; put('hwai_students_v1',d.courseStudents); put('hwai_grading_categories_v1',d.gradingCategories); put('hwai_assignments_v1',d.assignments); put('hwai_submissions_v1',d.submissions); location.reload();});
+
+     English:
+
+fetch('/mock-data/student-history-mockup-en.json').then(r=>r.json()).then(d=>{const put=(k,items)=>{const cur=JSON.parse(localStorage.getItem(k)||'[]');const ids=new Set(cur.map(x=>x.id));localStorage.setItem(k,JSON.stringify([...cur,...items.filter(x=>!ids.has(x.id))]));}; put('hwai_students_v1',d.courseStudents); put('hwai_grading_categories_v1',d.gradingCategories); put('hwai_assignments_v1',d.assignments); put('hwai_submissions_v1',d.submissions); location.reload();});
+
+---
+
 [4] ล้างข้อมูลทั้งหมด (ถ้าอยากเริ่มใหม่)
 
 ['hwai_user','hwai_managed_teachers_v1','hwai_cohort_students_v1','hwai_courses_v2','hwai_curriculum_versions_v1','hwai_course_templates_v1','hwai_students_v1','hwai_grading_categories_v1','hwai_assignments_v1','hwai_rubrics_v1','hwai_submissions_v1','hwai_student_groups_v1','hwai_clos_v1'].forEach(k=>localStorage.removeItem(k)); location.reload();
