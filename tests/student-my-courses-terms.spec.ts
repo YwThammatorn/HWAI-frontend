@@ -163,41 +163,107 @@ test.describe("Student home", () => {
 
 test.describe("term-history mock (console command [14])", () => {
   const rd = (f: string) => JSON.parse(fs.readFileSync(`public/mock-data/${f}`, "utf8"));
+  type Roster = { courseId: string; studentId: string; enrollmentStatus: string };
 
-  test("it refers to real courses: this term's c-mock-1, three finished 2568 courses, one withdrawn", async () => {
-    const courses = new Map<string, { academicYear: number; term: number; status: string }>(rd("courses-mockup.json").map((c: { id: string }) => [c.id, c]));
+  test("three students, each pointing at real courses: 66010101 and 67010201 (several finished terms), 68020101 (one withdrawn)", async () => {
+    const courses = new Map<string, { academicYear: number; term: number; status: string; name: string }>(rd("courses-mockup.json").map((c: { id: string }) => [c.id, c]));
+    const cohortIds = new Set(rd("students-mockup.json").map((s: { studentId: string }) => s.studentId));
     for (const f of ["student-history-mockup.json", "student-history-mockup-en.json"]) {
       const h = rd(f);
-      const byCourse = new Map<string, string>(h.courseStudents.map((r: { courseId: string; enrollmentStatus: string }) => [r.courseId, r.enrollmentStatus]));
-      expect([...byCourse.keys()].sort()).toEqual(["c-mock-1", "c-mock-17", "c-mock-18", "c-mock-19", "c-mock-6"]);
-      expect(byCourse.get("c-mock-6")).toBe("withdrawn");
-      expect(courses.get("c-mock-1")).toMatchObject({ academicYear: 2569, term: 1, status: "active" });
-      for (const id of ["c-mock-17", "c-mock-18", "c-mock-19"]) expect(courses.get(id)).toMatchObject({ academicYear: 2568, status: "archived" });
-      // every graded item has an announced (finalized) assignment and a category of its own course
-      for (const a of h.assignments) expect(a.gradingFinalized).toBe(true);
-      const cat = new Map(h.gradingCategories.map((c: { id: string; courseId: string }) => [c.id, c.courseId]));
+      const of = (sid: string) => (h.courseStudents as Roster[]).filter((r) => r.studentId === sid);
+      for (const sid of ["66010101", "67010201", "68020101"]) expect(cohortIds.has(sid), `${sid} is in the [12] student list`).toBe(true);
+      expect(of("66010101")).toHaveLength(3 + 8);
+      expect(of("67010201")).toHaveLength(3 + 7);
+      expect(of("68020101").map((r) => r.courseId).sort()).toEqual(["c-mock-1", "c-mock-17", "c-mock-18", "c-mock-19", "c-mock-6"]);
+      expect(of("68020101").find((r) => r.courseId === "c-mock-6")?.enrollmentStatus).toBe("withdrawn");
+      for (const r of h.courseStudents as Roster[]) expect(courses.has(r.courseId), `${r.courseId} exists in the courses mock`).toBe(true);
+      // this term's enrolments are active 2569/1 courses; the rest are finished (archived, before 2569)
+      for (const sid of ["66010101", "67010201"]) {
+        const cur = of(sid).filter((r) => courses.get(r.courseId)!.status === "active");
+        const past = of(sid).filter((r) => courses.get(r.courseId)!.status === "archived");
+        expect(cur).toHaveLength(3);
+        for (const r of cur) expect(courses.get(r.courseId)).toMatchObject({ academicYear: 2569, term: 1 });
+        for (const r of past) expect(courses.get(r.courseId)!.academicYear).toBeLessThan(2569);
+      }
+      // every assignment is announced except the one course whose results are deliberately not; weights sum to 100
+      const unannounced = new Set((h.assignments as { courseId: string; gradingFinalized: boolean }[]).filter((a) => !a.gradingFinalized).map((a) => a.courseId));
+      expect(unannounced.size).toBe(1);
+      const cat = new Map<string, string>(h.gradingCategories.map((c: { id: string; courseId: string }) => [c.id, c.courseId]));
       for (const a of h.assignments) expect(cat.get(a.categoryId)).toBe(a.courseId);
-      // weights add up to 100 per course
-      for (const id of ["c-mock-17", "c-mock-18", "c-mock-19"]) {
-        expect(h.gradingCategories.filter((c: { courseId: string }) => c.courseId === id).reduce((n: number, c: { weight: number }) => n + c.weight, 0)).toBe(100);
+      for (const courseId of new Set<string>(h.gradingCategories.map((c: { courseId: string }) => c.courseId))) {
+        expect(h.gradingCategories.filter((c: { courseId: string }) => c.courseId === courseId).reduce((n: number, c: { weight: number }) => n + c.weight, 0)).toBe(100);
       }
     }
   });
 
-  test("the results come out as A, C and B", async () => {
+  test("the grades of 68020101, 66010101 and 67010201", async () => {
     const h = rd("student-history-mockup.json");
-    const result = (courseId: string) => {
-      const cats = h.gradingCategories.filter((c: { courseId: string }) => c.courseId === courseId);
-      let total = 0;
-      for (const c of cats) {
+    const total = (sid: string, courseId: string) => {
+      let sum = 0;
+      for (const c of h.gradingCategories.filter((c: { courseId: string }) => c.courseId === courseId)) {
         const items = h.assignments.filter((a: { categoryId: string }) => a.categoryId === c.id);
-        const earned = items.reduce((n: number, a: { id: string }) => n + h.submissions.find((s: { assignmentId: string }) => s.assignmentId === a.id).instructorScore, 0);
-        total += (earned / items.reduce((n: number, a: { maxPoints: number }) => n + a.maxPoints, 0)) * c.weight;
+        const earned = items.reduce((n: number, a: { id: string }) => n + h.submissions.find((x: { assignmentId: string; studentId: string }) => x.assignmentId === a.id && x.studentId === sid).instructorScore, 0);
+        sum += (earned / items.reduce((n: number, a: { maxPoints: number }) => n + a.maxPoints, 0)) * c.weight;
       }
-      return total;
+      return Math.round(sum * 10) / 10;
     };
-    expect(result("c-mock-17")).toBeCloseTo(87.6, 1);   // A
-    expect(result("c-mock-18")).toBeCloseTo(62.7, 1);   // C
-    expect(result("c-mock-19")).toBeCloseTo(73.4, 1);   // B
+    const courseIdsOf = (sid: string) => (h.courseStudents as Roster[]).filter((r) => r.studentId === sid && h.gradingCategories.some((c: { courseId: string }) => c.courseId === r.courseId)).map((r) => r.courseId);
+    expect(courseIdsOf("68020101").map((c: string) => total("68020101", c))).toEqual([87.6, 62.7, 73.4]);
+    expect(courseIdsOf("66010101").map((c: string) => total("66010101", c))).toEqual([91, 84, 78, 72, 66, 58, 88, 80]);   // A A B B C D A A
+    expect(courseIdsOf("67010201").map((c: string) => total("67010201", c))).toEqual([86, 79, 55, 47, 90, 68, 80]);      // ... D, F, A, C and an unannounced course
+  });
+
+  // The real merged data in the browser: what the new students see.
+  async function openAs(page: Page, studentId: string) {
+    await page.clock.install({ time: new Date("2026-09-26T10:00:00") });
+    const data = { courses: rd("courses-mockup-en.json"), teachers: rd("teachers-mockup-en.json"), cohort: rd("students-mockup-en.json"), h: rd("student-history-mockup-en.json"), flow: rd("student-flow-mockup-en.json") };
+    await page.addInitScript(([sid, d]) => {
+      if (sessionStorage.getItem("hm")) return;
+      sessionStorage.setItem("hm", "1");
+      const x = d as { courses: unknown; teachers: unknown; cohort: { studentId: string; firstName: string; lastName: string; email: string }[]; h: Record<string, unknown[]>; flow: Record<string, unknown[]> };
+      const person = x.cohort.find((s) => s.studentId === sid)!;
+      localStorage.setItem("hwai_lang", "en");
+      localStorage.setItem("hwai_user", JSON.stringify({ name: `${person.firstName} ${person.lastName}`, email: person.email, role: "student", studentId: sid }));
+      localStorage.setItem("hwai_courses_v2", JSON.stringify(x.courses));
+      localStorage.setItem("hwai_managed_teachers_v1", JSON.stringify(x.teachers));
+      localStorage.setItem("hwai_cohort_students_v1", JSON.stringify(x.cohort));
+      localStorage.setItem("hwai_students_v1", JSON.stringify([...x.flow.courseStudents, ...x.h.courseStudents]));
+      localStorage.setItem("hwai_grading_categories_v1", JSON.stringify([...x.flow.gradingCategories, ...x.h.gradingCategories]));
+      localStorage.setItem("hwai_assignments_v1", JSON.stringify([...x.flow.assignments, ...x.h.assignments]));
+      localStorage.setItem("hwai_submissions_v1", JSON.stringify([...x.flow.submissions, ...x.h.submissions]));
+      localStorage.setItem("hwai_rubrics_v1", JSON.stringify(x.flow.rubrics));
+    }, [studentId, data] as const);
+    await page.goto(`${BASE}/student/courses`);
+    await page.waitForLoadState("networkidle");
+  }
+
+  test("66010101 (4th year): three courses this term; four finished terms, newest first", async ({ page }) => {
+    await openAs(page, "66010101");
+    await expect(page.getByText("Term 1/2569 · 3 courses")).toBeVisible();
+    const groups = pastSection(page).getByRole("group");
+    await expect(groups).toHaveCount(4);
+    await expect(groups.nth(0)).toHaveAccessibleName("Term 2/2567");
+    await expect(groups.nth(1)).toHaveAccessibleName("Term 1/2567");
+    await expect(groups.nth(2)).toHaveAccessibleName("Term 2/2566");
+    await expect(groups.nth(3)).toHaveAccessibleName("Term 1/2566");
+    const letters = await pastSection(page).getByLabel(/^Grade /).evaluateAll((els) => els.map((e) => e.getAttribute("aria-label")?.slice(-1)));
+    expect(letters.slice().sort().join("")).toBe("AAABBCDA".split("").sort().join(""));   // A A A A B B C D
+  });
+
+  test("67010201 (3rd year): the F, the D, and a term whose results are not announced yet", async ({ page }) => {
+    await openAs(page, "67010201");
+    const past = pastSection(page);
+    await expect(past.getByRole("group")).toHaveCount(4);
+    await expect(past.getByRole("group").nth(0)).toHaveAccessibleName("Term 2/2568");
+    await expect(past.getByRole("group").nth(0)).toContainText("No grade yet");
+    await expect(past.getByLabel("Grade F")).toHaveCount(1);
+    await expect(past.getByLabel("Grade D")).toHaveCount(1);
+    await expect(past.getByText("47.0%")).toBeVisible();
+  });
+
+  test("69070101 (1st year, the main demo login): only this term, no completed section", async ({ page }) => {
+    await openAs(page, "69070101");
+    await expect(currentSection(page).getByText("Computer Programming", { exact: true })).toBeVisible();
+    await expect(pastSection(page)).toHaveCount(0);
   });
 });

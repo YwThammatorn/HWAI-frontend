@@ -15,7 +15,7 @@ fetch('/mock-data/curriculum-mockup.json').then(r=>r.json()).then(d=>{localStora
 
 ---
 
-[2] รายวิชาที่เปิดสอน (37 section ใน 24 วิชา — หลายเคสไว้ดูหน้า /admin/courses ดู [11] ว่ามีเคสอะไรบ้าง)
+[2] รายวิชาที่เปิดสอน (52 section — หลายเคสไว้ดูหน้า /admin/courses ดู [11] ว่ามีเคสอะไรบ้าง; 15 รายการล่าสุดเป็นวิชาเก็บถาวรของเทอมก่อนๆ ไว้ให้ [14])
 
 fetch('/mock-data/courses-mockup.json').then(r=>r.json()).then(d=>{localStorage.setItem('hwai_courses_v2', JSON.stringify(d)); location.reload();});
 
@@ -129,7 +129,7 @@ fetch('/mock-data/curriculum-mockup-en.json').then(r=>r.json()).then(d=>{localSt
 
 [11] ดูหน้า /admin/courses หลายเคสพร้อมกัน — จัดกลุ่มตามหลักสูตร → วิชา (หลักสูตร + รายวิชา + อาจารย์ ชุดเดียว)
      ไม่แตะข้อมูลนักศึกษา/งาน ใช้เฉพาะ 3 ไฟล์ด้านล่าง รันแล้วหน้าจะ reload เอง แล้วเปิด /admin/courses (login admin)
-     เคสที่ใส่ไว้ (c-mock-1..37 — 30 เปิดสอน / 7 เก็บถาวร):
+     เคสที่ใส่ไว้ (c-mock-1..37 — 30 เปิดสอน / 7 เก็บถาวร; ไฟล์ตอนนี้มี 52 รายการ — 38..52 เป็นวิชาเก็บถาวรย้อนหลังของ [14]):
        - วิชาเดียวกันหลาย section (Computer Programming 3 sec, DSA 3 sec, OS 2 sec) — ต้องอยู่ในการ์ดเดียวกัน
        - วิชาเดียวกันคนละเทอม/ปี (Senior Project 2569/1 + ที่เก็บถาวร 2568/1, DSA 2569/1 + 2569/2, Programming 2568/1+2)
        - เทอม 3 (Database Systems 2569/3)
@@ -186,21 +186,24 @@ fetch('/mock-data/student-flow-mockup-en.json').then(r=>r.json()).then(d=>{local
 ---
 
 [14] ประวัติรายวิชาของนักศึกษา — ไว้ดู "รายวิชาของฉัน" (เทอมปัจจุบัน) กับ "รายวิชาที่เรียนผ่านไปแล้ว" ของ role student
-     นักศึกษา 68020101 (ภูริช วงศ์สวัสดิ์ — login 68020101@kmitl.ac.th ต้องมีในรายชื่อจาก [5] หรือ [12]) จะมี:
-       - เทอมปัจจุบัน (1/2569): c-mock-1 การเขียนโปรแกรมคอมพิวเตอร์ (ของ [2]/[5])
-       - เรียนผ่านแล้ว 3 วิชา เทอม 2568: การเขียนโปรแกรมฯ เทอม 1 (88% เกรด A), การเขียนโปรแกรมฯ เทอม 2 (63% เกรด C), โครงสร้างข้อมูลฯ เทอม 1 (73% เกรด B)
-         แต่ละวิชามี 3 หมวดงาน (แล็บ, แบบทดสอบย่อย, สอบ) ตรวจและประกาศผลแล้วทั้งหมด
-       - ถอนแล้ว 1 วิชา: โครงงานวิศวกรรมคอมพิวเตอร์ (2568/1) — ขึ้นป้าย "ถอนแล้ว" ไม่มีเกรด
-     ต้องทำ [2] ก่อน (c-mock-17/18/19/6 มาจากไฟล์ courses-mockup ชุดที่มี 37 วิชา) — คำสั่งนี้ "เพิ่ม" ต่อท้ายข้อมูลเดิม (ข้าม id ที่มีอยู่แล้ว) จึงรันซ้ำได้ ไม่ทับข้อมูลจาก [5]/[12]
+     คำสั่งเดียวจบ: ใส่รายวิชา 52 รายการ + อาจารย์ + รายชื่อนักศึกษา 57 คน (เหมือน [2] [3] [12]) แล้วเพิ่มประวัติเรียนต่อท้ายข้อมูลเดิม
+     (ประวัติเป็นแบบ "เพิ่ม" ข้าม id ที่มีอยู่แล้ว จึงไม่ทับสิ่งที่ [5] ใส่ไว้ — ถ้าจะล็อกอิน 69070101 ให้รัน [5] ตามหลังได้)
+     ล็อกอินด้วยอีเมลของนักศึกษา รหัสผ่านอะไรก็ได้:
+       66010101@kmitl.ac.th  ปี 4  — เทอมนี้ 3 วิชา (Senior Project, SE, OS) + เรียนผ่านแล้ว 8 วิชา 4 เทอม (2566/1 → 2567/2) เกรด A A B B C D A A
+       67010201@kmitl.ac.th  ปี 3  — เทอมนี้ 3 วิชา + เรียนผ่านแล้ว 7 วิชา 4 เทอม มีเกรด D, F (47%), และเทอม 2568/2 ที่ยังไม่ประกาศผล (ขึ้น "ยังไม่มีคะแนน")
+       68020101@kmitl.ac.th  ปี 2  — เทอมนี้ 1 วิชา (c-mock-1) + เรียนผ่านแล้ว 3 วิชา (A / C / B) + ถอนแล้ว 1 วิชา (ขึ้นป้าย "ถอนแล้ว")
+       69070101@kmitl.ac.th  ปี 1  — เทอมนี้อย่างเดียว (ยังไม่มีวิชาที่ผ่านแล้ว → ไม่มีส่วน "เรียนผ่านไปแล้ว") เป็นตัวอย่างกรณีเทอมแรก
+     วิชาที่เรียนผ่านแล้วเป็นวิชาเก็บถาวรของหลักสูตร CE 2564 (Programming, Discrete, DSA, Digital Logic, Architecture, OS, Database, SE) — ไปดูที่ /admin/courses ก็เห็นเป็นเทอมย้อนหลังในการ์ดวิชาเดียวกัน
+     แต่ละวิชามี 3 หมวดงาน (แล็บ, แบบทดสอบย่อย, สอบ) ตรวจและประกาศผลแล้ว ยกเว้นหนึ่งวิชาของ 67010201
      "เทอมปัจจุบัน" ตอนนี้ดูจากวันที่ตามปฏิทินการศึกษาทั่วไป (ส.ค.–ธ.ค. เทอม 1, ม.ค.–พ.ค. เทอม 2, มิ.ย.–ก.ค. เทอม 3) — ระบบเทอมจริงให้ admin ตั้งค่า เก็บไว้ทำทีหลัง
 
      ภาษาไทย:
 
-fetch('/mock-data/student-history-mockup.json').then(r=>r.json()).then(d=>{const put=(k,items)=>{const cur=JSON.parse(localStorage.getItem(k)||'[]');const ids=new Set(cur.map(x=>x.id));localStorage.setItem(k,JSON.stringify([...cur,...items.filter(x=>!ids.has(x.id))]));}; put('hwai_students_v1',d.courseStudents); put('hwai_grading_categories_v1',d.gradingCategories); put('hwai_assignments_v1',d.assignments); put('hwai_submissions_v1',d.submissions); location.reload();});
+fetch('/mock-data/courses-mockup.json').then(r=>r.json()).then(c=>{localStorage.setItem('hwai_courses_v2', JSON.stringify(c)); return fetch('/mock-data/teachers-mockup.json').then(r=>r.json());}).then(t=>{localStorage.setItem('hwai_managed_teachers_v1', JSON.stringify(t)); return fetch('/mock-data/students-mockup.json').then(r=>r.json());}).then(st=>{localStorage.setItem('hwai_cohort_students_v1', JSON.stringify(st)); return fetch('/mock-data/student-history-mockup.json').then(r=>r.json());}).then(d=>{const put=(k,items)=>{const cur=JSON.parse(localStorage.getItem(k)||'[]');const ids=new Set(cur.map(x=>x.id));localStorage.setItem(k,JSON.stringify([...cur,...items.filter(x=>!ids.has(x.id))]));}; put('hwai_students_v1',d.courseStudents); put('hwai_grading_categories_v1',d.gradingCategories); put('hwai_assignments_v1',d.assignments); put('hwai_submissions_v1',d.submissions); localStorage.setItem('hwai_lang','th'); location.reload();});
 
      English:
 
-fetch('/mock-data/student-history-mockup-en.json').then(r=>r.json()).then(d=>{const put=(k,items)=>{const cur=JSON.parse(localStorage.getItem(k)||'[]');const ids=new Set(cur.map(x=>x.id));localStorage.setItem(k,JSON.stringify([...cur,...items.filter(x=>!ids.has(x.id))]));}; put('hwai_students_v1',d.courseStudents); put('hwai_grading_categories_v1',d.gradingCategories); put('hwai_assignments_v1',d.assignments); put('hwai_submissions_v1',d.submissions); location.reload();});
+fetch('/mock-data/courses-mockup-en.json').then(r=>r.json()).then(c=>{localStorage.setItem('hwai_courses_v2', JSON.stringify(c)); return fetch('/mock-data/teachers-mockup-en.json').then(r=>r.json());}).then(t=>{localStorage.setItem('hwai_managed_teachers_v1', JSON.stringify(t)); return fetch('/mock-data/students-mockup-en.json').then(r=>r.json());}).then(st=>{localStorage.setItem('hwai_cohort_students_v1', JSON.stringify(st)); return fetch('/mock-data/student-history-mockup-en.json').then(r=>r.json());}).then(d=>{const put=(k,items)=>{const cur=JSON.parse(localStorage.getItem(k)||'[]');const ids=new Set(cur.map(x=>x.id));localStorage.setItem(k,JSON.stringify([...cur,...items.filter(x=>!ids.has(x.id))]));}; put('hwai_students_v1',d.courseStudents); put('hwai_grading_categories_v1',d.gradingCategories); put('hwai_assignments_v1',d.assignments); put('hwai_submissions_v1',d.submissions); localStorage.setItem('hwai_lang','en'); location.reload();});
 
 ---
 
@@ -214,7 +217,7 @@ fetch('/mock-data/student-history-mockup-en.json').then(r=>r.json()).then(d=>{co
 - ไฟล์ json ต้นทางอยู่ใน public/mock-data/ (courses-mockup.json, curriculum-mockup.json, teachers-mockup.json, student-flow-mockup.json)
   ถ้าแก้ข้อมูล mock ให้แก้ที่ test-data/*.json ก่อน แล้ว copy ทับไฟล์ใน public/mock-data/ ด้วย
 - คำสั่งพวกนี้ทำงานเฉพาะตอน dev server รันอยู่ (npm run dev) เพราะ fetch ไปที่ localhost
-- teachers-mockup.json ใช้ courseId ที่ตรงกับ courses-mockup.json (c-mock-1..37; 1..6 เดิม ที่เหลือเพิ่ม 26/9/2569 สำหรับหน้า /admin/courses) ทำ [2] ก่อน [3] เสมอ
+- teachers-mockup.json ใช้ courseId ที่ตรงกับ courses-mockup.json (c-mock-1..52; 1..6 เดิม ที่เหลือเพิ่ม 26/9/2569 สำหรับหน้า /admin/courses และ [14]) ทำ [2] ก่อน [3] เสมอ
 - student-flow-mockup.json ก็ใช้ courseId c-mock-1 เหมือนกัน ทำ [2] ก่อน [5] เสมอ
 - students_sample.csv ([3b]) กับ course-import-test.csv ([7]) เป็นคนละไฟล์ คนละหน้า แต่ ID ใช้ scheme เดียวกัน:
   — [3b] คือ import นักศึกษาเข้า cohort กลางของระบบ (ผ่าน /admin/users, format 5 คอลัมน์ studentId,firstName,lastName,email,program — cohort field ถูกเอาออกแล้ว 23/9/2569)

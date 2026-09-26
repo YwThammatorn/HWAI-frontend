@@ -26,6 +26,8 @@ async function open(page: Page, lang: "en" | "th" = "en") {
 }
 
 const curriculumHeadings = (page: Page) => page.getByRole("heading", { level: 2 }).allTextContents();
+// CE 2569 and CE 2564 both have a "Database Systems" subject (this term's and an earlier curriculum's), so pin the one in CE 2569
+const ce2569Db = (page: Page) => page.getByRole("region", { name: /Computer Engineering \(Revised 2569\)/ }).getByRole("region", { name: "Database Systems", exact: true });
 const subjectCard = (page: Page, name: string) => page.getByRole("region", { name, exact: true });
 
 test.describe("Admin Courses — grouped by curriculum, then subject", () => {
@@ -92,18 +94,18 @@ test.describe("Admin Courses — grouped by curriculum, then subject", () => {
   test("a curriculum can be collapsed and expanded, and 'Collapse all' does every one", async ({ page }) => {
     await open(page);
     const ce = page.getByRole("button", { name: /Computer Engineering \(Revised 2569\)/ });
-    await expect(subjectCard(page, "Database Systems")).toHaveCount(1);
+    await expect(ce2569Db(page)).toHaveCount(1);
     await ce.click();
     await expect(ce).toHaveAttribute("aria-expanded", "false");
-    await expect(subjectCard(page, "Database Systems")).toHaveCount(0);
+    await expect(ce2569Db(page)).toHaveCount(0);
     await ce.click();
-    await expect(subjectCard(page, "Database Systems")).toHaveCount(1);
+    await expect(ce2569Db(page)).toHaveCount(1);
 
     await page.getByRole("button", { name: "Collapse all" }).click();
-    await expect(subjectCard(page, "Database Systems")).toHaveCount(0);
+    await expect(ce2569Db(page)).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Expand all" })).toBeVisible();
     await page.getByRole("button", { name: "Expand all" }).click();
-    await expect(subjectCard(page, "Database Systems")).toHaveCount(1);
+    await expect(ce2569Db(page)).toHaveCount(1);
   });
 });
 
@@ -111,7 +113,7 @@ test.describe("Admin Courses — filters", () => {
   test("program, curriculum, term and status each narrow the list, and the counts follow", async ({ page }) => {
     await open(page);
     const summary = page.getByText(/sections? ·/).first();
-    await expect(summary).toHaveText("37 sections · 24 subjects · 8 curricula");
+    await expect(summary).toHaveText("52 sections · 29 subjects · 8 curricula");
 
     await page.getByLabel("Filter by program").selectOption("CEI");
     await expect(summary).toHaveText("5 sections · 4 subjects · 2 curricula");
@@ -122,7 +124,7 @@ test.describe("Admin Courses — filters", () => {
 
     await page.getByRole("button", { name: "Clear filters" }).click();
     await page.getByLabel("Filter by status").selectOption("archived");
-    await expect(summary).toHaveText("7 sections · 6 subjects · 4 curricula");
+    await expect(summary).toHaveText("22 sections · 12 subjects · 4 curricula");
     await expect(page.getByText("Archived", { exact: true }).first()).toBeVisible();
 
     await page.getByLabel("Filter by status").selectOption("all");
@@ -150,13 +152,13 @@ test.describe("Admin Courses — filters", () => {
     await expect(page.getByRole("button", { name: "Collapse all" })).toHaveCount(0);
 
     await search.fill("01076321");                      // a code
-    await expect(page.getByText("2 sections · 1 subject · 1 curriculum")).toBeVisible();
-    await expect(subjectCard(page, "Database Systems")).toHaveCount(1);
+    await expect(page.getByText("4 sections · 2 subjects · 2 curricula")).toBeVisible();
+    await expect(subjectCard(page, "Database Systems")).toHaveCount(2);      // this term's (CE 2569) and the earlier terms in CE 2564
 
     await search.fill("zzz nothing");
     await expect(page.getByText("No courses match these filters")).toBeVisible();
     await page.getByRole("main").getByRole("button", { name: "Clear filters" }).last().click();
-    await expect(page.getByText("37 sections · 24 subjects · 8 curricula")).toBeVisible();
+    await expect(page.getByText("52 sections · 29 subjects · 8 curricula")).toBeVisible();
   });
 });
 
