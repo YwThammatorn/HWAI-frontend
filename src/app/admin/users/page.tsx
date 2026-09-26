@@ -1142,16 +1142,27 @@ function DeactivateBatchModal({ open, onClose, students, onConfirm }: {
   open: boolean;
   onClose: () => void;
   students: { id: string; studentId: string; program: string; status?: string }[];
-  onConfirm: (batch: string, ids: string[]) => void;
+  onConfirm: (batch: string, ids: string[], programLabel?: string) => void;
 }) {
   const { t } = useLanguage();
+  // full program names, never the CE / CECS / CEI abbreviations (same 3-entry map as the other places in this file)
+  const PROGRAM_NAME: Record<string, string> = {
+    CE: t("วิศวกรรมคอมพิวเตอร์", "Computer Engineering"),
+    CECS: t("วิศวกรรมคอมพิวเตอร์และความมั่นคงปลอดภัยไซเบอร์", "Computer Engineering and Cybersecurity"),
+    CEI: t("วิศวกรรมคอมพิวเตอร์นานาชาติ", "Computer Engineering International"),
+  };
+  const programName = (p: string) => PROGRAM_NAME[p] ?? p;
   // only batches that still have someone active are worth offering, oldest first (the one that just graduated)
   const active = students.filter((s) => s.status !== "inactive");
   const batches = [...new Set(active.map((s) => batchOf(s.studentId)))].sort();
   const [picked, setPicked] = useState("");
   const batch = batches.includes(picked) ? picked : batches[0] ?? "";
-  const inBatch = active.filter((s) => batchOf(s.studentId) === batch);
-  const byProgram = Object.entries(inBatch.reduce<Record<string, number>>((acc, s) => ({ ...acc, [s.program]: (acc[s.program] ?? 0) + 1 }), {}));
+  const wholeBatch = active.filter((s) => batchOf(s.studentId) === batch);
+  // the batch can be closed all at once, or one program at a time
+  const programsInBatch = [...new Set(wholeBatch.map((s) => s.program))].sort();
+  const [pickedProgram, setPickedProgram] = useState("all");
+  const program = programsInBatch.includes(pickedProgram) ? pickedProgram : "all";   // a program the new batch doesn't have falls back to "all"
+  const inBatch = program === "all" ? wholeBatch : wholeBatch.filter((s) => s.program === program);
 
   return (
     <Modal open={open} onClose={onClose} size="md" title={t("ปิดใช้งานทั้งรุ่น", "Deactivate a whole batch")}
@@ -1162,7 +1173,7 @@ function DeactivateBatchModal({ open, onClose, students, onConfirm }: {
             className="h-10 px-5 rounded-xl border border-[var(--border)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors">
             {t("ยกเลิก", "Cancel")}
           </button>
-          <button onClick={() => onConfirm(batch, inBatch.map((s) => s.id))} disabled={inBatch.length === 0}
+          <button onClick={() => onConfirm(batch, inBatch.map((s) => s.id), program === "all" ? undefined : programName(program))} disabled={inBatch.length === 0}
             className="h-10 px-5 rounded-xl bg-amber-700 text-white text-sm font-semibold hover:bg-amber-800 active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors">
             {t(`ปิดใช้งาน ${inBatch.length} คน`, `Deactivate ${inBatch.length} student${inBatch.length === 1 ? "" : "s"}`)}
           </button>
@@ -1180,9 +1191,20 @@ function DeactivateBatchModal({ open, onClose, students, onConfirm }: {
             })}
           </select>
         </div>
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="batch-program-select" className="text-xs font-semibold text-[var(--text-muted)]">{t("สาขา", "Program")}</label>
+          <select id="batch-program-select" value={program} onChange={(e) => setPickedProgram(e.target.value)}
+            className="h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-3 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]">
+            <option value="all">{t(`ทุกสาขา — ${wholeBatch.length} คน`, `All programs — ${wholeBatch.length}`)}</option>
+            {programsInBatch.map((p) => (
+              <option key={p} value={p}>{programName(p)} — {wholeBatch.filter((s) => s.program === p).length}</option>
+            ))}
+          </select>
+        </div>
         <p className="text-sm text-[var(--text-secondary)]">
           {t(`นักศึกษา ${inBatch.length} คนของรุ่น ${batch}`, `${inBatch.length} student${inBatch.length === 1 ? "" : "s"} of batch ${batch}`)}
-          {byProgram.length > 0 && <span className="text-[var(--text-muted)]"> ({byProgram.map(([p, n]) => `${p} ${n}`).join(" · ")})</span>}
+          {" · "}
+          <span className="text-[var(--text-muted)]">{program === "all" ? t("ทุกสาขา", "all programs") : programName(program)}</span>
         </p>
         <p className="text-xs text-[var(--text-muted)]">
           {t("ข้อมูลและรายวิชาที่เคยลงยังอยู่ครบ เปิดใช้งานคืนทีละคนได้ หรือกด “เลิกทำ” ทันทีหลังจากนี้", "Their records and course enrolments stay. You can activate people again one by one, or press “Undo” right after.")}
@@ -1198,7 +1220,7 @@ function StudentsTab() {
   const [importOpen, setImportOpen] = useState(false);
   const [batchOpen, setBatchOpen] = useState(false);
   // what the last "deactivate a batch" did, so it can be undone in one click
-  const [batchNotice, setBatchNotice] = useState<{ batch: string; ids: string[] } | null>(null);
+  const [batchNotice, setBatchNotice] = useState<{ batch: string; ids: string[]; program?: string } | null>(null);
   const [addOpen, setAddOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deactivatingId, setDeactivatingId] = useState<string | null>(null);
@@ -1409,6 +1431,7 @@ function StudentsTab() {
         <div role="status" className="mb-4 flex items-center gap-3 rounded-xl border border-[var(--s-ok-bd)] bg-[var(--s-ok-bg)] px-4 py-2.5 text-sm text-[var(--s-ok-text)]">
           <span className="flex-1">
             {t(`ปิดใช้งานนักศึกษารุ่น ${batchNotice.batch} แล้ว ${batchNotice.ids.length} คน`, `Deactivated ${batchNotice.ids.length} student${batchNotice.ids.length === 1 ? "" : "s"} of batch ${batchNotice.batch}`)}
+            {batchNotice.program && ` · ${batchNotice.program}`}
           </span>
           <button
             onClick={() => { updateCohortStudents(batchNotice.ids, { status: "active" }); setBatchNotice(null); }}
@@ -1639,7 +1662,7 @@ function StudentsTab() {
         open={batchOpen}
         onClose={() => setBatchOpen(false)}
         students={cohortStudents}
-        onConfirm={(batch, ids) => { updateCohortStudents(ids, { status: "inactive" }); setBatchNotice({ batch, ids }); setBatchOpen(false); }}
+        onConfirm={(batch, ids, program) => { updateCohortStudents(ids, { status: "inactive" }); setBatchNotice({ batch, ids, program }); setBatchOpen(false); }}
       />
 
       {deletingStudent && (

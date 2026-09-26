@@ -119,7 +119,9 @@ test.describe("Deactivate a whole batch", () => {
     await expect(options).toHaveText(["Batch 67 — 3 active", "Batch 68 — 2 active", "Batch 69 — 1 active"]);
     // the oldest is preselected; the breakdown shows which programs are in it
     await expect(dialog.getByText("3 students of batch 67")).toBeVisible();
-    await expect(dialog.getByText("(CE 2 · CECS 1)")).toBeVisible();
+    // programs are named in full, never CE / CECS / CEI
+    await expect(dialog.getByLabel("Program").locator("option")).toHaveText(["All programs — 3", "Computer Engineering — 2", "Computer Engineering and Cybersecurity — 1"]);
+    await expect(dialog.getByText("CECS")).toHaveCount(0);
     await dialog.getByLabel(/Batch \(first two digits/).selectOption("68");
     await expect(dialog.getByRole("button", { name: "Deactivate 2 students" })).toBeVisible();
   });
@@ -154,6 +156,34 @@ test.describe("Deactivate a whole batch", () => {
     const after = await stored(page);
     expect(after.filter((s) => s.studentId.startsWith("67")).map((s) => [s.studentId, s.status ?? "active"]).sort())
       .toEqual([["67010101", "active"], ["67010102", "active"], ["67010103", "inactive"], ["67020101", "active"]]);
+  });
+
+  test("a batch can be closed one program at a time", async ({ page }) => {
+    await open(page, "en", BATCHES);
+    await page.getByRole("button", { name: "Deactivate batch" }).click();
+    const dialog = page.getByRole("dialog", { name: "Deactivate a whole batch" });
+    await dialog.getByLabel("Program").selectOption({ label: "Computer Engineering and Cybersecurity — 1" });
+    await expect(dialog.getByText("1 student of batch 67")).toBeVisible();
+    await dialog.getByRole("button", { name: "Deactivate 1 student", exact: true }).click();
+
+    await expect(page.getByRole("status")).toContainText("Deactivated 1 student of batch 67 · Computer Engineering and Cybersecurity");
+    const after = await stored(page);
+    expect(after.filter((s) => s.status === "inactive").map((s) => s.studentId).sort()).toEqual(["67010103", "67020101"]);   // the CECS one + the one already inactive
+
+    // batch 67 is still on offer, now with its 2 CE students
+    await page.getByRole("button", { name: "Deactivate batch" }).click();
+    await expect(dialog.getByLabel(/^Batch/).locator("option").first()).toHaveText("Batch 67 — 2 active");
+    await expect(dialog.getByLabel("Program").locator("option")).toHaveText(["All programs — 2", "Computer Engineering — 2"]);
+  });
+
+  test("a program picked for one batch falls back to 'all programs' when the next batch does not have it", async ({ page }) => {
+    await open(page, "en", BATCHES);
+    await page.getByRole("button", { name: "Deactivate batch" }).click();
+    const dialog = page.getByRole("dialog", { name: "Deactivate a whole batch" });
+    await dialog.getByLabel("Program").selectOption({ label: "Computer Engineering and Cybersecurity — 1" });
+    await dialog.getByLabel(/^Batch/).selectOption("68");        // 68 has CE and CEI, no CECS
+    await expect(dialog.getByLabel("Program")).toHaveValue("all");
+    await expect(dialog.getByRole("button", { name: "Deactivate 2 students" })).toBeVisible();
   });
 
   test("with nobody active the button is disabled", async ({ page }) => {
