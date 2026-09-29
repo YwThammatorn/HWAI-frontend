@@ -183,10 +183,15 @@ test.describe("term-history mock (console command [14])", () => {
     }
   });
 
-  test("no student's finished course predates their own admission year", async () => {
+  test("no student's finished course predates their own admission year — except 69070101, a deliberate, documented exception", async () => {
+    // 69070101 is the app's most-used demo login (every doc/HANDOFF points at it); the user asked twice to
+    // see it with both several current courses AND some finished ones, even though a batch-69 student
+    // (admitted this year) can't really have finished a course yet. That's a one-account demo convenience,
+    // not an oversight — every OTHER student must still respect the rule, which is what this test enforces.
     const courses = new Map<string, { academicYear?: number }>(rd("courses-mockup.json").map((c: { id: string }) => [c.id, c]));
     for (const f of ["student-history-mockup.json", "student-history-mockup-en.json"]) {
       for (const r of rd(f).courseStudents as Roster[]) {
+        if (r.studentId === "69070101") continue;
         const year = courses.get(r.courseId)?.academicYear;
         const admittedBE = 2500 + Number(r.studentId.slice(0, 2));
         if (year) expect(year, `${f} ${r.studentId} in ${r.courseId} (${year})`).toBeGreaterThanOrEqual(admittedBE);
@@ -302,13 +307,19 @@ test.describe("term-history mock (console command [14])", () => {
     await expect(past.getByText("Withdrawn")).toBeVisible();
   });
 
-  test("69070101 (1st year, admitted this year, the main demo login): several courses this term, and correctly NO completed section — this is literally their first term", async ({ page }) => {
+  test("69070101 (the main demo login): several courses this term, and — the one deliberate exception in this file — two finished ones too", async ({ page }) => {
     await openAs(page, "69070101");
     await expect(page.getByText("Term 1/2569 · 3 courses")).toBeVisible();
     const current = currentSection(page);
     for (const name of ["Computer Programming", "Data Structures and Algorithms", "User Experience and User Interface Design"]) {
       await expect(current.getByText(name, { exact: true })).toBeVisible();
     }
-    await expect(pastSection(page)).toHaveCount(0);
+    const past = pastSection(page);
+    const groups = past.getByRole("group");
+    await expect(groups).toHaveCount(2);
+    await expect(groups.nth(0)).toHaveAccessibleName("Term 2/2568");
+    await expect(groups.nth(1)).toHaveAccessibleName("Term 1/2568");
+    await expect(past.getByLabel("Grade A")).toHaveCount(1);
+    await expect(past.getByLabel("Grade B")).toHaveCount(1);
   });
 });
