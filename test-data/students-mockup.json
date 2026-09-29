@@ -22,9 +22,9 @@
   {
     "id": "cs-mock-3",
     "studentId": "69070103",
-    "title": "นาย",
-    "firstName": "อนุชา",
-    "lastName": "ปานเพชร",
+    "title": "Mr.",
+    "firstName": "Anucha",
+    "lastName": "Phanphet",
     "email": "69070103@kmitl.ac.th",
     "program": "CEI",
     "status": "active"
@@ -72,9 +72,9 @@
   {
     "id": "cs-mock-8",
     "studentId": "69070106",
-    "title": "นาย",
-    "firstName": "ธีรพงษ์",
-    "lastName": "มั่นคง",
+    "title": "Mr.",
+    "firstName": "Theerapong",
+    "lastName": "Mankong",
     "email": "69070106@kmitl.ac.th",
     "program": "CEI",
     "status": "active"
@@ -122,9 +122,9 @@
   {
     "id": "cs-mock-13",
     "studentId": "68020104",
-    "title": "นางสาว",
-    "firstName": "มาลี",
-    "lastName": "รุ่งเรือง",
+    "title": "Ms.",
+    "firstName": "Malee",
+    "lastName": "Rungruang",
     "email": "68020104@kmitl.ac.th",
     "program": "CEI",
     "status": "active"
@@ -222,9 +222,9 @@
   {
     "id": "cs-mock-23",
     "studentId": "66010110",
-    "title": "นางสาว",
-    "firstName": "ณัฐธิดา",
-    "lastName": "พรหมมา",
+    "title": "Ms.",
+    "firstName": "Natthida",
+    "lastName": "Phromma",
     "email": "66010110@kmitl.ac.th",
     "program": "CEI",
     "status": "active"
@@ -232,9 +232,9 @@
   {
     "id": "cs-mock-24",
     "studentId": "66010111",
-    "title": "นาย",
-    "firstName": "ชัยวัฒน์",
-    "lastName": "แก้วมณี",
+    "title": "Mr.",
+    "firstName": "Chaiwat",
+    "lastName": "Kaewmanee",
     "email": "66010111@kmitl.ac.th",
     "program": "CEI",
     "status": "inactive"
@@ -242,9 +242,9 @@
   {
     "id": "cs-mock-25",
     "studentId": "66010112",
-    "title": "นางสาว",
-    "firstName": "วราภรณ์",
-    "lastName": "สุขสวัสดิ์",
+    "title": "Ms.",
+    "firstName": "Waraporn",
+    "lastName": "Suksawat",
     "email": "66010112@kmitl.ac.th",
     "program": "CEI",
     "status": "active"
@@ -331,9 +331,9 @@
   {
     "id": "cs-mock-34",
     "studentId": "67010209",
-    "title": "นาย",
-    "firstName": "ตะวัน",
-    "lastName": "สายบุญ",
+    "title": "Mr.",
+    "firstName": "Tawan",
+    "lastName": "Saiboon",
     "email": "67010209@kmitl.ac.th",
     "program": "CEI",
     "status": "active"
@@ -341,9 +341,9 @@
   {
     "id": "cs-mock-35",
     "studentId": "67010210",
-    "title": "นางสาว",
-    "firstName": "จิราพร",
-    "lastName": "อ่อนหวาน",
+    "title": "Ms.",
+    "firstName": "Jiraporn",
+    "lastName": "Onwan",
     "email": "67010210@kmitl.ac.th",
     "program": "CEI",
     "status": "active"
@@ -351,9 +351,9 @@
   {
     "id": "cs-mock-36",
     "studentId": "67010211",
-    "title": "นาย",
-    "firstName": "ยศพล",
-    "lastName": "อินทรวงศ์",
+    "title": "Mr.",
+    "firstName": "Yotsaphon",
+    "lastName": "Intarawong",
     "email": "67010211@kmitl.ac.th",
     "program": "CEI",
     "status": "active"
@@ -431,9 +431,9 @@
   {
     "id": "cs-mock-44",
     "studentId": "68020208",
-    "title": "นาย",
-    "firstName": "รัชพล",
-    "lastName": "ใจเย็น",
+    "title": "Mr.",
+    "firstName": "Ratchaphon",
+    "lastName": "Jaiyen",
     "email": "68020208@kmitl.ac.th",
     "program": "CEI",
     "status": "active"
@@ -441,9 +441,9 @@
   {
     "id": "cs-mock-45",
     "studentId": "68020209",
-    "title": "นางสาว",
-    "firstName": "ศิริลักษณ์",
-    "lastName": "ทับทิม",
+    "title": "Ms.",
+    "firstName": "Sirilak",
+    "lastName": "Thapthim",
     "email": "68020209@kmitl.ac.th",
     "program": "CEI",
     "status": "active"
@@ -541,9 +541,9 @@
   {
     "id": "cs-mock-55",
     "studentId": "69070210",
-    "title": "นางสาว",
-    "firstName": "มนัสนันท์",
-    "lastName": "อุดม",
+    "title": "Ms.",
+    "firstName": "Manatsanan",
+    "lastName": "Udom",
     "email": "69070210@kmitl.ac.th",
     "program": "CEI",
     "status": "active"
@@ -551,9 +551,9 @@
   {
     "id": "cs-mock-56",
     "studentId": "69070211",
-    "title": "นาย",
-    "firstName": "ปุณยวีร์",
-    "lastName": "เกียรติกุล",
+    "title": "Mr.",
+    "firstName": "Punyawee",
+    "lastName": "Kiatkul",
     "email": "69070211@kmitl.ac.th",
     "program": "CEI",
     "status": "active"
@@ -561,9 +561,9 @@
   {
     "id": "cs-mock-57",
     "studentId": "69070212",
-    "title": "นางสาว",
-    "firstName": "ญาดา",
-    "lastName": "พิมพ์สอน",
+    "title": "Ms.",
+    "firstName": "Yada",
+    "lastName": "Phimson",
     "email": "69070212@kmitl.ac.th",
     "program": "CEI",
     "status": "active"

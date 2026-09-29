@@ -310,8 +310,10 @@ test.describe("term-history mock (console command [14])", () => {
   test("69070101 (the main demo login): several courses this term, and — the one deliberate exception in this file — two finished ones too", async ({ page }) => {
     await openAs(page, "69070101");
     await expect(page.getByText("Term 1/2569 · 3 courses")).toBeVisible();
+    // 69070101 is CE (Thai-track) — 30/9/2569: a student's own subject names always follow their
+    // program's home language, not the page's language toggle, so these stay Thai even in English UI.
     const current = currentSection(page);
-    for (const name of ["Computer Programming", "Data Structures and Algorithms", "User Experience and User Interface Design"]) {
+    for (const name of ["การเขียนโปรแกรมคอมพิวเตอร์", "โครงสร้างข้อมูลและอัลกอริทึม", "การออกแบบประสบการณ์และส่วนติดต่อผู้ใช้"]) {
       await expect(current.getByText(name, { exact: true })).toBeVisible();
     }
     const past = pastSection(page);

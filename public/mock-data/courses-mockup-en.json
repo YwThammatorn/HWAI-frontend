@@ -1,8 +1,8 @@
 [
   {
     "id": "c-mock-1",
-    "name": "Computer Programming",
-    "description": "Fundamentals of programming with Python and C",
+    "name": "การเขียนโปรแกรมคอมพิวเตอร์",
+    "description": "พื้นฐานการเขียนโปรแกรมด้วยภาษา Python และ C",
     "status": "active",
     "source": "manual",
     "coverColor": "#0F766E",
@@ -22,7 +22,7 @@
   },
   {
     "id": "c-mock-2",
-    "name": "Data Structures and Algorithms",
+    "name": "โครงสร้างข้อมูลและอัลกอริทึม",
     "description": "Data Structures and Algorithms",
     "status": "active",
     "source": "manual",
@@ -43,7 +43,7 @@
   },
   {
     "id": "c-mock-3",
-    "name": "Database Systems",
+    "name": "ระบบฐานข้อมูล",
     "description": "Database Systems",
     "status": "active",
     "source": "manual",
@@ -64,7 +64,7 @@
   },
   {
     "id": "c-mock-4",
-    "name": "User Experience and User Interface Design",
+    "name": "การออกแบบประสบการณ์และส่วนติดต่อผู้ใช้",
     "description": "User Experience and User Interface Design",
     "status": "active",
     "source": "manual",
@@ -85,7 +85,7 @@
   },
   {
     "id": "c-mock-5",
-    "name": "Embedded Systems",
+    "name": "ระบบสมองกลฝังตัว",
     "description": "Embedded Systems",
     "status": "active",
     "source": "manual",
@@ -104,7 +104,7 @@
   },
   {
     "id": "c-mock-6",
-    "name": "Computer Engineering Senior Project",
+    "name": "โครงงานวิศวกรรมคอมพิวเตอร์",
     "description": "Computer Engineering Senior Project",
     "status": "archived",
     "source": "manual",
@@ -123,7 +123,7 @@
   },
   {
     "id": "c-mock-7",
-    "name": "Computer Programming",
+    "name": "การเขียนโปรแกรมคอมพิวเตอร์",
     "description": "Computer Programming",
     "status": "active",
     "source": "manual",
@@ -142,7 +142,7 @@
   },
   {
     "id": "c-mock-8",
-    "name": "Computer Programming",
+    "name": "การเขียนโปรแกรมคอมพิวเตอร์",
     "description": "Computer Programming",
     "status": "active",
     "source": "manual",
@@ -161,7 +161,7 @@
   },
   {
     "id": "c-mock-9",
-    "name": "Data Structures and Algorithms",
+    "name": "โครงสร้างข้อมูลและอัลกอริทึม",
     "description": "Data Structures and Algorithms",
     "status": "active",
     "source": "manual",
@@ -180,7 +180,7 @@
   },
   {
     "id": "c-mock-10",
-    "name": "Data Structures and Algorithms",
+    "name": "โครงสร้างข้อมูลและอัลกอริทึม",
     "description": "Data Structures and Algorithms",
     "status": "active",
     "source": "manual",
@@ -199,7 +199,7 @@
   },
   {
     "id": "c-mock-11",
-    "name": "Database Systems",
+    "name": "ระบบฐานข้อมูล",
     "description": "Database Systems",
     "status": "active",
     "source": "manual",
@@ -218,7 +218,7 @@
   },
   {
     "id": "c-mock-12",
-    "name": "User Experience and User Interface Design",
+    "name": "การออกแบบประสบการณ์และส่วนติดต่อผู้ใช้",
     "description": "User Experience and User Interface Design",
     "status": "active",
     "source": "manual",
@@ -237,7 +237,7 @@
   },
   {
     "id": "c-mock-13",
-    "name": "Operating Systems",
+    "name": "ระบบปฏิบัติการ",
     "description": "Operating Systems",
     "status": "active",
     "source": "manual",
@@ -256,7 +256,7 @@
   },
   {
     "id": "c-mock-14",
-    "name": "Operating Systems",
+    "name": "ระบบปฏิบัติการ",
     "description": "Operating Systems",
     "status": "active",
     "source": "manual",
@@ -275,7 +275,7 @@
   },
   {
     "id": "c-mock-15",
-    "name": "Machine Learning",
+    "name": "การเรียนรู้ของเครื่อง",
     "description": "Machine Learning",
     "status": "active",
     "source": "manual",
@@ -294,7 +294,7 @@
   },
   {
     "id": "c-mock-16",
-    "name": "Computer Architecture",
+    "name": "สถาปัตยกรรมคอมพิวเตอร์",
     "description": "Computer Architecture",
     "status": "active",
     "source": "manual",
@@ -313,7 +313,7 @@
   },
   {
     "id": "c-mock-17",
-    "name": "Computer Programming",
+    "name": "การเขียนโปรแกรมคอมพิวเตอร์",
     "description": "Computer Programming",
     "status": "archived",
     "source": "manual",
@@ -332,7 +332,7 @@
   },
   {
     "id": "c-mock-18",
-    "name": "Computer Programming",
+    "name": "การเขียนโปรแกรมคอมพิวเตอร์",
     "description": "Computer Programming",
     "status": "archived",
     "source": "manual",
@@ -351,7 +351,7 @@
   },
   {
     "id": "c-mock-19",
-    "name": "Data Structures and Algorithms",
+    "name": "โครงสร้างข้อมูลและอัลกอริทึม",
     "description": "Data Structures and Algorithms",
     "status": "archived",
     "source": "manual",
@@ -370,7 +370,7 @@
   },
   {
     "id": "c-mock-20",
-    "name": "Computer Engineering Senior Project",
+    "name": "โครงงานวิศวกรรมคอมพิวเตอร์",
     "description": "Computer Engineering Senior Project",
     "status": "active",
     "source": "manual",
@@ -389,7 +389,7 @@
   },
   {
     "id": "c-mock-21",
-    "name": "Software Engineering",
+    "name": "วิศวกรรมซอฟต์แวร์",
     "description": "Software Engineering",
     "status": "active",
     "source": "manual",
@@ -408,7 +408,7 @@
   },
   {
     "id": "c-mock-22",
-    "name": "Software Engineering",
+    "name": "วิศวกรรมซอฟต์แวร์",
     "description": "Software Engineering",
     "status": "active",
     "source": "manual",
@@ -427,7 +427,7 @@
   },
   {
     "id": "c-mock-23",
-    "name": "Computer Networks",
+    "name": "เครือข่ายคอมพิวเตอร์",
     "description": "Computer Networks",
     "status": "archived",
     "source": "manual",
@@ -446,7 +446,7 @@
   },
   {
     "id": "c-mock-24",
-    "name": "Object-Oriented Programming",
+    "name": "การเขียนโปรแกรมเชิงวัตถุ",
     "description": "Object-Oriented Programming",
     "status": "active",
     "source": "manual",
@@ -465,7 +465,7 @@
   },
   {
     "id": "c-mock-25",
-    "name": "Object-Oriented Programming",
+    "name": "การเขียนโปรแกรมเชิงวัตถุ",
     "description": "Object-Oriented Programming",
     "status": "active",
     "source": "manual",
@@ -484,7 +484,7 @@
   },
   {
     "id": "c-mock-26",
-    "name": "UX/UI Design",
+    "name": "การออกแบบประสบการณ์ผู้ใช้และส่วนติดต่อผู้ใช้",
     "description": "UX/UI Design",
     "status": "active",
     "source": "manual",
@@ -503,7 +503,7 @@
   },
   {
     "id": "c-mock-27",
-    "name": "Cybersecurity",
+    "name": "ความมั่นคงปลอดภัยไซเบอร์",
     "description": "Cybersecurity",
     "status": "active",
     "source": "manual",
@@ -522,7 +522,7 @@
   },
   {
     "id": "c-mock-28",
-    "name": "Artificial Intelligence and Machine Learning",
+    "name": "ปัญญาประดิษฐ์และการเรียนรู้ของเครื่อง",
     "description": "Artificial Intelligence and Machine Learning",
     "status": "active",
     "source": "manual",
@@ -541,7 +541,7 @@
   },
   {
     "id": "c-mock-29",
-    "name": "Human-Computer Interaction",
+    "name": "การปฏิสัมพันธ์ระหว่างมนุษย์และคอมพิวเตอร์",
     "description": "Human-Computer Interaction",
     "status": "archived",
     "source": "manual",
@@ -703,7 +703,7 @@
   },
   {
     "id": "c-mock-38",
-    "name": "Computer Programming",
+    "name": "การเขียนโปรแกรมคอมพิวเตอร์",
     "description": "Computer Programming",
     "status": "archived",
     "source": "manual",
@@ -722,7 +722,7 @@
   },
   {
     "id": "c-mock-39",
-    "name": "Discrete Structures",
+    "name": "โครงสร้างไม่ต่อเนื่อง",
     "description": "Discrete Structures",
     "status": "archived",
     "source": "manual",
@@ -741,7 +741,7 @@
   },
   {
     "id": "c-mock-40",
-    "name": "Data Structures and Algorithms",
+    "name": "โครงสร้างข้อมูลและอัลกอริทึม",
     "description": "Data Structures and Algorithms",
     "status": "archived",
     "source": "manual",
@@ -760,7 +760,7 @@
   },
   {
     "id": "c-mock-41",
-    "name": "Digital Logic Design",
+    "name": "ตรรกะดิจิทัลและการออกแบบ",
     "description": "Digital Logic Design",
     "status": "archived",
     "source": "manual",
@@ -779,7 +779,7 @@
   },
   {
     "id": "c-mock-42",
-    "name": "Computer Architecture",
+    "name": "สถาปัตยกรรมคอมพิวเตอร์",
     "description": "Computer Architecture",
     "status": "archived",
     "source": "manual",
@@ -798,7 +798,7 @@
   },
   {
     "id": "c-mock-43",
-    "name": "Operating Systems",
+    "name": "ระบบปฏิบัติการ",
     "description": "Operating Systems",
     "status": "archived",
     "source": "manual",
@@ -817,7 +817,7 @@
   },
   {
     "id": "c-mock-44",
-    "name": "Database Systems",
+    "name": "ระบบฐานข้อมูล",
     "description": "Database Systems",
     "status": "archived",
     "source": "manual",
@@ -836,7 +836,7 @@
   },
   {
     "id": "c-mock-45",
-    "name": "Software Engineering",
+    "name": "วิศวกรรมซอฟต์แวร์",
     "description": "Software Engineering",
     "status": "archived",
     "source": "manual",
@@ -855,7 +855,7 @@
   },
   {
     "id": "c-mock-46",
-    "name": "Computer Programming",
+    "name": "การเขียนโปรแกรมคอมพิวเตอร์",
     "description": "Computer Programming",
     "status": "archived",
     "source": "manual",
@@ -874,7 +874,7 @@
   },
   {
     "id": "c-mock-47",
-    "name": "Discrete Structures",
+    "name": "โครงสร้างไม่ต่อเนื่อง",
     "description": "Discrete Structures",
     "status": "archived",
     "source": "manual",
@@ -893,7 +893,7 @@
   },
   {
     "id": "c-mock-48",
-    "name": "Data Structures and Algorithms",
+    "name": "โครงสร้างข้อมูลและอัลกอริทึม",
     "description": "Data Structures and Algorithms",
     "status": "archived",
     "source": "manual",
@@ -912,7 +912,7 @@
   },
   {
     "id": "c-mock-49",
-    "name": "Digital Logic Design",
+    "name": "ตรรกะดิจิทัลและการออกแบบ",
     "description": "Digital Logic Design",
     "status": "archived",
     "source": "manual",
@@ -931,7 +931,7 @@
   },
   {
     "id": "c-mock-50",
-    "name": "Computer Architecture",
+    "name": "สถาปัตยกรรมคอมพิวเตอร์",
     "description": "Computer Architecture",
     "status": "archived",
     "source": "manual",
@@ -950,7 +950,7 @@
   },
   {
     "id": "c-mock-51",
-    "name": "Operating Systems",
+    "name": "ระบบปฏิบัติการ",
     "description": "Operating Systems",
     "status": "archived",
     "source": "manual",
@@ -969,7 +969,7 @@
   },
   {
     "id": "c-mock-52",
-    "name": "Database Systems",
+    "name": "ระบบฐานข้อมูล",
     "description": "Database Systems",
     "status": "archived",
     "source": "manual",
@@ -988,8 +988,8 @@
   },
   {
     "id": "c-mock-53",
-    "name": "Software Engineering",
-    "description": "Software Engineering",
+    "name": "วิศวกรรมซอฟต์แวร์",
+    "description": "วิศวกรรมซอฟต์แวร์",
     "status": "archived",
     "source": "manual",
     "coverColor": "#B14C6B",

@@ -1,8 +1,8 @@
 [
   {
     "id": "t-mock-1",
-    "title": "Asst. Prof. Dr.",
-    "name": "Somsak Charoensuk",
+    "title": "ผศ.ดร.",
+    "name": "สมศักดิ์ เจริญสุข",
     "email": "somsak.c@kmitl.ac.th",
     "role": "teacher",
     "status": "active",
@@ -19,8 +19,8 @@
   },
   {
     "id": "t-mock-2",
-    "title": "Assoc. Prof. Dr.",
-    "name": "Prasert Deelert",
+    "title": "รศ.ดร.",
+    "name": "ประเสริฐ ดีเลิศ",
     "email": "prasert.d@kmitl.ac.th",
     "role": "teacher",
     "status": "active",
@@ -37,8 +37,8 @@
   },
   {
     "id": "t-mock-3",
-    "title": "Instructor",
-    "name": "Karn Srisuwan",
+    "title": "อ.",
+    "name": "กานต์ ศรีสุวรรณ",
     "email": "karn.s@kmitl.ac.th",
     "role": "teacher",
     "status": "active",
@@ -57,8 +57,8 @@
   },
   {
     "id": "t-mock-6",
-    "title": "Asst. Prof. Dr.",
-    "name": "Wanna Jaidee",
+    "title": "ผศ.ดร.",
+    "name": "วรรณา ใจดี",
     "email": "wanna.j@kmitl.ac.th",
     "role": "teacher",
     "status": "active",
@@ -77,8 +77,8 @@
   },
   {
     "id": "t-mock-7",
-    "title": "Assoc. Prof.",
-    "name": "Thanakorn Phongthai",
+    "title": "รศ.",
+    "name": "ธนากร พงษ์ไทย",
     "email": "thanakorn.p@kmitl.ac.th",
     "role": "teacher",
     "status": "active",
@@ -93,8 +93,8 @@
   },
   {
     "id": "t-mock-8",
-    "title": "Dr.",
-    "name": "Piya Rakrian",
+    "title": "อ.ดร.",
+    "name": "ปิยะ รักเรียน",
     "email": "piya.r@kmitl.ac.th",
     "role": "teacher",
     "status": "active",
