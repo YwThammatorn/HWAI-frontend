@@ -17,7 +17,7 @@
 
     { "id": "ct-4", "curriculumVersionId": "cv-ce-2559", "code": "01076112", "name": "การเขียนโปรแกรมคอมพิวเตอร์", "description": "Computer Programming" },
     { "id": "ct-5", "curriculumVersionId": "cv-ce-2559", "code": "01076113", "name": "โครงสร้างข้อมูลและอัลกอริทึม", "description": "Data Structures and Algorithms" },
-    { "id": "ct-6", "curriculumVersionId": "cv-ce-2559", "code": "01076231", "name": "สถาปัตยกรรมคอมพิวเตอร์", "description": "Computer Architecture" },
+    { "id": "ct-6", "curriculumVersionId": "cv-ce-2559", "code": "01076232", "name": "สถาปัตยกรรมคอมพิวเตอร์", "description": "Computer Architecture" },
     { "id": "ct-7", "curriculumVersionId": "cv-ce-2559", "code": "01076241", "name": "ระบบปฏิบัติการ", "description": "Operating Systems" },
     { "id": "ct-8", "curriculumVersionId": "cv-ce-2559", "code": "01076341", "name": "เครือข่ายคอมพิวเตอร์", "description": "Computer Networks" },
 
