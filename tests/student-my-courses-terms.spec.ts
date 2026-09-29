@@ -261,9 +261,16 @@ test.describe("term-history mock (console command [14])", () => {
     await expect(past.getByText("47.0%")).toBeVisible();
   });
 
-  test("69070101 (1st year, the main demo login): only this term, no completed section", async ({ page }) => {
+  test("69070101 (1st year, the main demo login): 3 courses this term (incl. the rich c-mock-1 demo), and the same finished courses as 68020101 with different grades", async ({ page }) => {
     await openAs(page, "69070101");
-    await expect(currentSection(page).getByText("Computer Programming", { exact: true })).toBeVisible();
-    await expect(pastSection(page)).toHaveCount(0);
+    const current = currentSection(page);
+    for (const name of ["Computer Programming", "Data Structures and Algorithms", "User Experience and User Interface Design"]) {
+      await expect(current.getByText(name, { exact: true })).toBeVisible();
+    }
+    const past = pastSection(page);
+    await expect(past.getByRole("group")).toHaveCount(2);            // the same 2568 terms as 68020101: Term 2/2568 (1 course), Term 1/2568 (2 courses)
+    await expect(past.getByLabel("Grade A")).toHaveCount(1);
+    await expect(past.getByLabel("Grade F")).toHaveCount(1);
+    await expect(past.getByLabel("Grade D")).toHaveCount(1);
   });
 });
