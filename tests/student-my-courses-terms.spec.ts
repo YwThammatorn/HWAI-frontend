@@ -265,7 +265,7 @@ test.describe("term-history mock (console command [14])", () => {
       localStorage.setItem("hwai_grading_categories_v1", JSON.stringify([...x.flow.gradingCategories, ...x.h.gradingCategories]));
       localStorage.setItem("hwai_assignments_v1", JSON.stringify([...x.flow.assignments, ...x.h.assignments]));
       localStorage.setItem("hwai_submissions_v1", JSON.stringify([...x.flow.submissions, ...x.h.submissions]));
-      localStorage.setItem("hwai_rubrics_v1", JSON.stringify(x.flow.rubrics));
+      localStorage.setItem("hwai_rubrics_v1", JSON.stringify([...x.flow.rubrics, ...x.h.rubrics]));
     }, [studentId, data] as const);
     await page.goto(`${BASE}/student/courses`);
     await page.waitForLoadState("networkidle");
