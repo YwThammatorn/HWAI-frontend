@@ -11,7 +11,7 @@ import StatCard from "@/components/StatCard";
 import Modal from "@/components/Modal";
 import SearchInput from "@/components/SearchInput";
 import FilterSelect from "@/components/FilterSelect";
-import { groupCourses, compareOfferings, curriculumKeyOf, NO_CURRICULUM_KEY, type SubjectGroup, type CurriculumGroup } from "@/lib/courseGroups";
+import { groupCourses, curriculumKeyOf, NO_CURRICULUM_KEY, type SubjectGroup, type CurriculumGroup } from "@/lib/courseGroups";
 import { useStudents } from "@/lib/students";
 
 // ── Course create/edit (centred popup) ─────────────────────────────────────────────────
@@ -802,6 +802,7 @@ export default function AdminCoursesPage() {
   const [search, setSearch] = useState("");
   const [programFilter, setProgramFilter] = useState("all");
   const [curriculumFilter, setCurriculumFilter] = useState("all");
+  const [yearFilter, setYearFilter] = useState("all");
   const [termFilter, setTermFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
@@ -814,18 +815,29 @@ export default function AdminCoursesPage() {
   const curriculumOptions = allGroups.filter((g) => programFilter === "all" || g.version?.program === programFilter);
   // a curriculum picked earlier that the program filter has since hidden counts as "all"
   const effectiveCurriculum = curriculumOptions.some((g) => g.key === curriculumFilter) ? curriculumFilter : "all";
-  const termKey = (c: Course) => (c.academicYear && c.term ? `${c.academicYear}-${c.term}` : "");
-  const termOptions = [...new Map(courses.filter((c) => termKey(c)).sort(compareOfferings).map((c) => [termKey(c), c])).values()];
+  // Term filter (29/9/2569): year and term used to be one combined dropdown ("2569 · Term 1"),
+  // which made picking "everything from this year" or "everything from Term 1 across years"
+  // impossible. Splitting them means the term list can also narrow to just the terms that
+  // exist within the chosen year, instead of always listing every year-term combo at once.
+  const TERM_ORDER = ["1", "2", "3", "summer"];
+  const yearOptions = [...new Set(courses.filter((c) => c.academicYear).map((c) => c.academicYear as number))].sort((a, b) => b - a);
+  const termOptions = [...new Set(
+    courses.filter((c) => c.term != null && (yearFilter === "all" || c.academicYear === Number(yearFilter))).map((c) => String(c.term))
+  )].sort((a, b) => TERM_ORDER.indexOf(a) - TERM_ORDER.indexOf(b));
+  // a term picked earlier that the year filter has since hidden counts as "all"
+  const effectiveTerm = termOptions.includes(termFilter) ? termFilter : "all";
+  const termLabelOf = (v: string) => (v === "summer" ? t("ภาคฤดูร้อน", "Summer") : t(`เทอม ${v}`, `Term ${v}`));
 
   const q = search.trim().toLowerCase();
-  const filtersActive = q !== "" || programFilter !== "all" || effectiveCurriculum !== "all" || termFilter !== "all" || statusFilter !== "all";
+  const filtersActive = q !== "" || programFilter !== "all" || effectiveCurriculum !== "all" || yearFilter !== "all" || effectiveTerm !== "all" || statusFilter !== "all";
 
   const shown = courses.filter((c) => {
     const key = curriculumKeyOf(c, courseTemplates);
     const version = curriculumVersions.find((v) => v.id === key);
     if (programFilter !== "all" && version?.program !== programFilter) return false;
     if (effectiveCurriculum !== "all" && (version?.id ?? NO_CURRICULUM_KEY) !== effectiveCurriculum) return false;
-    if (termFilter !== "all" && termKey(c) !== termFilter) return false;
+    if (yearFilter !== "all" && c.academicYear !== Number(yearFilter)) return false;
+    if (effectiveTerm !== "all" && String(c.term ?? "") !== effectiveTerm) return false;
     if (statusFilter !== "all" && c.status !== statusFilter) return false;
     if (q) {
       const hay = [c.name, c.code ?? "", ...getTeachersByCourse(c.id).map((tc) => tc.name)].join(" ").toLowerCase();
@@ -840,7 +852,7 @@ export default function AdminCoursesPage() {
   const allCollapsed = groups.length > 0 && groups.every((g) => collapsed.has(g.key));
 
   function clearFilters() {
-    setSearch(""); setProgramFilter("all"); setCurriculumFilter("all"); setTermFilter("all"); setStatusFilter("all");
+    setSearch(""); setProgramFilter("all"); setCurriculumFilter("all"); setYearFilter("all"); setTermFilter("all"); setStatusFilter("all");
   }
   function toggleGroup(key: string) {
     setCollapsed((prev) => { const next = new Set(prev); if (next.has(key)) next.delete(key); else next.add(key); return next; });
@@ -986,14 +998,18 @@ export default function AdminCoursesPage() {
               {programOptions.map((p) => <option key={p} value={p}>{p}</option>)}
             </FilterSelect>
             <FilterSelect value={effectiveCurriculum} onChange={setCurriculumFilter} ariaLabel={t("กรองตามหลักสูตร", "Filter by curriculum")} icon={FILTER_ICON}>
-              <option value="all">{t("ทุกหลักสูตร", "All curricula")}</option>
+              <option value="all">{t("ทุกหลักสูตร", "All curriculum")}</option>
               {curriculumOptions.map((g) => (
                 <option key={g.key} value={g.key}>{g.version ? `${g.version.program} · ${g.version.effectiveFrom}` : t("ไม่ผูกหลักสูตร", "No curriculum")}</option>
               ))}
             </FilterSelect>
-            <FilterSelect value={termFilter} onChange={setTermFilter} ariaLabel={t("กรองตามเทอม", "Filter by term")} icon={FILTER_ICON}>
+            <FilterSelect value={yearFilter} onChange={setYearFilter} ariaLabel={t("กรองตามปีการศึกษา", "Filter by academic year")} icon={FILTER_ICON}>
+              <option value="all">{t("ทุกปีการศึกษา", "All years")}</option>
+              {yearOptions.map((y) => <option key={y} value={String(y)}>{y}</option>)}
+            </FilterSelect>
+            <FilterSelect value={effectiveTerm} onChange={setTermFilter} ariaLabel={t("กรองตามเทอม", "Filter by term")} icon={FILTER_ICON}>
               <option value="all">{t("ทุกเทอม", "All terms")}</option>
-              {termOptions.map((c) => <option key={termKey(c)} value={termKey(c)}>{termLabel(c, t)}</option>)}
+              {termOptions.map((v) => <option key={v} value={v}>{termLabelOf(v)}</option>)}
             </FilterSelect>
             <FilterSelect value={statusFilter} onChange={setStatusFilter} ariaLabel={t("กรองตามสถานะ", "Filter by status")} icon={FILTER_ICON}>
               <option value="all">{t("ทุกสถานะ", "All statuses")}</option>
@@ -1014,7 +1030,7 @@ export default function AdminCoursesPage() {
             <p className="text-xs text-[var(--text-muted)] tabular-nums" aria-live="polite">
               {t(
                 `${shown.length} กลุ่มเรียน · ${subjectCount} วิชา · ${groups.length} หลักสูตร`,
-                `${shown.length} ${shown.length === 1 ? "section" : "sections"} · ${subjectCount} ${subjectCount === 1 ? "subject" : "subjects"} · ${groups.length} ${groups.length === 1 ? "curriculum" : "curricula"}`
+                `${shown.length} ${shown.length === 1 ? "section" : "sections"} · ${subjectCount} ${subjectCount === 1 ? "subject" : "subjects"} · ${groups.length} curriculum`
               )}
             </p>
             {groups.length > 1 && !filtersActive && (

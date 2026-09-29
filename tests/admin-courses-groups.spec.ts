@@ -110,25 +110,26 @@ test.describe("Admin Courses — grouped by curriculum, then subject", () => {
 });
 
 test.describe("Admin Courses — filters", () => {
-  test("program, curriculum, term and status each narrow the list, and the counts follow", async ({ page }) => {
+  test("program, curriculum, year, term and status each narrow the list, and the counts follow", async ({ page }) => {
     await open(page);
     const summary = page.getByText(/sections? ·/).first();
-    await expect(summary).toHaveText("53 sections · 29 subjects · 8 curricula");
+    await expect(summary).toHaveText("53 sections · 29 subjects · 8 curriculum");
 
     await page.getByLabel("Filter by program").selectOption("CEI");
-    await expect(summary).toHaveText("5 sections · 4 subjects · 2 curricula");
+    await expect(summary).toHaveText("5 sections · 4 subjects · 2 curriculum");
     // the curriculum list only offers CEI's versions now
-    await expect(page.getByLabel("Filter by curriculum").locator("option")).toHaveText(["All curricula", "CEI · 2568", "CEI · 2563"]);
+    await expect(page.getByLabel("Filter by curriculum").locator("option")).toHaveText(["All curriculum", "CEI · 2568", "CEI · 2563"]);
     await page.getByLabel("Filter by curriculum").selectOption({ label: "CEI · 2563" });
     await expect(summary).toHaveText("1 section · 1 subject · 1 curriculum");
 
     await page.getByRole("button", { name: "Clear filters" }).click();
     await page.getByLabel("Filter by status").selectOption("archived");
-    await expect(summary).toHaveText("23 sections · 12 subjects · 4 curricula");
+    await expect(summary).toHaveText("23 sections · 12 subjects · 4 curriculum");
     await expect(page.getByText("Archived", { exact: true }).first()).toBeVisible();
 
     await page.getByLabel("Filter by status").selectOption("all");
-    await page.getByLabel("Filter by term").selectOption({ label: "2569 · Term 3" });
+    await page.getByLabel("Filter by academic year").selectOption("2569");
+    await page.getByLabel("Filter by term").selectOption({ label: "Term 3" });
     await expect(summary).toHaveText("1 section · 1 subject · 1 curriculum");
     await expect(subjectCard(page, "Database Systems")).toHaveCount(1);
   });
@@ -138,7 +139,16 @@ test.describe("Admin Courses — filters", () => {
     await page.getByLabel("Filter by curriculum").selectOption({ label: "CE · 2569" });
     await page.getByLabel("Filter by program").selectOption("CEI");
     await expect(page.getByLabel("Filter by curriculum")).toHaveValue("all");
-    await expect(page.getByText("5 sections · 4 subjects · 2 curricula")).toBeVisible();
+    await expect(page.getByText("5 sections · 4 subjects · 2 curriculum")).toBeVisible();
+  });
+
+  test("a picked term that the year filter has narrowed away falls back to 'all' instead of showing nothing", async ({ page }) => {
+    await open(page);
+    await page.getByLabel("Filter by term").selectOption({ label: "Term 3" }); // only 2569 has a Term 3 offering
+    await page.getByLabel("Filter by academic year").selectOption("2567");
+    await expect(page.getByLabel("Filter by term")).toHaveValue("all");
+    // the term dropdown itself narrows to just the terms that exist within the chosen year
+    await expect(page.getByLabel("Filter by term").locator("option")).not.toContainText(["Term 3"]);
   });
 
   test("search matches subject name, code or teacher, keeps groups open, and says so when nothing matches", async ({ page }) => {
@@ -152,13 +162,13 @@ test.describe("Admin Courses — filters", () => {
     await expect(page.getByRole("button", { name: "Collapse all" })).toHaveCount(0);
 
     await search.fill("01076321");                      // a code
-    await expect(page.getByText("4 sections · 2 subjects · 2 curricula")).toBeVisible();
+    await expect(page.getByText("4 sections · 2 subjects · 2 curriculum")).toBeVisible();
     await expect(subjectCard(page, "Database Systems")).toHaveCount(2);      // this term's (CE 2569) and the earlier terms in CE 2564
 
     await search.fill("zzz nothing");
     await expect(page.getByText("No courses match these filters")).toBeVisible();
     await page.getByRole("main").getByRole("button", { name: "Clear filters" }).last().click();
-    await expect(page.getByText("53 sections · 29 subjects · 8 curricula")).toBeVisible();
+    await expect(page.getByText("53 sections · 29 subjects · 8 curriculum")).toBeVisible();
   });
 });
 
