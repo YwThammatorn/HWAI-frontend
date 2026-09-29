@@ -985,5 +985,24 @@
     "sectionNumber": "1",
     "gradingSource": "ta",
     "publishMode": "manual"
+  },
+  {
+    "id": "c-mock-53",
+    "name": "วิศวกรรมซอฟต์แวร์",
+    "description": "วิศวกรรมซอฟต์แวร์",
+    "status": "archived",
+    "source": "manual",
+    "coverColor": "#B14C6B",
+    "iconColor": "#B14C6B",
+    "icon": "flask",
+    "createdAt": "2025-07-01T00:00:00.000Z",
+    "updatedAt": "2025-12-20T00:00:00.000Z",
+    "code": "01076351",
+    "courseTemplateId": "ct-16",
+    "academicYear": 2568,
+    "term": 1,
+    "sectionNumber": "1",
+    "gradingSource": "ta",
+    "publishMode": "manual"
   }
 ]

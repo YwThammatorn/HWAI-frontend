@@ -164,28 +164,57 @@ test.describe("Student home", () => {
 test.describe("term-history mock (console command [14])", () => {
   const rd = (f: string) => JSON.parse(fs.readFileSync(`public/mock-data/${f}`, "utf8"));
   type Roster = { courseId: string; studentId: string; enrollmentStatus: string };
+  // 26/9/2569, corrected — the first version of this mock had two real mistakes the user caught:
+  // a student's own course list repeated the same subject (by Course.code — the stable id across curriculum
+  // revisions) more than once, and a "finished" course predated the student's own admission year (the
+  // "66/67/68/69" prefix of the student ID, this mock's own admission-year convention). Neither can happen now.
 
-  test("three students, each pointing at real courses: 66010101 and 67010201 (several finished terms), 68020101 (one withdrawn)", async () => {
+  test("no student takes the same subject twice (current + all finished terms combined)", async () => {
+    const courses = new Map<string, { code?: string }>(rd("courses-mockup.json").map((c: { id: string }) => [c.id, c]));
+    const flowRoster = rd("student-flow-mockup.json").courseStudents as Roster[];
+    for (const f of ["student-history-mockup.json", "student-history-mockup-en.json"]) {
+      const h = rd(f);
+      const bySid = new Map<string, string[]>();
+      for (const r of [...(h.courseStudents as Roster[]), ...flowRoster]) bySid.set(r.studentId, [...(bySid.get(r.studentId) ?? []), r.courseId]);
+      for (const [sid, courseIds] of bySid) {
+        const codes = courseIds.map((id) => courses.get(id)?.code ?? id);
+        expect(new Set(codes).size, `${f} ${sid}: ${courseIds.join(",")}`).toBe(codes.length);
+      }
+    }
+  });
+
+  test("no student's finished course predates their own admission year", async () => {
+    const courses = new Map<string, { academicYear?: number }>(rd("courses-mockup.json").map((c: { id: string }) => [c.id, c]));
+    for (const f of ["student-history-mockup.json", "student-history-mockup-en.json"]) {
+      for (const r of rd(f).courseStudents as Roster[]) {
+        const year = courses.get(r.courseId)?.academicYear;
+        const admittedBE = 2500 + Number(r.studentId.slice(0, 2));
+        if (year) expect(year, `${f} ${r.studentId} in ${r.courseId} (${year})`).toBeGreaterThanOrEqual(admittedBE);
+      }
+    }
+  });
+
+  test("three students point at real, distinct courses; 68020101 has one withdrawn; every finished course is graded except one", async () => {
     const courses = new Map<string, { academicYear: number; term: number; status: string; name: string }>(rd("courses-mockup.json").map((c: { id: string }) => [c.id, c]));
     const cohortIds = new Set(rd("students-mockup.json").map((s: { studentId: string }) => s.studentId));
     for (const f of ["student-history-mockup.json", "student-history-mockup-en.json"]) {
       const h = rd(f);
       const of = (sid: string) => (h.courseStudents as Roster[]).filter((r) => r.studentId === sid);
       for (const sid of ["66010101", "67010201", "68020101"]) expect(cohortIds.has(sid), `${sid} is in the [12] student list`).toBe(true);
-      expect(of("66010101")).toHaveLength(3 + 8);
-      expect(of("67010201")).toHaveLength(3 + 7);
-      expect(of("68020101").map((r) => r.courseId).sort()).toEqual(["c-mock-1", "c-mock-17", "c-mock-18", "c-mock-19", "c-mock-6"]);
+      expect(of("66010101")).toHaveLength(3 + 6);
+      expect(of("67010201")).toHaveLength(3 + 5);
+      expect(of("68020101").map((r) => r.courseId).sort()).toEqual(["c-mock-19", "c-mock-51", "c-mock-52", "c-mock-6"]);
       expect(of("68020101").find((r) => r.courseId === "c-mock-6")?.enrollmentStatus).toBe("withdrawn");
       for (const r of h.courseStudents as Roster[]) expect(courses.has(r.courseId), `${r.courseId} exists in the courses mock`).toBe(true);
-      // this term's enrolments are active 2569/1 courses; the rest are finished (archived, before 2569)
+      // this term's enrolments are active 2569/1 courses; the rest are finished (archived)
       for (const sid of ["66010101", "67010201"]) {
         const cur = of(sid).filter((r) => courses.get(r.courseId)!.status === "active");
         const past = of(sid).filter((r) => courses.get(r.courseId)!.status === "archived");
         expect(cur).toHaveLength(3);
         for (const r of cur) expect(courses.get(r.courseId)).toMatchObject({ academicYear: 2569, term: 1 });
-        for (const r of past) expect(courses.get(r.courseId)!.academicYear).toBeLessThan(2569);
+        for (const r of past) expect(courses.get(r.courseId)!.status).toBe("archived");
       }
-      // every assignment is announced except the one course whose results are deliberately not; weights sum to 100
+      // every finished course is announced except the one deliberately left pending; weights sum to 100
       const unannounced = new Set((h.assignments as { courseId: string; gradingFinalized: boolean }[]).filter((a) => !a.gradingFinalized).map((a) => a.courseId));
       expect(unannounced.size).toBe(1);
       const cat = new Map<string, string>(h.gradingCategories.map((c: { id: string; courseId: string }) => [c.id, c.courseId]));
@@ -196,7 +225,7 @@ test.describe("term-history mock (console command [14])", () => {
     }
   });
 
-  test("the grades of 68020101, 66010101 and 67010201", async () => {
+  test("the grades of 66010101, 67010201 and 68020101", async () => {
     const h = rd("student-history-mockup.json");
     const total = (sid: string, courseId: string) => {
       let sum = 0;
@@ -208,9 +237,9 @@ test.describe("term-history mock (console command [14])", () => {
       return Math.round(sum * 10) / 10;
     };
     const courseIdsOf = (sid: string) => (h.courseStudents as Roster[]).filter((r) => r.studentId === sid && h.gradingCategories.some((c: { courseId: string }) => c.courseId === r.courseId)).map((r) => r.courseId);
-    expect(courseIdsOf("68020101").map((c: string) => total("68020101", c))).toEqual([87.6, 62.7, 73.4]);
-    expect(courseIdsOf("66010101").map((c: string) => total("66010101", c))).toEqual([91, 84, 78, 72, 66, 58, 88, 80]);   // A A B B C D A A
-    expect(courseIdsOf("67010201").map((c: string) => total("67010201", c))).toEqual([86, 79, 55, 47, 90, 68, 80]);      // ... D, F, A, C and an unannounced course
+    expect(courseIdsOf("66010101").map((c: string) => total("66010101", c))).toEqual([91, 84, 78, 65, 58, 88]);   // A A B C D A
+    expect(courseIdsOf("67010201").map((c: string) => total("67010201", c))).toEqual([86, 79, 47, 55, 75]);       // A B F D, and one not-yet-announced
+    expect(courseIdsOf("68020101").map((c: string) => total("68020101", c))).toEqual([88, 65, 78]);               // A C B
   });
 
   // The real merged data in the browser: what the new students see.
@@ -237,7 +266,7 @@ test.describe("term-history mock (console command [14])", () => {
     await page.waitForLoadState("networkidle");
   }
 
-  test("66010101 (4th year): three courses this term; four finished terms, newest first", async ({ page }) => {
+  test("66010101 (4th year, admitted 2566): three courses this term; four finished terms back to their own first year, newest first", async ({ page }) => {
     await openAs(page, "66010101");
     await expect(page.getByText("Term 1/2569 · 3 courses")).toBeVisible();
     const groups = pastSection(page).getByRole("group");
@@ -245,32 +274,41 @@ test.describe("term-history mock (console command [14])", () => {
     await expect(groups.nth(0)).toHaveAccessibleName("Term 2/2567");
     await expect(groups.nth(1)).toHaveAccessibleName("Term 1/2567");
     await expect(groups.nth(2)).toHaveAccessibleName("Term 2/2566");
-    await expect(groups.nth(3)).toHaveAccessibleName("Term 1/2566");
+    await expect(groups.nth(3)).toHaveAccessibleName("Term 1/2566");   // their own first term — nothing earlier exists
     const letters = await pastSection(page).getByLabel(/^Grade /).evaluateAll((els) => els.map((e) => e.getAttribute("aria-label")?.slice(-1)));
-    expect(letters.slice().sort().join("")).toBe("AAABBCDA".split("").sort().join(""));   // A A A A B B C D
+    expect(letters.slice().sort().join("")).toBe("AAABCD".split("").sort().join(""));   // A A A B C D, no subject repeated
   });
 
-  test("67010201 (3rd year): the F, the D, and a term whose results are not announced yet", async ({ page }) => {
+  test("67010201 (3rd year, admitted 2567): the F, the D, and a term whose results are not announced yet — nothing before 2567", async ({ page }) => {
     await openAs(page, "67010201");
     const past = pastSection(page);
-    await expect(past.getByRole("group")).toHaveCount(4);
-    await expect(past.getByRole("group").nth(0)).toHaveAccessibleName("Term 2/2568");
+    await expect(past.getByRole("group")).toHaveCount(3);
+    await expect(past.getByRole("group").nth(0)).toHaveAccessibleName("Term 1/2568");
     await expect(past.getByRole("group").nth(0)).toContainText("No grade yet");
+    await expect(past.getByRole("group").nth(2)).toHaveAccessibleName("Term 1/2567");   // their own first term
     await expect(past.getByLabel("Grade F")).toHaveCount(1);
     await expect(past.getByLabel("Grade D")).toHaveCount(1);
     await expect(past.getByText("47.0%")).toBeVisible();
   });
 
-  test("69070101 (1st year, the main demo login): 3 courses this term (incl. the rich c-mock-1 demo), and the same finished courses as 68020101 with different grades", async ({ page }) => {
+  test("68020101 (2nd year, admitted 2568): finished courses only go back to 2568 — none from before they enrolled", async ({ page }) => {
+    await openAs(page, "68020101");
+    const past = pastSection(page);
+    await expect(past.getByRole("group")).toHaveCount(2);
+    await expect(past.getByRole("group").nth(1)).toHaveAccessibleName("Term 1/2568");
+    for (const l of await past.getByLabel(/^Grade /).evaluateAll((els) => els.map((e) => e.getAttribute("aria-label")))) {
+      expect(l).not.toContain("Grade F");
+    }
+    await expect(past.getByText("Withdrawn")).toBeVisible();
+  });
+
+  test("69070101 (1st year, admitted this year, the main demo login): several courses this term, and correctly NO completed section — this is literally their first term", async ({ page }) => {
     await openAs(page, "69070101");
+    await expect(page.getByText("Term 1/2569 · 3 courses")).toBeVisible();
     const current = currentSection(page);
     for (const name of ["Computer Programming", "Data Structures and Algorithms", "User Experience and User Interface Design"]) {
       await expect(current.getByText(name, { exact: true })).toBeVisible();
     }
-    const past = pastSection(page);
-    await expect(past.getByRole("group")).toHaveCount(2);            // the same 2568 terms as 68020101: Term 2/2568 (1 course), Term 1/2568 (2 courses)
-    await expect(past.getByLabel("Grade A")).toHaveCount(1);
-    await expect(past.getByLabel("Grade F")).toHaveCount(1);
-    await expect(past.getByLabel("Grade D")).toHaveCount(1);
+    await expect(pastSection(page)).toHaveCount(0);
   });
 });
