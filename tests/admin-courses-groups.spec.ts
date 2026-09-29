@@ -110,15 +110,26 @@ test.describe("Admin Courses — grouped by curriculum, then subject", () => {
 });
 
 test.describe("Admin Courses — filters", () => {
-  test("program, curriculum, year, term and status each narrow the list, and the counts follow", async ({ page }) => {
+  // Program used to be its own dropdown; it's now folded into Curriculum as an "All <program>" option
+  // per program (grouped under an <optgroup>), alongside each specific curriculum version.
+  test("the curriculum filter groups by program (All <program> + each version), with 'No curriculum' last", async ({ page }) => {
+    await open(page);
+    const select = page.getByLabel("Filter by curriculum");
+    const groupLabels = await select.locator("optgroup").evaluateAll((els) => els.map((el) => el.getAttribute("label")));
+    expect(groupLabels).toEqual(["CE", "CECS", "CEI"]);
+    await expect(select.locator('optgroup[label="CEI"] option')).toHaveText(["All CEI", "CEI · 2568", "CEI · 2563"]);
+    // "No curriculum" sits outside any optgroup, after all three
+    const topLevelOptionTexts = await select.locator(":scope > option").allTextContents();
+    expect(topLevelOptionTexts).toEqual(["All curriculum", "No curriculum"]);
+  });
+
+  test("curriculum (incl. a whole program), year, term and status each narrow the list, and the counts follow", async ({ page }) => {
     await open(page);
     const summary = page.getByText(/sections? ·/).first();
     await expect(summary).toHaveText("53 sections · 29 subjects · 8 curriculum");
 
-    await page.getByLabel("Filter by program").selectOption("CEI");
+    await page.getByLabel("Filter by curriculum").selectOption({ label: "All CEI" });
     await expect(summary).toHaveText("5 sections · 4 subjects · 2 curriculum");
-    // the curriculum list only offers CEI's versions now
-    await expect(page.getByLabel("Filter by curriculum").locator("option")).toHaveText(["All curriculum", "CEI · 2568", "CEI · 2563"]);
     await page.getByLabel("Filter by curriculum").selectOption({ label: "CEI · 2563" });
     await expect(summary).toHaveText("1 section · 1 subject · 1 curriculum");
 
@@ -132,14 +143,6 @@ test.describe("Admin Courses — filters", () => {
     await page.getByLabel("Filter by term").selectOption({ label: "Term 3" });
     await expect(summary).toHaveText("1 section · 1 subject · 1 curriculum");
     await expect(subjectCard(page, "Database Systems")).toHaveCount(1);
-  });
-
-  test("a picked curriculum that the program filter hides falls back to 'all' instead of showing nothing", async ({ page }) => {
-    await open(page);
-    await page.getByLabel("Filter by curriculum").selectOption({ label: "CE · 2569" });
-    await page.getByLabel("Filter by program").selectOption("CEI");
-    await expect(page.getByLabel("Filter by curriculum")).toHaveValue("all");
-    await expect(page.getByText("5 sections · 4 subjects · 2 curriculum")).toBeVisible();
   });
 
   test("a picked term that the year filter has narrowed away falls back to 'all' instead of showing nothing", async ({ page }) => {
