@@ -435,4 +435,30 @@ test.describe("P3 — Student Home (/student)", () => {
     await expect(page.getByText(/งานที่ต้องส่งเร็วๆ นี้|Upcoming assignments/i)).toBeVisible();
   });
 
+  test("the greeting shows the student's own program, always in its home language (30/9/2569)", async ({ page }) => {
+    // seedStudent's cohort record is program "CE" — always Thai, even with the English chrome seedStudent sets.
+    await seedStudent(page);
+    await page.goto(`${BASE}/student`);
+    await page.waitForLoadState("networkidle");
+    await expect(page.getByText("วิศวกรรมคอมพิวเตอร์", { exact: true })).toBeVisible();
+  });
+
+  test("a CEI student's program badge stays English even with Thai chrome", async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem("hwai_lang", "th");
+      localStorage.setItem("hwai_user", JSON.stringify({
+        name: "Anucha Phanphet", email: "cei1@kmitl.ac.th", role: "student", studentId: "69999999",
+      }));
+      localStorage.setItem("hwai_cohort_students_v1", JSON.stringify([
+        { id: "cs-cei-1", studentId: "69999999", firstName: "Anucha", lastName: "Phanphet", email: "cei1@kmitl.ac.th", program: "CEI" },
+      ]));
+      localStorage.setItem("hwai_courses_v2", "[]");
+      localStorage.setItem("hwai_students_v1", "[]");
+      localStorage.setItem("hwai_assignments_v1", "[]");
+    });
+    await page.goto(`${BASE}/student`);
+    await page.waitForLoadState("networkidle");
+    await expect(page.getByText("Computer Engineering International", { exact: true })).toBeVisible();
+  });
+
 });
