@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import { useCourses, Course, PRESET_COLORS, Term } from "@/lib/courses";
-import { useCurriculum } from "@/lib/curriculum";
+import { useCurriculum, type Program } from "@/lib/curriculum";
 import { useManagedTeachers } from "@/lib/managed-teachers";
 import { getInitials } from "@/lib/utils";
 import EmptyState from "@/components/EmptyState";
@@ -815,37 +815,48 @@ export default function AdminCoursesPage() {
   // added a second control to the same decision. Now Curriculum offers a "program:<X>" option per
   // program (grouped under an <optgroup>) alongside each specific curriculum version, in one select.
   const PROGRAM_ORDER = ["CE", "CECS", "CEI"] as const;
+  // Same 3-entry map as admin/users.tsx, admin/curriculum/page.tsx and teacher/courses/[id]/students/page.tsx —
+  // full program names instead of the CE/CECS/CEI abbreviation in this dropdown (30/9/2569).
+  const PROGRAM_LABEL: Record<Program, string> = {
+    CE: t("วิศวกรรมคอมพิวเตอร์", "Computer Engineering"),
+    CECS: t("วิศวกรรมคอมพิวเตอร์และความมั่นคงปลอดภัยไซเบอร์", "Computer Engineering and Cybersecurity"),
+    CEI: t("วิศวกรรมคอมพิวเตอร์นานาชาติ", "Computer Engineering International"),
+  };
   const programsPresent = PROGRAM_ORDER.filter((p) => allGroups.some((g) => g.version?.program === p));
   const curriculumValues = new Set<string>(["all", ...programsPresent.map((p) => `program:${p}`), ...allGroups.map((g) => g.key)]);
   // a curriculum/program value that no longer exists (e.g. its last course was deleted) counts as "all"
   const effectiveCurriculum = curriculumValues.has(curriculumFilter) ? curriculumFilter : "all";
+  function matchesCurriculum(c: Course) {
+    if (effectiveCurriculum === "all") return true;
+    const key = curriculumKeyOf(c, courseTemplates);
+    const version = curriculumVersions.find((v) => v.id === key);
+    if (effectiveCurriculum.startsWith("program:")) return version?.program === effectiveCurriculum.slice("program:".length);
+    return (version?.id ?? NO_CURRICULUM_KEY) === effectiveCurriculum;
+  }
   // Term filter (29/9/2569): year and term used to be one combined dropdown ("2569 · Term 1"),
   // which made picking "everything from this year" or "everything from Term 1 across years"
   // impossible. Splitting them means the term list can also narrow to just the terms that
   // exist within the chosen year, instead of always listing every year-term combo at once.
+  // Year filter also narrows to the chosen curriculum (30/9/2569), same cascade: a curriculum
+  // whose courses only ever ran in one year (or whose archived offerings span a few years)
+  // shouldn't leave every other academic year sitting in the dropdown as a dead end.
   const TERM_ORDER = ["1", "2", "3", "summer"];
-  const yearOptions = [...new Set(courses.filter((c) => c.academicYear).map((c) => c.academicYear as number))].sort((a, b) => b - a);
+  const yearOptions = [...new Set(courses.filter((c) => c.academicYear && matchesCurriculum(c)).map((c) => c.academicYear as number))].sort((a, b) => b - a);
+  // a year picked earlier that the curriculum filter has since hidden counts as "all"
+  const effectiveYear = yearOptions.map(String).includes(yearFilter) ? yearFilter : "all";
   const termOptions = [...new Set(
-    courses.filter((c) => c.term != null && (yearFilter === "all" || c.academicYear === Number(yearFilter))).map((c) => String(c.term))
+    courses.filter((c) => c.term != null && matchesCurriculum(c) && (effectiveYear === "all" || c.academicYear === Number(effectiveYear))).map((c) => String(c.term))
   )].sort((a, b) => TERM_ORDER.indexOf(a) - TERM_ORDER.indexOf(b));
   // a term picked earlier that the year filter has since hidden counts as "all"
   const effectiveTerm = termOptions.includes(termFilter) ? termFilter : "all";
   const termLabelOf = (v: string) => (v === "summer" ? t("ภาคฤดูร้อน", "Summer") : t(`เทอม ${v}`, `Term ${v}`));
 
   const q = search.trim().toLowerCase();
-  const filtersActive = q !== "" || effectiveCurriculum !== "all" || yearFilter !== "all" || effectiveTerm !== "all" || statusFilter !== "all";
+  const filtersActive = q !== "" || effectiveCurriculum !== "all" || effectiveYear !== "all" || effectiveTerm !== "all" || statusFilter !== "all";
 
   const shown = courses.filter((c) => {
-    const key = curriculumKeyOf(c, courseTemplates);
-    const version = curriculumVersions.find((v) => v.id === key);
-    if (effectiveCurriculum !== "all") {
-      if (effectiveCurriculum.startsWith("program:")) {
-        if (version?.program !== effectiveCurriculum.slice("program:".length)) return false;
-      } else if ((version?.id ?? NO_CURRICULUM_KEY) !== effectiveCurriculum) {
-        return false;
-      }
-    }
-    if (yearFilter !== "all" && c.academicYear !== Number(yearFilter)) return false;
+    if (!matchesCurriculum(c)) return false;
+    if (effectiveYear !== "all" && c.academicYear !== Number(effectiveYear)) return false;
     if (effectiveTerm !== "all" && String(c.term ?? "") !== effectiveTerm) return false;
     if (statusFilter !== "all" && c.status !== statusFilter) return false;
     if (q) {
@@ -1005,10 +1016,10 @@ export default function AdminCoursesPage() {
             <FilterSelect value={effectiveCurriculum} onChange={setCurriculumFilter} ariaLabel={t("กรองตามหลักสูตร", "Filter by curriculum")} icon={FILTER_ICON}>
               <option value="all">{t("ทุกหลักสูตร", "All curriculum")}</option>
               {programsPresent.map((p) => (
-                <optgroup key={p} label={p}>
-                  <option value={`program:${p}`}>{t(`ทั้งหมด ${p}`, `All ${p}`)}</option>
+                <optgroup key={p} label={PROGRAM_LABEL[p]}>
+                  <option value={`program:${p}`}>{t(`ทั้งหมด ${PROGRAM_LABEL[p]}`, `All ${PROGRAM_LABEL[p]}`)}</option>
                   {allGroups.filter((g) => g.version?.program === p).map((g) => (
-                    <option key={g.key} value={g.key}>{`${g.version!.program} · ${g.version!.effectiveFrom}`}</option>
+                    <option key={g.key} value={g.key}>{`${PROGRAM_LABEL[p]} · ${g.version!.effectiveFrom}`}</option>
                   ))}
                 </optgroup>
               ))}
@@ -1016,9 +1027,9 @@ export default function AdminCoursesPage() {
                 <option value={NO_CURRICULUM_KEY}>{t("ไม่ผูกหลักสูตร", "No curriculum")}</option>
               )}
             </FilterSelect>
-            <FilterSelect value={yearFilter} onChange={setYearFilter} ariaLabel={t("กรองตามปีการศึกษา", "Filter by academic year")} icon={FILTER_ICON}>
+            <FilterSelect value={effectiveYear} onChange={setYearFilter} ariaLabel={t("กรองตามปีการศึกษา", "Filter by academic year")} icon={FILTER_ICON}>
               <option value="all">{t("ทุกปีการศึกษา", "All years")}</option>
-              {yearOptions.map((y) => <option key={y} value={String(y)}>{y}</option>)}
+              {yearOptions.map((y) => <option key={y} value={String(y)}>{t(`ปีการศึกษา ${y}`, `AY ${y}`)}</option>)}
             </FilterSelect>
             <FilterSelect value={effectiveTerm} onChange={setTermFilter} ariaLabel={t("กรองตามเทอม", "Filter by term")} icon={FILTER_ICON}>
               <option value="all">{t("ทุกเทอม", "All terms")}</option>

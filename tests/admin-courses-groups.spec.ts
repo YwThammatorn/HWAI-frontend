@@ -123,8 +123,11 @@ test.describe("Admin Courses — filters", () => {
     await open(page);
     const select = page.getByLabel("Filter by curriculum");
     const groupLabels = await select.locator("optgroup").evaluateAll((els) => els.map((el) => el.getAttribute("label")));
-    expect(groupLabels).toEqual(["CE", "CECS", "CEI"]);
-    await expect(select.locator('optgroup[label="CEI"] option')).toHaveText(["All CEI", "CEI · 2568", "CEI · 2563"]);
+    // 30/9/2569: the dropdown spells out the full program name instead of the CE/CECS/CEI abbreviation.
+    expect(groupLabels).toEqual(["Computer Engineering", "Computer Engineering and Cybersecurity", "Computer Engineering International"]);
+    await expect(select.locator('optgroup[label="Computer Engineering International"] option')).toHaveText([
+      "All Computer Engineering International", "Computer Engineering International · 2568", "Computer Engineering International · 2563",
+    ]);
     // "No curriculum" sits outside any optgroup, after all three
     const topLevelOptionTexts = await select.locator(":scope > option").allTextContents();
     expect(topLevelOptionTexts).toEqual(["All curriculum", "No curriculum"]);
@@ -135,9 +138,9 @@ test.describe("Admin Courses — filters", () => {
     const summary = page.getByText(/sections? ·/).first();
     await expect(summary).toHaveText("53 sections · 29 subjects · 8 curriculum");
 
-    await page.getByLabel("Filter by curriculum").selectOption({ label: "All CEI" });
+    await page.getByLabel("Filter by curriculum").selectOption({ label: "All Computer Engineering International" });
     await expect(summary).toHaveText("5 sections · 4 subjects · 2 curriculum");
-    await page.getByLabel("Filter by curriculum").selectOption({ label: "CEI · 2563" });
+    await page.getByLabel("Filter by curriculum").selectOption({ label: "Computer Engineering International · 2563" });
     await expect(summary).toHaveText("1 section · 1 subject · 1 curriculum");
 
     await page.getByRole("button", { name: "Clear filters" }).click();
@@ -159,6 +162,17 @@ test.describe("Admin Courses — filters", () => {
     await expect(page.getByLabel("Filter by term")).toHaveValue("all");
     // the term dropdown itself narrows to just the terms that exist within the chosen year
     await expect(page.getByLabel("Filter by term").locator("option")).not.toContainText(["Term 3"]);
+  });
+
+  test("the year filter also narrows to the chosen curriculum (30/9/2569)", async ({ page }) => {
+    await open(page);
+    await page.getByLabel("Filter by academic year").selectOption("2569");
+    // "CEI · 2563" only ever ran a course in AY 2568 — picking it should drop 2569 as a dead end,
+    // narrowing the year list to just its own year, and reset the (now impossible) 2569 pick to "all".
+    await page.getByLabel("Filter by curriculum").selectOption({ label: "Computer Engineering International · 2563" });
+    await expect(page.getByLabel("Filter by academic year")).toHaveValue("all");
+    const yearOptionTexts = await page.getByLabel("Filter by academic year").locator("option").allTextContents();
+    expect(yearOptionTexts).toEqual(["All years", "AY 2568"]);
   });
 
   test("search matches subject name, code or teacher, keeps groups open, and says so when nothing matches", async ({ page }) => {

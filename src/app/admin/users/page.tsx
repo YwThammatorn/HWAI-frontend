@@ -1485,13 +1485,13 @@ function StudentsTab() {
             <div className="overflow-y-auto max-h-[calc(100vh-380px)]">
             <table className="w-full text-sm table-fixed">
               <colgroup>
-                <col className="w-[108px]" />
-                <col className="w-[92px]" />
-                <col className="w-[18%]" />
-                <col className="w-[18%]" />
-                <col className="w-[19%]" />
-                <col className="w-[96px]" />
-                <col className="w-[128px]" />
+                <col className="w-[12%]" />
+                <col className="w-[8%]" />
+                <col className="w-[16%]" />
+                <col className="w-[17%]" />
+                <col className="w-[29%]" />
+                <col className="w-[9%]" />
+                <col className="w-[9%]" />
               </colgroup>
               <thead className="sticky top-0 z-10">
                 <tr className="border-b border-[var(--border-subtle)]">
@@ -1504,7 +1504,7 @@ function StudentsTab() {
                   <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("สาขา", "Program")}</th>
                   <SortableTh label={t("สถานะ", "Status")} dir={sort.key === "status" ? sort.dir : undefined} onClick={toggleStatusSort}
                     hint={t("คลิกเพื่อเรียงตามสถานะ (ปกติก่อน → พ้นสภาพก่อน → กลับไปเรียงตามรหัส) — จะเปิดแสดงคนที่พ้นสภาพให้ด้วย", "Click to sort by status (Active first → Inactive first → back to Student ID) — also shows inactive students")} />
-                  <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("การจัดการ", "Actions")}</th>
+                  <th scope="col" className="px-4 py-1 text-right text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("การจัดการ", "Actions")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -1584,7 +1584,7 @@ function StudentsTab() {
                           </span>
                         </td>
                         <td className="px-4 py-1">
-                          <div className="flex items-center gap-1">
+                          <div className="flex items-center justify-end gap-1">
                             {isEditing ? (
                               <>
                                 <button
