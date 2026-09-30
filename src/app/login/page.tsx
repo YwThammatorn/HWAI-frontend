@@ -306,7 +306,11 @@ export default function LoginPage() {
                     [
                       { role: "admin" as UserRole, label: "Admin", email: "admin@kmitl.ac.th", name: "Dev Admin" },
                       { role: "teacher" as UserRole, label: "Teacher", email: "teacher@kmitl.ac.th", name: "Dev Teacher" },
-                      { role: "student" as UserRole, label: "Student", email: "64070501@kmitl.ac.th", name: "Dev Student", studentId: "64070501" },
+                      // 69070101 (29/9/2569, was the stale "64070501" — that id exists in no current mock seed at
+                      // all, so this button logged into an empty account). 69070101 is present in every seed
+                      // combination (base [5], the 57-student [12], and the [14] term-history extras), so this
+                      // shortcut always has something to show regardless of which console commands were run.
+                      { role: "student" as UserRole, label: "Student", email: "69070101@kmitl.ac.th", name: "สมชาย ใจดี", studentId: "69070101" },
                     ] satisfies Array<{ role: UserRole; label: string; email: string; name: string; studentId?: string }>
                   ).map(({ role, label, email: devEmail, name, studentId }) => (
                     <button

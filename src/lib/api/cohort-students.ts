@@ -17,6 +17,11 @@ export async function updateCohortStudent(id: string, data: Partial<Omit<CohortS
   return client.patch<CohortStudent>(`/api/cohort-students/${id}`, withNulls(data));
 }
 
+/** Same change for many students in one request (e.g. deactivating a whole batch). All-or-nothing server-side. */
+export async function updateCohortStudents(ids: string[], data: Partial<Omit<CohortStudent, "id" | "studentId">>): Promise<CohortStudent[]> {
+  return client.patch<CohortStudent[]>("/api/cohort-students", { ids, data: withNulls(data) });
+}
+
 // Section roles / grading assignments are still localStorage-only, so CohortStudentProvider keeps
 // cascading those client-side.
 export async function removeCohortStudent(id: string): Promise<void> {

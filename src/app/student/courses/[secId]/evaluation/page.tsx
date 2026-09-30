@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
+import { dateLocale } from "@/lib/dateLocale";
 import { useAuth } from "@/context/AuthContext";
 import { useCourses } from "@/lib/courses";
 import { useAssignments, studentVisibleSubmission, type Assignment } from "@/lib/assignments";
@@ -25,7 +26,7 @@ const chip = "inline-flex items-center justify-center gap-1 min-w-[3.5rem] h-8 p
 
 export default function StudentEvaluationPage() {
   const { secId } = useParams<{ secId: string }>();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const { user } = useAuth();
   const { getCourse } = useCourses();
   const { getAssignmentsByCourse, getSubmissionsByAssignment, getRubricsByAssignment } = useAssignments();
@@ -257,7 +258,7 @@ export default function StudentEvaluationPage() {
                             </Link>
                             <span className="block text-xs text-[var(--text-muted)] tabular-nums">
                               {a.dueDate
-                                ? `${t("กำหนดส่ง", "Due")} ${new Date(a.dueDate + "T00:00:00").toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "numeric" })}`
+                                ? `${t("กำหนดส่ง", "Due")} ${new Date(a.dueDate + "T00:00:00").toLocaleDateString(dateLocale(lang), { day: "numeric", month: "short", year: "numeric" })}`
                                 : t("สอบ", "Exam")}
                             </span>
                           </td>

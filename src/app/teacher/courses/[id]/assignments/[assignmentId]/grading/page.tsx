@@ -9,6 +9,7 @@ import { useStudents, isWithdrawn } from "@/lib/students";
 import { useStudentGroups } from "@/lib/studentGroups";
 import { groupSubmissionsByTeam, SubmissionRow } from "@/lib/groupSubmissions";
 import { useLanguage } from "@/context/LanguageContext";
+import { dateLocale } from "@/lib/dateLocale";
 import { getInitials } from "@/lib/utils";
 import SearchInput from "@/components/SearchInput";
 import PillTabBar from "@/components/PillTabBar";
@@ -93,7 +94,7 @@ function GradeRow({
   /** Re-grade (AI) only makes sense when there's a file for it to check (23/9/2569 round 3). */
   acceptsFiles: boolean;
 }) {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const rep = row.subs[0];
   const isTeam = !!row.teamName;
 
@@ -150,7 +151,7 @@ function GradeRow({
 
       {/* Submitted at */}
       <td className="px-4 py-3 text-xs text-gray-400 whitespace-nowrap">
-        {new Date(rep.submittedAt).toLocaleDateString("th-TH", { day: "numeric", month: "short" })}
+        {new Date(rep.submittedAt).toLocaleDateString(dateLocale(lang), { day: "numeric", month: "short" })}
       </td>
 
       {/* Score — read-only (23/9/2569). Editing happens only on the recheck page, per criterion. */}
@@ -362,7 +363,7 @@ function GradeAdjustmentTable({
 
 export default function GradingProgressPage() {
   const { id, assignmentId } = useParams<{ id: string; assignmentId: string }>();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const { getCourse } = useCourses();
   const { getAssignment, getSubmissionsByAssignment, addSubmission, updateSubmission, updateAssignment } = useAssignments();
   const { findByStudentId } = useCohortStudents();
@@ -512,7 +513,7 @@ export default function GradingProgressPage() {
             <div className="flex items-center gap-3 text-sm text-gray-400">
               <span>
                 {assignment.dueDate
-                  ? <>{t("ส่งภายใน", "Due")}{" "}{new Date(assignment.dueDate + "T00:00:00").toLocaleDateString("en-US", {
+                  ? <>{t("ส่งภายใน", "Due")}{" "}{new Date(assignment.dueDate + "T00:00:00").toLocaleDateString(dateLocale(lang), {
                       month: "short", day: "numeric", year: "numeric",
                     })}{" "}
                     {t("เวลา 23:59 น.", "at 11:59 PM")}</>

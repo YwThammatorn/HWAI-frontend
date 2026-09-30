@@ -8,6 +8,7 @@ import { useStudents, isWithdrawn, withdrawnIds } from "@/lib/students";
 import { useAssignments, type Assignment, type Submission } from "@/lib/assignments";
 import { useGradingCategories } from "@/lib/gradingCategories";
 import { useLanguage } from "@/context/LanguageContext";
+import { dateLocale } from "@/lib/dateLocale";
 import SearchInput from "@/components/SearchInput";
 import PillTabBar from "@/components/PillTabBar";
 import StatCard from "@/components/StatCard";
@@ -16,8 +17,8 @@ import AssignmentTypeBadge from "@/components/AssignmentTypeBadge";
 
 type QueueFilter = "all" | "review" | "notgraded" | "done" | "waiting";
 
-function fmtDate(dateStr: string) {
-  return new Date(dateStr + "T00:00:00").toLocaleDateString("en-US", {
+function fmtDate(dateStr: string, lang: string) {
+  return new Date(dateStr + "T00:00:00").toLocaleDateString(dateLocale(lang), {
     month: "short", day: "numeric", year: "numeric",
   });
 }
@@ -44,7 +45,7 @@ function progressOf(a: Assignment, subs: Submission[], today: string, enrolled: 
 
 export default function CourseGradingPage() {
   const { id } = useParams<{ id: string }>();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const { getCourse } = useCourses();
   const { getStudentsByCourse } = useStudents();
   const { getAssignmentsByCourse, getSubmissionsByAssignment } = useAssignments();
@@ -243,7 +244,7 @@ export default function CourseGradingPage() {
                           {a.name}
                         </Link>
                         <div className="flex items-center gap-2 mt-1 flex-wrap text-xs text-[var(--text-secondary)]">
-                          <span>{a.dueDate ? <>{t("กำหนดส่ง", "Due")} {fmtDate(a.dueDate)}</> : t("สอบ · ไม่มีกำหนดส่ง", "Exam · no due date")}</span>
+                          <span>{a.dueDate ? <>{t("กำหนดส่ง", "Due")} {fmtDate(a.dueDate, lang)}</> : t("สอบ · ไม่มีกำหนดส่ง", "Exam · no due date")}</span>
                           {p.overdue && (
                             <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-[var(--s-err-bg)] text-[var(--s-err-text)] font-semibold">
                               {t("เลยกำหนด", "Overdue")}

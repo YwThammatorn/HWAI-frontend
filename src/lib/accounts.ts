@@ -28,7 +28,9 @@ export interface MultiRoleAccount {
 export const MULTI_ROLE_ACCOUNTS: MultiRoleAccount[] = [
   {
     email: "somsak.c@kmitl.ac.th",
-    name: "Somsak Charoensuk",
+    // Teacher names are always Thai regardless of the language toggle (30/9/2569) — this is the
+    // same person as teachers-mockup.json's t-mock-1, so the name must match exactly.
+    name: "สมศักดิ์ เจริญสุข",
     roles: ["admin", "teacher", "student"],
     defaultRole: "teacher",
     studentId: "69070101",

@@ -3,8 +3,10 @@
 import { useMemo } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
+import { dateLocale } from "@/lib/dateLocale";
 import { useAuth } from "@/context/AuthContext";
-import { useStudents } from "@/lib/students";
+import { useStudents, isWithdrawn } from "@/lib/students";
+import { courseTermStatus } from "@/lib/academicTerm";
 import { useCourses } from "@/lib/courses";
 import { useAssignments, URGENT_HOURS } from "@/lib/assignments";
 import { useManagedTeachers } from "@/lib/managed-teachers";
@@ -30,13 +32,15 @@ export default function StudentHome() {
 
   const firstName = user?.name.split(" ")[0] ?? "";
 
+  // The dashboard is about what is going on now: courses of finished terms, archived ones and ones the student
+  // withdrew from live under "Completed courses" on the My Courses page (lib/academicTerm.ts).
   const enrolledCourses = useMemo(() => {
     if (!user?.studentId) return [];
     return students
       .filter((s) => s.studentId === user.studentId)
       .map((s) => {
         const course = getCourse(s.courseId);
-        return course ? { ...course, enrollmentId: s.id } : null;
+        return course && !isWithdrawn(s) && courseTermStatus(course) !== "past" ? { ...course, enrollmentId: s.id } : null;
       })
       .filter((c): c is NonNullable<typeof c> => c !== null);
   }, [students, user?.studentId, getCourse]);
@@ -177,7 +181,7 @@ export default function StudentHome() {
                         </div>
                         <div className="shrink-0 text-right">
                           <p className={`text-xs font-semibold ${isUrgent ? "text-[var(--s-err-text)]" : "text-[var(--text-muted)]"}`}>
-                            {due.toLocaleDateString("th-TH", { day: "numeric", month: "short" })}
+                            {due.toLocaleDateString(dateLocale(lang), { day: "numeric", month: "short" })}
                           </p>
                           {isUrgent && (
                             <p className="text-[10px] text-[var(--s-err-text)]">
@@ -196,7 +200,12 @@ export default function StudentHome() {
 
             {/* Enrolled courses quick links */}
             <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-5">
-              <h2 className="text-base font-bold text-[var(--text-primary)] mb-4">{t("รายวิชาของฉัน", "My Courses")}</h2>
+              <div className="flex items-baseline justify-between mb-4">
+                <h2 className="text-base font-bold text-[var(--text-primary)]">{t("รายวิชาของฉัน", "My Courses")}</h2>
+                <Link href="/student/courses" className="text-xs font-medium text-[var(--accent)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] rounded">
+                  {t("ดูทั้งหมด", "View all")}
+                </Link>
+              </div>
 
               {enrolledCourses.length === 0 ? (
                 <p className="text-sm text-[var(--text-muted)]">{t("ยังไม่มีรายวิชา", "No enrolled courses yet")}</p>

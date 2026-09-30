@@ -15,15 +15,15 @@ fetch('/mock-data/curriculum-mockup.json').then(r=>r.json()).then(d=>{localStora
 
 ---
 
-[2] รายวิชาที่เปิดสอน (37 section ใน 24 วิชา — หลายเคสไว้ดูหน้า /admin/courses ดู [11] ว่ามีเคสอะไรบ้าง)
+[2] รายวิชาที่เปิดสอน (53 section — หลายเคสไว้ดูหน้า /admin/courses ดู [11] ว่ามีเคสอะไรบ้าง; 15 รายการล่าสุดเป็นวิชาเก็บถาวรของเทอมก่อนๆ ไว้ให้ [14])
+    29/9: รวม [1] (curriculum) เข้ามาในคำสั่งนี้แล้ว — เมื่อก่อนถ้ารัน [2] เดี่ยวๆ โดยไม่รัน [1] ก่อน หน้า /admin/courses จะมองไม่เห็นหลักสูตรของวิชาไหนเลย ทำให้ตัวกรอง "สาขา"/"หลักสูตร" เหลือแค่ตัวเลือก "ทั้งหมด" ตัวเดียว (ดูเหมือน mock ไม่สมจริง ทั้งที่ curriculum-mockup.json มี 3 สาขา 9 หลักสูตรอยู่แล้ว) ตอนนี้รันคำสั่งเดียวได้ครบ ไม่ต้องพึ่งลำดับ [1] ก่อน [2] อีกต่อไป
 
-fetch('/mock-data/courses-mockup.json').then(r=>r.json()).then(d=>{localStorage.setItem('hwai_courses_v2', JSON.stringify(d)); location.reload();});
+fetch('/mock-data/curriculum-mockup.json').then(r=>r.json()).then(d=>{localStorage.setItem('hwai_curriculum_versions_v1', JSON.stringify(d.curriculumVersions)); localStorage.setItem('hwai_course_templates_v1', JSON.stringify(d.courseTemplates)); return fetch('/mock-data/courses-mockup.json').then(r=>r.json());}).then(d=>{localStorage.setItem('hwai_courses_v2', JSON.stringify(d)); location.reload();});
 
 ---
 
-[3] อาจารย์ พร้อม assign เข้าวิชาแล้ว (8 คน — ต้องทำ [2] ก่อน จะได้ courseId ตรงกัน)
-    5 คนเดิม (สมศักดิ์ / ประเสริฐ / กานต์ / นภาพร TA / วิทยา TA ที่ไม่ได้ assign — ทดสอบ empty state)
-    + วรรณา ใจดี, ธนากร พงษ์ไทย, ปิยะ รักเรียน ที่รับหลาย section ข้ามหลักสูตร
+[3] อาจารย์ พร้อม assign เข้าวิชาแล้ว (6 คน ทุกคนเป็น teacher — ระบบยังไม่มี TA และ admin ไม่ assign TA — ต้องทำ [2] ก่อน จะได้ courseId ตรงกัน)
+    สมศักดิ์ / ประเสริฐ / กานต์ + วรรณา ใจดี, ธนากร พงษ์ไทย, ปิยะ รักเรียน ที่รับหลาย section ข้ามหลักสูตร
 
 fetch('/mock-data/teachers-mockup.json').then(r=>r.json()).then(d=>{localStorage.setItem('hwai_managed_teachers_v1', JSON.stringify(d)); location.reload();});
 
@@ -72,7 +72,7 @@ fetch('/mock-data/student-flow-mockup.json').then(r=>r.json()).then(d=>{localSto
 [6] รีเซ็ตแค่ "ผลตรวจ" กลับไปที่ค่าเริ่มต้น (เผื่อทดสอบส่งงานซ้ำๆ)
     ใช้ตอนทดสอบ role student แล้วกดส่งงาน "โปรเจกต์เล็ก: เครื่องคิดเลข" (a-mock-2) ไปแล้ว
     อยากให้กลับไปเป็น "ยังไม่ส่ง" เพื่อลองกดส่งใหม่อีกรอบ — ไม่กระทบ cohort/รายวิชา/งาน/rubric เลย
-    แก้แค่ hwai_submissions_v1 กลับไปเป็น 3 รายการเดิมของ a-mock-1 (ตรวจแล้ว/รอตรวจ/ยังไม่ตรวจ)
+    แก้แค่ hwai_submissions_v1 กลับไปเป็นผลตรวจตั้งต้นทั้งชุดของ student-flow-mockup (13 รายการ — ตรวจแล้ว 7 รายการมีคะแนนรายเกณฑ์ ดู [13])
     ส่วน a-mock-2 จะไม่มี submission อยู่เลย เหมือนตอนเริ่มต้น
 
 fetch('/mock-data/student-flow-mockup.json').then(r=>r.json()).then(d=>{localStorage.setItem('hwai_submissions_v1', JSON.stringify(d.submissions)); location.reload();});
@@ -130,11 +130,11 @@ fetch('/mock-data/curriculum-mockup-en.json').then(r=>r.json()).then(d=>{localSt
 
 [11] ดูหน้า /admin/courses หลายเคสพร้อมกัน — จัดกลุ่มตามหลักสูตร → วิชา (หลักสูตร + รายวิชา + อาจารย์ ชุดเดียว)
      ไม่แตะข้อมูลนักศึกษา/งาน ใช้เฉพาะ 3 ไฟล์ด้านล่าง รันแล้วหน้าจะ reload เอง แล้วเปิด /admin/courses (login admin)
-     เคสที่ใส่ไว้ (c-mock-1..37 — 30 เปิดสอน / 7 เก็บถาวร):
+     เคสที่ใส่ไว้ (c-mock-1..37 — 30 เปิดสอน / 7 เก็บถาวร; ไฟล์ตอนนี้มี 53 รายการ — 38..52 เป็นวิชาเก็บถาวรย้อนหลังของ [14]):
        - วิชาเดียวกันหลาย section (Computer Programming 3 sec, DSA 3 sec, OS 2 sec) — ต้องอยู่ในการ์ดเดียวกัน
        - วิชาเดียวกันคนละเทอม/ปี (Senior Project 2569/1 + ที่เก็บถาวร 2568/1, DSA 2569/1 + 2569/2, Programming 2568/1+2)
        - เทอม 3 (Database Systems 2569/3)
-       - section ไม่มีอาจารย์ (Programming Sec 3, ML, AI&ML, CEI ML) และหลายอาจารย์ใน section เดียว (UX/UI Sec 2 = อาจารย์ + TA)
+       - section ไม่มีอาจารย์ (Programming Sec 3, ML, AI&ML, CEI ML) และหลายอาจารย์ใน section เดียว (UX/UI Sec 2 = อาจารย์ 2 คน)
        - ชื่อวิชาเดียวกันแต่คนละหลักสูตร (UX/UI ใน CE 2569 / CECS 2565 / CEI 2568) — ต้องไม่ปนกัน
        - หลักสูตรที่มีแต่ section เก็บถาวร (CE 2559, CECS 2560, CEI 2563) — ทดสอบตัวกรองสถานะ + ไม่มีปุ่ม + Section
        - ไม่ผูกหลักสูตร: หัวข้อพิเศษ (ชื่อยาว 2 section) และ Git workshop ที่ไม่มีปี/เทอม/section เลย
@@ -150,6 +150,67 @@ fetch('/mock-data/curriculum-mockup-en.json').then(r=>r.json()).then(d=>{localSt
 
 ---
 
+[12] นักศึกษาหลายรุ่น (รุ่น 66–69) ไว้ดูหน้า /admin/users > Students — ตัวกรองสาขา/พ้นสภาพ และปุ่ม "ปิดใช้งานทั้งรุ่น"
+     57 คน ครบ 3 สาขา (CE / CECS / CEI) — ใส่ทับเฉพาะรายชื่อนักศึกษากลาง (hwai_cohort_students_v1) ไม่แตะอย่างอื่น
+       รุ่น 66: 12 คน (พ้นสภาพ 2)  — รุ่นที่ใกล้จบ  | รุ่น 67: 12 คน (พ้นสภาพ 2, มี 1 คนไม่มีคำนำหน้า)
+       รุ่น 68: 13 คน (พ้นสภาพ 1)  | รุ่น 69: 20 คน (พ้นสภาพ 1)
+     13 คนเดิมของ [5] (cs-mock-1..13: 69070101-108, 68020101-104, 67010101) อยู่ครบ ข้อมูลเหมือนเดิมทุกอย่าง
+     จึงรันหลัง [5] ได้ และ login / การลงทะเบียนวิชาของ [5] ยังใช้ได้ (ถ้ารัน [5] ทีหลัง รายชื่อจะกลับเป็น 13 คน)
+     รหัสของ 44 คนใหม่ไม่ชนกับ students_sample.csv ([3b]) และ course-import-test.csv ([7]) — ยังใช้ทดสอบ import ได้ตามเดิม
+     ทดสอบ: ปุ่ม "ปิดใช้งานทั้งรุ่น" เลือกรุ่น 66 แล้วเลือกสาขา, สวิตช์ "แสดงที่พ้นสภาพ", เลือกสาขาเป็นชื่อเต็มในตาราง
+
+     ภาษาไทย:
+
+fetch('/mock-data/students-mockup.json').then(r=>r.json()).then(d=>{localStorage.setItem('hwai_cohort_students_v1', JSON.stringify(d)); localStorage.setItem('hwai_lang', 'th'); location.reload();});
+
+     English:
+
+fetch('/mock-data/students-mockup-en.json').then(r=>r.json()).then(d=>{localStorage.setItem('hwai_cohort_students_v1', JSON.stringify(d)); localStorage.setItem('hwai_lang', 'en'); location.reload();});
+
+---
+
+[13] คะแนนรายเกณฑ์ (rubric) ของนักศึกษา — เฉพาะผลตรวจ (submissions) ของ [5]/[10]
+     ผลตรวจที่ "ตรวจแล้ว" ทั้ง 7 รายการใน student-flow-mockup มี criterionScores (คะแนนแต่ละเกณฑ์ รวมเท่ากับคะแนนรวม และไม่เกินคะแนนเต็มของเกณฑ์นั้น)
+     นักศึกษาเห็นที่ /student/courses/c-mock-1/classwork/<งาน> (การ์ดเกณฑ์แสดง "56 / 60" + แถบ) และในป๊อปอัปของหน้า Evaluation (ไม่มีข้อความ "ประมาณ" อีก)
+     ล็อกอิน 69070101@kmitl.ac.th → งาน "แบบฝึกหัด Python เบื้องต้น" (90 = 56 + 18 + 16), "Quiz 1" (85), "Quiz 2" (85), "Lab 5" (92)
+     ถ้าเคยรัน [5] หรือ [10] ไว้แล้ว รันตัวนี้ตัวเดียวพอ — เขียนทับเฉพาะ hwai_submissions_v1 ไม่แตะรายชื่อนักศึกษาที่ใส่ด้วย [12]
+     (ยังไม่เคยรัน [5] ให้รัน [2] แล้ว [5] ก่อน)
+
+     ภาษาไทย (คำสั่งเดียวกับ [6]):
+
+fetch('/mock-data/student-flow-mockup.json').then(r=>r.json()).then(d=>{localStorage.setItem('hwai_submissions_v1', JSON.stringify(d.submissions)); location.reload();});
+
+     English:
+
+fetch('/mock-data/student-flow-mockup-en.json').then(r=>r.json()).then(d=>{localStorage.setItem('hwai_submissions_v1', JSON.stringify(d.submissions)); location.reload();});
+
+---
+
+[14] ประวัติรายวิชาของนักศึกษา — ไว้ดู "รายวิชาของฉัน" (เทอมปัจจุบัน) กับ "รายวิชาที่เรียนผ่านไปแล้ว" ของ role student
+     คำสั่งเดียวจบ: ใส่รายวิชา 53 รายการ + อาจารย์ + รายชื่อนักศึกษา 57 คน (เหมือน [2] [3] [12]) แล้วเพิ่มประวัติเรียนต่อท้ายข้อมูลเดิม
+     (ประวัติเป็นแบบ "เพิ่ม" ข้าม id ที่มีอยู่แล้ว — ถ้าอยากได้ c-mock-1 แบบเต็ม (rubric/แนบไฟล์) ของ 69070101 ด้วย ให้รัน [5] ก่อนค่อยรัน [14] ตามหลัง ลำดับนี้เท่านั้น: [14] ก่อนไม่ทับ [5], กลับกัน [5] ทับ [14] แน่นอนเพราะ [5] เขียนทับทั้ง 4 คีย์เดียวกัน)
+     26/9: รอบแรกมีบั๊กจริง 2 เรื่อง — แก้แล้ว: (1) นักศึกษาบางคนเรียนวิชาเดิมซ้ำ (เช่น "การเขียนโปรแกรมคอมพิวเตอร์" ทั้งเทอมนี้และในประวัติ 2 รอบ) ตอนนี้แต่ละคนเรียนแต่ละวิชา (นับตามรหัสวิชา ไม่ใช่ course id เพราะรหัสเดียวกันมีได้หลายหลักสูตร/หลายรุ่น) ครั้งเดียวเท่านั้น ไม่ซ้ำเลยทั้งเทอมนี้และเทอมก่อนๆ (2) เทอมของ "วิชาที่ผ่านมาแล้ว" ต้องไม่ก่อนปีที่เข้าเรียนของนักศึกษาคนนั้น (รหัส 66xxxxxx เข้าปี 2566 จะมีประวัติได้ตั้งแต่ 2566 เป็นต้นไป ฯลฯ) — 69070101 รหัส 69 เพิ่งเข้าปีนี้ (2569) เทอมนี้คือเทอมแรกจริงๆ จึงไม่มีทางมี "วิชาที่ผ่านมาแล้ว" ได้ตามหลักการนี้ กลับไปไม่มีส่วนนั้นเหมือนเดิม (ได้แค่ลงหลายวิชาในเทอมนี้)
+     ล็อกอินด้วยอีเมลของนักศึกษา รหัสผ่านอะไรก็ได้:
+       66010101@kmitl.ac.th  ปี 4 (เข้า 2566)  — เทอมนี้ 3 วิชา (Senior Project, SE, OS) + เรียนผ่านแล้ว 6 วิชา 4 เทอม (2566/1 → 2567/2: Programming, Discrete, DSA, Digital Logic, Architecture, Database) เกรด A A B C D A
+       67010201@kmitl.ac.th  ปี 3 (เข้า 2567)  — เทอมนี้ 3 วิชา (Architecture, OS, UX/UI) + เรียนผ่านแล้ว 5 วิชา 3 เทอม (2567/1 → 2568/1: Programming, Discrete, DSA, Digital Logic, SE) เกรด A B F D และเทอม 2568/1 (SE) ที่ยังไม่ประกาศผล (ขึ้น "ยังไม่มีคะแนน")
+       68020101@kmitl.ac.th  ปี 2 (เข้า 2568)  — เทอมนี้ 1 วิชา (c-mock-1) + เรียนผ่านแล้ว 3 วิชา 2 เทอม (2568/1–2568/2: DSA, OS, Database) เกรด A C B + ถอนแล้ว 1 วิชา (Senior Project, ขึ้นป้าย "ถอนแล้ว")
+       69070101@kmitl.ac.th  ปี 1 เข้าปีนี้ (ล็อกอินหลักที่ใช้เดโมทั่วไป — ก็คือปุ่ม "Student" ใน Dev Bypass ของหน้า login ด้วย) — เทอมนี้ 3 วิชา (Programming จาก [5], DSA + UX/UI จาก [14])
+         + เรียนผ่านแล้ว 2 วิชา 2 เทอม (2568/1–2568/2: Architecture, Database) เกรด A B — 29/9: ผู้ใช้ขอดูบัญชีนี้แบบมีทั้งสองส่วนโดยเฉพาะ (สองรอบ) จึงยกเว้นกฎ "ห้ามมีวิชาก่อนปีเข้าเรียน" ให้บัญชีนี้เจาะจง (คนอื่นในไฟล์ยังต้องตรงตามกฎเป๊ะ มีเทสต์คุมแยกไว้) — ระบุไว้ตรงนี้ชัดๆ ว่าเป็นข้อยกเว้นที่ตั้งใจทำ ไม่ใช่มองข้ามกฎไปเฉยๆ
+     วิชาที่เรียนผ่านแล้วเป็นวิชาเก็บถาวรของหลักสูตร CE 2564 (Programming, Discrete, DSA, Digital Logic, Architecture, Database, SE, OS, Senior Project) — ไปดูที่ /admin/courses ก็เห็นเป็นเทอมย้อนหลังในการ์ดวิชาเดียวกัน
+     แต่ละวิชามี 3 หมวดงาน (แล็บ, แบบทดสอบย่อย, สอบ) ตรวจและประกาศผลแล้ว ยกเว้นวิชา SE ของ 67010201
+     29/9: เพิ่ม rubric ให้ทั้ง 45 งาน + criterionScores ให้ทุก submission ที่ตรวจแล้ว (รวมแต่ละเกณฑ์ = คะแนนรวมเป๊ะ) — ตอนนี้วิชาที่เรียนผ่านไปแล้วก็กดดูรายละเอียดเกณฑ์ตรวจได้เหมือนวิชาเทอมนี้ ทั้งที่หน้า classwork รายงานและป๊อปอัปเกณฑ์ของหน้า Evaluation
+     "เทอมปัจจุบัน" ตอนนี้ดูจากวันที่ตามปฏิทินการศึกษาทั่วไป (ส.ค.–ธ.ค. เทอม 1, ม.ค.–พ.ค. เทอม 2, มิ.ย.–ก.ค. เทอม 3) — ระบบเทอมจริงให้ admin ตั้งค่า เก็บไว้ทำทีหลัง
+
+     ภาษาไทย:
+
+fetch('/mock-data/courses-mockup.json').then(r=>r.json()).then(c=>{localStorage.setItem('hwai_courses_v2', JSON.stringify(c)); return fetch('/mock-data/teachers-mockup.json').then(r=>r.json());}).then(t=>{localStorage.setItem('hwai_managed_teachers_v1', JSON.stringify(t)); return fetch('/mock-data/students-mockup.json').then(r=>r.json());}).then(st=>{localStorage.setItem('hwai_cohort_students_v1', JSON.stringify(st)); return fetch('/mock-data/student-history-mockup.json').then(r=>r.json());}).then(d=>{const put=(k,items)=>{const cur=JSON.parse(localStorage.getItem(k)||'[]');const ids=new Set(cur.map(x=>x.id));localStorage.setItem(k,JSON.stringify([...cur,...items.filter(x=>!ids.has(x.id))]));}; const putRoster=(k,items)=>{const cur=JSON.parse(localStorage.getItem(k)||'[]');const pairs=new Set(items.map(x=>x.studentId+'|'+x.courseId));const kept=cur.filter(x=>!pairs.has(x.studentId+'|'+x.courseId));localStorage.setItem(k,JSON.stringify([...kept,...items]));}; putRoster('hwai_students_v1',d.courseStudents); put('hwai_grading_categories_v1',d.gradingCategories); put('hwai_assignments_v1',d.assignments); put('hwai_rubrics_v1',d.rubrics); put('hwai_submissions_v1',d.submissions); localStorage.setItem('hwai_lang','th'); location.reload();});
+
+     English:
+
+fetch('/mock-data/courses-mockup-en.json').then(r=>r.json()).then(c=>{localStorage.setItem('hwai_courses_v2', JSON.stringify(c)); return fetch('/mock-data/teachers-mockup-en.json').then(r=>r.json());}).then(t=>{localStorage.setItem('hwai_managed_teachers_v1', JSON.stringify(t)); return fetch('/mock-data/students-mockup-en.json').then(r=>r.json());}).then(st=>{localStorage.setItem('hwai_cohort_students_v1', JSON.stringify(st)); return fetch('/mock-data/student-history-mockup-en.json').then(r=>r.json());}).then(d=>{const put=(k,items)=>{const cur=JSON.parse(localStorage.getItem(k)||'[]');const ids=new Set(cur.map(x=>x.id));localStorage.setItem(k,JSON.stringify([...cur,...items.filter(x=>!ids.has(x.id))]));}; const putRoster=(k,items)=>{const cur=JSON.parse(localStorage.getItem(k)||'[]');const pairs=new Set(items.map(x=>x.studentId+'|'+x.courseId));const kept=cur.filter(x=>!pairs.has(x.studentId+'|'+x.courseId));localStorage.setItem(k,JSON.stringify([...kept,...items]));}; putRoster('hwai_students_v1',d.courseStudents); put('hwai_grading_categories_v1',d.gradingCategories); put('hwai_assignments_v1',d.assignments); put('hwai_rubrics_v1',d.rubrics); put('hwai_submissions_v1',d.submissions); localStorage.setItem('hwai_lang','en'); location.reload();});
+
+---
+
 [4] ล้างข้อมูลทั้งหมด (ถ้าอยากเริ่มใหม่)
 
 ['hwai_user','hwai_managed_teachers_v1','hwai_cohort_students_v1','hwai_courses_v2','hwai_curriculum_versions_v1','hwai_course_templates_v1','hwai_students_v1','hwai_grading_categories_v1','hwai_assignments_v1','hwai_rubrics_v1','hwai_submissions_v1','hwai_student_groups_v1','hwai_clos_v1'].forEach(k=>localStorage.removeItem(k)); location.reload();
@@ -160,7 +221,7 @@ fetch('/mock-data/curriculum-mockup-en.json').then(r=>r.json()).then(d=>{localSt
 - ไฟล์ json ต้นทางอยู่ใน public/mock-data/ (courses-mockup.json, curriculum-mockup.json, teachers-mockup.json, student-flow-mockup.json)
   ถ้าแก้ข้อมูล mock ให้แก้ที่ test-data/*.json ก่อน แล้ว copy ทับไฟล์ใน public/mock-data/ ด้วย
 - คำสั่งพวกนี้ทำงานเฉพาะตอน dev server รันอยู่ (npm run dev) เพราะ fetch ไปที่ localhost
-- teachers-mockup.json ใช้ courseId ที่ตรงกับ courses-mockup.json (c-mock-1..37; 1..6 เดิม ที่เหลือเพิ่ม 26/9/2569 สำหรับหน้า /admin/courses) ทำ [2] ก่อน [3] เสมอ
+- teachers-mockup.json ใช้ courseId ที่ตรงกับ courses-mockup.json (c-mock-1..53; 1..6 เดิม ที่เหลือเพิ่ม 26/9/2569 สำหรับหน้า /admin/courses และ [14]) ทำ [2] ก่อน [3] เสมอ
 - student-flow-mockup.json ก็ใช้ courseId c-mock-1 เหมือนกัน ทำ [2] ก่อน [5] เสมอ
 - students_sample.csv ([3b]) กับ course-import-test.csv ([7]) เป็นคนละไฟล์ คนละหน้า แต่ ID ใช้ scheme เดียวกัน:
   — [3b] คือ import นักศึกษาเข้า cohort กลางของระบบ (ผ่าน /admin/users, format 5 คอลัมน์ studentId,firstName,lastName,email,program — cohort field ถูกเอาออกแล้ว 23/9/2569)

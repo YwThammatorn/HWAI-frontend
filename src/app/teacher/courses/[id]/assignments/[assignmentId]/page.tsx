@@ -6,11 +6,12 @@ import { useCourses } from "@/lib/courses";
 import { useAssignments } from "@/lib/assignments";
 import { useGradingCategories } from "@/lib/gradingCategories";
 import { useLanguage } from "@/context/LanguageContext";
+import { dateLocale } from "@/lib/dateLocale";
 import AssignmentTypeBadge from "@/components/AssignmentTypeBadge";
 import { AttachmentList } from "@/components/AssignmentAttachments";
 
-function fmtDate(dateStr: string) {
-  return new Date(dateStr + "T00:00:00").toLocaleDateString("en-US", {
+function fmtDate(dateStr: string, lang: string) {
+  return new Date(dateStr + "T00:00:00").toLocaleDateString(dateLocale(lang), {
     month: "short", day: "numeric", year: "numeric",
   });
 }
@@ -19,7 +20,7 @@ function fmtDate(dateStr: string) {
 // Everything about checking the submissions (stats, table, Review / Recheck) is on the Grading page.
 export default function ViewAssignmentPage() {
   const { id, assignmentId } = useParams<{ id: string; assignmentId: string }>();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const { getCourse } = useCourses();
   const { getAssignment, getSubmissionsByAssignment, getRubricsByAssignment } = useAssignments();
   const { getCategoriesByCourse } = useGradingCategories();
@@ -53,7 +54,7 @@ export default function ViewAssignmentPage() {
           label: t("กำหนดส่ง", "Due date"),
           value: (
             <span className={isPastDue ? "text-[var(--s-err-text)]" : undefined}>
-              {fmtDate(assignment.dueDate)} {t("เวลา 23:59 น.", "at 11:59 PM")}
+              {fmtDate(assignment.dueDate, lang)} {t("เวลา 23:59 น.", "at 11:59 PM")}
             </span>
           ),
         }
@@ -116,7 +117,7 @@ export default function ViewAssignmentPage() {
           <div className="flex items-center gap-2 mt-1.5 text-sm flex-wrap">
             <span className={isPastDue ? "text-[var(--s-err-text)]" : "text-[var(--text-secondary)]"}>
               {assignment.dueDate
-                ? <>{isPastDue ? `${t("เลยกำหนด", "Past due")} — ` : ""}{t("กำหนดส่ง", "Due")} {fmtDate(assignment.dueDate)}</>
+                ? <>{isPastDue ? `${t("เลยกำหนด", "Past due")} — ` : ""}{t("กำหนดส่ง", "Due")} {fmtDate(assignment.dueDate, lang)}</>
                 : t("สอบ · ไม่มีกำหนดส่ง", "Exam · no due date")}
             </span>
             {category && (

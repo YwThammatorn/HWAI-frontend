@@ -58,6 +58,15 @@ export default function CohortStudentProvider({ children }: { children: React.Re
     sync(() => api.updateCohortStudent(id, data));
   }
 
+  function updateCohortStudents(ids: string[], data: Partial<Omit<CohortStudent, "id">>) {
+    const set = new Set(ids);
+    persist(cohortStudents.map((s) => (set.has(s.id) ? { ...s, ...data } : s)));
+    // studentId is unique per student, so it can't be part of a bulk change (the backend rejects it too).
+    const { studentId: _unique, ...bulk } = data;
+    void _unique;
+    if (ids.length > 0) sync(() => api.updateCohortStudents(ids, bulk));
+  }
+
   function removeCohortStudent(id: string) {
     persist(cohortStudents.filter((s) => s.id !== id));
     sync(() => api.removeCohortStudent(id));
@@ -75,6 +84,7 @@ export default function CohortStudentProvider({ children }: { children: React.Re
         cohortStudents,
         addCohortStudents,
         updateCohortStudent,
+        updateCohortStudents,
         removeCohortStudent,
         findByStudentId,
       }}

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
+import { dateLocale } from "@/lib/dateLocale";
 import { useAuth } from "@/context/AuthContext";
 import { useCourses } from "@/lib/courses";
 import { useAssignments, submissionAttachments, studentVisibleSubmission, AssignmentAttachment } from "@/lib/assignments";
@@ -33,7 +34,7 @@ export default function StudentClassworkDetailPage() {
 
 function ClassworkDetail() {
   const { secId, actId } = useParams<{ secId: string; actId: string }>();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const { user } = useAuth();
   const { getCourse } = useCourses();
   const { getAssignment, getSubmissionsByAssignment, addSubmission, updateSubmission, getRubricsByAssignment } = useAssignments();
@@ -83,6 +84,9 @@ function ClassworkDetail() {
   const isGraded = mySubmission?.status === "graded";
   const locked = isGraded || beingGraded;
   const score = mySubmission?.instructorScore ?? mySubmission?.aiScore ?? null;
+  // What each rubric criterion earned — only real per-criterion scores the teacher saved (a graded submission is
+  // already masked to nothing until results are announced), never an estimate.
+  const earnedByCriterion = isGraded ? mySubmission?.criterionScores : undefined;
   // A link is always offered when the assignment accepts attachments at all —
   // not just for fileTypes that include "figma" — since plenty of valid
   // submissions are links regardless of tool (GitHub repo, Google Doc, etc).
@@ -188,7 +192,7 @@ function ClassworkDetail() {
                   {due ? (
                     <>
                       <span className={isPast && !mySubmission ? "text-[var(--st-overdue-text)] font-semibold" : ""}>
-                        {t("กำหนดส่ง:", "Due:")} {due.toLocaleDateString("th-TH", { day: "numeric", month: "long", year: "numeric" })}
+                        {t("กำหนดส่ง:", "Due:")} {due.toLocaleDateString(dateLocale(lang), { day: "numeric", month: "long", year: "numeric" })}
                       </span>
                       {isPast && !mySubmission && <AssignmentStatusBadge status="overdue" />}
                     </>
@@ -210,16 +214,39 @@ function ClassworkDetail() {
             {/* Rubric — read-only, shows what the student will be graded on */}
             {rubrics.length > 0 && (
               <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-5">
-                <h2 className="text-sm font-bold text-[var(--text-primary)] mb-3">{t("เกณฑ์การให้คะแนน", "Grading Rubric")}</h2>
+                <h2 className="text-sm font-bold text-[var(--text-primary)] mb-3">
+                  {earnedByCriterion ? t("เกณฑ์การให้คะแนน — คะแนนที่คุณได้", "Grading Rubric — your points") : t("เกณฑ์การให้คะแนน", "Grading Rubric")}
+                </h2>
                 <div className="flex flex-col gap-3">
                   {rubrics.flatMap((rubric) => rubric.criteria).map((c) => (
                     <div key={c.id} className="rounded-xl border border-[var(--border-subtle)] p-3">
                       <div className="flex items-start justify-between gap-3 mb-1">
                         <p className="text-sm font-semibold text-[var(--text-primary)]">{c.name}</p>
-                        <span className="shrink-0 text-xs font-semibold text-[var(--accent)] tabular-nums">
-                          {c.weight}% · {c.maxPoints} {t("คะแนน", "pts")}
-                        </span>
+                        {earnedByCriterion?.[c.id] !== undefined ? (
+                          <span className="shrink-0 text-right leading-tight">
+                            <span className="block text-sm font-bold text-[var(--text-primary)] tabular-nums">
+                              {earnedByCriterion[c.id]}<span className="text-xs font-semibold text-[var(--text-muted)]"> / {c.maxPoints}</span>
+                            </span>
+                            <span className="block text-[10px] text-[var(--text-muted)] tabular-nums">{c.weight}%</span>
+                          </span>
+                        ) : (
+                          <span className="shrink-0 text-xs font-semibold text-[var(--accent)] tabular-nums">
+                            {c.weight}% · {c.maxPoints} {t("คะแนน", "pts")}
+                          </span>
+                        )}
                       </div>
+                      {earnedByCriterion?.[c.id] !== undefined && c.maxPoints > 0 && (
+                        <div
+                          role="progressbar"
+                          aria-label={t(`${c.name}: ได้ ${earnedByCriterion[c.id]} จาก ${c.maxPoints}`, `${c.name}: ${earnedByCriterion[c.id]} of ${c.maxPoints}`)}
+                          aria-valuemin={0}
+                          aria-valuemax={c.maxPoints}
+                          aria-valuenow={earnedByCriterion[c.id]}
+                          className="h-1.5 rounded-full bg-[var(--border-subtle)] mb-2 overflow-hidden"
+                        >
+                          <div className="h-full rounded-full bg-[var(--accent-solid)]" style={{ width: `${Math.min(100, (earnedByCriterion[c.id] / c.maxPoints) * 100)}%` }} />
+                        </div>
+                      )}
                       {c.description && (
                         <p className="text-xs text-[var(--text-muted)] mb-2">{c.description}</p>
                       )}
@@ -347,7 +374,7 @@ function ClassworkDetail() {
                       <p className="text-xs font-semibold">{t("ส่งแล้ว รอผล", "Submitted — awaiting grade")}</p>
                       {mySubmission?.submittedAt && (
                         <p className="text-[10px] opacity-75 mt-0.5">
-                          {new Date(mySubmission.submittedAt).toLocaleString("th-TH", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                          {new Date(mySubmission.submittedAt).toLocaleString(dateLocale(lang), { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
                         </p>
                       )}
                     </div>
