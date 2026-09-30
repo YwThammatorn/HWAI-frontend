@@ -29,21 +29,30 @@ change how the app behaves today, and extending an already-unused layer can't.
 function's signature is already the async contract every future caller will use. No caller changes
 needed *at that point*; wiring the Providers to actually call these functions is the separate follow-up.
 
-## Admin backend wiring (HWAI-backend)
+## Backend wiring (HWAI-backend)
 
-The admin domains — **courses, curriculum (versions + course templates), managed teachers, cohort
-students** — are implemented by the Express/Prisma backend in `../HWAI-backend` (see its README).
-Their `lib/api/*.ts` files now make the real `client.*()` calls, and their Providers
-(`CourseProvider`, `CurriculumProvider`, `ManagedTeacherProvider`, `CohortStudentProvider`) use them
-**only when `NEXT_PUBLIC_API_URL` is set** (e.g. `NEXT_PUBLIC_API_URL=http://localhost:4000` in
-`.env.local`). Unset, everything stays on localStorage exactly as before — the Playwright suites
-depend on that.
+These domains are implemented by the Express/Prisma backend in `../HWAI-backend` (see its README and
+Swagger at `/docs`):
+
+- **Admin**: courses, curriculum (versions + course templates), managed teachers, cohort students
+- **Course content** (student pages + the teacher's create/edit assignment pages): course rosters
+  (`Student`), grading categories, assignments + rubrics + submissions, student groups
+- **Uploaded files** — `lib/fileStorage.ts` uploads to `POST /api/files` and a file's key is its id,
+  served at `GET /api/files/:id` (10MB limit). Mock `hwai_file_…` keys still resolve from localStorage.
+
+Their `lib/api/*.ts` files make the real `client.*()` calls, and their Providers use them **only when
+`NEXT_PUBLIC_API_URL` is set** (e.g. `NEXT_PUBLIC_API_URL=http://localhost:4000` in `.env.local`).
+Unset, everything stays on localStorage exactly as before — the Playwright suites depend on that.
 
 In API mode those Providers keep their synchronous context API: they update state optimistically with a
 client-generated id (the backend accepts `id` on create), then push the write through
 `enqueueWrite()` (`lib/api/sync.ts`), a single sequential queue so dependent writes made in the same
-tick (create course → assign teacher) reach the server in order. A failed write shows an alert and
-reloads that domain from the server. Every other domain below is still localStorage-only.
+tick (create course → assign teacher; create assignment → add rubric → set its rubricIds) reach the
+server in order. A failed write shows an alert and reloads that domain from the server.
+
+Still localStorage-only: CLOs, section roles, grading assignments, notifications — and announcements,
+weekly plan and teaching materials, which are hidden by `lib/featureFlags.ts` for now; their backend
+gets built when they come back.
 
 ## Auth
 

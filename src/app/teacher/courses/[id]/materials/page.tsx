@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useCourses } from "@/lib/courses";
 import { useTeachingMaterials, TeachingMaterial, TeachingMaterialType } from "@/lib/teachingMaterials";
-import { storeFile, resolveFileUrl, FileTooLargeError } from "@/lib/fileStorage";
+import { storeFile, resolveFileUrl, FileTooLargeError, MAX_FILE_MB } from "@/lib/fileStorage";
 import { useLanguage } from "@/context/LanguageContext";
 import { MATERIALS_DISABLED } from "@/lib/featureFlags";
 
@@ -89,7 +89,7 @@ export default function TeachingMaterialsPage() {
       setFormOpen(false);
     } catch (err) {
       if (err instanceof FileTooLargeError) {
-        setUploadError(t("ไฟล์ใหญ่เกินไป (จำกัด 2MB สำหรับ mock storage)", "File too large (2MB mock storage limit)"));
+        setUploadError(t(`ไฟล์ใหญ่เกินไป (จำกัด ${MAX_FILE_MB}MB)`, `File too large (${MAX_FILE_MB}MB limit)`));
       } else {
         setUploadError(t("อัปโหลดไม่สำเร็จ", "Upload failed"));
       }
@@ -243,7 +243,7 @@ export default function TeachingMaterialsPage() {
                       className="w-full text-sm text-gray-500 file:mr-3 file:px-3.5 file:py-2 file:rounded-xl file:border-0 file:bg-[var(--accent-solid)] file:text-[var(--accent-solid-text)] file:text-sm file:font-medium hover:file:bg-[var(--accent-solid-hover)] file:cursor-pointer disabled:opacity-50"
                     />
                     {uploadError && <p className="text-xs text-[var(--s-err-text)] mt-1.5">{uploadError}</p>}
-                    <p className="text-xs text-gray-400 mt-1.5">{t("จำกัดไฟล์ไม่เกิน 2MB (mock storage)", "2MB limit (mock storage)")}</p>
+                    <p className="text-xs text-gray-400 mt-1.5">{t(`จำกัดไฟล์ไม่เกิน ${MAX_FILE_MB}MB`, `${MAX_FILE_MB}MB limit`)}</p>
                   </div>
                 ) : (
                   <div className="mb-2">

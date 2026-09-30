@@ -3,6 +3,9 @@
 import { useState, useCallback, useEffect } from "react";
 import { AssignmentContext, Assignment, Submission, Rubric, DEFAULT_LEVELS } from "@/lib/assignments";
 import { removeFile } from "@/lib/fileStorage";
+import { API_ENABLED } from "@/lib/api/client";
+import { enqueueWrite } from "@/lib/api/sync";
+import * as api from "@/lib/api/assignments";
 
 const LS_ASSIGNMENTS = "hwai_assignments_v1";
 const LS_SUBMISSIONS = "hwai_submissions_v1";
@@ -120,16 +123,38 @@ export default function AssignmentProvider({ children }: { children: React.React
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [rubrics, setRubrics] = useState<Rubric[]>([]);
 
+  const setAllRubrics = useCallback((raw: Rubric[]) => setRubrics(raw.map(r => ({
+    ...r,
+    criteria: r.criteria.map(c => ({ ...c, levels: c.levels ?? DEFAULT_LEVELS })),
+  }))), []);
+
+  // API mode: reload from the server — on mount, and after a failed write (see api/sync.ts).
+  const resync = useCallback(() => {
+    Promise.all([api.getAssignments(), api.getSubmissions(), api.getRubrics()]).then(
+      ([a, s, r]) => {
+        setAssignments(a.map(x => ({ ...ASSIGNMENT_DEFAULTS, ...x })));
+        setSubmissions(s);
+        setAllRubrics(r);
+      },
+      (err) => console.error("[api] load assignments", err),
+    );
+  }, [setAllRubrics]);
+
   useEffect(() => {
+    if (API_ENABLED) {
+      resync();
+      return;
+    }
     const rawA = loadData<Assignment>(LS_ASSIGNMENTS, SEED_ASSIGNMENTS);
     setAssignments(rawA.map(a => ({ ...ASSIGNMENT_DEFAULTS, ...a })));
     setSubmissions(loadData<Submission>(LS_SUBMISSIONS, SEED_SUBMISSIONS));
-    const rawR = loadData<Rubric>(LS_RUBRICS, SEED_RUBRICS);
-    setRubrics(rawR.map(r => ({
-      ...r,
-      criteria: r.criteria.map(c => ({ ...c, levels: c.levels ?? DEFAULT_LEVELS })),
-    })));
-  }, []);
+    setAllRubrics(loadData<Rubric>(LS_RUBRICS, SEED_RUBRICS));
+  }, [resync, setAllRubrics]);
+
+  /** API mode only: send a write to the server after the optimistic local update. */
+  const sync = useCallback((task: () => Promise<unknown>) => {
+    if (API_ENABLED) enqueueWrite(task, resync);
+  }, [resync]);
 
   // Accepts a functional updater (like setState) so callers that chain
   // add-then-update on the same record in one synchronous handler (e.g.
@@ -139,7 +164,7 @@ export default function AssignmentProvider({ children }: { children: React.React
   const persistA = useCallback((updater: Assignment[] | ((prev: Assignment[]) => Assignment[])) => {
     setAssignments(prev => {
       const next = typeof updater === "function" ? updater(prev) : updater;
-      localStorage.setItem(LS_ASSIGNMENTS, JSON.stringify(next));
+      if (!API_ENABLED) localStorage.setItem(LS_ASSIGNMENTS, JSON.stringify(next));
       return next;
     });
   }, []);
@@ -147,7 +172,7 @@ export default function AssignmentProvider({ children }: { children: React.React
   const persistS = useCallback((updater: Submission[] | ((prev: Submission[]) => Submission[])) => {
     setSubmissions(prev => {
       const next = typeof updater === "function" ? updater(prev) : updater;
-      localStorage.setItem(LS_SUBMISSIONS, JSON.stringify(next));
+      if (!API_ENABLED) localStorage.setItem(LS_SUBMISSIONS, JSON.stringify(next));
       return next;
     });
   }, []);
@@ -155,7 +180,7 @@ export default function AssignmentProvider({ children }: { children: React.React
   const persistR = useCallback((updater: Rubric[] | ((prev: Rubric[]) => Rubric[])) => {
     setRubrics(prev => {
       const next = typeof updater === "function" ? updater(prev) : updater;
-      localStorage.setItem(LS_RUBRICS, JSON.stringify(next));
+      if (!API_ENABLED) localStorage.setItem(LS_RUBRICS, JSON.stringify(next));
       return next;
     });
   }, []);
@@ -164,20 +189,23 @@ export default function AssignmentProvider({ children }: { children: React.React
     const now = new Date().toISOString();
     const a: Assignment = { ...data, id: crypto.randomUUID(), createdAt: now, updatedAt: now };
     persistA(prev => [...prev, a]);
+    sync(() => api.createAssignment({ ...data, id: a.id }));
     return a;
-  }, [persistA]);
+  }, [persistA, sync]);
 
   const updateAssignment = useCallback((id: string, data: Partial<Omit<Assignment, "id" | "courseId" | "createdAt" | "updatedAt">>) => {
     persistA(prev => prev.map(a => a.id === id ? { ...a, ...data, updatedAt: new Date().toISOString() } : a));
-  }, [persistA]);
+    sync(() => api.updateAssignment(id, data));
+  }, [persistA, sync]);
 
   const removeAssignment = useCallback((id: string) => {
-    // Free the mock-storage blobs so deleted assignments don't eat localStorage quota
+    // Free the uploaded reference files (localStorage blobs, or the backend's files)
     assignments.find(a => a.id === id)?.attachments?.forEach(att => { if (att.source === "upload") removeFile(att.ref); });
     persistA(prev => prev.filter(a => a.id !== id));
-    persistS(prev => prev.filter(s => s.assignmentId !== id)); // cascade
+    persistS(prev => prev.filter(s => s.assignmentId !== id)); // cascade (the server cascades too)
     persistR(prev => prev.filter(r => r.assignmentId !== id)); // cascade
-  }, [assignments, persistA, persistS, persistR]);
+    sync(() => api.deleteAssignment(id));
+  }, [assignments, persistA, persistS, persistR, sync]);
 
   const getAssignment= useCallback((id: string) => assignments.find(a => a.id === id), [assignments]);
 
@@ -188,15 +216,17 @@ export default function AssignmentProvider({ children }: { children: React.React
     const now = new Date().toISOString();
     const s: Submission = { ...data, id: crypto.randomUUID(), updatedAt: now };
     persistS(prev => [...prev, s]);
+    sync(() => api.addSubmission({ ...data, id: s.id }));
     return s;
-  }, [persistS]);
+  }, [persistS, sync]);
 
   const updateSubmission = useCallback((
     id: string,
     data: Partial<Pick<Submission, "aiScore" | "instructorScore" | "instructorComment" | "criterionComments" | "criterionScores" | "status" | "fileUrl" | "attachments">>
   ) => {
     persistS(prev => prev.map(s => s.id === id ? { ...s, ...data, updatedAt: new Date().toISOString() } : s));
-  }, [persistS]);
+    sync(() => api.updateSubmission(id, data));
+  }, [persistS, sync]);
 
   const getSubmissionsByAssignment = useCallback((assignmentId: string) =>
     submissions.filter(s => s.assignmentId === assignmentId), [submissions]);
@@ -205,16 +235,19 @@ export default function AssignmentProvider({ children }: { children: React.React
     const now = new Date().toISOString();
     const r: Rubric = { ...data, id: crypto.randomUUID(), createdAt: now, updatedAt: now };
     persistR(prev => [...prev, r]);
+    sync(() => api.createRubric({ ...data, id: r.id }));
     return r;
-  }, [persistR]);
+  }, [persistR, sync]);
 
   const updateRubric = useCallback((id: string, data: Partial<Omit<Rubric, "id" | "assignmentId" | "createdAt" | "updatedAt">>) => {
     persistR(prev => prev.map(r => r.id === id ? { ...r, ...data, updatedAt: new Date().toISOString() } : r));
-  }, [persistR]);
+    sync(() => api.updateRubric(id, data));
+  }, [persistR, sync]);
 
   const removeRubric = useCallback((id: string) => {
     persistR(prev => prev.filter(r => r.id !== id));
-  }, [persistR]);
+    sync(() => api.deleteRubric(id));
+  }, [persistR, sync]);
 
   const getRubric = useCallback((id: string) => rubrics.find(r => r.id === id), [rubrics]);
 

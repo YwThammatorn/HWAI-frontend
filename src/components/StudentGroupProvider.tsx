@@ -2,6 +2,9 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { StudentGroupContext, StudentGroup } from "@/lib/studentGroups";
+import { API_ENABLED } from "@/lib/api/client";
+import { enqueueWrite } from "@/lib/api/sync";
+import * as api from "@/lib/api/student-groups";
 
 const LS_KEY = "hwai_student_groups_v1";
 
@@ -17,29 +20,46 @@ export default function StudentGroupProvider({ children }: { children: React.Rea
   // instead of during the initial render (hydration-mismatch fix, [[project-hwai-meeting-20260826]]).
   const [groups, setGroups] = useState<StudentGroup[]>([]);
 
-  useEffect(() => {
-    setGroups(loadData<StudentGroup>(LS_KEY, []));
+  // API mode: reload from the server — on mount, and after a failed write (see api/sync.ts).
+  const resync = useCallback(() => {
+    api.getStudentGroups().then(setGroups, (err) => console.error("[api] load student groups", err));
   }, []);
+
+  useEffect(() => {
+    if (API_ENABLED) {
+      resync();
+      return;
+    }
+    setGroups(loadData<StudentGroup>(LS_KEY, []));
+  }, [resync]);
 
   const persist = useCallback((next: StudentGroup[]) => {
     setGroups(next);
-    localStorage.setItem(LS_KEY, JSON.stringify(next));
+    if (!API_ENABLED) localStorage.setItem(LS_KEY, JSON.stringify(next));
   }, []);
+
+  /** API mode only: send a write to the server after the optimistic local update. */
+  const sync = useCallback((task: () => Promise<unknown>) => {
+    if (API_ENABLED) enqueueWrite(task, resync);
+  }, [resync]);
 
   const addGroup = useCallback((data: Omit<StudentGroup, "id" | "createdAt" | "updatedAt">): StudentGroup => {
     const now = new Date().toISOString();
     const g: StudentGroup = { ...data, id: crypto.randomUUID(), createdAt: now, updatedAt: now };
     persist([...groups, g]);
+    sync(() => api.addStudentGroup({ ...data, id: g.id }));
     return g;
-  }, [groups, persist]);
+  }, [groups, persist, sync]);
 
   const updateGroup = useCallback((id: string, data: Partial<Pick<StudentGroup, "name" | "memberStudentIds">>) => {
     persist(groups.map(g => g.id === id ? { ...g, ...data, updatedAt: new Date().toISOString() } : g));
-  }, [groups, persist]);
+    sync(() => api.updateStudentGroup(id, data));
+  }, [groups, persist, sync]);
 
   const removeGroup = useCallback((id: string) => {
     persist(groups.filter(g => g.id !== id));
-  }, [groups, persist]);
+    sync(() => api.removeStudentGroup(id));
+  }, [groups, persist, sync]);
 
   const getGroupsByAssignment = useCallback((assignmentId: string) =>
     groups.filter(g => g.assignmentId === assignmentId), [groups]);

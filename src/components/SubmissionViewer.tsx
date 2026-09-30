@@ -33,6 +33,7 @@ export default function SubmissionViewer({ attachments, zoom, caption, empty }: 
   const selId = sel?.id;
   const selRef = sel?.ref;
   const selSource = sel?.source;
+  const selName = sel?.name;
 
   // Uploads live as data URLs in mock storage; browsers won't frame or navigate to
   // data: URLs, so hand the pane a Blob URL instead (and release it when we move on).
@@ -46,6 +47,11 @@ export default function SubmissionViewer({ attachments, zoom, caption, empty }: 
       if (dataUrl) {
         try { blob = await (await fetch(dataUrl)).blob(); } catch { blob = null; }
       }
+      // A ".pdf" is shown in an iframe on this app's origin — pin its type to PDF so a mislabelled
+      // HTML file can only ever render as a (broken) PDF, never run script.
+      if (blob && /\.pdf$/i.test(selName ?? "") && blob.type !== "application/pdf") {
+        blob = new Blob([blob], { type: "application/pdf" });
+      }
       if (cancelled) return;
       if (blob) objectUrl = URL.createObjectURL(blob);
       setResolved({ id: selId, url: objectUrl ?? null, type: blob?.type ?? "" });
@@ -54,7 +60,7 @@ export default function SubmissionViewer({ attachments, zoom, caption, empty }: 
       cancelled = true;
       if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
-  }, [selId, selRef, selSource]);
+  }, [selId, selRef, selSource, selName]);
 
   if (!sel) return <>{empty}</>;
 
@@ -92,7 +98,7 @@ export default function SubmissionViewer({ attachments, zoom, caption, empty }: 
   } else if (sel.kind === "image" || ready.type.startsWith("image/")) {
     // eslint-disable-next-line @next/next/no-img-element
     body = <img src={ready.url} alt={sel.name} style={{ width: paperWidth, maxWidth: "none" }} className="shrink-0 bg-white shadow-xl rounded-sm" />;
-  } else if (ready.type === "application/pdf" || /\.pdf$/i.test(sel.name)) {
+  } else if (ready.type === "application/pdf") {
     body = (
       <iframe
         src={ready.url}

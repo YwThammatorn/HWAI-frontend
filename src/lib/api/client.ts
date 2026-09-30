@@ -7,6 +7,9 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
  */
 export const API_ENABLED = BASE_URL !== "";
 
+/** Absolute URL of an API path, for requests that can't go through `client` (raw file uploads, <img src>). */
+export const apiUrl = (path: string) => `${BASE_URL}${path}`;
+
 export class ApiError extends Error {
   constructor(
     public status: number,

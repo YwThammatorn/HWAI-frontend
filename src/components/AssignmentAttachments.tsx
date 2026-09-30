@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import { AssignmentAttachment } from "@/lib/assignments";
-import { storeFile, resolveFileUrl, removeFile, FileTooLargeError } from "@/lib/fileStorage";
+import { storeFile, resolveFileUrl, removeFile, FileTooLargeError, MAX_FILE_MB } from "@/lib/fileStorage";
 
 const MAX_ATTACHMENTS = 10;
 const FILE_ACCEPT = "image/*,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.zip";
@@ -124,7 +124,9 @@ async function openAttachment(a: AssignmentAttachment) {
   // Top-level navigation to data: URLs is blocked by browsers — go through a Blob URL.
   const blob = await (await fetch(dataUrl)).blob();
   const url = URL.createObjectURL(blob);
-  if (/^(image\/|application\/pdf|text\/)/.test(blob.type)) {
+  // Blob URLs run on this app's origin, so only open types that can't carry script (not HTML, not
+  // SVG); everything else downloads. Uploads are shared between users once they go to the backend.
+  if (/^(image\/(png|jpe?g|gif|webp|avif|bmp)|application\/pdf|text\/plain)$/.test(blob.type)) {
     window.open(url, "_blank", "noopener,noreferrer");
   } else {
     const link = document.createElement("a");
@@ -211,7 +213,7 @@ export function AttachmentsEditor({ items, onChange }: {
       for (const file of files) added.push(await storeAttachment(file));
     } catch (err) {
       setError(err instanceof FileTooLargeError
-        ? t("ไฟล์ใหญ่เกินไป (จำกัด 2MB ต่อไฟล์สำหรับ mock storage)", "File too large (2MB per file mock storage limit)")
+        ? t(`ไฟล์ใหญ่เกินไป (จำกัด ${MAX_FILE_MB}MB ต่อไฟล์)`, `File too large (${MAX_FILE_MB}MB per file limit)`)
         : t("แนบไฟล์ไม่สำเร็จ (พื้นที่เก็บข้อมูลอาจเต็ม)", "Couldn't attach the file (storage may be full)"));
     } finally {
       setUploading(false);
@@ -344,7 +346,7 @@ export function SubmissionFilesPicker({ items, onChange, accept, label, max = MA
       for (const file of picked) added.push(await storeAttachment(file));
     } catch (err) {
       setError(err instanceof FileTooLargeError
-        ? t("ไฟล์ใหญ่เกินไป (จำกัด 2MB ต่อไฟล์สำหรับ mock storage)", "File too large (2MB per file mock storage limit)")
+        ? t(`ไฟล์ใหญ่เกินไป (จำกัด ${MAX_FILE_MB}MB ต่อไฟล์)`, `File too large (${MAX_FILE_MB}MB per file limit)`)
         : t("แนบไฟล์ไม่สำเร็จ (พื้นที่เก็บข้อมูลอาจเต็ม)", "Couldn't attach the file (storage may be full)"));
     } finally {
       setBusy(false);
