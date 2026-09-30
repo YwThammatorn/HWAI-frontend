@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
 import { dateLocale } from "@/lib/dateLocale";
 import { useAuth } from "@/context/AuthContext";
+import { useCohortStudents } from "@/lib/cohort-students";
 import { useStudents, isWithdrawn } from "@/lib/students";
 import { courseTermStatus } from "@/lib/academicTerm";
 import { useCourses } from "@/lib/courses";
@@ -21,9 +22,19 @@ function fmtAnnouncementDate(iso: string, lang: string) {
   });
 }
 
+// Fixed per program, NOT the `t()` UI toggle — the 30/9/2569 rule ("...รวมไปถึง user ที่เรา login
+// อยู่...") is that a Thai-track student (CE/CECS) always sees their own program in Thai and a CEI
+// student always sees it in English, regardless of which language the rest of the chrome is in.
+const PROGRAM_HOME_NAME: Record<string, string> = {
+  CE: "วิศวกรรมคอมพิวเตอร์",
+  CECS: "วิศวกรรมคอมพิวเตอร์และความมั่นคงปลอดภัยไซเบอร์",
+  CEI: "Computer Engineering International",
+};
+
 export default function StudentHome() {
   const { t, lang } = useLanguage();
   const { user } = useAuth();
+  const { findByStudentId } = useCohortStudents();
   const { students } = useStudents();
   const { getCourse } = useCourses();
   const { getAssignmentsByCourse, getSubmissionsByAssignment } = useAssignments();
@@ -31,6 +42,8 @@ export default function StudentHome() {
   const { announcements } = useAnnouncements();
 
   const firstName = user?.name.split(" ")[0] ?? "";
+  const myProgram = user?.studentId ? findByStudentId(user.studentId)?.program : undefined;
+  const myProgramName = myProgram ? (PROGRAM_HOME_NAME[myProgram] ?? myProgram) : undefined;
 
   // The dashboard is about what is going on now: courses of finished terms, archived ones and ones the student
   // withdrew from live under "Completed courses" on the My Courses page (lib/academicTerm.ts).
@@ -117,9 +130,16 @@ export default function StudentHome() {
 
   return (
     <div className="p-6 w-full">
-        <h1 className="text-2xl font-bold text-[var(--text-primary)]">
-          {t(`สวัสดี, ${firstName}`, `Hi, ${firstName}`)} 👋
-        </h1>
+        <div className="flex items-center gap-3 flex-wrap">
+          <h1 className="text-2xl font-bold text-[var(--text-primary)]">
+            {t(`สวัสดี, ${firstName}`, `Hi, ${firstName}`)} 👋
+          </h1>
+          {myProgramName && (
+            <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-[var(--accent-bright)]/15 text-[var(--accent)]">
+              {myProgramName}
+            </span>
+          )}
+        </div>
         <p className="mt-1 text-sm text-[var(--text-muted)]">
           {t("ยินดีต้อนรับเข้าสู่พอร์ทัลนักศึกษา HWAI", "Welcome to the HWAI Student Portal")}
         </p>
