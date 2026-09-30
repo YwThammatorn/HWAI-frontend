@@ -192,7 +192,7 @@ function CourseModal({
             value={name}
             onChange={(e) => setName(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSave()}
-            placeholder={t("เช่น UX/UI Design", "e.g. UX/UI Design")}
+            placeholder="เช่น UX/UI Design"
             className="h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
           />
         </div>
@@ -204,7 +204,7 @@ function CourseModal({
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={3}
-            placeholder={t("อธิบายรายวิชาโดยย่อ (ไม่บังคับ)", "Brief description (optional)")}
+            placeholder="อธิบายรายวิชาโดยย่อ (ไม่บังคับ)"
             className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
           />
         </div>

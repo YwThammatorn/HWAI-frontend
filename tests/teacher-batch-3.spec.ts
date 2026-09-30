@@ -135,7 +135,7 @@ test.describe("Rubric — more than 3 levels", () => {
       (await card.locator("textarea[aria-label^='Layout — ']").evaluateAll((els) => els.map((e) => (e as HTMLTextAreaElement).value.length > 0))).every(Boolean),
     ).toBe(true);
 
-    await page.getByPlaceholder(/User Research Report/i).fill("Landing page");
+    await page.getByPlaceholder("เช่น รายงานการวิจัยผู้ใช้").fill("Landing page");
     await page.locator('input[type="date"]').fill("2099-12-31");
     await page.getByRole("button", { name: "Create Assignment" }).click();
     await expect(page).toHaveURL(/\/assignments\/(?!new)[^/]+$/, { timeout: 20_000 });

@@ -306,7 +306,7 @@ function TeacherModal({ open, onClose }: {
           <label htmlFor="teacher-title" className="text-sm font-medium text-[var(--text-primary)]">{t("ยศ/ตำแหน่งทางวิชาการ", "Academic Title")}</label>
           <input id="teacher-title" type="text" value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder={t("เช่น ผศ.ดร., รศ., ดร. (เว้นว่างได้)", "e.g. Prof., Dr. (optional)")}
+            placeholder="เช่น ผศ.ดร., รศ., ดร. (เว้นว่างได้)"
             className="h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-app)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]" />
         </div>
         <div className="flex flex-col gap-1.5">
@@ -315,7 +315,7 @@ function TeacherModal({ open, onClose }: {
           </label>
           <input id="teacher-name" type="text" value={name}
             onChange={(e) => { setName(e.target.value); setErrors((p) => ({ ...p, name: undefined })); }}
-            placeholder={t("เช่น สมชาย ใจดี", "e.g. John Smith")}
+            placeholder="เช่น สมชาย ใจดี"
             aria-describedby={errors.name ? "teacher-name-err" : undefined}
             aria-invalid={!!errors.name} aria-required="true" autoFocus
             className="h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-app)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]" />
@@ -868,7 +868,7 @@ function TeachersTab() {
                   <td className="px-3 py-1 text-[var(--text-secondary)]">
                     {isEditing ? (
                       <input value={draftTitle} onChange={(e) => setDraftTitle(e.target.value)}
-                        aria-label={t("ยศ", "Title")} placeholder={t("ไม่มี", "None")} className={inputClass} />
+                        aria-label={t("ยศ", "Title")} placeholder="ไม่มี" className={inputClass} />
                     ) : (
                       <span className="truncate">{teacher.title || "—"}</span>
                     )}
@@ -1082,14 +1082,14 @@ function AddStudentModal({ open, onClose }: {
               <label htmlFor="sfn" className={labelClass}>{t("ชื่อ", "First Name")} <span aria-hidden="true" className="text-[var(--s-err-text)]">*</span></label>
               <input id="sfn" type="text" value={firstName}
                 onChange={(e) => { setFirstName(e.target.value); setErrors((p) => ({ ...p, firstName: "" })); }}
-                placeholder={t("สมชาย", "John")} aria-invalid={!!errors.firstName} className={fieldClass} />
+                placeholder="สมชาย" aria-invalid={!!errors.firstName} className={fieldClass} />
               {errors.firstName && <p role="alert" className="text-xs text-[var(--s-err-text)]">{errors.firstName}</p>}
             </div>
             <div className="flex flex-col gap-1.5">
               <label htmlFor="sln" className={labelClass}>{t("นามสกุล", "Last Name")} <span aria-hidden="true" className="text-[var(--s-err-text)]">*</span></label>
               <input id="sln" type="text" value={lastName}
                 onChange={(e) => { setLastName(e.target.value); setErrors((p) => ({ ...p, lastName: "" })); }}
-                placeholder={t("ใจดี", "Smith")} aria-invalid={!!errors.lastName} className={fieldClass} />
+                placeholder="ใจดี" aria-invalid={!!errors.lastName} className={fieldClass} />
               {errors.lastName && <p role="alert" className="text-xs text-[var(--s-err-text)]">{errors.lastName}</p>}
             </div>
         </div>

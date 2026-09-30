@@ -353,7 +353,7 @@ function CurriculumModal({
               type="number"
               value={effectiveTo}
               onChange={(e) => setEffectiveTo(e.target.value)}
-              placeholder={t("ยังใช้อยู่", "still in use")}
+              placeholder="ยังใช้อยู่"
               className="h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] tabular-nums focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
             />
           </div>
@@ -428,7 +428,7 @@ function CourseTemplateModal({
             ref={codeRef}
             value={code}
             onChange={(e) => setCode(e.target.value)}
-            placeholder={t("เช่น 01076312", "e.g. 01076312")}
+            placeholder="เช่น 01076312"
             className="h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] tabular-nums focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
           />
         </div>
@@ -440,7 +440,7 @@ function CourseTemplateModal({
             value={name}
             onChange={(e) => setName(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSave()}
-            placeholder={t("เช่น การออกแบบ UX/UI", "e.g. UX/UI Design")}
+            placeholder="เช่น การออกแบบ UX/UI"
             className="h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
           />
         </div>
@@ -450,7 +450,7 @@ function CourseTemplateModal({
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={3}
-            placeholder={t("อธิบายรายวิชาโดยย่อ (ไม่บังคับ)", "Brief description (optional)")}
+            placeholder="อธิบายรายวิชาโดยย่อ (ไม่บังคับ)"
             className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
           />
         </div>

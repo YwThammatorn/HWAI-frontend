@@ -77,7 +77,7 @@ test("cold start: a student forms a team, submits, the teacher grades once, and 
 
   // Form a team with a real classmate from the roster.
   await page.getByRole("button", { name: /form a team/i }).click();
-  await page.getByPlaceholder(/team alpha/i).fill("Poster Squad");
+  await page.getByPlaceholder("เช่น ทีม A").fill("Poster Squad");
   await page.getByText("Beam Song").click();
   await page.getByRole("button", { name: /create team/i }).click();
   await expect(page.getByText("Poster Squad")).toBeVisible();

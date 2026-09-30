@@ -262,7 +262,7 @@ export default function CourseDetailPage() {
                   <input
                     value={detailsRoom}
                     onChange={(e) => setDetailsRoom(e.target.value)}
-                    placeholder={t("เช่น 811", "e.g. 811")}
+                    placeholder="เช่น 811"
                     className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
                   />
                 </div>
@@ -343,7 +343,7 @@ export default function CourseDetailPage() {
                         <input
                           value={catName}
                           onChange={(e) => setCatName(e.target.value)}
-                          placeholder={t("เช่น Midterm", "e.g. Midterm")}
+                          placeholder="เช่น Midterm"
                           autoFocus
                           className="w-full px-2.5 py-1.5 rounded-lg border border-[var(--accent)]/40 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 transition-colors"
                         />
@@ -424,7 +424,7 @@ export default function CourseDetailPage() {
                       <input
                         value={catName}
                         onChange={(e) => setCatName(e.target.value)}
-                        placeholder={t("เช่น Midterm", "e.g. Midterm")}
+                        placeholder="เช่น Midterm"
                         autoFocus
                         className="w-full px-2.5 py-1.5 rounded-lg border border-[var(--accent)]/40 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 transition-colors"
                       />

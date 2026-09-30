@@ -241,7 +241,7 @@ export default function RegisterPage() {
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder={t("เช่น สมชาย ใจดี", "e.g. Jane Doe")}
+                  placeholder="เช่น สมชาย ใจดี"
                   className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm text-[var(--text-primary)] placeholder-gray-400 bg-white focus:outline-none focus:border-[var(--accent-bright)] focus:ring-2 focus:ring-[var(--accent-bright)]/20 transition-colors"
                 />
               </div>
@@ -286,7 +286,7 @@ export default function RegisterPage() {
                   type={showPw ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder={t("อย่างน้อย 8 ตัวอักษร", "Min. 8 characters")}
+                  placeholder="อย่างน้อย 8 ตัวอักษร"
                   autoComplete="new-password"
                   className="w-full pl-10 pr-11 py-3 rounded-xl border border-gray-200 text-sm text-[var(--text-primary)] placeholder-gray-400 bg-white focus:outline-none focus:border-[var(--accent-bright)] focus:ring-2 focus:ring-[var(--accent-bright)]/20 transition-colors"
                 />
@@ -326,7 +326,7 @@ export default function RegisterPage() {
                   type={showConfirm ? "text" : "password"}
                   value={confirm}
                   onChange={(e) => setConfirm(e.target.value)}
-                  placeholder={t("อย่างน้อย 8 ตัวอักษร", "Min. 8 characters")}
+                  placeholder="อย่างน้อย 8 ตัวอักษร"
                   autoComplete="new-password"
                   className="w-full pl-10 pr-11 py-3 rounded-xl border border-gray-200 text-sm text-[var(--text-primary)] placeholder-gray-400 bg-white focus:outline-none focus:border-[var(--accent-bright)] focus:ring-2 focus:ring-[var(--accent-bright)]/20 transition-colors"
                 />

@@ -407,7 +407,7 @@ function ClassworkDetail() {
                         type="url"
                         value={linkValue}
                         onChange={(e) => setLinkValue(e.target.value)}
-                        placeholder={t("เช่น ลิงก์ Figma, GitHub, Google Docs", "e.g. Figma, GitHub, or Google Docs link")}
+                        placeholder="เช่น ลิงก์ Figma, GitHub, Google Docs"
                         aria-invalid={linkInvalid}
                         className="w-full h-9 px-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
                       />

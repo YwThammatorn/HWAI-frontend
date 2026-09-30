@@ -179,7 +179,7 @@ export default function TeacherAnnouncementsPage() {
                   <input
                     value={title}
                     onChange={e => setTitle(e.target.value)}
-                    placeholder={t("เช่น เลื่อนกำหนดส่งงาน", "e.g. Deadline extended")}
+                    placeholder="เช่น เลื่อนกำหนดส่งงาน"
                     className="w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
                   />
                 </div>

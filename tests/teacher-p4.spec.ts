@@ -121,7 +121,7 @@ test.describe("P4 — Course Landing: Details + Grading Categories", () => {
     await page.goto(`${BASE}/teacher/courses/c-p4`);
     await page.waitForLoadState("networkidle");
     await page.getByRole("button", { name: /Add Category/i }).click();
-    await page.getByPlaceholder("e.g. Midterm").fill("Quiz");
+    await page.getByPlaceholder("เช่น Midterm").fill("Quiz");
     await page.getByPlaceholder("30").fill("10");
     await page.getByRole("button", { name: /^Save$/i }).click();
     await expect(page.getByText("Quiz")).toBeVisible();
@@ -145,7 +145,7 @@ test.describe("P4 — Weekly Teaching Plan", () => {
     await page.waitForLoadState("networkidle");
     await page.getByRole("button", { name: /Add Week/i }).click();
     await expect(page.locator('input[type="number"]')).toHaveValue("2");
-    await page.getByPlaceholder(/Python fundamentals/i).fill("Wireframing basics");
+    await page.getByPlaceholder("เช่น พื้นฐานภาษา Python").fill("Wireframing basics");
     await page.getByRole("button", { name: /^Save$/i }).click();
     await expect(page.getByText("W2")).toBeVisible();
     await expect(page.getByText("Wireframing basics")).toBeVisible();
@@ -166,7 +166,7 @@ test.describe("P4 — Teaching Materials", () => {
     await page.goto(`${BASE}/teacher/courses/c-p4/materials`);
     await page.waitForLoadState("networkidle");
     await page.getByRole("button", { name: /Add Material/i }).click();
-    await page.getByPlaceholder(/Chapter 1 slides/i).fill("Recorded lecture week 2");
+    await page.getByPlaceholder("เช่น สไลด์บทที่ 1").fill("Recorded lecture week 2");
     await page.getByPlaceholder("https://...").fill("https://example.com/recording.mp4");
     await page.getByRole("button", { name: /^Save$/i }).click();
     await expect(page.getByText("Recorded lecture week 2")).toBeVisible();
@@ -188,7 +188,7 @@ test.describe("P4 — Announcements: authoring and section scoping", () => {
     await page.goto(`${BASE}/teacher/courses/c-p4/announcements`);
     await page.waitForLoadState("networkidle");
     await page.getByRole("button", { name: /New Announcement/i }).click();
-    await page.getByPlaceholder(/Deadline extended/i).fill("Reminder");
+    await page.getByPlaceholder("เช่น เลื่อนกำหนดส่งงาน").fill("Reminder");
     await page.locator("textarea").fill("Bring your laptops next week.");
     await page.getByRole("button", { name: /^Post$/i }).click();
     await expect(page.getByText("Reminder")).toBeVisible();
@@ -201,7 +201,7 @@ test.describe("P4 — Announcements: authoring and section scoping", () => {
     await page.getByRole("button", { name: /New Announcement/i }).click();
     await expect(page.getByText(/Also reaches: Sec\. 2/i)).toBeVisible();
 
-    await page.getByPlaceholder(/Deadline extended/i).fill("Midterm moved");
+    await page.getByPlaceholder("เช่น เลื่อนกำหนดส่งงาน").fill("Midterm moved");
     await page.locator("textarea").fill("Midterm is now on the 20th for all sections.");
     await page.getByText(/All sections of this subject/i).click();
     await page.getByRole("button", { name: /^Post$/i }).click();

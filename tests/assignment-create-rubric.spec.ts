@@ -23,7 +23,7 @@ async function seedTeacher(page: Page) {
 }
 
 async function fillBasics(page: Page) {
-  await page.getByPlaceholder(/User Research Report/i).fill("Landing page redesign");
+  await page.getByPlaceholder("เช่น รายงานการวิจัยผู้ใช้").fill("Landing page redesign");
   await page.locator('input[type="date"]').fill("2099-12-31");
 }
 
@@ -107,8 +107,8 @@ test.describe("New assignment — rubric on the same page", () => {
   test("AI assistant asks for a brief first, pre-filled from the name and description already typed", async ({ page }) => {
     await page.goto(`${BASE}/teacher/courses/c-rub/assignments/new`);
     await page.waitForLoadState("networkidle");
-    await page.getByPlaceholder(/User Research Report/i).fill("Landing page redesign");
-    await page.getByPlaceholder(/Describe the objectives/i).fill("Redesign the landing page in Figma and export a PDF");
+    await page.getByPlaceholder("เช่น รายงานการวิจัยผู้ใช้").fill("Landing page redesign");
+    await page.getByPlaceholder("อธิบายวัตถุประสงค์ รูปแบบไฟล์ที่ต้องส่ง เกณฑ์เบื้องต้น ฯลฯ").fill("Redesign the landing page in Figma and export a PDF");
 
     await page.getByRole("button", { name: /AI Rubric Assistant/i }).click();
     const dialog = page.getByRole("dialog", { name: "AI Rubric Assistant" });
@@ -126,8 +126,8 @@ test.describe("New assignment — rubric on the same page", () => {
   test("Fill from assignment pulls the name, description and attachments into the brief without clobbering typed text", async ({ page }) => {
     await page.goto(`${BASE}/teacher/courses/c-rub/assignments/new`);
     await page.waitForLoadState("networkidle");
-    await page.getByPlaceholder(/User Research Report/i).fill("Landing page redesign");
-    await page.getByPlaceholder(/Describe the objectives/i).fill("Redesign it in Figma");
+    await page.getByPlaceholder("เช่น รายงานการวิจัยผู้ใช้").fill("Landing page redesign");
+    await page.getByPlaceholder("อธิบายวัตถุประสงค์ รูปแบบไฟล์ที่ต้องส่ง เกณฑ์เบื้องต้น ฯลฯ").fill("Redesign it in Figma");
     await page.locator('input[type="file"]').setInputFiles({ name: "brief.pdf", mimeType: "application/pdf", buffer: Buffer.from("%PDF-1.4 test") });
     await page.getByRole("button", { name: "Add link" }).click();
     await page.getByLabel("Link URL").fill("figma.com/file/abc123");

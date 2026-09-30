@@ -329,7 +329,7 @@ export default function RubricCriteriaEditor({
                   value={c.name}
                   onChange={(e) => updateCriterion(c.id, "name", e.target.value)}
                   className="flex-1 min-w-0 text-sm font-semibold text-[var(--text-primary)] bg-transparent border-0 outline-none focus:bg-gray-50 rounded-lg px-2 py-1 -ml-2 transition-colors placeholder:text-gray-300"
-                  placeholder={t("ชื่อเกณฑ์", "Criterion name")}
+                  placeholder="ชื่อเกณฑ์"
                   aria-label={t("ชื่อเกณฑ์", "Criterion name")}
                 />
                 <div className="flex items-center gap-2 shrink-0">
@@ -391,10 +391,7 @@ export default function RubricCriteriaEditor({
                   value={c.description}
                   onChange={(e) => updateCriterion(c.id, "description", e.target.value)}
                   rows={2}
-                  placeholder={t(
-                    "อธิบายสิ่งที่นักศึกษาต้องแสดงในเกณฑ์นี้...",
-                    "Describe what students must demonstrate for this criterion..."
-                  )}
+                  placeholder="อธิบายสิ่งที่นักศึกษาต้องแสดงในเกณฑ์นี้..."
                   className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm text-[var(--text-primary)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors placeholder:text-gray-300"
                 />
               </div>
@@ -432,7 +429,7 @@ export default function RubricCriteriaEditor({
                         value={lv.description}
                         onChange={(e) => updateLevel(c.id, li, "description", e.target.value)}
                         rows={2}
-                        placeholder={t("อธิบายลักษณะงาน...", "Describe work characteristics...")}
+                        placeholder="อธิบายลักษณะงาน..."
                         aria-label={`${c.name || t("เกณฑ์", "Criterion")} — ${levelName}`}
                         className="w-full text-xs text-gray-600 resize-none border-0 outline-none bg-transparent placeholder:text-gray-300 leading-relaxed"
                       />
@@ -542,7 +539,7 @@ export default function RubricCriteriaEditor({
               value={aiBrief}
               onChange={(e) => setAiBrief(e.target.value)}
               rows={6}
-              placeholder={t("เช่น รายงานวิเคราะห์ผู้ใช้ ต้องมีการสัมภาษณ์ สรุป insight และข้อเสนอแนะการออกแบบ", "e.g. A user-research report with interviews, key insights and design recommendations")}
+              placeholder="เช่น รายงานวิเคราะห์ผู้ใช้ ต้องมีการสัมภาษณ์ สรุป insight และข้อเสนอแนะการออกแบบ"
               className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] text-sm text-[var(--text-primary)] leading-relaxed resize-y focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
             />
             <p className="text-xs text-[var(--text-muted)] mt-1.5">

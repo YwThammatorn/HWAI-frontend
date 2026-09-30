@@ -124,7 +124,7 @@ export default function TeamFormationModal({
             ref={nameRef}
             value={name}
             onChange={(e) => { setName(e.target.value); setError(null); }}
-            placeholder={t("เช่น ทีม A", "e.g. Team Alpha")}
+            placeholder="เช่น ทีม A"
             className="w-full h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
           />
           {error && <p className="text-xs text-[var(--s-err-text)] mt-1.5">{error}</p>}

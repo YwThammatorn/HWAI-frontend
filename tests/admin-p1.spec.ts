@@ -338,7 +338,7 @@ test.describe("P1c — Admin Courses (/admin/courses)", () => {
     await page.getByRole("button", { name: "Add Section" }).click();
     const dialog = page.getByRole("dialog", { name: "Add Section" });
     await expect(dialog.getByText('Adding sections to "Software Engineering"')).toBeVisible();
-    await expect(dialog.getByPlaceholder("e.g. UX/UI Design")).toHaveValue("Software Engineering");
+    await expect(dialog.getByPlaceholder("เช่น UX/UI Design")).toHaveValue("Software Engineering");
     await expect(dialog.getByLabel("Primary Teacher")).toHaveValue("");
     await expect(dialog.getByRole("button", { name: "Create Course" })).toBeDisabled();
 
@@ -359,7 +359,7 @@ test.describe("P1c — Admin Courses (/admin/courses)", () => {
     await gotoPage(page, "/admin/courses");
     await page.getByRole("button", { name: "New Course" }).first().click();
     const dialog = page.getByRole("dialog", { name: "New Course" });
-    await dialog.getByPlaceholder("e.g. UX/UI Design").fill("Web Design");
+    await dialog.getByPlaceholder("เช่น UX/UI Design").fill("Web Design");
     await expect(dialog.getByRole("button", { name: "Create Course" })).toBeDisabled();
 
     const teacherField = dialog.getByLabel("Primary Teacher");
