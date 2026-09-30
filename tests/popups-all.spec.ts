@@ -229,7 +229,7 @@ test.describe("Popup behaviour worth its own check", () => {
     await goto(page, "/student/courses/c-po/classwork/a-po");
     await page.getByRole("button", { name: "Form a team" }).click();
     const dialog = page.getByRole("dialog", { name: "Form a team" });
-    await dialog.getByPlaceholder(/Team Alpha/).fill("Prototype Pals");
+    await dialog.getByPlaceholder("เช่น ทีม A").fill("Prototype Pals");
     await dialog.getByText("Beam Suk").click();
     await dialog.getByRole("button", { name: "Create team" }).click();
     await expect(dialog).toHaveCount(0);

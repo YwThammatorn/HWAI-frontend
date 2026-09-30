@@ -207,7 +207,7 @@ export default function TeachingMaterialsPage() {
                   <input
                     value={title}
                     onChange={e => setTitle(e.target.value)}
-                    placeholder={t("เช่น สไลด์บทที่ 1", "e.g. Chapter 1 slides")}
+                    placeholder="เช่น สไลด์บทที่ 1"
                     className="w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
                   />
                 </div>

@@ -28,7 +28,7 @@ async function open(page: Page, courses: unknown[] = []) {
   await page.waitForLoadState("networkidle");
   await page.getByRole("button", { name: "New Course" }).first().click();
   const dialog = page.getByRole("dialog", { name: "New Course" });
-  await dialog.getByPlaceholder("e.g. UX/UI Design").fill("Web Design");
+  await dialog.getByPlaceholder("เช่น UX/UI Design").fill("Web Design");
   return dialog;
 }
 

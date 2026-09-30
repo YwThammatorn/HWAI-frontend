@@ -164,7 +164,7 @@ export default function NewAssignmentPage() {
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder={t("เช่น รายงานการวิจัยผู้ใช้", "e.g. User Research Report")}
+              placeholder="เช่น รายงานการวิจัยผู้ใช้"
               className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
               required
             />
@@ -176,7 +176,7 @@ export default function NewAssignmentPage() {
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder={t("อธิบายวัตถุประสงค์ รูปแบบไฟล์ที่ต้องส่ง เกณฑ์เบื้องต้น ฯลฯ", "Describe the objectives, file format, grading criteria, etc.")}
+              placeholder="อธิบายวัตถุประสงค์ รูปแบบไฟล์ที่ต้องส่ง เกณฑ์เบื้องต้น ฯลฯ"
               className="w-full flex-1 min-h-[100px] px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] resize-none transition-colors"
             />
             <AttachmentsEditor items={att.items} onChange={att.setItems} />

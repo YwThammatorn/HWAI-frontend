@@ -112,7 +112,7 @@ test.describe("P6 — Forming and sharing a team", () => {
     await page.goto(`${BASE}/student/courses/c-p6/classwork/a-p6-1`);
     await page.waitForLoadState("networkidle");
     await page.getByRole("button", { name: /form a team/i }).click();
-    await page.getByPlaceholder(/team alpha/i).fill("Prototype Pals");
+    await page.getByPlaceholder("เช่น ทีม A").fill("Prototype Pals");
     await page.getByText("Beam Suk").click();
     await page.getByRole("button", { name: /create team/i }).click();
 

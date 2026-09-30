@@ -271,7 +271,7 @@ function GradingAssignmentModal({
                     value={weekInput}
                     onChange={(e) => { setWeekInput(e.target.value); setWeekError(""); }}
                     onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addWeek(); } }}
-                    placeholder={t("เช่น 3", "e.g. 3")}
+                    placeholder="เช่น 3"
                     aria-invalid={weekError !== ""}
                     className={`h-10 px-5 rounded-xl border bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] tabular-nums focus:outline-none focus:ring-2 ${weekError ? "border-[var(--s-err-bd)] focus:ring-[var(--s-err-bd)]" : "border-[var(--border-subtle)] focus:ring-[var(--accent-bright)]"}`}
                   />

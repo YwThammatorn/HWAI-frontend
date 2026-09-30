@@ -287,7 +287,7 @@ export function AttachmentsEditor({ items, onChange }: {
             value={linkTitle}
             onChange={(e) => setLinkTitle(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addLink(); } }}
-            placeholder={t("ชื่อที่แสดง (ไม่บังคับ)", "Display name (optional)")}
+            placeholder="ชื่อที่แสดง (ไม่บังคับ)"
             aria-label={t("ชื่อที่แสดง", "Display name")}
             className={input}
           />

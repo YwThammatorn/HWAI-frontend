@@ -508,7 +508,7 @@ export default function ResultsPage() {
                 value={feedbackText}
                 onChange={(e) => setFeedbackText(e.target.value)}
                 rows={5}
-                placeholder={t("แชร์ความคิดเห็นเกี่ยวกับคุณภาพการตรวจของ AI...", "Share your feedback on the AI grading quality...")}
+                placeholder="แชร์ความคิดเห็นเกี่ยวกับคุณภาพการตรวจของ AI..."
                 className="w-full px-3 py-2 text-xs border border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors text-[var(--text-primary)] placeholder:text-gray-300"
               />
               <button

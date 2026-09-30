@@ -111,7 +111,7 @@ export default function NewCoursePage() {
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder={t("เช่น หลักการออกแบบ UX/UI", "e.g. UX/UI Design Principles")}
+                placeholder="เช่น หลักการออกแบบ UX/UI"
                 className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
                 required
               />
@@ -122,7 +122,7 @@ export default function NewCoursePage() {
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder={t("คำอธิบายสั้นๆ เกี่ยวกับรายวิชา...", "Brief description of the course...")}
+                placeholder="คำอธิบายสั้นๆ เกี่ยวกับรายวิชา..."
                 rows={3}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] resize-none transition-colors"
               />
@@ -193,7 +193,7 @@ export default function NewCoursePage() {
                   <input
                     value={sectionNumber}
                     onChange={(e) => setSectionNumber(e.target.value)}
-                    placeholder={t("เช่น 1", "e.g. 1")}
+                    placeholder="เช่น 1"
                     className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
                   />
                 </div>

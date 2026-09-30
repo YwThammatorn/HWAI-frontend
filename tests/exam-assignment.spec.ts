@@ -71,7 +71,7 @@ test.describe("Exam — teacher form", () => {
   test("turning on Exam removes the Due Date field, and Create no longer needs one", async ({ page }) => {
     await page.goto(`${BASE}/teacher/courses/c-exf/assignments/new`);
     await page.waitForLoadState("networkidle");
-    await page.getByPlaceholder(/User Research Report/i).fill("Final exam");
+    await page.getByPlaceholder("เช่น รายงานการวิจัยผู้ใช้").fill("Final exam");
     await expect(page.getByText("Due Date")).toBeVisible();
     await expect(page.getByRole("button", { name: "Create Assignment" })).toBeDisabled(); // a normal assignment needs a date
 

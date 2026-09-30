@@ -31,7 +31,7 @@ test.describe("Exam form hides the file controls", () => {
     await seed(page, "en", TEACHER);
     await page.goto(`${BASE}/teacher/courses/c-fx/assignments/new`);
     await page.waitForLoadState("networkidle");
-    await page.getByPlaceholder(/User Research Report/i).fill("Final exam");
+    await page.getByPlaceholder("เช่น รายงานการวิจัยผู้ใช้").fill("Final exam");
 
     await expect(page.getByRole("button", { name: "Accept Files" })).toBeVisible();
     await expect(page.getByText("Submission Type")).toBeVisible();
@@ -53,7 +53,7 @@ test.describe("Exam form hides the file controls", () => {
     await seed(page, "en", TEACHER);
     await page.goto(`${BASE}/teacher/courses/c-fx/assignments/new`);
     await page.waitForLoadState("networkidle");
-    await page.getByPlaceholder(/User Research Report/i).fill("Quiz");
+    await page.getByPlaceholder("เช่น รายงานการวิจัยผู้ใช้").fill("Quiz");
     await expect(page.getByText("Select at least one file type")).toHaveCount(0);
     // switch the two selected file types (Figma, PDF) off → a normal assignment can't be created…
     await page.getByRole("button", { name: "Figma", exact: true }).click();

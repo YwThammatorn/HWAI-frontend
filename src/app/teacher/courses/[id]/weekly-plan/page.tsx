@@ -217,7 +217,7 @@ export default function WeeklyPlanPage() {
                     <textarea
                       value={formTopic}
                       onChange={e => setFormTopic(e.target.value)}
-                      placeholder={t("เช่น พื้นฐานภาษา Python", "e.g. Python fundamentals")}
+                      placeholder="เช่น พื้นฐานภาษา Python"
                       rows={2}
                       className="w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] resize-none transition-colors"
                     />
@@ -229,7 +229,7 @@ export default function WeeklyPlanPage() {
                   <textarea
                     value={formNotes}
                     onChange={e => setFormNotes(e.target.value)}
-                    placeholder={t("เช่น แจกโจทย์แบบฝึกหัด, เตรียมสอบ ฯลฯ", "e.g. hand out worksheet, prep for exam")}
+                    placeholder="เช่น แจกโจทย์แบบฝึกหัด, เตรียมสอบ ฯลฯ"
                     rows={2}
                     className="w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] resize-none transition-colors"
                   />

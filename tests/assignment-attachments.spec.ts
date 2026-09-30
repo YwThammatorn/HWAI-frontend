@@ -35,7 +35,7 @@ test.describe("Assignment attachments — teacher form", () => {
     await page.goto(`${BASE}/teacher/courses/c-att/assignments/new`);
     await page.waitForLoadState("networkidle");
 
-    await page.getByPlaceholder(/User Research Report/i).fill("Landing page redesign");
+    await page.getByPlaceholder("เช่น รายงานการวิจัยผู้ใช้").fill("Landing page redesign");
     await page.locator('input[type="date"]').fill("2099-12-31");
 
     await page.locator('input[type="file"]').setInputFiles([

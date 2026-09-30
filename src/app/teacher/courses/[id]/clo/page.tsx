@@ -257,7 +257,7 @@ export default function CLOPage() {
               <textarea
                 value={formText}
                 onChange={e => setFormText(e.target.value)}
-                placeholder={t("นักศึกษาสามารถ...", "Students can...")}
+                placeholder="นักศึกษาสามารถ..."
                 rows={3}
                 className="w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] resize-none transition-colors"
               />

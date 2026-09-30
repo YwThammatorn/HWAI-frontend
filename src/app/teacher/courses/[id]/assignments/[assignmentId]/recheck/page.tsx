@@ -391,7 +391,7 @@ export default function RecheckPage() {
                           setSaved(false);
                         }}
                         rows={2}
-                        placeholder={t("เช่น AI ให้เข้มเกินไป เพราะ... (ไม่บังคับ)", "e.g. The AI was too strict because… (optional)")}
+                        placeholder="เช่น AI ให้เข้มเกินไป เพราะ... (ไม่บังคับ)"
                         className="w-full text-xs text-[var(--text-primary)] resize-none border border-gray-200 rounded-lg px-2.5 py-2 bg-white placeholder:text-gray-300 leading-relaxed focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
                       />
                     </div>
@@ -409,7 +409,7 @@ export default function RecheckPage() {
                 value={comment}
                 onChange={(e) => { setComment(e.target.value); setSaved(false); }}
                 rows={3}
-                placeholder={t("เพิ่มความคิดเห็นสำหรับนักศึกษา...", "Add a comment for the student...")}
+                placeholder="เพิ่มความคิดเห็นสำหรับนักศึกษา..."
                 className="w-full text-xs text-[var(--text-primary)] resize-none border-0 outline-none bg-transparent placeholder:text-gray-300 leading-relaxed"
               />
             </div>
