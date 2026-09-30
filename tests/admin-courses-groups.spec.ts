@@ -47,10 +47,10 @@ test.describe("Admin Courses — grouped by curriculum, then subject", () => {
       "(Revised 2568)", "(Revised 2563)",                                                // CEI — still English
       "No curriculum",
     ]);
-    // the program chip's text runs straight into the label
-    expect(heads[0]).toMatch(/^CEวิศวกรรม/);
-    expect(heads[3]).toMatch(/^CECSวิศวกรรม/);
-    expect(heads[5]).toMatch(/^CEIComputer/);
+    // the program chip's text runs straight into the label — full program name, not the abbreviation (30/9/2569)
+    expect(heads[0]).toMatch(/^Computer Engineeringวิศวกรรม/);
+    expect(heads[3]).toMatch(/^Computer Engineering and Cybersecurityวิศวกรรม/);
+    expect(heads[5]).toMatch(/^Computer Engineering InternationalComputer/);
   });
 
   test("the same subject's sections sit together in one card, newest offering first", async ({ page }) => {

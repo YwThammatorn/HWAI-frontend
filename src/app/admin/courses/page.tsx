@@ -14,6 +14,15 @@ import FilterSelect from "@/components/FilterSelect";
 import { groupCourses, curriculumKeyOf, NO_CURRICULUM_KEY, type SubjectGroup, type CurriculumGroup } from "@/lib/courseGroups";
 import { useStudents } from "@/lib/students";
 
+// Same 3-entry map as admin/users.tsx, admin/curriculum/page.tsx and teacher/courses/[id]/students/page.tsx —
+// full program names instead of the CE/CECS/CEI abbreviation, used by both the curriculum group
+// heading badge and the Curriculum filter dropdown below (30/9/2569).
+function programLabel(p: Program, t: (th: string, en: string) => string): string {
+  if (p === "CE") return t("วิศวกรรมคอมพิวเตอร์", "Computer Engineering");
+  if (p === "CECS") return t("วิศวกรรมคอมพิวเตอร์และความมั่นคงปลอดภัยไซเบอร์", "Computer Engineering and Cybersecurity");
+  return t("วิศวกรรมคอมพิวเตอร์นานาชาติ", "Computer Engineering International");
+}
+
 // ── Course create/edit (centred popup) ─────────────────────────────────────────────────
 
 function CourseModal({
@@ -759,8 +768,8 @@ function CurriculumSection({
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="6 9 12 15 18 9"/></svg>
           </span>
           {group.version && (
-            <span className="text-[11px] font-bold tabular-nums px-2 py-0.5 rounded-md bg-[var(--accent-solid)] text-[var(--accent-solid-text)] shrink-0">
-              {group.version.program}
+            <span className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-[var(--accent-solid)] text-[var(--accent-solid-text)] shrink-0 whitespace-nowrap">
+              {programLabel(group.version.program, t)}
             </span>
           )}
           <span className="text-sm font-semibold text-[var(--text-primary)] min-w-0 truncate">
@@ -815,12 +824,10 @@ export default function AdminCoursesPage() {
   // added a second control to the same decision. Now Curriculum offers a "program:<X>" option per
   // program (grouped under an <optgroup>) alongside each specific curriculum version, in one select.
   const PROGRAM_ORDER = ["CE", "CECS", "CEI"] as const;
-  // Same 3-entry map as admin/users.tsx, admin/curriculum/page.tsx and teacher/courses/[id]/students/page.tsx —
-  // full program names instead of the CE/CECS/CEI abbreviation in this dropdown (30/9/2569).
   const PROGRAM_LABEL: Record<Program, string> = {
-    CE: t("วิศวกรรมคอมพิวเตอร์", "Computer Engineering"),
-    CECS: t("วิศวกรรมคอมพิวเตอร์และความมั่นคงปลอดภัยไซเบอร์", "Computer Engineering and Cybersecurity"),
-    CEI: t("วิศวกรรมคอมพิวเตอร์นานาชาติ", "Computer Engineering International"),
+    CE: programLabel("CE", t),
+    CECS: programLabel("CECS", t),
+    CEI: programLabel("CEI", t),
   };
   const programsPresent = PROGRAM_ORDER.filter((p) => allGroups.some((g) => g.version?.program === p));
   const curriculumValues = new Set<string>(["all", ...programsPresent.map((p) => `program:${p}`), ...allGroups.map((g) => g.key)]);
