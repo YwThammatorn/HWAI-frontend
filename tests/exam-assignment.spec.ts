@@ -118,7 +118,9 @@ test.describe("Exam — teacher enters the scores", () => {
     expect(subs[0]).toMatchObject({ assignmentId: "ex1", studentId: "69070301", instructorScore: 42, status: "graded", fileUrl: null });
     await expect(page.getByRole("row", { name: /Nok Exam/ }).getByText("Scored")).toBeVisible();
     await expect(page.getByRole("row", { name: /Pim Exam/ }).getByText("Not scored")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Finish & announce" })).toHaveCount(0); // Pim still has no score
+    // Pim still has no score → the button is there, but disabled, and the note says how many are left
+    await expect(page.getByRole("button", { name: "Finish & announce" })).toBeDisabled();
+    await expect(page.getByRole("note")).toContainText("1 student");
   });
 
   test("a score above the maximum is rejected, and Finish & announce appears once everyone is scored", async ({ page }) => {
