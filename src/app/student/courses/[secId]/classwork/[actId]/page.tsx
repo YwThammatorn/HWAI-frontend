@@ -7,7 +7,9 @@ import { useLanguage } from "@/context/LanguageContext";
 import { dateLocale } from "@/lib/dateLocale";
 import { useAuth } from "@/context/AuthContext";
 import { useCourses } from "@/lib/courses";
-import { useAssignments, submissionAttachments, studentVisibleSubmission, AssignmentAttachment } from "@/lib/assignments";
+import { useAssignments, submissionAttachments, studentVisibleSubmission, achievedLevelIndex, AssignmentAttachment } from "@/lib/assignments";
+import { computeExamStats } from "@/lib/examStats";
+import ExamStatsCard from "@/components/ExamStatsCard";
 import { removeFile } from "@/lib/fileStorage";
 import { useStudents } from "@/lib/students";
 import { useStudentGroups } from "@/lib/studentGroups";
@@ -87,6 +89,9 @@ function ClassworkDetail() {
   // What each rubric criterion earned — only real per-criterion scores the teacher saved (a graded submission is
   // already masked to nothing until results are announced), never an estimate.
   const earnedByCriterion = isGraded ? mySubmission?.criterionScores : undefined;
+  // Class min / average / max / SD for an announced exam (null for anything else, and until results are announced)
+  const examStats = computeExamStats(assignment, allSubs);
+  const examResultShown = !!examStats && isGraded;
   // A link is always offered when the assignment accepts attachments at all —
   // not just for fileTypes that include "figma" — since plenty of valid
   // submissions are links regardless of tool (GitHub repo, Google Doc, etc).
@@ -175,7 +180,7 @@ function ClassworkDetail() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
           {/* Left: Assignment info */}
-          <div className="lg:col-span-2 flex flex-col gap-4">
+          <div className={`${examResultShown ? "lg:col-span-3" : "lg:col-span-2"} flex flex-col gap-4`}>
             <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-5">
               <div className="flex items-start justify-between gap-3 mb-3">
                 <h1 className="text-xl font-bold text-[var(--text-primary)]">{assignment.name}</h1>
@@ -210,6 +215,17 @@ function ClassworkDetail() {
               )}
               <AttachmentList attachments={assignment.attachments} />
             </div>
+
+            {examStats && (
+              <ExamStatsCard
+                name={assignment.name}
+                maxPoints={assignment.maxPoints}
+                stats={examStats}
+                myScore={isGraded ? score : null}
+                comment={isGraded ? mySubmission?.instructorComment || undefined : undefined}
+                showName={false}
+              />
+            )}
 
             {/* Rubric — read-only, shows what the student will be graded on */}
             {rubrics.length > 0 && (
@@ -252,14 +268,20 @@ function ClassworkDetail() {
                       )}
                       {c.levels.length > 0 && (
                         <div className="grid gap-2 mt-2 [grid-template-columns:repeat(auto-fit,minmax(140px,1fr))]">
-                          {c.levels.map((lvl, i) => (
-                            <div key={i} className="rounded-lg bg-[var(--bg-app)] p-2">
-                              <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">{lvl.label}</p>
+                          {c.levels.map((lvl, i) => {
+                            const earned = earnedByCriterion?.[c.id];
+                            const mine = earned !== undefined && achievedLevelIndex(earned, c.maxPoints, c.levels.length) === i;
+                            return (
+                            <div key={i} aria-current={mine ? "true" : undefined}
+                              className={`rounded-lg p-2 ${mine ? "bg-[var(--accent-bright)]/10 border border-[var(--accent)]" : "bg-[var(--bg-app)] border border-transparent"}`}>
+                              {mine && <span className="mb-1 inline-block rounded-full bg-[var(--accent-solid)] px-2 py-0.5 text-[10px] font-semibold text-[var(--accent-solid-text)]">{t("ระดับของคุณ", "Your level")}</span>}
+                              <p className={`text-[10px] font-semibold uppercase tracking-wide ${mine ? "text-[var(--accent)]" : "text-[var(--text-muted)]"}`}>{lvl.label}</p>
                               {lvl.description && (
                                 <p className="text-[11px] text-[var(--text-secondary)] mt-0.5 leading-snug">{lvl.description}</p>
                               )}
                             </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       )}
                     </div>
@@ -269,7 +291,9 @@ function ClassworkDetail() {
             )}
           </div>
 
-          {/* Right: Submit section */}
+          {/* Right: Submit section — an exam with its score announced has nothing left to show here:
+              the score and the class comparison are in the stats card, so this column goes away. */}
+          {!examResultShown && (
           <div className="flex flex-col gap-4">
             {/* Team panel — only for group assignments */}
             {isGroup && (
@@ -453,6 +477,7 @@ function ClassworkDetail() {
               )}
             </div>
           </div>
+          )}
         </div>
       </div>
 

@@ -113,6 +113,16 @@ export const DEFAULT_LEVELS: CriterionLevel[] = [
   { label: "Needs Improvement", description: "" },
 ];
 
+/**
+ * Which level a score falls in. Levels carry no point ranges, only an order (best first), so the
+ * 0–max range is split evenly: with 3 levels, ≥ 2/3 of max is the 1st, ≥ 1/3 the 2nd, the rest the 3rd.
+ */
+export function achievedLevelIndex(earned: number, maxPoints: number, levelCount: number): number | null {
+  if (levelCount <= 0 || maxPoints <= 0) return null;
+  const clamped = Math.min(maxPoints, Math.max(0, earned));
+  return Math.min(levelCount - 1, Math.max(0, Math.ceil((levelCount * (maxPoints - clamped)) / maxPoints) - 1));
+}
+
 export interface RubricCriterion {
   id: string;
   name: string;

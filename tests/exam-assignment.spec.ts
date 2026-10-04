@@ -179,7 +179,8 @@ test.describe("Exam — student side", () => {
     await seed(page, "student", { submissions: [graded("69070301", 42)], announced: true });
     await page.goto(`${BASE}/student/courses/c-ex/classwork/ex1`);
     await page.waitForLoadState("networkidle");
-    await expect(page.getByText("42/50")).toBeVisible();
+    // the score now lives in the class-statistics card (the "My Work" card is gone for a scored exam)
+    await expect(page.getByText("42 / 50")).toBeVisible();
     await expect(page.getByText("Waiting for your exam score")).toHaveCount(0);
     await expect(page.getByRole("button", { name: /^(Submit|Resubmit)$/ })).toHaveCount(0);
   });
