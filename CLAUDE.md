@@ -19,8 +19,8 @@
 
 ## Current active task
 _(อัปเดตช่องนี้ทุกครั้งที่เริ่ม task ใหม่ — ดูรายละเอียดที่ HANDOFF.md)_
-- Task (29/9): student — rubric breakdown mock for finished/past courses; admin Courses — Program/Curriculum filter "only one option" root cause (seed command [2] never loaded curriculum data), "curricula"→"curriculum" rename, Term filter split into Year + Term.
-- Status: code + mock data done, tsc clean, `admin-courses-groups.spec.ts` (16) + `student-my-courses-terms.spec.ts` green; full suite run + commit/push pending — see HANDOFF.md. All prior rounds fully done and pushed.
+- Task (4/10): student exam results (class stats card + animated bell curve + rubric "Your level"), teacher grading page (visible Finish & announce state, boxed status filter, readable scores), c-mock-1 grown to 42 students with realistic scores — console command [15] in test-data/seed-commands.txt.
+- Status: all committed and pushed; full suite 539 passed / 30 skipped; details and the announce-state lesson in HANDOFF.md (last section). Open offers listed there.
 
 # i18n Rule (TH/EN Language Toggle)
 
