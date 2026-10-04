@@ -3,6 +3,8 @@
 import { usePathname } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
 import { WEEKLY_PLAN_DISABLED, MATERIALS_DISABLED, ANNOUNCEMENTS_DISABLED } from "@/lib/featureFlags";
+import { termLine } from "@/lib/academicTerm";
+import type { Term } from "@/lib/courses";
 import { SidebarNavItem, SidebarSectionLabel, SidebarCourseHeader, SIDEBAR_CLASS } from "@/components/SidebarParts";
 
 // Same layout, sizes and icon shapes as the teacher sidebar (25/9/2569) — both are built from
@@ -26,6 +28,8 @@ interface CourseLink {
   name: string;
   code?: string;
   sectionNumber?: string;
+  academicYear?: number;
+  term?: Term;
 }
 
 interface StudentSidebarProps {
@@ -66,6 +70,7 @@ export default function StudentSidebar({ courses = [] }: StudentSidebarProps) {
             backLabel={t("กลับหน้าหลัก", "Back to main")}
             code={activeCourse?.code}
             name={courseName}
+            termLine={activeCourse ? termLine(activeCourse, t) : undefined}
             section={activeCourse?.sectionNumber ? t(`กลุ่มเรียน ${activeCourse.sectionNumber}`, `Section ${activeCourse.sectionNumber}`) : undefined}
           />
           <nav className="flex flex-col gap-0.5 mb-4" aria-label={courseName}>

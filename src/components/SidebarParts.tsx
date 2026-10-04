@@ -46,11 +46,12 @@ export function SidebarSectionLabel({ children }: { children: React.ReactNode })
  * screenshots): a full-bleed header block — back link, course code big, course name, section —
  * followed by the course's pages. Same block for Teacher and Student.
  */
-export function SidebarCourseHeader({ backHref, backLabel, code, name, section }: {
+export function SidebarCourseHeader({ backHref, backLabel, code, name, termLine, section }: {
   backHref: string;
   backLabel: string;
   code?: string;
   name: string;
+  termLine?: string;
   section?: string;
 }) {
   return (
@@ -64,7 +65,8 @@ export function SidebarCourseHeader({ backHref, backLabel, code, name, section }
       </Link>
       <p className="text-xl font-bold leading-tight text-white tabular-nums break-words">{code ?? name}</p>
       {code && <p className="mt-1 text-sm font-medium leading-snug text-white/90 line-clamp-3">{name}</p>}
-      {section && <p className="mt-3 rounded-full bg-white px-3 py-1.5 text-xs font-medium text-[var(--sidebar-bg)] truncate">{section}</p>}
+      {termLine && <p className="mt-2.5 text-xs font-normal leading-snug text-white/70 tabular-nums">{termLine}</p>}
+      {section && <p className="mt-4 rounded-full bg-white px-3 py-1.5 text-xs font-medium text-[var(--sidebar-bg)] truncate">{section}</p>}
     </div>
   );
 }
