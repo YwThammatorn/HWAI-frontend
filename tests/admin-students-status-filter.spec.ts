@@ -334,7 +334,7 @@ test.describe("Students mock data (batches 66-69)", () => {
     await open(page, "en", rdJson("students-mockup-en.json"));
     await page.getByRole("button", { name: "Deactivate batch" }).click();
     const dialog = page.getByRole("dialog", { name: "Deactivate a whole batch" });
-    await expect(dialog.getByLabel(/^Batch/).locator("option")).toHaveText(["Batch 66 — 10 active", "Batch 67 — 10 active", "Batch 68 — 12 active", "Batch 69 — 19 active"]);
+    await expect(dialog.getByLabel(/^Batch/).locator("option")).toHaveText(["Batch 66 — 10 active", "Batch 67 — 10 active", "Batch 68 — 12 active", "Batch 69 — 47 active"]);
     await dialog.getByLabel("Program").selectOption({ label: "Computer Engineering International — 2" });
     await expect(dialog.getByRole("button", { name: "Deactivate 2 students" })).toBeVisible();
   });

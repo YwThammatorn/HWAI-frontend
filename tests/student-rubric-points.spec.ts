@@ -132,7 +132,7 @@ test("the student-flow mock: every graded submission has criterion scores that a
       }
       checked++;
     }
-    expect(checked, f).toBe(7);
+    expect(checked, f).toBe(175);
   }
   // public and test-data copies stay identical
   for (const n of ["student-flow-mockup.json", "student-flow-mockup-en.json"]) {
