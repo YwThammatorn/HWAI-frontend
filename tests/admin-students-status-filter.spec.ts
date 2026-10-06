@@ -3,9 +3,13 @@ import fs from "fs";
 
 const BASE = "http://localhost:3000";
 
-// 26/9/2569 — admin Users → Students: inactive students are hidden by default and a single "Show inactive (n)"
-// switch in the filter row brings them in below the active ones (a second tab bar under Teachers/Students was
-// redundant). A long program name (Computer Engineering and Cybersecurity) wraps instead of being clipped.
+// 26/9/2569 — admin Users → Students: inactive students were hidden by default behind a single
+// "Show inactive (n)" switch in the filter row, which brought them in below the active ones.
+// 30/9/2569 — replaced with two subtabs (Active / Inactive), same PillTabBar as Teachers/Students
+// itself and the teacher roster's Enrolled/Withdrawn: a status is never ambiguous from the row
+// alone, and a search that only matches the other tab jumps there automatically (see the last
+// describe block below). A long program name (Computer Engineering and Cybersecurity) still wraps
+// instead of being clipped.
 
 const mk = (n: number, program: string, status?: string) => ({
   id: `s-${n}`, studentId: `6907${String(n).padStart(4, "0")}`, firstName: `Name${n}`, lastName: "Test",
@@ -28,57 +32,85 @@ async function open(page: Page, lang: "en" | "th" = "en", students: unknown[] = 
 }
 
 const rows = (page: Page) => page.getByRole("row").filter({ hasText: "Test" });
-const toggle = (page: Page) => page.getByRole("switch", { name: /Show inactive|แสดงที่พ้นสภาพ/ });
+const activeTab = (page: Page) => page.getByRole("tab", { name: /^Active|^ปกติ/ });
+const inactiveTab = (page: Page) => page.getByRole("tab", { name: /^Inactive|^พ้นสภาพ/ });
 
-test("inactive students are hidden until 'Show inactive' is switched on, then they follow the active ones", async ({ page }) => {
+test("active and inactive students live on separate tabs, never mixed", async ({ page }) => {
   await open(page);
   await page.getByLabel("Filter by program").selectOption("CECS");
 
-  // default: only the active students (one has no status at all → counts as active), no second tab bar
-  await expect(page.getByRole("tablist", { name: "Student status" })).toHaveCount(0);
-  await expect(toggle(page)).toHaveAttribute("aria-checked", "false");
-  await expect(toggle(page)).toContainText("(1)");
+  // Active is the default tab; the bar itself only exists because CECS has an inactive student
+  await expect(activeTab(page)).toHaveAttribute("aria-selected", "true");
+  await expect(activeTab(page)).toContainText("2");
+  await expect(inactiveTab(page)).toContainText("1");
   await expect(rows(page)).toHaveCount(2);
   await expect(rows(page).getByText("Inactive", { exact: true })).toHaveCount(0);
 
-  await toggle(page).click();
-  await expect(toggle(page)).toHaveAttribute("aria-checked", "true");
-  await expect(rows(page)).toHaveCount(3);
-  // active first, inactive last — even though Name2 sorts before Name3 by ID
-  await expect(rows(page).nth(0)).toContainText("Name1");
-  await expect(rows(page).nth(1)).toContainText("Name3");
-  await expect(rows(page).nth(2)).toContainText("Name2");
-  await expect(rows(page).nth(2).getByText("Inactive", { exact: true })).toBeVisible();
+  await inactiveTab(page).click();
+  await expect(inactiveTab(page)).toHaveAttribute("aria-selected", "true");
+  await expect(rows(page)).toHaveCount(1);
+  await expect(rows(page)).toContainText("Name2");
+  await expect(rows(page).getByText("Inactive", { exact: true })).toBeVisible();
 
-  await toggle(page).click();
+  await activeTab(page).click();
   await expect(rows(page)).toHaveCount(2);
 });
 
-test("the count follows the program filter and the search; the switch is disabled when nobody is inactive", async ({ page }) => {
-  await open(page);
-  await page.getByLabel("Filter by program").selectOption("CE");
-  await expect(toggle(page)).toContainText("(1)");
-  await page.getByPlaceholder("Search students...").fill("Name4");
-  await expect(toggle(page)).toContainText("(0)");
-  await expect(toggle(page)).toBeDisabled();
+test("no tab bar at all when nobody in the program is inactive", async ({ page }) => {
+  await open(page, "en", [mk(1, "CECS"), mk(3, "CECS")]);
+  await page.getByLabel("Filter by program").selectOption("CECS");
+  await expect(page.getByRole("tablist", { name: "Student status" })).toHaveCount(0);
+  await expect(rows(page)).toHaveCount(2);
 });
 
-test("deactivating a student drops the row from the default view and the count goes up; activating brings it back", async ({ page }) => {
+test("tab counts follow the program filter and the search; the bar stays even when the search matches none of the inactive ones", async ({ page }) => {
+  await open(page);
+  await page.getByLabel("Filter by program").selectOption("CE");
+  await expect(activeTab(page)).toContainText("1");
+  await expect(inactiveTab(page)).toContainText("1");
+
+  await page.getByPlaceholder("Search students...").fill("Name4");
+  await expect(activeTab(page)).toContainText("1");
+  await expect(inactiveTab(page)).toContainText("0");
+  // no auto-jump: the tab we're already on still has a match
+  await expect(activeTab(page)).toHaveAttribute("aria-selected", "true");
+});
+
+test("deactivating a student moves them to the Inactive tab; activating brings them back", async ({ page }) => {
   await open(page);
   await page.getByLabel("Filter by program").selectOption("CE");
 
   await page.getByRole("button", { name: "Deactivate Name4 Test" }).click();
   await page.getByRole("button", { name: "Deactivate", exact: true }).click();
+  // confirming lands on the Inactive tab by itself, with the student right there
+  await expect(inactiveTab(page)).toHaveAttribute("aria-selected", "true");
+  await expect(inactiveTab(page)).toContainText("2");
+  await expect(rows(page)).toHaveCount(2);
+  await expect(rows(page).filter({ hasText: "Name4" })).toHaveCount(1);
+
+  await activeTab(page).click();
   await expect(rows(page)).toHaveCount(0);
   await expect(page.getByText("Everyone in this program is inactive")).toBeVisible();
-  await expect(toggle(page)).toContainText("(2)");
 
-  await toggle(page).click();
-  await expect(rows(page)).toHaveCount(2);
+  await inactiveTab(page).click();
   await page.getByRole("button", { name: "Activate Name4 Test" }).click();
-  await expect(rows(page).nth(0)).toContainText("Name4");                   // back among the active ones, above Name5
-  await expect(rows(page).nth(1)).toContainText("Name5");
-  await expect(toggle(page)).toContainText("(1)");
+  await expect(rows(page)).toHaveCount(1);   // Name4 leaves this tab the moment it's active again
+  await expect(rows(page)).toContainText("Name5");
+
+  await activeTab(page).click();
+  await expect(rows(page)).toHaveCount(1);
+  await expect(rows(page)).toContainText("Name4");
+});
+
+test("deactivating the first-ever inactive student still lands on a brand-new Inactive tab", async ({ page }) => {
+  const mk = (id: string, first: string) => ({ id: `s-${id}`, studentId: id, firstName: first, lastName: "Test", email: `${id}@kmitl.ac.th`, program: "CE" });
+  await open(page, "en", [mk("67010101", "Alpha"), mk("67010102", "Bravo")]);
+  await expect(inactiveTab(page)).toHaveCount(0);   // nobody inactive yet, so no tab bar
+
+  await page.getByRole("button", { name: "Deactivate Alpha Test" }).click();
+  await page.getByRole("button", { name: "Deactivate", exact: true }).click();
+  await expect(inactiveTab(page)).toHaveAttribute("aria-selected", "true");
+  await expect(rows(page)).toHaveCount(1);
 });
 
 test("a long program name wraps and shows in full instead of being clipped", async ({ page }) => {
@@ -95,9 +127,55 @@ test("a long program name wraps and shows in full instead of being clipped", asy
   await expect(cell).toHaveAttribute("title", "Computer Engineering and Cybersecurity");
 });
 
-test("Thai UI: the switch is Thai", async ({ page }) => {
+test("Thai UI: the tabs are Thai", async ({ page }) => {
   await open(page, "th");
-  await expect(page.getByRole("switch", { name: /แสดงที่พ้นสภาพ/ })).toBeVisible();
+  await expect(page.getByRole("tab", { name: /ปกติ/ })).toBeVisible();
+  await expect(page.getByRole("tab", { name: /พ้นสภาพ/ })).toBeVisible();
+});
+
+// 30/9/2569 — a search that only matches the other tab jumps there automatically, so a name that
+// happens to be inactive never dead-ends in "no results found" on the Active tab.
+test.describe("Search autocomplete surfaces inactive matches and jumps to their tab", () => {
+  test("a suggestion for an inactive student is labelled, and picking it switches to the Inactive tab", async ({ page }) => {
+    await open(page);
+    await page.getByLabel("Filter by program").selectOption("CECS");   // Name2 here is inactive
+    await page.getByPlaceholder("Search students...").fill("Name2");
+    const option = page.getByRole("option", { name: "Name2 Test (Inactive)" });
+    await expect(option).toBeVisible();
+    await option.click();
+    await expect(inactiveTab(page)).toHaveAttribute("aria-selected", "true");
+    await expect(rows(page)).toHaveCount(1);
+    await expect(rows(page)).toContainText("Name2");
+  });
+
+  test("typing a name that only exists in the other tab jumps there too, without picking a suggestion", async ({ page }) => {
+    await open(page);
+    await page.getByLabel("Filter by program").selectOption("CECS");
+    await page.getByPlaceholder("Search students...").fill("Name2");
+    await page.keyboard.press("Escape");   // close the dropdown, keep the typed text
+    await expect(inactiveTab(page)).toHaveAttribute("aria-selected", "true");
+  });
+
+  test("clearing the search does not jump back on its own", async ({ page }) => {
+    await open(page);
+    await page.getByLabel("Filter by program").selectOption("CECS");
+    await page.getByPlaceholder("Search students...").fill("Name2");
+    await expect(inactiveTab(page)).toHaveAttribute("aria-selected", "true");
+    await page.getByPlaceholder("Search students...").fill("");
+    await expect(inactiveTab(page)).toHaveAttribute("aria-selected", "true");   // stays put; just no longer highlighted
+  });
+
+  test("an auto-jumped match is highlighted; a manual tab switch clears it", async ({ page }) => {
+    await open(page);
+    await page.getByLabel("Filter by program").selectOption("CECS");
+    await page.getByPlaceholder("Search students...").fill("Name2");
+    await expect(inactiveTab(page)).toHaveAttribute("aria-selected", "true");
+    expect(await rows(page).first().getAttribute("class")).toContain("accent-bright");
+
+    await activeTab(page).click();
+    await inactiveTab(page).click();
+    expect(await rows(page).first().getAttribute("class")).not.toContain("accent-bright");
+  });
 });
 
 // 26/9/2569 — "a batch has graduated": deactivate every active student whose ID starts with the batch's two digits.
@@ -127,6 +205,38 @@ test.describe("Deactivate a whole batch", () => {
     await expect(dialog.getByRole("button", { name: "Deactivate 2 students" })).toBeVisible();
   });
 
+  test("an individually-added student outside the chosen batch is included in the count and can be removed again", async ({ page }) => {
+    await open(page, "en", BATCHES);
+    await page.getByRole("button", { name: "Deactivate batch" }).click();
+    const dialog = page.getByRole("dialog", { name: "Deactivate a whole batch" });
+    await expect(dialog.getByRole("button", { name: "Deactivate 3 students" })).toBeVisible();   // batch 67, preselected
+
+    const addBox = dialog.getByPlaceholder("Search student name...");
+    await addBox.fill("N101");
+    await dialog.getByRole("option", { name: "N101 Test (68010101)" }).click();
+    await expect(dialog.getByText("N101 Test", { exact: true })).toBeVisible();   // the chip
+    await expect(dialog.getByRole("button", { name: "Deactivate 4 students" })).toBeVisible();
+
+    await dialog.getByRole("button", { name: "Remove N101 Test" }).click();
+    await expect(dialog.getByText("N101 Test", { exact: true })).toHaveCount(0);
+    await expect(dialog.getByRole("button", { name: "Deactivate 3 students" })).toBeVisible();
+  });
+
+  test("confirming includes the individually-added student even though they're outside the chosen batch", async ({ page }) => {
+    await open(page, "en", BATCHES);
+    await page.getByRole("button", { name: "Deactivate batch" }).click();
+    const dialog = page.getByRole("dialog", { name: "Deactivate a whole batch" });   // batch 67 preselected
+    await dialog.getByPlaceholder("Search student name...").fill("N101");
+    await dialog.getByRole("option", { name: "N101 Test (68010101)" }).click();
+    await dialog.getByRole("button", { name: "Deactivate 4 students" }).click();
+    await expect(dialog).toHaveCount(0);
+
+    const after = await stored(page);
+    expect(after.filter((s) => s.studentId.startsWith("67")).every((s) => s.status === "inactive")).toBe(true);
+    expect(after.find((s) => s.studentId === "68010101")?.status).toBe("inactive");
+    expect(after.find((s) => s.studentId === "68010102")?.status).not.toBe("inactive");   // the rest of batch 68 untouched
+  });
+
   test("confirming deactivates only that batch's active students, across programs, and leaves the rest alone", async ({ page }) => {
     await open(page, "en", BATCHES);
     await page.getByLabel("Filter by program").selectOption("CE");
@@ -140,11 +250,12 @@ test.describe("Deactivate a whole batch", () => {
     expect(after.filter((s) => s.studentId.startsWith("67")).every((s) => s.status === "inactive")).toBe(true);   // incl. the CECS one, and none lost in the batch write
     expect(after.filter((s) => !s.studentId.startsWith("67")).every((s) => s.status !== "inactive")).toBe(true);
 
-    // the CE list now shows the CE students of batches 68 and 69 only; batch 67's CE students are under "Show inactive"
+    // confirming lands on the Inactive tab with batch 67's CE students; Active keeps the CE students of 68 and 69
+    await expect(inactiveTab(page)).toHaveAttribute("aria-selected", "true");
+    await expect(inactiveTab(page)).toContainText("3");
+    await expect(rows(page)).toHaveCount(3);
+    await activeTab(page).click();
     await expect(rows(page)).toHaveCount(2);
-    await expect(toggle(page)).toContainText("(3)");
-    await toggle(page).click();
-    await expect(rows(page)).toHaveCount(5);
   });
 
   test("Undo brings the batch back in one click, but not the student who was already inactive", async ({ page }) => {
@@ -223,54 +334,8 @@ test.describe("Students mock data (batches 66-69)", () => {
     await open(page, "en", rdJson("students-mockup-en.json"));
     await page.getByRole("button", { name: "Deactivate batch" }).click();
     const dialog = page.getByRole("dialog", { name: "Deactivate a whole batch" });
-    await expect(dialog.getByLabel(/^Batch/).locator("option")).toHaveText(["Batch 66 — 10 active", "Batch 67 — 10 active", "Batch 68 — 12 active", "Batch 69 — 19 active"]);
+    await expect(dialog.getByLabel(/^Batch/).locator("option")).toHaveText(["Batch 66 — 10 active", "Batch 67 — 10 active", "Batch 68 — 12 active", "Batch 69 — 47 active"]);
     await dialog.getByLabel("Program").selectOption({ label: "Computer Engineering International — 2" });
     await expect(dialog.getByRole("button", { name: "Deactivate 2 students" })).toBeVisible();
-  });
-});
-
-// 26/9/2569 — the Status column header sorts on click, like Student ID and Name.
-test.describe("Sort by the Status column", () => {
-  const header = (page: Page) => page.getByRole("columnheader", { name: /Status/ });
-  const ids = (page: Page) => rows(page).evaluateAll((els) => els.map((e) => e.textContent?.match(/Name\d/)?.[0]));
-
-  test("Active first → Inactive first → back to the default, and the first click shows the inactive students", async ({ page }) => {
-    await open(page);
-    await page.getByLabel("Filter by program").selectOption("CECS");     // Name1 active, Name2 inactive, Name3 active
-    await expect(toggle(page)).toHaveAttribute("aria-checked", "false");
-    await expect(header(page)).toHaveAttribute("aria-sort", "none");
-    expect(await ids(page)).toEqual(["Name1", "Name3"]);
-
-    await header(page).getByRole("button").click();                          // 1st click: Active first (and Show inactive turns on)
-    await expect(header(page)).toHaveAttribute("aria-sort", "ascending");
-    await expect(toggle(page)).toHaveAttribute("aria-checked", "true");
-    expect(await ids(page)).toEqual(["Name1", "Name3", "Name2"]);
-
-    await header(page).getByRole("button").click();                          // 2nd: Inactive first
-    await expect(header(page)).toHaveAttribute("aria-sort", "descending");
-    expect(await ids(page)).toEqual(["Name2", "Name1", "Name3"]);
-
-    await header(page).getByRole("button").click();                          // 3rd: back to Student ID order
-    await expect(header(page)).toHaveAttribute("aria-sort", "none");
-    await expect(page.getByRole("columnheader", { name: /Student ID/ })).toHaveAttribute("aria-sort", "ascending");
-    expect(await ids(page)).toEqual(["Name1", "Name3", "Name2"]);            // default = active first, then inactive, by ID
-  });
-
-  test("sorting by another column replaces the status sort", async ({ page }) => {
-    await open(page);
-    await page.getByLabel("Filter by program").selectOption("CECS");
-    await header(page).getByRole("button").click();
-    await page.getByRole("columnheader", { name: /^Name/ }).getByRole("button").click();
-    await expect(header(page)).toHaveAttribute("aria-sort", "none");
-    await expect(page.getByRole("columnheader", { name: /^Name/ })).toHaveAttribute("aria-sort", "ascending");
-  });
-
-  test("with nobody inactive the click just sorts (nothing to show)", async ({ page }) => {
-    await open(page, "en", [mk(1, "CECS"), mk(3, "CECS")]);
-    await page.getByLabel("Filter by program").selectOption("CECS");
-    await header(page).getByRole("button").click();
-    await expect(header(page)).toHaveAttribute("aria-sort", "ascending");
-    await expect(toggle(page)).toBeDisabled();
-    await expect(rows(page)).toHaveCount(2);
   });
 });

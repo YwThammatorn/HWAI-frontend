@@ -10,6 +10,7 @@ import { useManagedTeachers } from "@/lib/managed-teachers";
 import { useGradingCategories, GradingCategory } from "@/lib/gradingCategories";
 import { DAY_OPTIONS, SLOT_OPTIONS, parseSchedule } from "@/lib/schedule";
 import { useLanguage } from "@/context/LanguageContext";
+import { CourseIcon } from "@/components/CourseIcon";
 
 export default function CourseDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -39,6 +40,24 @@ export default function CourseDetailPage() {
   const [detailsDay, setDetailsDay] = useState("");
   const [detailsSlot, setDetailsSlot] = useState("");
   const [detailsRoom, setDetailsRoom] = useState("");
+
+  const [descEditing, setDescEditing] = useState(false);
+  const [descValue, setDescValue] = useState("");
+
+  function openEditDesc() {
+    if (!course) return;
+    setDescValue(course.description ?? "");
+    setDescEditing(true);
+  }
+
+  function cancelEditDesc() {
+    setDescEditing(false);
+  }
+
+  function handleSaveDesc() {
+    updateCourse(id, { description: descValue.trim() });
+    setDescEditing(false);
+  }
 
   function openEditDetails() {
     if (!course) return;
@@ -135,16 +154,12 @@ export default function CourseDetailPage() {
         <div className="relative h-36 rounded-2xl mb-6 overflow-hidden" style={{ background: course.coverColor }}>
           <div className="absolute inset-0 bg-black/10" />
           <div className="absolute bottom-4 left-5 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
-                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-              </svg>
+            <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center shrink-0">
+              <CourseIcon iconKey={course.icon} size={20} className="text-white" />
             </div>
-            <div>
-              <h1 className="text-xl font-bold text-white">{course.name}</h1>
-              {course.description && (
-                <p className="text-white/70 text-xs mt-0.5 max-w-md truncate">{course.description}</p>
-              )}
+            <div className="min-w-0">
+              {course.code && <p className="text-white/80 text-xs font-semibold tracking-wide tabular-nums truncate">{course.code}</p>}
+              <h1 className="text-xl font-bold text-white truncate">{course.name}</h1>
             </div>
           </div>
           <Link
@@ -157,6 +172,56 @@ export default function CourseDetailPage() {
             </svg>
             {t("ตั้งค่า", "Settings")}
           </Link>
+        </div>
+
+        {/* Description — its own card, separate from the banner (30/9/2569), with inline edit */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base font-bold text-[var(--text-primary)]">{t("คำอธิบายรายวิชา", "Description")}</h2>
+            {!descEditing && (
+              <button
+                onClick={openEditDesc}
+                className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-[var(--text-primary)] transition-colors"
+                title={t("แก้ไข", "Edit")}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+              </button>
+            )}
+          </div>
+          {descEditing ? (
+            <div className="flex flex-col gap-3">
+              <textarea
+                value={descValue}
+                onChange={(e) => setDescValue(e.target.value)}
+                rows={3}
+                placeholder="อธิบายรายวิชาโดยย่อ (ไม่บังคับ)"
+                className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm text-[var(--text-primary)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
+              />
+              <div className="flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={cancelEditDesc}
+                  className="px-3.5 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+                >
+                  {t("ยกเลิก", "Cancel")}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveDesc}
+                  className="px-3.5 py-1.5 rounded-lg bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-xs font-medium transition-colors"
+                >
+                  {t("บันทึก", "Save")}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-[var(--text-primary)] whitespace-pre-wrap">
+              {course.description || <span className="text-gray-400">{t("ยังไม่มีคำอธิบายรายวิชา", "No description yet")}</span>}
+            </p>
+          )}
         </div>
 
         {/* Stats strip — one compact bar instead of 3 tall cards */}

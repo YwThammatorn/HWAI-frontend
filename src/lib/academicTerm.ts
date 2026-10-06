@@ -52,3 +52,12 @@ export function compareTermsDesc(a: Pick<Course, "academicYear" | "term">, b: Pi
   const ob = b.academicYear && b.term ? orderOf(b.academicYear, b.term) : -1;
   return ob - oa;
 }
+
+/** "ปีการศึกษา 2569 · เทอม 1" for a course's header; undefined when the course has no year/term. */
+export function termLine(course: Pick<Course, "academicYear" | "term">, t: (th: string, en: string) => string): string | undefined {
+  const parts = [
+    course.academicYear && t(`ปีการศึกษา ${course.academicYear}`, `Academic year ${course.academicYear}`),
+    course.term && (course.term === "summer" ? t("ภาคฤดูร้อน", "Summer") : t(`เทอม ${course.term}`, `Term ${course.term}`)),
+  ].filter(Boolean);
+  return parts.length ? parts.join(" · ") : undefined;
+}

@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
 import { useCourses } from "@/lib/courses";
+import { termLine } from "@/lib/academicTerm";
 import { SidebarNavItem, SidebarSectionLabel, SidebarCourseHeader, SIDEBAR_CLASS } from "@/components/SidebarParts";
 import { WEEKLY_PLAN_DISABLED, MATERIALS_DISABLED, ANNOUNCEMENTS_DISABLED, GRADING_SPLIT_DISABLED, TEACHER_HISTORY_DISABLED, TEACHER_DASHBOARD_DISABLED } from "@/lib/featureFlags";
 
@@ -213,6 +214,7 @@ export default function ProfileSidebar() {
             backLabel={t("กลับหน้าหลัก", "Back to main")}
             code={activeCourse?.code}
             name={activeCourse?.name ?? t("รายวิชา", "Course")}
+            termLine={activeCourse ? termLine(activeCourse, t) : undefined}
             section={activeCourse?.sectionNumber ? t(`กลุ่มเรียน ${activeCourse.sectionNumber}`, `Section ${activeCourse.sectionNumber}`) : undefined}
           />
           <nav className="flex flex-col gap-0.5 mb-4" aria-label={activeCourse?.name ?? t("รายวิชา", "Course")}>

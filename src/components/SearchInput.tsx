@@ -12,6 +12,9 @@ interface SearchInputProps {
   /** Candidate values to suggest from as the user types (e.g. names/ids).
    *  Omit to keep this a plain search box with no dropdown. */
   suggestions?: string[];
+  /** Optional small muted label appended after a suggestion (e.g. "Inactive") — display only,
+   *  selecting the suggestion still fills the box with the plain value, unchanged. */
+  suggestionMeta?: (s: string) => string | undefined;
   /** Focus the input once on mount. Pair with a `key` prop that changes
    *  (e.g. a tab id) to re-focus when the input is effectively "new". */
   autoFocus?: boolean;
@@ -25,6 +28,7 @@ export default function SearchInput({
   ariaLabel,
   rounded = "xl",
   suggestions,
+  suggestionMeta,
   autoFocus,
 }: SearchInputProps) {
   const [open, setOpen] = useState(false);
@@ -86,20 +90,24 @@ export default function SearchInput({
           role="listbox"
           className="absolute left-0 right-0 mt-1 z-20 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] shadow-lg overflow-hidden max-h-56 overflow-y-auto"
         >
-          {matches.map((s, i) => (
-            <li key={s} role="option" aria-selected={i === highlight}>
-              <button
-                type="button"
-                // onMouseDown (not onClick) so this fires before the input's onBlur closes the dropdown
-                onMouseDown={(e) => { e.preventDefault(); select(s); }}
-                className={`w-full text-left px-3 py-2 text-sm truncate transition-colors ${
-                  i === highlight ? "bg-[var(--accent-bright)]/10 text-[var(--text-primary)]" : "text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)]"
-                }`}
-              >
-                {s}
-              </button>
-            </li>
-          ))}
+          {matches.map((s, i) => {
+            const meta = suggestionMeta?.(s);
+            return (
+              <li key={s} role="option" aria-selected={i === highlight}>
+                <button
+                  type="button"
+                  // onMouseDown (not onClick) so this fires before the input's onBlur closes the dropdown
+                  onMouseDown={(e) => { e.preventDefault(); select(s); }}
+                  className={`w-full flex items-center gap-2 text-left px-3 py-2 text-sm transition-colors ${
+                    i === highlight ? "bg-[var(--accent-bright)]/10 text-[var(--text-primary)]" : "text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)]"
+                  }`}
+                >
+                  <span className="truncate">{s}</span>
+                  {meta && <span className="shrink-0 text-xs text-[var(--text-muted)]">({meta})</span>}
+                </button>
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>

@@ -22,7 +22,10 @@ const submission = (criterionScores?: Record<string, number>) => ({
   ...(criterionScores ? { criterionScores } : {}),
 });
 
-async function open(page: Page, opts: { finalized?: boolean; criterionScores?: Record<string, number>; lang?: "en" | "th" } = {}) {
+const LEVELS = [{ label: "Excellent", description: "Top" }, { label: "Good", description: "Mid" }, { label: "Needs Improvement", description: "Low" }];
+const RUBRIC_WITH_LEVELS = { ...RUBRIC, criteria: RUBRIC.criteria.map((c) => ({ ...c, levels: LEVELS })) };
+
+async function open(page: Page, opts: { finalized?: boolean; criterionScores?: Record<string, number>; lang?: "en" | "th"; withLevels?: boolean } = {}) {
   await page.addInitScript(([lang, a, sub]) => {
     if (sessionStorage.getItem("rp")) return;
     sessionStorage.setItem("rp", "1");
@@ -33,7 +36,7 @@ async function open(page: Page, opts: { finalized?: boolean; criterionScores?: R
     localStorage.setItem("hwai_assignments_v1", JSON.stringify([a]));
     localStorage.setItem("hwai_submissions_v1", JSON.stringify([sub]));
   }, [opts.lang ?? "en", assignment(opts.finalized ?? true), submission(opts.criterionScores)] as const);
-  await page.addInitScript((r) => { if (!localStorage.getItem("hwai_rubrics_v1")) localStorage.setItem("hwai_rubrics_v1", JSON.stringify([r])); }, RUBRIC);
+  await page.addInitScript((r) => { if (!localStorage.getItem("hwai_rubrics_v1")) localStorage.setItem("hwai_rubrics_v1", JSON.stringify([r])); }, opts.withLevels ? RUBRIC_WITH_LEVELS : RUBRIC);
   await page.goto(`${BASE}/student/courses/c-rp/classwork/a-1`);
   await page.waitForLoadState("networkidle");
 }
@@ -49,6 +52,34 @@ test("each rubric criterion shows the points earned, with a bar", async ({ page 
   // the earned points sit in the criterion card next to its name
   const card = page.locator("div.rounded-xl", { has: page.getByText("Correctness", { exact: true }) }).first();
   await expect(card).toContainText("56 / 60");
+});
+
+test("the level the score falls in is marked 'Your level' (levels split the 0–max range evenly, best first)", async ({ page }) => {
+  // Correctness 56/60 → top third; Clean code 20/40 → middle third
+  await open(page, { criterionScores: { k1: 56, k2: 20 }, withLevels: true });
+  const card = (name: string) => page.locator("div.rounded-xl", { has: page.getByText(name, { exact: true }) }).first();
+  await expect(card("Correctness").locator('[aria-current="true"]')).toHaveCount(1);
+  await expect(card("Correctness").locator('[aria-current="true"]')).toContainText("Excellent");
+  await expect(card("Correctness").getByText("Your level")).toHaveCount(1);
+  await expect(card("Clean code").locator('[aria-current="true"]')).toContainText("Good");
+});
+
+test("a score exactly on a boundary lands in the higher level; zero lands in the lowest", async ({ page }) => {
+  await open(page, { criterionScores: { k1: 40, k2: 0 }, withLevels: true });   // 40/60 = exactly 2/3
+  const card = (name: string) => page.locator("div.rounded-xl", { has: page.getByText(name, { exact: true }) }).first();
+  await expect(card("Correctness").locator('[aria-current="true"]')).toContainText("Excellent");
+  await expect(card("Clean code").locator('[aria-current="true"]')).toContainText("Needs Improvement");
+});
+
+test("no level is marked before the teacher announces results", async ({ page }) => {
+  await open(page, { finalized: false, criterionScores: { k1: 56, k2: 20 }, withLevels: true });
+  await expect(page.locator('[aria-current="true"]')).toHaveCount(0);
+  await expect(page.getByText("Your level")).toHaveCount(0);
+});
+
+test("Thai UI shows the level tag in Thai", async ({ page }) => {
+  await open(page, { criterionScores: { k1: 56, k2: 20 }, withLevels: true, lang: "th" });
+  await expect(page.getByText("ระดับของคุณ")).toHaveCount(2);
 });
 
 test("no per-criterion scores saved → the rubric stays the plain read-only one (no invented numbers)", async ({ page }) => {
@@ -101,7 +132,7 @@ test("the student-flow mock: every graded submission has criterion scores that a
       }
       checked++;
     }
-    expect(checked, f).toBe(7);
+    expect(checked, f).toBe(175);
   }
   // public and test-data copies stay identical
   for (const n of ["student-flow-mockup.json", "student-flow-mockup-en.json"]) {

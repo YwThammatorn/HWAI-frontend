@@ -49,7 +49,7 @@ fetch('/mock-data/teachers-mockup.json').then(r=>r.json()).then(d=>{localStorage
 
 [5] นักศึกษาครบ flow — cohort + ลงทะเบียนวิชา + หมวดคะแนน + งาน + rubric + ผลตรวจ
     (ต้องทำ [2] ก่อน เพราะลงทะเบียนเข้า c-mock-1 "การเขียนโปรแกรมคอมพิวเตอร์" ของสมศักดิ์)
-    13 คนใน cohort (CE67/68/69, 1 คน inactive — cap ปี CE69 ไม่มี CE70) — 3 คนแรก (69070101-103) ลงทะเบียนวิชา c-mock-1 จริง
+    52 คนใน cohort (13 คนเดิม CE67/68/69, 1 คน inactive — cap ปี CE69 ไม่มี CE70 + 39 คนรุ่น 69 ของห้อง c-mock-1 ดู [15]) — ห้อง c-mock-1 มี 42 คน (69070101-103 เดิม + 39 คนใหม่ 69070201-240)
     อีก 10 คนที่เหลือ (69070104-108, 68020101-104, 67010101) ยังไม่ลงวิชาไหนเลย
     — ไว้ใช้ทดสอบการ import นักศึกษาเข้าวิชา ดู [7] ด้านล่าง
     วิชานี้มี 3 หมวดคะแนน (งานที่มอบหมาย 40% / สอบกลางภาค 25% / สอบปลายภาค 35% — ยังไม่มีงานผูกกับ
@@ -72,7 +72,7 @@ fetch('/mock-data/student-flow-mockup.json').then(r=>r.json()).then(d=>{localSto
 [6] รีเซ็ตแค่ "ผลตรวจ" กลับไปที่ค่าเริ่มต้น (เผื่อทดสอบส่งงานซ้ำๆ)
     ใช้ตอนทดสอบ role student แล้วกดส่งงาน "โปรเจกต์เล็ก: เครื่องคิดเลข" (a-mock-2) ไปแล้ว
     อยากให้กลับไปเป็น "ยังไม่ส่ง" เพื่อลองกดส่งใหม่อีกรอบ — ไม่กระทบ cohort/รายวิชา/งาน/rubric เลย
-    แก้แค่ hwai_submissions_v1 กลับไปเป็นผลตรวจตั้งต้นทั้งชุดของ student-flow-mockup (13 รายการ — ตรวจแล้ว 7 รายการมีคะแนนรายเกณฑ์ ดู [13])
+    แก้แค่ hwai_submissions_v1 กลับไปเป็นผลตรวจตั้งต้นทั้งชุดของ student-flow-mockup (233 รายการ — 175 รายการที่ตรวจแล้วมีคะแนนรายเกณฑ์ ดู [13])
     ส่วน a-mock-2 จะไม่มี submission อยู่เลย เหมือนตอนเริ่มต้น
 
 fetch('/mock-data/student-flow-mockup.json').then(r=>r.json()).then(d=>{localStorage.setItem('hwai_submissions_v1', JSON.stringify(d.submissions)); location.reload();});
@@ -80,7 +80,7 @@ fetch('/mock-data/student-flow-mockup.json').then(r=>r.json()).then(d=>{localSto
 ---
 
 [7] ทดสอบนำเข้านักศึกษาเข้าวิชา (teacher CSV import + cross-check กับระบบ)
-    ต้องทำ [5] ก่อน (ให้มี cohort 13 คนใน hwai_cohort_students_v1)
+    ต้องทำ [5] ก่อน (ให้มี cohort ของ [5] ใน hwai_cohort_students_v1)
     ไปที่ /teacher/courses/c-mock-1/students -> กด "นำเข้าด้วย CSV" (popup) -> อัปโหลด test-data/course-import-test.csv
 
     ไฟล์นี้มี 12 แถว ตั้งใจใส่ชื่อ/อีเมลผิดในทุกแถวที่ยังไม่ลงวิชา เพื่อพิสูจน์ว่าระบบดึงชื่อจริงจากระบบมาแทน:
@@ -151,12 +151,12 @@ fetch('/mock-data/curriculum-mockup-en.json').then(r=>r.json()).then(d=>{localSt
 ---
 
 [12] นักศึกษาหลายรุ่น (รุ่น 66–69) ไว้ดูหน้า /admin/users > Students — ตัวกรองสาขา/พ้นสภาพ และปุ่ม "ปิดใช้งานทั้งรุ่น"
-     57 คน ครบ 3 สาขา (CE / CECS / CEI) — ใส่ทับเฉพาะรายชื่อนักศึกษากลาง (hwai_cohort_students_v1) ไม่แตะอย่างอื่น
+     85 คน ครบ 3 สาขา (CE / CECS / CEI) — ใส่ทับเฉพาะรายชื่อนักศึกษากลาง (hwai_cohort_students_v1) ไม่แตะอย่างอื่น
        รุ่น 66: 12 คน (พ้นสภาพ 2)  — รุ่นที่ใกล้จบ  | รุ่น 67: 12 คน (พ้นสภาพ 2, มี 1 คนไม่มีคำนำหน้า)
-       รุ่น 68: 13 คน (พ้นสภาพ 1)  | รุ่น 69: 20 คน (พ้นสภาพ 1)
+       รุ่น 68: 13 คน (พ้นสภาพ 1)  | รุ่น 69: 48 คน (พ้นสภาพ 1)
      13 คนเดิมของ [5] (cs-mock-1..13: 69070101-108, 68020101-104, 67010101) อยู่ครบ ข้อมูลเหมือนเดิมทุกอย่าง
-     จึงรันหลัง [5] ได้ และ login / การลงทะเบียนวิชาของ [5] ยังใช้ได้ (ถ้ารัน [5] ทีหลัง รายชื่อจะกลับเป็น 13 คน)
-     รหัสของ 44 คนใหม่ไม่ชนกับ students_sample.csv ([3b]) และ course-import-test.csv ([7]) — ยังใช้ทดสอบ import ได้ตามเดิม
+     จึงรันหลัง [5] ได้ และ login / การลงทะเบียนวิชาของ [5] ยังใช้ได้ (ถ้ารัน [5] ทีหลัง รายชื่อจะกลับเป็น 52 คนของ [5] — รัน [15] เพื่อกลับมาเป็น 85 คน)
+     รหัสของ 72 คนใหม่ (44 + 28 คนของห้อง [15]) ไม่ชนกับ students_sample.csv ([3b]) และ course-import-test.csv ([7]) — ยังใช้ทดสอบ import ได้ตามเดิม
      ทดสอบ: ปุ่ม "ปิดใช้งานทั้งรุ่น" เลือกรุ่น 66 แล้วเลือกสาขา, สวิตช์ "แสดงที่พ้นสภาพ", เลือกสาขาเป็นชื่อเต็มในตาราง
 
      ภาษาไทย:
@@ -170,9 +170,9 @@ fetch('/mock-data/students-mockup-en.json').then(r=>r.json()).then(d=>{localStor
 ---
 
 [13] คะแนนรายเกณฑ์ (rubric) ของนักศึกษา — เฉพาะผลตรวจ (submissions) ของ [5]/[10]
-     ผลตรวจที่ "ตรวจแล้ว" ทั้ง 7 รายการใน student-flow-mockup มี criterionScores (คะแนนแต่ละเกณฑ์ รวมเท่ากับคะแนนรวม และไม่เกินคะแนนเต็มของเกณฑ์นั้น)
+     ผลตรวจที่ "ตรวจแล้ว" ทั้ง 175 รายการใน student-flow-mockup มี criterionScores (คะแนนแต่ละเกณฑ์ รวมเท่ากับคะแนนรวม และไม่เกินคะแนนเต็มของเกณฑ์นั้น)
      นักศึกษาเห็นที่ /student/courses/c-mock-1/classwork/<งาน> (การ์ดเกณฑ์แสดง "56 / 60" + แถบ) และในป๊อปอัปของหน้า Evaluation (ไม่มีข้อความ "ประมาณ" อีก)
-     ล็อกอิน 69070101@kmitl.ac.th → งาน "แบบฝึกหัด Python เบื้องต้น" (90 = 56 + 18 + 16), "Quiz 1" (85), "Quiz 2" (85), "Lab 5" (92)
+     ล็อกอิน 69070101@kmitl.ac.th → งาน "แบบฝึกหัด Python เบื้องต้น" (90 = 56 + 18 + 16), "Quiz 1" (85) — ส่วน Python / Quiz 2 / Lab 5 นักศึกษาจะเห็นคะแนนหลังอาจารย์กด “เสร็จสิ้นและประกาศผล” ของงานนั้น (ดู [15])
      ถ้าเคยรัน [5] หรือ [10] ไว้แล้ว รันตัวนี้ตัวเดียวพอ — เขียนทับเฉพาะ hwai_submissions_v1 ไม่แตะรายชื่อนักศึกษาที่ใส่ด้วย [12]
      (ยังไม่เคยรัน [5] ให้รัน [2] แล้ว [5] ก่อน)
 
@@ -187,7 +187,7 @@ fetch('/mock-data/student-flow-mockup-en.json').then(r=>r.json()).then(d=>{local
 ---
 
 [14] ประวัติรายวิชาของนักศึกษา — ไว้ดู "รายวิชาของฉัน" (เทอมปัจจุบัน) กับ "รายวิชาที่เรียนผ่านไปแล้ว" ของ role student
-     คำสั่งเดียวจบ: ใส่รายวิชา 53 รายการ + อาจารย์ + รายชื่อนักศึกษา 57 คน (เหมือน [2] [3] [12]) แล้วเพิ่มประวัติเรียนต่อท้ายข้อมูลเดิม
+     คำสั่งเดียวจบ: ใส่รายวิชา 53 รายการ + อาจารย์ + รายชื่อนักศึกษา 85 คน (เหมือน [2] [3] [12]) แล้วเพิ่มประวัติเรียนต่อท้ายข้อมูลเดิม
      (ประวัติเป็นแบบ "เพิ่ม" ข้าม id ที่มีอยู่แล้ว — ถ้าอยากได้ c-mock-1 แบบเต็ม (rubric/แนบไฟล์) ของ 69070101 ด้วย ให้รัน [5] ก่อนค่อยรัน [14] ตามหลัง ลำดับนี้เท่านั้น: [14] ก่อนไม่ทับ [5], กลับกัน [5] ทับ [14] แน่นอนเพราะ [5] เขียนทับทั้ง 4 คีย์เดียวกัน)
      26/9: รอบแรกมีบั๊กจริง 2 เรื่อง — แก้แล้ว: (1) นักศึกษาบางคนเรียนวิชาเดิมซ้ำ (เช่น "การเขียนโปรแกรมคอมพิวเตอร์" ทั้งเทอมนี้และในประวัติ 2 รอบ) ตอนนี้แต่ละคนเรียนแต่ละวิชา (นับตามรหัสวิชา ไม่ใช่ course id เพราะรหัสเดียวกันมีได้หลายหลักสูตร/หลายรุ่น) ครั้งเดียวเท่านั้น ไม่ซ้ำเลยทั้งเทอมนี้และเทอมก่อนๆ (2) เทอมของ "วิชาที่ผ่านมาแล้ว" ต้องไม่ก่อนปีที่เข้าเรียนของนักศึกษาคนนั้น (รหัส 66xxxxxx เข้าปี 2566 จะมีประวัติได้ตั้งแต่ 2566 เป็นต้นไป ฯลฯ) — 69070101 รหัส 69 เพิ่งเข้าปีนี้ (2569) เทอมนี้คือเทอมแรกจริงๆ จึงไม่มีทางมี "วิชาที่ผ่านมาแล้ว" ได้ตามหลักการนี้ กลับไปไม่มีส่วนนั้นเหมือนเดิม (ได้แค่ลงหลายวิชาในเทอมนี้)
      ล็อกอินด้วยอีเมลของนักศึกษา รหัสผ่านอะไรก็ได้:
@@ -208,6 +208,33 @@ fetch('/mock-data/courses-mockup.json').then(r=>r.json()).then(c=>{localStorage.
      English:
 
 fetch('/mock-data/courses-mockup-en.json').then(r=>r.json()).then(c=>{localStorage.setItem('hwai_courses_v2', JSON.stringify(c)); return fetch('/mock-data/teachers-mockup-en.json').then(r=>r.json());}).then(t=>{localStorage.setItem('hwai_managed_teachers_v1', JSON.stringify(t)); return fetch('/mock-data/students-mockup-en.json').then(r=>r.json());}).then(st=>{localStorage.setItem('hwai_cohort_students_v1', JSON.stringify(st)); return fetch('/mock-data/student-history-mockup-en.json').then(r=>r.json());}).then(d=>{const put=(k,items)=>{const cur=JSON.parse(localStorage.getItem(k)||'[]');const ids=new Set(cur.map(x=>x.id));localStorage.setItem(k,JSON.stringify([...cur,...items.filter(x=>!ids.has(x.id))]));}; const putRoster=(k,items)=>{const cur=JSON.parse(localStorage.getItem(k)||'[]');const pairs=new Set(items.map(x=>x.studentId+'|'+x.courseId));const kept=cur.filter(x=>!pairs.has(x.studentId+'|'+x.courseId));localStorage.setItem(k,JSON.stringify([...kept,...items]));}; putRoster('hwai_students_v1',d.courseStudents); put('hwai_grading_categories_v1',d.gradingCategories); put('hwai_assignments_v1',d.assignments); put('hwai_rubrics_v1',d.rubrics); put('hwai_submissions_v1',d.submissions); localStorage.setItem('hwai_lang','en'); location.reload();});
+
+---
+
+[15] ห้อง c-mock-1 "การเขียนโปรแกรมคอมพิวเตอร์" (01076112 กลุ่ม 1 · 2569 เทอม 1) — 42 คน + คะแนนสมจริง
+     เดิมห้องนี้มี 3 คน ตอนนี้ 42 คน: 3 คนเดิม (69070101-103) + 39 คนรุ่น 69 (69070201-240) — 11 คนมาจาก [12] ที่ยังไม่ได้ลงวิชาไหน + 28 คนใหม่ (cohort รวมเป็น 85 คน)
+     ทุกคนเป็นรุ่น 69 (เข้าปีนี้) ตรงกับวิชาปี 1 เทอม 1; รหัสไม่ชนกับ students_sample.csv ([3b]) และ course-import-test.csv ([7]) 10 คนที่ [7] ใช้ยังไม่ลงวิชาเหมือนเดิม
+     คะแนนสร้างจากความสามารถรายคน + สุ่มเล็กน้อย (seed คงที่ ได้ผลเดิมทุกครั้ง) คนที่อ่อนมีโอกาสไม่ส่งงานมากกว่าเล็กน้อย — ของ 3 คนเดิมไม่ถูกแตะ:
+       สอบกลางภาค (เต็ม 50, ประกาศผลแล้ว)  ได้คะแนนครบ 42 คน  เฉลี่ย 33.4  SD 8.0  ต่ำสุด 16  สูงสุด 49  — ไว้ดูกราฟระฆังคว่ำ/สถิติของ role student
+       แบบฝึกหัด Python (ยังไม่ประกาศ)    ตรวจแล้ว 30 (เฉลี่ย 76.6) · รอตรวจ 6 · ยังไม่ตรวจ 4 · ไม่ส่ง 2
+       Quiz 1 (ประกาศผลแล้ว)             ตรวจแล้ว 39 (เฉลี่ย 73.8) · ไม่ส่ง 3
+       Quiz 2 (ยังไม่ประกาศ)              ตรวจแล้ว 32 (เฉลี่ย 71.1) · รอตรวจ 4 · ไม่ส่ง 6
+       Lab 5  (ยังไม่ประกาศ)              ตรวจแล้ว 38 (เฉลี่ย 77.4) · รอตรวจ 2 · ไม่ส่ง 2
+       โปรเจกต์เล็ก (เลยกำหนด)               ตรวจครบแล้ว 36 (เฉลี่ย 74.4) · ไม่ส่ง 6 (รวม 3 คนเดิมที่ตั้งใจไม่ให้ส่ง) — **ยังไม่ประกาศผล**: งานเดียวที่ปุ่ม “เสร็จสิ้นและประกาศผล” กดได้ทันที (ตรวจครบแล้ว รอกดยืนยัน)
+     งานที่ยังตรวจไม่ครบ (Python, Quiz 2, Lab 5) ยังไม่ประกาศผล — ลองเข้าไปกด "ตรวจ" ที่ค้างจนครบ 100% แล้วปุ่ม “เสร็จสิ้นและประกาศผล” จะกดได้ (Lab 5 เหลือแค่ 2 รายการ ลองง่ายสุด) ระหว่างนั้นนักศึกษาเห็นแค่ว่ากำลังตรวจ
+     ที่ประกาศแล้ว: Quiz 1 กับสอบกลางภาค (ตรวจครบจริง)
+     ทุกงานที่มี rubric: คะแนนรายเกณฑ์รวมเท่ากับคะแนนรวมเป๊ะ และไม่เกินคะแนนเต็มของเกณฑ์นั้น (เหมือน [13])
+     ไม่เขียนทับข้อมูลอื่น: เปลี่ยนเฉพาะรายชื่อห้อง c-mock-1, ตัวงานของวิชานี้ (รวมสถานะ “ประกาศผลแล้ว/ยังไม่ประกาศ” ซึ่งเก็บอยู่ที่ตัวงาน — จึงรีเซ็ตกลับเป็นค่าตั้งต้นทุกครั้งที่รัน) และผลตรวจของงานเหล่านั้น — รายชื่อ/ผลตรวจของวิชาอื่น (เช่นประวัติจาก [14]) อยู่ครบ
+     และรวมรายชื่อนักศึกษากลางเข้ากับของเดิม (ที่เพิ่มเองด้วยปุ่ม Add Student ไม่หาย) ใช้ได้ไม่ว่าเคยรัน [5], [12], [14] มาแล้วหรือไม่ แต่ต้องเคยรัน [2] และ [5] (ให้มีวิชา/งานของ c-mock-1)
+     ล็อกอิน somsak.c@kmitl.ac.th (อาจารย์) → c-mock-1 → สมุดคะแนน / นักศึกษา จะเห็น 42 คน; ล็อกอิน 69070101@kmitl.ac.th → ผลการประเมิน / สอบกลางภาค เห็นกราฟเทียบทั้งห้อง
+
+     ภาษาไทย:
+
+fetch('/mock-data/student-flow-mockup.json').then(r=>r.json()).then(f=>fetch('/mock-data/students-mockup.json').then(r=>r.json()).then(st=>{const get=k=>JSON.parse(localStorage.getItem(k)||'[]');const ids=new Set(st.map(s=>s.studentId));const mine=new Set(f.assignments.map(a=>a.id));localStorage.setItem('hwai_cohort_students_v1',JSON.stringify([...st,...get('hwai_cohort_students_v1').filter(s=>!ids.has(s.studentId))]));localStorage.setItem('hwai_students_v1',JSON.stringify([...get('hwai_students_v1').filter(s=>s.courseId!=='c-mock-1'),...f.courseStudents]));localStorage.setItem('hwai_assignments_v1',JSON.stringify([...get('hwai_assignments_v1').filter(a=>!mine.has(a.id)),...f.assignments]));localStorage.setItem('hwai_submissions_v1',JSON.stringify([...get('hwai_submissions_v1').filter(s=>!mine.has(s.assignmentId)),...f.submissions]));location.reload();}));
+
+     English:
+
+fetch('/mock-data/student-flow-mockup-en.json').then(r=>r.json()).then(f=>fetch('/mock-data/students-mockup-en.json').then(r=>r.json()).then(st=>{const get=k=>JSON.parse(localStorage.getItem(k)||'[]');const ids=new Set(st.map(s=>s.studentId));const mine=new Set(f.assignments.map(a=>a.id));localStorage.setItem('hwai_cohort_students_v1',JSON.stringify([...st,...get('hwai_cohort_students_v1').filter(s=>!ids.has(s.studentId))]));localStorage.setItem('hwai_students_v1',JSON.stringify([...get('hwai_students_v1').filter(s=>s.courseId!=='c-mock-1'),...f.courseStudents]));localStorage.setItem('hwai_assignments_v1',JSON.stringify([...get('hwai_assignments_v1').filter(a=>!mine.has(a.id)),...f.assignments]));localStorage.setItem('hwai_submissions_v1',JSON.stringify([...get('hwai_submissions_v1').filter(s=>!mine.has(s.assignmentId)),...f.submissions]));location.reload();}));
 
 ---
 

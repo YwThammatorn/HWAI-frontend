@@ -11,6 +11,7 @@ import { groupSubmissionsByTeam, SubmissionRow } from "@/lib/groupSubmissions";
 import { useLanguage } from "@/context/LanguageContext";
 import { dateLocale } from "@/lib/dateLocale";
 import { getInitials } from "@/lib/utils";
+import { toneForPct, SCORE_TONE_CLASSES } from "@/lib/scoreBook";
 import SearchInput from "@/components/SearchInput";
 import PillTabBar from "@/components/PillTabBar";
 import WithdrawnTabs, { type WithdrawnTab } from "@/components/WithdrawnTabs";
@@ -104,6 +105,9 @@ function GradeRow({
   // once one exists, else the AI's own score; "Edited" marks a submission where those two differ.
   const displayScore = rep.instructorScore ?? rep.aiScore;
   const isModified = rep.instructorScore !== null && rep.instructorScore !== rep.aiScore;
+  // The score reads as a chip in the Score Book colours (green ≥ 80%, blue 60–79%, red < 60%): a bare number with a
+  // faint "/100" beside it was hard to scan down a long column. Every pair below is ≥ 4.5:1 (see HANDOFF).
+  const scoreTone = displayScore !== null && maxPoints > 0 ? toneForPct((displayScore / maxPoints) * 100) : null;
 
   const STATUS_MAP = {
     not_graded: { label: t("ยังไม่ได้ตรวจ", "Not graded"), cls: "bg-[var(--bg-subtle)] text-[var(--text-secondary)]" },
@@ -116,7 +120,7 @@ function GradeRow({
     : STATUS_MAP[rep.status];
 
   return (
-    <tr className={`border-b border-gray-100 last:border-0 transition-colors ${isModified ? "bg-amber-50" : "hover:bg-gray-50"}`}>
+    <tr className={`border-b border-gray-100 last:border-0 transition-colors ${isModified ? "bg-[var(--s-warn-bg)]/60" : "hover:bg-gray-50"}`}>
       {/* Student / team */}
       <td className="px-4 py-3">
         {isTeam ? (
@@ -156,16 +160,16 @@ function GradeRow({
 
       {/* Score — read-only (23/9/2569). Editing happens only on the recheck page, per criterion. */}
       <td className="px-4 py-3">
-        <div className="flex items-center gap-1.5">
-          <span className={`text-sm tabular-nums ${isModified ? "font-semibold text-amber-700" : "text-[var(--text-primary)]"}`}>
-            {displayScore !== null ? displayScore : "—"}
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <span className={`inline-flex items-baseline gap-1 rounded-lg px-2.5 py-1 tabular-nums ${scoreTone ? SCORE_TONE_CLASSES[scoreTone] : "text-[var(--text-secondary)]"}`}>
+            <span className="text-sm font-bold">{displayScore !== null ? displayScore : "—"}</span>
+            {displayScore !== null && <span className="text-xs font-medium">/{maxPoints}</span>}
           </span>
-          <span className="text-gray-300 text-xs">/{maxPoints}</span>
           {isModified && rep.aiScore !== null && (
-            <span className="text-[10px] text-gray-400 whitespace-nowrap">{t(`AI: ${rep.aiScore}`, `AI: ${rep.aiScore}`)}</span>
+            <span className="text-xs text-[var(--text-secondary)] whitespace-nowrap">AI: {rep.aiScore}</span>
           )}
           {isModified && (
-            <span className="text-[10px] font-bold text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded whitespace-nowrap">
+            <span className="rounded-md border border-[var(--s-warn-bd)] bg-[var(--s-warn-bg)] px-1.5 py-0.5 text-xs font-bold text-[var(--s-warn-text)] whitespace-nowrap">
               {t("แก้ไขแล้ว", "Edited")}
             </span>
           )}
@@ -291,13 +295,14 @@ function GradeAdjustmentTable({
         <div className="flex items-center justify-between gap-3 px-5 py-3 border-b border-gray-100 flex-wrap">
           <PillTabBar
             ariaLabel={t("กรองตามสถานะ", "Filter by status")}
+            variant="boxed"
             activeKey={statusFilter}
             onChange={(k) => setStatusFilter(k as StatusFilter)}
             tabs={[
-              { key: "all", label: t("ทั้งหมด", "All"), count: rows.length },
-              { key: "need_review", label: t("รอตรวจสอบ", "Needs review"), count: countBy("need_review") },
-              { key: "not_graded", label: t("ยังไม่ตรวจ", "Not graded"), count: countBy("not_graded") },
-              { key: "graded", label: t("ตรวจแล้ว", "Graded"), count: countBy("graded") },
+              { key: "all", label: t("ทั้งหมด", "All"), count: rows.length, tone: "info" },
+              { key: "need_review", label: t("รอตรวจสอบ", "Needs review"), count: countBy("need_review"), tone: "warn" },
+              { key: "not_graded", label: t("ยังไม่ตรวจ", "Not graded"), count: countBy("not_graded"), tone: "neutral" },
+              { key: "graded", label: t("ตรวจแล้ว", "Graded"), count: countBy("graded"), tone: "ok" },
             ]}
           />
           <SearchInput
@@ -430,6 +435,15 @@ export default function GradingProgressPage() {
   const pct = total > 0 ? (processed / total) * 100 : 0;
   const isDone = total > 0 && processed === total;
   const finalized = !!assignment.gradingFinalized;
+  const pending = Math.max(0, total - processed);
+  const pendingUnit = isExam ? t("คน", pending === 1 ? "student" : "students") : t("งาน", pending === 1 ? "submission" : "submissions");
+  // What "Finish & announce" does, said up front (not only inside the confirm popup): results go out to the students.
+  const finishHint = finalized
+    ? t("ประกาศผลให้นักศึกษาแล้ว — แต่ละคนเห็นคะแนนของตัวเองแล้ว", "Results are announced — each student can see their own score.")
+        + (pending > 0 ? " " + t(`ยังมี ${pending} ${pendingUnit}ที่ยังไม่ตรวจ นักศึกษาเหล่านั้นจะเห็นคะแนนทันทีที่ตรวจเสร็จ`, `${pending} ${pendingUnit} still to grade — those students see their score as soon as it is graded.`) : "")
+    : isDone
+      ? t("ตรวจครบแล้ว — กด “เสร็จสิ้นและประกาศผล” เพื่อประกาศผลการตรวจไปให้นักศึกษา แต่ละคนจะเห็นคะแนนของตัวเองทันที", "Everything is graded — press “Finish & announce” to send the results to your students. Each one sees their own score right away.")
+      : t(`ตรวจให้ครบก่อน (เหลืออีก ${pending} ${pendingUnit}) แล้วกด “เสร็จสิ้นและประกาศผล” — ระบบจะประกาศผลการตรวจไปให้นักศึกษา ตอนนี้นักศึกษาเห็นแค่ว่างานกำลังถูกตรวจ`, `Grade the remaining ${pending} ${pendingUnit}, then press “Finish & announce” — the results are announced to your students. Until then they only see that their work is being graded.`);
 
   // "Finish" is also the announcement (25/9/2569): students see no score until this is confirmed
   // (see studentVisibleSubmission), so it always goes through a confirm popup.
@@ -533,7 +547,7 @@ export default function GradingProgressPage() {
               </svg>
               {t("แก้ไขงาน", "Edit Assignment")}
             </Link>
-            {isDone && finalized ? (
+            {finalized ? (
               <>
                 <Link
                   href={`/teacher/courses/${id}/assignments/${assignmentId}/results`}
@@ -549,6 +563,11 @@ export default function GradingProgressPage() {
                   <span className="w-1.5 h-1.5 rounded-full bg-current" aria-hidden="true" />
                   {t("ประกาศผลแล้ว", "Results announced")}
                 </span>
+                {!isDone && total > 0 && (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border bg-[var(--s-warn-bg)] text-[var(--s-warn-text)] border-[var(--s-warn-bd)]">
+                    {t(`ยังไม่ตรวจ ${pending} ${pendingUnit}`, `${pending} ${pendingUnit} to grade`)}
+                  </span>
+                )}
                 {/* Safety valve (23/9/2569) — finalizing was never meant to be a one-way door. */}
                 <button
                   type="button"
@@ -572,15 +591,36 @@ export default function GradingProgressPage() {
                 {t("เสร็จสิ้นและประกาศผล", "Finish & announce")}
               </button>
             ) : (
-              <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[var(--accent-bright)]/60 text-[var(--text-primary)] text-sm font-semibold select-none">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
-                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+              // Not everything is graded yet: the button is there but disabled, with the reason, so it is clear
+              // where the announcement comes from and what is still missing.
+              <button
+                type="button"
+                disabled
+                aria-describedby="finish-hint"
+                title={total === 0 ? t("ยังไม่มีงานให้ประกาศ", "Nothing to announce yet") : t(`ตรวจให้ครบก่อน — เหลือ ${pending} ${pendingUnit}`, `Finish grading first — ${pending} ${pendingUnit} left`)}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] text-sm font-semibold text-[var(--text-secondary)] cursor-not-allowed"
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+                  <polyline points="20 6 9 17 4 12"/>
                 </svg>
-                {t("กำลังตรวจ", "Grading")}
-              </span>
+                {t("เสร็จสิ้นและประกาศผล", "Finish & announce")}
+              </button>
             )}
           </div>
         </div>
+
+        {total > 0 && (
+          <div
+            id="finish-hint"
+            role="note"
+            className={`mb-5 flex items-start gap-3 rounded-xl border px-4 py-3 text-sm leading-relaxed ${finalized ? "border-[var(--s-ok-bd)] bg-[var(--s-ok-bg)] text-[var(--s-ok-text)]" : "border-[var(--s-info-bd)] bg-[var(--s-info-bg)] text-[var(--s-info-text)]"}`}
+          >
+            <svg className="mt-0.5 shrink-0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+            </svg>
+            <p>{finishHint}</p>
+          </div>
+        )}
 
         {/* Enrolled / Withdrawn — only appears once someone has withdrawn */}
         <WithdrawnTabs tab={tab} onChange={setTabState} activeCount={isExam ? activeCount : rows.length} withdrawnCount={withdrawnCount} />

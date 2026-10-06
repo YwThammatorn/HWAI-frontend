@@ -99,7 +99,8 @@ test.describe("P4 — Course Landing: Details + Grading Categories", () => {
   test("details card shows code, section, schedule, room, instructor", async ({ page }) => {
     await page.goto(`${BASE}/teacher/courses/c-p4`);
     await page.waitForLoadState("networkidle");
-    await expect(page.getByRole("main").getByText("01076036")).toBeVisible();
+    // the course code now also sits in the header banner above (30/9/2569) — the Details card's own copy is the later match
+    await expect(page.getByRole("main").getByText("01076036").last()).toBeVisible();
     await expect(page.getByText("Mon 9:00-12:00")).toBeVisible();
     await expect(page.getByText("305")).toBeVisible();
     await expect(page.getByText("ผศ.ดร. Chompoonuch Sanguan")).toBeVisible();

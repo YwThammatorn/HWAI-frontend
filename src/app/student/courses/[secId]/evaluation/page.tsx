@@ -8,7 +8,9 @@ import { dateLocale } from "@/lib/dateLocale";
 import { useAuth } from "@/context/AuthContext";
 import { useCourses } from "@/lib/courses";
 import { useAssignments, studentVisibleSubmission, type Assignment } from "@/lib/assignments";
-import { useGradingCategories, computeCategoryGradeRows, computeTotalSoFar, type CategoryGradeRow } from "@/lib/gradingCategories";
+import { useGradingCategories, computeCategoryGradeRows, computeTotalSoFar, scoreForAssignment, type CategoryGradeRow } from "@/lib/gradingCategories";
+import { computeExamStats } from "@/lib/examStats";
+import ExamStatsCard from "@/components/ExamStatsCard";
 import { buildScoreBook, gradeLetter, toneForPct, SCORE_TONE_CLASSES, PENDING_CHIP_CLASSES, MISSING_CHIP_CLASSES, type ScoreCell } from "@/lib/scoreBook";
 import EmptyState from "@/components/EmptyState";
 import StatCard from "@/components/StatCard";
@@ -71,6 +73,11 @@ export default function StudentEvaluationPage() {
     today,
   });
   const myRow = book.rows[0];
+  // Announced exams only — computeExamStats returns null for anything else.
+  const examCards = assignments.flatMap((a) => {
+    const stats = computeExamStats(a, allSubmissions);
+    return stats ? [{ assignment: a, stats, myScore: scoreForAssignment(allSubmissions, a.id, studentId) }] : [];
+  });
   const gradedPct = book.totalCells > 0 ? Math.round((book.gradedCells / book.totalCells) * 100) : 0;
   const awaitingCount = book.pendingCells + book.missingCells;
   // Skip the "no category" bucket's own section-header row when it's the only group — that's the
@@ -273,6 +280,18 @@ export default function StudentEvaluationPage() {
               })}
             </table>
           </div>
+
+          {examCards.length > 0 && (
+            <section className="mt-8" aria-labelledby="exam-stats-heading">
+              <h2 id="exam-stats-heading" className="text-base font-bold text-[var(--text-primary)] mb-1">{t("สถิติการสอบ", "Exam statistics")}</h2>
+              <p className="text-xs text-[var(--text-muted)] mb-3">{t("คะแนนของคุณเทียบกับทั้งห้อง แสดงเมื่ออาจารย์ประกาศผลสอบแล้ว", "Your score against the class, shown once your teacher has announced the exam results")}</p>
+              <div className="grid gap-4 xl:grid-cols-2">
+                {examCards.map((c) => (
+                  <ExamStatsCard key={c.assignment.id} name={c.assignment.name} maxPoints={c.assignment.maxPoints} stats={c.stats} myScore={c.myScore} headingTag="h3" />
+                ))}
+              </div>
+            </section>
+          )}
         </>
       )}
 

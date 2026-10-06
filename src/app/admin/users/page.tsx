@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useLanguage } from "@/context/LanguageContext";
 import { useManagedTeachers, ManagedTeacher, splitTeacherTitle } from "@/lib/managed-teachers";
 import { useCohortStudents, CohortStudent } from "@/lib/cohort-students";
-import { getInitials } from "@/lib/utils";
 import { splitCsvLine } from "@/lib/csv";
 import EmptyState from "@/components/EmptyState";
 import Modal from "@/components/Modal";
@@ -842,11 +842,11 @@ function TeachersTab() {
         <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] overflow-hidden">
           <table className="w-full text-sm table-fixed" role="table">
             <colgroup>
-              <col className="w-[76px]" />
-              <col className="w-[32%]" />
-              <col className="w-[36%]" />
-              <col className="w-[120px]" />
-              <col className="w-24" />
+              <col className="w-[14%]" />
+              <col className="w-[21%]" />
+              <col className="w-[28%]" />
+              <col className="w-[18%]" />
+              <col className="w-[19%]" />
             </colgroup>
             <thead>
               <tr className="border-b border-[var(--border-subtle)]">
@@ -881,12 +881,7 @@ function TeachersTab() {
                         {draftErrors.name && <p role="alert" className="text-[10px] text-[var(--s-err-text)] mt-0.5">{draftErrors.name}</p>}
                       </div>
                     ) : (
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="w-6 h-6 rounded-full bg-[var(--accent-bright)]/20 flex items-center justify-center text-[var(--accent)] text-[10px] font-bold shrink-0 select-none" aria-hidden="true">
-                          {getInitials(teacher.name)}
-                        </div>
-                        <span className="truncate">{teacher.name}</span>
-                      </div>
+                      <span className="truncate">{teacher.name}</span>
                     )}
                   </td>
                   <td className="px-4 py-1 text-[var(--text-secondary)] truncate">
@@ -1141,10 +1136,18 @@ const batchOf = (studentId: string) => studentId.slice(0, 2);
 function DeactivateBatchModal({ open, onClose, students, onConfirm }: {
   open: boolean;
   onClose: () => void;
-  students: { id: string; studentId: string; program: string; status?: string }[];
+  students: { id: string; studentId: string; firstName: string; lastName: string; program: string; status?: string }[];
   onConfirm: (batch: string, ids: string[], programLabel?: string) => void;
 }) {
   const { t } = useLanguage();
+  // A few people outside the batch pattern (30/9/2569) — picked one at a time via search, on top
+  // of whatever the batch + program selection already covers. Cleared every time the modal opens,
+  // so a pick from a previous, cancelled run never silently rides along into a later one.
+  const [extraIds, setExtraIds] = useState<string[]>([]);
+  const [addQuery, setAddQuery] = useState("");
+  useEffect(() => {
+    if (open) { setExtraIds([]); setAddQuery(""); }
+  }, [open]);
   // full program names, never the CE / CECS / CEI abbreviations (same 3-entry map as the other places in this file)
   const PROGRAM_NAME: Record<string, string> = {
     CE: t("วิศวกรรมคอมพิวเตอร์", "Computer Engineering"),
@@ -1164,6 +1167,19 @@ function DeactivateBatchModal({ open, onClose, students, onConfirm }: {
   const program = programsInBatch.includes(pickedProgram) ? pickedProgram : "all";   // a program the new batch doesn't have falls back to "all"
   const inBatch = program === "all" ? wholeBatch : wholeBatch.filter((s) => s.program === program);
 
+  // Individually-added people, on top of the batch/program selection above — picking someone
+  // already in it is harmless (the final list below dedupes by id).
+  const inBatchIds = new Set(inBatch.map((s) => s.id));
+  const addCandidates = active.filter((s) => !inBatchIds.has(s.id) && !extraIds.includes(s.id));
+  const candidateLabel = (s: { firstName: string; lastName: string; studentId: string }) => `${s.firstName} ${s.lastName} (${s.studentId})`;
+  function handleAddQueryChange(v: string) {
+    setAddQuery(v);
+    const match = addCandidates.find((s) => candidateLabel(s) === v);
+    if (match) { setExtraIds((ids) => [...ids, match.id]); setAddQuery(""); }
+  }
+  const extras = active.filter((s) => extraIds.includes(s.id));
+  const finalIds = [...new Set([...inBatch.map((s) => s.id), ...extraIds])];
+
   return (
     <Modal open={open} onClose={onClose} size="md" title={t("ปิดใช้งานทั้งรุ่น", "Deactivate a whole batch")}
       description={t("ใช้เมื่อนักศึกษารุ่นนั้นจบแล้ว — ทุกคนในรุ่นจะเปลี่ยนเป็น “พ้นสภาพ”", "For when a batch has graduated — everyone in it becomes “Inactive”")}
@@ -1173,9 +1189,9 @@ function DeactivateBatchModal({ open, onClose, students, onConfirm }: {
             className="h-10 px-5 rounded-xl border border-[var(--border)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors">
             {t("ยกเลิก", "Cancel")}
           </button>
-          <button onClick={() => onConfirm(batch, inBatch.map((s) => s.id), program === "all" ? undefined : programName(program))} disabled={inBatch.length === 0}
+          <button onClick={() => onConfirm(batch, finalIds, program === "all" ? undefined : programName(program))} disabled={finalIds.length === 0}
             className="h-10 px-5 rounded-xl bg-amber-700 text-white text-sm font-semibold hover:bg-amber-800 active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors">
-            {t(`ปิดใช้งาน ${inBatch.length} คน`, `Deactivate ${inBatch.length} student${inBatch.length === 1 ? "" : "s"}`)}
+            {t(`ปิดใช้งาน ${finalIds.length} คน`, `Deactivate ${finalIds.length} student${finalIds.length === 1 ? "" : "s"}`)}
           </button>
         </>
       }
@@ -1206,6 +1222,40 @@ function DeactivateBatchModal({ open, onClose, students, onConfirm }: {
           {" · "}
           <span className="text-[var(--text-muted)]">{program === "all" ? t("ทุกสาขา", "all programs") : programName(program)}</span>
         </p>
+
+        {/* A few people outside the batch pattern — found one at a time, not limited to this batch/program (30/9/2569) */}
+        <div className="flex flex-col gap-1.5 pt-1 border-t border-[var(--border-subtle)]">
+          <label htmlFor="batch-add-individual" className="text-xs font-semibold text-[var(--text-muted)] mt-3">
+            {t("เพิ่มคนที่ยังไม่จบเป็นรายคน (ไม่บังคับ)", "Also deactivate individually (optional)")}
+          </label>
+          <SearchInput
+            value={addQuery}
+            onChange={handleAddQueryChange}
+            placeholder={t("ค้นหาชื่อนักศึกษา...", "Search student name...")}
+            ariaLabel={t("เพิ่มคนที่ยังไม่จบเป็นรายคน", "Also deactivate individually")}
+            suggestions={addCandidates.map(candidateLabel)}
+          />
+          {extras.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mt-1">
+              {extras.map((s) => (
+                <span key={s.id} className="inline-flex items-center gap-1 pl-2.5 pr-1 py-1 rounded-full bg-[var(--accent-bright)]/10 text-[var(--accent)] text-xs font-medium">
+                  {s.firstName} {s.lastName}
+                  <button
+                    type="button"
+                    onClick={() => setExtraIds((ids) => ids.filter((id) => id !== s.id))}
+                    aria-label={t(`เอา ${s.firstName} ${s.lastName} ออก`, `Remove ${s.firstName} ${s.lastName}`)}
+                    className="w-4 h-4 flex items-center justify-center rounded-full hover:bg-black/10 transition-colors"
+                  >
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" aria-hidden="true">
+                      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+
         <p className="text-xs text-[var(--text-muted)]">
           {t("ข้อมูลและรายวิชาที่เคยลงยังอยู่ครบ เปิดใช้งานคืนทีละคนได้ หรือกด “เลิกทำ” ทันทีหลังจากนี้", "Their records and course enrolments stay. You can activate people again one by one, or press “Undo” right after.")}
         </p>
@@ -1214,7 +1264,7 @@ function DeactivateBatchModal({ open, onClose, students, onConfirm }: {
   );
 }
 
-function StudentsTab() {
+function StudentsTab({ statusTabsSlot }: { statusTabsSlot: HTMLDivElement | null }) {
   const { t } = useLanguage();
   const { cohortStudents, updateCohortStudent, updateCohortStudents, removeCohortStudent, findByStudentId } = useCohortStudents();
   const [importOpen, setImportOpen] = useState(false);
@@ -1226,12 +1276,18 @@ function StudentsTab() {
   const [deactivatingId, setDeactivatingId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [programFilter, setProgramFilter] = useState("CE");
-  // Inactive students are hidden until asked for (26/9/2569): one "Show inactive" switch in the filter row,
-  // not a second tab bar under the Teachers/Students one. When on, they follow the active students, dimmed.
-  const [showInactive, setShowInactive] = useState(false);
-  // Sorting lives on the column headers (click Student ID / Name / Status), one active
-  // key at a time. Default = Student ID ascending; Name and Status cycle asc → desc → back to default.
-  const [sort, setSort] = useState<{ key: "id" | "name" | "status"; dir: "asc" | "desc" }>({ key: "id", dir: "asc" });
+  // Active / Inactive as subtabs (30/9/2569) — was one "Show inactive" switch that mixed both into
+  // the same list. Splitting them into tabs (same PillTabBar as Teachers/Students itself, and the
+  // teacher roster's Enrolled/Withdrawn) means a status is never ambiguous from the row alone, and
+  // there's a natural place to land on after a search only matches the other tab (see the effect below).
+  const [statusTab, setStatusTab] = useState<"active" | "inactive">("active");
+  // True right after a search auto-switched the tab (below) — highlights the matched rows so the
+  // jump doesn't feel like a silent teleport. Cleared on the next manual tab click or empty search.
+  const [autoJumped, setAutoJumped] = useState(false);
+  // Sorting lives on the column headers (click Student ID / Name), one active key at a time.
+  // Default = Student ID ascending; Name cycles asc → desc → back to default. Status no longer
+  // sorts — every row in a tab already shares the same status, so there's nothing left to order by.
+  const [sort, setSort] = useState<{ key: "id" | "name"; dir: "asc" | "desc" }>({ key: "id", dir: "asc" });
   function toggleIdSort() {
     setSort((s) => ({ key: "id", dir: s.key === "id" && s.dir === "asc" ? "desc" : "asc" }));
   }
@@ -1240,15 +1296,6 @@ function StudentsTab() {
       if (s.key !== "name") return { key: "name", dir: "asc" };
       return s.dir === "asc" ? { key: "name", dir: "desc" } : { key: "id", dir: "asc" };
     });
-  }
-  // Status: Active first → Inactive first → back to the default. Sorting by status only shows anything
-  // when inactive students are on the list, so the first click also switches "Show inactive" on.
-  function toggleStatusSort() {
-    setSort((s) => {
-      if (s.key !== "status") return { key: "status", dir: "asc" };
-      return s.dir === "asc" ? { key: "status", dir: "desc" } : { key: "id", dir: "asc" };
-    });
-    if (sort.key !== "status") setShowInactive(true);
   }
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 10;
@@ -1319,32 +1366,45 @@ function StudentsTab() {
     CEI: t("วิศวกรรมคอมพิวเตอร์นานาชาติ", "Computer Engineering International"),
   };
 
-  const inProgramAndSearch = cohortStudents.filter((s) => {
-    const matchProgram = s.program === programFilter;
+  const isInactiveStudent = (s: { status?: string }) => s.status === "inactive";
+  const inProgram = cohortStudents.filter((s) => s.program === programFilter);
+  // Whether the Inactive tab exists at all — based on the whole program, not the current search,
+  // so typing a query that happens to match 0 inactive people doesn't make the tab flicker away.
+  const hasInactiveInProgram = inProgram.some(isInactiveStudent);
+  const inProgramAndSearch = inProgram.filter((s) => {
     const q = search.toLowerCase();
-    const matchSearch = !q || s.studentId.includes(q) || s.firstName.toLowerCase().includes(q) ||
+    return !q || s.studentId.includes(q) || s.firstName.toLowerCase().includes(q) ||
       s.lastName.toLowerCase().includes(q) || `${s.firstName} ${s.lastName}`.toLowerCase().includes(q) ||
       s.email.toLowerCase().includes(q);
-    return matchProgram && matchSearch;
   });
-  const isInactiveStudent = (s: { status?: string }) => s.status === "inactive";
-  const inactiveCount = inProgramAndSearch.filter(isInactiveStudent).length;
-  const filtered = inProgramAndSearch.filter((s) => showInactive || !isInactiveStudent(s));
-  filtered.sort((a, b) => {
-    const byStatus = Number(isInactiveStudent(a)) - Number(isInactiveStudent(b));
-    // sorted by the Status column: that decides the order (then Student ID); otherwise active students
-    // come first and the inactive ones follow (they are only on the list while the switch is on)
-    if (sort.key === "status") {
-      if (byStatus !== 0) return sort.dir === "asc" ? byStatus : -byStatus;
-      return a.studentId.localeCompare(b.studentId, undefined, { numeric: true });
+  const activeMatches = inProgramAndSearch.filter((s) => !isInactiveStudent(s));
+  const inactiveMatches = inProgramAndSearch.filter(isInactiveStudent);
+  const activeCount = activeMatches.length;
+  const inactiveCount = inactiveMatches.length;
+
+  // A search that only matches the other tab jumps there automatically instead of showing
+  // "no results" while the person is one click away on the other status.
+  useEffect(() => {
+    if (!search.trim()) { setAutoJumped(false); return; }
+    const here = statusTab === "active" ? activeCount : inactiveCount;
+    const there = statusTab === "active" ? inactiveCount : activeCount;
+    if (here === 0 && there > 0) {
+      setStatusTab(statusTab === "active" ? "inactive" : "active");
+      setAutoJumped(true);
+    } else {
+      setAutoJumped(false);
     }
-    if (byStatus !== 0) return byStatus;
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- deliberately excludes statusTab: it's the effect's own output, not a trigger
+  }, [search, programFilter, activeCount, inactiveCount]);
+
+  const filtered = statusTab === "inactive" ? inactiveMatches : activeMatches;
+  filtered.sort((a, b) => {
     const cmp = sort.key === "name"
       ? `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`, "th")
       : a.studentId.localeCompare(b.studentId, undefined, { numeric: true });
     return sort.dir === "asc" ? cmp : -cmp;
   });
-  useEffect(() => { setPage(1); }, [search, programFilter, showInactive, sort]);
+  useEffect(() => { setPage(1); }, [search, programFilter, statusTab, sort]);
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
@@ -1364,12 +1424,30 @@ function StudentsTab() {
   function deactivateStudent(id: string) {
     updateCohortStudent(id, { status: "inactive" });
     setDeactivatingId(null);
+    setStatusTab("inactive");
+    setAutoJumped(false);
   }
 
   const COL_COUNT = 7;
 
+  // Active / Inactive — StudentsTab's own state, portaled onto the same line as the Teachers/Students
+  // tabs above (30/9/2569) via the slot the parent renders there, instead of a separate row down here.
+  const statusTabs = hasInactiveInProgram && statusTabsSlot && createPortal(
+    <PillTabBar
+      ariaLabel={t("สถานะนักศึกษา", "Student status")}
+      activeKey={statusTab}
+      onChange={(k) => { setStatusTab(k as "active" | "inactive"); setAutoJumped(false); }}
+      tabs={[
+        { key: "active", label: t("ปกติ", "Active"), count: activeCount },
+        { key: "inactive", label: t("พ้นสภาพ", "Inactive"), count: inactiveCount },
+      ]}
+    />,
+    statusTabsSlot
+  );
+
   return (
     <div>
+      {statusTabs}
       {/* Action bar */}
       <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
         <div className="flex items-center gap-2 flex-wrap">
@@ -1380,6 +1458,10 @@ function StudentsTab() {
             className="w-48 shrink-0"
             rounded="full"
             suggestions={cohortStudents.map((s) => `${s.firstName} ${s.lastName}`)}
+            suggestionMeta={(s) => {
+              const match = cohortStudents.find((c) => `${c.firstName} ${c.lastName}` === s);
+              return match && isInactiveStudent(match) ? t("พ้นสภาพ", "Inactive") : undefined;
+            }}
           />
           {programs.length > 0 && (
             <FilterSelect
@@ -1395,20 +1477,6 @@ function StudentsTab() {
               {programs.map((p) => <option key={p} value={p}>{PROGRAM_LABEL[p] ?? p}</option>)}
             </FilterSelect>
           )}
-          <button
-            type="button"
-            role="switch"
-            aria-checked={showInactive}
-            onClick={() => setShowInactive((v) => !v)}
-            disabled={inactiveCount === 0}
-            className="flex items-center gap-2 h-9 px-3 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-sm text-[var(--text-primary)] hover:border-[var(--accent-bright)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] disabled:opacity-50 disabled:pointer-events-none transition-colors whitespace-nowrap"
-          >
-            <span aria-hidden="true" className={`relative inline-flex h-4 w-7 shrink-0 items-center rounded-full transition-colors ${showInactive ? "bg-[var(--accent)]" : "bg-[var(--border)]"}`}>
-              <span className={`inline-block h-3 w-3 rounded-full bg-white shadow transition-transform ${showInactive ? "translate-x-3.5" : "translate-x-0.5"}`} />
-            </span>
-            {t("แสดงที่พ้นสภาพ", "Show inactive")}
-            <span className="text-xs tabular-nums text-[var(--text-muted)]">({inactiveCount})</span>
-          </button>
           <button
             type="button"
             onClick={() => setBatchOpen(true)}
@@ -1489,9 +1557,9 @@ function StudentsTab() {
                 <col className="w-[8%]" />
                 <col className="w-[16%]" />
                 <col className="w-[17%]" />
-                <col className="w-[29%]" />
+                <col className="w-[26%]" />
                 <col className="w-[9%]" />
-                <col className="w-[9%]" />
+                <col className="w-[12%]" />
               </colgroup>
               <thead className="sticky top-0 z-10">
                 <tr className="border-b border-[var(--border-subtle)]">
@@ -1502,17 +1570,16 @@ function StudentsTab() {
                     hint={t("คลิกเพื่อเรียงตามชื่อ (ก–ฮ → ฮ–ก → กลับไปเรียงตามรหัส)", "Click to sort by name (A–Z → Z–A → back to ID order)")} />
                   <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("อีเมล", "Email")}</th>
                   <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("สาขา", "Program")}</th>
-                  <SortableTh label={t("สถานะ", "Status")} dir={sort.key === "status" ? sort.dir : undefined} onClick={toggleStatusSort}
-                    hint={t("คลิกเพื่อเรียงตามสถานะ (ปกติก่อน → พ้นสภาพก่อน → กลับไปเรียงตามรหัส) — จะเปิดแสดงคนที่พ้นสภาพให้ด้วย", "Click to sort by status (Active first → Inactive first → back to Student ID) — also shows inactive students")} />
-                  <th scope="col" className="px-4 py-1 text-right text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("การจัดการ", "Actions")}</th>
+                  <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("สถานะ", "Status")}</th>
+                  <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("การจัดการ", "Actions")}</th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.length === 0 ? (
                   <tr>
                     <td colSpan={COL_COUNT} className="px-4 py-8 text-center text-sm text-[var(--text-muted)]">
-                      {!search && !showInactive && inactiveCount > 0
-                        ? t("ทุกคนในสาขานี้พ้นสภาพแล้ว — เปิด “แสดงที่พ้นสภาพ” เพื่อดู", "Everyone in this program is inactive — turn on “Show inactive” to see them")
+                      {!search && statusTab === "active" && activeCount === 0 && inactiveCount > 0
+                        ? t("ทุกคนในสาขานี้พ้นสภาพแล้ว — ดูที่แท็บ “พ้นสภาพ”", "Everyone in this program is inactive — see the “Inactive” tab")
                         : t("ไม่พบผลการค้นหา", "No results found")}
                     </td>
                   </tr>
@@ -1524,7 +1591,7 @@ function StudentsTab() {
                     return (
                       <tr
                         key={student.id}
-                        className={`border-b border-[var(--border-subtle)] transition-colors hover:bg-[var(--bg-subtle)] ${isInactive ? "opacity-70" : ""}`}
+                        className={`border-b border-[var(--border-subtle)] transition-colors hover:bg-[var(--bg-subtle)] ${autoJumped ? "bg-[var(--accent-bright)]/10" : ""}`}
                       >
                         <td className="px-4 py-1 text-[var(--text-secondary)] tabular-nums truncate">
                           {isEditing ? (
@@ -1584,7 +1651,7 @@ function StudentsTab() {
                           </span>
                         </td>
                         <td className="px-4 py-1">
-                          <div className="flex items-center justify-end gap-1">
+                          <div className="flex items-center gap-1">
                             {isEditing ? (
                               <>
                                 <button
@@ -1677,7 +1744,7 @@ function StudentsTab() {
         open={batchOpen}
         onClose={() => setBatchOpen(false)}
         students={cohortStudents}
-        onConfirm={(batch, ids, program) => { updateCohortStudents(ids, { status: "inactive" }); setBatchNotice({ batch, ids, program }); setBatchOpen(false); }}
+        onConfirm={(batch, ids, program) => { updateCohortStudents(ids, { status: "inactive" }); setBatchNotice({ batch, ids, program }); setBatchOpen(false); setStatusTab("inactive"); setAutoJumped(false); }}
       />
 
       {deletingStudent && (
@@ -1763,6 +1830,10 @@ export default function AdminUsersPage() {
   const [tab, setTab] = useState<Tab>("teachers");
   const { teachers } = useManagedTeachers();
   const { cohortStudents } = useCohortStudents();
+  // Portal target for StudentsTab's own Active/Inactive subtab (30/9/2569) — it's StudentsTab's
+  // state, but the user wants it rendered on the same line as Teachers/Students above, not down
+  // inside the tab panel. A ref callback avoids a null-on-first-render gap from useRef+useEffect.
+  const [studentStatusSlot, setStudentStatusSlot] = useState<HTMLDivElement | null>(null);
 
   const TABS: { key: Tab; label: string }[] = [
     { key: "teachers", label: t("อาจารย์", "Teachers") },
@@ -1810,19 +1881,21 @@ export default function AdminUsersPage() {
         />
       </div>
 
-      {/* Pill tabs */}
-      <div className="mb-6">
+      {/* Pill tabs — the Active/Inactive subtab (StudentsTab's own state) portals into the slot
+          here so it reads as attached to "Students", on the same line, not a separate row below. */}
+      <div className="mb-6 flex items-center gap-3 flex-wrap">
         <PillTabBar
           tabs={TABS}
           activeKey={tab}
           onChange={(k) => setTab(k as Tab)}
           ariaLabel={t("ประเภทผู้ใช้", "User type")}
         />
+        {tab === "students" && <div ref={setStudentStatusSlot} className="flex items-center" />}
       </div>
 
       {/* Tab panels */}
       <div role="tabpanel">
-        {tab === "teachers" ? <TeachersTab /> : <StudentsTab />}
+        {tab === "teachers" ? <TeachersTab /> : <StudentsTab statusTabsSlot={studentStatusSlot} />}
       </div>
     </div>
   );

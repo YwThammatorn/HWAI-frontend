@@ -11,6 +11,7 @@ import { useAssignments, Assignment, Submission, studentVisibleSubmission, DUE_S
 import { useGradingCategories, GradingCategory } from "@/lib/gradingCategories";
 import AssignmentStatusBadge, { AssignmentStatus } from "@/components/AssignmentStatusBadge";
 import AssignmentTypeBadge from "@/components/AssignmentTypeBadge";
+import { CourseIcon } from "@/components/CourseIcon";
 
 
 // ── Status helper ──────────────────────────────────────────────────────────
@@ -196,18 +197,22 @@ export default function StudentClassworkPage() {
           <div className="absolute inset-0 bg-black/10" />
           <div className="absolute bottom-4 left-5 right-5 flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center shrink-0" aria-hidden="true">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
-                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-              </svg>
+              <CourseIcon iconKey={course.icon} size={20} className="text-white" />
             </div>
             <div className="min-w-0">
+              {course.code && <p className="text-white/80 text-xs font-semibold tracking-wide tabular-nums truncate">{course.code}</p>}
               <h1 className="text-xl font-bold text-white truncate">{course.name}</h1>
-              <p className="text-white/80 text-xs mt-0.5 max-w-md truncate">
-                {course.description || t(`${assignments.length} งานทั้งหมด`, `${assignments.length} assignment(s) total`)}
-              </p>
             </div>
           </div>
         </div>
+
+        {/* Description — its own card, separate from the banner (30/9/2569); read-only for students */}
+        {course.description && (
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-6">
+            <h2 className="text-base font-bold text-[var(--text-primary)] mb-2">{t("คำอธิบายรายวิชา", "Description")}</h2>
+            <p className="text-sm text-[var(--text-secondary)] whitespace-pre-wrap">{course.description}</p>
+          </div>
+        )}
 
         {/* Two columns on wide screens: work on the left, grading categories (สัดส่วนคะแนน) on the right.
             Below xl everything stacks: work first, categories after. */}

@@ -118,7 +118,9 @@ test.describe("Exam — teacher enters the scores", () => {
     expect(subs[0]).toMatchObject({ assignmentId: "ex1", studentId: "69070301", instructorScore: 42, status: "graded", fileUrl: null });
     await expect(page.getByRole("row", { name: /Nok Exam/ }).getByText("Scored")).toBeVisible();
     await expect(page.getByRole("row", { name: /Pim Exam/ }).getByText("Not scored")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Finish & announce" })).toHaveCount(0); // Pim still has no score
+    // Pim still has no score → the button is there, but disabled, and the note says how many are left
+    await expect(page.getByRole("button", { name: "Finish & announce" })).toBeDisabled();
+    await expect(page.getByRole("note")).toContainText("1 student");
   });
 
   test("a score above the maximum is rejected, and Finish & announce appears once everyone is scored", async ({ page }) => {
@@ -179,7 +181,8 @@ test.describe("Exam — student side", () => {
     await seed(page, "student", { submissions: [graded("69070301", 42)], announced: true });
     await page.goto(`${BASE}/student/courses/c-ex/classwork/ex1`);
     await page.waitForLoadState("networkidle");
-    await expect(page.getByText("42/50")).toBeVisible();
+    // the score now lives in the class-statistics card (the "My Work" card is gone for a scored exam)
+    await expect(page.getByText("42 / 50")).toBeVisible();
     await expect(page.getByText("Waiting for your exam score")).toHaveCount(0);
     await expect(page.getByRole("button", { name: /^(Submit|Resubmit)$/ })).toHaveCount(0);
   });

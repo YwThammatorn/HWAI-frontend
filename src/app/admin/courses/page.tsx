@@ -614,7 +614,9 @@ function CourseRow({
             </span>
           )}
           <p className="flex-1 min-w-0 text-xs text-[var(--text-muted)] truncate">
-            {assignedTeachers.length > 0 ? assignedTeachers.map((tc) => tc.name).join(", ") : t("ยังไม่มีอาจารย์ assigned", "No teachers assigned")}
+            {assignedTeachers.length > 0
+              ? assignedTeachers.map((tc) => (tc.title ? `${tc.title} ${tc.name}` : tc.name)).join(", ")
+              : t("ยังไม่มีอาจารย์ assigned", "No teachers assigned")}
           </p>
           <span className={`transition-transform duration-200 text-[var(--text-muted)] shrink-0 ${expanded ? "rotate-180" : ""}`} aria-hidden="true">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -698,6 +700,10 @@ function SubjectCard({
   // (duplicating an archived course as a new active one isn't a meaningful action).
   const source = subject.courses.find((c) => c.status === "active");
   const n = subject.courses.length;
+  // Sections sort newest-first (see CourseRow's comment above), so `first`'s own year/term is the
+  // one to headline next to the name — the per-row badges below still carry each section's own
+  // term for the (already-filterable) case where a card mixes a current offering with older ones.
+  const headlineTerm = termLabel(first, t);
 
   return (
     <section aria-label={subject.name} className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] overflow-hidden">
@@ -711,6 +717,11 @@ function SubjectCard({
             {subject.code && (
               <span className="text-[10px] font-semibold tabular-nums px-1.5 py-0.5 rounded-md bg-[var(--accent-bright)]/15 text-[var(--accent)] shrink-0">
                 {subject.code}
+              </span>
+            )}
+            {headlineTerm && (
+              <span className="text-[10px] font-semibold tabular-nums px-1.5 py-0.5 rounded-md border border-[var(--border-subtle)] text-[var(--text-secondary)] shrink-0">
+                {headlineTerm}
               </span>
             )}
           </div>
