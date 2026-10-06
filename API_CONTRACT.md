@@ -131,6 +131,12 @@ non-withdrawn student enrolled. Reject a student from another program (suggest `
 section's) — the frontend already blocks it in the UI (`lib/sectionProgram.ts`), but the UI check is not a substitute.
 When a batch contains a mix, enrol the matching rows and report the rest per row, as the CSV import preview does.
 
+**HWAI-backend enforces this.** `POST /api/courses/:courseId/students` answers
+`201 { enrolled: Student[], rejected: { studentId, program, sectionProgram, reason: "wrong_program" }[] }`
+(`rejected` is `[]` when everyone fit), or `422 { error, rejected }` when nobody did. A student unknown to the
+cohort list has no program and is accepted, as in the UI. `api/students.ts` throws when anything was rejected, so
+the write queue alerts and reloads the rosters instead of showing a student the server didn't enrol.
+
 ### Cohort students (account-level) — `lib/api/cohort-students.ts`
 | Function | Verb + path | Request | Response |
 |---|---|---|---|
