@@ -37,6 +37,8 @@ Swagger at `/docs`):
 - **Admin**: courses, curriculum (versions + course templates), managed teachers, cohort students
 - **Course content** (student pages + the teacher's create/edit assignment pages): course rosters
   (`Student`), grading categories, assignments + rubrics + submissions, student groups
+- **Course staff**: section roles (Collaborators — a TA is a student, a co-teacher a teacher; the server
+  removes a person's roles when their account is deleted) and CLOs
 - **Uploaded files** — `lib/fileStorage.ts` uploads to `POST /api/files` and a file's key is its id,
   served at `GET /api/files/:id` (10MB limit). Mock `hwai_file_…` keys still resolve from localStorage.
 
@@ -50,9 +52,9 @@ client-generated id (the backend accepts `id` on create), then push the write th
 tick (create course → assign teacher; create assignment → add rubric → set its rubricIds) reach the
 server in order. A failed write shows an alert and reloads that domain from the server.
 
-Still localStorage-only: CLOs, section roles, grading assignments, notifications — and announcements,
-weekly plan and teaching materials, which are hidden by `lib/featureFlags.ts` for now; their backend
-gets built when they come back.
+Still localStorage-only, all currently hidden by `lib/featureFlags.ts`: grading assignments (Grading
+Split), notifications, announcements, weekly plan and teaching materials — their backend gets built when
+they come back.
 
 ## Auth
 
@@ -163,10 +165,12 @@ Treat this section as a reasonable starting shape, not a spec pulled from workin
 | `unassignTeacherFromCourse` | `DELETE /api/managed-teachers/:id/courses/:courseId` | — | `void` |
 
 ### Section roles ("Collaborators") — `lib/api/section-roles.ts`
-There is no separate "Collaborator" resource — a collaborator on a course *is* a `SectionRole` row
-(`role: "co-teacher" | "ta"`) plus a matching entry in `ManagedTeacher.courseIds`. Keep the two in sync
-server-side on add/remove (the live frontend does it with two separate client calls today).
-`hasPermission()` is a pure client-side check over already-fetched roles — no endpoint for it.
+There is no separate "Collaborator" resource — a collaborator on a course *is* a `SectionRole` row:
+`role: "ta"` with `accountId` = a `CohortStudent.id`, or `role: "co-teacher"` with `accountId` = a
+`ManagedTeacher.id`. The primary teacher is separate (admin's `ManagedTeacher.courseIds`) and the
+Collaborators page doesn't touch it. The backend rejects a role that doesn't fit the account (400) or a
+second role for the same person in a course (409), and drops a person's roles when their account is
+deleted. `hasPermission()` is a pure client-side check over already-fetched roles — no endpoint for it.
 | Function | Verb + path | Request | Response |
 |---|---|---|---|
 | `getSectionRoles` | `GET /api/courses/:courseId/roles` | — | `SectionRole[]` |

@@ -2,6 +2,9 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { SectionRoleContext, SectionRole, SectionRolePermissions, defaultPermissionsFor } from "@/lib/section-roles";
+import { API_ENABLED } from "@/lib/api/client";
+import { enqueueWrite } from "@/lib/api/sync";
+import * as api from "@/lib/api/section-roles";
 
 const LS_KEY = "hwai_section_roles_v1";
 
@@ -10,28 +13,46 @@ export default function SectionRoleProvider({ children }: { children: React.Reac
   // instead of during the initial render (hydration-mismatch fix, [[project-hwai-meeting-20260826]]).
   const [sectionRoles, setSectionRoles] = useState<SectionRole[]>([]);
 
+  // API mode: reload from the server — on mount, and after a failed write (see api/sync.ts).
+  const resync = useCallback(() => {
+    api.getSectionRoles().then(setSectionRoles, (err) => console.error("[api] load section roles", err));
+  }, []);
+
   useEffect(() => {
+    if (API_ENABLED) {
+      resync();
+      return;
+    }
     try {
       const raw = localStorage.getItem(LS_KEY);
       if (raw) setSectionRoles(JSON.parse(raw) as SectionRole[]);
     } catch {}
-  }, []);
+  }, [resync]);
 
   const persist = useCallback((next: SectionRole[]) => {
     setSectionRoles(next);
-    localStorage.setItem(LS_KEY, JSON.stringify(next));
+    if (!API_ENABLED) localStorage.setItem(LS_KEY, JSON.stringify(next));
   }, []);
+
+  /** API mode only: send a write to the server after the optimistic local update. */
+  const sync = useCallback((task: () => Promise<unknown>) => {
+    if (API_ENABLED) enqueueWrite(task, resync);
+  }, [resync]);
 
   const addSectionRole = useCallback((data: Omit<SectionRole, "id" | "permissions">): SectionRole => {
     const r: SectionRole = { ...data, id: crypto.randomUUID() };
     persist([...sectionRoles, r]);
+    sync(() => api.addSectionRole({ ...data, id: r.id }));
     return r;
-  }, [sectionRoles, persist]);
+  }, [sectionRoles, persist, sync]);
 
   const removeSectionRole = useCallback((id: string) => {
     persist(sectionRoles.filter(r => r.id !== id));
-  }, [sectionRoles, persist]);
+    sync(() => api.removeSectionRole(id));
+  }, [sectionRoles, persist, sync]);
 
+  // Cascade from deleting a teacher/student account. In API mode the server already removes their
+  // roles with the account, so this only updates local state.
   const removeRolesByAccount = useCallback((accountId: string) => {
     persist(sectionRoles.filter(r => r.accountId !== accountId));
   }, [sectionRoles, persist]);

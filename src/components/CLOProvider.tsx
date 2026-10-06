@@ -2,6 +2,9 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { CLOContext, CLO } from "@/lib/clo";
+import { API_ENABLED } from "@/lib/api/client";
+import { enqueueWrite } from "@/lib/api/sync";
+import * as api from "@/lib/api/clo";
 
 const LS_CLOS = "hwai_clos_v1";
 
@@ -50,29 +53,46 @@ export default function CLOProvider({ children }: { children: React.ReactNode })
   // instead of during the initial render (hydration-mismatch fix, [[project-hwai-meeting-20260826]]).
   const [clos, setClos] = useState<CLO[]>([]);
 
-  useEffect(() => {
-    setClos(loadData<CLO>(LS_CLOS, SEED_CLOS));
+  // API mode: reload from the server — on mount, and after a failed write (see api/sync.ts).
+  const resync = useCallback(() => {
+    api.getCLOs().then(setClos, (err) => console.error("[api] load CLOs", err));
   }, []);
+
+  useEffect(() => {
+    if (API_ENABLED) {
+      resync();
+      return;
+    }
+    setClos(loadData<CLO>(LS_CLOS, SEED_CLOS));
+  }, [resync]);
 
   const persist = useCallback((next: CLO[]) => {
     setClos(next);
-    localStorage.setItem(LS_CLOS, JSON.stringify(next));
+    if (!API_ENABLED) localStorage.setItem(LS_CLOS, JSON.stringify(next));
   }, []);
+
+  /** API mode only: send a write to the server after the optimistic local update. */
+  const sync = useCallback((task: () => Promise<unknown>) => {
+    if (API_ENABLED) enqueueWrite(task, resync);
+  }, [resync]);
 
   const addCLO = useCallback((data: Omit<CLO, "id" | "createdAt" | "updatedAt">): CLO => {
     const now = new Date().toISOString();
     const c: CLO = { ...data, id: crypto.randomUUID(), createdAt: now, updatedAt: now };
     persist([...clos, c]);
+    sync(() => api.addCLO({ ...data, id: c.id }));
     return c;
-  }, [clos, persist]);
+  }, [clos, persist, sync]);
 
   const updateCLO = useCallback((id: string, data: Partial<Omit<CLO, "id" | "courseId" | "createdAt" | "updatedAt">>) => {
     persist(clos.map(c => c.id === id ? { ...c, ...data, updatedAt: new Date().toISOString() } : c));
-  }, [clos, persist]);
+    sync(() => api.updateCLO(id, data));
+  }, [clos, persist, sync]);
 
   const removeCLO = useCallback((id: string) => {
     persist(clos.filter(c => c.id !== id));
-  }, [clos, persist]);
+    sync(() => api.removeCLO(id));
+  }, [clos, persist, sync]);
 
   const getCLO = useCallback((id: string) => clos.find(c => c.id === id), [clos]);
 
