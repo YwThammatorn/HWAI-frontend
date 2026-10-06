@@ -17,6 +17,9 @@ import StatCard from "@/components/StatCard";
 import EmptyState from "@/components/EmptyState";
 import RubricBreakdownModal from "@/components/RubricBreakdownModal";
 import WithdrawnTabs, { type WithdrawnTab } from "@/components/WithdrawnTabs";
+import PillTabBar from "@/components/PillTabBar";
+import ScoreSummaryView from "@/components/ScoreSummaryView";
+import { buildScoreSummary } from "@/lib/scoreSummary";
 
 type SortKey = "id" | "name" | "total";
 
@@ -46,6 +49,8 @@ export default function ScoreBookPage() {
 
   const [search, setSearch] = useState("");
   const [tabState, setTabState] = useState<WithdrawnTab>("active");
+  // Matrix = every score, cell by cell; Summary = how the section is doing (4/10/2569).
+  const [viewState, setViewState] = useState<"matrix" | "summary">("matrix");
   const [categoryFilter, setCategoryFilter] = useState("all");
   // Which cell's rubric breakdown popup is open (null = closed).
   const [breakdown, setBreakdown] = useState<{ row: ScoreBookRow; assignment: Assignment } | null>(null);
@@ -67,6 +72,8 @@ export default function ScoreBookPage() {
   const activeRoster = fullRoster.filter((s) => !isWithdrawn(s));
   const tab: WithdrawnTab = withdrawnRoster.length === 0 ? "active" : tabState;
   const roster = tab === "active" ? activeRoster : withdrawnRoster;
+  // Class-level numbers only make sense for the enrolled group, so the withdrawn tab is always the matrix.
+  const view = tab === "active" ? viewState : "matrix";
   const assignments = getAssignmentsByCourse(id);
   const categories = getCategoriesByCourse(id);
   const today = new Date().toISOString().split("T")[0];
@@ -120,6 +127,7 @@ export default function ScoreBookPage() {
     });
   }
 
+  const summary = view === "summary" ? buildScoreSummary(book) : null;
   const gradedPct = book.totalCells > 0 ? Math.round((book.gradedCells / book.totalCells) * 100) : 0;
 
   function exportCsv() {
@@ -263,6 +271,20 @@ export default function ScoreBookPage() {
         </button>
       </div>
 
+      {assignments.length > 0 && roster.length > 0 && tab === "active" && (
+        <div className="mb-4">
+          <PillTabBar
+            ariaLabel={t("มุมมองสมุดคะแนน", "Score Book view")}
+            activeKey={view}
+            onChange={(k) => setViewState(k as "matrix" | "summary")}
+            tabs={[
+              { key: "matrix", label: t("ตารางคะแนน", "Score matrix") },
+              { key: "summary", label: t("สรุปผลทั้งห้อง", "Class summary") },
+            ]}
+          />
+        </div>
+      )}
+
       <WithdrawnTabs tab={tab} onChange={setTabState} activeCount={activeRoster.length} withdrawnCount={withdrawnRoster.length} />
 
       {assignments.length === 0 || roster.length === 0 ? (
@@ -310,6 +332,14 @@ export default function ScoreBookPage() {
             />
           </div>}
 
+          {view === "summary" && summary ? (
+            <ScoreSummaryView
+              courseId={id}
+              book={book}
+              summary={summary}
+              onShowStudent={(studentId) => { setSearch(studentId); setViewState("matrix"); }}
+            />
+          ) : (<>
           {/* Toolbar + legend */}
           <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
             <div className="flex items-center gap-2 flex-wrap">
@@ -502,6 +532,7 @@ export default function ScoreBookPage() {
               ? t(`พบ ${rows.length} จาก ${roster.length} คน`, `${rows.length} of ${roster.length} students`)
               : t("“รวม” นับเฉพาะหมวดที่มีงานตรวจแล้ว — ค่าเดียวกับที่นักศึกษาเห็นในหน้าผลการประเมิน", "“Total” counts only categories with graded work — the same number students see on their Evaluation page")}
           </p>
+          </>)}
         </>
       )}
 

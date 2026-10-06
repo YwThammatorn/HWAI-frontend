@@ -17,9 +17,15 @@ export interface ExamStats {
  */
 export function computeExamStats(assignment: Assignment | undefined, submissions: Submission[]): ExamStats | null {
   if (!assignment?.isExam || !assignment.gradingFinalized) return null;
-  const scores = submissions
-    .filter((s) => s.assignmentId === assignment.id && s.status === "graded")
-    .map((s) => s.instructorScore ?? s.aiScore ?? 0);
+  return statsFromScores(
+    submissions
+      .filter((s) => s.assignmentId === assignment.id && s.status === "graded")
+      .map((s) => s.instructorScore ?? s.aiScore ?? 0),
+  );
+}
+
+/** The same min / max / mean / SD from a plain list of scores — the teacher's summary has no "announced" gate. */
+export function statsFromScores(scores: number[]): ExamStats | null {
   if (scores.length === 0) return null;
   const count = scores.length;
   const mean = scores.reduce((sum, v) => sum + v, 0) / count;
