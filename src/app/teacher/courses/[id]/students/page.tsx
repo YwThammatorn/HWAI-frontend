@@ -11,6 +11,7 @@ import EnrollStudentModal from "@/components/EnrollStudentModal";
 import ImportCourseStudentsModal from "@/components/ImportCourseStudentsModal";
 import SearchInput from "@/components/SearchInput";
 import SortableTh from "@/components/SortableTh";
+import { useSectionProgram } from "@/lib/sectionProgram";
 
 type RosterSort = { key: "id" | "name"; dir: "asc" | "desc" } | null;
 
@@ -20,6 +21,9 @@ export default function StudentsRosterPage() {
   const { getCourse } = useCourses();
   const { getStudentsByCourse, updateStudent, removeStudent } = useStudents();
   const { findByStudentId } = useCohortStudents();
+  // One section = one program (4/10/2569): who this section is for, and anyone already on the roster who isn't.
+  const { section, mismatched } = useSectionProgram(id);
+  const mismatchedIds = new Set(mismatched.map((m) => m.studentId));
   const [addOpen, setAddOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -114,7 +118,14 @@ export default function StudentsRosterPage() {
         <div className="flex items-start justify-between gap-4 mb-6">
           <div>
             <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">{t("รายชื่อนักศึกษา", "Student Roster")}</h1>
-            <p className="text-sm text-gray-500">{course.name}</p>
+            <p className="text-sm text-gray-500">
+              {course.name}
+              {section && (
+                <span className="ml-2 inline-flex items-center rounded-full border border-[var(--s-info-bd)] bg-[var(--s-info-bg)] px-2 py-0.5 text-xs font-semibold text-[var(--s-info-text)]" title={t("section นี้รับเฉพาะนักศึกษาหลักสูตรนี้", "This section only takes students from this program")}>
+                  {t("หลักสูตร", "Program")} {section.program}
+                </span>
+              )}
+            </p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <button
@@ -141,6 +152,17 @@ export default function StudentsRosterPage() {
             </button>
           </div>
         </div>
+
+        {mismatched.length > 0 && section && (
+          <p role="note" data-testid="program-mismatch" className="mb-4 flex items-start gap-3 rounded-xl border border-[var(--s-warn-bd)] bg-[var(--s-warn-bg)] px-4 py-3 text-sm leading-relaxed text-[var(--s-warn-text)]">
+            <span>
+              {t(
+                `มี ${mismatched.length} คนในรายชื่อที่ไม่ใช่หลักสูตร ${section.program} (ดูแถวที่ติดป้ายสีส้ม) — หนึ่ง section รับนักศึกษาจากหลักสูตรเดียวเท่านั้น ควรลบออกจากวิชานี้`,
+                `${mismatched.length} student${mismatched.length === 1 ? " on" : "s on"} this roster ${mismatched.length === 1 ? "is" : "are"} not in ${section.program} (see the orange-tagged rows) — a section only takes students from one program, so they should be removed from this course.`,
+              )}
+            </span>
+          </p>
+        )}
 
         {students.length > 0 && (
           <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
@@ -230,6 +252,11 @@ export default function StudentsRosterPage() {
                           <td className="px-4 py-2 text-[var(--text-secondary)]">{s.email || "—"}</td>
                           <td className="px-4 py-2 text-[var(--text-secondary)]">
                             {(() => { const p = findByStudentId(s.studentId)?.program; return p ? (PROGRAM_LABEL[p] ?? p) : "—"; })()}
+                            {mismatchedIds.has(s.studentId) && section && (
+                              <span className="ml-2 inline-flex items-center rounded-full border border-[var(--s-warn-bd)] bg-[var(--s-warn-bg)] px-2 py-0.5 text-xs font-semibold text-[var(--s-warn-text)]">
+                                {t(`ไม่ใช่ ${section.program}`, `Not ${section.program}`)}
+                              </span>
+                            )}
                           </td>
                           <td className="px-4 py-2">
                             <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold border ${statusToneClasses(status)}`}>

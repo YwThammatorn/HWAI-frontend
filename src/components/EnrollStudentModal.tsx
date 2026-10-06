@@ -6,6 +6,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { useStudents } from "@/lib/students";
 import { useCohortStudents, CohortStudent } from "@/lib/cohort-students";
 import { getInitials } from "@/lib/utils";
+import { useSectionProgram } from "@/lib/sectionProgram";
 
 /**
  * Teacher: enrol ONE student in a course by student ID. Same rule as the CSV
@@ -21,6 +22,7 @@ export default function EnrollStudentModal({ courseId, courseName, onClose }: {
   const { t } = useLanguage();
   const { addStudents, getStudentsByCourse } = useStudents();
   const { findByStudentId } = useCohortStudents();
+  const { section, fits } = useSectionProgram(courseId);
   const [studentId, setStudentId] = useState("");
   const [error, setError] = useState("");
   const [added, setAdded] = useState<CohortStudent | null>(null);
@@ -28,12 +30,21 @@ export default function EnrollStudentModal({ courseId, courseName, onClose }: {
   const trimmed = studentId.trim();
   const match = trimmed ? findByStudentId(trimmed) : undefined;
   const alreadyEnrolled = !!match && getStudentsByCourse(courseId).some((s) => s.studentId === trimmed);
+  // One section = one program: a student from another program can't be added (4/10/2569).
+  const wrongProgram = !!match && !fits(match.program);
+  const wrongProgramText = wrongProgram && section
+    ? t(
+        `${match!.firstName} ${match!.lastName} อยู่หลักสูตร ${match!.program} แต่ section นี้เป็นของหลักสูตร ${section.program} — หนึ่ง section รับนักศึกษาจากหลักสูตรเดียวเท่านั้น`,
+        `${match!.firstName} ${match!.lastName} is in ${match!.program}, but this section is for ${section.program} — a section only takes students from one program`,
+      )
+    : "";
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!trimmed) { setError(t("กรุณากรอกรหัสนักศึกษา", "Student ID is required")); return; }
     if (!match) { setError(t("ไม่พบรหัสนี้ในระบบ — ให้แอดมินเพิ่มนักศึกษาเข้าระบบก่อน", "This ID isn't in the system — ask an admin to add the student first")); return; }
     if (alreadyEnrolled) { setError(t("นักศึกษาคนนี้ลงทะเบียนในวิชานี้แล้ว", "This student is already enrolled in this course")); return; }
+    if (wrongProgram) { setError(wrongProgramText); return; }
     // No enrollmentStatus: the provider marks a newcomer to a non-empty roster "added-midterm" (meeting 4/9/2569)
     addStudents(courseId, [{
       studentId: match.studentId,
@@ -95,6 +106,8 @@ export default function EnrollStudentModal({ courseId, courseName, onClose }: {
             <div id="enroll-sid-result" aria-live="polite">
               {error ? (
                 <p role="alert" className="text-xs text-[var(--s-err-text)]">{error}</p>
+              ) : wrongProgram ? (
+                <p role="alert" className="text-xs text-[var(--s-err-text)]">{wrongProgramText}</p>
               ) : match && alreadyEnrolled ? (
                 <p className="text-xs text-[var(--s-warn-text)]">
                   {t(`${match.firstName} ${match.lastName} ลงทะเบียนในวิชานี้แล้ว`, `${match.firstName} ${match.lastName} is already enrolled in this course`)}
@@ -104,7 +117,7 @@ export default function EnrollStudentModal({ courseId, courseName, onClose }: {
           </div>
 
           {/* The student the ID resolves to — confirm it's the right person before adding */}
-          {match && !alreadyEnrolled && !error && (
+          {match && !alreadyEnrolled && !wrongProgram && !error && (
             <div className="flex items-center gap-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-4 py-3">
               <div className="w-10 h-10 rounded-full bg-[var(--accent-subtle)] text-[var(--accent)] text-xs font-bold flex items-center justify-center shrink-0">
                 {getInitials(`${match.firstName} ${match.lastName}`)}
@@ -119,7 +132,7 @@ export default function EnrollStudentModal({ courseId, courseName, onClose }: {
 
           <div className="flex justify-end gap-2 pt-1">
             <button type="button" className={secondaryBtn} onClick={onClose}>{t("ยกเลิก", "Cancel")}</button>
-            <button type="submit" className={primaryBtn} disabled={alreadyEnrolled}>
+            <button type="submit" className={primaryBtn} disabled={alreadyEnrolled || wrongProgram}>
               {t("เพิ่มนักศึกษา", "Add Student")}
             </button>
           </div>
