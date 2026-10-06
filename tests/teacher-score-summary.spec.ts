@@ -25,7 +25,7 @@ async function open(page: Page, lang: "en" | "th" = "en") {
     const NOW = "2026-01-01T00:00:00.000Z";
     localStorage.setItem("hwai_lang", lang as string);
     localStorage.setItem("hwai_user", JSON.stringify({ name: "Somsak", email: "somsak@kmitl.ac.th", role: "teacher" }));
-    localStorage.setItem("hwai_courses_v2", JSON.stringify([{ id: "c-ss", name: "Summary Course", description: "", status: "active", source: "manual", coverColor: "#0F766E", iconColor: "#0F766E", sectionNumber: "1", code: "01076888", academicYear: 2569, term: 1, createdAt: NOW, updatedAt: NOW }]));
+    localStorage.setItem("hwai_courses_v2", JSON.stringify([{ id: "c-ss", name: "Summary Course", description: "", status: "active", coverColor: "#0F766E", sectionNumber: "1", code: "01076888", academicYear: 2569, term: 1, createdAt: NOW, updatedAt: NOW }]));
     localStorage.setItem("hwai_managed_teachers_v1", JSON.stringify([{ id: "t-ss", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", role: "teacher", status: "active", courseIds: ["c-ss"] }]));
     const ppl = people as string[][];
     localStorage.setItem("hwai_cohort_students_v1", JSON.stringify(ppl.map(([id, f], i) => ({ id: `cs-${i}`, studentId: id, firstName: f, lastName: "Test", email: `${id}@kmitl.ac.th`, program: "CE", status: "active" }))));
@@ -141,7 +141,7 @@ test.describe("Class summary view", () => {
     await page.addInitScript(() => {
       localStorage.setItem("hwai_lang", "en");
       localStorage.setItem("hwai_user", JSON.stringify({ name: "Somsak", email: "somsak@kmitl.ac.th", role: "teacher" }));
-      localStorage.setItem("hwai_courses_v2", JSON.stringify([{ id: "c-e", name: "Empty", description: "", status: "active", source: "manual", coverColor: "#0F766E", iconColor: "#0F766E", sectionNumber: "1", code: "0", academicYear: 2569, term: 1, createdAt: "2026-01-01T00:00:00.000Z", updatedAt: "2026-01-01T00:00:00.000Z" }]));
+      localStorage.setItem("hwai_courses_v2", JSON.stringify([{ id: "c-e", name: "Empty", description: "", status: "active", coverColor: "#0F766E", sectionNumber: "1", code: "0", academicYear: 2569, term: 1, createdAt: "2026-01-01T00:00:00.000Z", updatedAt: "2026-01-01T00:00:00.000Z" }]));
     });
     await page.goto(`${BASE}/teacher/courses/c-e/results`);
     await expect(page.getByText("No students in this course yet")).toBeVisible();

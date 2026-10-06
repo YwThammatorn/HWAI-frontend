@@ -73,7 +73,7 @@ async function seed(page: Page, o: { roster?: string[]; lang?: "en" | "th" } = {
     const ppl = people as string[][];
     localStorage.setItem("hwai_lang", lang as string);
     localStorage.setItem("hwai_user", JSON.stringify({ name: "Somsak", email: "somsak@kmitl.ac.th", role: "teacher" }));
-    const course = (id: string, name: string, extra: object) => ({ id, name, description: "", status: "active", source: "manual", coverColor: "#0F766E", iconColor: "#0F766E", academicYear: 2569, term: 1, sectionNumber: "1", code: id, createdAt: NOW, updatedAt: NOW, ...extra });
+    const course = (id: string, name: string, extra: object) => ({ id, name, description: "", status: "active", coverColor: "#0F766E", academicYear: 2569, term: 1, sectionNumber: "1", code: id, createdAt: NOW, updatedAt: NOW, ...extra });
     localStorage.setItem("hwai_courses_v2", JSON.stringify([course("c-ce", "CE Section", { courseTemplateId: "t-ce" }), course("c-free", "Unlinked Section", {})]));
     localStorage.setItem("hwai_curriculum_versions_v1", JSON.stringify([{ id: "v-ce", program: "CE", label: "CE 2569", effectiveFrom: 2569 }]));
     localStorage.setItem("hwai_course_templates_v1", JSON.stringify([{ id: "t-ce", curriculumVersionId: "v-ce", code: "01", name: "CE Subject" }]));
