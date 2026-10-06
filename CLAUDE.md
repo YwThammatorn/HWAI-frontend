@@ -19,8 +19,8 @@
 
 ## Current active task
 _(อัปเดตช่องนี้ทุกครั้งที่เริ่ม task ใหม่ — ดูรายละเอียดที่ HANDOFF.md)_
-- Task (4/10): student exam results (class stats card + animated bell curve + rubric "Your level"), teacher grading page (visible Finish & announce state, boxed status filter, readable scores), c-mock-1 grown to 42 students with realistic scores — console command [15] in test-data/seed-commands.txt.
-- Status: all committed and pushed; full suite 539 passed / 30 skipped; details and the announce-state lesson in HANDOFF.md (last section). Open offers listed there.
+- Task (4–6/10): teacher class summary (Score Book tab), exam announce → statistics page, one section = one program (`lib/sectionProgram.ts`; students from another program are refused on add / CSV import), realistic mock scores (different full marks per assignment; earlier-term pieces 40/20/40). Reload: console [14] then [15] in test-data/seed-commands.txt.
+- Status: all committed and pushed; full suite 588 passed / 30 skipped; details in HANDOFF.md (last section). Open offers listed there.
 
 # i18n Rule (TH/EN Language Toggle)
 
