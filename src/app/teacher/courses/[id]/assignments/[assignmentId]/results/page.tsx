@@ -9,6 +9,9 @@ import { useStudentGroups } from "@/lib/studentGroups";
 import { groupSubmissionsByTeam, SubmissionRow } from "@/lib/groupSubmissions";
 import { useLanguage } from "@/context/LanguageContext";
 import SearchInput from "@/components/SearchInput";
+import ExamStatsCard from "@/components/ExamStatsCard";
+import { statsFromScores } from "@/lib/examStats";
+import { SCORE_TONE_CLASSES } from "@/lib/scoreBook";
 
 const AVATAR_COLORS = ["#4F46E5", "#7C3AED", "#BE185D", "#B45309", "#047857", "#0369A1", "#C2410C", "#0E7490"];
 function avatarColor(name: string) { return AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length]; }
@@ -97,6 +100,11 @@ export default function ResultsPage() {
     gradeCounts[gradeLetter(score, max)]++;
   });
   const maxCount = Math.max(1, ...Object.values(gradeCounts));
+
+  // Exam: the same class-statistics card (with the bell curve) a student gets once the results are announced.
+  const examStats = assignment.isExam
+    ? statsFromScores(allSubs.filter((s) => s.status === "graded").map((s) => s.instructorScore ?? s.aiScore ?? 0))
+    : null;
 
   const filtered = repRows.filter((r) =>
     r.displayName.toLowerCase().includes(search.toLowerCase()) ||
@@ -241,6 +249,38 @@ export default function ResultsPage() {
             </button>
           </div>
         </div>
+
+        {/* Exam: what the students see */}
+        {assignment.isExam && (
+          <section className="mb-6" aria-labelledby="exam-view-h">
+            <h2 id="exam-view-h" className="sr-only">{t("สถิติการสอบ", "Exam statistics")}</h2>
+            <p
+              role="status"
+              className={`mb-3 rounded-xl border px-4 py-3 text-sm leading-relaxed ${assignment.gradingFinalized ? "border-[var(--s-ok-bd)] bg-[var(--s-ok-bg)] text-[var(--s-ok-text)]" : "border-[var(--s-info-bd)] bg-[var(--s-info-bg)] text-[var(--s-info-text)]"}`}
+            >
+              {assignment.gradingFinalized
+                ? t("ประกาศผลแล้ว — นักศึกษาแต่ละคนเห็นการ์ดสถิติด้านล่างนี้ในหน้าของตัวเอง พร้อมคะแนนของตัวเองและตำแหน่งในห้อง", "Results announced — each student sees the statistics below on their own page, together with their own score and where they stand in the class.")
+                : t("ยังไม่ประกาศผล — นักศึกษายังไม่เห็นการ์ดสถิติด้านล่างนี้จนกว่าจะประกาศผลที่หน้า Grading", "Not announced yet — students don't see the statistics below until you announce the results on the Grading page.")}
+            </p>
+            {examStats ? (
+              <ExamStatsCard
+                name={assignment.name}
+                maxPoints={max}
+                stats={examStats}
+                myScore={null}
+                badge={
+                  <span className={`inline-flex h-7 items-center rounded-lg px-2.5 text-xs font-semibold ${assignment.gradingFinalized ? SCORE_TONE_CLASSES.ok : SCORE_TONE_CLASSES.info}`}>
+                    {assignment.gradingFinalized ? t("ประกาศผลแล้ว", "Announced") : t("ยังไม่ประกาศ", "Not announced")}
+                  </span>
+                }
+              />
+            ) : (
+              <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-6 py-10 text-center text-sm text-[var(--text-secondary)]">
+                {t("ยังไม่มีคะแนนสอบ", "No exam scores yet")}
+              </div>
+            )}
+          </section>
+        )}
 
         {/* Stats */}
         <div className="grid grid-cols-4 gap-4 mb-6">

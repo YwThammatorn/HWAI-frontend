@@ -124,6 +124,13 @@ Treat this section as a reasonable starting shape, not a spec pulled from workin
 | `updateStudent` | `PATCH /api/students/:id` | `Partial<Omit<Student, "id"\|"courseId">>` | `Student` |
 | `removeStudent` | `DELETE /api/students/:id` | — | `void` |
 
+**Rule the server must enforce on `addStudents` (4/10/2569): one section = one program.** Every student enrolled in a
+section must have the same `CohortStudent.program` (CE / CECS / CEI) as that section. The section's program is the program
+of the curriculum its `courseTemplateId` belongs to; a section with no curriculum takes the program of the first
+non-withdrawn student enrolled. Reject a student from another program (suggest `409`/`422` with the student's program and the
+section's) — the frontend already blocks it in the UI (`lib/sectionProgram.ts`), but the UI check is not a substitute.
+When a batch contains a mix, enrol the matching rows and report the rest per row, as the CSV import preview does.
+
 ### Cohort students (account-level) — `lib/api/cohort-students.ts`
 | Function | Verb + path | Request | Response |
 |---|---|---|---|

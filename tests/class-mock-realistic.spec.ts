@@ -34,7 +34,7 @@ for (const sfx of ["", "-en"]) {
         expect(c!.status).toBe("active");
         expect(r.studentId.startsWith("69")).toBe(true);                    // first-years, taking the first-year course
       }
-      expect(new Set(roster.map((r) => cohort.find((x) => x.studentId === r.studentId)!.program))).toEqual(new Set(["CE", "CECS", "CEI"]));
+      expect(new Set(roster.map((r) => cohort.find((x) => x.studentId === r.studentId)!.program))).toEqual(new Set(["CE"]));   // one section = one program: this is a CE 2569 section
     });
 
     test("the 10 students the teacher CSV-import test relies on are still not enrolled, and the sample CSVs still don't clash", () => {

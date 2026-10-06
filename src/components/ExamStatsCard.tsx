@@ -14,7 +14,7 @@ const num = (n: number) => (Number.isInteger(n) ? String(n) : one(n));
  * Container-query layout: narrow (the Evaluation grid) stacks it; wide (the exam page) puts the score on
  * the left and the track + figures on the right, so the card fills the width instead of leaving it empty.
  */
-export default function ExamStatsCard({ name, maxPoints, stats, myScore, comment, showName = true, headingTag: Heading = "h2" }: {
+export default function ExamStatsCard({ name, maxPoints, stats, myScore, comment, showName = true, headingTag: Heading = "h2", badge, unit }: {
   name: string;
   maxPoints: number;
   stats: ExamStats;
@@ -23,12 +23,17 @@ export default function ExamStatsCard({ name, maxPoints, stats, myScore, comment
   /** false where the exam name is already the page title right above (it stays as a screen-reader heading). */
   showName?: boolean;
   headingTag?: "h2" | "h3";
+  /** Shown next to the name (the teacher's summary puts "Announced" / "Not announced" here). */
+  badge?: React.ReactNode;
+  /** Appended to the figures when the scale isn't raw points, e.g. "%". */
+  unit?: string;
 }) {
   const { t } = useLanguage();
   const at = (v: number) => (maxPoints > 0 ? Math.min(100, Math.max(0, (v / maxPoints) * 100)) : 0);
   const lo = at(stats.min);
   const hi = at(stats.max);
   const diff = myScore !== null ? myScore - stats.mean : null;
+  const avgPct = maxPoints > 0 ? Math.round((stats.mean / maxPoints) * 100) : null;
   const myPct = myScore !== null && maxPoints > 0 ? Math.round((myScore / maxPoints) * 100) : null;
 
   const summary = t(
@@ -36,10 +41,11 @@ export default function ExamStatsCard({ name, maxPoints, stats, myScore, comment
     `${name}: lowest ${num(stats.min)}, average ${one(stats.mean)}, highest ${num(stats.max)} out of ${maxPoints}` + (myScore !== null ? `; your score ${num(myScore)}` : "")
   );
 
+  const u = unit ?? "";
   const tiles: { label: string; value: string; title?: string }[] = [
-    { label: t("ต่ำสุด", "Min"), value: num(stats.min) },
-    { label: t("เฉลี่ย", "Average"), value: one(stats.mean) },
-    { label: t("สูงสุด", "Max"), value: num(stats.max) },
+    { label: t("ต่ำสุด", "Min"), value: num(Math.round(stats.min * 10) / 10) + u },
+    { label: t("เฉลี่ย", "Average"), value: one(stats.mean) + u },
+    { label: t("สูงสุด", "Max"), value: num(Math.round(stats.max * 10) / 10) + u },
     { label: "SD", value: stats.sd === null ? "—" : one(stats.sd), title: t("ส่วนเบี่ยงเบนมาตรฐาน", "Standard deviation") },
   ];
 
@@ -61,11 +67,25 @@ export default function ExamStatsCard({ name, maxPoints, stats, myScore, comment
         {/* Who / how you did */}
         <div className="flex items-start justify-between gap-4 @2xl:flex-col @2xl:justify-start @2xl:gap-5">
           <div className="min-w-0">
-            <Heading className={showName ? "text-sm font-bold text-[var(--text-primary)] truncate @2xl:text-base @2xl:whitespace-normal" : "sr-only"}>{name}</Heading>
+            <div className="flex flex-wrap items-center gap-2">
+              <Heading className={showName ? "text-sm font-bold text-[var(--text-primary)] truncate @2xl:text-base @2xl:whitespace-normal" : "sr-only"}>{name}</Heading>
+              {badge}
+            </div>
             <p className={`text-xs text-[var(--text-muted)] ${showName ? "mt-0.5" : "font-semibold uppercase tracking-wider"}`}>
               {t(`สถิติจากนักศึกษา ${stats.count} คน`, `Class statistics · ${stats.count} student${stats.count === 1 ? "" : "s"}`)}
             </p>
           </div>
+          {myScore === null && (
+            <div className="shrink-0 text-right @2xl:text-left">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">{t("ค่าเฉลี่ยของห้อง", "Class average")}</p>
+              <p className="text-2xl font-bold leading-tight tabular-nums text-[var(--text-primary)] @2xl:text-5xl">
+                {one(stats.mean)}<span className="text-sm font-semibold text-[var(--text-muted)] @2xl:text-xl">{unit ?? ` / ${maxPoints}`}</span>
+              </p>
+              {avgPct !== null && unit !== "%" && (
+                <span className={`mt-1 inline-flex h-6 items-center rounded-lg px-2 text-xs font-semibold tabular-nums @2xl:mt-2 @2xl:h-7 @2xl:px-3 @2xl:text-sm ${SCORE_TONE_CLASSES[toneForPct(avgPct)]}`}>{avgPct}%</span>
+              )}
+            </div>
+          )}
           {myScore !== null && (
             <div className="shrink-0 text-right @2xl:text-left">
               <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">{t("คะแนนของคุณ", "Your score")}</p>

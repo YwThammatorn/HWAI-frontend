@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCourses } from "@/lib/courses";
 import { useAssignments, type Submission } from "@/lib/assignments";
@@ -368,6 +368,7 @@ function GradeAdjustmentTable({
 
 export default function GradingProgressPage() {
   const { id, assignmentId } = useParams<{ id: string; assignmentId: string }>();
+  const router = useRouter();
   const { t, lang } = useLanguage();
   const { getCourse } = useCourses();
   const { getAssignment, getSubmissionsByAssignment, addSubmission, updateSubmission, updateAssignment } = useAssignments();
@@ -447,9 +448,11 @@ export default function GradingProgressPage() {
 
   // "Finish" is also the announcement (25/9/2569): students see no score until this is confirmed
   // (see studentVisibleSubmission), so it always goes through a confirm popup.
+  // An exam's announcement lands on its results page (4/10/2569): the class statistics card the students now see.
   function handleFinishGrading() {
     updateAssignment(assignmentId, { gradingFinalized: true });
     setAnnounceOpen(false);
+    if (assignment?.isExam) router.push(`/teacher/courses/${id}/assignments/${assignmentId}/results`);
   }
   function handleReopenGrading() {
     if (!window.confirm(

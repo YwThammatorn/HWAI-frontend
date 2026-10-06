@@ -5,6 +5,7 @@ import Modal from "@/components/Modal";
 import { useLanguage } from "@/context/LanguageContext";
 import { useStudents } from "@/lib/students";
 import { useCohortStudents, CohortStudent } from "@/lib/cohort-students";
+import { useSectionProgram } from "@/lib/sectionProgram";
 
 interface ParsedRow {
   line: number;
@@ -60,6 +61,7 @@ export default function ImportCourseStudentsModal({ courseId, courseName, onClos
   const { t } = useLanguage();
   const { addStudents, getStudentsByCourse } = useStudents();
   const { findByStudentId } = useCohortStudents();
+  const { section } = useSectionProgram(courseId);
   const fileRef = useRef<HTMLInputElement>(null);
   const [step, setStep] = useState<"upload" | "preview" | "done">("upload");
   const [rows, setRows] = useState<ParsedRow[]>([]);
@@ -77,6 +79,10 @@ export default function ImportCourseStudentsModal({ courseId, courseName, onClos
     if (code === "missing_last") return t("ไม่มีนามสกุล", "Missing last name");
     if (code === "not_in_system") return t("ไม่พบในระบบ", "Not found in system");
     if (code === "already_enrolled") return t("ลงทะเบียนแล้ว", "Already enrolled");
+    if (code.startsWith("wrong_program:")) {
+      const p = code.slice("wrong_program:".length);
+      return t(`คนละหลักสูตรกับ section นี้ (${p})`, `Different program from this section (${p})`);
+    }
     return code;
   }
 
@@ -85,12 +91,18 @@ export default function ImportCourseStudentsModal({ courseId, courseName, onClos
     const enrolledIds = new Set(getStudentsByCourse(courseId).map((s) => s.studentId));
     const reader = new FileReader();
     reader.onload = (e) => {
+      // One section = one program (4/10/2569). A section that no curriculum or earlier student pins down yet is
+      // pinned by the first student this file would add, so one file can't smuggle in a mix either.
+      let pinned = section?.program ?? null;
       const parsed = parseCSV(e.target?.result as string).map((row) => {
         if (row.error) return row;
         if (enrolledIds.has(row.studentId)) return { ...row, error: "already_enrolled" };
         const match = findByStudentId(row.studentId);
         if (!match) return { ...row, error: "not_in_system" };
-        return { ...row, firstName: match.firstName, lastName: match.lastName, email: match.email, match };
+        const named = { ...row, firstName: match.firstName, lastName: match.lastName, email: match.email, match };
+        if (pinned && match.program && match.program !== pinned) return { ...named, error: `wrong_program:${match.program}` };
+        if (!pinned && match.program) pinned = match.program;
+        return named;
       });
       setRows(parsed);
       setStep("preview");
@@ -154,6 +166,10 @@ export default function ImportCourseStudentsModal({ courseId, courseName, onClos
                 {t(
                   "ทุกรหัสนักศึกษาจะถูกตรวจสอบกับรายชื่อที่มีอยู่ในระบบก่อน — ถ้าพบจะดึงชื่อ/อีเมลจริงจากระบบมาลงทะเบียน ถ้าไม่พบในระบบจะข้ามแถวนั้นไป (ให้แอดมินเพิ่มเข้าระบบก่อน)",
                   "Each student ID is checked against the system's existing student database first — a match pulls the real name/email from there; an ID not in the system is skipped (ask an admin to add it first)."
+                )}
+                {section && " " + t(
+                  `section นี้เป็นของหลักสูตร ${section.program} — นักศึกษาจากหลักสูตรอื่นจะถูกข้าม`,
+                  `This section is for ${section.program} — students from any other program are skipped.`,
                 )}
               </p>
             </div>
