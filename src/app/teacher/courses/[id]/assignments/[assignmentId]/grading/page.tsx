@@ -746,6 +746,7 @@ export default function GradingProgressPage() {
             rubric={rubric}
             graded={repSubs.filter((s) => s.status === "graded")}
             editHref={`/teacher/courses/${id}/assignments/${assignmentId}/edit`}
+            locked={finalized}
             unit={isGroupAssignment ? "team" : "student"}
           />
         )}

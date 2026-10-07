@@ -24,11 +24,13 @@ const toneOf = (i: number, n: number) => (n <= 1 ? 0 : Math.round((i / (n - 1)) 
  * the wording of every level with the number of students who reached it. So the rubric sits next to the grading
  * instead of behind the Edit page, and shows where the class is strong or weak at a glance.
  */
-export default function GradingRubricPanel({ rubric, graded, editHref, unit = "student" }: {
+export default function GradingRubricPanel({ rubric, graded, editHref, locked = false, unit = "student" }: {
   rubric: Rubric;
   /** the graded work to count (one per student, or one per team) */
   graded: Submission[];
   editHref: string;
+  /** results are announced: the rubric can't be changed any more, so no Edit link */
+  locked?: boolean;
   /** what one counted item is — a group assignment counts teams */
   unit?: "student" | "team";
 }) {
@@ -77,12 +79,19 @@ export default function GradingRubricPanel({ rubric, graded, editHref, unit = "s
           >
             {allOpen ? t("ซ่อนคำอธิบายระดับทั้งหมด", "Hide all level descriptions") : t("แสดงคำอธิบายระดับทั้งหมด", "Show all level descriptions")}
           </button>
+          {locked ? (
+            <span data-testid="rubric-locked-chip" className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-[var(--border)] bg-[var(--bg-app)] px-3 text-xs font-medium text-[var(--text-secondary)]">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+              {t("ล็อกแล้ว — ประกาศผลแล้ว", "Locked once announced")}
+            </span>
+          ) : (
           <Link
             href={editHref}
             className="inline-flex h-9 items-center rounded-lg border border-[var(--border)] bg-[var(--bg-surface)] px-3 text-xs font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)] active:scale-[.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
           >
             {t("แก้ไขเกณฑ์", "Edit rubric")}
           </Link>
+          )}
         </div>
       </div>
 
