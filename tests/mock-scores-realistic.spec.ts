@@ -114,7 +114,7 @@ const BASE = "http://localhost:3000";
 const doc = fs.readFileSync("test-data/seed-commands.txt", "utf8");
 const block = (from: string, to: string) => doc.slice(doc.indexOf(from), doc.indexOf(to)).split("\n").filter((l) => l.startsWith("fetch("));
 const cmd14 = block("\n[14] ประวัติ", "\n[15] ห้อง")[0];
-const cmd15 = block("\n[15] ห้อง", "\n[4] ล้างข้อมูลทั้งหมด")[0];
+const cmd15 = block("\n[15] ห้อง", "\n[16] วิชา UX/UI")[0];
 const stored = (page: Page, key: string) => page.evaluate((k) => JSON.parse(localStorage.getItem(k) ?? "[]"), key);
 
 test("[14] from a browser holding the old history scores: every earlier course ends up with the new 40/20/40 marks and different scores, nothing doubled", async ({ page }) => {

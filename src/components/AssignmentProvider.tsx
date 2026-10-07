@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
+import { buildCriteria, UX_RESEARCH } from "@/lib/rubricTemplates";
 import { AssignmentContext, Assignment, Submission, Rubric, DEFAULT_LEVELS } from "@/lib/assignments";
 import { removeFile } from "@/lib/fileStorage";
 import { API_ENABLED } from "@/lib/api/client";
@@ -58,11 +59,8 @@ const SEED_RUBRICS: Rubric[] = [
   {
     id: "r-seed-1-1", assignmentId: "a-seed-1-1",
     name: "User Research Rubric",
-    criteria: [
-      { id: "rc-1-1-1", name: "การสัมภาษณ์ผู้ใช้", description: "คุณภาพและความลึกของการสัมภาษณ์ผู้ใช้งาน", maxPoints: 30, weight: 30, levels: [{ label: "ดีเยี่ยม", description: "สัมภาษณ์ครบ 5 คน ข้อมูลลึกและหลากหลาย มี Insight ที่ชัดเจน" }, { label: "ดี", description: "สัมภาษณ์ครบ 5 คน แต่ข้อมูลบางส่วนยังขาดความลึก" }, { label: "ต้องปรับปรุง", description: "สัมภาษณ์ไม่ครบหรือข้อมูลที่ได้ไม่เพียงพอต่อการวิเคราะห์" }] },
-      { id: "rc-1-1-2", name: "User Persona", description: "ความครบถ้วนและความแม่นยำของ Persona", maxPoints: 40, weight: 40, levels: [{ label: "ดีเยี่ยม", description: "Persona ครบ 2 คน มีข้อมูล Pain Points, Goal และ Behavior ชัดเจน" }, { label: "ดี", description: "Persona ครบจำนวน แต่ข้อมูลบางส่วนยังไม่สมบูรณ์" }, { label: "ต้องปรับปรุง", description: "Persona ไม่ครบหรือข้อมูลไม่เพียงพอ" }] },
-      { id: "rc-1-1-3", name: "Insight และสรุปผล", description: "ความลึกและความเข้าใจของ Pain Points และ Insights", maxPoints: 30, weight: 30, levels: [{ label: "ดีเยี่ยม", description: "Insight ชัดเจน นำไปสู่ Design Direction ที่มีเหตุผล" }, { label: "ดี", description: "มี Insight แต่การสรุปยังขาดความเชื่อมโยงกับ Design" }, { label: "ต้องปรับปรุง", description: "Insight ไม่ชัดเจนหรือขาดการวิเคราะห์" }] },
-    ],
+    // 4-level, level-scored rubric (lib/rubricTemplates.ts) — same shape as every rubric in the mock data
+    criteria: buildCriteria(UX_RESEARCH, 100, "th").map((c, i) => ({ id: `rc-1-1-${i + 1}`, ...c })),
     createdAt: "2026-07-20T09:00:00.000Z", updatedAt: "2026-07-20T09:00:00.000Z",
   },
 ];

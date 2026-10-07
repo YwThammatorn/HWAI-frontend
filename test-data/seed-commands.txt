@@ -55,9 +55,9 @@ fetch('/mock-data/teachers-mockup.json').then(r=>r.json()).then(d=>{localStorage
     วิชานี้มี 3 หมวดคะแนน (งานที่มอบหมาย 40% / สอบกลางภาค 25% / สอบปลายภาค 35% — ยังไม่มีงานผูกกับ
     2 หมวดหลัง เป็นของจริงที่ยังไม่ได้สร้าง ไม่ใช่ bug) และ 3 งาน ทุกงานอยู่ในหมวด "งานที่มอบหมาย"
     ทุกงานมี rubric ผูกอยู่แล้ว (ทุกงานที่สร้างผ่าน UI จะมี rubric เสมอ):
-                     [1] งานเดี่ยว ครบกำหนดแล้ว มี rubric 3 ข้อ + ผลตรวจ 3 แบบ (ตรวจแล้ว/รอตรวจ/ยังไม่ตรวจ)
-                     [2] งานเดี่ยว ยังไม่ถึงกำหนด มี rubric 3 ข้อ ยังไม่มีใครส่ง
-                     [3] งานกลุ่ม (a-mock-3, จับคู่ 2 คน) ยังไม่ถึงกำหนด มี rubric 3 ข้อ ยังไม่มีทีม/ใครส่ง
+                     [1] งานเดี่ยว ครบกำหนดแล้ว มี rubric 3 เกณฑ์ (4 ระดับ ดีมาก/พอใช้/ต้องปรับปรุง/ไม่ผ่าน) + ผลตรวจ 3 แบบ (ตรวจแล้ว/รอตรวจ/ยังไม่ตรวจ)
+                     [2] งานเดี่ยว ยังไม่ถึงกำหนด มี rubric 3 เกณฑ์ (4 ระดับ ดีมาก/พอใช้/ต้องปรับปรุง/ไม่ผ่าน) ยังไม่มีใครส่ง
+                     [3] งานกลุ่ม (a-mock-3, จับคู่ 2 คน) ยังไม่ถึงกำหนด มี rubric 3 เกณฑ์ (4 ระดับ ดีมาก/พอใช้/ต้องปรับปรุง/ไม่ผ่าน) ยังไม่มีทีม/ใครส่ง
                          — ไว้ทดสอบ flow จับกลุ่ม: login 69070101 จับทีมกับ 69070102 → ส่งงาน →
                          login somsak.c@kmitl.ac.th (ทำ [3] ก่อนถึงจะ login ได้) → Start Grading
                          หรือกด Review/Recheck (ตอนนี้มี rubric แล้ว หน้า Grading Review จะเห็นเกณฑ์จริง)
@@ -71,11 +71,11 @@ fetch('/mock-data/student-flow-mockup.json').then(r=>r.json()).then(d=>{localSto
 
 [6] รีเซ็ตแค่ "ผลตรวจ" กลับไปที่ค่าเริ่มต้น (เผื่อทดสอบส่งงานซ้ำๆ)
     ใช้ตอนทดสอบ role student แล้วกดส่งงาน "โปรเจกต์เล็ก: เครื่องคิดเลข" (a-mock-2) ไปแล้ว
-    อยากให้กลับไปเป็น "ยังไม่ส่ง" เพื่อลองกดส่งใหม่อีกรอบ — ไม่กระทบ cohort/รายวิชา/งาน/rubric เลย
+    อยากให้กลับไปเป็น "ยังไม่ส่ง" เพื่อลองกดส่งใหม่อีกรอบ — ไม่กระทบ cohort/รายวิชา/งาน เลย (rubric ของ c-mock-1 ถูกใส่ซ้ำให้ตรงกับผลตรวจ)
     แก้แค่ hwai_submissions_v1 กลับไปเป็นผลตรวจตั้งต้นทั้งชุดของ student-flow-mockup (233 รายการ — 175 รายการที่ตรวจแล้วมีคะแนนรายเกณฑ์ ดู [13])
     ส่วน a-mock-2 จะไม่มี submission อยู่เลย เหมือนตอนเริ่มต้น
 
-fetch('/mock-data/student-flow-mockup.json').then(r=>r.json()).then(d=>{localStorage.setItem('hwai_submissions_v1', JSON.stringify(d.submissions)); location.reload();});
+fetch('/mock-data/student-flow-mockup.json').then(r=>r.json()).then(d=>{localStorage.setItem('hwai_submissions_v1', JSON.stringify(d.submissions)); const rids=new Set(d.rubrics.map(r=>r.id)); localStorage.setItem('hwai_rubrics_v1', JSON.stringify([...JSON.parse(localStorage.getItem('hwai_rubrics_v1')||'[]').filter(r=>!rids.has(r.id)),...d.rubrics])); location.reload();});
 
 ---
 
@@ -176,23 +176,24 @@ fetch('/mock-data/students-mockup-en.json').then(r=>r.json()).then(d=>{localStor
 [13] คะแนนรายเกณฑ์ (rubric) ของนักศึกษา — เฉพาะผลตรวจ (submissions) ของ [5]/[10]
      ผลตรวจที่ "ตรวจแล้ว" ทั้ง 175 รายการใน student-flow-mockup มี criterionScores (คะแนนแต่ละเกณฑ์ รวมเท่ากับคะแนนรวม และไม่เกินคะแนนเต็มของเกณฑ์นั้น)
      นักศึกษาเห็นที่ /student/courses/c-mock-1/classwork/<งาน> (การ์ดเกณฑ์แสดง "56 / 60" + แถบ) และในป๊อปอัปของหน้า Evaluation (ไม่มีข้อความ "ประมาณ" อีก)
-     ล็อกอิน 69070101@kmitl.ac.th → งาน "แบบฝึกหัด Python เบื้องต้น" (90 = 56 + 18 + 16), "Quiz 1" (85) — ส่วน Python / Quiz 2 / Lab 5 นักศึกษาจะเห็นคะแนนหลังอาจารย์กด “เสร็จสิ้นและประกาศผล” ของงานนั้น (ดู [15])
+     ล็อกอิน 69070101@kmitl.ac.th → งาน "แบบฝึกหัด Python เบื้องต้น" (14 = 9 + 2 + 3 จากเต็ม 15 = 9 + 3 + 3), "Quiz 1" (9 = 3 + 3 + 3 จากเต็ม 10 = 4 + 3 + 3) — ส่วน Python / Quiz 2 / Lab 5 นักศึกษาจะเห็นคะแนนหลังอาจารย์กด “เสร็จสิ้นและประกาศผล” ของงานนั้น (ดู [15])
      ถ้าเคยรัน [5] หรือ [10] ไว้แล้ว รันตัวนี้ตัวเดียวพอ — เขียนทับเฉพาะ hwai_submissions_v1 ไม่แตะรายชื่อนักศึกษาที่ใส่ด้วย [12]
      (ยังไม่เคยรัน [5] ให้รัน [2] แล้ว [5] ก่อน)
 
      ภาษาไทย (คำสั่งเดียวกับ [6]):
 
-fetch('/mock-data/student-flow-mockup.json').then(r=>r.json()).then(d=>{localStorage.setItem('hwai_submissions_v1', JSON.stringify(d.submissions)); location.reload();});
+fetch('/mock-data/student-flow-mockup.json').then(r=>r.json()).then(d=>{localStorage.setItem('hwai_submissions_v1', JSON.stringify(d.submissions)); const rids=new Set(d.rubrics.map(r=>r.id)); localStorage.setItem('hwai_rubrics_v1', JSON.stringify([...JSON.parse(localStorage.getItem('hwai_rubrics_v1')||'[]').filter(r=>!rids.has(r.id)),...d.rubrics])); location.reload();});
 
      English:
 
-fetch('/mock-data/student-flow-mockup-en.json').then(r=>r.json()).then(d=>{localStorage.setItem('hwai_submissions_v1', JSON.stringify(d.submissions)); location.reload();});
+fetch('/mock-data/student-flow-mockup-en.json').then(r=>r.json()).then(d=>{localStorage.setItem('hwai_submissions_v1', JSON.stringify(d.submissions)); const rids=new Set(d.rubrics.map(r=>r.id)); localStorage.setItem('hwai_rubrics_v1', JSON.stringify([...JSON.parse(localStorage.getItem('hwai_rubrics_v1')||'[]').filter(r=>!rids.has(r.id)),...d.rubrics])); location.reload();});
 
 ---
 
 [14] ประวัติรายวิชาของนักศึกษา — ไว้ดู "รายวิชาของฉัน" (เทอมปัจจุบัน) กับ "รายวิชาที่เรียนผ่านไปแล้ว" ของ role student
      คำสั่งเดียวจบ: ใส่รายวิชา 53 รายการ + อาจารย์ + รายชื่อนักศึกษา 85 คน (เหมือน [2] [3] [12]) แล้วเพิ่มประวัติเรียนต่อท้ายข้อมูลเดิม
      4/10: วิชาที่เรียนผ่านแล้วมี แล็บ (เต็ม 40) · แบบทดสอบย่อย (เต็ม 20) · สอบปลายภาค (เต็ม 40) = 100 คะแนน — คะแนนแต่ละชิ้นต่างกันตามจริง (ไม่ใช่เลขเดียวกันทั้ง 3 ชิ้นอีกแล้ว) แต่รวมแล้วได้เกรดเดิมเป๊ะ
+     rubric ของทุกงานเป็นแบบ 4 ระดับ เกณฑ์เข้ากับวิชา: แล็บของ DSA วัดอัลกอริทึม/ความซับซ้อน, ตรรกะดิจิทัลวัดวงจร/การลดรูป, ฐานข้อมูลวัด ER/SQL ฯลฯ ส่วนแบบทดสอบย่อยและสอบปลายภาคใช้กรอบเดียวกันโดยเปลี่ยนหัวข้อวิชา
      (ประวัติเป็นแบบ "เพิ่ม/แทนที่ตาม id" — รันซ้ำได้ ข้อมูลประวัติเก่าในเบราว์เซอร์ถูกแทนที่ด้วยคะแนนชุดใหม่ — ถ้าอยากได้ c-mock-1 แบบเต็ม (rubric/แนบไฟล์) ของ 69070101 ด้วย ให้รัน [5] ก่อนค่อยรัน [14] ตามหลัง ลำดับนี้เท่านั้น: [14] ก่อนไม่ทับ [5], กลับกัน [5] ทับ [14] แน่นอนเพราะ [5] เขียนทับทั้ง 4 คีย์เดียวกัน)
      26/9: รอบแรกมีบั๊กจริง 2 เรื่อง — แก้แล้ว: (1) นักศึกษาบางคนเรียนวิชาเดิมซ้ำ (เช่น "การเขียนโปรแกรมคอมพิวเตอร์" ทั้งเทอมนี้และในประวัติ 2 รอบ) ตอนนี้แต่ละคนเรียนแต่ละวิชา (นับตามรหัสวิชา ไม่ใช่ course id เพราะรหัสเดียวกันมีได้หลายหลักสูตร/หลายรุ่น) ครั้งเดียวเท่านั้น ไม่ซ้ำเลยทั้งเทอมนี้และเทอมก่อนๆ (2) เทอมของ "วิชาที่ผ่านมาแล้ว" ต้องไม่ก่อนปีที่เข้าเรียนของนักศึกษาคนนั้น (รหัส 66xxxxxx เข้าปี 2566 จะมีประวัติได้ตั้งแต่ 2566 เป็นต้นไป ฯลฯ) — 69070101 รหัส 69 เพิ่งเข้าปีนี้ (2569) เทอมนี้คือเทอมแรกจริงๆ จึงไม่มีทางมี "วิชาที่ผ่านมาแล้ว" ได้ตามหลักการนี้ กลับไปไม่มีส่วนนั้นเหมือนเดิม (ได้แค่ลงหลายวิชาในเทอมนี้)
      ล็อกอินด้วยอีเมลของนักศึกษา รหัสผ่านอะไรก็ได้:
@@ -225,6 +226,8 @@ fetch('/mock-data/courses-mockup-en.json').then(r=>r.json()).then(c=>{localStora
      4/10: คะแนนเต็มของแต่ละงานไม่เท่ากันแล้ว เพื่อให้เห็นสัดส่วนว่างานไหนมีน้ำหนักเท่าไร — หมวด "งานที่มอบหมาย" 40% รวมเต็ม 100 คะแนน:
        Python 15 · Quiz 1 10 · Quiz 2 10 · Lab 5 15 · โปรเจกต์เล็ก 25 · โปรเจกต์กลุ่ม 15 และ 10   |   สอบกลางภาค 50 (25%)   |   สอบปลายภาค 100 (35%)
        คะแนนไม่สุดโต่ง: ไม่มีใครได้เต็มสักงาน ต่ำสุดไม่ต่ำกว่า 1 ใน 3 ของคะแนนเต็ม งานเล็ก (Quiz) กระจายกว้างกว่างานใหญ่ (โปรเจกต์ สอบ)
+     rubric ของทุกงานเป็นแบบเดียวกับไฟล์ UXUI_Final_Rubric_draft1.xlsx: เกณฑ์ C1, C2 … แต่ละเกณฑ์มี 4 ระดับ (ดีมาก 100% / พอใช้ 66.67% / ต้องปรับปรุง 33.33% / ไม่ผ่าน 0%)
+     และคะแนนรายเกณฑ์ของนักศึกษาก็เป็นขั้นตามระดับนั้น (เกณฑ์เต็ม 9 → 9/6/3/0) เกณฑ์เนื้อหาเข้ากับงาน: โปรแกรม (ถูกต้อง/อ่านง่าย/จัดการ Error), Quiz (แนวคิด/คำตอบ/เหตุผล), งานกลุ่ม (ฟังก์ชัน/โครงสร้าง/ทีม)
        สอบกลางภาค (เต็ม 50, ประกาศผลแล้ว)  ได้คะแนนครบ 42 คน  เฉลี่ย 33.0  SD 7.5  ต่ำสุด 17  สูงสุด 47  — ไว้ดูกราฟระฆังคว่ำ/สถิติของ role student
        แบบฝึกหัด Python (ยังไม่ประกาศ)    ตรวจแล้ว 30 (เฉลี่ย 12.0/15) · รอตรวจ 6 · ยังไม่ตรวจ 4 · ไม่ส่ง 2
        Quiz 1 (ประกาศผลแล้ว)             ตรวจแล้ว 39 (เฉลี่ย 7.5/10) · ไม่ส่ง 3
@@ -245,6 +248,50 @@ fetch('/mock-data/student-flow-mockup.json').then(r=>r.json()).then(f=>fetch('/m
      English:
 
 fetch('/mock-data/student-flow-mockup-en.json').then(r=>r.json()).then(f=>fetch('/mock-data/students-mockup-en.json').then(r=>r.json()).then(st=>{const get=k=>JSON.parse(localStorage.getItem(k)||'[]');const ids=new Set(st.map(s=>s.studentId));const mine=new Set(f.assignments.map(a=>a.id));localStorage.setItem('hwai_cohort_students_v1',JSON.stringify([...st,...get('hwai_cohort_students_v1').filter(s=>!ids.has(s.studentId))]));localStorage.setItem('hwai_students_v1',JSON.stringify([...get('hwai_students_v1').filter(s=>s.courseId!=='c-mock-1'),...f.courseStudents]));localStorage.setItem('hwai_assignments_v1',JSON.stringify([...get('hwai_assignments_v1').filter(a=>!mine.has(a.id)),...f.assignments]));localStorage.setItem('hwai_submissions_v1',JSON.stringify([...get('hwai_submissions_v1').filter(s=>!mine.has(s.assignmentId)),...f.submissions]));const rids=new Set(f.rubrics.map(r=>r.id));localStorage.setItem('hwai_rubrics_v1',JSON.stringify([...get('hwai_rubrics_v1').filter(r=>!rids.has(r.id)),...f.rubrics]));location.reload();}));
+
+---
+
+[16] วิชา UX/UI (c-mock-4 "การออกแบบประสบการณ์และส่วนติดต่อผู้ใช้" กลุ่ม 1 · 2569 เทอม 1) — 30 คน + งาน UX/UI Final Project พร้อม rubric จากไฟล์ UXUI_Final_Rubric_draft1.xlsx
+     ต้องมีรายวิชา c-mock-4 กับอาจารย์ก่อน (รัน [14] หรือ [2] [3] มาแล้ว) — คำสั่งนี้ใส่เฉพาะรายชื่อ งาน rubric และผลตรวจของวิชานี้ ไม่แตะวิชาอื่น และรันซ้ำได้
+     ห้อง 30 คน เป็นนักศึกษา CE ทั้งหมด (1 section = 1 หลักสูตร): 69070101 กับ 67010201 ที่เรียนอยู่เดิม + อีก 11 คนรุ่น 66–68 + 17 คนรุ่น 69 จาก [15]
+     งาน "โปรเจกต์ UX/UI ปลายภาค (Final Project)" เต็ม 100 หมวด "โปรเจกต์ปลายภาค" 60% (หมวด "สอบปลายภาค" 40% ยังไม่มีงาน) ตรวจแล้ว 27 คน ไม่ส่ง 3 คน และประกาศผลแล้ว
+     rubric 7 เกณฑ์ตามไฟล์ (C1–C7 คะแนน 15/15/10/15/15/15/15) 4 ระดับ: ดีมาก = เต็ม, พอใช้ = 66.67%, ต้องปรับปรุง = 33.33%, ไม่ผ่าน = 0%
+     → เกณฑ์เต็ม 15 ได้ 15/10/5/0 ส่วนเกณฑ์เต็ม 10 (C3) ได้ 10/7/3/0 (ปัดเป็นจำนวนเต็ม) — คะแนนรายเกณฑ์ของนักศึกษาทุกคนเป็นค่าตามระดับเหล่านี้
+     คะแนนรวม: เฉลี่ย 73.4  SD 15.7  ต่ำสุด 48  สูงสุด 92 (ไม่มีใครเต็ม) — ข้อที่ได้ "ดีมาก" น้อยสุดคือ C6 ตัวอักษร สี และ Accessibility (4 คน)
+     ดูที่: ล็อกอิน karn.s@kmitl.ac.th (อาจารย์วิชานี้) → UX/UI → สมุดคะแนน → สรุปผลทั้งห้อง; หรือล็อกอิน 69070101@kmitl.ac.th (87 คะแนน) → วิชา UX/UI → งาน Final Project → การ์ดเกณฑ์จะไฮไลต์ระดับที่ได้ในแต่ละเกณฑ์
+
+     ภาษาไทย:
+
+fetch('/mock-data/student-uxui-mockup.json').then(r=>r.json()).then(f=>fetch('/mock-data/students-mockup.json').then(r=>r.json()).then(st=>{const get=k=>JSON.parse(localStorage.getItem(k)||'[]');const put=(k,items)=>{const ids=new Set(items.map(x=>x.id));localStorage.setItem(k,JSON.stringify([...get(k).filter(x=>!ids.has(x.id)),...items]));};const sids=new Set(st.map(x=>x.studentId));localStorage.setItem('hwai_cohort_students_v1',JSON.stringify([...st,...get('hwai_cohort_students_v1').filter(x=>!sids.has(x.studentId))]));localStorage.setItem('hwai_students_v1',JSON.stringify([...get('hwai_students_v1').filter(x=>x.courseId!=='c-mock-4'),...f.courseStudents]));put('hwai_grading_categories_v1',f.gradingCategories);put('hwai_assignments_v1',f.assignments);put('hwai_rubrics_v1',f.rubrics);const aids=new Set(f.assignments.map(a=>a.id));localStorage.setItem('hwai_submissions_v1',JSON.stringify([...get('hwai_submissions_v1').filter(x=>!aids.has(x.assignmentId)),...f.submissions]));location.reload();}));
+
+     English:
+
+fetch('/mock-data/student-uxui-mockup-en.json').then(r=>r.json()).then(f=>fetch('/mock-data/students-mockup-en.json').then(r=>r.json()).then(st=>{const get=k=>JSON.parse(localStorage.getItem(k)||'[]');const put=(k,items)=>{const ids=new Set(items.map(x=>x.id));localStorage.setItem(k,JSON.stringify([...get(k).filter(x=>!ids.has(x.id)),...items]));};const sids=new Set(st.map(x=>x.studentId));localStorage.setItem('hwai_cohort_students_v1',JSON.stringify([...st,...get('hwai_cohort_students_v1').filter(x=>!sids.has(x.studentId))]));localStorage.setItem('hwai_students_v1',JSON.stringify([...get('hwai_students_v1').filter(x=>x.courseId!=='c-mock-4'),...f.courseStudents]));put('hwai_grading_categories_v1',f.gradingCategories);put('hwai_assignments_v1',f.assignments);put('hwai_rubrics_v1',f.rubrics);const aids=new Set(f.assignments.map(a=>a.id));localStorage.setItem('hwai_submissions_v1',JSON.stringify([...get('hwai_submissions_v1').filter(x=>!aids.has(x.assignmentId)),...f.submissions]));location.reload();}));
+
+---
+
+[17] ทดสอบนำเข้าคะแนนสอบจาก CSV (หน้ากรอกคะแนนสอบของอาจารย์) — ไม่ต้องใช้ console
+     ต้องมีห้อง c-mock-1 ครบ 42 คนก่อน (รัน [2] [3] [14] [15] มาแล้ว) — ใช้ "สอบปลายภาค" (a-mock-9, เต็ม 100) เพราะยังไม่มีคะแนนและยังไม่ประกาศผล
+     ล็อกอิน somsak.c@kmitl.ac.th → c-mock-1 → Grading → เลือก "สอบปลายภาค" → ตารางคะแนนสอบ → กด "นำเข้าด้วย CSV" → เลือกไฟล์:
+
+     test-data/exam-scores-final-c-mock-1.csv  (ไฟล์ถูกต้อง)
+       42 คนครบทุกคน หัวตารางภาษาไทย (รหัสนักศึกษา, ชื่อ-นามสกุล, คะแนน) คะแนนเฉลี่ยราว 64.5 SD 14.5 ต่ำสุด 32 สูงสุด 93 มีครึ่งคะแนน (81.5)
+       → ตัวอย่างควรขึ้น "42 พร้อมกรอก" ทุกแถวสถานะ "กรอกคะแนนใหม่" → กด "กรอก 42 คะแนน" ช่องคะแนนในตารางถูกไฮไลต์ → ตรวจแล้วกด "บันทึกคะแนน"
+       → หลังบันทึก กด "เสร็จสิ้นและประกาศผล" ได้ และหน้า Score Book กับการ์ดสถิติสอบของ 69070101 จะมีสอบปลายภาคเพิ่ม
+
+     test-data/exam-scores-final-c-mock-1-with-errors.csv  (ไฟล์ที่มีปัญหา — ดูว่าระบบบอกเหตุผลอย่างไร)
+       → "36 พร้อมกรอก · 1 ข้าม · 4 มีข้อผิดพลาด" และ "นักศึกษาในวิชานี้อีก 3 คนไม่อยู่ในไฟล์"
+       · 69070205 คะแนน 105            → "คะแนนต้องเป็นตัวเลข 0–100"
+       · 69070210 คะแนน "ขาดสอบ"       → "คะแนนต้องเป็นตัวเลข 0–100"
+       · 69070215 ไม่มีคะแนน            → "ไม่มีคะแนน — ข้าม" (ไม่นับเป็นข้อผิดพลาด)
+       · 69070220 มีช่องว่างหน้าหลัง      → ใช้ได้ตามปกติ
+       · 69079999 ไม่ได้ลงทะเบียน        → "ไม่ได้ลงทะเบียนในวิชานี้"
+       · 69070201 ปรากฏซ้ำอีกครั้งท้ายไฟล์ → "รหัสซ้ำในไฟล์ (ใช้แถวแรก)"
+       · 69070230–232 ไม่อยู่ในไฟล์เลย   → ไม่ถูกแตะ
+
+     ลองต่อ: นำเข้าไฟล์ถูกต้องแล้วบันทึก จากนั้นนำเข้า with-errors อีกรอบ → แถวที่คะแนนต่างจากเดิมจะขึ้น "แทนที่คะแนนเดิม …" (ไฟล์ with-errors กับไฟล์แรกคะแนนเหมือนกัน
+     ยกเว้นแถวที่ตั้งใจให้ผิด จึงขึ้น "เหมือนเดิม" เป็นส่วนใหญ่); หรือกด "ดาวน์โหลด" ในหน้าต่างนำเข้าเพื่อได้ไฟล์รายชื่อว่างๆ ไปกรอกใน Excel
+     ถ้าเคยบันทึกคะแนนสอบปลายภาคไว้แล้ว แถวที่ต่างจากเดิมจะขึ้น "แทนที่คะแนนเดิม" ก่อนกรอกทับ
 
 ---
 

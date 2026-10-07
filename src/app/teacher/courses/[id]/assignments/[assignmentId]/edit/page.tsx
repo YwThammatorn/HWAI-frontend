@@ -8,6 +8,7 @@ import { useAssignments, Assignment } from "@/lib/assignments";
 import { useGradingCategories } from "@/lib/gradingCategories";
 import { useLanguage } from "@/context/LanguageContext";
 import { AttachmentsEditor, useAttachmentsDraft } from "@/components/AssignmentAttachments";
+import Modal from "@/components/Modal";
 import RubricCriteriaEditor, { CriterionDraft, newCriterionDraft, toDraft, criteriaPointsOk, criteriaTotalPoints, finalizeCriteria } from "@/components/RubricCriteriaEditor";
 
 export default function EditAssignmentPage() {
@@ -18,6 +19,7 @@ export default function EditAssignmentPage() {
   const {
     getAssignment, updateAssignment, removeAssignment,
     getRubricsByAssignment, addRubric, updateRubric,
+    getSubmissionsByAssignment, updateSubmission,
   } = useAssignments();
   const { getCategoriesByCourse } = useGradingCategories();
 
@@ -48,6 +50,7 @@ export default function EditAssignmentPage() {
   const [submissionType, setSubmissionType] = useState<"individual" | "group">("individual");
   const [maxGroupSize, setMaxGroupSize] = useState("");
   const [saved, setSaved] = useState(false);
+  const [restartOpen, setRestartOpen] = useState(false);
   const att = useAttachmentsDraft();
 
   // Rubric editing lives on this page now (23/9/2569 round 3, was a separate step via the
@@ -147,6 +150,14 @@ export default function EditAssignmentPage() {
 
   function handleSave(e: React.FormEvent) {
     e.preventDefault();
+    // A changed rubric means the scores already given no longer match it — say so before it happens.
+    if (rubricChanged && scoredSubs.length > 0) { setRestartOpen(true); return; }
+    commitSave(false);
+  }
+
+  /** `restart`: the rubric changed under work that was already graded, so that work goes back to "not graded". */
+  function commitSave(restart: boolean) {
+    setRestartOpen(false);
     updateAssignment(assignmentId, {
       name: name.trim(),
       description: description.trim(),
@@ -162,7 +173,12 @@ export default function EditAssignmentPage() {
       maxGroupSize: !isExam && submissionType === "group" && maxGroupSize ? parseInt(maxGroupSize) : null,
       isExam,
     });
-    if (!needsManualScore) {
+    if (restart) {
+      scoredSubs.forEach((sub) => updateSubmission(sub.id, {
+        aiScore: null, instructorScore: null, criterionScores: undefined, criterionComments: undefined, status: "not_graded",
+      }));
+    }
+    if (!needsManualScore && !rubricLocked) {
       const finalized = finalizeCriteria(criteria, t("ไม่มีชื่อ", "Untitled"));
       if (linkedRubrics[0]) {
         updateRubric(linkedRubrics[0].id, { name: linkedRubrics[0].name, criteria: finalized });
@@ -203,6 +219,11 @@ export default function EditAssignmentPage() {
   // state directly (finalized + synced to the assignment on Save), not from the linked rubric's
   // last-saved value, since editing happens inline on this page now instead of a separate route.
   const needsManualScore = isExam || !acceptsFiles;
+  // Once the results are announced the rubric is frozen (the scores were given under it); "Reopen grading" on the
+  // Grading page lifts that. Until then, a changed rubric restarts the work that was already scored.
+  const rubricLocked = !!assignment.gradingFinalized;
+  const rubricChanged = !needsManualScore && !rubricLocked && JSON.stringify(criteria) !== origRef.current.criteriaJson;
+  const scoredSubs = getSubmissionsByAssignment(assignmentId).filter((sub) => sub.status !== "not_graded");
   const totalPoints = criteriaTotalPoints(criteria);
   const pointsOk = criteriaPointsOk(criteria);
   const isValid = name.trim().length > 0 && (isExam || dueDate !== "") && (isExam || !acceptsFiles || fileTypes.length > 0) &&
@@ -432,11 +453,27 @@ export default function EditAssignmentPage() {
               <p className="text-sm text-gray-500 mb-5">
                 {t("ตั้งเกณฑ์ที่ HWAI Agent จะใช้ตรวจงานนี้ พร้อมคะแนนของแต่ละเกณฑ์ — คะแนนเต็มของชิ้นงานจะมาจากผลรวมนี้", "Set the criteria the HWAI Agent will grade this assignment with, each with its own points. The assignment's max score is the sum.")}
               </p>
-              <RubricCriteriaEditor
-                criteria={criteria}
-                setCriteria={setCriteria}
-                assignmentName={name.trim()} assignmentDescription={description} assignmentAttachments={att.items}
-              />
+              {rubricLocked ? (
+                <p data-testid="rubric-locked" role="note" className="mb-4 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-xl border border-[var(--s-info-bd)] bg-[var(--s-info-bg)] px-4 py-3 text-sm leading-relaxed text-[var(--s-info-text)]">
+                  <svg className="shrink-0" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                    <rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+                  </svg>
+                  <span>{t("ตรวจเสร็จและประกาศผลแล้ว — แก้เกณฑ์ไม่ได้ ถ้าต้องแก้ ให้ “เปิดตรวจใหม่” ที่หน้าตรวจงานก่อน", "Grading is finished and announced — the rubric can't be changed. To change it, “Reopen grading” on the Grading page first.")}</span>
+                  <Link href={`/teacher/courses/${id}/assignments/${assignmentId}/grading`} className="font-semibold underline underline-offset-2">{t("ไปหน้าตรวจงาน", "Go to Grading")}</Link>
+                </p>
+              ) : scoredSubs.length > 0 && (
+                <p data-testid="rubric-restart-note" role="note" className="mb-4 rounded-xl border border-[var(--s-info-bd)] bg-[var(--s-info-bg)] px-4 py-3 text-sm leading-relaxed text-[var(--s-info-text)]">
+                  {t(`งานนี้ตรวจไปแล้ว ${scoredSubs.length} ชิ้น — ถ้าเปลี่ยนเกณฑ์ ระบบจะเริ่มตรวจใหม่ตามเกณฑ์ใหม่`, `${scoredSubs.length} ${scoredSubs.length === 1 ? "submission has" : "submissions have"} been graded — changing the rubric restarts grading under the new criteria.`)}
+                </p>
+              )}
+              {/* a disabled fieldset switches off every field and button inside the editor in one go */}
+              <fieldset disabled={rubricLocked} className={`m-0 min-w-0 border-0 p-0 ${rubricLocked ? "opacity-60" : ""}`}>
+                <RubricCriteriaEditor
+                  criteria={criteria}
+                  setCriteria={setCriteria}
+                  assignmentName={name.trim()} assignmentDescription={description} assignmentAttachments={att.items}
+                />
+              </fieldset>
             </section>
           )}
 
@@ -478,6 +515,32 @@ export default function EditAssignmentPage() {
             </button>
           </div>
         </form>
+
+        <Modal
+          open={restartOpen}
+          onClose={() => setRestartOpen(false)}
+          title={t("เปลี่ยนเกณฑ์ = เริ่มตรวจใหม่", "Changing the rubric restarts grading")}
+          description={t(`งานนี้ตรวจไปแล้ว ${scoredSubs.length} ชิ้น`, `${scoredSubs.length} ${scoredSubs.length === 1 ? "submission has" : "submissions have"} already been graded`)}
+          footer={
+            <>
+              <button type="button" onClick={() => setRestartOpen(false)}
+                className="h-10 px-4 rounded-xl border border-[var(--border)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors">
+                {t("กลับไปแก้ต่อ", "Keep editing")}
+              </button>
+              <button type="button" data-testid="confirm-restart" onClick={() => commitSave(true)}
+                className="h-10 px-4 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors">
+                {t("บันทึกและเริ่มตรวจใหม่", "Save and restart grading")}
+              </button>
+            </>
+          }
+        >
+          <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{t("เมื่อบันทึกเกณฑ์ใหม่ ระบบจะ", "When you save the new rubric, the system will")}</p>
+          <ul className="mt-2 list-disc space-y-1.5 pl-5 text-sm text-[var(--text-primary)] leading-relaxed">
+            <li>{t(`ล้างคะแนนและคะแนนรายเกณฑ์ของงาน ${scoredSubs.length} ชิ้น (ทั้งที่ AI และอาจารย์ให้ไว้)`, `clear the scores and per-criterion scores of ${scoredSubs.length} ${scoredSubs.length === 1 ? "submission" : "submissions"} (both the AI's and yours)`)}</li>
+            <li>{t("ส่งงานเหล่านั้นกลับไปเป็น “ยังไม่ตรวจ” เพื่อตรวจใหม่ตามเกณฑ์ใหม่", "send them back to “Not graded” to be graded again under the new criteria")}</li>
+          </ul>
+          <p className="mt-3 text-sm font-medium text-[var(--s-err-text)]">{t("ย้อนกลับไม่ได้ — คะแนนที่ล้างไปจะไม่กลับมา", "This can't be undone — cleared scores don't come back.")}</p>
+        </Modal>
       </main>
   );
 }

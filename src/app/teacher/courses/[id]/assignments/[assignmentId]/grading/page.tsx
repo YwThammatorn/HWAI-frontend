@@ -17,6 +17,7 @@ import PillTabBar from "@/components/PillTabBar";
 import WithdrawnTabs, { type WithdrawnTab } from "@/components/WithdrawnTabs";
 import ExamScoreTable from "@/components/ExamScoreTable";
 import Modal from "@/components/Modal";
+import GradingRubricPanel from "@/components/GradingRubricPanel";
 import { useCohortStudents } from "@/lib/cohort-students";
 
 // ── Stat card ─────────────────────────────────────────────────────────────
@@ -371,7 +372,7 @@ export default function GradingProgressPage() {
   const router = useRouter();
   const { t, lang } = useLanguage();
   const { getCourse } = useCourses();
-  const { getAssignment, getSubmissionsByAssignment, addSubmission, updateSubmission, updateAssignment } = useAssignments();
+  const { getAssignment, getSubmissionsByAssignment, getRubricsByAssignment, addSubmission, updateSubmission, updateAssignment } = useAssignments();
   const { findByStudentId } = useCohortStudents();
   const { getGroupsByAssignment } = useStudentGroups();
   const { getStudentsByCourse } = useStudents();
@@ -381,6 +382,7 @@ export default function GradingProgressPage() {
   const course = getCourse(id);
   const assignment = getAssignment(assignmentId);
   const submissions = getSubmissionsByAssignment(assignmentId);
+  const rubric = getRubricsByAssignment(assignmentId)[0];
 
   if (!course || !assignment) {
     return (
@@ -738,6 +740,17 @@ export default function GradingProgressPage() {
           </div>
         </div>
 
+        {/* The rubric next to the grading (4/10/2569): criteria, how the graded work spreads over each one's levels, level wording */}
+        {rubric && rubric.criteria.length > 0 && (
+          <GradingRubricPanel
+            rubric={rubric}
+            graded={repSubs.filter((s) => s.status === "graded")}
+            editHref={`/teacher/courses/${id}/assignments/${assignmentId}/edit`}
+            locked={finalized}
+            unit={isGroupAssignment ? "team" : "student"}
+          />
+        )}
+
         </>)}
 
         {isExam ? (
@@ -747,6 +760,7 @@ export default function GradingProgressPage() {
             titleOf={(sid) => findByStudentId(sid)?.title}
             scores={examScores}
             maxPoints={assignment.maxPoints}
+            withdrawnIds={withdrawnStudentIds}
             readOnly={tab === "withdrawn" || finalized}
             readOnlyReason={tab === "withdrawn"
               ? t("นักศึกษาที่ถอนแล้ว — ดูอย่างเดียว", "Withdrawn students — view only")

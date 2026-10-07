@@ -4,6 +4,7 @@ import { useState, Dispatch, SetStateAction } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import { RubricCriterion, CriterionLevel, AssignmentAttachment } from "@/lib/assignments";
 import Modal from "@/components/Modal";
+import { buildCriteria, pickAiTemplate } from "@/lib/rubricTemplates";
 
 // Shared by the "New Assignment" form and the standalone rubric editor page, so
 // both edit criteria exactly the same way. The parent owns the draft state and
@@ -11,6 +12,8 @@ import Modal from "@/components/Modal";
 
 const LEVEL_LABEL_MAP: Record<string, string> = {
   ดีเยี่ยม: "Excellent",
+  ดีมาก: "Excellent",
+  ไม่ผ่าน: "Fail",
   ดี: "Good",
   พอใช้: "Fair",
   ต้องปรับปรุง: "Needs Improvement",
@@ -222,6 +225,14 @@ export default function RubricCriteriaEditor({
   function generateAiSuggestions() {
     setAiStep("loading");
     setTimeout(() => {
+      // A brief about UX/UI, an exam or code gets the rubric that fits it (4 levels, level-scored — see lib/rubricTemplates.ts);
+      // anything else keeps the general-purpose suggestions below.
+      const tpl = pickAiTemplate(aiBrief);
+      if (tpl) {
+        setAiSuggestions(buildCriteria(tpl.criteria, 100, lang === "en" ? "en" : "th").map((c) => ({ name: c.name, description: c.description, points: c.maxPoints, levels: c.levels })));
+        setAiStep("results");
+        return;
+      }
       const base = lang === "en"
         ? [
             { name: "Content Completeness", description: "Covers all key points as required", points: 40 },
