@@ -19,8 +19,8 @@
 
 ## Current active task
 _(อัปเดตช่องนี้ทุกครั้งที่เริ่ม task ใหม่ — ดูรายละเอียดที่ HANDOFF.md)_
-- Task (4–6/10): teacher class summary (Score Book tab), exam announce → statistics page, one section = one program (`lib/sectionProgram.ts`; students from another program are refused on add / CSV import), realistic mock scores (different full marks per assignment; earlier-term pieces 40/20/40). Reload: console [14] then [15] in test-data/seed-commands.txt.
-- Status: all committed and pushed; full suite 588 passed / 30 skipped; details in HANDOFF.md (last section). Open offers listed there.
+- Task (6–7/10): 4-level rubrics from the UX/UI rubric file (`lib/rubricTemplates.ts`, all mock rubrics + AI assistant + a 30-student UX/UI class, reload [14]→[15]→[16]), rubric card on the Grading page, exam score CSV import ([17]), rubric change on graded work = popup + restart, rubric locked once results are announced. Earlier (4–6/10): class summary, one section = one program, realistic mock scores.
+- Status: committed locally (cb3db4b → a780a51, not pushed); full suite 642 passed / 30 skipped; details in HANDOFF.md (last section). Open offers listed there.
 
 # i18n Rule (TH/EN Language Toggle)
 
