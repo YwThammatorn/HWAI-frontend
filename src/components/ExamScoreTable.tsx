@@ -4,13 +4,14 @@ import { useState } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import type { Student } from "@/lib/students";
 import SearchInput from "@/components/SearchInput";
+import ImportExamScoresModal from "@/components/ImportExamScoresModal";
 
 /**
  * Score entry for an Exam (25/9/2569). Students never submit an exam, so there are no submissions to
  * open — every enrolled student gets a row here and the teacher types each score in, then saves them
  * all at once. Empty = not scored yet.
  */
-export default function ExamScoreTable({ students, titleOf, scores, maxPoints, readOnly, readOnlyReason, onSave }: {
+export default function ExamScoreTable({ students, titleOf, scores, maxPoints, readOnly, readOnlyReason, withdrawnIds, onSave }: {
   students: Student[];
   titleOf: (studentId: string) => string | undefined;
   /** Current saved score per studentId (absent = not scored). */
@@ -19,12 +20,17 @@ export default function ExamScoreTable({ students, titleOf, scores, maxPoints, r
   readOnly: boolean;
   /** Shown instead of the Save button while the table can't be edited. */
   readOnlyReason?: string;
+  /** Students who withdrew from the course — a CSV row for one of them is refused with that reason. */
+  withdrawnIds?: Set<string>;
   onSave: (changes: Record<string, number | null>) => void;
 }) {
   const { t } = useLanguage();
   const saved = (id: string) => (scores[id] === undefined ? "" : String(scores[id]));
   const [draft, setDraft] = useState<Record<string, string>>(() => Object.fromEntries(students.map((s) => [s.studentId, saved(s.studentId)])));
   const [search, setSearch] = useState("");
+  const [importOpen, setImportOpen] = useState(false);
+  // Boxes filled from a CSV and not saved yet: highlighted, with a note, until the teacher saves (or edits them).
+  const [imported, setImported] = useState<Set<string>>(new Set());
 
   const value = (id: string) => draft[id] ?? saved(id);
   const parse = (raw: string): number | null | "bad" => {
@@ -47,6 +53,12 @@ export default function ExamScoreTable({ students, titleOf, scores, maxPoints, r
     });
     onSave(changes);
     setDraft((d) => ({ ...d, ...normalised }));
+    setImported(new Set());
+  }
+
+  function applyImport(values: Record<string, string>) {
+    setDraft((d) => ({ ...d, ...values }));
+    setImported(new Set(Object.keys(values)));
   }
 
   const q = search.trim().toLowerCase();
@@ -73,6 +85,16 @@ export default function ExamScoreTable({ students, titleOf, scores, maxPoints, r
             )}
             <button
               type="button"
+              onClick={() => setImportOpen(true)}
+              className="inline-flex h-9 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] px-4 text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>
+              </svg>
+              {t("นำเข้าด้วย CSV", "Import CSV")}
+            </button>
+            <button
+              type="button"
               onClick={handleSave}
               disabled={changed.length === 0 || anyBad}
               className="h-9 px-4 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
@@ -82,6 +104,12 @@ export default function ExamScoreTable({ students, titleOf, scores, maxPoints, r
           </div>
         )}
       </div>
+
+      {imported.size > 0 && !readOnly && (
+        <p role="status" data-testid="import-note" className="flex items-center gap-2 border-b border-[var(--s-info-bd)] bg-[var(--s-info-bg)] px-5 py-2.5 text-sm text-[var(--s-info-text)]">
+          {t(`กรอกคะแนนจาก CSV แล้ว ${imported.size} คน (ช่องที่ไฮไลต์) — ตรวจดูแล้วกด “บันทึกคะแนน”`, `${imported.size} ${imported.size === 1 ? "score" : "scores"} filled from the CSV (highlighted) — check them, then press “Save scores”`)}
+        </p>
+      )}
 
       {students.length > 0 && (
         <div className="px-5 py-3 border-b border-[var(--border-subtle)]">
@@ -135,11 +163,11 @@ export default function ExamScoreTable({ students, titleOf, scores, maxPoints, r
                           step="any"
                           value={raw}
                           disabled={readOnly}
-                          onChange={(e) => setDraft((d) => ({ ...d, [s.studentId]: e.target.value }))}
+                          onChange={(e) => { setDraft((d) => ({ ...d, [s.studentId]: e.target.value })); if (imported.has(s.studentId)) setImported((p) => { const n = new Set(p); n.delete(s.studentId); return n; }); }}
                           aria-label={t(`คะแนนของ ${s.firstName} ${s.lastName}`, `Score for ${s.firstName} ${s.lastName}`)}
                           aria-invalid={bad}
                           className={`w-24 h-9 px-3 rounded-lg border text-sm tabular-nums text-[var(--text-primary)] bg-[var(--bg-surface)] disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-2 ${
-                            bad ? "border-[var(--s-err-bd)] focus:ring-[var(--s-err-text)]/30" : "border-[var(--border)] focus:ring-[var(--accent)]/30 focus:border-[var(--accent)]"
+                            bad ? "border-[var(--s-err-bd)] focus:ring-[var(--s-err-text)]/30" : imported.has(s.studentId) ? "border-[var(--s-info-bd)] bg-[var(--s-info-bg)] focus:ring-[var(--accent)]/30 focus:border-[var(--accent)]" : "border-[var(--border)] focus:ring-[var(--accent)]/30 focus:border-[var(--accent)]"
                           }`}
                         />
                         <span className="text-xs text-[var(--text-muted)] tabular-nums">/ {maxPoints}</span>
@@ -159,6 +187,16 @@ export default function ExamScoreTable({ students, titleOf, scores, maxPoints, r
             </tbody>
           </table>
         </div>
+      )}
+      {importOpen && (
+        <ImportExamScoresModal
+          students={students}
+          withdrawnIds={withdrawnIds ?? new Set()}
+          maxPoints={maxPoints}
+          currentOf={value}
+          onApply={applyImport}
+          onClose={() => setImportOpen(false)}
+        />
       )}
     </div>
   );

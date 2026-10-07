@@ -759,6 +759,7 @@ export default function GradingProgressPage() {
             titleOf={(sid) => findByStudentId(sid)?.title}
             scores={examScores}
             maxPoints={assignment.maxPoints}
+            withdrawnIds={withdrawnStudentIds}
             readOnly={tab === "withdrawn" || finalized}
             readOnlyReason={tab === "withdrawn"
               ? t("นักศึกษาที่ถอนแล้ว — ดูอย่างเดียว", "Withdrawn students — view only")
