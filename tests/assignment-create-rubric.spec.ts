@@ -97,7 +97,7 @@ test.describe("New assignment — rubric on the same page", () => {
     await page.goto(`${BASE}/teacher/courses/c-rub/assignments/new`);
     await page.waitForLoadState("networkidle");
     await page.getByRole("button", { name: /AI Rubric Assistant/i }).click();
-    await page.getByLabel("What should this assignment assess?").fill("A Figma landing page");
+    await page.getByLabel("What should this assignment assess?").fill("A research summary");   // nothing specific in the brief: the general-purpose suggestions
     await page.getByRole("button", { name: "Generate criteria" }).click();
     await page.getByRole("button", { name: "Apply Suggestions" }).click({ timeout: 8000 });
     await expect(page.getByText("100 pts total")).toBeVisible();
@@ -166,7 +166,7 @@ test.describe("New assignment — rubric on the same page", () => {
     await fillBasics(page);
     await page.getByRole("button", { name: /AI Rubric Assistant/i }).click();
     const dialog = page.getByRole("dialog", { name: "AI Rubric Assistant" });
-    await dialog.getByLabel("What should this assignment assess?").fill("Figma landing page");
+    await dialog.getByLabel("What should this assignment assess?").fill("Research summary");
     await dialog.getByRole("button", { name: "Generate criteria" }).click();
 
     await expect(dialog.getByText("Content Completeness", { exact: true })).toBeVisible({ timeout: 8000 });
@@ -180,6 +180,52 @@ test.describe("New assignment — rubric on the same page", () => {
     await expect(page.getByLabel("Criterion name")).toHaveCount(4);
     await expect(page.getByLabel("Level name")).toHaveCount(16);
     await expect(page.getByLabel(/Content Completeness — Excellent/)).toHaveValue(/Clearly demonstrates content completeness/i);
+  });
+
+  // 4/10/2569 — the assistant suggests the rubric that fits what was typed (templates in lib/rubricTemplates.ts):
+  // UX/UI → the 7 criteria of the UX/UI Final Project rubric file, exams / quizzes, code / labs; otherwise the general set.
+  async function ask(page: Page, brief: string) {
+    await page.goto(`${BASE}/teacher/courses/c-rub/assignments/new`);
+    await page.waitForLoadState("networkidle");
+    await page.getByRole("button", { name: /AI Rubric Assistant/i }).click();
+    const dialog = page.getByRole("dialog", { name: "AI Rubric Assistant" });
+    await dialog.getByLabel("What should this assignment assess?").fill(brief);
+    await dialog.getByRole("button", { name: "Generate criteria" }).click();
+    return dialog;
+  }
+
+  test("a UX/UI brief gets the 7 criteria of the UX/UI Final Project rubric, four levels each, 100 points", async ({ page }) => {
+    const dialog = await ask(page, "Figma prototype for a booking app");
+    await expect(dialog.getByText("C1 · Screen Completeness & Content Realism", { exact: true })).toBeVisible({ timeout: 8000 });
+    for (const label of ["Excellent", "Fair", "Needs Improvement", "Fail"]) await expect(dialog.getByText(label, { exact: true })).toHaveCount(7);
+    await expect(dialog.getByText("Spacing, Alignment & Grid Pattern", { exact: false })).toBeVisible();
+    await dialog.getByRole("button", { name: "Apply Suggestions" }).click();
+    await expect(page.getByText("100 pts total")).toBeVisible();
+    await expect(page.getByLabel("Criterion name")).toHaveCount(7);
+    await expect(page.getByLabel("Level name")).toHaveCount(28);
+    const pts = await page.getByLabel("Points").evaluateAll((els) => els.map((el) => (el as HTMLInputElement).value));
+    expect(pts).toEqual(["15", "15", "10", "15", "15", "15", "15"]);
+  });
+
+  test("an exam or quiz brief gets exam criteria; a code or lab brief gets programming criteria", async ({ page }) => {
+    let dialog = await ask(page, "Midterm quiz on loops");
+    await expect(dialog.getByText("C2 · Applying and solving problems", { exact: true })).toBeVisible({ timeout: 8000 });
+    await dialog.getByRole("button", { name: "Apply Suggestions" }).click();
+    await expect(page.getByText("100 pts total")).toBeVisible();
+    await expect(page.getByLabel("Criterion name")).toHaveCount(3);
+
+    dialog = await ask(page, "Python lab on writing functions");
+    await expect(dialog.getByText("C1 · Program correctness", { exact: true })).toBeVisible({ timeout: 8000 });
+    await dialog.getByRole("button", { name: "Apply Suggestions" }).click();
+    await expect(page.getByText("100 pts total")).toBeVisible();
+    await expect(page.getByLabel("Criterion name")).toHaveCount(4);
+  });
+
+  test("UX/UI wins over exam and code words; a brief with none of them keeps the general suggestions", async ({ page }) => {
+    let dialog = await ask(page, "Final exam: design a UX flow in Python");
+    await expect(dialog.getByText("C5 · Visual Hierarchy", { exact: true })).toBeVisible({ timeout: 8000 });
+    dialog = await ask(page, "Essay about the history of computing");
+    await expect(dialog.getByText("Content Completeness", { exact: true })).toBeVisible({ timeout: 8000 });
   });
 
   test("Exam Assignment toggle hides the rubric and switches to a manual max score", async ({ page }) => {

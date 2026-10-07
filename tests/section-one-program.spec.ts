@@ -24,7 +24,8 @@ test.describe("the mock data keeps every section to one program", () => {
         const tpl = cur.courseTemplates.find((x: { id: string }) => x.id === courses.find((c) => c.id === courseId)?.courseTemplateId);
         return cur.curriculumVersions.find((v: { id: string }) => v.id === tpl?.curriculumVersionId)?.program as string | undefined;
       };
-      const roster = [...flow.courseStudents, ...hist.courseStudents] as { courseId: string; studentId: string }[];
+      const uxui = rd(`student-uxui-mockup${sfx}.json`);   // the UX/UI class (c-mock-4) has its own file
+      const roster = [...flow.courseStudents, ...hist.courseStudents, ...uxui.courseStudents] as { courseId: string; studentId: string }[];
       expect(roster.length).toBeGreaterThan(60);
       for (const r of roster) {
         const sectionProgram = programOf(r.courseId);
@@ -210,7 +211,7 @@ test.describe("Roster page", () => {
 // documented [15] command must leave a clean, single-program roster — not just correct files.
 test("from a stale browser that still holds the mixed roster, running [15] leaves c-mock-1 with one program and no warning", async ({ page }) => {
   const doc = fs.readFileSync("test-data/seed-commands.txt", "utf8");
-  const command = doc.slice(doc.indexOf("\n[15] ห้อง"), doc.indexOf("\n[4] ล้างข้อมูลทั้งหมด")).split("\n").filter((l) => l.startsWith("fetch("))[0];
+  const command = doc.slice(doc.indexOf("\n[15] ห้อง"), doc.indexOf("\n[16] วิชา UX/UI")).split("\n").filter((l) => l.startsWith("fetch("))[0];
   const flow = rd("student-flow-mockup.json");
   const ids = new Set(flow.courseStudents.map((r: { studentId: string }) => r.studentId));
   let n = 0;

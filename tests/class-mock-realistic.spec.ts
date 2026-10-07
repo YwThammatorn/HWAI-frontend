@@ -115,7 +115,7 @@ test("public/mock-data and test-data copies stay identical", () => {
 
 // The command documented as [15] is what gets pasted into the console — run that exact text.
 const doc = fs.readFileSync("test-data/seed-commands.txt", "utf8");
-const section15 = doc.slice(doc.indexOf("\n[15] ห้อง"), doc.indexOf("\n[4] ล้างข้อมูลทั้งหมด"));
+const section15 = doc.slice(doc.indexOf("\n[15] ห้อง"), doc.indexOf("\n[16] วิชา UX/UI"));
 const commands = section15.split("\n").filter((l) => l.startsWith("fetch("));
 
 test("[15] documents a Thai and an English command", () => {
