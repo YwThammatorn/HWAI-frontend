@@ -15,7 +15,7 @@ description: กฎการจัดการ context และความจ�
 
 ## จบ task ย่อย / จุดพักงาน
 เขียน/อัปเดต HANDOFF.md: เป้าหมายตอนนี้ / decision ที่ทำไปแล้ว+เหตุผล / ไฟล์ที่แตะ / verify แล้ว-ยังไม่ verify / next step
-Commit ทันทีที่จบแต่ละ subtask
+จบแต่ละ subtask → รัน test + รายงานผู้ใช้ แล้วรอคำสั่ง commit (ห้าม commit/push เอง; commit แยกตามเรื่อง; push แยก)
 
 ## Knowledge gap
 เจอเรื่องที่ไม่มีใน CLAUDE.md/rules/skills:
@@ -30,4 +30,4 @@ Commit ทันทีที่จบแต่ละ subtask
 
 ## Verify before "done"
 - ห้ามสรุปว่าเสร็จโดยไม่รัน test / ตรวจ git diff จริง
-- มี hook (.claude/hooks/post-edit-verify.sh) บังคับรัน test อัตโนมัติอยู่แล้ว ห้ามข้าม
+- มี hook Stop (.claude/hooks/stop-verify.sh) รัน tsc + test อัตโนมัติเมื่อไฟล์เสี่ยง regression เปลี่ยน ห้ามข้าม — รายละเอียดและเวลาที่ควรเขียน test ดู rules/testing.md

@@ -7,20 +7,21 @@
 ## Standing rules (แยกไฟล์)
 - Context / session hygiene → `.claude/rules/context-hygiene.md`
 - Refactor & cleanup workflow → `.claude/rules/refactor-protocol.md`
+- Testing (เขียน test เมื่อไหร่ + hook ที่รัน test เอง) → `.claude/rules/testing.md`
 
 ## หลักการหลัก (ย่อ)
 - ก่อนเริ่ม task ที่กระทบวงกว้าง (refactor, migration, เปลี่ยน architecture) → เปิด Plan Mode เสมอ
 - Subtask ต้องเล็กพอให้จบได้ภายใน ~50% ของ context ต่อ session
-- Commit ทันทีที่จบแต่ละ subtask — อย่าปล่อยค้าง
+- Commit/push เมื่อผู้ใช้สั่งเท่านั้น — จบ subtask แล้วรัน test + รายงาน แล้วรอ; ตอนสั่ง commit ให้แยก commit ตามเรื่อง; push แยกต่างหาก (ผู้ใช้สั่ง "push work-log")
 - Manual /compact ที่ ~50% ของ context — อย่ารอ auto-compact
 - ไม่รู้ = ห้ามเดา → ประกาศ knowledge gap ก่อนเสมอ (รายละเอียดใน context-hygiene.md)
 - เช็ค .claude/skills/ ที่มีอยู่ก่อนเขียนอะไรใหม่เอง — Claude โหลด skill เองอัตโนมัติ ไม่ต้องทำ manifest มือ
-- ห้ามสรุปว่า "เสร็จแล้ว" โดยไม่รัน test จริง (มี hook บังคับอยู่แล้ว ดู .claude/hooks/)
+- ห้ามสรุปว่า "เสร็จแล้ว" โดยไม่รัน test จริง — hook Stop (`.claude/hooks/stop-verify.sh`) รัน tsc + test เมื่อไฟล์เสี่ยง regression เปลี่ยน; โค้ดที่เปลี่ยนพฤติกรรมต้องมี test ในงานเดียวกัน (ดู rules/testing.md)
 
 ## Current active task
 _(อัปเดตช่องนี้ทุกครั้งที่เริ่ม task ใหม่ — ดูรายละเอียดที่ HANDOFF.md)_
-- Task (6–7/10): 4-level rubrics from the UX/UI rubric file (`lib/rubricTemplates.ts`, all mock rubrics + AI assistant + a 30-student UX/UI class, reload [14]→[15]→[16]), rubric card on the Grading page, exam score CSV import ([17]), rubric change on graded work = popup + restart, rubric locked once results are announced. Earlier (4–6/10): class summary, one section = one program, realistic mock scores.
-- Status: committed locally (cb3db4b → a780a51, not pushed); full suite 642 passed / 30 skipped; details in HANDOFF.md (last section). Open offers listed there.
+- Task (7–10/10): test-speed work (fullyParallel, no video, `npm run test:e2e:fast` on a production build; 4m38 → ~3m / ~2m) + the Stop hook / testing rules (`rules/testing.md`) + the UI-design report (`report-ui/`, section 3.4, teal 16:9 screenshots). Before that (6–7/10): 4-level rubrics, rubric card on Grading, exam CSV import, rubric change = restart + lock.
+- Status: rubric/CSV round pushed (up to 58eef95); suite 643 passed / 31 skipped on production build; the Playwright + hook + rules changes and `report-ui/` are NOT committed yet (waiting for the user). Details in HANDOFF.md (last section).
 
 # i18n Rule (TH/EN Language Toggle)
 

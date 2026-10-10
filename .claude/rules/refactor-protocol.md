@@ -19,7 +19,7 @@ description: ขั้นตอน refactor/cleanup ทั้งโปรเจ�
 1. รอ user ยืนยันรายการจากขั้นสำรวจก่อน
 2. แก้ทีละ module
 3. รัน test (hook บังคับอยู่แล้ว)
-4. Commit ทันทีที่จบแต่ละ subtask พร้อม message ชัดเจน
+4. จบแต่ละ subtask → รอผู้ใช้สั่ง commit แล้วค่อย commit พร้อม message ชัดเจน (ห้าม commit/push เอง)
 
 ## จบแต่ละ subtask
 อัปเดต HANDOFF.md: ลบอะไร, ย้ายอะไรไปไหนทำไม, อะไรยัง verify ไม่ครบ

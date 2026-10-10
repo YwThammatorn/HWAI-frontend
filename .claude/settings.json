@@ -1,9 +1,8 @@
 {
   "hooks": {
-    "PostToolUse": [
+    "Stop": [
       {
-        "matcher": "Edit|Write",
-        "hooks": [{ "type": "command", "command": ".claude/hooks/post-edit-verify.sh" }]
+        "hooks": [{ "type": "command", "command": ".claude/hooks/stop-verify.sh", "timeout": 900 }]
       }
     ]
   }
