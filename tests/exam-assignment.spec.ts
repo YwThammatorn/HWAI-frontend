@@ -119,11 +119,11 @@ test.describe("Exam — teacher enters the scores", () => {
     await expect(page.getByRole("row", { name: /Nok Exam/ }).getByText("Scored")).toBeVisible();
     await expect(page.getByRole("row", { name: /Pim Exam/ }).getByText("Not scored")).toBeVisible();
     // Pim still has no score → the button is there, but disabled, and the note says how many are left
-    await expect(page.getByRole("button", { name: "Finish & announce" })).toBeDisabled();
+    await expect(page.getByRole("button", { name: "Announce results" })).toBeDisabled();
     await expect(page.getByRole("note")).toContainText("1 student");
   });
 
-  test("a score above the maximum is rejected, and Finish & announce appears once everyone is scored", async ({ page }) => {
+  test("a score above the maximum is rejected, and Announce results appears once everyone is scored", async ({ page }) => {
     await seed(page, "teacher", { submissions: [graded("69070301", 42)] });
     await page.goto(`${BASE}/teacher/courses/c-ex/assignments/ex1/grading`);
     await page.waitForLoadState("networkidle");
@@ -134,7 +134,7 @@ test.describe("Exam — teacher enters the scores", () => {
 
     await page.getByLabel("Score for Pim Exam").fill("37.5");
     await page.getByRole("button", { name: "Save scores" }).click();
-    await expect(page.getByRole("button", { name: "Finish & announce" }).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: "Announce results" }).first()).toBeVisible();
     const subs = await stored(page);
     expect(subs.find((s: { studentId: string }) => s.studentId === "69070302")).toMatchObject({ instructorScore: 37.5, status: "graded" });
   });

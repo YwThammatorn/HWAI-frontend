@@ -34,7 +34,7 @@ async function open(page: Page, o: Seed = {}) {
   await page.waitForLoadState("networkidle");
 }
 
-const finish = (page: Page) => page.getByRole("button", { name: "Finish & announce" }).first();
+const finish = (page: Page) => page.getByRole("button", { name: "Announce results" }).first();
 
 test.describe("Finish & announce", () => {
   test("not everything graded: the button is visible but disabled, and the note says what is left and what finishing does", async ({ page }) => {
@@ -43,15 +43,15 @@ test.describe("Finish & announce", () => {
     await expect(finish(page)).toHaveAttribute("title", /Finish grading first — 2 submissions left/);
     const note = page.getByRole("note");
     await expect(note).toContainText("Grade the remaining 2 submissions");
-    await expect(note).toContainText("announced to your students");
+    await expect(note).toContainText("then you can announce the results");
     await expect(page.getByText("Results announced")).toHaveCount(0);
   });
 
-  test("everything graded: the button is enabled and the note says it will send the results", async ({ page }) => {
+  test("everything graded: the button is enabled and the note says it is ready to announce", async ({ page }) => {
     await open(page, { all: true });
     await expect(finish(page)).toBeEnabled();
-    await expect(page.getByRole("note")).toContainText("Everything is graded");
-    await expect(page.getByRole("note")).toContainText("send the results to your students");
+    await expect(page.getByRole("note")).toContainText("All graded");
+    await expect(page.getByRole("note")).toContainText("ready to announce the results");
     await finish(page).click();
     await expect(page.getByRole("dialog", { name: "Announce results to students?" })).toBeVisible();
   });
@@ -61,32 +61,34 @@ test.describe("Finish & announce", () => {
     await expect(page.getByText("Results announced")).toBeVisible();
     await expect(page.getByText("2 submissions to grade")).toBeVisible();
     await expect(page.getByRole("button", { name: "Reopen grading" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Finish & announce" })).toHaveCount(0);
-    await expect(page.getByRole("note")).toContainText("Results are announced");
+    await expect(page.getByRole("button", { name: "Announce results" })).toHaveCount(0);
+    await expect(page.getByRole("note")).toContainText("Students can see their own score now");
     await expect(page.getByRole("note")).toContainText("2 submissions still to grade");
   });
 
   test("Thai UI", async ({ page }) => {
     await open(page, { lang: "th" });
-    await expect(page.getByRole("button", { name: "เสร็จสิ้นและประกาศผล" })).toBeDisabled();
+    await expect(page.getByRole("button", { name: "ประกาศผล" })).toBeDisabled();
     await expect(page.getByRole("note")).toContainText("ตรวจให้ครบก่อน (เหลืออีก 2 งาน)");
-    await expect(page.getByRole("note")).toContainText("ประกาศผลการตรวจไปให้นักศึกษา");
+    await expect(page.getByRole("note")).toContainText("จึงจะประกาศผลได้");
   });
 });
 
 test.describe("Status filter as separate boxes", () => {
-  test("four separate bordered boxes with gaps, the selected one has a tick, and clicking filters", async ({ page }) => {
+  test("four separate bordered boxes with gaps, all the same size, no tick icon, and clicking filters", async ({ page }) => {
     await open(page);
     const tabs = page.getByRole("tab");
     await expect(tabs).toHaveCount(4);
-    const boxes = await tabs.evaluateAll((els) => els.map((e) => { const r = e.getBoundingClientRect(); const s = getComputedStyle(e); return { left: r.left, right: r.right, border: s.borderTopWidth, radius: s.borderTopLeftRadius }; }));
+    const boxes = await tabs.evaluateAll((els) => els.map((e) => { const r = e.getBoundingClientRect(); const s = getComputedStyle(e); return { left: r.left, right: r.right, width: Math.round(r.width), height: Math.round(r.height), border: s.borderTopWidth, radius: s.borderTopLeftRadius }; }));
     for (const b of boxes) { expect(b.border).toBe("2px"); expect(parseFloat(b.radius)).toBeGreaterThanOrEqual(10); }
     for (let i = 1; i < boxes.length; i++) expect(boxes[i].left - boxes[i - 1].right).toBeGreaterThanOrEqual(6);   // a gap, not one fused bar
+    expect(new Set(boxes.map((b) => b.width)).size).toBe(1);                                // every box the same width…
+    expect(new Set(boxes.map((b) => b.height)).size).toBe(1);                               // …and height
     await expect(page.getByRole("tab", { selected: true })).toContainText("All");
-    await expect(page.locator('[role=tab][aria-selected=true] svg')).toHaveCount(1);       // the tick
-    await expect(page.locator('[role=tab][aria-selected=false] svg')).toHaveCount(0);
+    await expect(page.locator("[role=tab] svg")).toHaveCount(0);                            // no tick on the selected box (or any icon)
     await page.getByRole("tab", { name: /Needs review/ }).click();
     await expect(page.getByRole("tab", { selected: true })).toContainText("Needs review");
+    expect(await tabs.evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().width)))).toEqual(boxes.map((b) => b.width));   // selecting doesn't resize
     await expect(page.getByRole("row", { name: /Ben Test/ })).toBeVisible();
     await expect(page.getByRole("row", { name: /Ann Test/ })).toHaveCount(0);
   });

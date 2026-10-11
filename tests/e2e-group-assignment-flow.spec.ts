@@ -46,7 +46,7 @@ async function seedStatic(page: Page) {
     localStorage.setItem("hwai_courses_v2", JSON.stringify([data.course]));
     localStorage.setItem("hwai_managed_teachers_v1", JSON.stringify([data.teacher]));
     localStorage.setItem("hwai_students_v1", JSON.stringify(data.roster));
-    // The assignment is seeded once too: the teacher's "Finish & announce" changes it (gradingFinalized)
+    // The assignment is seeded once too: the teacher's "Announce results" changes it (gradingFinalized)
     if (!localStorage.getItem("hwai_assignments_v1")) localStorage.setItem("hwai_assignments_v1", JSON.stringify([data.assignment]));
     // Only seed these if absent — addInitScript re-runs on every navigation
     // within the test, and a plain overwrite here would silently wipe out
@@ -123,7 +123,7 @@ test("cold start: a student forms a team, submits, the teacher grades once, and 
   await loginAs(page, { name: TEACHER.name, email: TEACHER.email, role: "teacher" });
   await page.goto(GRADING_URL);
   await page.waitForLoadState("networkidle");
-  await page.getByRole("button", { name: /finish & announce/i }).first().click();
+  await page.getByRole("button", { name: "Announce results" }).first().click();
   await page.getByRole("dialog", { name: "Announce results to students?" }).getByRole("button", { name: "Announce results" }).click();
   await expect(page.getByText("Results announced")).toBeVisible();
 

@@ -82,9 +82,9 @@ test.describe("Withdrawn students — Score Book", () => {
 });
 
 test.describe("Withdrawn students — Grading", () => {
-  test("their open review doesn't block Finish & announce, and the counts skip them", async ({ page }) => {
+  test("their open review doesn't block Announce results, and the counts skip them", async ({ page }) => {
     await open(page, "/teacher/courses/c-wd/assignments/hw1/grading");
-    await expect(page.getByRole("button", { name: /finish & announce/i }).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: "Announce results" }).first()).toBeVisible();
     await expect(page.getByText("/ 2 · 0 pending")).toBeVisible();
   });
 
