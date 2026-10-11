@@ -30,6 +30,8 @@ export interface CriterionDraft {
   description: string;
   points: string;
   levels: CriterionLevel[];
+  /** CLOs this criterion measures */
+  cloIds: string[];
 }
 
 const defaultLevels = (): CriterionLevel[] => [
@@ -45,12 +47,20 @@ export function toDraft(c: RubricCriterion): CriterionDraft {
     description: c.description,
     points: String(c.maxPoints),
     levels: c.levels?.length ? c.levels : defaultLevels(),
+    cloIds: c.cloIds ?? [],
   };
 }
 
 export function newCriterionDraft(name: string, points = "0"): CriterionDraft {
-  return { id: crypto.randomUUID(), name, description: "", points, levels: defaultLevels() };
+  return { id: crypto.randomUUID(), name, description: "", points, levels: defaultLevels(), cloIds: [] };
 }
+
+/** Share of a criterion's points a level is worth, best level first: with 4 levels 100 / 66.67 / 33.33 / 0 %, the scale of the
+ *  UX/UI rubric file (UXUI_Final_Rubric_draft1.xlsx) — "ระดับ 3 = 100%, 2 = 66.67% …". Generalised to any 2–6 levels. */
+export function levelShare(levelIndex: number, levelCount: number): number {
+  return levelCount <= 1 ? 1 : (levelCount - 1 - levelIndex) / (levelCount - 1);
+}
+const pctText = (share: number) => `${Math.round(share * 10000) / 100}%`;
 
 export function criteriaTotalPoints(criteria: CriterionDraft[]): number {
   return criteria.reduce((sum, c) => sum + (Math.round(parseFloat(c.points)) || 0), 0);
@@ -75,8 +85,17 @@ export function finalizeCriteria(criteria: CriterionDraft[], untitled: string): 
     weight: total > 0 ? Math.round((pts[i] / total) * 100) : 0,
     maxPoints: pts[i],
     levels: c.levels,
+    ...(c.cloIds.length > 0 ? { cloIds: c.cloIds } : {}),
   }));
 }
+
+/** Everything about the criteria that changes how work is scored — i.e. all of it except the CLO tags. Comparing this
+ *  (not the whole draft) is how "the rubric changed, grading restarts" ignores a teacher who only re-tagged CLOs. */
+export function scoringSignature(criteria: CriterionDraft[]): string {
+  return JSON.stringify(criteria.map(({ cloIds: _cloIds, ...scoring }) => scoring));
+}
+
+export interface CloOption { id: string; code: string; text: string }
 
 // A rubric scale runs best → worst; teachers can use anywhere from 2 to 6 levels.
 const MIN_LEVELS = 2;
@@ -133,7 +152,13 @@ export default function RubricCriteriaEditor({
   assignmentName,
   assignmentDescription = "",
   assignmentAttachments = [],
+  clos,
+  cloHref,
 }: {
+  /** The course's CLOs. Leave undefined to hide the CLO row; an empty list shows a "no CLOs yet" hint. */
+  clos?: CloOption[];
+  /** Where to send the teacher to add CLOs */
+  cloHref?: string;
   criteria: CriterionDraft[];
   setCriteria: Dispatch<SetStateAction<CriterionDraft[]>>;
   assignmentName: string;
@@ -154,6 +179,10 @@ export default function RubricCriteriaEditor({
 
   function updateCriterion(cid: string, field: keyof Omit<CriterionDraft, "id" | "levels">, value: string) {
     setCriteria((prev) => prev.map((c) => (c.id === cid ? { ...c, [field]: value } : c)));
+  }
+
+  function toggleClo(cid: string, cloId: string) {
+    setCriteria((prev) => prev.map((c) => (c.id !== cid ? c : { ...c, cloIds: c.cloIds.includes(cloId) ? c.cloIds.filter((x) => x !== cloId) : [...c.cloIds, cloId] })));
   }
 
   function updateLevel(cid: string, li: number, field: keyof CriterionLevel, value: string) {
@@ -262,6 +291,7 @@ export default function RubricCriteriaEditor({
       description: s.description,
       points: String(s.points),
       levels: s.levels.map((lv) => ({ ...lv })),
+      cloIds: [],   // the teacher ticks the CLOs afterwards
     })));
     setAiOpen(false);
   }
@@ -327,6 +357,15 @@ export default function RubricCriteriaEditor({
           </button>
         </div>
       </div>
+
+      {/* How a level turns into points — same for every criterion (the rubric file's "level → score" sheet) */}
+      {criteria.length > 0 && criteria.every((c) => c.levels.length === criteria[0].levels.length) && (
+        <p data-testid="level-scale" className="mb-4 -mt-2 text-xs leading-relaxed text-gray-500">
+          <span className="font-semibold text-[var(--text-secondary)]">{t("คิดคะแนนตามระดับ", "Level → points")}:</span>{" "}
+          {criteria[0].levels.map((_, li, all) => `${t("ระดับ", "Level")} ${all.length - 1 - li} = ${pctText(levelShare(li, all.length))}`).join(" · ")}{" "}
+          {t("ของคะแนนเต็มของเกณฑ์", "of the criterion's points")}
+        </p>
+      )}
 
       {/* Criteria list */}
       <div className="space-y-4">
@@ -407,21 +446,59 @@ export default function RubricCriteriaEditor({
                 />
               </div>
 
+              {clos && (
+                <div className="px-5 py-4 border-b border-gray-50" data-testid={`clo-row-${idx}`}>
+                  <p className="block text-xs text-gray-500 mb-1.5">{t("CLO ที่เกณฑ์นี้วัด", "CLOs this criterion measures")}</p>
+                  {clos.length === 0 ? (
+                    <p className="text-xs text-gray-500">
+                      {t("วิชานี้ยังไม่มี CLO — ", "This course has no CLOs yet — ")}
+                      {cloHref && <a href={cloHref} className="font-medium text-[var(--accent)] underline underline-offset-2">{t("เพิ่มที่แท็บ CLO", "add them on the CLO tab")}</a>}
+                    </p>
+                  ) : (
+                    <>
+                      <div role="group" aria-label={t("เลือก CLO", "Pick CLOs")} className="flex flex-wrap gap-2">
+                        {clos.map((clo) => {
+                          const on = c.cloIds.includes(clo.id);
+                          return (
+                            <button
+                              key={clo.id}
+                              type="button"
+                              aria-pressed={on}
+                              title={clo.text}
+                              onClick={() => toggleClo(c.id, clo.id)}
+                              className={`inline-flex h-8 items-center rounded-lg border px-3 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] ${on ? "border-[var(--accent-solid)] bg-[var(--accent-solid)] text-[var(--accent-solid-text)]" : "border-gray-200 bg-white text-gray-600 hover:border-[var(--accent)] hover:text-[var(--accent)]"}`}
+                            >
+                              {clo.code}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {c.cloIds.length > 0 && (
+                        <ul className="mt-2 space-y-0.5 text-xs text-gray-500">
+                          {c.cloIds.map((id) => clos.find((x) => x.id === id)).filter(Boolean).map((clo) => (
+                            <li key={clo!.id}><span className="font-semibold text-[var(--text-secondary)]">{clo!.code}</span> {clo!.text}</li>
+                          ))}
+                        </ul>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
+
               {/* 1px gaps over a tinted backdrop draw the dividers, so they stay clean when 4+ levels wrap */}
               <div className="grid gap-px bg-gray-100 [grid-template-columns:repeat(auto-fit,minmax(200px,1fr))]">
                 {c.levels.map((lv, li) => {
                   const col = levelTone(li, c.levels.length);
                   const levelName = getDisplayLabel(lv.label, lang);
+                  const levelPts = Math.round((Math.round(parseFloat(c.points)) || 0) * levelShare(li, c.levels.length));
                   return (
                     <div key={li} className="bg-white px-5 py-4">
-                      <div className="flex items-center gap-1.5 mb-2">
+                      {/* "Level 3 · 15 pts" on top, the level's own (editable) name under it — as the rubric file's column headings */}
+                      <div className="flex items-center gap-1.5 mb-0.5">
                         <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${col.dot}`} />
-                        <input
-                          value={levelName}
-                          onChange={(e) => updateLevel(c.id, li, "label", e.target.value)}
-                          aria-label={t("ชื่อระดับ", "Level name")}
-                          className={`flex-1 min-w-0 text-xs font-semibold bg-transparent border-0 outline-none rounded px-1 -mx-1 focus:bg-gray-50 ${col.label}`}
-                        />
+                        <span className="flex-1 min-w-0 text-[11px] text-gray-400 tabular-nums">
+                          {t("ระดับ", "Level")} {c.levels.length - 1 - li} · <span data-testid="level-points" className="font-semibold text-gray-500">{levelPts} {t("คะแนน", "pts")}</span>
+                        </span>
                         {c.levels.length > MIN_LEVELS && (
                           <button
                             type="button"
@@ -436,6 +513,12 @@ export default function RubricCriteriaEditor({
                           </button>
                         )}
                       </div>
+                      <input
+                        value={levelName}
+                        onChange={(e) => updateLevel(c.id, li, "label", e.target.value)}
+                        aria-label={t("ชื่อระดับ", "Level name")}
+                        className={`w-full min-w-0 mb-2 text-xs font-semibold bg-transparent border-0 outline-none rounded px-1 -mx-1 focus:bg-gray-50 ${col.label}`}
+                      />
                       <textarea
                         value={lv.description}
                         onChange={(e) => updateLevel(c.id, li, "description", e.target.value)}

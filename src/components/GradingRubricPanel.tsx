@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
 import { achievedLevelIndex, type Rubric, type Submission } from "@/lib/assignments";
 import { toneForPct, SCORE_TONE_CLASSES } from "@/lib/scoreBook";
+import CloChips from "@/components/CloChips";
+import type { CLO } from "@/lib/clo";
 
 // How a level looks on a distribution bar: best → worst. warn is not used — it means "awaiting grading" everywhere else.
 const FILL = ["bg-[var(--s-ok-text)]", "bg-[var(--s-info-text)]", "bg-[var(--text-muted)]", "bg-[var(--s-err-text)]"];
@@ -24,8 +26,10 @@ const toneOf = (i: number, n: number) => (n <= 1 ? 0 : Math.round((i / (n - 1)) 
  * the wording of every level with the number of students who reached it. So the rubric sits next to the grading
  * instead of behind the Edit page, and shows where the class is strong or weak at a glance.
  */
-export default function GradingRubricPanel({ rubric, graded, editHref, locked = false, unit = "student" }: {
+export default function GradingRubricPanel({ rubric, graded, editHref, locked = false, unit = "student", clos = [] }: {
   rubric: Rubric;
+  /** the course's CLOs, to tag each criterion with the outcomes it measures */
+  clos?: CLO[];
   /** the graded work to count (one per student, or one per team) */
   graded: Submission[];
   editHref: string;
@@ -105,6 +109,7 @@ export default function GradingRubricPanel({ rubric, graded, editHref, locked = 
               <div className="grid items-center gap-x-5 gap-y-2 px-5 py-3.5 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1.5fr)_264px_32px]">
                 <div className="min-w-0">
                   <p className="text-sm font-semibold text-[var(--text-primary)]">{c.name}</p>
+                  <CloChips cloIds={c.cloIds} clos={clos} />
                   {c.description && <p className="mt-0.5 text-xs leading-snug text-[var(--text-muted)]">{c.description}</p>}
                 </div>
 

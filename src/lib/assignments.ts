@@ -40,9 +40,24 @@ export interface Assignment {
    *  `rubricIds` stays empty and `maxPoints` is user-entered instead of derived from a rubric's
    *  point total. Absent/false = the normal rubric-graded assignment. */
   isExam?: boolean;
+  /** How the teacher grades this assignment (11/10/2569): "ai" = the AI scores each submission first and the teacher
+   *  reviews / re-grades, "manual" = the teacher scores everything by hand and no AI result is shown or used.
+   *  Absent = "ai". An exam or an assignment without files can only be graded by hand whatever this says — use
+   *  isManualGrading(), never this field alone. */
+  gradingMode?: "ai" | "manual";
   createdAt: string;
   updatedAt: string;
 }
+
+/** True when nothing about this assignment is graded by the AI: an exam, an assignment with no file to check,
+ *  or one the teacher switched to manual grading. */
+export function isManualGrading(a: Pick<Assignment, "isExam" | "acceptsFiles" | "gradingMode">): boolean {
+  return !!a.isExam || a.acceptsFiles === false || a.gradingMode === "manual";
+}
+
+/** A submission the AI graded and the teacher has not scored by hand — what "switch to manual" sends back to not graded. */
+export const isAiOnlyGraded = (s: Pick<Submission, "status" | "instructorScore" | "aiScore">) =>
+  s.status !== "not_graded" && s.instructorScore === null;
 
 export interface Submission {
   id: string;
@@ -130,6 +145,9 @@ export interface RubricCriterion {
   maxPoints: number;
   weight: number; // 0–100, sum of all criteria must equal 100
   levels: CriterionLevel[];
+  /** The course's learning outcomes (CLO.id) this criterion measures (11/10/2569). Metadata only — it never changes how
+   *  a score is computed, so editing it does not restart grading. Absent = not linked to any CLO. */
+  cloIds?: string[];
 }
 
 export interface Rubric {

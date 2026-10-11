@@ -196,7 +196,7 @@ test.describe("New assignment — rubric on the same page", () => {
 
   test("a UX/UI brief gets the 7 criteria of the UX/UI Final Project rubric, four levels each, 100 points", async ({ page }) => {
     const dialog = await ask(page, "Figma prototype for a booking app");
-    await expect(dialog.getByText("C1 · Screen Completeness & Content Realism", { exact: true })).toBeVisible({ timeout: 8000 });
+    await expect(dialog.getByText("C1 · Screen Completeness & Content Realism / ความครบถ้วนขององค์ประกอบและความสมจริงของเนื้อหา", { exact: true })).toBeVisible({ timeout: 8000 });
     for (const label of ["Excellent", "Fair", "Needs Improvement", "Fail"]) await expect(dialog.getByText(label, { exact: true })).toHaveCount(7);
     await expect(dialog.getByText("Spacing, Alignment & Grid Pattern", { exact: false })).toBeVisible();
     await dialog.getByRole("button", { name: "Apply Suggestions" }).click();
@@ -205,17 +205,23 @@ test.describe("New assignment — rubric on the same page", () => {
     await expect(page.getByLabel("Level name")).toHaveCount(28);
     const pts = await page.getByLabel("Points").evaluateAll((els) => els.map((el) => (el as HTMLInputElement).value));
     expect(pts).toEqual(["15", "15", "10", "15", "15", "15", "15"]);
+    // the editor shows how a level turns into points, as the rubric file's conversion sheet does
+    await expect(page.getByTestId("level-scale")).toContainText("Level 3 = 100% · Level 2 = 66.67% · Level 1 = 33.33% · Level 0 = 0%");
+    await expect(page.getByTestId("level-points").nth(0)).toHaveText("15 pts");
+    await expect(page.getByTestId("level-points").nth(1)).toHaveText("10 pts");
+    await expect(page.getByTestId("level-points").nth(2)).toHaveText("5 pts");
+    await expect(page.getByTestId("level-points").nth(3)).toHaveText("0 pts");
   });
 
   test("an exam or quiz brief gets exam criteria; a code or lab brief gets programming criteria", async ({ page }) => {
     let dialog = await ask(page, "Midterm quiz on loops");
-    await expect(dialog.getByText("C2 · Applying and solving problems", { exact: true })).toBeVisible({ timeout: 8000 });
+    await expect(dialog.getByText("C2 · Applying and solving problems / การประยุกต์และการแก้โจทย์", { exact: true })).toBeVisible({ timeout: 8000 });
     await dialog.getByRole("button", { name: "Apply Suggestions" }).click();
     await expect(page.getByText("100 pts total")).toBeVisible();
     await expect(page.getByLabel("Criterion name")).toHaveCount(3);
 
     dialog = await ask(page, "Python lab on writing functions");
-    await expect(dialog.getByText("C1 · Program correctness", { exact: true })).toBeVisible({ timeout: 8000 });
+    await expect(dialog.getByText("C1 · Program correctness / ความถูกต้องของโปรแกรม", { exact: true })).toBeVisible({ timeout: 8000 });
     await dialog.getByRole("button", { name: "Apply Suggestions" }).click();
     await expect(page.getByText("100 pts total")).toBeVisible();
     await expect(page.getByLabel("Criterion name")).toHaveCount(4);
@@ -223,7 +229,7 @@ test.describe("New assignment — rubric on the same page", () => {
 
   test("UX/UI wins over exam and code words; a brief with none of them keeps the general suggestions", async ({ page }) => {
     let dialog = await ask(page, "Final exam: design a UX flow in Python");
-    await expect(dialog.getByText("C5 · Visual Hierarchy", { exact: true })).toBeVisible({ timeout: 8000 });
+    await expect(dialog.getByText("C5 · Visual Hierarchy / ลำดับความสำคัญทางสายตา", { exact: true })).toBeVisible({ timeout: 8000 });
     dialog = await ask(page, "Essay about the history of computing");
     await expect(dialog.getByText("Content Completeness", { exact: true })).toBeVisible({ timeout: 8000 });
   });

@@ -9,7 +9,8 @@ import { useGradingCategories } from "@/lib/gradingCategories";
 import { useLanguage } from "@/context/LanguageContext";
 import { AttachmentsEditor, useAttachmentsDraft } from "@/components/AssignmentAttachments";
 import Modal from "@/components/Modal";
-import RubricCriteriaEditor, { CriterionDraft, newCriterionDraft, toDraft, criteriaPointsOk, criteriaTotalPoints, finalizeCriteria } from "@/components/RubricCriteriaEditor";
+import RubricCriteriaEditor, { CriterionDraft, newCriterionDraft, toDraft, criteriaPointsOk, criteriaTotalPoints, finalizeCriteria, scoringSignature } from "@/components/RubricCriteriaEditor";
+import { useCLOs } from "@/lib/clo";
 
 export default function EditAssignmentPage() {
   const { id, assignmentId } = useParams<{ id: string; assignmentId: string }>();
@@ -22,6 +23,7 @@ export default function EditAssignmentPage() {
     getSubmissionsByAssignment, updateSubmission,
   } = useAssignments();
   const { getCategoriesByCourse } = useGradingCategories();
+  const { getCLOsByCourse } = useCLOs();
 
   const CONFIRM_MSG = t(
     "การเปลี่ยนแปลงจะไม่ถูกบันทึก\nต้องการออกจากหน้านี้หรือไม่?",
@@ -61,7 +63,7 @@ export default function EditAssignmentPage() {
     name: "", description: "", dueDate: "", isExam: false, maxPoints: "", categoryId: "",
     acceptsFiles: true, fileTypesJson: "[]",
     submissionType: "individual" as "individual" | "group",
-    maxGroupSizeStr: "", criteriaJson: "[]",
+    maxGroupSizeStr: "", criteriaJson: "[]", scoringSig: "[]",
   });
 
   useEffect(() => {
@@ -76,6 +78,7 @@ export default function EditAssignmentPage() {
       const savedCriteria = (linkedRubrics[0]?.criteria ?? []).map(toDraft);
       const draftCriteria = savedCriteria.length > 0 ? savedCriteria : [newCriterionDraft(t("เกณฑ์ที่ 1", "Criterion 1"), "100")];
       const criteriaJson = JSON.stringify(draftCriteria);
+      const scoringSig = scoringSignature(draftCriteria);
       const orig = {
         name: assignment.name,
         description: assignment.description,
@@ -88,6 +91,7 @@ export default function EditAssignmentPage() {
         submissionType: st,
         maxGroupSizeStr: gs,
         criteriaJson,
+        scoringSig,
       };
       setName(orig.name);
       setDescription(orig.description);
@@ -222,7 +226,8 @@ export default function EditAssignmentPage() {
   // Once the results are announced the rubric is frozen (the scores were given under it); "Reopen grading" on the
   // Grading page lifts that. Until then, a changed rubric restarts the work that was already scored.
   const rubricLocked = !!assignment.gradingFinalized;
-  const rubricChanged = !needsManualScore && !rubricLocked && JSON.stringify(criteria) !== origRef.current.criteriaJson;
+  // CLO tags are metadata: re-tagging alone never restarts grading, only a change to what is scored does
+  const rubricChanged = !needsManualScore && !rubricLocked && scoringSignature(criteria) !== origRef.current.scoringSig;
   const scoredSubs = getSubmissionsByAssignment(assignmentId).filter((sub) => sub.status !== "not_graded");
   const totalPoints = criteriaTotalPoints(criteria);
   const pointsOk = criteriaPointsOk(criteria);
@@ -472,6 +477,7 @@ export default function EditAssignmentPage() {
                   criteria={criteria}
                   setCriteria={setCriteria}
                   assignmentName={name.trim()} assignmentDescription={description} assignmentAttachments={att.items}
+                  clos={getCLOsByCourse(id)} cloHref={`/teacher/courses/${id}/clo`}
                 />
               </fieldset>
             </section>
