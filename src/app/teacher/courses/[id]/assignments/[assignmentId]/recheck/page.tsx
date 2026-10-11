@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCourses } from "@/lib/courses";
-import { useAssignments, RubricCriterion, submissionAttachments } from "@/lib/assignments";
+import { useAssignments, RubricCriterion, submissionAttachments, isManualGrading } from "@/lib/assignments";
 import SubmissionViewer from "@/components/SubmissionViewer";
 import { useStudentGroups } from "@/lib/studentGroups";
 import { useLanguage } from "@/context/LanguageContext";
@@ -89,6 +89,8 @@ export default function RecheckPage() {
     );
   }
 
+  // Graded by hand (11/10/2569: the teacher's choice, an exam, or no file to check): nothing from the AI is shown here
+  const handGraded = isManualGrading(assignment);
   const totalScore = rubric ? scores.reduce((sum, s) => sum + s.score, 0) : manualScore;
   const totalMax = rubric ? (scores.reduce((sum, s) => sum + s.maxPoints, 0) || assignment.maxPoints) : assignment.maxPoints;
   const aiScore = submission.aiScore ?? 0;
@@ -252,7 +254,11 @@ export default function RecheckPage() {
                 round 3: the Grade link is now reachable before that happens too, e.g. a not_graded row
                 or a no-file assignment that's never AI-graded at all — showing "Low confidence" there
                 would be misleading, since there's no AI score behind it). */}
-            {submission.aiScore !== null ? (
+            {handGraded ? (
+              <p className="text-xs text-[var(--text-secondary)]">
+                {t("ตรวจเอง — ไม่ใช้ AI ในงานนี้", "Graded by hand — no AI on this assignment")}
+              </p>
+            ) : submission.aiScore !== null ? (
               <>
                 <div className="flex items-center gap-2 mb-1">
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" className="text-[var(--accent)]">
@@ -353,21 +359,23 @@ export default function RecheckPage() {
                     </div>
                   </div>
 
-                  {s.edited && (
+                  {s.edited && !handGraded && (
                     <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded mb-2">
                       {t("แก้ไขแล้ว", "Manually Edited")}
                     </span>
                   )}
 
+                  {!handGraded && (
                   <div className="mt-2">
                     <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">
                       {t("ความคิดเห็น AI", "AI Feedback")}
                     </p>
                     <p className="text-xs text-gray-600 leading-relaxed">{s.aiFeedback}</p>
                   </div>
+                  )}
 
                   {/* Shown once the instructor overrides the score (or a note already exists) */}
-                  {(s.edited || criterionComments[s.criterionId]) && (
+                  {!handGraded && (s.edited || criterionComments[s.criterionId]) && (
                     <div className="mt-3">
                       <label
                         htmlFor={`criterion-note-${s.criterionId}`}

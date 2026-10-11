@@ -1,19 +1,23 @@
 "use client";
 
 import { useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCourses } from "@/lib/courses";
 import { useStudents, isWithdrawn, withdrawnIds } from "@/lib/students";
-import { useAssignments, type Assignment, type Submission } from "@/lib/assignments";
+import { useAssignments, isManualGrading, isAiOnlyGraded, type Assignment, type Submission } from "@/lib/assignments";
 import { useGradingCategories } from "@/lib/gradingCategories";
+import { useStudentGroups } from "@/lib/studentGroups";
+import { groupSubmissionsByTeam } from "@/lib/groupSubmissions";
+import { mockAiGrade, waitingForAi } from "@/lib/aiGrading";
 import { useLanguage } from "@/context/LanguageContext";
 import { dateLocale } from "@/lib/dateLocale";
 import SearchInput from "@/components/SearchInput";
-import PillTabBar from "@/components/PillTabBar";
+import PillTabBar, { type PillTabTone } from "@/components/PillTabBar";
 import StatCard from "@/components/StatCard";
 import EmptyState from "@/components/EmptyState";
 import AssignmentTypeBadge from "@/components/AssignmentTypeBadge";
+import Modal from "@/components/Modal";
 
 type QueueFilter = "all" | "review" | "notgraded" | "done" | "waiting";
 
@@ -45,14 +49,20 @@ function progressOf(a: Assignment, subs: Submission[], today: string, enrolled: 
 
 export default function CourseGradingPage() {
   const { id } = useParams<{ id: string }>();
+  const router = useRouter();
   const { t, lang } = useLanguage();
   const { getCourse } = useCourses();
   const { getStudentsByCourse } = useStudents();
-  const { getAssignmentsByCourse, getSubmissionsByAssignment } = useAssignments();
+  const { getAssignmentsByCourse, getSubmissionsByAssignment, updateAssignment, updateSubmission } = useAssignments();
   const { getCategoriesByCourse } = useGradingCategories();
+  const { getGroupsByAssignment } = useStudentGroups();
 
   const [filter, setFilter] = useState<QueueFilter>("all");
   const [search, setSearch] = useState("");
+  // switching an assignment to Manual that the AI already scored asks first
+  const [manualFor, setManualFor] = useState<Assignment | null>(null);
+  // the assignment whose work is being sent to the AI right now
+  const [sendingId, setSendingId] = useState<string | null>(null);
 
   const course = getCourse(id);
   const roster = getStudentsByCourse(id);
@@ -77,11 +87,52 @@ export default function CourseGradingPage() {
     return { a, subs, p: progressOf(a, subs, today, students.length) };
   });
 
-  // Stat cards — the four that used to sit on the Assignments page, computed the same way.
+  // Stat cards — three only (11/10/2569): how many assignments there are, how many are fully graded, how many announced.
+  // Per-assignment detail (needs review, overdue …) lives in the queue below and its filters.
   const totalAssignments = items.length;
   const gradedAssignments = items.filter((i) => i.p.complete).length;
-  const pendingReview = items.reduce((sum, i) => sum + i.p.needReview, 0);
-  const overdueCount = items.filter((i) => i.p.overdue).length;
+  const announcedAssignments = items.filter((i) => i.a.gradingFinalized).length;
+
+  // Grading method (11/10/2569): the button that starts grading IS the choice, and it is the TEACHER who starts it.
+  //   "Grade with AI"   → every submission of that assignment still waiting is sent to the AI; each comes back scored (or
+  //                       "needs review"), and the teacher opens the assignment to review them. Nothing is graded before this.
+  //   "Grade manually"  → the AI is not used: the teacher opens the assignment and scores each submission by hand. Work that only
+  //                       the AI scored goes back to "not graded" (the teacher's own scores stay), so that asks first.
+  const aiOnlyOf = (a: Assignment) => getSubmissionsByAssignment(a.id).filter(isAiOnlyGraded);
+  // one unit of work per submission, or per team for a group assignment (every member shares the team's score)
+  const waitingUnits = (a: Assignment) => {
+    const subs = getSubmissionsByAssignment(a.id).filter((x) => !withdrawn.has(x.studentId));
+    const units = a.submissionType === "group" ? groupSubmissionsByTeam(subs, getGroupsByAssignment(a.id), "Team") : subs.map((x) => ({ key: x.id, subs: [x] }));
+    return units.filter((u) => u.subs.some(waitingForAi));
+  };
+  const gradingHref = (a: Assignment) => `/teacher/courses/${id}/assignments/${a.id}/grading`;
+  async function applyAndGo(a: Assignment, mode: "ai" | "manual") {
+    setManualFor(null);
+    if (mode !== (isManualGrading(a) ? "manual" : "ai")) {
+      if (mode === "manual") {
+        aiOnlyOf(a).forEach((sub) => updateSubmission(sub.id, { aiScore: null, instructorScore: null, status: "not_graded", criterionScores: undefined, criterionComments: undefined }));
+      }
+      updateAssignment(a.id, { gradingMode: mode });
+    }
+    if (mode === "ai") {
+      const units = waitingUnits(a);
+      if (units.length > 0) {
+        setSendingId(a.id);
+        await new Promise((r) => setTimeout(r, 1200));       // the AI "working" (simulated)
+        units.forEach((u) => {
+          const res = mockAiGrade(u.key, a.maxPoints);
+          u.subs.filter(waitingForAi).forEach((sub) => updateSubmission(sub.id, { aiScore: res.score, instructorScore: null, status: res.status, criterionScores: undefined, criterionComments: undefined }));
+        });
+        setSendingId(null);
+      }
+    }
+    router.push(gradingHref(a));
+  }
+  function startGrading(a: Assignment, mode: "ai" | "manual") {
+    if (sendingId) return;
+    if (mode === "manual" && !isManualGrading(a) && aiOnlyOf(a).length > 0) { setManualFor(a); return; }
+    void applyAndGo(a, mode);
+  }
 
   const matchesFilter = (i: (typeof items)[number]) => {
     switch (filter) {
@@ -98,12 +149,12 @@ export default function CourseGradingPage() {
     .filter((i) => !q || i.a.name.toLowerCase().includes(q))
     .sort((x, y) => x.p.rank - y.p.rank || (x.a.dueDate ?? "9999-12-31").localeCompare(y.a.dueDate ?? "9999-12-31"));
 
-  const tabs: { key: QueueFilter; label: string; count: number }[] = [
-    { key: "all", label: t("ทั้งหมด", "All"), count: items.length },
-    { key: "review", label: t("รอตรวจสอบ", "Needs review"), count: items.filter((i) => i.p.needReview > 0).length },
-    { key: "notgraded", label: t("ยังไม่ตรวจ", "Not graded"), count: items.filter((i) => i.p.notGraded > 0).length },
-    { key: "done", label: t("ตรวจครบแล้ว", "Completed"), count: items.filter((i) => i.p.complete).length },
-    { key: "waiting", label: t("รอนักศึกษาส่ง", "Awaiting submissions"), count: items.filter((i) => i.subs.length === 0).length },
+  const tabs: { key: QueueFilter; label: string; count: number; tone: PillTabTone }[] = [
+    { key: "all", label: t("ทั้งหมด", "All"), count: items.length, tone: "info" },
+    { key: "review", label: t("รอตรวจสอบ", "Needs review"), count: items.filter((i) => i.p.needReview > 0).length, tone: "warn" },
+    { key: "notgraded", label: t("ยังไม่ตรวจ", "Not graded"), count: items.filter((i) => i.p.notGraded > 0).length, tone: "neutral" },
+    { key: "done", label: t("ตรวจครบแล้ว", "Completed"), count: items.filter((i) => i.p.complete).length, tone: "ok" },
+    { key: "waiting", label: t("รอนักศึกษาส่ง", "Awaiting submissions"), count: items.filter((i) => i.subs.length === 0).length, tone: "neutral" },
   ];
 
   const statCards = [
@@ -117,7 +168,7 @@ export default function CourseGradingPage() {
       ),
     },
     {
-      label: t("ตรวจแล้ว", "Graded"), value: gradedAssignments,
+      label: t("ให้คะแนนแล้ว", "Graded"), value: gradedAssignments,
       color: "var(--s-ok-text)", bg: "var(--s-ok-bg)",
       icon: (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
@@ -126,21 +177,11 @@ export default function CourseGradingPage() {
       ),
     },
     {
-      label: t("รอตรวจสอบ", "Pending Review"), value: pendingReview,
-      color: "var(--s-warn-text)", bg: "var(--s-warn-bg)",
+      label: t("ประกาศแล้ว", "Announced"), value: announcedAssignments,
+      color: "var(--accent)", bg: "var(--accent-subtle)",
       icon: (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
-          <path d="M5 3h14l-2 7H7L5 3z"/><path d="M7 10l-2 11h14L17 10"/><circle cx="12" cy="16" r="1" fill="currentColor"/>
-        </svg>
-      ),
-    },
-    {
-      label: t("เลยกำหนด", "Overdue"), value: overdueCount,
-      color: "var(--s-err-text)", bg: "var(--s-err-bg)",
-      icon: (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
-          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-          <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M3 11v2a1 1 0 0 0 1 1h2l5 4V6L6 10H4a1 1 0 0 0-1 1z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/>
         </svg>
       ),
     },
@@ -181,7 +222,7 @@ export default function CourseGradingPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         {statCards.map((s) => (
           <StatCard key={s.label} label={s.label} value={s.value} color={s.color} bg={s.bg} icon={s.icon} />
         ))}
@@ -210,7 +251,7 @@ export default function CourseGradingPage() {
         <>
           {/* Filter + search */}
           <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
-            <PillTabBar tabs={tabs} activeKey={filter} onChange={(k) => setFilter(k as QueueFilter)} ariaLabel={t("กรองงานที่ต้องตรวจ", "Filter the grading queue")} />
+            <PillTabBar variant="boxed" minBoxWidth="14.5rem" tabs={tabs} activeKey={filter} onChange={(k) => setFilter(k as QueueFilter)} ariaLabel={t("กรองงานที่ต้องตรวจ", "Filter the grading queue")} />
             <SearchInput
               value={search}
               onChange={setSearch}
@@ -234,7 +275,7 @@ export default function CourseGradingPage() {
                   const total = subs.length;
                   const seg = (n: number) => (total > 0 ? `${(n / total) * 100}%` : "0%");
                   return (
-                    <li key={a.id} className="flex items-center gap-6 px-5 py-4 border-b border-[var(--border-subtle)] last:border-b-0 hover:bg-[var(--bg-subtle)] transition-colors">
+                    <li key={a.id} className="grid grid-cols-[minmax(0,1fr)_13.5rem] md:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)_13.5rem] items-center gap-x-8 gap-y-2 px-5 py-4 border-b border-[var(--border-subtle)] last:border-b-0 hover:bg-[var(--bg-subtle)] transition-colors">
                       {/* What it is */}
                       <div className="min-w-0 flex-1">
                         <Link
@@ -260,7 +301,7 @@ export default function CourseGradingPage() {
                       </div>
 
                       {/* Progress */}
-                      <div className="w-72 shrink-0 hidden md:block">
+                      <div className="hidden md:block min-w-0">
                         <div className="flex items-baseline justify-between text-xs text-[var(--text-secondary)] mb-1.5">
                           <span className="tabular-nums">
                             <span className="font-semibold text-[var(--text-primary)]">{total}</span> / {students.length} {a.isExam ? t("ให้คะแนนแล้ว", "scored") : t("ส่งแล้ว", "submitted")}
@@ -284,37 +325,83 @@ export default function CourseGradingPage() {
                         <p className="text-xs text-[var(--text-muted)] mt-1.5 tabular-nums">
                           {total === 0
                             ? t("ยังไม่มีการส่งงาน", "No submissions yet")
-                            : `${t("ตรวจแล้ว", "Graded")} ${p.gradedCount} · ${t("รอตรวจสอบ", "Needs review")} ${p.needReview} · ${t("ยังไม่ตรวจ", "Not graded")} ${p.notGraded}`}
+                            : <>
+                <span className="whitespace-nowrap">{t("ตรวจแล้ว", "Graded")} {p.gradedCount}</span>{" · "}
+                <span className="whitespace-nowrap">{t("รอตรวจสอบ", "Needs review")} {p.needReview}</span>{" · "}
+                <span className="whitespace-nowrap">{t("ยังไม่ตรวจ", "Not graded")} {p.notGraded}</span>
+              </>}
                         </p>
                       </div>
 
                       {/* Actions */}
-                      <div className="flex items-center gap-2 shrink-0 w-52 justify-end">
+                      <div className="flex items-center gap-2 justify-end">
                         {p.complete ? (
                           <>
                             <Link
                               href={`/teacher/courses/${id}/assignments/${a.id}/grading`}
-                              className="px-3 h-9 inline-flex items-center rounded-xl border border-[var(--border)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-surface)] hover:text-[var(--text-primary)] active:scale-[.97] transition-colors"
+                              className="px-3 h-9 inline-flex items-center whitespace-nowrap rounded-xl border border-[var(--border)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-surface)] hover:text-[var(--text-primary)] active:scale-[.97] transition-colors"
                             >
                               {t("ทบทวน", "Review")}
                             </Link>
                             <Link
                               href={`/teacher/courses/${id}/assignments/${a.id}/results`}
-                              className="px-3 h-9 inline-flex items-center rounded-xl bg-[var(--accent-solid)] text-sm font-semibold text-[var(--accent-solid-text)] hover:bg-[var(--accent-solid-hover)] active:scale-[.97] transition-colors"
+                              className="px-3 h-9 inline-flex items-center whitespace-nowrap rounded-xl bg-[var(--accent-solid)] text-sm font-semibold text-[var(--accent-solid-text)] hover:bg-[var(--accent-solid-hover)] active:scale-[.97] transition-colors"
                             >
                               {t("ดูผลลัพธ์", "View Results")}
                             </Link>
                           </>
                         ) : total === 0 ? (
                           <span className="text-xs text-[var(--text-muted)]">{t("รอนักศึกษาส่งงาน", "Awaiting submissions")}</span>
+                        ) : a.isExam || a.acceptsFiles === false || a.gradingFinalized ? (
+                          // nothing to choose: an exam is typed in, no files means nothing for the AI, announced work keeps its method
+                          <div className="flex flex-col items-end gap-1">
+                            <Link
+                              href={gradingHref(a)}
+                              className="px-3 h-9 inline-flex items-center gap-1.5 rounded-xl bg-[var(--accent-solid)] text-sm font-semibold text-[var(--accent-solid-text)] hover:bg-[var(--accent-solid-hover)] active:scale-[.97] transition-colors"
+                            >
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                              {t("เริ่มตรวจงาน", "Start Grading")}
+                            </Link>
+                            {!a.isExam && (
+                              <span data-testid="grading-mode-locked" className="text-xs text-[var(--text-muted)]">
+                                {a.acceptsFiles === false ? t("ตรวจเองเท่านั้น — ไม่รับไฟล์", "Manual only — takes no files") : t("ล็อกวิธีตรวจ — ประกาศผลแล้ว", "Method locked — results announced")}
+                              </span>
+                            )}
+                          </div>
                         ) : (
-                          <Link
-                            href={`/teacher/courses/${id}/assignments/${a.id}/grading`}
-                            className="px-3 h-9 inline-flex items-center gap-1.5 rounded-xl bg-[var(--accent-solid)] text-sm font-semibold text-[var(--accent-solid-text)] hover:bg-[var(--accent-solid-hover)] active:scale-[.97] transition-colors"
-                          >
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                            {t("เริ่มตรวจงาน", "Start Grading")}
-                          </Link>
+                          // the choice: the method already in use is the filled button, the other one is outlined
+                          <div role="group" aria-label={t(`เลือกวิธีตรวจ — ${a.name}`, `Choose how to grade — ${a.name}`)} className="flex flex-col gap-1.5 w-full">
+                            {(["ai", "manual"] as const).map((m) => {
+                              const current = (isManualGrading(a) ? "manual" : "ai") === m;
+                              const waiting = m === "ai" ? waitingUnits(a).length : 0;
+                              const busy = sendingId === a.id && m === "ai";
+                              return (
+                                <button
+                                  key={m}
+                                  type="button"
+                                  disabled={!!sendingId}
+                                  onClick={() => startGrading(a, m)}
+                                  title={m === "ai"
+                                    ? (waiting > 0
+                                      ? t(`ส่งงานที่ยังไม่ตรวจ ${waiting} ชิ้นให้ AI ตรวจ แล้วเปิดให้คุณตรวจทาน`, `Sends the ${waiting} not-graded ${waiting === 1 ? "submission" : "submissions"} to the AI, then opens them for your review`)
+                                      : t("ไม่มีงานที่รอ AI — เปิดหน้าตรวจ", "Nothing is waiting for the AI — opens the grading page"))
+                                    : t("ไม่ใช้ AI — คุณให้คะแนนเองทีละงาน", "No AI — you score each submission yourself")}
+                                  className={`px-3 h-9 inline-flex items-center justify-center gap-1.5 rounded-xl text-sm font-semibold active:scale-[.97] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] disabled:cursor-wait disabled:opacity-70 ${current
+                                    ? "bg-[var(--accent-solid)] text-[var(--accent-solid-text)] hover:bg-[var(--accent-solid-hover)]"
+                                    : "border border-[var(--border)] bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)]"}`}
+                                >
+                                  {busy && (
+                                    <svg className="animate-spin" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                                  )}
+                                  {busy
+                                    ? t(`AI กำลังตรวจ ${waiting} ชิ้น…`, `AI grading ${waiting}…`)
+                                    : m === "ai"
+                                      ? (waiting > 0 ? t(`ตรวจด้วย AI (${waiting})`, `Grade with AI (${waiting})`) : t("ตรวจด้วย AI", "Grade with AI"))
+                                      : t("ตรวจเอง", "Grade manually")}
+                                </button>
+                              );
+                            })}
+                          </div>
                         )}
                       </div>
                     </li>
@@ -328,6 +415,48 @@ export default function CourseGradingPage() {
           </p>
         </>
       )}
+
+      <Modal
+        open={!!manualFor}
+        onClose={() => setManualFor(null)}
+        size="sm"
+        title={t("เปลี่ยนเป็นตรวจเอง?", "Switch to manual grading?")}
+        description={manualFor?.name}
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={() => setManualFor(null)}
+              className="h-10 px-5 whitespace-nowrap rounded-xl border border-[var(--border)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
+            >
+              {t("ยังก่อน", "Not yet")}
+            </button>
+            <button
+              type="button"
+              onClick={() => manualFor && applyAndGo(manualFor, "manual")}
+              className="h-10 px-5 whitespace-nowrap rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-semibold active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
+            >
+              {t("เปลี่ยนแล้วเริ่มตรวจ", "Switch and grade")}
+            </button>
+          </>
+        }
+      >
+        {manualFor && (
+          <>
+            <p className="text-sm text-[var(--text-primary)] leading-relaxed">
+              {t(
+                `งานที่ AI ตรวจไว้ ${aiOnlyOf(manualFor).length} ชิ้นจะกลับเป็น “ยังไม่ตรวจ” — คุณต้องให้คะแนนเอง`,
+                `${aiOnlyOf(manualFor).length} submission${aiOnlyOf(manualFor).length === 1 ? "" : "s"} scored only by the AI will go back to “Not graded” — you score them yourself.`
+              )}
+            </p>
+            <ul className="mt-3 flex flex-col gap-1.5 text-sm text-[var(--text-secondary)] list-disc pl-5">
+              <li>{t("คะแนนที่คุณให้เองยังอยู่ครบ", "Scores you set yourself stay.")}</li>
+              <li>{t("คะแนน AI และปุ่ม Re-grade จะถูกซ่อน", "AI scores and the Re-grade button are hidden.")}</li>
+              <li>{t("เปลี่ยนกลับเป็น “ให้ AI ช่วยตรวจ” ได้ แต่ผลที่ถูกล้างจะไม่กลับมา", "You can switch back to AI-assisted, but the cleared AI results do not come back.")}</li>
+            </ul>
+          </>
+        )}
+      </Modal>
     </main>
   );
 }
