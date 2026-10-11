@@ -17,10 +17,16 @@ interface PillTabBarProps {
   ariaLabel?: string;
   /**
    * "pill" (default): one grey track holding the tabs — fine for a top-level switch.
-   * "boxed": every tab is its own bordered box with a gap between them, so each one reads as a button;
+   * "boxed": every tab is its own bordered box (all the same width) with a gap between them, so each one reads as a button;
    * for filters inside a card, where the grey track blended into the card and nothing looked clickable.
    */
   variant?: "pill" | "boxed";
+  /**
+   * boxed only: for a row too long to fit on one line. The boxes stay equal and wrap onto the next row once they
+   * would get narrower than this (a CSS length, e.g. "14.5rem"); they stretch to fill the row. Without it the row is
+   * one line, each box as wide as the widest label.
+   */
+  minBoxWidth?: string;
 }
 
 // Same pale -bg + readable -text + visible -bd trio as every other status chip (DESIGN.md §6 / §9b).
@@ -32,10 +38,16 @@ const TONE: Record<PillTabTone, string> = {
   neutral: "bg-[var(--bg-app)] text-[var(--text-secondary)] border-[var(--border)]",
 };
 
-export default function PillTabBar({ tabs, activeKey, onChange, ariaLabel, variant = "pill" }: PillTabBarProps) {
+export default function PillTabBar({ tabs, activeKey, onChange, ariaLabel, variant = "pill", minBoxWidth }: PillTabBarProps) {
   if (variant === "boxed") {
     return (
-      <div className="flex flex-wrap gap-2" role="tablist" aria-label={ariaLabel}>
+      // every box takes the width of the widest one (auto-cols-fr), so the row reads as one set; 2x2 on a phone
+      <div
+        className={minBoxWidth ? "grid w-full gap-2" : "grid w-full grid-cols-2 gap-2 sm:inline-grid sm:w-auto sm:grid-flow-col sm:auto-cols-fr sm:grid-cols-none"}
+        style={minBoxWidth ? { gridTemplateColumns: `repeat(auto-fit, minmax(min(100%, ${minBoxWidth}), 1fr))` } : undefined}
+        role="tablist"
+        aria-label={ariaLabel}
+      >
         {tabs.map(({ key, label, count, tone }) => {
           const active = key === activeKey;
           return (
@@ -46,7 +58,7 @@ export default function PillTabBar({ tabs, activeKey, onChange, ariaLabel, varia
               aria-selected={active}
               onClick={() => onChange(key)}
               className={[
-                "inline-flex h-11 items-center gap-2.5 rounded-xl border-2 pl-4 pr-3 text-sm font-semibold transition-colors",
+                "inline-flex h-11 items-center justify-between gap-3 rounded-xl border-2 pl-4 pr-3 text-sm font-semibold whitespace-nowrap transition-colors",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] focus-visible:ring-offset-1",
                 active
                   // text-primary, not accent: accent on accent-subtle is 4.40:1 in dark mode (under 4.5)
@@ -54,10 +66,6 @@ export default function PillTabBar({ tabs, activeKey, onChange, ariaLabel, varia
                   : "border-[var(--border)] bg-[var(--bg-surface)] text-[var(--text-secondary)] shadow-sm hover:border-[var(--accent-bright)] hover:text-[var(--text-primary)]",
               ].join(" ")}
             >
-              {/* a tick on the selected box, so "selected" never rests on colour alone */}
-              {active && (
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12" /></svg>
-              )}
               {label}
               {count !== undefined && (
                 <span className={`min-w-7 rounded-lg border px-2 py-0.5 text-center text-xs font-bold tabular-nums ${TONE[tone ?? "neutral"]}`}>{count}</span>

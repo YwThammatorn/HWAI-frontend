@@ -241,6 +241,15 @@ test.describe("Teacher roster — Program / Status", () => {
     await expect(rowCells(page, "69070101").nth(6)).toHaveText("Enrolled");
   });
 
+  test("Status is plain dot + text, not a bordered/filled pill (it must not look like a button)", async ({ page }) => {
+    await open(page);
+    const label = rowCells(page, "69070101").nth(6).locator("span").first();
+    const st = await label.evaluate((e) => { const c = getComputedStyle(e); return { border: c.borderTopWidth, bg: c.backgroundColor, dot: e.querySelectorAll("span").length }; });
+    expect(st.border).toBe("0px");
+    expect(st.bg).toBe("rgba(0, 0, 0, 0)");
+    expect(st.dot).toBe(1);     // the little status dot
+  });
+
   test("withdrawing a student asks for confirmation, then flips the badge and the toggle icon", async ({ page }) => {
     await open(page);
     const row = page.getByRole("row", { name: /69070101/ });
