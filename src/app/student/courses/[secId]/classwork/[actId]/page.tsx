@@ -8,7 +8,7 @@ import { dateLocale } from "@/lib/dateLocale";
 import { useAuth } from "@/context/AuthContext";
 import { useCourses } from "@/lib/courses";
 import { useAssignments, submissionAttachments, studentVisibleSubmission, achievedLevelIndex, AssignmentAttachment } from "@/lib/assignments";
-import { computeExamStats } from "@/lib/examStats";
+import { computeExamStats, computeAssignmentStats } from "@/lib/examStats";
 import ExamStatsCard from "@/components/ExamStatsCard";
 import { removeFile } from "@/lib/fileStorage";
 import { useStudents } from "@/lib/students";
@@ -92,6 +92,8 @@ function ClassworkDetail() {
   // Class min / average / max / SD for an announced exam (null for anything else, and until results are announced)
   const examStats = computeExamStats(assignment, allSubs);
   const examResultShown = !!examStats && isGraded;
+  // An announced ordinary assignment gets the same "where do I stand" chart, below the brief (11/10/2569)
+  const classStats = examStats ?? computeAssignmentStats(assignment, allSubs);
   // A link is always offered when the assignment accepts attachments at all —
   // not just for fileTypes that include "figma" — since plenty of valid
   // submissions are links regardless of tool (GitHub repo, Google Doc, etc).
@@ -216,13 +218,13 @@ function ClassworkDetail() {
               <AttachmentList attachments={assignment.attachments} />
             </div>
 
-            {examStats && (
+            {classStats && (
               <ExamStatsCard
                 name={assignment.name}
                 maxPoints={assignment.maxPoints}
-                stats={examStats}
+                stats={classStats}
                 myScore={isGraded ? score : null}
-                comment={isGraded ? mySubmission?.instructorComment || undefined : undefined}
+                comment={examStats && isGraded ? mySubmission?.instructorComment || undefined : undefined}
                 showName={false}
               />
             )}

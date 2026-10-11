@@ -434,23 +434,13 @@ body {
   .hwai-modal, .hwai-modal-overlay { animation: none; }
 }
 
-/* Exam bell curve (BellCurve.tsx): the curve draws itself left → right, the "below you" area wipes in after it,
-   then the marker drops onto the curve. A first-look moment, so ~1s total; all of it off for reduced motion. */
-@keyframes hwai-bell-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
-@keyframes hwai-bell-wipe { from { transform: scaleX(0); } to { transform: scaleX(1); } }
-@keyframes hwai-bell-fade { from { opacity: 0; } to { opacity: 1; } }
-@keyframes hwai-bell-drop {
-  0% { opacity: 0; transform: translateY(-18px) scale(.7); }
-  60% { opacity: 1; transform: translateY(3px) scale(1.04); }
-  100% { opacity: 1; transform: none; }
-}
-.hwai-bell-draw { stroke-dasharray: 1; animation: hwai-bell-draw 1100ms cubic-bezier(0.23, 1, 0.32, 1) both; }
-.hwai-bell-wipe { transform-box: fill-box; transform-origin: 0 50%; animation: hwai-bell-wipe 1100ms cubic-bezier(0.23, 1, 0.32, 1) both; }
-.hwai-bell-fade { animation: hwai-bell-fade 500ms ease-out both; }
-.hwai-bell-drop { transform-box: fill-box; transform-origin: 50% 100%; animation: hwai-bell-drop 550ms cubic-bezier(0.34, 1.56, 0.64, 1) both; }
 @keyframes hwai-bar-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 .hwai-bar-grow { transform-origin: 0 50%; animation: hwai-bar-grow 700ms cubic-bezier(0.23, 1, 0.32, 1) both; }
 @media (prefers-reduced-motion: reduce) {
-  .hwai-bell-draw, .hwai-bell-wipe, .hwai-bell-fade, .hwai-bell-drop { animation: none; stroke-dasharray: none; }
   .hwai-bar-grow { animation: none; }
 }
+
+/* Score histogram (11/10/2569): bars grow up from the baseline, staggered by the inline animation-delay */
+@keyframes hwai-hist-grow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+.hwai-hist-grow { transform-origin: 50% 100%; animation: hwai-hist-grow 550ms cubic-bezier(0.23, 1, 0.32, 1) both; }
+@media (prefers-reduced-motion: reduce) { .hwai-hist-grow { animation: none; } }
