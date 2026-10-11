@@ -2320,8 +2320,8 @@
       "criteria": [
         {
           "id": "rc-hist-a-hist-66010101-1-c-mock-38-1-a",
-          "name": "C1 · Program correctness",
-          "description": "the program's output matching the task",
+          "name": "C1 · Program correctness / ความถูกต้องของโปรแกรม",
+          "description": "Looks at the program's output matching the task.",
           "maxPoints": 24,
           "weight": 60,
           "levels": [
@@ -2331,22 +2331,22 @@
             },
             {
               "label": "Fair",
-              "description": "The program's output matching the task — mostly sound, with only minor gaps."
+              "description": "Output is correct on most tasks, but some cases fail — typically edge cases or unusual input."
             },
             {
               "label": "Needs Improvement",
-              "description": "The program's output matching the task — several gaps; clearly falls short of what was asked."
+              "description": "Output is wrong on several tasks, or the program only works for the simple cases."
             },
             {
               "label": "Fail",
-              "description": "The program's output matching the task — does not meet what was asked, or cannot be assessed."
+              "description": "The program does not run, or its output is wrong almost everywhere and does not match the task."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-66010101-1-c-mock-38-1-b",
-          "name": "C2 · Code readability",
-          "description": "naming, formatting and comments in the code",
+          "name": "C2 · Code readability / ความอ่านง่ายของโค้ด",
+          "description": "Looks at naming, formatting and comments in the code.",
           "maxPoints": 8,
           "weight": 20,
           "levels": [
@@ -2356,22 +2356,22 @@
             },
             {
               "label": "Fair",
-              "description": "Naming, formatting and comments in the code — mostly sound, with only minor gaps."
+              "description": "Mostly readable, but a few names say too little or the formatting drifts in places."
             },
             {
               "label": "Needs Improvement",
-              "description": "Naming, formatting and comments in the code — several gaps; clearly falls short of what was asked."
+              "description": "Many names are unclear, indentation is uneven and there are almost no comments, so a reader must guess what the code does."
             },
             {
               "label": "Fail",
-              "description": "Naming, formatting and comments in the code — does not meet what was asked, or cannot be assessed."
+              "description": "The code cannot be followed — arbitrary names, and no structure or formatting at all."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-66010101-1-c-mock-38-1-c",
-          "name": "C3 · Error handling",
-          "description": "handling of bad input and unusual cases",
+          "name": "C3 · Error handling / การจัดการ Error",
+          "description": "Looks at handling of bad input and unusual cases.",
           "maxPoints": 8,
           "weight": 20,
           "levels": [
@@ -2381,15 +2381,15 @@
             },
             {
               "label": "Fair",
-              "description": "Handling of bad input and unusual cases — mostly sound, with only minor gaps."
+              "description": "Common bad input is handled, but a few unusual cases still stop the program or give an unclear message."
             },
             {
               "label": "Needs Improvement",
-              "description": "Handling of bad input and unusual cases — several gaps; clearly falls short of what was asked."
+              "description": "Errors are handled in a few places only; badly formed input can still crash the program."
             },
             {
               "label": "Fail",
-              "description": "Handling of bad input and unusual cases — does not meet what was asked, or cannot be assessed."
+              "description": "No error handling — even slightly wrong input stops the program."
             }
           ]
         }
@@ -2404,8 +2404,8 @@
       "criteria": [
         {
           "id": "rc-hist-a-hist-66010101-1-c-mock-38-2-a",
-          "name": "C1 · Understanding of programming",
-          "description": "understanding of programming",
+          "name": "C1 · Understanding of programming / ความเข้าใจแนวคิดการเขียนโปรแกรม",
+          "description": "Looks at understanding of programming.",
           "maxPoints": 8,
           "weight": 40,
           "levels": [
@@ -2415,22 +2415,22 @@
             },
             {
               "label": "Fair",
-              "description": "Understanding of programming — mostly sound, with only minor gaps."
+              "description": "Answers on programming are mostly correct, but some points are incomplete or slightly misunderstood."
             },
             {
               "label": "Needs Improvement",
-              "description": "Understanding of programming — several gaps; clearly falls short of what was asked."
+              "description": "Only part of programming is understood; several core points are wrong or confused."
             },
             {
               "label": "Fail",
-              "description": "Understanding of programming — does not meet what was asked, or cannot be assessed."
+              "description": "Almost none of the ideas asked about in programming are understood."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-66010101-1-c-mock-38-2-b",
-          "name": "C2 · Answer accuracy",
-          "description": "the accuracy of each answer",
+          "name": "C2 · Answer accuracy / ความถูกต้องของคำตอบ",
+          "description": "Looks at the accuracy of each answer.",
           "maxPoints": 6,
           "weight": 30,
           "levels": [
@@ -2440,22 +2440,22 @@
             },
             {
               "label": "Fair",
-              "description": "The accuracy of each answer — mostly sound, with only minor gaps."
+              "description": "Most answers are correct, with a few small mistakes."
             },
             {
               "label": "Needs Improvement",
-              "description": "The accuracy of each answer — several gaps; clearly falls short of what was asked."
+              "description": "Many answers are wrong, including basic ones."
             },
             {
               "label": "Fail",
-              "description": "The accuracy of each answer — does not meet what was asked, or cannot be assessed."
+              "description": "Most answers are wrong or left blank."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-66010101-1-c-mock-38-2-c",
-          "name": "C3 · Reasoning and explanation",
-          "description": "the reasoning given with each answer",
+          "name": "C3 · Reasoning and explanation / การให้เหตุผลและอธิบายคำตอบ",
+          "description": "Looks at the reasoning given with each answer.",
           "maxPoints": 6,
           "weight": 30,
           "levels": [
@@ -2465,15 +2465,15 @@
             },
             {
               "label": "Fair",
-              "description": "The reasoning given with each answer — mostly sound, with only minor gaps."
+              "description": "Reasoning is given for most answers, but some skip steps or do not name the principle."
             },
             {
               "label": "Needs Improvement",
-              "description": "The reasoning given with each answer — several gaps; clearly falls short of what was asked."
+              "description": "Reasoning is given for only some answers, and it is vague or unsound."
             },
             {
               "label": "Fail",
-              "description": "The reasoning given with each answer — does not meet what was asked, or cannot be assessed."
+              "description": "No reasoning — only bare answers."
             }
           ]
         }
@@ -2488,8 +2488,8 @@
       "criteria": [
         {
           "id": "rc-hist-a-hist-66010101-1-c-mock-38-3-a",
-          "name": "C1 · Understanding of programming theory",
-          "description": "understanding of the theory and principles of programming",
+          "name": "C1 · Understanding of programming theory / ความเข้าใจทฤษฎีการเขียนโปรแกรม",
+          "description": "Looks at understanding of the theory and principles of programming.",
           "maxPoints": 12,
           "weight": 30,
           "levels": [
@@ -2499,22 +2499,22 @@
             },
             {
               "label": "Fair",
-              "description": "Understanding of the theory and principles of programming — mostly sound, with only minor gaps."
+              "description": "The theory of programming is mostly explained correctly, but some topics are missing or not connected."
             },
             {
               "label": "Needs Improvement",
-              "description": "Understanding of the theory and principles of programming — several gaps; clearly falls short of what was asked."
+              "description": "The theory of programming is wrong or incomplete on several main topics."
             },
             {
               "label": "Fail",
-              "description": "Understanding of the theory and principles of programming — does not meet what was asked, or cannot be assessed."
+              "description": "The theory of programming that was asked about cannot be explained."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-66010101-1-c-mock-38-3-b",
-          "name": "C2 · Applying and solving problems",
-          "description": "applying the principles to solve problems",
+          "name": "C2 · Applying and solving problems / การประยุกต์และการแก้โจทย์",
+          "description": "Looks at applying the principles to solve problems.",
           "maxPoints": 16,
           "weight": 40,
           "levels": [
@@ -2524,22 +2524,22 @@
             },
             {
               "label": "Fair",
-              "description": "Applying the principles to solve problems — mostly sound, with only minor gaps."
+              "description": "Easy problems are solved correctly, but complex ones get an unsuitable method or are left unfinished."
             },
             {
               "label": "Needs Improvement",
-              "description": "Applying the principles to solve problems — several gaps; clearly falls short of what was asked."
+              "description": "Only a few easy problems are solved, and the method is wrong for most."
             },
             {
               "label": "Fail",
-              "description": "Applying the principles to solve problems — does not meet what was asked, or cannot be assessed."
+              "description": "The principles cannot be applied to solve the problems."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-66010101-1-c-mock-38-3-c",
-          "name": "C3 · Accuracy of working and written answers",
-          "description": "the accuracy of the working and the final answers",
+          "name": "C3 · Accuracy of working and written answers / ความถูกต้องของการคำนวณและการเขียนตอบ",
+          "description": "Looks at the accuracy of the working and the final answers.",
           "maxPoints": 12,
           "weight": 30,
           "levels": [
@@ -2549,15 +2549,15 @@
             },
             {
               "label": "Fair",
-              "description": "The accuracy of the working and the final answers — mostly sound, with only minor gaps."
+              "description": "Working is mostly shown, with small slips in some calculations or steps."
             },
             {
               "label": "Needs Improvement",
-              "description": "The accuracy of the working and the final answers — several gaps; clearly falls short of what was asked."
+              "description": "Many steps are skipped, or calculation errors make several final answers wrong."
             },
             {
               "label": "Fail",
-              "description": "The accuracy of the working and the final answers — does not meet what was asked, or cannot be assessed."
+              "description": "No working shown, and most final answers are wrong."
             }
           ]
         }
@@ -2572,8 +2572,8 @@
       "criteria": [
         {
           "id": "rc-hist-a-hist-66010101-1-c-mock-39-1-a",
-          "name": "C1 · Correctness of answers and proofs",
-          "description": "the correctness of answers and proofs",
+          "name": "C1 · Correctness of answers and proofs / ความถูกต้องของคำตอบและการพิสูจน์",
+          "description": "Looks at the correctness of answers and proofs.",
           "maxPoints": 20,
           "weight": 50,
           "levels": [
@@ -2583,22 +2583,22 @@
             },
             {
               "label": "Fair",
-              "description": "The correctness of answers and proofs — mostly sound, with only minor gaps."
+              "description": "Answers and proofs are mostly correct, with a small logical gap in some items."
             },
             {
               "label": "Needs Improvement",
-              "description": "The correctness of answers and proofs — several gaps; clearly falls short of what was asked."
+              "description": "Proofs have logical gaps or skip key steps in several items, and several answers are wrong."
             },
             {
               "label": "Fail",
-              "description": "The correctness of answers and proofs — does not meet what was asked, or cannot be assessed."
+              "description": "Answers and proofs are mostly wrong, or what is written is not a proof."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-66010101-1-c-mock-39-1-b",
-          "name": "C2 · Reasoning steps",
-          "description": "the clarity of the reasoning steps",
+          "name": "C2 · Reasoning steps / ขั้นตอนการให้เหตุผล",
+          "description": "Looks at the clarity of the reasoning steps.",
           "maxPoints": 12,
           "weight": 30,
           "levels": [
@@ -2608,22 +2608,22 @@
             },
             {
               "label": "Fair",
-              "description": "The clarity of the reasoning steps — mostly sound, with only minor gaps."
+              "description": "Steps are shown in order for the most part, but some do not cite the theorem used."
             },
             {
               "label": "Needs Improvement",
-              "description": "The clarity of the reasoning steps — several gaps; clearly falls short of what was asked."
+              "description": "Steps jump around or are missing in many places, so a reader cannot follow."
             },
             {
               "label": "Fail",
-              "description": "The clarity of the reasoning steps — does not meet what was asked, or cannot be assessed."
+              "description": "No reasoning steps shown — only the answers."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-66010101-1-c-mock-39-1-c",
-          "name": "C3 · Mathematical notation",
-          "description": "the use of mathematical notation",
+          "name": "C3 · Mathematical notation / การใช้สัญลักษณ์ทางคณิตศาสตร์",
+          "description": "Looks at the use of mathematical notation.",
           "maxPoints": 8,
           "weight": 20,
           "levels": [
@@ -2633,15 +2633,15 @@
             },
             {
               "label": "Fair",
-              "description": "The use of mathematical notation — mostly sound, with only minor gaps."
+              "description": "Notation is mostly correct, with a mix-up or an inconsistency here and there."
             },
             {
               "label": "Needs Improvement",
-              "description": "The use of mathematical notation — several gaps; clearly falls short of what was asked."
+              "description": "Notation is wrong or inconsistent in many places, so the meaning has to be guessed."
             },
             {
               "label": "Fail",
-              "description": "The use of mathematical notation — does not meet what was asked, or cannot be assessed."
+              "description": "Notation is so wrong that the mathematics cannot be read."
             }
           ]
         }
@@ -2656,8 +2656,8 @@
       "criteria": [
         {
           "id": "rc-hist-a-hist-66010101-1-c-mock-39-2-a",
-          "name": "C1 · Understanding of discrete structures",
-          "description": "understanding of discrete structures",
+          "name": "C1 · Understanding of discrete structures / ความเข้าใจแนวคิดโครงสร้างไม่ต่อเนื่อง",
+          "description": "Looks at understanding of discrete structures.",
           "maxPoints": 8,
           "weight": 40,
           "levels": [
@@ -2667,22 +2667,22 @@
             },
             {
               "label": "Fair",
-              "description": "Understanding of discrete structures — mostly sound, with only minor gaps."
+              "description": "Answers on discrete structures are mostly correct, but some points are incomplete or slightly misunderstood."
             },
             {
               "label": "Needs Improvement",
-              "description": "Understanding of discrete structures — several gaps; clearly falls short of what was asked."
+              "description": "Only part of discrete structures is understood; several core points are wrong or confused."
             },
             {
               "label": "Fail",
-              "description": "Understanding of discrete structures — does not meet what was asked, or cannot be assessed."
+              "description": "Almost none of the ideas asked about in discrete structures are understood."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-66010101-1-c-mock-39-2-b",
-          "name": "C2 · Answer accuracy",
-          "description": "the accuracy of each answer",
+          "name": "C2 · Answer accuracy / ความถูกต้องของคำตอบ",
+          "description": "Looks at the accuracy of each answer.",
           "maxPoints": 6,
           "weight": 30,
           "levels": [
@@ -2692,22 +2692,22 @@
             },
             {
               "label": "Fair",
-              "description": "The accuracy of each answer — mostly sound, with only minor gaps."
+              "description": "Most answers are correct, with a few small mistakes."
             },
             {
               "label": "Needs Improvement",
-              "description": "The accuracy of each answer — several gaps; clearly falls short of what was asked."
+              "description": "Many answers are wrong, including basic ones."
             },
             {
               "label": "Fail",
-              "description": "The accuracy of each answer — does not meet what was asked, or cannot be assessed."
+              "description": "Most answers are wrong or left blank."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-66010101-1-c-mock-39-2-c",
-          "name": "C3 · Reasoning and explanation",
-          "description": "the reasoning given with each answer",
+          "name": "C3 · Reasoning and explanation / การให้เหตุผลและอธิบายคำตอบ",
+          "description": "Looks at the reasoning given with each answer.",
           "maxPoints": 6,
           "weight": 30,
           "levels": [
@@ -2717,15 +2717,15 @@
             },
             {
               "label": "Fair",
-              "description": "The reasoning given with each answer — mostly sound, with only minor gaps."
+              "description": "Reasoning is given for most answers, but some skip steps or do not name the principle."
             },
             {
               "label": "Needs Improvement",
-              "description": "The reasoning given with each answer — several gaps; clearly falls short of what was asked."
+              "description": "Reasoning is given for only some answers, and it is vague or unsound."
             },
             {
               "label": "Fail",
-              "description": "The reasoning given with each answer — does not meet what was asked, or cannot be assessed."
+              "description": "No reasoning — only bare answers."
             }
           ]
         }
@@ -2740,8 +2740,8 @@
       "criteria": [
         {
           "id": "rc-hist-a-hist-66010101-1-c-mock-39-3-a",
-          "name": "C1 · Understanding of discrete structures theory",
-          "description": "understanding of the theory and principles of discrete structures",
+          "name": "C1 · Understanding of discrete structures theory / ความเข้าใจทฤษฎีโครงสร้างไม่ต่อเนื่อง",
+          "description": "Looks at understanding of the theory and principles of discrete structures.",
           "maxPoints": 12,
           "weight": 30,
           "levels": [
@@ -2751,22 +2751,22 @@
             },
             {
               "label": "Fair",
-              "description": "Understanding of the theory and principles of discrete structures — mostly sound, with only minor gaps."
+              "description": "The theory of discrete structures is mostly explained correctly, but some topics are missing or not connected."
             },
             {
               "label": "Needs Improvement",
-              "description": "Understanding of the theory and principles of discrete structures — several gaps; clearly falls short of what was asked."
+              "description": "The theory of discrete structures is wrong or incomplete on several main topics."
             },
             {
               "label": "Fail",
-              "description": "Understanding of the theory and principles of discrete structures — does not meet what was asked, or cannot be assessed."
+              "description": "The theory of discrete structures that was asked about cannot be explained."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-66010101-1-c-mock-39-3-b",
-          "name": "C2 · Applying and solving problems",
-          "description": "applying the principles to solve problems",
+          "name": "C2 · Applying and solving problems / การประยุกต์และการแก้โจทย์",
+          "description": "Looks at applying the principles to solve problems.",
           "maxPoints": 16,
           "weight": 40,
           "levels": [
@@ -2776,22 +2776,22 @@
             },
             {
               "label": "Fair",
-              "description": "Applying the principles to solve problems — mostly sound, with only minor gaps."
+              "description": "Easy problems are solved correctly, but complex ones get an unsuitable method or are left unfinished."
             },
             {
               "label": "Needs Improvement",
-              "description": "Applying the principles to solve problems — several gaps; clearly falls short of what was asked."
+              "description": "Only a few easy problems are solved, and the method is wrong for most."
             },
             {
               "label": "Fail",
-              "description": "Applying the principles to solve problems — does not meet what was asked, or cannot be assessed."
+              "description": "The principles cannot be applied to solve the problems."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-66010101-1-c-mock-39-3-c",
-          "name": "C3 · Accuracy of working and written answers",
-          "description": "the accuracy of the working and the final answers",
+          "name": "C3 · Accuracy of working and written answers / ความถูกต้องของการคำนวณและการเขียนตอบ",
+          "description": "Looks at the accuracy of the working and the final answers.",
           "maxPoints": 12,
           "weight": 30,
           "levels": [
@@ -2801,15 +2801,15 @@
             },
             {
               "label": "Fair",
-              "description": "The accuracy of the working and the final answers — mostly sound, with only minor gaps."
+              "description": "Working is mostly shown, with small slips in some calculations or steps."
             },
             {
               "label": "Needs Improvement",
-              "description": "The accuracy of the working and the final answers — several gaps; clearly falls short of what was asked."
+              "description": "Many steps are skipped, or calculation errors make several final answers wrong."
             },
             {
               "label": "Fail",
-              "description": "The accuracy of the working and the final answers — does not meet what was asked, or cannot be assessed."
+              "description": "No working shown, and most final answers are wrong."
             }
           ]
         }
@@ -2824,8 +2824,8 @@
       "criteria": [
         {
           "id": "rc-hist-a-hist-66010101-2-c-mock-40-1-a",
-          "name": "C1 · Algorithm correctness",
-          "description": "the correctness of the algorithm",
+          "name": "C1 · Algorithm correctness / ความถูกต้องของอัลกอริทึม",
+          "description": "Looks at the correctness of the algorithm.",
           "maxPoints": 18,
           "weight": 45,
           "levels": [
@@ -2835,22 +2835,22 @@
             },
             {
               "label": "Fair",
-              "description": "The correctness of the algorithm — mostly sound, with only minor gaps."
+              "description": "Passes most tests but fails some edge cases, such as empty input or repeated values."
             },
             {
               "label": "Needs Improvement",
-              "description": "The correctness of the algorithm — several gaps; clearly falls short of what was asked."
+              "description": "Passes only the easy tests and is wrong in many cases."
             },
             {
               "label": "Fail",
-              "description": "The correctness of the algorithm — does not meet what was asked, or cannot be assessed."
+              "description": "The algorithm gives wrong results on almost every test, or does not run."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-66010101-2-c-mock-40-1-b",
-          "name": "C2 · Data-structure choice and complexity analysis",
-          "description": "the choice of data structure and the complexity analysis",
+          "name": "C2 · Data-structure choice and complexity analysis / การเลือกโครงสร้างข้อมูลและวิเคราะห์ความซับซ้อน",
+          "description": "Looks at the choice of data structure and the complexity analysis.",
           "maxPoints": 14,
           "weight": 35,
           "levels": [
@@ -2860,22 +2860,22 @@
             },
             {
               "label": "Fair",
-              "description": "The choice of data structure and the complexity analysis — mostly sound, with only minor gaps."
+              "description": "The data structure is a suitable choice, but the complexity analysis is partly off."
             },
             {
               "label": "Needs Improvement",
-              "description": "The choice of data structure and the complexity analysis — several gaps; clearly falls short of what was asked."
+              "description": "The data structure does not suit the problem, or the complexity analysis is wrong in several places."
             },
             {
               "label": "Fail",
-              "description": "The choice of data structure and the complexity analysis — does not meet what was asked, or cannot be assessed."
+              "description": "The data structure is not chosen with any reasoning, and there is no complexity analysis."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-66010101-2-c-mock-40-1-c",
-          "name": "C3 · Code quality and testing",
-          "description": "code readability and the test set",
+          "name": "C3 · Code quality and testing / คุณภาพโค้ดและการทดสอบ",
+          "description": "Looks at code readability and the test set.",
           "maxPoints": 8,
           "weight": 20,
           "levels": [
@@ -2885,15 +2885,15 @@
             },
             {
               "label": "Fair",
-              "description": "Code readability and the test set — mostly sound, with only minor gaps."
+              "description": "The code is readable and has tests, but they miss some important cases."
             },
             {
               "label": "Needs Improvement",
-              "description": "Code readability and the test set — several gaps; clearly falls short of what was asked."
+              "description": "The code is hard to read and has only a few test cases."
             },
             {
               "label": "Fail",
-              "description": "Code readability and the test set — does not meet what was asked, or cannot be assessed."
+              "description": "The code cannot be read and there are no tests."
             }
           ]
         }
@@ -2908,8 +2908,8 @@
       "criteria": [
         {
           "id": "rc-hist-a-hist-66010101-2-c-mock-40-2-a",
-          "name": "C1 · Understanding of data structures and algorithms",
-          "description": "understanding of data structures and algorithms",
+          "name": "C1 · Understanding of data structures and algorithms / ความเข้าใจแนวคิดโครงสร้างข้อมูลและอัลกอริทึม",
+          "description": "Looks at understanding of data structures and algorithms.",
           "maxPoints": 8,
           "weight": 40,
           "levels": [
@@ -2919,22 +2919,22 @@
             },
             {
               "label": "Fair",
-              "description": "Understanding of data structures and algorithms — mostly sound, with only minor gaps."
+              "description": "Answers on data structures and algorithms are mostly correct, but some points are incomplete or slightly misunderstood."
             },
             {
               "label": "Needs Improvement",
-              "description": "Understanding of data structures and algorithms — several gaps; clearly falls short of what was asked."
+              "description": "Only part of data structures and algorithms is understood; several core points are wrong or confused."
             },
             {
               "label": "Fail",
-              "description": "Understanding of data structures and algorithms — does not meet what was asked, or cannot be assessed."
+              "description": "Almost none of the ideas asked about in data structures and algorithms are understood."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-66010101-2-c-mock-40-2-b",
-          "name": "C2 · Answer accuracy",
-          "description": "the accuracy of each answer",
+          "name": "C2 · Answer accuracy / ความถูกต้องของคำตอบ",
+          "description": "Looks at the accuracy of each answer.",
           "maxPoints": 6,
           "weight": 30,
           "levels": [
@@ -2944,22 +2944,22 @@
             },
             {
               "label": "Fair",
-              "description": "The accuracy of each answer — mostly sound, with only minor gaps."
+              "description": "Most answers are correct, with a few small mistakes."
             },
             {
               "label": "Needs Improvement",
-              "description": "The accuracy of each answer — several gaps; clearly falls short of what was asked."
+              "description": "Many answers are wrong, including basic ones."
             },
             {
               "label": "Fail",
-              "description": "The accuracy of each answer — does not meet what was asked, or cannot be assessed."
+              "description": "Most answers are wrong or left blank."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-66010101-2-c-mock-40-2-c",
-          "name": "C3 · Reasoning and explanation",
-          "description": "the reasoning given with each answer",
+          "name": "C3 · Reasoning and explanation / การให้เหตุผลและอธิบายคำตอบ",
+          "description": "Looks at the reasoning given with each answer.",
           "maxPoints": 6,
           "weight": 30,
           "levels": [
@@ -2969,15 +2969,15 @@
             },
             {
               "label": "Fair",
-              "description": "The reasoning given with each answer — mostly sound, with only minor gaps."
+              "description": "Reasoning is given for most answers, but some skip steps or do not name the principle."
             },
             {
               "label": "Needs Improvement",
-              "description": "The reasoning given with each answer — several gaps; clearly falls short of what was asked."
+              "description": "Reasoning is given for only some answers, and it is vague or unsound."
             },
             {
               "label": "Fail",
-              "description": "The reasoning given with each answer — does not meet what was asked, or cannot be assessed."
+              "description": "No reasoning — only bare answers."
             }
           ]
         }
@@ -2992,8 +2992,8 @@
       "criteria": [
         {
           "id": "rc-hist-a-hist-66010101-2-c-mock-40-3-a",
-          "name": "C1 · Understanding of data structures and algorithms theory",
-          "description": "understanding of the theory and principles of data structures and algorithms",
+          "name": "C1 · Understanding of data structures and algorithms theory / ความเข้าใจทฤษฎีโครงสร้างข้อมูลและอัลกอริทึม",
+          "description": "Looks at understanding of the theory and principles of data structures and algorithms.",
           "maxPoints": 12,
           "weight": 30,
           "levels": [
@@ -3003,22 +3003,22 @@
             },
             {
               "label": "Fair",
-              "description": "Understanding of the theory and principles of data structures and algorithms — mostly sound, with only minor gaps."
+              "description": "The theory of data structures and algorithms is mostly explained correctly, but some topics are missing or not connected."
             },
             {
               "label": "Needs Improvement",
-              "description": "Understanding of the theory and principles of data structures and algorithms — several gaps; clearly falls short of what was asked."
+              "description": "The theory of data structures and algorithms is wrong or incomplete on several main topics."
             },
             {
               "label": "Fail",
-              "description": "Understanding of the theory and principles of data structures and algorithms — does not meet what was asked, or cannot be assessed."
+              "description": "The theory of data structures and algorithms that was asked about cannot be explained."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-66010101-2-c-mock-40-3-b",
-          "name": "C2 · Applying and solving problems",
-          "description": "applying the principles to solve problems",
+          "name": "C2 · Applying and solving problems / การประยุกต์และการแก้โจทย์",
+          "description": "Looks at applying the principles to solve problems.",
           "maxPoints": 16,
           "weight": 40,
           "levels": [
@@ -3028,22 +3028,22 @@
             },
             {
               "label": "Fair",
-              "description": "Applying the principles to solve problems — mostly sound, with only minor gaps."
+              "description": "Easy problems are solved correctly, but complex ones get an unsuitable method or are left unfinished."
             },
             {
               "label": "Needs Improvement",
-              "description": "Applying the principles to solve problems — several gaps; clearly falls short of what was asked."
+              "description": "Only a few easy problems are solved, and the method is wrong for most."
             },
             {
               "label": "Fail",
-              "description": "Applying the principles to solve problems — does not meet what was asked, or cannot be assessed."
+              "description": "The principles cannot be applied to solve the problems."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-66010101-2-c-mock-40-3-c",
-          "name": "C3 · Accuracy of working and written answers",
-          "description": "the accuracy of the working and the final answers",
+          "name": "C3 · Accuracy of working and written answers / ความถูกต้องของการคำนวณและการเขียนตอบ",
+          "description": "Looks at the accuracy of the working and the final answers.",
           "maxPoints": 12,
           "weight": 30,
           "levels": [
@@ -3053,15 +3053,15 @@
             },
             {
               "label": "Fair",
-              "description": "The accuracy of the working and the final answers — mostly sound, with only minor gaps."
+              "description": "Working is mostly shown, with small slips in some calculations or steps."
             },
             {
               "label": "Needs Improvement",
-              "description": "The accuracy of the working and the final answers — several gaps; clearly falls short of what was asked."
+              "description": "Many steps are skipped, or calculation errors make several final answers wrong."
             },
             {
               "label": "Fail",
-              "description": "The accuracy of the working and the final answers — does not meet what was asked, or cannot be assessed."
+              "description": "No working shown, and most final answers are wrong."
             }
           ]
         }
@@ -3076,8 +3076,8 @@
       "criteria": [
         {
           "id": "rc-hist-a-hist-66010101-2-c-mock-41-1-a",
-          "name": "C1 · Circuit correctness",
-          "description": "the correctness of the designed circuit",
+          "name": "C1 · Circuit correctness / ความถูกต้องของวงจร",
+          "description": "Looks at the correctness of the designed circuit.",
           "maxPoints": 20,
           "weight": 50,
           "levels": [
@@ -3087,22 +3087,22 @@
             },
             {
               "label": "Fair",
-              "description": "The correctness of the designed circuit — mostly sound, with only minor gaps."
+              "description": "The circuit matches most of the truth table but is wrong in a few cases."
             },
             {
               "label": "Needs Improvement",
-              "description": "The correctness of the designed circuit — several gaps; clearly falls short of what was asked."
+              "description": "The circuit gives the wrong output on several rows of the truth table."
             },
             {
               "label": "Fail",
-              "description": "The correctness of the designed circuit — does not meet what was asked, or cannot be assessed."
+              "description": "The circuit does not meet the specification, or the design is incomplete."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-66010101-2-c-mock-41-1-b",
-          "name": "C2 · Simplification and design efficiency",
-          "description": "how the logic is simplified and how economical the circuit is",
+          "name": "C2 · Simplification and design efficiency / การลดรูปและประสิทธิภาพของการออกแบบ",
+          "description": "Looks at how the logic is simplified and how economical the circuit is.",
           "maxPoints": 12,
           "weight": 30,
           "levels": [
@@ -3112,22 +3112,22 @@
             },
             {
               "label": "Fair",
-              "description": "How the logic is simplified and how economical the circuit is — mostly sound, with only minor gaps."
+              "description": "The equations are simplified, but some gates could still be removed."
             },
             {
               "label": "Needs Improvement",
-              "description": "How the logic is simplified and how economical the circuit is — several gaps; clearly falls short of what was asked."
+              "description": "Simplification is incomplete or wrong at some step, and clearly more gates are used than needed."
             },
             {
               "label": "Fail",
-              "description": "How the logic is simplified and how economical the circuit is — does not meet what was asked, or cannot be assessed."
+              "description": "No simplification, or the simplification breaks the circuit."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-66010101-2-c-mock-41-1-c",
-          "name": "C3 · Simulation and verification",
-          "description": "the circuit simulation and verification of results",
+          "name": "C3 · Simulation and verification / การจำลองและตรวจสอบผล",
+          "description": "Looks at the circuit simulation and verification of results.",
           "maxPoints": 8,
           "weight": 20,
           "levels": [
@@ -3137,15 +3137,15 @@
             },
             {
               "label": "Fair",
-              "description": "The circuit simulation and verification of results — mostly sound, with only minor gaps."
+              "description": "The circuit is simulated and checked on most cases, but the results are not all recorded."
             },
             {
               "label": "Needs Improvement",
-              "description": "The circuit simulation and verification of results — several gaps; clearly falls short of what was asked."
+              "description": "Only a few cases are simulated and they are not compared with the truth table."
             },
             {
               "label": "Fail",
-              "description": "The circuit simulation and verification of results — does not meet what was asked, or cannot be assessed."
+              "description": "No simulation, and no record of any verification."
             }
           ]
         }
@@ -3160,8 +3160,8 @@
       "criteria": [
         {
           "id": "rc-hist-a-hist-66010101-2-c-mock-41-2-a",
-          "name": "C1 · Understanding of digital logic",
-          "description": "understanding of digital logic",
+          "name": "C1 · Understanding of digital logic / ความเข้าใจแนวคิดตรรกะดิจิทัล",
+          "description": "Looks at understanding of digital logic.",
           "maxPoints": 8,
           "weight": 40,
           "levels": [
@@ -3171,22 +3171,22 @@
             },
             {
               "label": "Fair",
-              "description": "Understanding of digital logic — mostly sound, with only minor gaps."
+              "description": "Answers on digital logic are mostly correct, but some points are incomplete or slightly misunderstood."
             },
             {
               "label": "Needs Improvement",
-              "description": "Understanding of digital logic — several gaps; clearly falls short of what was asked."
+              "description": "Only part of digital logic is understood; several core points are wrong or confused."
             },
             {
               "label": "Fail",
-              "description": "Understanding of digital logic — does not meet what was asked, or cannot be assessed."
+              "description": "Almost none of the ideas asked about in digital logic are understood."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-66010101-2-c-mock-41-2-b",
-          "name": "C2 · Answer accuracy",
-          "description": "the accuracy of each answer",
+          "name": "C2 · Answer accuracy / ความถูกต้องของคำตอบ",
+          "description": "Looks at the accuracy of each answer.",
           "maxPoints": 6,
           "weight": 30,
           "levels": [
@@ -3196,22 +3196,22 @@
             },
             {
               "label": "Fair",
-              "description": "The accuracy of each answer — mostly sound, with only minor gaps."
+              "description": "Most answers are correct, with a few small mistakes."
             },
             {
               "label": "Needs Improvement",
-              "description": "The accuracy of each answer — several gaps; clearly falls short of what was asked."
+              "description": "Many answers are wrong, including basic ones."
             },
             {
               "label": "Fail",
-              "description": "The accuracy of each answer — does not meet what was asked, or cannot be assessed."
+              "description": "Most answers are wrong or left blank."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-66010101-2-c-mock-41-2-c",
-          "name": "C3 · Reasoning and explanation",
-          "description": "the reasoning given with each answer",
+          "name": "C3 · Reasoning and explanation / การให้เหตุผลและอธิบายคำตอบ",
+          "description": "Looks at the reasoning given with each answer.",
           "maxPoints": 6,
           "weight": 30,
           "levels": [
@@ -3221,15 +3221,15 @@
             },
             {
               "label": "Fair",
-              "description": "The reasoning given with each answer — mostly sound, with only minor gaps."
+              "description": "Reasoning is given for most answers, but some skip steps or do not name the principle."
             },
             {
               "label": "Needs Improvement",
-              "description": "The reasoning given with each answer — several gaps; clearly falls short of what was asked."
+              "description": "Reasoning is given for only some answers, and it is vague or unsound."
             },
             {
               "label": "Fail",
-              "description": "The reasoning given with each answer — does not meet what was asked, or cannot be assessed."
+              "description": "No reasoning — only bare answers."
             }
           ]
         }
@@ -3244,8 +3244,8 @@
       "criteria": [
         {
           "id": "rc-hist-a-hist-66010101-2-c-mock-41-3-a",
-          "name": "C1 · Understanding of digital logic theory",
-          "description": "understanding of the theory and principles of digital logic",
+          "name": "C1 · Understanding of digital logic theory / ความเข้าใจทฤษฎีตรรกะดิจิทัล",
+          "description": "Looks at understanding of the theory and principles of digital logic.",
           "maxPoints": 12,
           "weight": 30,
           "levels": [
@@ -3255,22 +3255,22 @@
             },
             {
               "label": "Fair",
-              "description": "Understanding of the theory and principles of digital logic — mostly sound, with only minor gaps."
+              "description": "The theory of digital logic is mostly explained correctly, but some topics are missing or not connected."
             },
             {
               "label": "Needs Improvement",
-              "description": "Understanding of the theory and principles of digital logic — several gaps; clearly falls short of what was asked."
+              "description": "The theory of digital logic is wrong or incomplete on several main topics."
             },
             {
               "label": "Fail",
-              "description": "Understanding of the theory and principles of digital logic — does not meet what was asked, or cannot be assessed."
+              "description": "The theory of digital logic that was asked about cannot be explained."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-66010101-2-c-mock-41-3-b",
-          "name": "C2 · Applying and solving problems",
-          "description": "applying the principles to solve problems",
+          "name": "C2 · Applying and solving problems / การประยุกต์และการแก้โจทย์",
+          "description": "Looks at applying the principles to solve problems.",
           "maxPoints": 16,
           "weight": 40,
           "levels": [
@@ -3280,22 +3280,22 @@
             },
             {
               "label": "Fair",
-              "description": "Applying the principles to solve problems — mostly sound, with only minor gaps."
+              "description": "Easy problems are solved correctly, but complex ones get an unsuitable method or are left unfinished."
             },
             {
               "label": "Needs Improvement",
-              "description": "Applying the principles to solve problems — several gaps; clearly falls short of what was asked."
+              "description": "Only a few easy problems are solved, and the method is wrong for most."
             },
             {
               "label": "Fail",
-              "description": "Applying the principles to solve problems — does not meet what was asked, or cannot be assessed."
+              "description": "The principles cannot be applied to solve the problems."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-66010101-2-c-mock-41-3-c",
-          "name": "C3 · Accuracy of working and written answers",
-          "description": "the accuracy of the working and the final answers",
+          "name": "C3 · Accuracy of working and written answers / ความถูกต้องของการคำนวณและการเขียนตอบ",
+          "description": "Looks at the accuracy of the working and the final answers.",
           "maxPoints": 12,
           "weight": 30,
           "levels": [
@@ -3305,15 +3305,15 @@
             },
             {
               "label": "Fair",
-              "description": "The accuracy of the working and the final answers — mostly sound, with only minor gaps."
+              "description": "Working is mostly shown, with small slips in some calculations or steps."
             },
             {
               "label": "Needs Improvement",
-              "description": "The accuracy of the working and the final answers — several gaps; clearly falls short of what was asked."
+              "description": "Many steps are skipped, or calculation errors make several final answers wrong."
             },
             {
               "label": "Fail",
-              "description": "The accuracy of the working and the final answers — does not meet what was asked, or cannot be assessed."
+              "description": "No working shown, and most final answers are wrong."
             }
           ]
         }
@@ -3328,8 +3328,8 @@
       "criteria": [
         {
           "id": "rc-hist-a-hist-66010101-3-c-mock-42-1-a",
-          "name": "C1 · Correctness of the design / assembly program",
-          "description": "the correctness of the design or assembly program",
+          "name": "C1 · Correctness of the design / assembly program / ความถูกต้องของการออกแบบ/โปรแกรมแอสเซมบลี",
+          "description": "Looks at the correctness of the design or assembly program.",
           "maxPoints": 18,
           "weight": 45,
           "levels": [
@@ -3339,22 +3339,22 @@
             },
             {
               "label": "Fair",
-              "description": "The correctness of the design or assembly program — mostly sound, with only minor gaps."
+              "description": "Works correctly for most instructions but is wrong for a few instructions or cases."
             },
             {
               "label": "Needs Improvement",
-              "description": "The correctness of the design or assembly program — several gaps; clearly falls short of what was asked."
+              "description": "Several instructions misbehave, or the datapath/program does not cover everything required."
             },
             {
               "label": "Fail",
-              "description": "The correctness of the design or assembly program — does not meet what was asked, or cannot be assessed."
+              "description": "The design or program does not work as specified."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-66010101-3-c-mock-42-1-b",
-          "name": "C2 · Performance analysis",
-          "description": "the performance analysis of what was designed",
+          "name": "C2 · Performance analysis / การวิเคราะห์ประสิทธิภาพ",
+          "description": "Looks at the performance analysis of what was designed.",
           "maxPoints": 14,
           "weight": 35,
           "levels": [
@@ -3364,22 +3364,22 @@
             },
             {
               "label": "Fair",
-              "description": "The performance analysis of what was designed — mostly sound, with only minor gaps."
+              "description": "CPI or cycle counts are worked out, but the alternatives are not all compared or a calculation slips."
             },
             {
               "label": "Needs Improvement",
-              "description": "The performance analysis of what was designed — several gaps; clearly falls short of what was asked."
+              "description": "The performance analysis is wrong in several places, or alternatives are not compared."
             },
             {
               "label": "Fail",
-              "description": "The performance analysis of what was designed — does not meet what was asked, or cannot be assessed."
+              "description": "No performance analysis."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-66010101-3-c-mock-42-1-c",
-          "name": "C3 · Explanation and lab report",
-          "description": "the clarity of the lab report",
+          "name": "C3 · Explanation and lab report / การอธิบายและรายงานผลการทดลอง",
+          "description": "Looks at the clarity of the lab report.",
           "maxPoints": 8,
           "weight": 20,
           "levels": [
@@ -3389,15 +3389,15 @@
             },
             {
               "label": "Fair",
-              "description": "The clarity of the lab report — mostly sound, with only minor gaps."
+              "description": "The report explains the idea and the results, but some conclusions are unclear."
             },
             {
               "label": "Needs Improvement",
-              "description": "The clarity of the lab report — several gaps; clearly falls short of what was asked."
+              "description": "The report is missing results or conclusions and does not explain the idea fully."
             },
             {
               "label": "Fail",
-              "description": "The clarity of the lab report — does not meet what was asked, or cannot be assessed."
+              "description": "No report, or the report cannot be understood."
             }
           ]
         }
@@ -3412,8 +3412,8 @@
       "criteria": [
         {
           "id": "rc-hist-a-hist-66010101-3-c-mock-42-2-a",
-          "name": "C1 · Understanding of computer architecture",
-          "description": "understanding of computer architecture",
+          "name": "C1 · Understanding of computer architecture / ความเข้าใจแนวคิดสถาปัตยกรรมคอมพิวเตอร์",
+          "description": "Looks at understanding of computer architecture.",
           "maxPoints": 8,
           "weight": 40,
           "levels": [
@@ -3423,22 +3423,22 @@
             },
             {
               "label": "Fair",
-              "description": "Understanding of computer architecture — mostly sound, with only minor gaps."
+              "description": "Answers on computer architecture are mostly correct, but some points are incomplete or slightly misunderstood."
             },
             {
               "label": "Needs Improvement",
-              "description": "Understanding of computer architecture — several gaps; clearly falls short of what was asked."
+              "description": "Only part of computer architecture is understood; several core points are wrong or confused."
             },
             {
               "label": "Fail",
-              "description": "Understanding of computer architecture — does not meet what was asked, or cannot be assessed."
+              "description": "Almost none of the ideas asked about in computer architecture are understood."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-66010101-3-c-mock-42-2-b",
-          "name": "C2 · Answer accuracy",
-          "description": "the accuracy of each answer",
+          "name": "C2 · Answer accuracy / ความถูกต้องของคำตอบ",
+          "description": "Looks at the accuracy of each answer.",
           "maxPoints": 6,
           "weight": 30,
           "levels": [
@@ -3448,22 +3448,22 @@
             },
             {
               "label": "Fair",
-              "description": "The accuracy of each answer — mostly sound, with only minor gaps."
+              "description": "Most answers are correct, with a few small mistakes."
             },
             {
               "label": "Needs Improvement",
-              "description": "The accuracy of each answer — several gaps; clearly falls short of what was asked."
+              "description": "Many answers are wrong, including basic ones."
             },
             {
               "label": "Fail",
-              "description": "The accuracy of each answer — does not meet what was asked, or cannot be assessed."
+              "description": "Most answers are wrong or left blank."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-66010101-3-c-mock-42-2-c",
-          "name": "C3 · Reasoning and explanation",
-          "description": "the reasoning given with each answer",
+          "name": "C3 · Reasoning and explanation / การให้เหตุผลและอธิบายคำตอบ",
+          "description": "Looks at the reasoning given with each answer.",
           "maxPoints": 6,
           "weight": 30,
           "levels": [
@@ -3473,15 +3473,15 @@
             },
             {
               "label": "Fair",
-              "description": "The reasoning given with each answer — mostly sound, with only minor gaps."
+              "description": "Reasoning is given for most answers, but some skip steps or do not name the principle."
             },
             {
               "label": "Needs Improvement",
-              "description": "The reasoning given with each answer — several gaps; clearly falls short of what was asked."
+              "description": "Reasoning is given for only some answers, and it is vague or unsound."
             },
             {
               "label": "Fail",
-              "description": "The reasoning given with each answer — does not meet what was asked, or cannot be assessed."
+              "description": "No reasoning — only bare answers."
             }
           ]
         }
@@ -3496,8 +3496,8 @@
       "criteria": [
         {
           "id": "rc-hist-a-hist-66010101-3-c-mock-42-3-a",
-          "name": "C1 · Understanding of computer architecture theory",
-          "description": "understanding of the theory and principles of computer architecture",
+          "name": "C1 · Understanding of computer architecture theory / ความเข้าใจทฤษฎีสถาปัตยกรรมคอมพิวเตอร์",
+          "description": "Looks at understanding of the theory and principles of computer architecture.",
           "maxPoints": 12,
           "weight": 30,
           "levels": [
@@ -3507,22 +3507,22 @@
             },
             {
               "label": "Fair",
-              "description": "Understanding of the theory and principles of computer architecture — mostly sound, with only minor gaps."
+              "description": "The theory of computer architecture is mostly explained correctly, but some topics are missing or not connected."
             },
             {
               "label": "Needs Improvement",
-              "description": "Understanding of the theory and principles of computer architecture — several gaps; clearly falls short of what was asked."
+              "description": "The theory of computer architecture is wrong or incomplete on several main topics."
             },
             {
               "label": "Fail",
-              "description": "Understanding of the theory and principles of computer architecture — does not meet what was asked, or cannot be assessed."
+              "description": "The theory of computer architecture that was asked about cannot be explained."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-66010101-3-c-mock-42-3-b",
-          "name": "C2 · Applying and solving problems",
-          "description": "applying the principles to solve problems",
+          "name": "C2 · Applying and solving problems / การประยุกต์และการแก้โจทย์",
+          "description": "Looks at applying the principles to solve problems.",
           "maxPoints": 16,
           "weight": 40,
           "levels": [
@@ -3532,22 +3532,22 @@
             },
             {
               "label": "Fair",
-              "description": "Applying the principles to solve problems — mostly sound, with only minor gaps."
+              "description": "Easy problems are solved correctly, but complex ones get an unsuitable method or are left unfinished."
             },
             {
               "label": "Needs Improvement",
-              "description": "Applying the principles to solve problems — several gaps; clearly falls short of what was asked."
+              "description": "Only a few easy problems are solved, and the method is wrong for most."
             },
             {
               "label": "Fail",
-              "description": "Applying the principles to solve problems — does not meet what was asked, or cannot be assessed."
+              "description": "The principles cannot be applied to solve the problems."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-66010101-3-c-mock-42-3-c",
-          "name": "C3 · Accuracy of working and written answers",
-          "description": "the accuracy of the working and the final answers",
+          "name": "C3 · Accuracy of working and written answers / ความถูกต้องของการคำนวณและการเขียนตอบ",
+          "description": "Looks at the accuracy of the working and the final answers.",
           "maxPoints": 12,
           "weight": 30,
           "levels": [
@@ -3557,15 +3557,15 @@
             },
             {
               "label": "Fair",
-              "description": "The accuracy of the working and the final answers — mostly sound, with only minor gaps."
+              "description": "Working is mostly shown, with small slips in some calculations or steps."
             },
             {
               "label": "Needs Improvement",
-              "description": "The accuracy of the working and the final answers — several gaps; clearly falls short of what was asked."
+              "description": "Many steps are skipped, or calculation errors make several final answers wrong."
             },
             {
               "label": "Fail",
-              "description": "The accuracy of the working and the final answers — does not meet what was asked, or cannot be assessed."
+              "description": "No working shown, and most final answers are wrong."
             }
           ]
         }
@@ -3580,8 +3580,8 @@
       "criteria": [
         {
           "id": "rc-hist-a-hist-66010101-4-c-mock-44-1-a",
-          "name": "C1 · Data-model correctness",
-          "description": "the correctness of the ER diagram and schema",
+          "name": "C1 · Data-model correctness / ความถูกต้องของแบบจำลองข้อมูล",
+          "description": "Looks at the correctness of the ER diagram and schema.",
           "maxPoints": 14,
           "weight": 35,
           "levels": [
@@ -3591,22 +3591,22 @@
             },
             {
               "label": "Fair",
-              "description": "The correctness of the ER diagram and schema — mostly sound, with only minor gaps."
+              "description": "The ER model and schema cover most requirements, but normalisation is incomplete or a relationship is wrong."
             },
             {
               "label": "Needs Improvement",
-              "description": "The correctness of the ER diagram and schema — several gaps; clearly falls short of what was asked."
+              "description": "Several important entities or relationships are missing, and data is duplicated."
             },
             {
               "label": "Fail",
-              "description": "The correctness of the ER diagram and schema — does not meet what was asked, or cannot be assessed."
+              "description": "The data model does not match the requirements, or there is no schema."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-66010101-4-c-mock-44-1-b",
-          "name": "C2 · SQL correctness and efficiency",
-          "description": "the correctness and efficiency of the SQL",
+          "name": "C2 · SQL correctness and efficiency / ความถูกต้องและประสิทธิภาพของคำสั่ง SQL",
+          "description": "Looks at the correctness and efficiency of the SQL.",
           "maxPoints": 18,
           "weight": 45,
           "levels": [
@@ -3616,22 +3616,22 @@
             },
             {
               "label": "Fair",
-              "description": "The correctness and efficiency of the SQL — mostly sound, with only minor gaps."
+              "description": "SQL is correct on most items, but some give incomplete results or are written inefficiently."
             },
             {
               "label": "Needs Improvement",
-              "description": "The correctness and efficiency of the SQL — several gaps; clearly falls short of what was asked."
+              "description": "SQL is wrong on several items, or returns results that do not match the question."
             },
             {
               "label": "Fail",
-              "description": "The correctness and efficiency of the SQL — does not meet what was asked, or cannot be assessed."
+              "description": "SQL does not run or is wrong on almost every item."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-66010101-4-c-mock-44-1-c",
-          "name": "C3 · Documentation and test data",
-          "description": "the documentation and test data",
+          "name": "C3 · Documentation and test data / เอกสารและข้อมูลทดสอบ",
+          "description": "Looks at the documentation and test data.",
           "maxPoints": 8,
           "weight": 20,
           "levels": [
@@ -3641,15 +3641,15 @@
             },
             {
               "label": "Fair",
-              "description": "The documentation and test data — mostly sound, with only minor gaps."
+              "description": "Documentation and test data exist, but do not cover every important case."
             },
             {
               "label": "Needs Improvement",
-              "description": "The documentation and test data — several gaps; clearly falls short of what was asked."
+              "description": "The documentation is very thin and the test data too small to check the results."
             },
             {
               "label": "Fail",
-              "description": "The documentation and test data — does not meet what was asked, or cannot be assessed."
+              "description": "No documentation and no test data."
             }
           ]
         }
@@ -3664,8 +3664,8 @@
       "criteria": [
         {
           "id": "rc-hist-a-hist-66010101-4-c-mock-44-2-a",
-          "name": "C1 · Understanding of database systems",
-          "description": "understanding of database systems",
+          "name": "C1 · Understanding of database systems / ความเข้าใจแนวคิดระบบฐานข้อมูล",
+          "description": "Looks at understanding of database systems.",
           "maxPoints": 8,
           "weight": 40,
           "levels": [
@@ -3675,22 +3675,22 @@
             },
             {
               "label": "Fair",
-              "description": "Understanding of database systems — mostly sound, with only minor gaps."
+              "description": "Answers on database systems are mostly correct, but some points are incomplete or slightly misunderstood."
             },
             {
               "label": "Needs Improvement",
-              "description": "Understanding of database systems — several gaps; clearly falls short of what was asked."
+              "description": "Only part of database systems is understood; several core points are wrong or confused."
             },
             {
               "label": "Fail",
-              "description": "Understanding of database systems — does not meet what was asked, or cannot be assessed."
+              "description": "Almost none of the ideas asked about in database systems are understood."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-66010101-4-c-mock-44-2-b",
-          "name": "C2 · Answer accuracy",
-          "description": "the accuracy of each answer",
+          "name": "C2 · Answer accuracy / ความถูกต้องของคำตอบ",
+          "description": "Looks at the accuracy of each answer.",
           "maxPoints": 6,
           "weight": 30,
           "levels": [
@@ -3700,22 +3700,22 @@
             },
             {
               "label": "Fair",
-              "description": "The accuracy of each answer — mostly sound, with only minor gaps."
+              "description": "Most answers are correct, with a few small mistakes."
             },
             {
               "label": "Needs Improvement",
-              "description": "The accuracy of each answer — several gaps; clearly falls short of what was asked."
+              "description": "Many answers are wrong, including basic ones."
             },
             {
               "label": "Fail",
-              "description": "The accuracy of each answer — does not meet what was asked, or cannot be assessed."
+              "description": "Most answers are wrong or left blank."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-66010101-4-c-mock-44-2-c",
-          "name": "C3 · Reasoning and explanation",
-          "description": "the reasoning given with each answer",
+          "name": "C3 · Reasoning and explanation / การให้เหตุผลและอธิบายคำตอบ",
+          "description": "Looks at the reasoning given with each answer.",
           "maxPoints": 6,
           "weight": 30,
           "levels": [
@@ -3725,15 +3725,15 @@
             },
             {
               "label": "Fair",
-              "description": "The reasoning given with each answer — mostly sound, with only minor gaps."
+              "description": "Reasoning is given for most answers, but some skip steps or do not name the principle."
             },
             {
               "label": "Needs Improvement",
-              "description": "The reasoning given with each answer — several gaps; clearly falls short of what was asked."
+              "description": "Reasoning is given for only some answers, and it is vague or unsound."
             },
             {
               "label": "Fail",
-              "description": "The reasoning given with each answer — does not meet what was asked, or cannot be assessed."
+              "description": "No reasoning — only bare answers."
             }
           ]
         }
@@ -3748,8 +3748,8 @@
       "criteria": [
         {
           "id": "rc-hist-a-hist-66010101-4-c-mock-44-3-a",
-          "name": "C1 · Understanding of database systems theory",
-          "description": "understanding of the theory and principles of database systems",
+          "name": "C1 · Understanding of database systems theory / ความเข้าใจทฤษฎีระบบฐานข้อมูล",
+          "description": "Looks at understanding of the theory and principles of database systems.",
           "maxPoints": 12,
           "weight": 30,
           "levels": [
@@ -3759,22 +3759,22 @@
             },
             {
               "label": "Fair",
-              "description": "Understanding of the theory and principles of database systems — mostly sound, with only minor gaps."
+              "description": "The theory of database systems is mostly explained correctly, but some topics are missing or not connected."
             },
             {
               "label": "Needs Improvement",
-              "description": "Understanding of the theory and principles of database systems — several gaps; clearly falls short of what was asked."
+              "description": "The theory of database systems is wrong or incomplete on several main topics."
             },
             {
               "label": "Fail",
-              "description": "Understanding of the theory and principles of database systems — does not meet what was asked, or cannot be assessed."
+              "description": "The theory of database systems that was asked about cannot be explained."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-66010101-4-c-mock-44-3-b",
-          "name": "C2 · Applying and solving problems",
-          "description": "applying the principles to solve problems",
+          "name": "C2 · Applying and solving problems / การประยุกต์และการแก้โจทย์",
+          "description": "Looks at applying the principles to solve problems.",
           "maxPoints": 16,
           "weight": 40,
           "levels": [
@@ -3784,22 +3784,22 @@
             },
             {
               "label": "Fair",
-              "description": "Applying the principles to solve problems — mostly sound, with only minor gaps."
+              "description": "Easy problems are solved correctly, but complex ones get an unsuitable method or are left unfinished."
             },
             {
               "label": "Needs Improvement",
-              "description": "Applying the principles to solve problems — several gaps; clearly falls short of what was asked."
+              "description": "Only a few easy problems are solved, and the method is wrong for most."
             },
             {
               "label": "Fail",
-              "description": "Applying the principles to solve problems — does not meet what was asked, or cannot be assessed."
+              "description": "The principles cannot be applied to solve the problems."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-66010101-4-c-mock-44-3-c",
-          "name": "C3 · Accuracy of working and written answers",
-          "description": "the accuracy of the working and the final answers",
+          "name": "C3 · Accuracy of working and written answers / ความถูกต้องของการคำนวณและการเขียนตอบ",
+          "description": "Looks at the accuracy of the working and the final answers.",
           "maxPoints": 12,
           "weight": 30,
           "levels": [
@@ -3809,15 +3809,15 @@
             },
             {
               "label": "Fair",
-              "description": "The accuracy of the working and the final answers — mostly sound, with only minor gaps."
+              "description": "Working is mostly shown, with small slips in some calculations or steps."
             },
             {
               "label": "Needs Improvement",
-              "description": "The accuracy of the working and the final answers — several gaps; clearly falls short of what was asked."
+              "description": "Many steps are skipped, or calculation errors make several final answers wrong."
             },
             {
               "label": "Fail",
-              "description": "The accuracy of the working and the final answers — does not meet what was asked, or cannot be assessed."
+              "description": "No working shown, and most final answers are wrong."
             }
           ]
         }
@@ -3832,8 +3832,8 @@
       "criteria": [
         {
           "id": "rc-hist-a-hist-67010201-1-c-mock-46-1-a",
-          "name": "C1 · Program correctness",
-          "description": "the program's output matching the task",
+          "name": "C1 · Program correctness / ความถูกต้องของโปรแกรม",
+          "description": "Looks at the program's output matching the task.",
           "maxPoints": 24,
           "weight": 60,
           "levels": [
@@ -3843,22 +3843,22 @@
             },
             {
               "label": "Fair",
-              "description": "The program's output matching the task — mostly sound, with only minor gaps."
+              "description": "Output is correct on most tasks, but some cases fail — typically edge cases or unusual input."
             },
             {
               "label": "Needs Improvement",
-              "description": "The program's output matching the task — several gaps; clearly falls short of what was asked."
+              "description": "Output is wrong on several tasks, or the program only works for the simple cases."
             },
             {
               "label": "Fail",
-              "description": "The program's output matching the task — does not meet what was asked, or cannot be assessed."
+              "description": "The program does not run, or its output is wrong almost everywhere and does not match the task."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-67010201-1-c-mock-46-1-b",
-          "name": "C2 · Code readability",
-          "description": "naming, formatting and comments in the code",
+          "name": "C2 · Code readability / ความอ่านง่ายของโค้ด",
+          "description": "Looks at naming, formatting and comments in the code.",
           "maxPoints": 8,
           "weight": 20,
           "levels": [
@@ -3868,22 +3868,22 @@
             },
             {
               "label": "Fair",
-              "description": "Naming, formatting and comments in the code — mostly sound, with only minor gaps."
+              "description": "Mostly readable, but a few names say too little or the formatting drifts in places."
             },
             {
               "label": "Needs Improvement",
-              "description": "Naming, formatting and comments in the code — several gaps; clearly falls short of what was asked."
+              "description": "Many names are unclear, indentation is uneven and there are almost no comments, so a reader must guess what the code does."
             },
             {
               "label": "Fail",
-              "description": "Naming, formatting and comments in the code — does not meet what was asked, or cannot be assessed."
+              "description": "The code cannot be followed — arbitrary names, and no structure or formatting at all."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-67010201-1-c-mock-46-1-c",
-          "name": "C3 · Error handling",
-          "description": "handling of bad input and unusual cases",
+          "name": "C3 · Error handling / การจัดการ Error",
+          "description": "Looks at handling of bad input and unusual cases.",
           "maxPoints": 8,
           "weight": 20,
           "levels": [
@@ -3893,15 +3893,15 @@
             },
             {
               "label": "Fair",
-              "description": "Handling of bad input and unusual cases — mostly sound, with only minor gaps."
+              "description": "Common bad input is handled, but a few unusual cases still stop the program or give an unclear message."
             },
             {
               "label": "Needs Improvement",
-              "description": "Handling of bad input and unusual cases — several gaps; clearly falls short of what was asked."
+              "description": "Errors are handled in a few places only; badly formed input can still crash the program."
             },
             {
               "label": "Fail",
-              "description": "Handling of bad input and unusual cases — does not meet what was asked, or cannot be assessed."
+              "description": "No error handling — even slightly wrong input stops the program."
             }
           ]
         }
@@ -3916,8 +3916,8 @@
       "criteria": [
         {
           "id": "rc-hist-a-hist-67010201-1-c-mock-46-2-a",
-          "name": "C1 · Understanding of programming",
-          "description": "understanding of programming",
+          "name": "C1 · Understanding of programming / ความเข้าใจแนวคิดการเขียนโปรแกรม",
+          "description": "Looks at understanding of programming.",
           "maxPoints": 8,
           "weight": 40,
           "levels": [
@@ -3927,22 +3927,22 @@
             },
             {
               "label": "Fair",
-              "description": "Understanding of programming — mostly sound, with only minor gaps."
+              "description": "Answers on programming are mostly correct, but some points are incomplete or slightly misunderstood."
             },
             {
               "label": "Needs Improvement",
-              "description": "Understanding of programming — several gaps; clearly falls short of what was asked."
+              "description": "Only part of programming is understood; several core points are wrong or confused."
             },
             {
               "label": "Fail",
-              "description": "Understanding of programming — does not meet what was asked, or cannot be assessed."
+              "description": "Almost none of the ideas asked about in programming are understood."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-67010201-1-c-mock-46-2-b",
-          "name": "C2 · Answer accuracy",
-          "description": "the accuracy of each answer",
+          "name": "C2 · Answer accuracy / ความถูกต้องของคำตอบ",
+          "description": "Looks at the accuracy of each answer.",
           "maxPoints": 6,
           "weight": 30,
           "levels": [
@@ -3952,22 +3952,22 @@
             },
             {
               "label": "Fair",
-              "description": "The accuracy of each answer — mostly sound, with only minor gaps."
+              "description": "Most answers are correct, with a few small mistakes."
             },
             {
               "label": "Needs Improvement",
-              "description": "The accuracy of each answer — several gaps; clearly falls short of what was asked."
+              "description": "Many answers are wrong, including basic ones."
             },
             {
               "label": "Fail",
-              "description": "The accuracy of each answer — does not meet what was asked, or cannot be assessed."
+              "description": "Most answers are wrong or left blank."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-67010201-1-c-mock-46-2-c",
-          "name": "C3 · Reasoning and explanation",
-          "description": "the reasoning given with each answer",
+          "name": "C3 · Reasoning and explanation / การให้เหตุผลและอธิบายคำตอบ",
+          "description": "Looks at the reasoning given with each answer.",
           "maxPoints": 6,
           "weight": 30,
           "levels": [
@@ -3977,15 +3977,15 @@
             },
             {
               "label": "Fair",
-              "description": "The reasoning given with each answer — mostly sound, with only minor gaps."
+              "description": "Reasoning is given for most answers, but some skip steps or do not name the principle."
             },
             {
               "label": "Needs Improvement",
-              "description": "The reasoning given with each answer — several gaps; clearly falls short of what was asked."
+              "description": "Reasoning is given for only some answers, and it is vague or unsound."
             },
             {
               "label": "Fail",
-              "description": "The reasoning given with each answer — does not meet what was asked, or cannot be assessed."
+              "description": "No reasoning — only bare answers."
             }
           ]
         }
@@ -4000,8 +4000,8 @@
       "criteria": [
         {
           "id": "rc-hist-a-hist-67010201-1-c-mock-46-3-a",
-          "name": "C1 · Understanding of programming theory",
-          "description": "understanding of the theory and principles of programming",
+          "name": "C1 · Understanding of programming theory / ความเข้าใจทฤษฎีการเขียนโปรแกรม",
+          "description": "Looks at understanding of the theory and principles of programming.",
           "maxPoints": 12,
           "weight": 30,
           "levels": [
@@ -4011,22 +4011,22 @@
             },
             {
               "label": "Fair",
-              "description": "Understanding of the theory and principles of programming — mostly sound, with only minor gaps."
+              "description": "The theory of programming is mostly explained correctly, but some topics are missing or not connected."
             },
             {
               "label": "Needs Improvement",
-              "description": "Understanding of the theory and principles of programming — several gaps; clearly falls short of what was asked."
+              "description": "The theory of programming is wrong or incomplete on several main topics."
             },
             {
               "label": "Fail",
-              "description": "Understanding of the theory and principles of programming — does not meet what was asked, or cannot be assessed."
+              "description": "The theory of programming that was asked about cannot be explained."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-67010201-1-c-mock-46-3-b",
-          "name": "C2 · Applying and solving problems",
-          "description": "applying the principles to solve problems",
+          "name": "C2 · Applying and solving problems / การประยุกต์และการแก้โจทย์",
+          "description": "Looks at applying the principles to solve problems.",
           "maxPoints": 16,
           "weight": 40,
           "levels": [
@@ -4036,22 +4036,22 @@
             },
             {
               "label": "Fair",
-              "description": "Applying the principles to solve problems — mostly sound, with only minor gaps."
+              "description": "Easy problems are solved correctly, but complex ones get an unsuitable method or are left unfinished."
             },
             {
               "label": "Needs Improvement",
-              "description": "Applying the principles to solve problems — several gaps; clearly falls short of what was asked."
+              "description": "Only a few easy problems are solved, and the method is wrong for most."
             },
             {
               "label": "Fail",
-              "description": "Applying the principles to solve problems — does not meet what was asked, or cannot be assessed."
+              "description": "The principles cannot be applied to solve the problems."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-67010201-1-c-mock-46-3-c",
-          "name": "C3 · Accuracy of working and written answers",
-          "description": "the accuracy of the working and the final answers",
+          "name": "C3 · Accuracy of working and written answers / ความถูกต้องของการคำนวณและการเขียนตอบ",
+          "description": "Looks at the accuracy of the working and the final answers.",
           "maxPoints": 12,
           "weight": 30,
           "levels": [
@@ -4061,15 +4061,15 @@
             },
             {
               "label": "Fair",
-              "description": "The accuracy of the working and the final answers — mostly sound, with only minor gaps."
+              "description": "Working is mostly shown, with small slips in some calculations or steps."
             },
             {
               "label": "Needs Improvement",
-              "description": "The accuracy of the working and the final answers — several gaps; clearly falls short of what was asked."
+              "description": "Many steps are skipped, or calculation errors make several final answers wrong."
             },
             {
               "label": "Fail",
-              "description": "The accuracy of the working and the final answers — does not meet what was asked, or cannot be assessed."
+              "description": "No working shown, and most final answers are wrong."
             }
           ]
         }
@@ -4084,8 +4084,8 @@
       "criteria": [
         {
           "id": "rc-hist-a-hist-67010201-1-c-mock-47-1-a",
-          "name": "C1 · Correctness of answers and proofs",
-          "description": "the correctness of answers and proofs",
+          "name": "C1 · Correctness of answers and proofs / ความถูกต้องของคำตอบและการพิสูจน์",
+          "description": "Looks at the correctness of answers and proofs.",
           "maxPoints": 20,
           "weight": 50,
           "levels": [
@@ -4095,22 +4095,22 @@
             },
             {
               "label": "Fair",
-              "description": "The correctness of answers and proofs — mostly sound, with only minor gaps."
+              "description": "Answers and proofs are mostly correct, with a small logical gap in some items."
             },
             {
               "label": "Needs Improvement",
-              "description": "The correctness of answers and proofs — several gaps; clearly falls short of what was asked."
+              "description": "Proofs have logical gaps or skip key steps in several items, and several answers are wrong."
             },
             {
               "label": "Fail",
-              "description": "The correctness of answers and proofs — does not meet what was asked, or cannot be assessed."
+              "description": "Answers and proofs are mostly wrong, or what is written is not a proof."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-67010201-1-c-mock-47-1-b",
-          "name": "C2 · Reasoning steps",
-          "description": "the clarity of the reasoning steps",
+          "name": "C2 · Reasoning steps / ขั้นตอนการให้เหตุผล",
+          "description": "Looks at the clarity of the reasoning steps.",
           "maxPoints": 12,
           "weight": 30,
           "levels": [
@@ -4120,22 +4120,22 @@
             },
             {
               "label": "Fair",
-              "description": "The clarity of the reasoning steps — mostly sound, with only minor gaps."
+              "description": "Steps are shown in order for the most part, but some do not cite the theorem used."
             },
             {
               "label": "Needs Improvement",
-              "description": "The clarity of the reasoning steps — several gaps; clearly falls short of what was asked."
+              "description": "Steps jump around or are missing in many places, so a reader cannot follow."
             },
             {
               "label": "Fail",
-              "description": "The clarity of the reasoning steps — does not meet what was asked, or cannot be assessed."
+              "description": "No reasoning steps shown — only the answers."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-67010201-1-c-mock-47-1-c",
-          "name": "C3 · Mathematical notation",
-          "description": "the use of mathematical notation",
+          "name": "C3 · Mathematical notation / การใช้สัญลักษณ์ทางคณิตศาสตร์",
+          "description": "Looks at the use of mathematical notation.",
           "maxPoints": 8,
           "weight": 20,
           "levels": [
@@ -4145,15 +4145,15 @@
             },
             {
               "label": "Fair",
-              "description": "The use of mathematical notation — mostly sound, with only minor gaps."
+              "description": "Notation is mostly correct, with a mix-up or an inconsistency here and there."
             },
             {
               "label": "Needs Improvement",
-              "description": "The use of mathematical notation — several gaps; clearly falls short of what was asked."
+              "description": "Notation is wrong or inconsistent in many places, so the meaning has to be guessed."
             },
             {
               "label": "Fail",
-              "description": "The use of mathematical notation — does not meet what was asked, or cannot be assessed."
+              "description": "Notation is so wrong that the mathematics cannot be read."
             }
           ]
         }
@@ -4168,8 +4168,8 @@
       "criteria": [
         {
           "id": "rc-hist-a-hist-67010201-1-c-mock-47-2-a",
-          "name": "C1 · Understanding of discrete structures",
-          "description": "understanding of discrete structures",
+          "name": "C1 · Understanding of discrete structures / ความเข้าใจแนวคิดโครงสร้างไม่ต่อเนื่อง",
+          "description": "Looks at understanding of discrete structures.",
           "maxPoints": 8,
           "weight": 40,
           "levels": [
@@ -4179,22 +4179,22 @@
             },
             {
               "label": "Fair",
-              "description": "Understanding of discrete structures — mostly sound, with only minor gaps."
+              "description": "Answers on discrete structures are mostly correct, but some points are incomplete or slightly misunderstood."
             },
             {
               "label": "Needs Improvement",
-              "description": "Understanding of discrete structures — several gaps; clearly falls short of what was asked."
+              "description": "Only part of discrete structures is understood; several core points are wrong or confused."
             },
             {
               "label": "Fail",
-              "description": "Understanding of discrete structures — does not meet what was asked, or cannot be assessed."
+              "description": "Almost none of the ideas asked about in discrete structures are understood."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-67010201-1-c-mock-47-2-b",
-          "name": "C2 · Answer accuracy",
-          "description": "the accuracy of each answer",
+          "name": "C2 · Answer accuracy / ความถูกต้องของคำตอบ",
+          "description": "Looks at the accuracy of each answer.",
           "maxPoints": 6,
           "weight": 30,
           "levels": [
@@ -4204,22 +4204,22 @@
             },
             {
               "label": "Fair",
-              "description": "The accuracy of each answer — mostly sound, with only minor gaps."
+              "description": "Most answers are correct, with a few small mistakes."
             },
             {
               "label": "Needs Improvement",
-              "description": "The accuracy of each answer — several gaps; clearly falls short of what was asked."
+              "description": "Many answers are wrong, including basic ones."
             },
             {
               "label": "Fail",
-              "description": "The accuracy of each answer — does not meet what was asked, or cannot be assessed."
+              "description": "Most answers are wrong or left blank."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-67010201-1-c-mock-47-2-c",
-          "name": "C3 · Reasoning and explanation",
-          "description": "the reasoning given with each answer",
+          "name": "C3 · Reasoning and explanation / การให้เหตุผลและอธิบายคำตอบ",
+          "description": "Looks at the reasoning given with each answer.",
           "maxPoints": 6,
           "weight": 30,
           "levels": [
@@ -4229,15 +4229,15 @@
             },
             {
               "label": "Fair",
-              "description": "The reasoning given with each answer — mostly sound, with only minor gaps."
+              "description": "Reasoning is given for most answers, but some skip steps or do not name the principle."
             },
             {
               "label": "Needs Improvement",
-              "description": "The reasoning given with each answer — several gaps; clearly falls short of what was asked."
+              "description": "Reasoning is given for only some answers, and it is vague or unsound."
             },
             {
               "label": "Fail",
-              "description": "The reasoning given with each answer — does not meet what was asked, or cannot be assessed."
+              "description": "No reasoning — only bare answers."
             }
           ]
         }
@@ -4252,8 +4252,8 @@
       "criteria": [
         {
           "id": "rc-hist-a-hist-67010201-1-c-mock-47-3-a",
-          "name": "C1 · Understanding of discrete structures theory",
-          "description": "understanding of the theory and principles of discrete structures",
+          "name": "C1 · Understanding of discrete structures theory / ความเข้าใจทฤษฎีโครงสร้างไม่ต่อเนื่อง",
+          "description": "Looks at understanding of the theory and principles of discrete structures.",
           "maxPoints": 12,
           "weight": 30,
           "levels": [
@@ -4263,22 +4263,22 @@
             },
             {
               "label": "Fair",
-              "description": "Understanding of the theory and principles of discrete structures — mostly sound, with only minor gaps."
+              "description": "The theory of discrete structures is mostly explained correctly, but some topics are missing or not connected."
             },
             {
               "label": "Needs Improvement",
-              "description": "Understanding of the theory and principles of discrete structures — several gaps; clearly falls short of what was asked."
+              "description": "The theory of discrete structures is wrong or incomplete on several main topics."
             },
             {
               "label": "Fail",
-              "description": "Understanding of the theory and principles of discrete structures — does not meet what was asked, or cannot be assessed."
+              "description": "The theory of discrete structures that was asked about cannot be explained."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-67010201-1-c-mock-47-3-b",
-          "name": "C2 · Applying and solving problems",
-          "description": "applying the principles to solve problems",
+          "name": "C2 · Applying and solving problems / การประยุกต์และการแก้โจทย์",
+          "description": "Looks at applying the principles to solve problems.",
           "maxPoints": 16,
           "weight": 40,
           "levels": [
@@ -4288,22 +4288,22 @@
             },
             {
               "label": "Fair",
-              "description": "Applying the principles to solve problems — mostly sound, with only minor gaps."
+              "description": "Easy problems are solved correctly, but complex ones get an unsuitable method or are left unfinished."
             },
             {
               "label": "Needs Improvement",
-              "description": "Applying the principles to solve problems — several gaps; clearly falls short of what was asked."
+              "description": "Only a few easy problems are solved, and the method is wrong for most."
             },
             {
               "label": "Fail",
-              "description": "Applying the principles to solve problems — does not meet what was asked, or cannot be assessed."
+              "description": "The principles cannot be applied to solve the problems."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-67010201-1-c-mock-47-3-c",
-          "name": "C3 · Accuracy of working and written answers",
-          "description": "the accuracy of the working and the final answers",
+          "name": "C3 · Accuracy of working and written answers / ความถูกต้องของการคำนวณและการเขียนตอบ",
+          "description": "Looks at the accuracy of the working and the final answers.",
           "maxPoints": 12,
           "weight": 30,
           "levels": [
@@ -4313,15 +4313,15 @@
             },
             {
               "label": "Fair",
-              "description": "The accuracy of the working and the final answers — mostly sound, with only minor gaps."
+              "description": "Working is mostly shown, with small slips in some calculations or steps."
             },
             {
               "label": "Needs Improvement",
-              "description": "The accuracy of the working and the final answers — several gaps; clearly falls short of what was asked."
+              "description": "Many steps are skipped, or calculation errors make several final answers wrong."
             },
             {
               "label": "Fail",
-              "description": "The accuracy of the working and the final answers — does not meet what was asked, or cannot be assessed."
+              "description": "No working shown, and most final answers are wrong."
             }
           ]
         }
@@ -4336,8 +4336,8 @@
       "criteria": [
         {
           "id": "rc-hist-a-hist-67010201-2-c-mock-48-1-a",
-          "name": "C1 · Algorithm correctness",
-          "description": "the correctness of the algorithm",
+          "name": "C1 · Algorithm correctness / ความถูกต้องของอัลกอริทึม",
+          "description": "Looks at the correctness of the algorithm.",
           "maxPoints": 18,
           "weight": 45,
           "levels": [
@@ -4347,22 +4347,22 @@
             },
             {
               "label": "Fair",
-              "description": "The correctness of the algorithm — mostly sound, with only minor gaps."
+              "description": "Passes most tests but fails some edge cases, such as empty input or repeated values."
             },
             {
               "label": "Needs Improvement",
-              "description": "The correctness of the algorithm — several gaps; clearly falls short of what was asked."
+              "description": "Passes only the easy tests and is wrong in many cases."
             },
             {
               "label": "Fail",
-              "description": "The correctness of the algorithm — does not meet what was asked, or cannot be assessed."
+              "description": "The algorithm gives wrong results on almost every test, or does not run."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-67010201-2-c-mock-48-1-b",
-          "name": "C2 · Data-structure choice and complexity analysis",
-          "description": "the choice of data structure and the complexity analysis",
+          "name": "C2 · Data-structure choice and complexity analysis / การเลือกโครงสร้างข้อมูลและวิเคราะห์ความซับซ้อน",
+          "description": "Looks at the choice of data structure and the complexity analysis.",
           "maxPoints": 14,
           "weight": 35,
           "levels": [
@@ -4372,22 +4372,22 @@
             },
             {
               "label": "Fair",
-              "description": "The choice of data structure and the complexity analysis — mostly sound, with only minor gaps."
+              "description": "The data structure is a suitable choice, but the complexity analysis is partly off."
             },
             {
               "label": "Needs Improvement",
-              "description": "The choice of data structure and the complexity analysis — several gaps; clearly falls short of what was asked."
+              "description": "The data structure does not suit the problem, or the complexity analysis is wrong in several places."
             },
             {
               "label": "Fail",
-              "description": "The choice of data structure and the complexity analysis — does not meet what was asked, or cannot be assessed."
+              "description": "The data structure is not chosen with any reasoning, and there is no complexity analysis."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-67010201-2-c-mock-48-1-c",
-          "name": "C3 · Code quality and testing",
-          "description": "code readability and the test set",
+          "name": "C3 · Code quality and testing / คุณภาพโค้ดและการทดสอบ",
+          "description": "Looks at code readability and the test set.",
           "maxPoints": 8,
           "weight": 20,
           "levels": [
@@ -4397,15 +4397,15 @@
             },
             {
               "label": "Fair",
-              "description": "Code readability and the test set — mostly sound, with only minor gaps."
+              "description": "The code is readable and has tests, but they miss some important cases."
             },
             {
               "label": "Needs Improvement",
-              "description": "Code readability and the test set — several gaps; clearly falls short of what was asked."
+              "description": "The code is hard to read and has only a few test cases."
             },
             {
               "label": "Fail",
-              "description": "Code readability and the test set — does not meet what was asked, or cannot be assessed."
+              "description": "The code cannot be read and there are no tests."
             }
           ]
         }
@@ -4420,8 +4420,8 @@
       "criteria": [
         {
           "id": "rc-hist-a-hist-67010201-2-c-mock-48-2-a",
-          "name": "C1 · Understanding of data structures and algorithms",
-          "description": "understanding of data structures and algorithms",
+          "name": "C1 · Understanding of data structures and algorithms / ความเข้าใจแนวคิดโครงสร้างข้อมูลและอัลกอริทึม",
+          "description": "Looks at understanding of data structures and algorithms.",
           "maxPoints": 8,
           "weight": 40,
           "levels": [
@@ -4431,22 +4431,22 @@
             },
             {
               "label": "Fair",
-              "description": "Understanding of data structures and algorithms — mostly sound, with only minor gaps."
+              "description": "Answers on data structures and algorithms are mostly correct, but some points are incomplete or slightly misunderstood."
             },
             {
               "label": "Needs Improvement",
-              "description": "Understanding of data structures and algorithms — several gaps; clearly falls short of what was asked."
+              "description": "Only part of data structures and algorithms is understood; several core points are wrong or confused."
             },
             {
               "label": "Fail",
-              "description": "Understanding of data structures and algorithms — does not meet what was asked, or cannot be assessed."
+              "description": "Almost none of the ideas asked about in data structures and algorithms are understood."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-67010201-2-c-mock-48-2-b",
-          "name": "C2 · Answer accuracy",
-          "description": "the accuracy of each answer",
+          "name": "C2 · Answer accuracy / ความถูกต้องของคำตอบ",
+          "description": "Looks at the accuracy of each answer.",
           "maxPoints": 6,
           "weight": 30,
           "levels": [
@@ -4456,22 +4456,22 @@
             },
             {
               "label": "Fair",
-              "description": "The accuracy of each answer — mostly sound, with only minor gaps."
+              "description": "Most answers are correct, with a few small mistakes."
             },
             {
               "label": "Needs Improvement",
-              "description": "The accuracy of each answer — several gaps; clearly falls short of what was asked."
+              "description": "Many answers are wrong, including basic ones."
             },
             {
               "label": "Fail",
-              "description": "The accuracy of each answer — does not meet what was asked, or cannot be assessed."
+              "description": "Most answers are wrong or left blank."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-67010201-2-c-mock-48-2-c",
-          "name": "C3 · Reasoning and explanation",
-          "description": "the reasoning given with each answer",
+          "name": "C3 · Reasoning and explanation / การให้เหตุผลและอธิบายคำตอบ",
+          "description": "Looks at the reasoning given with each answer.",
           "maxPoints": 6,
           "weight": 30,
           "levels": [
@@ -4481,15 +4481,15 @@
             },
             {
               "label": "Fair",
-              "description": "The reasoning given with each answer — mostly sound, with only minor gaps."
+              "description": "Reasoning is given for most answers, but some skip steps or do not name the principle."
             },
             {
               "label": "Needs Improvement",
-              "description": "The reasoning given with each answer — several gaps; clearly falls short of what was asked."
+              "description": "Reasoning is given for only some answers, and it is vague or unsound."
             },
             {
               "label": "Fail",
-              "description": "The reasoning given with each answer — does not meet what was asked, or cannot be assessed."
+              "description": "No reasoning — only bare answers."
             }
           ]
         }
@@ -4504,8 +4504,8 @@
       "criteria": [
         {
           "id": "rc-hist-a-hist-67010201-2-c-mock-48-3-a",
-          "name": "C1 · Understanding of data structures and algorithms theory",
-          "description": "understanding of the theory and principles of data structures and algorithms",
+          "name": "C1 · Understanding of data structures and algorithms theory / ความเข้าใจทฤษฎีโครงสร้างข้อมูลและอัลกอริทึม",
+          "description": "Looks at understanding of the theory and principles of data structures and algorithms.",
           "maxPoints": 12,
           "weight": 30,
           "levels": [
@@ -4515,22 +4515,22 @@
             },
             {
               "label": "Fair",
-              "description": "Understanding of the theory and principles of data structures and algorithms — mostly sound, with only minor gaps."
+              "description": "The theory of data structures and algorithms is mostly explained correctly, but some topics are missing or not connected."
             },
             {
               "label": "Needs Improvement",
-              "description": "Understanding of the theory and principles of data structures and algorithms — several gaps; clearly falls short of what was asked."
+              "description": "The theory of data structures and algorithms is wrong or incomplete on several main topics."
             },
             {
               "label": "Fail",
-              "description": "Understanding of the theory and principles of data structures and algorithms — does not meet what was asked, or cannot be assessed."
+              "description": "The theory of data structures and algorithms that was asked about cannot be explained."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-67010201-2-c-mock-48-3-b",
-          "name": "C2 · Applying and solving problems",
-          "description": "applying the principles to solve problems",
+          "name": "C2 · Applying and solving problems / การประยุกต์และการแก้โจทย์",
+          "description": "Looks at applying the principles to solve problems.",
           "maxPoints": 16,
           "weight": 40,
           "levels": [
@@ -4540,22 +4540,22 @@
             },
             {
               "label": "Fair",
-              "description": "Applying the principles to solve problems — mostly sound, with only minor gaps."
+              "description": "Easy problems are solved correctly, but complex ones get an unsuitable method or are left unfinished."
             },
             {
               "label": "Needs Improvement",
-              "description": "Applying the principles to solve problems — several gaps; clearly falls short of what was asked."
+              "description": "Only a few easy problems are solved, and the method is wrong for most."
             },
             {
               "label": "Fail",
-              "description": "Applying the principles to solve problems — does not meet what was asked, or cannot be assessed."
+              "description": "The principles cannot be applied to solve the problems."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-67010201-2-c-mock-48-3-c",
-          "name": "C3 · Accuracy of working and written answers",
-          "description": "the accuracy of the working and the final answers",
+          "name": "C3 · Accuracy of working and written answers / ความถูกต้องของการคำนวณและการเขียนตอบ",
+          "description": "Looks at the accuracy of the working and the final answers.",
           "maxPoints": 12,
           "weight": 30,
           "levels": [
@@ -4565,15 +4565,15 @@
             },
             {
               "label": "Fair",
-              "description": "The accuracy of the working and the final answers — mostly sound, with only minor gaps."
+              "description": "Working is mostly shown, with small slips in some calculations or steps."
             },
             {
               "label": "Needs Improvement",
-              "description": "The accuracy of the working and the final answers — several gaps; clearly falls short of what was asked."
+              "description": "Many steps are skipped, or calculation errors make several final answers wrong."
             },
             {
               "label": "Fail",
-              "description": "The accuracy of the working and the final answers — does not meet what was asked, or cannot be assessed."
+              "description": "No working shown, and most final answers are wrong."
             }
           ]
         }
@@ -4588,8 +4588,8 @@
       "criteria": [
         {
           "id": "rc-hist-a-hist-67010201-2-c-mock-49-1-a",
-          "name": "C1 · Circuit correctness",
-          "description": "the correctness of the designed circuit",
+          "name": "C1 · Circuit correctness / ความถูกต้องของวงจร",
+          "description": "Looks at the correctness of the designed circuit.",
           "maxPoints": 20,
           "weight": 50,
           "levels": [
@@ -4599,22 +4599,22 @@
             },
             {
               "label": "Fair",
-              "description": "The correctness of the designed circuit — mostly sound, with only minor gaps."
+              "description": "The circuit matches most of the truth table but is wrong in a few cases."
             },
             {
               "label": "Needs Improvement",
-              "description": "The correctness of the designed circuit — several gaps; clearly falls short of what was asked."
+              "description": "The circuit gives the wrong output on several rows of the truth table."
             },
             {
               "label": "Fail",
-              "description": "The correctness of the designed circuit — does not meet what was asked, or cannot be assessed."
+              "description": "The circuit does not meet the specification, or the design is incomplete."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-67010201-2-c-mock-49-1-b",
-          "name": "C2 · Simplification and design efficiency",
-          "description": "how the logic is simplified and how economical the circuit is",
+          "name": "C2 · Simplification and design efficiency / การลดรูปและประสิทธิภาพของการออกแบบ",
+          "description": "Looks at how the logic is simplified and how economical the circuit is.",
           "maxPoints": 12,
           "weight": 30,
           "levels": [
@@ -4624,22 +4624,22 @@
             },
             {
               "label": "Fair",
-              "description": "How the logic is simplified and how economical the circuit is — mostly sound, with only minor gaps."
+              "description": "The equations are simplified, but some gates could still be removed."
             },
             {
               "label": "Needs Improvement",
-              "description": "How the logic is simplified and how economical the circuit is — several gaps; clearly falls short of what was asked."
+              "description": "Simplification is incomplete or wrong at some step, and clearly more gates are used than needed."
             },
             {
               "label": "Fail",
-              "description": "How the logic is simplified and how economical the circuit is — does not meet what was asked, or cannot be assessed."
+              "description": "No simplification, or the simplification breaks the circuit."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-67010201-2-c-mock-49-1-c",
-          "name": "C3 · Simulation and verification",
-          "description": "the circuit simulation and verification of results",
+          "name": "C3 · Simulation and verification / การจำลองและตรวจสอบผล",
+          "description": "Looks at the circuit simulation and verification of results.",
           "maxPoints": 8,
           "weight": 20,
           "levels": [
@@ -4649,15 +4649,15 @@
             },
             {
               "label": "Fair",
-              "description": "The circuit simulation and verification of results — mostly sound, with only minor gaps."
+              "description": "The circuit is simulated and checked on most cases, but the results are not all recorded."
             },
             {
               "label": "Needs Improvement",
-              "description": "The circuit simulation and verification of results — several gaps; clearly falls short of what was asked."
+              "description": "Only a few cases are simulated and they are not compared with the truth table."
             },
             {
               "label": "Fail",
-              "description": "The circuit simulation and verification of results — does not meet what was asked, or cannot be assessed."
+              "description": "No simulation, and no record of any verification."
             }
           ]
         }
@@ -4672,8 +4672,8 @@
       "criteria": [
         {
           "id": "rc-hist-a-hist-67010201-2-c-mock-49-2-a",
-          "name": "C1 · Understanding of digital logic",
-          "description": "understanding of digital logic",
+          "name": "C1 · Understanding of digital logic / ความเข้าใจแนวคิดตรรกะดิจิทัล",
+          "description": "Looks at understanding of digital logic.",
           "maxPoints": 8,
           "weight": 40,
           "levels": [
@@ -4683,22 +4683,22 @@
             },
             {
               "label": "Fair",
-              "description": "Understanding of digital logic — mostly sound, with only minor gaps."
+              "description": "Answers on digital logic are mostly correct, but some points are incomplete or slightly misunderstood."
             },
             {
               "label": "Needs Improvement",
-              "description": "Understanding of digital logic — several gaps; clearly falls short of what was asked."
+              "description": "Only part of digital logic is understood; several core points are wrong or confused."
             },
             {
               "label": "Fail",
-              "description": "Understanding of digital logic — does not meet what was asked, or cannot be assessed."
+              "description": "Almost none of the ideas asked about in digital logic are understood."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-67010201-2-c-mock-49-2-b",
-          "name": "C2 · Answer accuracy",
-          "description": "the accuracy of each answer",
+          "name": "C2 · Answer accuracy / ความถูกต้องของคำตอบ",
+          "description": "Looks at the accuracy of each answer.",
           "maxPoints": 6,
           "weight": 30,
           "levels": [
@@ -4708,22 +4708,22 @@
             },
             {
               "label": "Fair",
-              "description": "The accuracy of each answer — mostly sound, with only minor gaps."
+              "description": "Most answers are correct, with a few small mistakes."
             },
             {
               "label": "Needs Improvement",
-              "description": "The accuracy of each answer — several gaps; clearly falls short of what was asked."
+              "description": "Many answers are wrong, including basic ones."
             },
             {
               "label": "Fail",
-              "description": "The accuracy of each answer — does not meet what was asked, or cannot be assessed."
+              "description": "Most answers are wrong or left blank."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-67010201-2-c-mock-49-2-c",
-          "name": "C3 · Reasoning and explanation",
-          "description": "the reasoning given with each answer",
+          "name": "C3 · Reasoning and explanation / การให้เหตุผลและอธิบายคำตอบ",
+          "description": "Looks at the reasoning given with each answer.",
           "maxPoints": 6,
           "weight": 30,
           "levels": [
@@ -4733,15 +4733,15 @@
             },
             {
               "label": "Fair",
-              "description": "The reasoning given with each answer — mostly sound, with only minor gaps."
+              "description": "Reasoning is given for most answers, but some skip steps or do not name the principle."
             },
             {
               "label": "Needs Improvement",
-              "description": "The reasoning given with each answer — several gaps; clearly falls short of what was asked."
+              "description": "Reasoning is given for only some answers, and it is vague or unsound."
             },
             {
               "label": "Fail",
-              "description": "The reasoning given with each answer — does not meet what was asked, or cannot be assessed."
+              "description": "No reasoning — only bare answers."
             }
           ]
         }
@@ -4756,8 +4756,8 @@
       "criteria": [
         {
           "id": "rc-hist-a-hist-67010201-2-c-mock-49-3-a",
-          "name": "C1 · Understanding of digital logic theory",
-          "description": "understanding of the theory and principles of digital logic",
+          "name": "C1 · Understanding of digital logic theory / ความเข้าใจทฤษฎีตรรกะดิจิทัล",
+          "description": "Looks at understanding of the theory and principles of digital logic.",
           "maxPoints": 12,
           "weight": 30,
           "levels": [
@@ -4767,22 +4767,22 @@
             },
             {
               "label": "Fair",
-              "description": "Understanding of the theory and principles of digital logic — mostly sound, with only minor gaps."
+              "description": "The theory of digital logic is mostly explained correctly, but some topics are missing or not connected."
             },
             {
               "label": "Needs Improvement",
-              "description": "Understanding of the theory and principles of digital logic — several gaps; clearly falls short of what was asked."
+              "description": "The theory of digital logic is wrong or incomplete on several main topics."
             },
             {
               "label": "Fail",
-              "description": "Understanding of the theory and principles of digital logic — does not meet what was asked, or cannot be assessed."
+              "description": "The theory of digital logic that was asked about cannot be explained."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-67010201-2-c-mock-49-3-b",
-          "name": "C2 · Applying and solving problems",
-          "description": "applying the principles to solve problems",
+          "name": "C2 · Applying and solving problems / การประยุกต์และการแก้โจทย์",
+          "description": "Looks at applying the principles to solve problems.",
           "maxPoints": 16,
           "weight": 40,
           "levels": [
@@ -4792,22 +4792,22 @@
             },
             {
               "label": "Fair",
-              "description": "Applying the principles to solve problems — mostly sound, with only minor gaps."
+              "description": "Easy problems are solved correctly, but complex ones get an unsuitable method or are left unfinished."
             },
             {
               "label": "Needs Improvement",
-              "description": "Applying the principles to solve problems — several gaps; clearly falls short of what was asked."
+              "description": "Only a few easy problems are solved, and the method is wrong for most."
             },
             {
               "label": "Fail",
-              "description": "Applying the principles to solve problems — does not meet what was asked, or cannot be assessed."
+              "description": "The principles cannot be applied to solve the problems."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-67010201-2-c-mock-49-3-c",
-          "name": "C3 · Accuracy of working and written answers",
-          "description": "the accuracy of the working and the final answers",
+          "name": "C3 · Accuracy of working and written answers / ความถูกต้องของการคำนวณและการเขียนตอบ",
+          "description": "Looks at the accuracy of the working and the final answers.",
           "maxPoints": 12,
           "weight": 30,
           "levels": [
@@ -4817,15 +4817,15 @@
             },
             {
               "label": "Fair",
-              "description": "The accuracy of the working and the final answers — mostly sound, with only minor gaps."
+              "description": "Working is mostly shown, with small slips in some calculations or steps."
             },
             {
               "label": "Needs Improvement",
-              "description": "The accuracy of the working and the final answers — several gaps; clearly falls short of what was asked."
+              "description": "Many steps are skipped, or calculation errors make several final answers wrong."
             },
             {
               "label": "Fail",
-              "description": "The accuracy of the working and the final answers — does not meet what was asked, or cannot be assessed."
+              "description": "No working shown, and most final answers are wrong."
             }
           ]
         }
@@ -4840,8 +4840,8 @@
       "criteria": [
         {
           "id": "rc-hist-a-hist-67010201-3-c-mock-53-1-a",
-          "name": "C1 · Completeness of requirements and design documents",
-          "description": "the completeness of requirements and design documents",
+          "name": "C1 · Completeness of requirements and design documents / ความครบถ้วนของ requirement และเอกสารออกแบบ",
+          "description": "Looks at the completeness of requirements and design documents.",
           "maxPoints": 16,
           "weight": 40,
           "levels": [
@@ -4851,22 +4851,22 @@
             },
             {
               "label": "Fair",
-              "description": "The completeness of requirements and design documents — mostly sound, with only minor gaps."
+              "description": "Requirements are mostly complete, but traceability is partial or some design documents disagree."
             },
             {
               "label": "Needs Improvement",
-              "description": "The completeness of requirements and design documents — several gaps; clearly falls short of what was asked."
+              "description": "Several requirements are missing, and the design documents contradict each other."
             },
             {
               "label": "Fail",
-              "description": "The completeness of requirements and design documents — does not meet what was asked, or cannot be assessed."
+              "description": "No clear requirements, or the design documents are unrelated to the work."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-67010201-3-c-mock-53-1-b",
-          "name": "C2 · UML diagram quality",
-          "description": "the correctness and readability of the UML diagrams",
+          "name": "C2 · UML diagram quality / คุณภาพของแผนภาพ UML",
+          "description": "Looks at the correctness and readability of the UML diagrams.",
           "maxPoints": 14,
           "weight": 35,
           "levels": [
@@ -4876,22 +4876,22 @@
             },
             {
               "label": "Fair",
-              "description": "The correctness and readability of the UML diagrams — mostly sound, with only minor gaps."
+              "description": "Most diagrams are correct, with a small notation error or a part that is hard to read."
             },
             {
               "label": "Needs Improvement",
-              "description": "The correctness and readability of the UML diagrams — several gaps; clearly falls short of what was asked."
+              "description": "UML notation is wrong in many places, or an important diagram is missing."
             },
             {
               "label": "Fail",
-              "description": "The correctness and readability of the UML diagrams — does not meet what was asked, or cannot be assessed."
+              "description": "No UML diagrams, or they do not follow the standard."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-67010201-3-c-mock-53-1-c",
-          "name": "C3 · Teamwork and Git use",
-          "description": "how work is shared and Git is used in the team",
+          "name": "C3 · Teamwork and Git use / การทำงานร่วมกันและการใช้ Git",
+          "description": "Looks at how work is shared and Git is used in the team.",
           "maxPoints": 10,
           "weight": 25,
           "levels": [
@@ -4901,15 +4901,15 @@
             },
             {
               "label": "Fair",
-              "description": "How work is shared and Git is used in the team — mostly sound, with only minor gaps."
+              "description": "Work is split and Git is used, but commit messages or branches are not systematic."
             },
             {
               "label": "Needs Improvement",
-              "description": "How work is shared and Git is used in the team — several gaps; clearly falls short of what was asked."
+              "description": "Most commits go straight to main with no branches, and some members barely contribute."
             },
             {
               "label": "Fail",
-              "description": "How work is shared and Git is used in the team — does not meet what was asked, or cannot be assessed."
+              "description": "Git is not used in any meaningful way, or one person did all the work."
             }
           ]
         }
@@ -4924,8 +4924,8 @@
       "criteria": [
         {
           "id": "rc-hist-a-hist-67010201-3-c-mock-53-2-a",
-          "name": "C1 · Understanding of software engineering",
-          "description": "understanding of software engineering",
+          "name": "C1 · Understanding of software engineering / ความเข้าใจแนวคิดวิศวกรรมซอฟต์แวร์",
+          "description": "Looks at understanding of software engineering.",
           "maxPoints": 8,
           "weight": 40,
           "levels": [
@@ -4935,22 +4935,22 @@
             },
             {
               "label": "Fair",
-              "description": "Understanding of software engineering — mostly sound, with only minor gaps."
+              "description": "Answers on software engineering are mostly correct, but some points are incomplete or slightly misunderstood."
             },
             {
               "label": "Needs Improvement",
-              "description": "Understanding of software engineering — several gaps; clearly falls short of what was asked."
+              "description": "Only part of software engineering is understood; several core points are wrong or confused."
             },
             {
               "label": "Fail",
-              "description": "Understanding of software engineering — does not meet what was asked, or cannot be assessed."
+              "description": "Almost none of the ideas asked about in software engineering are understood."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-67010201-3-c-mock-53-2-b",
-          "name": "C2 · Answer accuracy",
-          "description": "the accuracy of each answer",
+          "name": "C2 · Answer accuracy / ความถูกต้องของคำตอบ",
+          "description": "Looks at the accuracy of each answer.",
           "maxPoints": 6,
           "weight": 30,
           "levels": [
@@ -4960,22 +4960,22 @@
             },
             {
               "label": "Fair",
-              "description": "The accuracy of each answer — mostly sound, with only minor gaps."
+              "description": "Most answers are correct, with a few small mistakes."
             },
             {
               "label": "Needs Improvement",
-              "description": "The accuracy of each answer — several gaps; clearly falls short of what was asked."
+              "description": "Many answers are wrong, including basic ones."
             },
             {
               "label": "Fail",
-              "description": "The accuracy of each answer — does not meet what was asked, or cannot be assessed."
+              "description": "Most answers are wrong or left blank."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-67010201-3-c-mock-53-2-c",
-          "name": "C3 · Reasoning and explanation",
-          "description": "the reasoning given with each answer",
+          "name": "C3 · Reasoning and explanation / การให้เหตุผลและอธิบายคำตอบ",
+          "description": "Looks at the reasoning given with each answer.",
           "maxPoints": 6,
           "weight": 30,
           "levels": [
@@ -4985,15 +4985,15 @@
             },
             {
               "label": "Fair",
-              "description": "The reasoning given with each answer — mostly sound, with only minor gaps."
+              "description": "Reasoning is given for most answers, but some skip steps or do not name the principle."
             },
             {
               "label": "Needs Improvement",
-              "description": "The reasoning given with each answer — several gaps; clearly falls short of what was asked."
+              "description": "Reasoning is given for only some answers, and it is vague or unsound."
             },
             {
               "label": "Fail",
-              "description": "The reasoning given with each answer — does not meet what was asked, or cannot be assessed."
+              "description": "No reasoning — only bare answers."
             }
           ]
         }
@@ -5008,8 +5008,8 @@
       "criteria": [
         {
           "id": "rc-hist-a-hist-67010201-3-c-mock-53-3-a",
-          "name": "C1 · Understanding of software engineering theory",
-          "description": "understanding of the theory and principles of software engineering",
+          "name": "C1 · Understanding of software engineering theory / ความเข้าใจทฤษฎีวิศวกรรมซอฟต์แวร์",
+          "description": "Looks at understanding of the theory and principles of software engineering.",
           "maxPoints": 12,
           "weight": 30,
           "levels": [
@@ -5019,22 +5019,22 @@
             },
             {
               "label": "Fair",
-              "description": "Understanding of the theory and principles of software engineering — mostly sound, with only minor gaps."
+              "description": "The theory of software engineering is mostly explained correctly, but some topics are missing or not connected."
             },
             {
               "label": "Needs Improvement",
-              "description": "Understanding of the theory and principles of software engineering — several gaps; clearly falls short of what was asked."
+              "description": "The theory of software engineering is wrong or incomplete on several main topics."
             },
             {
               "label": "Fail",
-              "description": "Understanding of the theory and principles of software engineering — does not meet what was asked, or cannot be assessed."
+              "description": "The theory of software engineering that was asked about cannot be explained."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-67010201-3-c-mock-53-3-b",
-          "name": "C2 · Applying and solving problems",
-          "description": "applying the principles to solve problems",
+          "name": "C2 · Applying and solving problems / การประยุกต์และการแก้โจทย์",
+          "description": "Looks at applying the principles to solve problems.",
           "maxPoints": 16,
           "weight": 40,
           "levels": [
@@ -5044,22 +5044,22 @@
             },
             {
               "label": "Fair",
-              "description": "Applying the principles to solve problems — mostly sound, with only minor gaps."
+              "description": "Easy problems are solved correctly, but complex ones get an unsuitable method or are left unfinished."
             },
             {
               "label": "Needs Improvement",
-              "description": "Applying the principles to solve problems — several gaps; clearly falls short of what was asked."
+              "description": "Only a few easy problems are solved, and the method is wrong for most."
             },
             {
               "label": "Fail",
-              "description": "Applying the principles to solve problems — does not meet what was asked, or cannot be assessed."
+              "description": "The principles cannot be applied to solve the problems."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-67010201-3-c-mock-53-3-c",
-          "name": "C3 · Accuracy of working and written answers",
-          "description": "the accuracy of the working and the final answers",
+          "name": "C3 · Accuracy of working and written answers / ความถูกต้องของการคำนวณและการเขียนตอบ",
+          "description": "Looks at the accuracy of the working and the final answers.",
           "maxPoints": 12,
           "weight": 30,
           "levels": [
@@ -5069,15 +5069,15 @@
             },
             {
               "label": "Fair",
-              "description": "The accuracy of the working and the final answers — mostly sound, with only minor gaps."
+              "description": "Working is mostly shown, with small slips in some calculations or steps."
             },
             {
               "label": "Needs Improvement",
-              "description": "The accuracy of the working and the final answers — several gaps; clearly falls short of what was asked."
+              "description": "Many steps are skipped, or calculation errors make several final answers wrong."
             },
             {
               "label": "Fail",
-              "description": "The accuracy of the working and the final answers — does not meet what was asked, or cannot be assessed."
+              "description": "No working shown, and most final answers are wrong."
             }
           ]
         }
@@ -5092,8 +5092,8 @@
       "criteria": [
         {
           "id": "rc-hist-a-hist-68020101-1-c-mock-19-1-a",
-          "name": "C1 · Algorithm correctness",
-          "description": "the correctness of the algorithm",
+          "name": "C1 · Algorithm correctness / ความถูกต้องของอัลกอริทึม",
+          "description": "Looks at the correctness of the algorithm.",
           "maxPoints": 18,
           "weight": 45,
           "levels": [
@@ -5103,22 +5103,22 @@
             },
             {
               "label": "Fair",
-              "description": "The correctness of the algorithm — mostly sound, with only minor gaps."
+              "description": "Passes most tests but fails some edge cases, such as empty input or repeated values."
             },
             {
               "label": "Needs Improvement",
-              "description": "The correctness of the algorithm — several gaps; clearly falls short of what was asked."
+              "description": "Passes only the easy tests and is wrong in many cases."
             },
             {
               "label": "Fail",
-              "description": "The correctness of the algorithm — does not meet what was asked, or cannot be assessed."
+              "description": "The algorithm gives wrong results on almost every test, or does not run."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-68020101-1-c-mock-19-1-b",
-          "name": "C2 · Data-structure choice and complexity analysis",
-          "description": "the choice of data structure and the complexity analysis",
+          "name": "C2 · Data-structure choice and complexity analysis / การเลือกโครงสร้างข้อมูลและวิเคราะห์ความซับซ้อน",
+          "description": "Looks at the choice of data structure and the complexity analysis.",
           "maxPoints": 14,
           "weight": 35,
           "levels": [
@@ -5128,22 +5128,22 @@
             },
             {
               "label": "Fair",
-              "description": "The choice of data structure and the complexity analysis — mostly sound, with only minor gaps."
+              "description": "The data structure is a suitable choice, but the complexity analysis is partly off."
             },
             {
               "label": "Needs Improvement",
-              "description": "The choice of data structure and the complexity analysis — several gaps; clearly falls short of what was asked."
+              "description": "The data structure does not suit the problem, or the complexity analysis is wrong in several places."
             },
             {
               "label": "Fail",
-              "description": "The choice of data structure and the complexity analysis — does not meet what was asked, or cannot be assessed."
+              "description": "The data structure is not chosen with any reasoning, and there is no complexity analysis."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-68020101-1-c-mock-19-1-c",
-          "name": "C3 · Code quality and testing",
-          "description": "code readability and the test set",
+          "name": "C3 · Code quality and testing / คุณภาพโค้ดและการทดสอบ",
+          "description": "Looks at code readability and the test set.",
           "maxPoints": 8,
           "weight": 20,
           "levels": [
@@ -5153,15 +5153,15 @@
             },
             {
               "label": "Fair",
-              "description": "Code readability and the test set — mostly sound, with only minor gaps."
+              "description": "The code is readable and has tests, but they miss some important cases."
             },
             {
               "label": "Needs Improvement",
-              "description": "Code readability and the test set — several gaps; clearly falls short of what was asked."
+              "description": "The code is hard to read and has only a few test cases."
             },
             {
               "label": "Fail",
-              "description": "Code readability and the test set — does not meet what was asked, or cannot be assessed."
+              "description": "The code cannot be read and there are no tests."
             }
           ]
         }
@@ -5176,8 +5176,8 @@
       "criteria": [
         {
           "id": "rc-hist-a-hist-68020101-1-c-mock-19-2-a",
-          "name": "C1 · Understanding of data structures and algorithms",
-          "description": "understanding of data structures and algorithms",
+          "name": "C1 · Understanding of data structures and algorithms / ความเข้าใจแนวคิดโครงสร้างข้อมูลและอัลกอริทึม",
+          "description": "Looks at understanding of data structures and algorithms.",
           "maxPoints": 8,
           "weight": 40,
           "levels": [
@@ -5187,22 +5187,22 @@
             },
             {
               "label": "Fair",
-              "description": "Understanding of data structures and algorithms — mostly sound, with only minor gaps."
+              "description": "Answers on data structures and algorithms are mostly correct, but some points are incomplete or slightly misunderstood."
             },
             {
               "label": "Needs Improvement",
-              "description": "Understanding of data structures and algorithms — several gaps; clearly falls short of what was asked."
+              "description": "Only part of data structures and algorithms is understood; several core points are wrong or confused."
             },
             {
               "label": "Fail",
-              "description": "Understanding of data structures and algorithms — does not meet what was asked, or cannot be assessed."
+              "description": "Almost none of the ideas asked about in data structures and algorithms are understood."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-68020101-1-c-mock-19-2-b",
-          "name": "C2 · Answer accuracy",
-          "description": "the accuracy of each answer",
+          "name": "C2 · Answer accuracy / ความถูกต้องของคำตอบ",
+          "description": "Looks at the accuracy of each answer.",
           "maxPoints": 6,
           "weight": 30,
           "levels": [
@@ -5212,22 +5212,22 @@
             },
             {
               "label": "Fair",
-              "description": "The accuracy of each answer — mostly sound, with only minor gaps."
+              "description": "Most answers are correct, with a few small mistakes."
             },
             {
               "label": "Needs Improvement",
-              "description": "The accuracy of each answer — several gaps; clearly falls short of what was asked."
+              "description": "Many answers are wrong, including basic ones."
             },
             {
               "label": "Fail",
-              "description": "The accuracy of each answer — does not meet what was asked, or cannot be assessed."
+              "description": "Most answers are wrong or left blank."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-68020101-1-c-mock-19-2-c",
-          "name": "C3 · Reasoning and explanation",
-          "description": "the reasoning given with each answer",
+          "name": "C3 · Reasoning and explanation / การให้เหตุผลและอธิบายคำตอบ",
+          "description": "Looks at the reasoning given with each answer.",
           "maxPoints": 6,
           "weight": 30,
           "levels": [
@@ -5237,15 +5237,15 @@
             },
             {
               "label": "Fair",
-              "description": "The reasoning given with each answer — mostly sound, with only minor gaps."
+              "description": "Reasoning is given for most answers, but some skip steps or do not name the principle."
             },
             {
               "label": "Needs Improvement",
-              "description": "The reasoning given with each answer — several gaps; clearly falls short of what was asked."
+              "description": "Reasoning is given for only some answers, and it is vague or unsound."
             },
             {
               "label": "Fail",
-              "description": "The reasoning given with each answer — does not meet what was asked, or cannot be assessed."
+              "description": "No reasoning — only bare answers."
             }
           ]
         }
@@ -5260,8 +5260,8 @@
       "criteria": [
         {
           "id": "rc-hist-a-hist-68020101-1-c-mock-19-3-a",
-          "name": "C1 · Understanding of data structures and algorithms theory",
-          "description": "understanding of the theory and principles of data structures and algorithms",
+          "name": "C1 · Understanding of data structures and algorithms theory / ความเข้าใจทฤษฎีโครงสร้างข้อมูลและอัลกอริทึม",
+          "description": "Looks at understanding of the theory and principles of data structures and algorithms.",
           "maxPoints": 12,
           "weight": 30,
           "levels": [
@@ -5271,22 +5271,22 @@
             },
             {
               "label": "Fair",
-              "description": "Understanding of the theory and principles of data structures and algorithms — mostly sound, with only minor gaps."
+              "description": "The theory of data structures and algorithms is mostly explained correctly, but some topics are missing or not connected."
             },
             {
               "label": "Needs Improvement",
-              "description": "Understanding of the theory and principles of data structures and algorithms — several gaps; clearly falls short of what was asked."
+              "description": "The theory of data structures and algorithms is wrong or incomplete on several main topics."
             },
             {
               "label": "Fail",
-              "description": "Understanding of the theory and principles of data structures and algorithms — does not meet what was asked, or cannot be assessed."
+              "description": "The theory of data structures and algorithms that was asked about cannot be explained."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-68020101-1-c-mock-19-3-b",
-          "name": "C2 · Applying and solving problems",
-          "description": "applying the principles to solve problems",
+          "name": "C2 · Applying and solving problems / การประยุกต์และการแก้โจทย์",
+          "description": "Looks at applying the principles to solve problems.",
           "maxPoints": 16,
           "weight": 40,
           "levels": [
@@ -5296,22 +5296,22 @@
             },
             {
               "label": "Fair",
-              "description": "Applying the principles to solve problems — mostly sound, with only minor gaps."
+              "description": "Easy problems are solved correctly, but complex ones get an unsuitable method or are left unfinished."
             },
             {
               "label": "Needs Improvement",
-              "description": "Applying the principles to solve problems — several gaps; clearly falls short of what was asked."
+              "description": "Only a few easy problems are solved, and the method is wrong for most."
             },
             {
               "label": "Fail",
-              "description": "Applying the principles to solve problems — does not meet what was asked, or cannot be assessed."
+              "description": "The principles cannot be applied to solve the problems."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-68020101-1-c-mock-19-3-c",
-          "name": "C3 · Accuracy of working and written answers",
-          "description": "the accuracy of the working and the final answers",
+          "name": "C3 · Accuracy of working and written answers / ความถูกต้องของการคำนวณและการเขียนตอบ",
+          "description": "Looks at the accuracy of the working and the final answers.",
           "maxPoints": 12,
           "weight": 30,
           "levels": [
@@ -5321,15 +5321,15 @@
             },
             {
               "label": "Fair",
-              "description": "The accuracy of the working and the final answers — mostly sound, with only minor gaps."
+              "description": "Working is mostly shown, with small slips in some calculations or steps."
             },
             {
               "label": "Needs Improvement",
-              "description": "The accuracy of the working and the final answers — several gaps; clearly falls short of what was asked."
+              "description": "Many steps are skipped, or calculation errors make several final answers wrong."
             },
             {
               "label": "Fail",
-              "description": "The accuracy of the working and the final answers — does not meet what was asked, or cannot be assessed."
+              "description": "No working shown, and most final answers are wrong."
             }
           ]
         }
@@ -5344,8 +5344,8 @@
       "criteria": [
         {
           "id": "rc-hist-a-hist-68020101-1-c-mock-51-1-a",
-          "name": "C1 · System-program correctness",
-          "description": "the correctness of the process/thread program",
+          "name": "C1 · System-program correctness / ความถูกต้องของโปรแกรมระบบ",
+          "description": "Looks at the correctness of the process/thread program.",
           "maxPoints": 18,
           "weight": 45,
           "levels": [
@@ -5355,22 +5355,22 @@
             },
             {
               "label": "Fair",
-              "description": "The correctness of the process/thread program — mostly sound, with only minor gaps."
+              "description": "The program works in most test scenarios but fails in a few."
             },
             {
               "label": "Needs Improvement",
-              "description": "The correctness of the process/thread program — several gaps; clearly falls short of what was asked."
+              "description": "It fails in several test scenarios, for example creating or ending a process."
             },
             {
               "label": "Fail",
-              "description": "The correctness of the process/thread program — does not meet what was asked, or cannot be assessed."
+              "description": "The program does not work as specified."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-68020101-1-c-mock-51-1-b",
-          "name": "C2 · Resource management and synchronization",
-          "description": "resource management and synchronisation between processes",
+          "name": "C2 · Resource management and synchronization / การจัดการทรัพยากรและ synchronization",
+          "description": "Looks at resource management and synchronisation between processes.",
           "maxPoints": 14,
           "weight": 35,
           "levels": [
@@ -5380,22 +5380,22 @@
             },
             {
               "label": "Fair",
-              "description": "Resource management and synchronisation between processes — mostly sound, with only minor gaps."
+              "description": "Synchronisation is mostly right, but a race condition still shows up in some scenarios."
             },
             {
               "label": "Needs Improvement",
-              "description": "Resource management and synchronisation between processes — several gaps; clearly falls short of what was asked."
+              "description": "Race conditions or deadlocks can happen easily in several places."
             },
             {
               "label": "Fail",
-              "description": "Resource management and synchronisation between processes — does not meet what was asked, or cannot be assessed."
+              "description": "No synchronisation or resource management at all."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-68020101-1-c-mock-51-1-c",
-          "name": "C3 · Analysis of results",
-          "description": "the analysis and explanation of the results",
+          "name": "C3 · Analysis of results / การวิเคราะห์ผลการทดลอง",
+          "description": "Looks at the analysis and explanation of the results.",
           "maxPoints": 8,
           "weight": 20,
           "levels": [
@@ -5405,15 +5405,15 @@
             },
             {
               "label": "Fair",
-              "description": "The analysis and explanation of the results — mostly sound, with only minor gaps."
+              "description": "The results are analysed and the behaviour partly explained, but reasons are missing."
             },
             {
               "label": "Needs Improvement",
-              "description": "The analysis and explanation of the results — several gaps; clearly falls short of what was asked."
+              "description": "The explanation is wrong, or the results are only copied out without analysis."
             },
             {
               "label": "Fail",
-              "description": "The analysis and explanation of the results — does not meet what was asked, or cannot be assessed."
+              "description": "No analysis of the results."
             }
           ]
         }
@@ -5428,8 +5428,8 @@
       "criteria": [
         {
           "id": "rc-hist-a-hist-68020101-1-c-mock-51-2-a",
-          "name": "C1 · Understanding of operating systems",
-          "description": "understanding of operating systems",
+          "name": "C1 · Understanding of operating systems / ความเข้าใจแนวคิดระบบปฏิบัติการ",
+          "description": "Looks at understanding of operating systems.",
           "maxPoints": 8,
           "weight": 40,
           "levels": [
@@ -5439,22 +5439,22 @@
             },
             {
               "label": "Fair",
-              "description": "Understanding of operating systems — mostly sound, with only minor gaps."
+              "description": "Answers on operating systems are mostly correct, but some points are incomplete or slightly misunderstood."
             },
             {
               "label": "Needs Improvement",
-              "description": "Understanding of operating systems — several gaps; clearly falls short of what was asked."
+              "description": "Only part of operating systems is understood; several core points are wrong or confused."
             },
             {
               "label": "Fail",
-              "description": "Understanding of operating systems — does not meet what was asked, or cannot be assessed."
+              "description": "Almost none of the ideas asked about in operating systems are understood."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-68020101-1-c-mock-51-2-b",
-          "name": "C2 · Answer accuracy",
-          "description": "the accuracy of each answer",
+          "name": "C2 · Answer accuracy / ความถูกต้องของคำตอบ",
+          "description": "Looks at the accuracy of each answer.",
           "maxPoints": 6,
           "weight": 30,
           "levels": [
@@ -5464,22 +5464,22 @@
             },
             {
               "label": "Fair",
-              "description": "The accuracy of each answer — mostly sound, with only minor gaps."
+              "description": "Most answers are correct, with a few small mistakes."
             },
             {
               "label": "Needs Improvement",
-              "description": "The accuracy of each answer — several gaps; clearly falls short of what was asked."
+              "description": "Many answers are wrong, including basic ones."
             },
             {
               "label": "Fail",
-              "description": "The accuracy of each answer — does not meet what was asked, or cannot be assessed."
+              "description": "Most answers are wrong or left blank."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-68020101-1-c-mock-51-2-c",
-          "name": "C3 · Reasoning and explanation",
-          "description": "the reasoning given with each answer",
+          "name": "C3 · Reasoning and explanation / การให้เหตุผลและอธิบายคำตอบ",
+          "description": "Looks at the reasoning given with each answer.",
           "maxPoints": 6,
           "weight": 30,
           "levels": [
@@ -5489,15 +5489,15 @@
             },
             {
               "label": "Fair",
-              "description": "The reasoning given with each answer — mostly sound, with only minor gaps."
+              "description": "Reasoning is given for most answers, but some skip steps or do not name the principle."
             },
             {
               "label": "Needs Improvement",
-              "description": "The reasoning given with each answer — several gaps; clearly falls short of what was asked."
+              "description": "Reasoning is given for only some answers, and it is vague or unsound."
             },
             {
               "label": "Fail",
-              "description": "The reasoning given with each answer — does not meet what was asked, or cannot be assessed."
+              "description": "No reasoning — only bare answers."
             }
           ]
         }
@@ -5512,8 +5512,8 @@
       "criteria": [
         {
           "id": "rc-hist-a-hist-68020101-1-c-mock-51-3-a",
-          "name": "C1 · Understanding of operating systems theory",
-          "description": "understanding of the theory and principles of operating systems",
+          "name": "C1 · Understanding of operating systems theory / ความเข้าใจทฤษฎีระบบปฏิบัติการ",
+          "description": "Looks at understanding of the theory and principles of operating systems.",
           "maxPoints": 12,
           "weight": 30,
           "levels": [
@@ -5523,22 +5523,22 @@
             },
             {
               "label": "Fair",
-              "description": "Understanding of the theory and principles of operating systems — mostly sound, with only minor gaps."
+              "description": "The theory of operating systems is mostly explained correctly, but some topics are missing or not connected."
             },
             {
               "label": "Needs Improvement",
-              "description": "Understanding of the theory and principles of operating systems — several gaps; clearly falls short of what was asked."
+              "description": "The theory of operating systems is wrong or incomplete on several main topics."
             },
             {
               "label": "Fail",
-              "description": "Understanding of the theory and principles of operating systems — does not meet what was asked, or cannot be assessed."
+              "description": "The theory of operating systems that was asked about cannot be explained."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-68020101-1-c-mock-51-3-b",
-          "name": "C2 · Applying and solving problems",
-          "description": "applying the principles to solve problems",
+          "name": "C2 · Applying and solving problems / การประยุกต์และการแก้โจทย์",
+          "description": "Looks at applying the principles to solve problems.",
           "maxPoints": 16,
           "weight": 40,
           "levels": [
@@ -5548,22 +5548,22 @@
             },
             {
               "label": "Fair",
-              "description": "Applying the principles to solve problems — mostly sound, with only minor gaps."
+              "description": "Easy problems are solved correctly, but complex ones get an unsuitable method or are left unfinished."
             },
             {
               "label": "Needs Improvement",
-              "description": "Applying the principles to solve problems — several gaps; clearly falls short of what was asked."
+              "description": "Only a few easy problems are solved, and the method is wrong for most."
             },
             {
               "label": "Fail",
-              "description": "Applying the principles to solve problems — does not meet what was asked, or cannot be assessed."
+              "description": "The principles cannot be applied to solve the problems."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-68020101-1-c-mock-51-3-c",
-          "name": "C3 · Accuracy of working and written answers",
-          "description": "the accuracy of the working and the final answers",
+          "name": "C3 · Accuracy of working and written answers / ความถูกต้องของการคำนวณและการเขียนตอบ",
+          "description": "Looks at the accuracy of the working and the final answers.",
           "maxPoints": 12,
           "weight": 30,
           "levels": [
@@ -5573,15 +5573,15 @@
             },
             {
               "label": "Fair",
-              "description": "The accuracy of the working and the final answers — mostly sound, with only minor gaps."
+              "description": "Working is mostly shown, with small slips in some calculations or steps."
             },
             {
               "label": "Needs Improvement",
-              "description": "The accuracy of the working and the final answers — several gaps; clearly falls short of what was asked."
+              "description": "Many steps are skipped, or calculation errors make several final answers wrong."
             },
             {
               "label": "Fail",
-              "description": "The accuracy of the working and the final answers — does not meet what was asked, or cannot be assessed."
+              "description": "No working shown, and most final answers are wrong."
             }
           ]
         }
@@ -5596,8 +5596,8 @@
       "criteria": [
         {
           "id": "rc-hist-a-hist-68020101-2-c-mock-52-1-a",
-          "name": "C1 · Data-model correctness",
-          "description": "the correctness of the ER diagram and schema",
+          "name": "C1 · Data-model correctness / ความถูกต้องของแบบจำลองข้อมูล",
+          "description": "Looks at the correctness of the ER diagram and schema.",
           "maxPoints": 14,
           "weight": 35,
           "levels": [
@@ -5607,22 +5607,22 @@
             },
             {
               "label": "Fair",
-              "description": "The correctness of the ER diagram and schema — mostly sound, with only minor gaps."
+              "description": "The ER model and schema cover most requirements, but normalisation is incomplete or a relationship is wrong."
             },
             {
               "label": "Needs Improvement",
-              "description": "The correctness of the ER diagram and schema — several gaps; clearly falls short of what was asked."
+              "description": "Several important entities or relationships are missing, and data is duplicated."
             },
             {
               "label": "Fail",
-              "description": "The correctness of the ER diagram and schema — does not meet what was asked, or cannot be assessed."
+              "description": "The data model does not match the requirements, or there is no schema."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-68020101-2-c-mock-52-1-b",
-          "name": "C2 · SQL correctness and efficiency",
-          "description": "the correctness and efficiency of the SQL",
+          "name": "C2 · SQL correctness and efficiency / ความถูกต้องและประสิทธิภาพของคำสั่ง SQL",
+          "description": "Looks at the correctness and efficiency of the SQL.",
           "maxPoints": 18,
           "weight": 45,
           "levels": [
@@ -5632,22 +5632,22 @@
             },
             {
               "label": "Fair",
-              "description": "The correctness and efficiency of the SQL — mostly sound, with only minor gaps."
+              "description": "SQL is correct on most items, but some give incomplete results or are written inefficiently."
             },
             {
               "label": "Needs Improvement",
-              "description": "The correctness and efficiency of the SQL — several gaps; clearly falls short of what was asked."
+              "description": "SQL is wrong on several items, or returns results that do not match the question."
             },
             {
               "label": "Fail",
-              "description": "The correctness and efficiency of the SQL — does not meet what was asked, or cannot be assessed."
+              "description": "SQL does not run or is wrong on almost every item."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-68020101-2-c-mock-52-1-c",
-          "name": "C3 · Documentation and test data",
-          "description": "the documentation and test data",
+          "name": "C3 · Documentation and test data / เอกสารและข้อมูลทดสอบ",
+          "description": "Looks at the documentation and test data.",
           "maxPoints": 8,
           "weight": 20,
           "levels": [
@@ -5657,15 +5657,15 @@
             },
             {
               "label": "Fair",
-              "description": "The documentation and test data — mostly sound, with only minor gaps."
+              "description": "Documentation and test data exist, but do not cover every important case."
             },
             {
               "label": "Needs Improvement",
-              "description": "The documentation and test data — several gaps; clearly falls short of what was asked."
+              "description": "The documentation is very thin and the test data too small to check the results."
             },
             {
               "label": "Fail",
-              "description": "The documentation and test data — does not meet what was asked, or cannot be assessed."
+              "description": "No documentation and no test data."
             }
           ]
         }
@@ -5680,8 +5680,8 @@
       "criteria": [
         {
           "id": "rc-hist-a-hist-68020101-2-c-mock-52-2-a",
-          "name": "C1 · Understanding of database systems",
-          "description": "understanding of database systems",
+          "name": "C1 · Understanding of database systems / ความเข้าใจแนวคิดระบบฐานข้อมูล",
+          "description": "Looks at understanding of database systems.",
           "maxPoints": 8,
           "weight": 40,
           "levels": [
@@ -5691,22 +5691,22 @@
             },
             {
               "label": "Fair",
-              "description": "Understanding of database systems — mostly sound, with only minor gaps."
+              "description": "Answers on database systems are mostly correct, but some points are incomplete or slightly misunderstood."
             },
             {
               "label": "Needs Improvement",
-              "description": "Understanding of database systems — several gaps; clearly falls short of what was asked."
+              "description": "Only part of database systems is understood; several core points are wrong or confused."
             },
             {
               "label": "Fail",
-              "description": "Understanding of database systems — does not meet what was asked, or cannot be assessed."
+              "description": "Almost none of the ideas asked about in database systems are understood."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-68020101-2-c-mock-52-2-b",
-          "name": "C2 · Answer accuracy",
-          "description": "the accuracy of each answer",
+          "name": "C2 · Answer accuracy / ความถูกต้องของคำตอบ",
+          "description": "Looks at the accuracy of each answer.",
           "maxPoints": 6,
           "weight": 30,
           "levels": [
@@ -5716,22 +5716,22 @@
             },
             {
               "label": "Fair",
-              "description": "The accuracy of each answer — mostly sound, with only minor gaps."
+              "description": "Most answers are correct, with a few small mistakes."
             },
             {
               "label": "Needs Improvement",
-              "description": "The accuracy of each answer — several gaps; clearly falls short of what was asked."
+              "description": "Many answers are wrong, including basic ones."
             },
             {
               "label": "Fail",
-              "description": "The accuracy of each answer — does not meet what was asked, or cannot be assessed."
+              "description": "Most answers are wrong or left blank."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-68020101-2-c-mock-52-2-c",
-          "name": "C3 · Reasoning and explanation",
-          "description": "the reasoning given with each answer",
+          "name": "C3 · Reasoning and explanation / การให้เหตุผลและอธิบายคำตอบ",
+          "description": "Looks at the reasoning given with each answer.",
           "maxPoints": 6,
           "weight": 30,
           "levels": [
@@ -5741,15 +5741,15 @@
             },
             {
               "label": "Fair",
-              "description": "The reasoning given with each answer — mostly sound, with only minor gaps."
+              "description": "Reasoning is given for most answers, but some skip steps or do not name the principle."
             },
             {
               "label": "Needs Improvement",
-              "description": "The reasoning given with each answer — several gaps; clearly falls short of what was asked."
+              "description": "Reasoning is given for only some answers, and it is vague or unsound."
             },
             {
               "label": "Fail",
-              "description": "The reasoning given with each answer — does not meet what was asked, or cannot be assessed."
+              "description": "No reasoning — only bare answers."
             }
           ]
         }
@@ -5764,8 +5764,8 @@
       "criteria": [
         {
           "id": "rc-hist-a-hist-68020101-2-c-mock-52-3-a",
-          "name": "C1 · Understanding of database systems theory",
-          "description": "understanding of the theory and principles of database systems",
+          "name": "C1 · Understanding of database systems theory / ความเข้าใจทฤษฎีระบบฐานข้อมูล",
+          "description": "Looks at understanding of the theory and principles of database systems.",
           "maxPoints": 12,
           "weight": 30,
           "levels": [
@@ -5775,22 +5775,22 @@
             },
             {
               "label": "Fair",
-              "description": "Understanding of the theory and principles of database systems — mostly sound, with only minor gaps."
+              "description": "The theory of database systems is mostly explained correctly, but some topics are missing or not connected."
             },
             {
               "label": "Needs Improvement",
-              "description": "Understanding of the theory and principles of database systems — several gaps; clearly falls short of what was asked."
+              "description": "The theory of database systems is wrong or incomplete on several main topics."
             },
             {
               "label": "Fail",
-              "description": "Understanding of the theory and principles of database systems — does not meet what was asked, or cannot be assessed."
+              "description": "The theory of database systems that was asked about cannot be explained."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-68020101-2-c-mock-52-3-b",
-          "name": "C2 · Applying and solving problems",
-          "description": "applying the principles to solve problems",
+          "name": "C2 · Applying and solving problems / การประยุกต์และการแก้โจทย์",
+          "description": "Looks at applying the principles to solve problems.",
           "maxPoints": 16,
           "weight": 40,
           "levels": [
@@ -5800,22 +5800,22 @@
             },
             {
               "label": "Fair",
-              "description": "Applying the principles to solve problems — mostly sound, with only minor gaps."
+              "description": "Easy problems are solved correctly, but complex ones get an unsuitable method or are left unfinished."
             },
             {
               "label": "Needs Improvement",
-              "description": "Applying the principles to solve problems — several gaps; clearly falls short of what was asked."
+              "description": "Only a few easy problems are solved, and the method is wrong for most."
             },
             {
               "label": "Fail",
-              "description": "Applying the principles to solve problems — does not meet what was asked, or cannot be assessed."
+              "description": "The principles cannot be applied to solve the problems."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-68020101-2-c-mock-52-3-c",
-          "name": "C3 · Accuracy of working and written answers",
-          "description": "the accuracy of the working and the final answers",
+          "name": "C3 · Accuracy of working and written answers / ความถูกต้องของการคำนวณและการเขียนตอบ",
+          "description": "Looks at the accuracy of the working and the final answers.",
           "maxPoints": 12,
           "weight": 30,
           "levels": [
@@ -5825,15 +5825,15 @@
             },
             {
               "label": "Fair",
-              "description": "The accuracy of the working and the final answers — mostly sound, with only minor gaps."
+              "description": "Working is mostly shown, with small slips in some calculations or steps."
             },
             {
               "label": "Needs Improvement",
-              "description": "The accuracy of the working and the final answers — several gaps; clearly falls short of what was asked."
+              "description": "Many steps are skipped, or calculation errors make several final answers wrong."
             },
             {
               "label": "Fail",
-              "description": "The accuracy of the working and the final answers — does not meet what was asked, or cannot be assessed."
+              "description": "No working shown, and most final answers are wrong."
             }
           ]
         }
@@ -5848,8 +5848,8 @@
       "criteria": [
         {
           "id": "rc-hist-a-hist-69070101-3-c-mock-50-1-a",
-          "name": "C1 · Correctness of the design / assembly program",
-          "description": "the correctness of the design or assembly program",
+          "name": "C1 · Correctness of the design / assembly program / ความถูกต้องของการออกแบบ/โปรแกรมแอสเซมบลี",
+          "description": "Looks at the correctness of the design or assembly program.",
           "maxPoints": 18,
           "weight": 45,
           "levels": [
@@ -5859,22 +5859,22 @@
             },
             {
               "label": "Fair",
-              "description": "The correctness of the design or assembly program — mostly sound, with only minor gaps."
+              "description": "Works correctly for most instructions but is wrong for a few instructions or cases."
             },
             {
               "label": "Needs Improvement",
-              "description": "The correctness of the design or assembly program — several gaps; clearly falls short of what was asked."
+              "description": "Several instructions misbehave, or the datapath/program does not cover everything required."
             },
             {
               "label": "Fail",
-              "description": "The correctness of the design or assembly program — does not meet what was asked, or cannot be assessed."
+              "description": "The design or program does not work as specified."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-69070101-3-c-mock-50-1-b",
-          "name": "C2 · Performance analysis",
-          "description": "the performance analysis of what was designed",
+          "name": "C2 · Performance analysis / การวิเคราะห์ประสิทธิภาพ",
+          "description": "Looks at the performance analysis of what was designed.",
           "maxPoints": 14,
           "weight": 35,
           "levels": [
@@ -5884,22 +5884,22 @@
             },
             {
               "label": "Fair",
-              "description": "The performance analysis of what was designed — mostly sound, with only minor gaps."
+              "description": "CPI or cycle counts are worked out, but the alternatives are not all compared or a calculation slips."
             },
             {
               "label": "Needs Improvement",
-              "description": "The performance analysis of what was designed — several gaps; clearly falls short of what was asked."
+              "description": "The performance analysis is wrong in several places, or alternatives are not compared."
             },
             {
               "label": "Fail",
-              "description": "The performance analysis of what was designed — does not meet what was asked, or cannot be assessed."
+              "description": "No performance analysis."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-69070101-3-c-mock-50-1-c",
-          "name": "C3 · Explanation and lab report",
-          "description": "the clarity of the lab report",
+          "name": "C3 · Explanation and lab report / การอธิบายและรายงานผลการทดลอง",
+          "description": "Looks at the clarity of the lab report.",
           "maxPoints": 8,
           "weight": 20,
           "levels": [
@@ -5909,15 +5909,15 @@
             },
             {
               "label": "Fair",
-              "description": "The clarity of the lab report — mostly sound, with only minor gaps."
+              "description": "The report explains the idea and the results, but some conclusions are unclear."
             },
             {
               "label": "Needs Improvement",
-              "description": "The clarity of the lab report — several gaps; clearly falls short of what was asked."
+              "description": "The report is missing results or conclusions and does not explain the idea fully."
             },
             {
               "label": "Fail",
-              "description": "The clarity of the lab report — does not meet what was asked, or cannot be assessed."
+              "description": "No report, or the report cannot be understood."
             }
           ]
         }
@@ -5932,8 +5932,8 @@
       "criteria": [
         {
           "id": "rc-hist-a-hist-69070101-3-c-mock-50-2-a",
-          "name": "C1 · Understanding of computer architecture",
-          "description": "understanding of computer architecture",
+          "name": "C1 · Understanding of computer architecture / ความเข้าใจแนวคิดสถาปัตยกรรมคอมพิวเตอร์",
+          "description": "Looks at understanding of computer architecture.",
           "maxPoints": 8,
           "weight": 40,
           "levels": [
@@ -5943,22 +5943,22 @@
             },
             {
               "label": "Fair",
-              "description": "Understanding of computer architecture — mostly sound, with only minor gaps."
+              "description": "Answers on computer architecture are mostly correct, but some points are incomplete or slightly misunderstood."
             },
             {
               "label": "Needs Improvement",
-              "description": "Understanding of computer architecture — several gaps; clearly falls short of what was asked."
+              "description": "Only part of computer architecture is understood; several core points are wrong or confused."
             },
             {
               "label": "Fail",
-              "description": "Understanding of computer architecture — does not meet what was asked, or cannot be assessed."
+              "description": "Almost none of the ideas asked about in computer architecture are understood."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-69070101-3-c-mock-50-2-b",
-          "name": "C2 · Answer accuracy",
-          "description": "the accuracy of each answer",
+          "name": "C2 · Answer accuracy / ความถูกต้องของคำตอบ",
+          "description": "Looks at the accuracy of each answer.",
           "maxPoints": 6,
           "weight": 30,
           "levels": [
@@ -5968,22 +5968,22 @@
             },
             {
               "label": "Fair",
-              "description": "The accuracy of each answer — mostly sound, with only minor gaps."
+              "description": "Most answers are correct, with a few small mistakes."
             },
             {
               "label": "Needs Improvement",
-              "description": "The accuracy of each answer — several gaps; clearly falls short of what was asked."
+              "description": "Many answers are wrong, including basic ones."
             },
             {
               "label": "Fail",
-              "description": "The accuracy of each answer — does not meet what was asked, or cannot be assessed."
+              "description": "Most answers are wrong or left blank."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-69070101-3-c-mock-50-2-c",
-          "name": "C3 · Reasoning and explanation",
-          "description": "the reasoning given with each answer",
+          "name": "C3 · Reasoning and explanation / การให้เหตุผลและอธิบายคำตอบ",
+          "description": "Looks at the reasoning given with each answer.",
           "maxPoints": 6,
           "weight": 30,
           "levels": [
@@ -5993,15 +5993,15 @@
             },
             {
               "label": "Fair",
-              "description": "The reasoning given with each answer — mostly sound, with only minor gaps."
+              "description": "Reasoning is given for most answers, but some skip steps or do not name the principle."
             },
             {
               "label": "Needs Improvement",
-              "description": "The reasoning given with each answer — several gaps; clearly falls short of what was asked."
+              "description": "Reasoning is given for only some answers, and it is vague or unsound."
             },
             {
               "label": "Fail",
-              "description": "The reasoning given with each answer — does not meet what was asked, or cannot be assessed."
+              "description": "No reasoning — only bare answers."
             }
           ]
         }
@@ -6016,8 +6016,8 @@
       "criteria": [
         {
           "id": "rc-hist-a-hist-69070101-3-c-mock-50-3-a",
-          "name": "C1 · Understanding of computer architecture theory",
-          "description": "understanding of the theory and principles of computer architecture",
+          "name": "C1 · Understanding of computer architecture theory / ความเข้าใจทฤษฎีสถาปัตยกรรมคอมพิวเตอร์",
+          "description": "Looks at understanding of the theory and principles of computer architecture.",
           "maxPoints": 12,
           "weight": 30,
           "levels": [
@@ -6027,22 +6027,22 @@
             },
             {
               "label": "Fair",
-              "description": "Understanding of the theory and principles of computer architecture — mostly sound, with only minor gaps."
+              "description": "The theory of computer architecture is mostly explained correctly, but some topics are missing or not connected."
             },
             {
               "label": "Needs Improvement",
-              "description": "Understanding of the theory and principles of computer architecture — several gaps; clearly falls short of what was asked."
+              "description": "The theory of computer architecture is wrong or incomplete on several main topics."
             },
             {
               "label": "Fail",
-              "description": "Understanding of the theory and principles of computer architecture — does not meet what was asked, or cannot be assessed."
+              "description": "The theory of computer architecture that was asked about cannot be explained."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-69070101-3-c-mock-50-3-b",
-          "name": "C2 · Applying and solving problems",
-          "description": "applying the principles to solve problems",
+          "name": "C2 · Applying and solving problems / การประยุกต์และการแก้โจทย์",
+          "description": "Looks at applying the principles to solve problems.",
           "maxPoints": 16,
           "weight": 40,
           "levels": [
@@ -6052,22 +6052,22 @@
             },
             {
               "label": "Fair",
-              "description": "Applying the principles to solve problems — mostly sound, with only minor gaps."
+              "description": "Easy problems are solved correctly, but complex ones get an unsuitable method or are left unfinished."
             },
             {
               "label": "Needs Improvement",
-              "description": "Applying the principles to solve problems — several gaps; clearly falls short of what was asked."
+              "description": "Only a few easy problems are solved, and the method is wrong for most."
             },
             {
               "label": "Fail",
-              "description": "Applying the principles to solve problems — does not meet what was asked, or cannot be assessed."
+              "description": "The principles cannot be applied to solve the problems."
             }
           ]
         },
         {
           "id": "rc-hist-a-hist-69070101-3-c-mock-50-3-c",
-          "name": "C3 · Accuracy of working and written answers",
-          "description": "the accuracy of the working and the final answers",
+          "name": "C3 · Accuracy of working and written answers / ความถูกต้องของการคำนวณและการเขียนตอบ",
+          "description": "Looks at the accuracy of the working and the final answers.",
           "maxPoints": 12,
           "weight": 30,
           "levels": [
@@ -6077,15 +6077,15 @@
             },
             {
               "label": "Fair",
-              "description": "The accuracy of the working and the final answers — mostly sound, with only minor gaps."
+              "description": "Working is mostly shown, with small slips in some calculations or steps."
             },
             {
               "label": "Needs Improvement",
-              "description": "The accuracy of the working and the final answers — several gaps; clearly falls short of what was asked."
+              "description": "Many steps are skipped, or calculation errors make several final answers wrong."
             },
             {
               "label": "Fail",
-              "description": "The accuracy of the working and the final answers — does not meet what was asked, or cannot be assessed."
+              "description": "No working shown, and most final answers are wrong."
             }
           ]
         }

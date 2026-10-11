@@ -19,12 +19,12 @@ test.describe("the rubric file's rules", () => {
   test("the UX/UI Final Project template is the file: 7 criteria, weights 15/15/10/15/15/15/15, its Thai wording", () => {
     const c = buildCriteria(UXUI_FINAL, 100, "th");
     expect(c.map((x) => x.maxPoints)).toEqual([15, 15, 10, 15, 15, 15, 15]);
-    expect(c[0].name).toBe("C1 · ความครบถ้วนขององค์ประกอบและความสมจริงของเนื้อหา");
+    expect(c[0].name).toBe("C1 · Screen Completeness & Content Realism / ความครบถ้วนขององค์ประกอบและความสมจริงของเนื้อหา");   // both languages, as the file's headings
     expect(c[0].levels.map((l) => l.label)).toEqual(["ดีมาก", "พอใช้", "ต้องปรับปรุง", "ไม่ผ่าน"]);
     expect(c[0].levels[0].description).toBe("องค์ประกอบที่จำเป็นตามหน้าจอและงานที่กำหนดครบถ้วน เนื้อหามีความสมจริง ไม่พึ่ง Lorem Ipsum หรือข้อมูลตัวแทนมากเกินไป");
     expect(c[6].levels[3].description).toBe("ไม่สามารถทำ Core User Flow ให้สำเร็จได้ หรือ Prototype ขาดการเชื่อมโยงที่จำเป็น");
     const en = buildCriteria(UXUI_FINAL, 100, "en");
-    expect(en[2].name).toBe("C3 · Spacing, Alignment & Grid Pattern");
+    expect(en[2].name).toBe("C3 · Spacing, Alignment & Grid Pattern / ระยะห่าง การจัดแนว และรูปแบบ Grid");
     expect(en[0].levels.map((l) => l.label)).toEqual(["Excellent", "Fair", "Needs Improvement", "Fail"]);
   });
 
@@ -42,6 +42,33 @@ test.describe("the rubric file's rules", () => {
         expect(c.levels).toHaveLength(4);
         expect(new Set(c.levels.map((l) => l.description)).size, c.name).toBe(4);
         expect(c.levels.every((l) => l.description.trim().length > 10)).toBe(true);
+      }
+    }
+  });
+
+  test("lower levels say what the grader would see — no stock sentence, and no wording shared between two criteria", () => {
+    const stock = /mostly sound|clearly falls short|does not meet what was asked|โดยรวมทำได้ดี|ยังไม่ตรงตามที่กำหนดอย่างชัดเจน|ไม่เป็นไปตามที่กำหนด หรือไม่สามารถประเมินได้/;
+    for (const lang of ["th", "en"] as const) {
+      const sets = [UXUI_FINAL, ...Object.values(SUBJECTS).map((s) => s.lab), ...Object.values(SUBJECTS).flatMap((s) => [quizCriteria(s.topic), examCriteria(s.topic)])];
+      const owner = new Map<string, string>();     // level text → the criterion it belongs to (the same criterion may recur in several rubrics)
+      for (const specs of sets) for (const c of buildCriteria(specs, 100, lang)) {
+        const key = c.name.replace(/^C\d+ · /, "");
+        for (const l of c.levels) {
+          expect(l.description, c.name).not.toMatch(stock);
+          const prev = owner.get(l.description);
+          if (prev !== undefined) expect(prev, `"${l.description}" is used by two criteria`).toBe(key);
+          owner.set(l.description, key);
+        }
+      }
+    }
+  });
+
+  test("criterion names carry both languages like the file's headings: C1 · English / ไทย", () => {
+    for (const lang of ["th", "en"] as const) {
+      const sets = [UXUI_FINAL, ...Object.values(SUBJECTS).map((s) => s.lab), ...Object.values(SUBJECTS).flatMap((s) => [quizCriteria(s.topic), examCriteria(s.topic)])];
+      for (const specs of sets) for (const c of buildCriteria(specs, 100, lang)) {
+        expect(c.name).toMatch(/^C\d+ · [A-Za-z].* \/ .*[฀-๿]/);
+        expect(c.description.length, c.name).toBeGreaterThan(5);
       }
     }
   });
@@ -156,7 +183,7 @@ test("Thai and English UX/UI files hold the same numbers, and the public and tes
 
 // [16] from a browser that has never seen the UX/UI class, and again from one holding a stale roster for c-mock-4.
 const doc = fs.readFileSync("test-data/seed-commands.txt", "utf8");
-const cmd16 = doc.slice(doc.indexOf("\n[16] วิชา UX/UI"), doc.indexOf("\n[4] ล้างข้อมูลทั้งหมด")).split("\n").filter((l) => l.startsWith("fetch("));
+const cmd16 = doc.slice(doc.indexOf("\n[16] วิชา UX/UI"), doc.indexOf("\n[17] ")).split("\n").filter((l) => l.startsWith("fetch("));
 const stored = (page: Page, key: string) => page.evaluate((k) => JSON.parse(localStorage.getItem(k) ?? "[]"), key);
 
 test("[16] documents a Thai and an English command", () => {

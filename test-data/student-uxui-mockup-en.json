@@ -351,7 +351,7 @@
       "criteria": [
         {
           "id": "rc-uxui-1",
-          "name": "C1 · Screen Completeness & Content Realism",
+          "name": "C1 · Screen Completeness & Content Realism / ความครบถ้วนขององค์ประกอบและความสมจริงของเนื้อหา",
           "description": "How complete the screens' elements are and how realistic the content is",
           "maxPoints": 15,
           "weight": 15,
@@ -376,7 +376,7 @@
         },
         {
           "id": "rc-uxui-2",
-          "name": "C2 · Layout & Balance",
+          "name": "C2 · Layout & Balance / การจัดวางและความสมดุลของหน้าจอ",
           "description": "How balanced the screen layout is",
           "maxPoints": 15,
           "weight": 15,
@@ -401,7 +401,7 @@
         },
         {
           "id": "rc-uxui-3",
-          "name": "C3 · Spacing, Alignment & Grid Pattern",
+          "name": "C3 · Spacing, Alignment & Grid Pattern / ระยะห่าง การจัดแนว และรูปแบบ Grid",
           "description": "Consistency of spacing, alignment and grid",
           "maxPoints": 10,
           "weight": 10,
@@ -426,7 +426,7 @@
         },
         {
           "id": "rc-uxui-4",
-          "name": "C4 · Component Consistency & Design System",
+          "name": "C4 · Component Consistency & Design System / ความสม่ำเสมอของ Component และ Design System",
           "description": "Consistent use of components, styles and a design system",
           "maxPoints": 15,
           "weight": 15,
@@ -451,7 +451,7 @@
         },
         {
           "id": "rc-uxui-5",
-          "name": "C5 · Visual Hierarchy",
+          "name": "C5 · Visual Hierarchy / ลำดับความสำคัญทางสายตา",
           "description": "How clearly the screen shows what matters most",
           "maxPoints": 15,
           "weight": 15,
@@ -476,7 +476,7 @@
         },
         {
           "id": "rc-uxui-6",
-          "name": "C6 · Typography, Color & Accessibility",
+          "name": "C6 · Typography, Color & Accessibility / ตัวอักษร สี และ Accessibility",
           "description": "Readable type, consistent color, sufficient contrast",
           "maxPoints": 15,
           "weight": 15,
@@ -501,7 +501,7 @@
         },
         {
           "id": "rc-uxui-7",
-          "name": "C7 · Prototype Flow & Interaction Completeness",
+          "name": "C7 · Prototype Flow & Interaction Completeness / การเชื่อมโยง Flow และความสมบูรณ์ของ Interaction",
           "description": "Whether the prototype's core flow works end to end",
           "maxPoints": 15,
           "weight": 15,

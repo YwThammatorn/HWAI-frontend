@@ -351,8 +351,8 @@
       "criteria": [
         {
           "id": "rc-uxui-1",
-          "name": "C1 · ความครบถ้วนขององค์ประกอบและความสมจริงของเนื้อหา",
-          "description": "Screen Completeness & Content Realism",
+          "name": "C1 · Screen Completeness & Content Realism / ความครบถ้วนขององค์ประกอบและความสมจริงของเนื้อหา",
+          "description": "องค์ประกอบของหน้าจอครบถ้วนและเนื้อหาสมจริงเพียงใด",
           "maxPoints": 15,
           "weight": 15,
           "levels": [
@@ -376,8 +376,8 @@
         },
         {
           "id": "rc-uxui-2",
-          "name": "C2 · การจัดวางและความสมดุลของหน้าจอ",
-          "description": "Layout & Balance",
+          "name": "C2 · Layout & Balance / การจัดวางและความสมดุลของหน้าจอ",
+          "description": "การจัดวางหน้าจอสมดุลเหมาะกับเนื้อหาเพียงใด",
           "maxPoints": 15,
           "weight": 15,
           "levels": [
@@ -401,8 +401,8 @@
         },
         {
           "id": "rc-uxui-3",
-          "name": "C3 · ระยะห่าง การจัดแนว และรูปแบบ Grid",
-          "description": "Spacing, Alignment & Grid Pattern",
+          "name": "C3 · Spacing, Alignment & Grid Pattern / ระยะห่าง การจัดแนว และรูปแบบ Grid",
+          "description": "ความสม่ำเสมอของระยะห่าง การจัดแนว และ Grid",
           "maxPoints": 10,
           "weight": 10,
           "levels": [
@@ -426,8 +426,8 @@
         },
         {
           "id": "rc-uxui-4",
-          "name": "C4 · ความสม่ำเสมอของ Component และ Design System",
-          "description": "Component Consistency & Design System",
+          "name": "C4 · Component Consistency & Design System / ความสม่ำเสมอของ Component และ Design System",
+          "description": "การใช้ Component, Style และ Design System อย่างสม่ำเสมอ",
           "maxPoints": 15,
           "weight": 15,
           "levels": [
@@ -451,8 +451,8 @@
         },
         {
           "id": "rc-uxui-5",
-          "name": "C5 · ลำดับความสำคัญทางสายตา",
-          "description": "Visual Hierarchy",
+          "name": "C5 · Visual Hierarchy / ลำดับความสำคัญทางสายตา",
+          "description": "หน้าจอบอกชัดเพียงใดว่าอะไรสำคัญที่สุด",
           "maxPoints": 15,
           "weight": 15,
           "levels": [
@@ -476,8 +476,8 @@
         },
         {
           "id": "rc-uxui-6",
-          "name": "C6 · ตัวอักษร สี และ Accessibility",
-          "description": "Typography, Color & Accessibility",
+          "name": "C6 · Typography, Color & Accessibility / ตัวอักษร สี และ Accessibility",
+          "description": "ตัวอักษรอ่านง่าย สีสม่ำเสมอ และ Contrast เพียงพอ",
           "maxPoints": 15,
           "weight": 15,
           "levels": [
@@ -501,8 +501,8 @@
         },
         {
           "id": "rc-uxui-7",
-          "name": "C7 · การเชื่อมโยง Flow และความสมบูรณ์ของ Interaction",
-          "description": "Prototype Flow & Interaction Completeness",
+          "name": "C7 · Prototype Flow & Interaction Completeness / การเชื่อมโยง Flow และความสมบูรณ์ของ Interaction",
+          "description": "Core Flow ของ Prototype ทำงานจบตั้งแต่ต้นจนจบหรือไม่",
           "maxPoints": 15,
           "weight": 15,
           "levels": [
