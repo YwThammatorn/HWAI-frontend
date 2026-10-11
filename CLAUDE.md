@@ -20,8 +20,8 @@
 
 ## Current active task
 _(อัปเดตช่องนี้ทุกครั้งที่เริ่ม task ใหม่ — ดูรายละเอียดที่ HANDOFF.md)_
-- Task (7–10/10): test-speed work (fullyParallel, no video, `npm run test:e2e:fast` on a production build; 4m38 → ~3m / ~2m) + the Stop hook / testing rules (`rules/testing.md`) + the UI-design report (`report-ui/`, section 3.4, teal 16:9 screenshots). Before that (6–7/10): 4-level rubrics, rubric card on Grading, exam CSV import, rubric change = restart + lock.
-- Status: rubric/CSV round pushed (up to 58eef95); suite 643 passed / 31 skipped on production build; the Playwright + hook + rules changes and `report-ui/` are NOT committed yet (waiting for the user). Details in HANDOFF.md (last section).
+- Task (11/10): one subject = one teacher across all its sections (mock), score bar chart for students, rubric criteria ↔ CLOs, then round 2: per-assignment grading method (AI-assisted / Manual), shorter announce wording, 3-card course Grading dashboard, no AI-confidence on announced results, admin "Deactivate batch" checklist, rubric wording/names/editor closer to the real UX/UI rubric file. Before that (7–10/10): faster tests / Stop hook / testing rules / UI-design report (`report-ui/`); (6–7/10): 4-level rubrics, exam CSV import, rubric lock.
+- Status: all of 7–11/10 is uncommitted/unpushed except what the user has already committed (see `git log`); suite 699 passed / 31 skipped on a production build. Details in HANDOFF.md (last two sections).
 
 # i18n Rule (TH/EN Language Toggle)
 
