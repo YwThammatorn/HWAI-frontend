@@ -210,24 +210,105 @@ test.describe("Deactivate a whole batch", () => {
     await page.getByRole("button", { name: "Deactivate batch" }).click();
     const dialog = page.getByRole("dialog", { name: "Deactivate a whole batch" });
     await expect(dialog.getByRole("button", { name: "Deactivate 3 students" })).toBeVisible();   // batch 67, preselected
+    await dialog.getByText("Also deactivate people outside this selection (optional)").click();   // collapsed by default
 
-    const addBox = dialog.getByPlaceholder("Search student name...");
-    await addBox.fill("N101");
-    await dialog.getByRole("option", { name: "N101 Test (68010101)" }).click();
-    await expect(dialog.getByText("N101 Test", { exact: true })).toBeVisible();   // the chip
+    const box = dialog.getByRole("checkbox", { name: /68010101/ });
+    await box.check();
     await expect(dialog.getByRole("button", { name: "Deactivate 4 students" })).toBeVisible();
+    await expect(dialog.getByText("3 left · 1 added")).toBeVisible();
 
-    await dialog.getByRole("button", { name: "Remove N101 Test" }).click();
-    await expect(dialog.getByText("N101 Test", { exact: true })).toHaveCount(0);
+    await box.uncheck();
     await expect(dialog.getByRole("button", { name: "Deactivate 3 students" })).toBeVisible();
+    await expect(dialog.getByText("3 left · 0 added")).toBeVisible();
+  });
+
+  test("the batch picked above is listed below with everyone ticked; unticking a student who has not graduated keeps them active", async ({ page }) => {
+    await open(page, "en", BATCHES);
+    await page.getByRole("button", { name: "Deactivate batch" }).click();
+    const dialog = page.getByRole("dialog", { name: "Deactivate a whole batch" });
+    const list = dialog.getByTestId("deactivate-batch-list");
+    const names = () => list.getByRole("checkbox").evaluateAll((els) => els.map((e) => (e.closest("label") as HTMLElement).innerText.replace(/\s+/g, " ").trim()));
+
+    // batch 67 (3 active) — only its students, all ticked; nobody from 68 / 69 and not the one already inactive
+    await expect(list.getByRole("checkbox")).toHaveCount(3);
+    expect(await names()).toEqual([
+      "N101 Test 67010101 Computer Engineering",
+      "N102 Test 67010102 Computer Engineering",
+      "N101 Test 67020101 Computer Engineering and Cybersecurity",
+    ]);
+    for (const box of await list.getByRole("checkbox").all()) await expect(box).toBeChecked();
+    await expect(list.getByText("3 of 3 selected")).toBeVisible();
+
+    // not graduated yet: untick → one fewer in the count and on the button
+    await list.getByRole("checkbox", { name: /67010102/ }).uncheck();
+    await expect(list.getByText("2 of 3 selected")).toBeVisible();
+    await expect(dialog.getByRole("button", { name: "Deactivate 2 students" })).toBeVisible();
+
+    // the list follows the pickers, and a new choice starts from everyone ticked again
+    await dialog.getByLabel("Program").selectOption("CE");
+    await expect(list.getByRole("checkbox")).toHaveCount(2);
+    await expect(list.getByText("2 of 2 selected")).toBeVisible();
+    await dialog.getByLabel(/Batch \(first two digits/).selectOption("68");
+    await expect(list.getByRole("checkbox")).toHaveCount(1);                    // program CE is still picked: only 68010101
+    expect(await names()).toEqual(["N101 Test 68010101 Computer Engineering"]);
+  });
+
+  test("confirming deactivates the ticked students of the batch and leaves the unticked one active", async ({ page }) => {
+    await open(page, "en", BATCHES);
+    await page.getByRole("button", { name: "Deactivate batch" }).click();
+    const dialog = page.getByRole("dialog", { name: "Deactivate a whole batch" });
+    await dialog.getByTestId("deactivate-batch-list").getByRole("checkbox", { name: /67010102/ }).uncheck();
+    await dialog.getByRole("button", { name: "Deactivate 2 students" }).click();
+    const after = await stored(page);
+    expect(after.find((x) => x.studentId === "67010101")?.status).toBe("inactive");
+    expect(after.find((x) => x.studentId === "67020101")?.status).toBe("inactive");
+    expect(after.find((x) => x.studentId === "67010102")?.status).not.toBe("inactive");   // not graduated yet — still active
+    expect(after.find((x) => x.studentId === "68010101")?.status).not.toBe("inactive");
+  });
+
+  test("the people the selection leaves out are listed right away, follow the batch/program choice, and can be filtered", async ({ page }) => {
+    await open(page, "en", BATCHES);
+    await page.getByRole("button", { name: "Deactivate batch" }).click();
+    const dialog = page.getByRole("dialog", { name: "Deactivate a whole batch" });
+    await dialog.getByText("Also deactivate people outside this selection (optional)").click();   // collapsed by default
+    const list = dialog.getByTestId("deactivate-left-out");
+    const names = () => list.getByRole("checkbox").evaluateAll((els) => els.map((e) => (e.closest("label") as HTMLElement).innerText.replace(/\s+/g, " ").trim()));
+
+    // batch 67 selected → the three active students of 68 and 69 are what is left, nobody has to be searched for
+    await expect(list.getByRole("checkbox")).toHaveCount(3);
+    expect(await names()).toEqual([
+      "N101 Test 68010101 Computer Engineering",
+      "N102 Test 68010102 Computer Engineering International",
+      "N101 Test 69010101 Computer Engineering",
+    ]);
+    await expect(list.getByText("3 left · 0 added")).toBeVisible();
+
+    // narrowing the selection to one program leaves the rest of batch 67 in the list too
+    await dialog.getByLabel("Program").selectOption("CE");
+    await expect(list.getByRole("checkbox")).toHaveCount(4);
+    await expect(list.getByText("4 left")).toBeVisible();
+    // switching batch swaps who is left out
+    await dialog.getByLabel(/Batch \(first two digits/).selectOption("68");
+    await expect(list.getByRole("checkbox")).toHaveCount(5);   // program CE is still picked: batch 68 CEI student + 3 of batch 67 + 1 of batch 69
+    expect((await names()).some((n) => n.includes("68010101"))).toBe(false);
+
+    // the filter box narrows the list by name, ID or program; the ticks survive the filtering
+    await list.getByRole("checkbox", { name: /69010101/ }).check();
+    await list.getByLabel("Filter the remaining students").fill("cybersecurity");
+    await expect(list.getByRole("checkbox")).toHaveCount(1);
+    await list.getByLabel("Filter the remaining students").fill("zzz");
+    await expect(list.getByText("No student matches the filter")).toBeVisible();
+    await list.getByLabel("Filter the remaining students").fill("");
+    await expect(list.getByRole("checkbox", { name: /69010101/ })).toBeChecked();
+    await expect(list.getByText(/· 1 added/)).toBeVisible();
   });
 
   test("confirming includes the individually-added student even though they're outside the chosen batch", async ({ page }) => {
     await open(page, "en", BATCHES);
     await page.getByRole("button", { name: "Deactivate batch" }).click();
     const dialog = page.getByRole("dialog", { name: "Deactivate a whole batch" });   // batch 67 preselected
-    await dialog.getByPlaceholder("Search student name...").fill("N101");
-    await dialog.getByRole("option", { name: "N101 Test (68010101)" }).click();
+    await dialog.getByText("Also deactivate people outside this selection (optional)").click();   // collapsed by default
+    await dialog.getByRole("checkbox", { name: /68010101/ }).check();
     await dialog.getByRole("button", { name: "Deactivate 4 students" }).click();
     await expect(dialog).toHaveCount(0);
 
