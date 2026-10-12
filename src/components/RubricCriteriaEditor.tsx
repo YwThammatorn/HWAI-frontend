@@ -2,7 +2,10 @@
 
 import { useState, Dispatch, SetStateAction } from "react";
 import { useLanguage } from "@/context/LanguageContext";
-import { RubricCriterion, CriterionLevel, AssignmentAttachment } from "@/lib/assignments";
+import { RubricCriterion, CriterionLevel, AssignmentAttachment, levelShare } from "@/lib/assignments";
+import RubricPickerModal, { type PickedCriterion } from "@/components/RubricPickerModal";
+import { useRubricLibrary } from "@/lib/rubricLibrary";
+import { useCourses } from "@/lib/courses";
 import Modal from "@/components/Modal";
 import { buildCriteria, pickAiTemplate } from "@/lib/rubricTemplates";
 
@@ -55,11 +58,6 @@ export function newCriterionDraft(name: string, points = "0"): CriterionDraft {
   return { id: crypto.randomUUID(), name, description: "", points, levels: defaultLevels(), cloIds: [] };
 }
 
-/** Share of a criterion's points a level is worth, best level first: with 4 levels 100 / 66.67 / 33.33 / 0 %, the scale of the
- *  UX/UI rubric file (UXUI_Final_Rubric_draft1.xlsx) — "ระดับ 3 = 100%, 2 = 66.67% …". Generalised to any 2–6 levels. */
-export function levelShare(levelIndex: number, levelCount: number): number {
-  return levelCount <= 1 ? 1 : (levelCount - 1 - levelIndex) / (levelCount - 1);
-}
 const pctText = (share: number) => `${Math.round(share * 10000) / 100}%`;
 
 export function criteriaTotalPoints(criteria: CriterionDraft[]): number {
@@ -154,7 +152,13 @@ export default function RubricCriteriaEditor({
   assignmentAttachments = [],
   clos,
   cloHref,
+  courseId,
+  assignmentId,
 }: {
+  /** The course this rubric is for — switches on "Use a rubric from before" and "Save to library". */
+  courseId?: string;
+  /** The assignment being edited (never offered as its own source). */
+  assignmentId?: string;
   /** The course's CLOs. Leave undefined to hide the CLO row; an empty list shows a "no CLOs yet" hint. */
   clos?: CloOption[];
   /** Where to send the teacher to add CLOs */
@@ -173,6 +177,13 @@ export default function RubricCriteriaEditor({
   const [aiSuggestions, setAiSuggestions] = useState<AiSuggestion[]>([]);
   const [aiStep, setAiStep] = useState<"brief" | "loading" | "results">("brief");
   const [aiBrief, setAiBrief] = useState("");
+  // reuse (12/10/2569): pick a rubric used before / keep this one in the subject's library
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [saveOpen, setSaveOpen] = useState(false);
+  const [saveName, setSaveName] = useState("");
+  const [savedNote, setSavedNote] = useState(false);
+  const { addEntry } = useRubricLibrary();
+  const { getCourse } = useCourses();
 
   const totalPoints = criteriaTotalPoints(criteria);
   const pointsOk = criteriaPointsOk(criteria);
@@ -296,6 +307,37 @@ export default function RubricCriteriaEditor({
     setAiOpen(false);
   }
 
+  function applyPicked(picked: PickedCriterion[], mode: "replace" | "add") {
+    setCriteria((prev) => {
+      const offset = mode === "add" ? prev.length : 0;
+      // a criterion named "C2 · …" takes its place in the NEW list: C1, C2, C3 … with no gaps or repeats after skips and replacements
+      const drafts: CriterionDraft[] = picked.map((p, i) => {
+        const d = newCriterionDraft(p.name.replace(/^C\d+ · /, `C${offset + i + 1} · `), String(p.points));
+        return { ...d, description: p.description, levels: p.levels ?? d.levels, cloIds: p.cloIds };
+      });
+      return mode === "add" ? [...prev, ...drafts] : drafts;
+    });
+  }
+
+  function openSave() {
+    setSaveName(assignmentName.trim());
+    setSaveOpen(true);
+  }
+
+  function saveToLibrary() {
+    const name = saveName.trim();
+    if (!name) return;
+    addEntry({
+      name,
+      courseTemplateId: courseId ? getCourse(courseId)?.courseTemplateId : undefined,
+      criteria: finalizeCriteria(criteria, t("เกณฑ์ไม่มีชื่อ", "Untitled criterion")),
+      sourceAssignmentId: assignmentId,
+    });
+    setSaveOpen(false);
+    setSavedNote(true);
+    setTimeout(() => setSavedNote(false), 3000);
+  }
+
   function addCriterion() {
     setCriteria((prev) => [...prev, newCriterionDraft(t(`เกณฑ์ที่ ${prev.length + 1}`, `Criterion ${prev.length + 1}`))]);
   }
@@ -343,6 +385,28 @@ export default function RubricCriteriaEditor({
             </svg>
             {t("AI ช่วยสร้างเกณฑ์", "AI Rubric Assistant")}
           </button>
+          {courseId && (
+            <>
+              <button
+                type="button"
+                onClick={() => setPickerOpen(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[var(--accent)] text-xs text-[var(--accent)] hover:bg-teal-50 transition-colors font-medium"
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><polyline points="3 3 3 9 9 9"/><path d="M12 7v5l3 2"/></svg>
+                {t("ใช้ rubric จากงานก่อนหน้า", "Use a rubric from before")}
+              </button>
+              <button
+                type="button"
+                onClick={openSave}
+                disabled={!pointsOk}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-600 hover:bg-gray-50 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                {t("บันทึกลงคลัง", "Save to library")}
+              </button>
+              <span role="status" className="text-xs font-medium text-[var(--s-ok-text)]">{savedNote ? t("บันทึกลงคลังแล้ว", "Saved to the library") : ""}</span>
+            </>
+          )}
           <div className="w-px h-4 bg-gray-200" />
           <button
             type="button"
@@ -563,6 +627,42 @@ export default function RubricCriteriaEditor({
         </svg>
         {t("เพิ่มเกณฑ์ย่อยใหม่", "Add New Criterion")}
       </button>
+
+      {courseId && (
+        <>
+          <RubricPickerModal
+            open={pickerOpen}
+            onClose={() => setPickerOpen(false)}
+            courseId={courseId}
+            assignmentId={assignmentId}
+            hasCriteria={criteria.some((c) => c.name.trim() !== "" || c.description.trim() !== "")}
+            clos={clos}
+            brief={assignmentBrief()}
+            onApply={applyPicked}
+          />
+          <Modal
+            open={saveOpen}
+            onClose={() => setSaveOpen(false)}
+            size="sm"
+            title={t("บันทึก rubric ลงคลัง", "Save rubric to the library")}
+            description={t("เก็บไว้ใช้ซ้ำกับวิชานี้ในปีหน้า หรืองานอื่น", "Keep it to reuse next year or in another assignment of this subject")}
+            footer={
+              <>
+                <button type="button" onClick={() => setSaveOpen(false)} className="h-10 px-5 whitespace-nowrap rounded-xl border border-[var(--border)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors">{t("ยกเลิก", "Cancel")}</button>
+                <button type="button" onClick={saveToLibrary} disabled={!saveName.trim()} className="h-10 px-5 whitespace-nowrap rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-semibold active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors">{t("บันทึก", "Save")}</button>
+              </>
+            }
+          >
+            <label htmlFor="library-name" className="mb-1.5 block text-sm font-medium text-[var(--text-primary)]">{t("ชื่อ rubric", "Rubric name")}</label>
+            <input
+              id="library-name"
+              value={saveName}
+              onChange={(e) => setSaveName(e.target.value)}
+              className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] px-3 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
+            />
+          </Modal>
+        </>
+      )}
 
       {/* AI Rubric Assistant — brief → suggestions (with each criterion's level rubric) */}
       <Modal

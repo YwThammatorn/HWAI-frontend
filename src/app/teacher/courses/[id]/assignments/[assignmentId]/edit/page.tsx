@@ -478,6 +478,7 @@ export default function EditAssignmentPage() {
                   setCriteria={setCriteria}
                   assignmentName={name.trim()} assignmentDescription={description} assignmentAttachments={att.items}
                   clos={getCLOsByCourse(id)} cloHref={`/teacher/courses/${id}/clo`}
+                  courseId={id} assignmentId={assignmentId}
                 />
               </fieldset>
             </section>

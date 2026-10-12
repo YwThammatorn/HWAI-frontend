@@ -376,6 +376,7 @@ export default function NewAssignmentPage() {
                 setCriteria={(u) => { setRubricTouched(true); setCriteria(u); }}
                 assignmentName={name.trim()} assignmentDescription={description} assignmentAttachments={att.items}
                 clos={getCLOsByCourse(id)} cloHref={`/teacher/courses/${id}/clo`}
+                courseId={id}
               />
             </section>
           )}

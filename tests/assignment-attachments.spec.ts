@@ -127,7 +127,7 @@ test.describe("Assignment attachments — teacher edit", () => {
     await page.getByRole("button", { name: "Add link" }).click();
     await page.getByLabel("Link URL").fill("https://example.com/spec");
     await page.getByRole("button", { name: "Add", exact: true }).click();
-    await page.getByRole("button", { name: /Save/i }).first().click();
+    await page.getByRole("button", { name: "Save Changes" }).click();
     await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem("hwai_assignments_v1") ?? "[]")[0]?.attachments?.length)).toBe(1);
 
     const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("hwai_assignments_v1") ?? "[]")[0].attachments);
