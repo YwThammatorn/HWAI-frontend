@@ -346,6 +346,23 @@ const get=(u)=>fetch(u).then(r=>r.json()); const merge=(k,rs)=>{const ids=new Se
 
 ---
 
+[21] เพิ่มข้อมูลไว้ลองหน้า Rubrics > "เทียบข้ามปี" (12/10) — วิชาการเขียนโปรแกรม ของปี 2567 และ 2568 พร้อม rubric และผลตรวจของนักศึกษาสมมติ 36 คนต่องาน
+     เพิ่มรายวิชา c-mock-60 (2567/1) และ c-mock-61 (2568/1) ให้อาจารย์สมศักดิ์ (เก็บถาวร), งาน 4 ชิ้น (แบบฝึกหัด Python + Mini Project ปีละ 1 ชุด), rubric 4 ชุดที่ชื่อเกณฑ์ตรงกับของปีนี้บางส่วน (ปี 2567 ไม่มี Error handling, Mini Project ปี 2567 มี Style and documentation แทน), และผลตรวจ 144 ชิ้น
+     เติมแบบ merge ตาม id เท่านั้น — ไม่แตะรายวิชา/อาจารย์/งาน/ผลตรวจอื่น ใช้นักศึกษาสมมติ (รหัส 6799xxxx / 6899xxxx) จึงไม่กระทบประวัติรายวิชาของนักศึกษาจริงในระบบ
+     ดูผล: /teacher/courses/c-mock-1/rubrics (แท็บ "เทียบข้ามปี"), และปุ่ม "ใช้ rubric จากงานก่อนหน้า" ตอนสร้างงาน (มี "ปีที่แล้ว")
+     ต้องโหลด [2]/[3]/[5] หรือ [18]/[20] มาก่อน เพื่อให้มีรายวิชา c-mock-1 และ rubric ของปีนี้
+     (ทดสอบด้วย reload-rubric-years.spec.ts — คำสั่งด้านล่างถูกดึงจากไฟล์นี้ไปรันจริงจากสถานะเก่า)
+
+     ภาษาไทย:
+
+const get=(u)=>fetch(u).then(r=>r.json()); const merge=(k,rs)=>{const ids=new Set(rs.map(r=>r.id)); localStorage.setItem(k, JSON.stringify([...JSON.parse(localStorage.getItem(k)||'[]').filter(r=>!ids.has(r.id)),...rs]));}; get('/mock-data/rubric-years-mockup.json').then(d=>{merge('hwai_courses_v2', d.courses); merge('hwai_assignments_v1', d.assignments); merge('hwai_rubrics_v1', d.rubrics); merge('hwai_submissions_v1', d.submissions); const ts=JSON.parse(localStorage.getItem('hwai_managed_teachers_v1')||'[]'); ts.forEach(t=>{ if(t.id===d.teacherId) t.courseIds=[...new Set([...(t.courseIds||[]),...d.courses.map(c=>c.id)])]; }); localStorage.setItem('hwai_managed_teachers_v1', JSON.stringify(ts)); location.reload();});
+
+     English:
+
+const get=(u)=>fetch(u).then(r=>r.json()); const merge=(k,rs)=>{const ids=new Set(rs.map(r=>r.id)); localStorage.setItem(k, JSON.stringify([...JSON.parse(localStorage.getItem(k)||'[]').filter(r=>!ids.has(r.id)),...rs]));}; get('/mock-data/rubric-years-mockup-en.json').then(d=>{merge('hwai_courses_v2', d.courses); merge('hwai_assignments_v1', d.assignments); merge('hwai_rubrics_v1', d.rubrics); merge('hwai_submissions_v1', d.submissions); const ts=JSON.parse(localStorage.getItem('hwai_managed_teachers_v1')||'[]'); ts.forEach(t=>{ if(t.id===d.teacherId) t.courseIds=[...new Set([...(t.courseIds||[]),...d.courses.map(c=>c.id)])]; }); localStorage.setItem('hwai_managed_teachers_v1', JSON.stringify(ts)); location.reload();});
+
+---
+
 [4] ล้างข้อมูลทั้งหมด (ถ้าอยากเริ่มใหม่)
 
 ['hwai_user','hwai_managed_teachers_v1','hwai_cohort_students_v1','hwai_courses_v2','hwai_curriculum_versions_v1','hwai_course_templates_v1','hwai_students_v1','hwai_grading_categories_v1','hwai_assignments_v1','hwai_rubrics_v1','hwai_submissions_v1','hwai_student_groups_v1','hwai_clos_v1'].forEach(k=>localStorage.removeItem(k)); location.reload();

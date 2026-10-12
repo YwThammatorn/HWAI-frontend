@@ -91,6 +91,24 @@ const STUDENTS_ICON = (
   </svg>
 );
 
+const RUBRICS_ICON = (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <rect x="3" y="4" width="18" height="16" rx="2" />
+    <line x1="3" y1="10" x2="21" y2="10" />
+    <line x1="9" y1="10" x2="9" y2="20" />
+    <line x1="15" y1="10" x2="15" y2="20" />
+  </svg>
+);
+
+const CALIBRATION_ICON = (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <line x1="4" y1="21" x2="4" y2="14" /><line x1="4" y1="10" x2="4" y2="3" />
+    <line x1="12" y1="21" x2="12" y2="12" /><line x1="12" y1="8" x2="12" y2="3" />
+    <line x1="20" y1="21" x2="20" y2="16" /><line x1="20" y1="12" x2="20" y2="3" />
+    <line x1="1" y1="14" x2="7" y2="14" /><line x1="9" y1="8" x2="15" y2="8" /><line x1="17" y1="16" x2="23" y2="16" />
+  </svg>
+);
+
 const CLO_ICON = (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <circle cx="12" cy="12" r="10" />
@@ -184,6 +202,8 @@ export default function ProfileSidebar() {
         { label: t("งาน/การบ้าน", "Assignments"), href: `/teacher/courses/${activeCourseId}/assignments`,   active: onAssignments, icon: ASSIGNMENTS_ICON   },
         { label: t("ตรวจงาน", "Grading"),         href: `/teacher/courses/${activeCourseId}/grading`,       active: onGrading,     icon: GRADING_ICON        },
         { label: t("สมุดคะแนน", "Score Book"),    href: `/teacher/courses/${activeCourseId}/results`,       active: onScoreBook,   icon: RESULTS_ICON        },
+        { label: t("เกณฑ์การให้คะแนน", "Rubrics"), href: `/teacher/courses/${activeCourseId}/rubrics`,       active: isAt(`/teacher/courses/${activeCourseId}/rubrics`),     icon: RUBRICS_ICON        },
+        { label: "Calibration", href: `/teacher/courses/${activeCourseId}/calibration`, active: isAt(`/teacher/courses/${activeCourseId}/calibration`), icon: CALIBRATION_ICON    },
         ...(GRADING_SPLIT_DISABLED ? [] : [
           { label: t("แบ่งงานตรวจ", "Grading Split"), href: `/teacher/courses/${activeCourseId}/grading-split`, active: isAt(`/teacher/courses/${activeCourseId}/grading-split`), icon: GRADING_SPLIT_ICON },
         ]),
