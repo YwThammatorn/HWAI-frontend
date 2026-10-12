@@ -23,14 +23,14 @@ import "./globals.css";
 
 const lexend = Lexend({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-lexend",
   display: "swap",
 });
 
 const prompt = Prompt({
   subsets: ["thai", "latin"],
-  weight: ["300", "400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-prompt",
   display: "swap",
 });
