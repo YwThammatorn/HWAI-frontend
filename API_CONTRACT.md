@@ -226,3 +226,9 @@ fan-out server-side — either way `getAnnouncements`'s signature doesn't need t
 
 ### Assignment.gradingMode (11/10/2569)
 `gradingMode?: "ai" | "manual"` — how the teacher grades: the AI scores first (default) or by hand with no AI result shown. An exam or an assignment without files is always manual regardless of this field. Switching to manual clears scores that only the AI produced (status back to not_graded); the teacher's own scores stay.
+
+### Rubric reuse and calibration (12/10/2569)
+- `RubricLibraryEntry { id, name, courseTemplateId?, criteria: RubricCriterion[], sourceAssignmentId?, createdAt }` — a rubric saved for reuse, per subject.
+- `Submission.aiCriterionScores?: Record<criterionId, number>` — what the AI gave each criterion, set when the work is sent through the rubric; never visible to students.
+- `Rubric.aiOffsets?: Record<criterionId, number>` — correction of the AI in levels (+ stricter, − more generous), set by "Use these values" on Calibration; applied to later AI grading of that assignment.
+- `CalibrationRun { id, assignmentId, createdAt, sampleIds, teacherLevels: Record<sampleId, Record<criterionId, number>>, completedAt?, appliedAt?, appliedOffsets? }` — levels are positions on the criterion's scale, 0 = best.

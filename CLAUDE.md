@@ -20,8 +20,8 @@
 
 ## Current active task
 _(อัปเดตช่องนี้ทุกครั้งที่เริ่ม task ใหม่ — ดูรายละเอียดที่ HANDOFF.md)_
-- Task (11/10): one subject = one teacher across all its sections (mock), score bar chart for students, rubric criteria ↔ CLOs, then round 2: per-assignment grading method (AI-assisted / Manual), shorter announce wording, 3-card course Grading dashboard, no AI-confidence on announced results, admin "Deactivate batch" checklist, rubric wording/names/editor closer to the real UX/UI rubric file. Before that (7–10/10): faster tests / Stop hook / testing rules / UI-design report (`report-ui/`); (6–7/10): 4-level rubrics, exam CSV import, rubric lock.
-- Status: all of 7–11/10 is uncommitted/unpushed except what the user has already committed (see `git log`); suite 699 passed / 31 skipped on a production build. Details in HANDOFF.md (last two sections).
+- Task (11/10): one subject = one teacher across all its sections (mock), score bar chart for students, rubric criteria ↔ CLOs, then round 2: per-assignment grading method (AI-assisted / Manual), shorter announce wording, 3-card course Grading dashboard, no AI-confidence on announced results, admin "Deactivate batch" checklist, rubric wording/names/editor closer to the real UX/UI rubric file. Then (12/10): rubric reuse picker + library, Rubrics page (library, compare years), Calibration tab (AI strictness + rubric suggestions). Before that (7–10/10): faster tests / Stop hook / testing rules / UI-design report (`report-ui/`); (6–7/10): 4-level rubrics, exam CSV import, rubric lock.
+- Status: all of 7–11/10 is uncommitted/unpushed except what the user has already committed (see `git log`); suite 745 passed / 31 skipped on a production build. Details in HANDOFF.md (last two sections).
 
 # i18n Rule (TH/EN Language Toggle)
 
