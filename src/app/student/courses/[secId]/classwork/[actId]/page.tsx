@@ -7,6 +7,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { dateLocale } from "@/lib/dateLocale";
 import { useAuth } from "@/context/AuthContext";
 import { useCourses } from "@/lib/courses";
+import CriterionName from "@/components/CriterionName";
 import { useAssignments, submissionAttachments, studentVisibleSubmission, achievedLevelIndex, AssignmentAttachment } from "@/lib/assignments";
 import { computeExamStats, computeAssignmentStats } from "@/lib/examStats";
 import ExamStatsCard from "@/components/ExamStatsCard";
@@ -239,7 +240,7 @@ function ClassworkDetail() {
                   {rubrics.flatMap((rubric) => rubric.criteria).map((c) => (
                     <div key={c.id} className="rounded-xl border border-[var(--border-subtle)] p-3">
                       <div className="flex items-start justify-between gap-3 mb-1">
-                        <p className="text-sm font-semibold text-[var(--text-primary)]">{c.name}</p>
+                        <CriterionName name={c.name} />
                         {earnedByCriterion?.[c.id] !== undefined ? (
                           <span className="shrink-0 text-right leading-tight">
                             <span className="block text-sm font-bold text-[var(--text-primary)] tabular-nums">
@@ -269,7 +270,7 @@ function ClassworkDetail() {
                         <p className="text-xs text-[var(--text-muted)] mb-2">{c.description}</p>
                       )}
                       {c.levels.length > 0 && (
-                        <div className="grid gap-2 mt-2 [grid-template-columns:repeat(auto-fit,minmax(140px,1fr))]">
+                        <div className="grid gap-2 mt-2" style={{ gridTemplateColumns: c.levels.length === 4 ? "repeat(2, minmax(0, 1fr))" : "repeat(auto-fit, minmax(140px, 1fr))" }}>   {/* 4 levels sit 2 x 2, never 3 + 1 */}
                           {c.levels.map((lvl, i) => {
                             const earned = earnedByCriterion?.[c.id];
                             const mine = earned !== undefined && achievedLevelIndex(earned, c.maxPoints, c.levels.length) === i;

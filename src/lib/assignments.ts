@@ -82,6 +82,9 @@ export interface Submission {
    *  callers that need a breakdown for those fall back to splitting the total by criterion weight
    *  (the same math the recheck page itself starts from — see RecheckPage's initial-scores effect). */
   criterionScores?: Record<string, number>;
+  /** What the AI gave each criterion, keyed by RubricCriterion.id (12/10/2569) — set when the teacher sends the work to the AI, so the
+   *  Grade screen can start from it and Calibration can compare it with the teacher's own levels. Never shown to students. */
+  aiCriterionScores?: Record<string, number>;
   // Security: student work must not leave faculty without explicit consent
   externalUseConsent: boolean;
   status: "not_graded" | "need_review" | "graded";
@@ -114,7 +117,7 @@ export const URGENT_HOURS = 48;
  *  grade": no score, no comment, no breakdown. Teacher-side code keeps using the raw submission. */
 export function studentVisibleSubmission(assignment: Assignment | undefined, sub: Submission): Submission {
   if (sub.status !== "graded" || assignment?.gradingFinalized) return sub;
-  return { ...sub, status: "not_graded", aiScore: null, instructorScore: null, instructorComment: "", criterionScores: undefined, criterionComments: undefined };
+  return { ...sub, status: "not_graded", aiScore: null, instructorScore: null, instructorComment: "", criterionScores: undefined, aiCriterionScores: undefined, criterionComments: undefined };
 }
 
 export interface CriterionLevel {
@@ -138,6 +141,12 @@ export function achievedLevelIndex(earned: number, maxPoints: number, levelCount
   return Math.min(levelCount - 1, Math.max(0, Math.ceil((levelCount * (maxPoints - clamped)) / maxPoints) - 1));
 }
 
+/** Share of a criterion's points a level is worth, best level first: with 4 levels 100 / 66.67 / 33.33 / 0 %, the scale of the
+ *  UX/UI rubric file (UXUI_Final_Rubric_draft1.xlsx). Generalised to any 2-6 levels. */
+export function levelShare(levelIndex: number, levelCount: number): number {
+  return levelCount <= 1 ? 1 : (levelCount - 1 - levelIndex) / (levelCount - 1);
+}
+
 export interface RubricCriterion {
   id: string;
   name: string;
@@ -155,6 +164,9 @@ export interface Rubric {
   assignmentId: string;
   name: string;
   criteria: RubricCriterion[];
+  /** How the AI is corrected on this rubric (12/10/2569, set by "Use these values" on the Calibration page): per criterion, levels to move
+   *  the AI's judgement toward stricter (+) or more generous (−). Applies to the next "Grade with AI"; absent = no correction. */
+  aiOffsets?: Record<string, number>;
   createdAt: string;
   updatedAt: string;
 }
@@ -169,7 +181,7 @@ export interface AssignmentContextValue {
   getAssignment: (id: string) => Assignment | undefined;
   getAssignmentsByCourse: (courseId: string) => Assignment[];
   addSubmission: (data: Omit<Submission, "id" | "updatedAt">) => Submission;
-  updateSubmission: (id: string, data: Partial<Pick<Submission, "aiScore" | "instructorScore" | "instructorComment" | "criterionComments" | "criterionScores" | "status" | "fileUrl" | "attachments">>) => void;
+  updateSubmission: (id: string, data: Partial<Pick<Submission, "aiScore" | "instructorScore" | "instructorComment" | "criterionComments" | "criterionScores" | "aiCriterionScores" | "status" | "fileUrl" | "attachments">>) => void;
   getSubmissionsByAssignment: (assignmentId: string) => Submission[];
   addRubric: (data: Omit<Rubric, "id" | "createdAt" | "updatedAt">) => Rubric;
   updateRubric: (id: string, data: Partial<Omit<Rubric, "id" | "assignmentId" | "createdAt" | "updatedAt">>) => void;

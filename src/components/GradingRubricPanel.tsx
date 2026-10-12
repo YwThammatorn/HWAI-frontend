@@ -3,9 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
-import { achievedLevelIndex, type Rubric, type Submission } from "@/lib/assignments";
+import { achievedLevelIndex, levelShare, type Rubric, type Submission } from "@/lib/assignments";
 import { toneForPct, SCORE_TONE_CLASSES } from "@/lib/scoreBook";
 import CloChips from "@/components/CloChips";
+import { splitCriterionName } from "@/lib/rubricName";
 import type { CLO } from "@/lib/clo";
 
 // How a level looks on a distribution bar: best → worst. warn is not used — it means "awaiting grading" everywhere else.
@@ -64,7 +65,7 @@ export default function GradingRubricPanel({ rubric, graded, editHref, locked = 
 
   return (
     <section className={`${card} mt-6`} aria-labelledby="grading-rubric-h" data-testid="grading-rubric">
-      <div className="flex flex-wrap items-center justify-between gap-3 px-5 pt-5 pb-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 px-6 pt-5 pb-4">
         <div className="min-w-0">
           <h2 id="grading-rubric-h" className="text-base font-bold text-[var(--text-primary)]">{t("เกณฑ์การให้คะแนน", "Grading rubric")}</h2>
           <p className="mt-0.5 text-xs text-[var(--text-muted)]">
@@ -106,11 +107,23 @@ export default function GradingRubricPanel({ rubric, graded, editHref, locked = 
           const avgPct = avg !== null && c.maxPoints > 0 ? (avg / c.maxPoints) * 100 : null;
           return (
             <li key={c.id} data-testid={`rubric-row-${c.id}`}>
-              <div className="grid items-center gap-x-5 gap-y-2 px-5 py-3.5 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1.5fr)_264px_32px]">
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold text-[var(--text-primary)]">{c.name}</p>
-                  <CloChips cloIds={c.cloIds} clos={clos} />
-                  {c.description && <p className="mt-0.5 text-xs leading-snug text-[var(--text-muted)]">{c.description}</p>}
+              <div className="grid items-center gap-x-6 gap-y-3 px-6 py-4 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1.4fr)_9.5rem_2rem]">
+                <div className="flex min-w-0 items-start gap-3">
+                  {(() => {
+                    const nm = splitCriterionName(c.name);
+                    return (
+                      <>
+                        {nm.code && (
+                          <span className="mt-0.5 inline-flex h-6 min-w-8 shrink-0 items-center justify-center rounded-md border border-[var(--border)] bg-[var(--bg-app)] px-1.5 text-xs font-bold tabular-nums text-[var(--text-secondary)]">{nm.code}</span>
+                        )}
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold leading-snug text-[var(--text-primary)]">{nm.main}</p>
+                          {nm.second && <p className="mt-0.5 text-xs leading-snug text-[var(--text-secondary)]">{nm.second}</p>}
+                          <CloChips cloIds={c.cloIds} clos={clos} />
+                        </div>
+                      </>
+                    );
+                  })()}
                 </div>
 
                 <div className="min-w-0">
@@ -137,20 +150,19 @@ export default function GradingRubricPanel({ rubric, graded, editHref, locked = 
                   )}
                 </div>
 
-                <div className="flex items-center gap-2 lg:justify-end">
-                  <span className="inline-flex h-7 items-center whitespace-nowrap rounded-lg border border-[var(--border)] bg-[var(--bg-app)] px-2 text-xs font-semibold tabular-nums text-[var(--text-secondary)]">
-                    {c.maxPoints} {t("คะแนน", "pts")}
-                  </span>
+                {/* the class average as the one coloured fact, the criterion's full marks under it as plain text */}
+                <div className="flex flex-col gap-1 lg:items-end">
                   {avgPct !== null && avg !== null ? (
                     <span
-                      className={`inline-flex h-7 items-center whitespace-nowrap rounded-lg px-2 text-xs font-semibold tabular-nums ${SCORE_TONE_CLASSES[toneForPct(avgPct)]}`}
+                      className={`inline-flex h-7 items-center whitespace-nowrap rounded-lg px-2.5 text-xs font-semibold tabular-nums ${SCORE_TONE_CLASSES[toneForPct(avgPct)]}`}
                       title={t("คะแนนเฉลี่ยของเกณฑ์นี้", "Class average on this criterion")}
                     >
                       {t("เฉลี่ย", "Avg")} {Number.isInteger(avg) ? avg : avg.toFixed(1)} · {Math.round(avgPct)}%
                     </span>
                   ) : (
-                    <span className="inline-flex h-7 items-center px-2 text-xs text-[var(--text-muted)]">—</span>
+                    <span className="inline-flex h-7 items-center px-2.5 text-xs text-[var(--text-muted)]">—</span>
                   )}
+                  <span className="text-xs tabular-nums text-[var(--text-muted)]">{t(`เต็ม ${c.maxPoints} คะแนน`, `of ${c.maxPoints} pts`)}</span>
                 </div>
 
                 <button
@@ -168,18 +180,20 @@ export default function GradingRubricPanel({ rubric, graded, editHref, locked = 
               </div>
 
               {isOpen && (
-                <div className="grid gap-2 px-5 pb-4 sm:grid-cols-2 xl:grid-cols-4" style={n > 4 ? { gridTemplateColumns: `repeat(${Math.min(n, 6)}, minmax(0, 1fr))` } : undefined}>
-                  {c.levels.map((lv, i) => (
-                    <div key={i} className={`rounded-xl border p-3 ${BOX[toneOf(i, n)]}`}>
-                      <div className="flex items-baseline justify-between gap-2">
-                        <p className={`text-[11px] font-bold uppercase tracking-wider ${TEXT[toneOf(i, n)]}`}>{lv.label}</p>
-                        <p className="text-[11px] tabular-nums text-[var(--text-secondary)]">
-                          <span className="font-semibold text-[var(--text-primary)]">{counts[i]}</span> {unit === "team" ? t("ทีม", counts[i] === 1 ? "team" : "teams") : t("คน", counts[i] === 1 ? "student" : "students")}
+                <div className="px-6 pb-5">
+                  {c.description && <p className="mb-3 text-xs leading-relaxed text-[var(--text-secondary)]">{c.description}</p>}
+                  <div className="grid gap-2.5 sm:grid-cols-2 xl:grid-cols-4" style={n > 4 ? { gridTemplateColumns: `repeat(${Math.min(n, 6)}, minmax(0, 1fr))` } : undefined}>
+                    {c.levels.map((lv, i) => (
+                      <div key={i} className={`rounded-xl border p-3.5 ${BOX[toneOf(i, n)]}`}>
+                        <p className="flex items-baseline justify-between gap-2 text-[11px] tabular-nums text-[var(--text-secondary)]">
+                          <span>{t("ระดับ", "Level")} {n - 1 - i} · {Math.round(c.maxPoints * levelShare(i, n))} {t("คะแนน", "pts")}</span>
+                          <span><span className="font-semibold text-[var(--text-primary)]">{counts[i]}</span> {unit === "team" ? t("ทีม", counts[i] === 1 ? "team" : "teams") : t("คน", counts[i] === 1 ? "student" : "students")}</span>
                         </p>
+                        <p className={`mt-1 text-xs font-bold uppercase tracking-wider ${TEXT[toneOf(i, n)]}`}>{lv.label}</p>
+                        <p className="mt-1.5 text-xs leading-relaxed text-[var(--text-primary)]">{lv.description || <span className="text-[var(--text-muted)]">{t("ไม่มีคำอธิบาย", "No description")}</span>}</p>
                       </div>
-                      <p className="mt-1.5 text-xs leading-relaxed text-[var(--text-primary)]">{lv.description || <span className="text-[var(--text-muted)]">{t("ไม่มีคำอธิบาย", "No description")}</span>}</p>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               )}
             </li>

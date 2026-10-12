@@ -4,6 +4,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import type { Rubric } from "@/lib/assignments";
 import { PENDING_CHIP_CLASSES } from "@/lib/scoreBook";
 import Modal from "./Modal";
+import CriterionName from "./CriterionName";
 
 // Shared by the teacher Score Book and the student Evaluation page — what each rubric criterion
 // earned toward a graded score, not just the total. Extracted (22/9) so both screens stay identical
@@ -49,7 +50,7 @@ export default function RubricBreakdownModal({
             const earned = storedCriterionScores?.[c.id] ?? Math.round((c.weight / 100) * cell.score);
             return (
               <tr key={c.id} className="border-b border-[var(--border-subtle)] last:border-b-0">
-                <td className="py-2.5 pr-2 text-[var(--text-primary)]">{c.name}</td>
+                <td className="py-2.5 pr-2 text-[var(--text-primary)]"><CriterionName name={c.name} /></td>
                 <td className="py-2.5 text-right tabular-nums text-[var(--text-secondary)]">{c.weight}%</td>
                 <td className="py-2.5 text-right tabular-nums font-medium text-[var(--text-primary)]">{earned} / {c.maxPoints}</td>
               </tr>

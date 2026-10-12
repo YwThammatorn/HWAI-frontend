@@ -240,7 +240,9 @@ test("what a student sees: 69070101 opens the UX/UI Final Project and the rubric
   }, [rd("courses-mockup-en.json"), rd("teachers-mockup-en.json"), rd("students-mockup-en.json"), ux.courseStudents, ux.assignments, ux.rubrics, ux.submissions, ux.gradingCategories] as const);
   await page.goto(`${BASE}/student/courses/c-mock-4/classwork/a-mock-10`);
   await page.waitForLoadState("networkidle");
-  await expect(page.getByText("C1 · Screen Completeness & Content Realism").first()).toBeVisible();
+  await expect(page.getByText("Screen Completeness & Content Realism", { exact: true }).first()).toBeVisible();   // main name…
+  await expect(page.getByText("ความครบถ้วนขององค์ประกอบและความสมจริงของเนื้อหา", { exact: true }).first()).toBeVisible();   // …and the other language under it
+  await expect(page.getByText("C1", { exact: true }).first()).toBeVisible();                                      // the code as its own badge
   await expect(page.getByText("15 / 15").first()).toBeVisible();   // C1: Excellent
   await expect(page.getByText("7 / 10").first()).toBeVisible();    // C3: Fair
   await expect(page.getByText("Your level")).toHaveCount(7);

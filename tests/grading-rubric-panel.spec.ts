@@ -76,15 +76,17 @@ test.describe("Grading page — rubric panel", () => {
     await expect(panel).toContainText("from 4 graded items");
 
     const c1 = row(page, "k1");
-    await expect(c1).toContainText("C1 · Content");
-    await expect(c1).toContainText("Is the content complete");
-    await expect(c1).toContainText("15 pts");
+    // the code is its own badge, the name beside it; the description waits for the row to be opened
+    await expect(c1.getByText("C1", { exact: true })).toBeVisible();
+    await expect(c1.getByText("Content", { exact: true })).toBeVisible();
+    await expect(c1.getByText("Is the content complete")).toHaveCount(0);
+    await expect(c1).toContainText("of 15 pts");
     await expect(c1.getByRole("img")).toHaveAttribute("aria-label", "ดีมาก: 1, พอใช้: 2, ต้องปรับปรุง: 1, ไม่ผ่าน: 0");
     await expect(c1).toContainText("Avg 10 · 67%");
 
     await expect(row(page, "k2").getByRole("img")).toHaveAttribute("aria-label", "ดีมาก: 1, พอใช้: 1, ต้องปรับปรุง: 1, ไม่ผ่าน: 1");
     await expect(row(page, "k2")).toContainText("Avg 5 · 50%");
-    await expect(row(page, "k2")).toContainText("10 pts");
+    await expect(row(page, "k2")).toContainText("of 10 pts");
     await expect(row(page, "k3")).toContainText("Avg 7.5 · 50%");
   });
 
@@ -95,6 +97,10 @@ test.describe("Grading page — rubric panel", () => {
     await c1.getByRole("button", { name: /Level descriptions for C1 · Content/ }).click();
     await expect(c1.getByRole("button", { name: /Level descriptions for C1/ })).toHaveAttribute("aria-expanded", "true");
     for (const text of ["Content complete", "Content mostly complete", "Content thin", "Content missing"]) await expect(c1.getByText(text, { exact: true })).toBeVisible();
+    await expect(c1.getByText("Is the content complete")).toBeVisible();     // the description sits above the level cards
+    await expect(c1).toContainText("Level 3 · 15 pts");                        // each level card says what it is worth
+    await expect(c1).toContainText("Level 2 · 10 pts");
+    await expect(c1).toContainText("Level 0 · 0 pts");
     await expect(c1).toContainText("2 students");   // Fair
     await expect(c1).toContainText("0 students");   // Fail
     await expect(row(page, "k2").getByText("Style uneven")).toHaveCount(0);
@@ -143,6 +149,20 @@ test.describe("Grading page — rubric panel", () => {
     await expect(panel).toContainText("nothing graded yet");
     await expect(panel.getByRole("img")).toHaveCount(0);
     await expect(row(page, "k1")).toContainText("No per-criterion scores to summarise yet");
-    await expect(row(page, "k1")).toContainText("15 pts");
+    await expect(row(page, "k1")).toContainText("of 15 pts");
+  });
+
+  test("a bilingual name shows the code, the main name and the second-language name apart", async ({ page }) => {
+    await seed(page);
+    // registered after the seeding script, so it runs after it on the reload
+    await page.addInitScript(() => {
+      const r = JSON.parse(localStorage.getItem("hwai_rubrics_v1") ?? "[]");
+      if (r[0]) { r[0].criteria[0].name = "C1 · Program correctness / ความถูกต้องของโปรแกรม"; localStorage.setItem("hwai_rubrics_v1", JSON.stringify(r)); }
+    });
+    await page.reload();
+    const c1 = row(page, "k1");
+    await expect(c1.getByText("C1", { exact: true })).toBeVisible();
+    await expect(c1.getByText("Program correctness", { exact: true })).toBeVisible();
+    await expect(c1.getByText("ความถูกต้องของโปรแกรม", { exact: true })).toBeVisible();
   });
 });

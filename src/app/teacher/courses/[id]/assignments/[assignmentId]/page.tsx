@@ -10,6 +10,7 @@ import { dateLocale } from "@/lib/dateLocale";
 import AssignmentTypeBadge from "@/components/AssignmentTypeBadge";
 import { AttachmentList } from "@/components/AssignmentAttachments";
 import CloChips from "@/components/CloChips";
+import CriterionName from "@/components/CriterionName";
 import { useCLOs } from "@/lib/clo";
 
 function fmtDate(dateStr: string, lang: string) {
@@ -210,7 +211,7 @@ export default function ViewAssignmentPage() {
                     <div key={c.id} className="rounded-xl border border-[var(--border-subtle)] p-3">
                       <div className="flex items-start justify-between gap-3 mb-1">
                         <div className="min-w-0">
-                          <p className="text-sm font-semibold text-[var(--text-primary)]">{c.name}</p>
+                          <CriterionName name={c.name} />
                           <CloChips cloIds={c.cloIds} clos={getCLOsByCourse(id)} />
                         </div>
                         <span className="shrink-0 text-xs font-semibold text-[var(--accent)] tabular-nums">
