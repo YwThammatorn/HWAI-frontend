@@ -282,9 +282,9 @@ test.describe("P3b — Course banner + grading categories on the classwork page"
     expect(Math.abs(wide.c.y - wide.w.y)).toBeLessThan(400); // ...level with the top of the list, not below it
 
     await page.setViewportSize({ width: 1100, height: 900 });
-    await page.waitForTimeout(300);
+    // the layout reflows after the resize: poll until the two blocks share a column instead of sleeping
+    await expect.poll(async () => Math.abs((await box(cats)).x - (await box(work)).x)).toBeLessThan(80);
     const narrow = { w: await box(work), c: await box(cats) };
-    expect(Math.abs(narrow.c.x - narrow.w.x)).toBeLessThan(80); // same column
     expect(narrow.c.y).toBeGreaterThan(narrow.w.y); // categories after the work
   });
 

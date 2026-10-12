@@ -104,8 +104,10 @@ test("cold start: a student forms a team, submits, the teacher grades once, and 
   await page.goto(GRADING_URL);
   await page.waitForLoadState("networkidle");
   await expect(page.getByText("Poster Squad")).toBeVisible();
-  await page.getByRole("button", { name: /Re-grade team Poster Squad/i }).click();
-  await page.waitForTimeout(2000); // mock re-grade takes 1.5s
+  const regrade = page.getByRole("button", { name: /Re-grade team Poster Squad/i });
+  await regrade.click();
+  await expect(regrade).toBeDisabled(); // the mock re-grade takes 1.5s: wait for it to start, then to finish
+  await expect(regrade).toBeEnabled();
   await page.getByRole("link", { name: /Grade team/i }).click();
   await page.waitForLoadState("networkidle");
   await page.getByLabel(/Total score/i).fill("88");
