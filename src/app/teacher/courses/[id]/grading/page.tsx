@@ -9,7 +9,7 @@ import { useAssignments, isManualGrading, isAiOnlyGraded, type Assignment, type 
 import { useGradingCategories } from "@/lib/gradingCategories";
 import { useStudentGroups } from "@/lib/studentGroups";
 import { groupSubmissionsByTeam } from "@/lib/groupSubmissions";
-import { mockAiGrade, waitingForAi } from "@/lib/aiGrading";
+import { mockAiGrade, mockAiGradeCriteria, waitingForAi } from "@/lib/aiGrading";
 import { useLanguage } from "@/context/LanguageContext";
 import { dateLocale } from "@/lib/dateLocale";
 import SearchInput from "@/components/SearchInput";
@@ -53,7 +53,7 @@ export default function CourseGradingPage() {
   const { t, lang } = useLanguage();
   const { getCourse } = useCourses();
   const { getStudentsByCourse } = useStudents();
-  const { getAssignmentsByCourse, getSubmissionsByAssignment, updateAssignment, updateSubmission } = useAssignments();
+  const { getAssignmentsByCourse, getSubmissionsByAssignment, getRubricsByAssignment, updateAssignment, updateSubmission } = useAssignments();
   const { getCategoriesByCourse } = useGradingCategories();
   const { getGroupsByAssignment } = useStudentGroups();
 
@@ -110,7 +110,7 @@ export default function CourseGradingPage() {
     setManualFor(null);
     if (mode !== (isManualGrading(a) ? "manual" : "ai")) {
       if (mode === "manual") {
-        aiOnlyOf(a).forEach((sub) => updateSubmission(sub.id, { aiScore: null, instructorScore: null, status: "not_graded", criterionScores: undefined, criterionComments: undefined }));
+        aiOnlyOf(a).forEach((sub) => updateSubmission(sub.id, { aiScore: null, aiCriterionScores: undefined, instructorScore: null, status: "not_graded", criterionScores: undefined, criterionComments: undefined }));
       }
       updateAssignment(a.id, { gradingMode: mode });
     }
@@ -119,9 +119,11 @@ export default function CourseGradingPage() {
       if (units.length > 0) {
         setSendingId(a.id);
         await new Promise((r) => setTimeout(r, 1200));       // the AI "working" (simulated)
+        // with a rubric the AI scores every criterion (through the correction Calibration saved, if any); without one, a total only
+        const rubric = getRubricsByAssignment(a.id)[0];
         units.forEach((u) => {
-          const res = mockAiGrade(u.key, a.maxPoints);
-          u.subs.filter(waitingForAi).forEach((sub) => updateSubmission(sub.id, { aiScore: res.score, instructorScore: null, status: res.status, criterionScores: undefined, criterionComments: undefined }));
+          const res = rubric && rubric.criteria.length > 0 ? mockAiGradeCriteria(u.key, rubric.criteria, rubric.aiOffsets) : { ...mockAiGrade(u.key, a.maxPoints), criterionScores: undefined };
+          u.subs.filter(waitingForAi).forEach((sub) => updateSubmission(sub.id, { aiScore: res.score, aiCriterionScores: res.criterionScores, instructorScore: null, status: res.status, criterionScores: undefined, criterionComments: undefined }));
         });
         setSendingId(null);
       }

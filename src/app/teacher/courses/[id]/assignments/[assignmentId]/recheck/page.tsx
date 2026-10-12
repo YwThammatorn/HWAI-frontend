@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useCourses } from "@/lib/courses";
 import { useAssignments, RubricCriterion, submissionAttachments, isManualGrading } from "@/lib/assignments";
 import SubmissionViewer from "@/components/SubmissionViewer";
+import CriterionName from "@/components/CriterionName";
 import { useStudentGroups } from "@/lib/studentGroups";
 import { useLanguage } from "@/context/LanguageContext";
 
@@ -59,7 +60,8 @@ export default function RecheckPage() {
     const aiScore = submission.instructorScore ?? submission.aiScore ?? 0;
     if (rubric) {
       const initial: CriterionScore[] = rubric.criteria.map((c: RubricCriterion) => {
-        const pts = Math.round((c.weight / 100) * aiScore);
+        // what the AI gave this criterion, when it was sent through the rubric; otherwise its share of the AI's total
+        const pts = submission.aiCriterionScores?.[c.id] ?? Math.round((c.weight / 100) * aiScore);
         return {
           criterionId: c.id,
           score: pts,
@@ -112,13 +114,10 @@ export default function RecheckPage() {
     if (!submission) return;
     const aiScore = submission.aiScore ?? 0;
     if (rubric) {
-      setScores(rubric.criteria.map((c: RubricCriterion) => ({
-        criterionId: c.id,
-        score: Math.round((c.weight / 100) * aiScore),
-        maxPoints: c.maxPoints,
-        aiFeedback: genFeedback(c.name, (Math.round((c.weight / 100) * aiScore)) / c.maxPoints >= 0.7 ? "high" : "low"),
-        edited: false,
-      })));
+      setScores(rubric.criteria.map((c: RubricCriterion) => {
+        const pts = submission.aiCriterionScores?.[c.id] ?? Math.round((c.weight / 100) * aiScore);
+        return { criterionId: c.id, score: pts, maxPoints: c.maxPoints, aiFeedback: genFeedback(c.name, pts / c.maxPoints >= 0.7 ? "high" : "low"), edited: false };
+      }));
     } else {
       setManualScore(aiScore);
     }
@@ -341,7 +340,7 @@ export default function RecheckPage() {
                       ) : (
                         <div className="w-4 h-4 rounded-full bg-gray-100" />
                       )}
-                      <span className="text-xs font-semibold text-[var(--text-primary)]">{c.name}</span>
+                      <CriterionName name={c.name} />
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">
                       <span className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">

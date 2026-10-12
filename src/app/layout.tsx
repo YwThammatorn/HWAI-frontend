@@ -3,6 +3,8 @@ import { Lexend, Prompt } from "next/font/google";
 import CourseProvider from "@/components/CourseProvider";
 import StudentProvider from "@/components/StudentProvider";
 import CLOProvider from "@/components/CLOProvider";
+import RubricLibraryProvider from "@/components/RubricLibraryProvider";
+import CalibrationProvider from "@/components/CalibrationProvider";
 import GradingCategoryProvider from "@/components/GradingCategoryProvider";
 import WeeklyPlanProvider from "@/components/WeeklyPlanProvider";
 import TeachingMaterialProvider from "@/components/TeachingMaterialProvider";
@@ -59,7 +61,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                                 <TeachingMaterialProvider>
                                   <AnnouncementProvider>
                                     <AssignmentProvider>
-                                      <StudentGroupProvider>{children}</StudentGroupProvider>
+                                      <StudentGroupProvider>
+                                        <RubricLibraryProvider>
+                                          <CalibrationProvider>{children}</CalibrationProvider>
+                                        </RubricLibraryProvider>
+                                      </StudentGroupProvider>
                                     </AssignmentProvider>
                                   </AnnouncementProvider>
                                 </TeachingMaterialProvider>
