@@ -15,3 +15,4 @@ export * from "./teaching-materials";
 export * from "./announcements";
 export * from "./clo";
 export * from "./grading-assignments";
+export * from "./rubric-tools";

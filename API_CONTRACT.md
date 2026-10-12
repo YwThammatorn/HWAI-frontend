@@ -39,6 +39,10 @@ Swagger at `/docs`):
   (`Student`), grading categories, assignments + rubrics + submissions, student groups
 - **Course staff**: section roles (Collaborators — a TA is a student, a co-teacher a teacher; the server
   removes a person's roles when their account is deleted) and CLOs
+- **Rubric tools**: the rubric reuse library (RubricLibraryProvider → `/api/rubric-library`) and Calibration
+  runs (CalibrationProvider → `PUT /api/calibration-runs/:id`, create-or-replace like `saveRun`). The AI
+  fields `Assignment.gradingMode`, `Submission.aiCriterionScores` and `Rubric.aiOffsets` are stored too
+  (the AI grading itself is still the frontend's stand-in, `lib/aiGrading.ts`).
 - **Uploaded files** — `lib/fileStorage.ts` uploads to `POST /api/files` and a file's key is its id,
   served at `GET /api/files/:id` (10MB limit). Mock `hwai_file_…` keys still resolve from localStorage.
 
