@@ -1,7 +1,10 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, Fragment, useContext, useEffect, useRef, useState } from "react";
 import { findMultiRoleAccount, identityEmail } from "@/lib/accounts";
+import { API_ENABLED, setSignedIn, UNAUTHORIZED_EVENT } from "@/lib/api/client";
+import * as authApi from "@/lib/api/auth";
+import DemoBanner from "@/components/DemoBanner";
 
 export type UserRole = "teacher" | "ta" | "student" | "admin";
 
@@ -16,6 +19,8 @@ export interface AuthUser {
   /** The email the person signed in with. `email` changes with the active role
    *  (a student persona acts as `<id>@kmitl.ac.th`), this one never does. */
   accountEmail?: string;
+  /** Signed in through the backend's demo sign-in (API mode) — the UI shows a banner. */
+  demo?: boolean;
 }
 
 interface AuthContextValue {
@@ -23,7 +28,9 @@ interface AuthContextValue {
   viewAs: UserRole | null;
   effectiveRole: UserRole | null;
   setViewAs: (role: UserRole | null) => void;
-  login: (user: AuthUser) => void;
+  /** Mock mode: start a session for `user`. API mode: pass the session the API just started
+   *  (authApi.userFromMe after demoLogin). */
+  login: (user: AuthUser, me?: authApi.Me) => void;
   logout: () => void;
   /** Multi-role accounts only: act as another role the account holds. `displayName`
    *  is the name to show for the student persona (looked up by the caller). */
@@ -51,21 +58,70 @@ function applyAccountRoles(u: AuthUser): AuthUser {
   return next;
 }
 
+function storedUser(): AuthUser | null {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    return stored ? (JSON.parse(stored) as AuthUser) : null;
+  } catch {
+    return null; // ignore corrupt storage
+  }
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [viewAs, setViewAs] = useState<UserRole | null>(null);
+  // API mode: what the backend says about the session (who, and which roles).
+  const meRef = useRef<authApi.Me | null>(null);
 
   const effectiveRole: UserRole | null = viewAs ?? user?.role ?? null;
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) setUser(applyAccountRoles(JSON.parse(stored)));
-    } catch {
-      // ignore corrupt storage
+    if (!API_ENABLED) {
+      const stored = storedUser();
+      if (stored) setUser(applyAccountRoles(stored));
+      setLoaded(true);
+      return;
     }
-    setLoaded(true);
+    // The session cookie is HttpOnly — ask the API who it belongs to. localStorage only remembers
+    // which of their roles the user was acting as.
+    let cancelled = false;
+    authApi
+      .me()
+      .then((me) => {
+        if (cancelled) return;
+        meRef.current = me;
+        setSignedIn(true);
+        const next = authApi.userFromMe(me, storedUser()?.role);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+        setUser(next);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        localStorage.removeItem(STORAGE_KEY);
+        setUser(null);
+      })
+      .finally(() => {
+        if (!cancelled) setLoaded(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // The API answered 401 (session expired or ended elsewhere): sign the UI out — the shells send
+  // the user to /login.
+  useEffect(() => {
+    if (!API_ENABLED) return;
+    const onUnauthorized = () => {
+      meRef.current = null;
+      setSignedIn(false);
+      localStorage.removeItem(STORAGE_KEY);
+      setUser(null);
+      setViewAs(null);
+    };
+    window.addEventListener(UNAUTHORIZED_EVENT, onUnauthorized);
+    return () => window.removeEventListener(UNAUTHORIZED_EVENT, onUnauthorized);
   }, []);
 
   function persist(u: AuthUser) {
@@ -73,12 +129,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(u);
   }
 
-  function login(u: AuthUser) {
-    persist(applyAccountRoles(u));
+  function login(u: AuthUser, me?: authApi.Me) {
+    if (API_ENABLED) {
+      meRef.current = me ?? meRef.current;
+      setSignedIn(true);
+      persist(u);
+    } else {
+      persist(applyAccountRoles(u));
+    }
     setViewAs(null);
   }
 
   function logout() {
+    if (API_ENABLED) {
+      meRef.current = null;
+      setSignedIn(false);
+      authApi.logout().catch((err) => console.warn("[api] logout failed", err));
+    }
     localStorage.removeItem(STORAGE_KEY);
     setUser(null);
     setViewAs(null);
@@ -86,6 +153,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   function switchRole(role: UserRole, displayName?: string) {
     if (!user?.roles?.includes(role)) return;
+    if (API_ENABLED) {
+      if (!meRef.current) return;
+      persist(authApi.userFromMe(meRef.current, role));
+      setViewAs(null);
+      return;
+    }
     const account = findMultiRoleAccount(user.accountEmail);
     if (!account) return;
     const next: AuthUser = {
@@ -104,7 +177,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider value={{ user, viewAs, effectiveRole, setViewAs, login, logout, switchRole }}>
-      {children}
+      {/* API mode: the data Providers below load once, on mount — remount them whenever a different
+          account signs in (or out) so they load what this account may see. */}
+      <Fragment key={API_ENABLED ? (user?.accountEmail ?? "signed-out") : "local"}>{children}</Fragment>
+      {user?.demo && <DemoBanner email={user.accountEmail ?? user.email} />}
     </AuthContext.Provider>
   );
 }

@@ -6,6 +6,8 @@
 // one after another, across every Provider, so dependent calls made in the same tick — e.g. the admin
 // "create course" modal calling addCourse() then assignToCourse(created.id) — reach the server in order.
 
+import { ApiError } from "./client";
+
 let queue: Promise<void> = Promise.resolve();
 
 /**
@@ -34,4 +36,16 @@ export function enqueueWrite(task: () => Promise<unknown>, onError: () => void):
  */
 export function withNulls<T extends object>(data: T): T {
   return Object.fromEntries(Object.entries(data).map(([k, v]) => [k, v === undefined ? null : v])) as T;
+}
+
+/**
+ * A Provider's initial load failed. Not being signed in (401 — before sign-in every Provider still
+ * mounts) and not being allowed (403 — e.g. a student and the rubric library) are expected: the list
+ * just stays empty. Anything else is logged.
+ */
+export function loadFailed(what: string) {
+  return (err: unknown) => {
+    if (err instanceof ApiError && (err.status === 401 || err.status === 403)) return;
+    console.error(`[api] load ${what}`, err);
+  };
 }

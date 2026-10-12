@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { GradingCategoryContext, GradingCategory } from "@/lib/gradingCategories";
 import { API_ENABLED } from "@/lib/api/client";
-import { enqueueWrite } from "@/lib/api/sync";
+import { enqueueWrite, loadFailed } from "@/lib/api/sync";
 import * as api from "@/lib/api/grading-categories";
 
 const LS_CATEGORIES = "hwai_grading_categories_v1";
@@ -49,7 +49,7 @@ export default function GradingCategoryProvider({ children }: { children: React.
 
   // API mode: reload from the server — on mount, and after a failed write (see api/sync.ts).
   const resync = useCallback(() => {
-    api.getGradingCategories().then(setCategories, (err) => console.error("[api] load grading categories", err));
+    api.getGradingCategories().then(setCategories, loadFailed("grading categories"));
   }, []);
 
   useEffect(() => {

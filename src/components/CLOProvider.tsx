@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { CLOContext, CLO } from "@/lib/clo";
 import { API_ENABLED } from "@/lib/api/client";
-import { enqueueWrite } from "@/lib/api/sync";
+import { enqueueWrite, loadFailed } from "@/lib/api/sync";
 import * as api from "@/lib/api/clo";
 
 const LS_CLOS = "hwai_clos_v1";
@@ -55,7 +55,7 @@ export default function CLOProvider({ children }: { children: React.ReactNode })
 
   // API mode: reload from the server — on mount, and after a failed write (see api/sync.ts).
   const resync = useCallback(() => {
-    api.getCLOs().then(setClos, (err) => console.error("[api] load CLOs", err));
+    api.getCLOs().then(setClos, loadFailed("CLOs"));
   }, []);
 
   useEffect(() => {

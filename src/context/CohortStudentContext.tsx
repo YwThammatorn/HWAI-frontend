@@ -5,7 +5,7 @@ import { CohortStudentContext, CohortStudent } from "@/lib/cohort-students";
 import { useSectionRoles } from "@/lib/section-roles";
 import { useGradingAssignments } from "@/lib/grading-assignments";
 import { API_ENABLED } from "@/lib/api/client";
-import { enqueueWrite } from "@/lib/api/sync";
+import { enqueueWrite, loadFailed } from "@/lib/api/sync";
 import * as api from "@/lib/api/cohort-students";
 
 const STORAGE_KEY = "hwai_cohort_students_v1";
@@ -21,7 +21,7 @@ export default function CohortStudentProvider({ children }: { children: React.Re
 
   // API mode: reload from the server — on mount, and after a failed write (see api/sync.ts).
   const resync = useCallback(() => {
-    api.getCohortStudents().then(setCohortStudents, (err) => console.error("[api] load cohort students", err));
+    api.getCohortStudents().then(setCohortStudents, loadFailed("cohort students"));
   }, []);
 
   useEffect(() => {

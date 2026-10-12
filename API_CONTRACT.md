@@ -62,13 +62,29 @@ they come back.
 
 ## Auth
 
-- `Authorization: Bearer <token>` header, added automatically by `src/lib/api/client.ts` when a token
-  is present. Base URL from `NEXT_PUBLIC_API_URL` (empty string today — same-origin).
-- **Open gap, not solved here**: `AuthContext.tsx`'s `AuthUser` (the real session shape, stored under
-  `localStorage["hwai_user"]`) has no `token` field, and nothing in the app ever sets one — this demo
-  never had real login. `client.ts` already reads `JSON.parse(hwai_user)?.token` and quietly sends no
-  `Authorization` header when it's absent, so nothing breaks today; whoever builds real login needs to
-  add a `token` field to `AuthUser` and populate it on sign-in before this does anything.
+- **Session = an HttpOnly cookie** (`hwai_session`) set by HWAI-backend. `client.ts` sends
+  `credentials: "include"` on every request (and so do the raw file fetches in `fileStorage.ts`,
+  `SubmissionViewer`, `AssignmentAttachments`); the page never sees or stores a token.
+- `AuthContext` (API mode) asks `GET /api/auth/me` on load: who is signed in and every role they hold
+  (`roles`, plus `teacher` / `student` — their account records; staff are never also students).
+  The role switcher then offers exactly `roles` (somsak: admin + teacher) — `lib/accounts.ts`'s list,
+  which also gives somsak a student persona, applies only to the localStorage mock.
+  `localStorage["hwai_user"]` only remembers which of those roles the user is acting as.
+  `AuthUser.demo` is set for demo sessions — a "Demo mode" banner (`DemoBanner`) shows on every page.
+- The data Providers load once on mount, so `AuthProvider` remounts them whenever a different account
+  signs in or out. While signed out `client.ts` answers non-auth calls with a 401 itself (no request),
+  and a 401 from the API fires `hwai:unauthorized` → the UI signs out → the shells send the user to /login.
+  `loadFailed()` (`sync.ts`) keeps 401/403 on a Provider's initial load quiet — e.g. a student has no
+  rubric library.
+- Sign-in today is **demo sign-in only** (the backend runs with `DEMO_LOGIN=true`): the login page's
+  "Demo sign-in" buttons — Admin / Teacher → `somsak.c@kmitl.ac.th`, Student → `69070101@kmitl.ac.th`.
+  It skips the password only; the account keeps exactly its own permissions. The email + password form
+  tells the user to use Google (coming) or the demo buttons. Without `NEXT_PUBLIC_API_URL` the old
+  localStorage login and "Dev Bypass" are unchanged.
+- **Google sign-in** (accounts @kmitl.ac.th, no self-registration) comes later, once there's a Client ID.
+- The backend enforces who may do what (see HWAI-backend's README, "การเข้าสู่ระบบและสิทธิ์") — the
+  frontend's own hiding of controls is only UX now. A refused write (403) shows the usual
+  "Failed to save" alert and the Provider resyncs.
 - Errors: any non-2xx response throws `ApiError { status: number, message: string }` (`client.ts`).
   `message` is the response body text, or `res.statusText` if the body is empty. `204 No Content`
   resolves as `undefined`.
@@ -79,13 +95,15 @@ Each function below is `async`, already matches its real TypeScript type import 
 file for the exact type), and the endpoint/method is the one suggested in that file's comment — adjust
 freely, these are starting points, not a spec the frontend enforces.
 
-### Auth — `lib/api/auth.ts`
+### Auth — `lib/api/auth.ts` ✅ backed
 | Function | Verb + path | Request | Response |
 |---|---|---|---|
-| `login` | `POST /api/auth/login` | `{ email, password }` | `AuthUser` |
-| `register` | `POST /api/auth/register` | `{ name, email, password, role }` | `AuthUser` |
+| `authConfig` | `GET /api/auth/config` | — | `{ demoLogin, demoAccounts, google }` |
+| `demoLogin` | `POST /api/auth/demo-login` | `{ email }` | `Me` (+ sets the cookie) |
 | `logout` | `POST /api/auth/logout` | — | `void` |
-| `me` | `GET /api/auth/me` | — | `AuthUser` |
+| `me` | `GET /api/auth/me` | — | `Me` — `{ email, name, demo, roles, defaultRole, teacher, student }` |
+
+`userFromMe(me, role)` turns a `Me` into the `AuthUser` acting as `role`.
 
 ### Courses — `lib/api/courses.ts` (`Course` = a *section* instance, not a catalog entry)
 | Function | Verb + path | Request | Response |

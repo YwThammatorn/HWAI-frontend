@@ -7,6 +7,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { useCohortStudents } from "@/lib/cohort-students";
 import { findMultiRoleAccount, identityEmail } from "@/lib/accounts";
 import { ADMIN_DASHBOARD_DISABLED } from "@/lib/featureFlags";
+import { API_ENABLED } from "@/lib/api/client";
 import type { UserRole } from "@/context/AuthContext";
 
 const ROLE_ROUTE: Record<UserRole, string> = {
@@ -56,7 +57,12 @@ export default function RoleSwitcher() {
 
   // One sign-in, several roles (see lib/accounts.ts): a real switch between the
   // roles this account actually holds — never a preview, and never any other role.
-  const account = user.roles && user.roles.length > 1 ? findMultiRoleAccount(user.accountEmail) : undefined;
+  // With HWAI-backend the roles are what the API says (user.roles) — lib/accounts.ts is the mock's list.
+  const account = user.roles && user.roles.length > 1
+    ? (API_ENABLED
+      ? { email: user.accountEmail ?? user.email, name: user.name, roles: user.roles, defaultRole: user.role }
+      : findMultiRoleAccount(user.accountEmail))
+    : undefined;
   if (account) {
     const pickRole = (r: UserRole) => {
       setOpen(false);

@@ -45,7 +45,7 @@ export default function SubmissionViewer({ attachments, zoom, caption, empty }: 
       let blob: Blob | null = null;
       const dataUrl = resolveFileUrl(selRef);
       if (dataUrl) {
-        try { blob = await (await fetch(dataUrl)).blob(); } catch { blob = null; }
+        try { blob = await (await fetch(dataUrl, { credentials: "include" })).blob(); } catch { blob = null; }
       }
       // A ".pdf" is shown in an iframe on this app's origin — pin its type to PDF so a mislabelled
       // HTML file can only ever render as a (broken) PDF, never run script.

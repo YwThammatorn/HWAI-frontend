@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { CourseContext, Course, SEED_COURSES } from "@/lib/courses";
 import { API_ENABLED } from "@/lib/api/client";
-import { enqueueWrite } from "@/lib/api/sync";
+import { enqueueWrite, loadFailed } from "@/lib/api/sync";
 import * as api from "@/lib/api/courses";
 
 const LS_KEY = "hwai_courses_v2";
@@ -29,7 +29,7 @@ export default function CourseProvider({ children }: { children: React.ReactNode
         latest.current = loaded;
         setCourses(loaded);
       },
-      (err) => console.error("[api] load courses", err),
+      loadFailed("courses"),
     );
   }, []);
 

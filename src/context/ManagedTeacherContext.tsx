@@ -5,7 +5,7 @@ import { ManagedTeacherContext, ManagedTeacher, splitTeacherTitle } from "@/lib/
 import { useSectionRoles } from "@/lib/section-roles";
 import { useGradingAssignments } from "@/lib/grading-assignments";
 import { API_ENABLED } from "@/lib/api/client";
-import { enqueueWrite } from "@/lib/api/sync";
+import { enqueueWrite, loadFailed } from "@/lib/api/sync";
 import * as api from "@/lib/api/managed-teachers";
 
 const STORAGE_KEY = "hwai_managed_teachers_v1";
@@ -29,7 +29,7 @@ export default function ManagedTeacherProvider({ children }: { children: React.R
         latest.current = loaded;
         setTeachers(loaded);
       },
-      (err) => console.error("[api] load managed teachers", err),
+      loadFailed("managed teachers"),
     );
   }, []);
 

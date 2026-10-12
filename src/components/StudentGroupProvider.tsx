@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { StudentGroupContext, StudentGroup } from "@/lib/studentGroups";
 import { API_ENABLED } from "@/lib/api/client";
-import { enqueueWrite } from "@/lib/api/sync";
+import { enqueueWrite, loadFailed } from "@/lib/api/sync";
 import * as api from "@/lib/api/student-groups";
 
 const LS_KEY = "hwai_student_groups_v1";
@@ -22,7 +22,7 @@ export default function StudentGroupProvider({ children }: { children: React.Rea
 
   // API mode: reload from the server — on mount, and after a failed write (see api/sync.ts).
   const resync = useCallback(() => {
-    api.getStudentGroups().then(setGroups, (err) => console.error("[api] load student groups", err));
+    api.getStudentGroups().then(setGroups, loadFailed("student groups"));
   }, []);
 
   useEffect(() => {

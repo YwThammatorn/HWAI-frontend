@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { RubricLibraryContext, type RubricLibraryEntry } from "@/lib/rubricLibrary";
 import { API_ENABLED } from "@/lib/api/client";
-import { enqueueWrite } from "@/lib/api/sync";
+import { enqueueWrite, loadFailed } from "@/lib/api/sync";
 import * as api from "@/lib/api/rubric-tools";
 
 const LS_LIBRARY = "hwai_rubric_library_v1";
@@ -14,7 +14,7 @@ export default function RubricLibraryProvider({ children }: { children: React.Re
 
   // API mode: reload from the server — on mount, and after a failed write (see api/sync.ts).
   const resync = useCallback(() => {
-    api.getRubricLibrary().then(setEntries, (err) => console.error("[api] load rubric library", err));
+    api.getRubricLibrary().then(setEntries, loadFailed("rubric library"));
   }, []);
 
   useEffect(() => {

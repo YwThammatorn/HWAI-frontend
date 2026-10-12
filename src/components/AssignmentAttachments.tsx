@@ -122,7 +122,7 @@ async function openAttachment(a: AssignmentAttachment) {
   const dataUrl = resolveFileUrl(a.ref);
   if (!dataUrl) return;
   // Top-level navigation to data: URLs is blocked by browsers — go through a Blob URL.
-  const blob = await (await fetch(dataUrl)).blob();
+  const blob = await (await fetch(dataUrl, { credentials: "include" })).blob();
   const url = URL.createObjectURL(blob);
   // Blob URLs run on this app's origin, so only open types that can't carry script (not HTML, not
   // SVG); everything else downloads. Uploads are shared between users once they go to the backend.

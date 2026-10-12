@@ -27,6 +27,7 @@ export async function storeFile(file: File): Promise<string> {
   if (API_ENABLED) {
     const res = await fetch(apiUrl("/api/files"), {
       method: "POST",
+      credentials: "include", // the session cookie
       headers: {
         "Content-Type": file.type || "application/octet-stream",
         "X-File-Name": encodeURIComponent(file.name),
@@ -61,7 +62,7 @@ export function removeFile(key: string): void {
     return;
   }
   if (!API_ENABLED) return;
-  fetch(apiUrl(`/api/files/${encodeURIComponent(key)}`), { method: "DELETE" }).catch((err) =>
+  fetch(apiUrl(`/api/files/${encodeURIComponent(key)}`), { method: "DELETE", credentials: "include" }).catch((err) =>
     console.warn("[api] could not delete file", key, err),
   );
 }

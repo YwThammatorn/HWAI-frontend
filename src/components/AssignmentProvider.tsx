@@ -5,7 +5,7 @@ import { buildCriteria, UX_RESEARCH } from "@/lib/rubricTemplates";
 import { AssignmentContext, Assignment, Submission, Rubric, DEFAULT_LEVELS } from "@/lib/assignments";
 import { removeFile } from "@/lib/fileStorage";
 import { API_ENABLED } from "@/lib/api/client";
-import { enqueueWrite } from "@/lib/api/sync";
+import { enqueueWrite, loadFailed } from "@/lib/api/sync";
 import * as api from "@/lib/api/assignments";
 
 const LS_ASSIGNMENTS = "hwai_assignments_v1";
@@ -134,7 +134,7 @@ export default function AssignmentProvider({ children }: { children: React.React
         setSubmissions(s);
         setAllRubrics(r);
       },
-      (err) => console.error("[api] load assignments", err),
+      loadFailed("assignments"),
     );
   }, [setAllRubrics]);
 

@@ -7,6 +7,8 @@ import { useLanguage } from "@/context/LanguageContext";
 import { useCohortStudents } from "@/lib/cohort-students";
 import { ADMIN_DASHBOARD_DISABLED } from "@/lib/featureFlags";
 import type { UserRole } from "@/context/AuthContext";
+import { API_ENABLED } from "@/lib/api/client";
+import * as authApi from "@/lib/api/auth";
 
 function HwaiLogo() {
   return (
@@ -75,6 +77,30 @@ export default function LoginPage() {
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  // API mode: does HWAI-backend offer demo sign-in (DEMO_LOGIN=true)?
+  const [demoLogin, setDemoLogin] = useState(false);
+
+  useEffect(() => {
+    if (!API_ENABLED) return;
+    authApi.authConfig().then((c) => setDemoLogin(c.demoLogin), () => setDemoLogin(false));
+  }, []);
+
+  /** API mode: sign in through the backend's demo sign-in, acting as `role`. */
+  async function signInDemo(email: string, role: UserRole) {
+    setError("");
+    setLoading(true);
+    try {
+      const me = await authApi.demoLogin(email);
+      login(authApi.userFromMe(me, role), me);
+    } catch (err) {
+      const raw = err instanceof Error ? err.message : String(err);
+      let message = raw;
+      try { message = (JSON.parse(raw) as { error?: string }).error ?? raw; } catch { /* plain text */ }
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
     if (!user) return;
@@ -86,6 +112,15 @@ export default function LoginPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+
+    // With HWAI-backend there are no passwords: real sign-in will be Google (@kmitl.ac.th).
+    if (API_ENABLED) {
+      setError(t(
+        "ระบบจริงจะเข้าสู่ระบบด้วย Google (@kmitl.ac.th) — ระหว่างนี้ใช้บัญชีเดโมด้านล่าง",
+        "Sign-in will be with Google (@kmitl.ac.th) — for now, use a demo account below.",
+      ));
+      return;
+    }
 
     if (!email.includes("@")) {
       setError(t("กรุณากรอกอีเมลที่ถูกต้อง", "Please enter a valid email address."));
@@ -295,8 +330,39 @@ export default function LoginPage() {
               </button>
             </div>
 
-            {/* ── DEV BYPASS — only in development build ── */}
-            {process.env.NODE_ENV === "development" && (
+            {/* ── DEMO SIGN-IN — API mode, only while HWAI-backend runs with DEMO_LOGIN=true. It skips the
+                 password only: each button signs in as a real seeded account with that account's own
+                 permissions (สมศักดิ์ is a demo admin + teacher; 69070101 is a student). ── */}
+            {API_ENABLED && demoLogin && (
+              <div className="mt-6 rounded-xl border border-dashed border-amber-300 bg-amber-50 dark:border-amber-700/50 dark:bg-amber-900/10 p-4">
+                <p className="text-[10px] font-bold tracking-widest uppercase text-amber-600 dark:text-amber-400 mb-3">
+                  {t("เข้าสู่ระบบแบบเดโม", "Demo sign-in")}
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  {(
+                    [
+                      { role: "admin" as UserRole, label: "Admin", email: "somsak.c@kmitl.ac.th" },
+                      { role: "teacher" as UserRole, label: "Teacher", email: "somsak.c@kmitl.ac.th" },
+                      { role: "student" as UserRole, label: "Student", email: "69070101@kmitl.ac.th" },
+                    ] satisfies Array<{ role: UserRole; label: string; email: string }>
+                  ).map(({ role, label, email: demoEmail }) => (
+                    <button
+                      key={role}
+                      type="button"
+                      disabled={loading}
+                      title={demoEmail}
+                      onClick={() => signInDemo(demoEmail, role)}
+                      className="py-2 rounded-lg text-xs font-semibold border border-amber-300 bg-white text-amber-700 hover:bg-amber-100 disabled:opacity-50 dark:bg-amber-900/20 dark:border-amber-700/60 dark:text-amber-300 dark:hover:bg-amber-900/40 transition-colors"
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ── DEV BYPASS — only in development build, and only without the backend (localStorage mock) ── */}
+            {process.env.NODE_ENV === "development" && !API_ENABLED && (
               <div className="mt-6 rounded-xl border border-dashed border-amber-300 bg-amber-50 dark:border-amber-700/50 dark:bg-amber-900/10 p-4">
                 <p className="text-[10px] font-bold tracking-widest uppercase text-amber-600 dark:text-amber-400 mb-3">
                   Dev Bypass

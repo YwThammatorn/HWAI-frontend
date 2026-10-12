@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { CalibrationContext, type CalibrationRun } from "@/lib/calibration";
 import { API_ENABLED } from "@/lib/api/client";
-import { enqueueWrite } from "@/lib/api/sync";
+import { enqueueWrite, loadFailed } from "@/lib/api/sync";
 import * as api from "@/lib/api/rubric-tools";
 
 const LS_CALIBRATIONS = "hwai_calibrations_v1";
@@ -14,7 +14,7 @@ export default function CalibrationProvider({ children }: { children: React.Reac
 
   // API mode: reload from the server — on mount, and after a failed write (see api/sync.ts).
   const resync = useCallback(() => {
-    api.getCalibrationRuns().then(setRuns, (err) => console.error("[api] load calibration runs", err));
+    api.getCalibrationRuns().then(setRuns, loadFailed("calibration runs"));
   }, []);
 
   useEffect(() => {

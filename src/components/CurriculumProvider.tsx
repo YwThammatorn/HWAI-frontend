@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { CurriculumContext, CurriculumVersion, CourseTemplate } from "@/lib/curriculum";
 import { API_ENABLED } from "@/lib/api/client";
-import { enqueueWrite } from "@/lib/api/sync";
+import { enqueueWrite, loadFailed } from "@/lib/api/sync";
 import * as api from "@/lib/api/curriculum";
 
 const LS_VERSIONS = "hwai_curriculum_versions_v1";
@@ -29,7 +29,7 @@ export default function CurriculumProvider({ children }: { children: React.React
         setCurriculumVersions(versions);
         setCourseTemplates(templates);
       },
-      (err) => console.error("[api] load curriculum", err),
+      loadFailed("curriculum"),
     );
   }, []);
 

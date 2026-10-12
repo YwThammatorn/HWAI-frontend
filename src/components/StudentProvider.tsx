@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { StudentContext, Student } from "@/lib/students";
 import { API_ENABLED } from "@/lib/api/client";
-import { enqueueWrite } from "@/lib/api/sync";
+import { enqueueWrite, loadFailed } from "@/lib/api/sync";
 import * as api from "@/lib/api/students";
 
 const LS_KEY = "hwai_students_v1";
@@ -15,7 +15,7 @@ export default function StudentProvider({ children }: { children: React.ReactNod
 
   // API mode: reload from the server — on mount, and after a failed write (see api/sync.ts).
   const resync = useCallback(() => {
-    api.getStudents().then(setStudents, (err) => console.error("[api] load rosters", err));
+    api.getStudents().then(setStudents, loadFailed("rosters"));
   }, []);
 
   useEffect(() => {

@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { SectionRoleContext, SectionRole, SectionRolePermissions, defaultPermissionsFor } from "@/lib/section-roles";
 import { API_ENABLED } from "@/lib/api/client";
-import { enqueueWrite } from "@/lib/api/sync";
+import { enqueueWrite, loadFailed } from "@/lib/api/sync";
 import * as api from "@/lib/api/section-roles";
 
 const LS_KEY = "hwai_section_roles_v1";
@@ -15,7 +15,7 @@ export default function SectionRoleProvider({ children }: { children: React.Reac
 
   // API mode: reload from the server — on mount, and after a failed write (see api/sync.ts).
   const resync = useCallback(() => {
-    api.getSectionRoles().then(setSectionRoles, (err) => console.error("[api] load section roles", err));
+    api.getSectionRoles().then(setSectionRoles, loadFailed("section roles"));
   }, []);
 
   useEffect(() => {
