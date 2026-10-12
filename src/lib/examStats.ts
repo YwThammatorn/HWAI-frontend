@@ -24,6 +24,19 @@ export function computeExamStats(assignment: Assignment | undefined, submissions
   );
 }
 
+/**
+ * The same class numbers for an ordinary (non-exam) assignment, so a student can see how the room did on it too.
+ * Same gate as an exam: nothing exists until the teacher has announced the results.
+ */
+export function computeAssignmentStats(assignment: Assignment | undefined, submissions: Submission[]): ExamStats | null {
+  if (!assignment || assignment.isExam || !assignment.gradingFinalized) return null;
+  return statsFromScores(
+    submissions
+      .filter((s) => s.assignmentId === assignment.id && s.status === "graded")
+      .map((s) => s.instructorScore ?? s.aiScore ?? 0),
+  );
+}
+
 /** The same min / max / mean / SD from a plain list of scores — the teacher's summary has no "announced" gate. */
 export function statsFromScores(scores: number[]): ExamStats | null {
   if (scores.length === 0) return null;

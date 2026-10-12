@@ -123,8 +123,7 @@ test.describe("P2 — Teacher Grade Adjustment", () => {
     await regradeBtn.click();
     // Spinner visible during processing (1500ms)
     await expect(regradeBtn).toBeDisabled();
-    // After completion, score cell updates (wait up to 3s)
-    await page.waitForTimeout(2000);
+    // After completion the button is usable again (the mock takes 1.5s)
     await expect(regradeBtn).toBeEnabled();
   });
 

@@ -15,7 +15,7 @@ fetch('/mock-data/curriculum-mockup.json').then(r=>r.json()).then(d=>{localStora
 
 ---
 
-[2] รายวิชาที่เปิดสอน (53 section — หลายเคสไว้ดูหน้า /admin/courses ดู [11] ว่ามีเคสอะไรบ้าง; 15 รายการล่าสุดเป็นวิชาเก็บถาวรของเทอมก่อนๆ ไว้ให้ [14])
+[2] รายวิชาที่เปิดสอน (50 section — หลายเคสไว้ดูหน้า /admin/courses ดู [11] ว่ามีเคสอะไรบ้าง; 15 รายการล่าสุดเป็นวิชาเก็บถาวรของเทอมก่อนๆ ไว้ให้ [14])
     29/9: รวม [1] (curriculum) เข้ามาในคำสั่งนี้แล้ว — เมื่อก่อนถ้ารัน [2] เดี่ยวๆ โดยไม่รัน [1] ก่อน หน้า /admin/courses จะมองไม่เห็นหลักสูตรของวิชาไหนเลย ทำให้ตัวกรอง "สาขา"/"หลักสูตร" เหลือแค่ตัวเลือก "ทั้งหมด" ตัวเดียว (ดูเหมือน mock ไม่สมจริง ทั้งที่ curriculum-mockup.json มี 3 สาขา 9 หลักสูตรอยู่แล้ว) ตอนนี้รันคำสั่งเดียวได้ครบ ไม่ต้องพึ่งลำดับ [1] ก่อน [2] อีกต่อไป
 
 fetch('/mock-data/curriculum-mockup.json').then(r=>r.json()).then(d=>{localStorage.setItem('hwai_curriculum_versions_v1', JSON.stringify(d.curriculumVersions)); localStorage.setItem('hwai_course_templates_v1', JSON.stringify(d.courseTemplates)); return fetch('/mock-data/courses-mockup.json').then(r=>r.json());}).then(d=>{localStorage.setItem('hwai_courses_v2', JSON.stringify(d)); location.reload();});
@@ -134,11 +134,12 @@ fetch('/mock-data/curriculum-mockup-en.json').then(r=>r.json()).then(d=>{localSt
 
 [11] ดูหน้า /admin/courses หลายเคสพร้อมกัน — จัดกลุ่มตามหลักสูตร → วิชา (หลักสูตร + รายวิชา + อาจารย์ ชุดเดียว)
      ไม่แตะข้อมูลนักศึกษา/งาน ใช้เฉพาะ 3 ไฟล์ด้านล่าง รันแล้วหน้าจะ reload เอง แล้วเปิด /admin/courses (login admin)
-     เคสที่ใส่ไว้ (c-mock-1..37 — 30 เปิดสอน / 7 เก็บถาวร; ไฟล์ตอนนี้มี 53 รายการ — 38..52 เป็นวิชาเก็บถาวรย้อนหลังของ [14]):
+     เคสที่ใส่ไว้ (c-mock-1..37 — 27 เปิดสอน / 7 เก็บถาวร; ไฟล์ตอนนี้มี 50 รายการ — c-mock-15/28/33 (วิชา ML ที่ไม่มีอาจารย์) ถูกตัดออก, 38..53 เป็นวิชาเก็บถาวรย้อนหลังของ [14]):
        - วิชาเดียวกันหลาย section (Computer Programming 3 sec, DSA 3 sec, OS 2 sec) — ต้องอยู่ในการ์ดเดียวกัน
        - วิชาเดียวกันคนละเทอม/ปี (Senior Project 2569/1 + ที่เก็บถาวร 2568/1, DSA 2569/1 + 2569/2, Programming 2568/1+2)
        - เทอม 3 (Database Systems 2569/3)
-       - section ไม่มีอาจารย์ (Programming Sec 3, ML, AI&ML, CEI ML) และหลายอาจารย์ใน section เดียว (UX/UI Sec 2 = อาจารย์ 2 คน)
+       - วิชาที่มีหลาย section อาจารย์คนเดียวสอนทุก section (Programming 3 sec = สมศักดิ์, DSA 2569/1 = สมศักดิ์, UX/UI = กานต์) — ไม่มี section ว่าง ไม่มีหลายอาจารย์ใน section เดียว (7/10, ทดสอบด้วย section-one-teacher.spec)
+       - ทุกรายวิชามีอาจารย์ 1 คนพอดี (ตอนสร้างวิชาในระบบต้องเลือกอาจารย์เสมอ จึงไม่มีเคส "No teachers assigned" ใน mock — ทดสอบด้วย section-one-teacher.spec)
        - ชื่อวิชาเดียวกันแต่คนละหลักสูตร (UX/UI ใน CE 2569 / CECS 2565 / CEI 2568) — ต้องไม่ปนกัน
        - หลักสูตรที่มีแต่ section เก็บถาวร (CE 2559, CECS 2560, CEI 2563) — ทดสอบตัวกรองสถานะ + ไม่มีปุ่ม + Section
        - ไม่ผูกหลักสูตร: หัวข้อพิเศษ (ชื่อยาว 2 section) และ Git workshop ที่ไม่มีปี/เทอม/section เลย
@@ -191,7 +192,7 @@ fetch('/mock-data/student-flow-mockup-en.json').then(r=>r.json()).then(d=>{local
 ---
 
 [14] ประวัติรายวิชาของนักศึกษา — ไว้ดู "รายวิชาของฉัน" (เทอมปัจจุบัน) กับ "รายวิชาที่เรียนผ่านไปแล้ว" ของ role student
-     คำสั่งเดียวจบ: ใส่รายวิชา 53 รายการ + อาจารย์ + รายชื่อนักศึกษา 85 คน (เหมือน [2] [3] [12]) แล้วเพิ่มประวัติเรียนต่อท้ายข้อมูลเดิม
+     คำสั่งเดียวจบ: ใส่รายวิชา 50 รายการ + อาจารย์ + รายชื่อนักศึกษา 85 คน (เหมือน [2] [3] [12]) แล้วเพิ่มประวัติเรียนต่อท้ายข้อมูลเดิม
      4/10: วิชาที่เรียนผ่านแล้วมี แล็บ (เต็ม 40) · แบบทดสอบย่อย (เต็ม 20) · สอบปลายภาค (เต็ม 40) = 100 คะแนน — คะแนนแต่ละชิ้นต่างกันตามจริง (ไม่ใช่เลขเดียวกันทั้ง 3 ชิ้นอีกแล้ว) แต่รวมแล้วได้เกรดเดิมเป๊ะ
      rubric ของทุกงานเป็นแบบ 4 ระดับ เกณฑ์เข้ากับวิชา: แล็บของ DSA วัดอัลกอริทึม/ความซับซ้อน, ตรรกะดิจิทัลวัดวงจร/การลดรูป, ฐานข้อมูลวัด ER/SQL ฯลฯ ส่วนแบบทดสอบย่อยและสอบปลายภาคใช้กรอบเดียวกันโดยเปลี่ยนหัวข้อวิชา
      (ประวัติเป็นแบบ "เพิ่ม/แทนที่ตาม id" — รันซ้ำได้ ข้อมูลประวัติเก่าในเบราว์เซอร์ถูกแทนที่ด้วยคะแนนชุดใหม่ — ถ้าอยากได้ c-mock-1 แบบเต็ม (rubric/แนบไฟล์) ของ 69070101 ด้วย ให้รัน [5] ก่อนค่อยรัน [14] ตามหลัง ลำดับนี้เท่านั้น: [14] ก่อนไม่ทับ [5], กลับกัน [5] ทับ [14] แน่นอนเพราะ [5] เขียนทับทั้ง 4 คีย์เดียวกัน)
@@ -295,6 +296,73 @@ fetch('/mock-data/student-uxui-mockup-en.json').then(r=>r.json()).then(f=>fetch(
 
 ---
 
+[18] รีโหลดเฉพาะ "รายวิชา + อาจารย์คนเดียวสอนทุก section" + ป้าย CLO บนเกณฑ์ (11/10) — ไม่แตะนักศึกษา/ผลตรวจ/ประวัติ
+     0) รายวิชา: ทุกรายวิชามีอาจารย์ (วิชา ML ที่ไม่มีอาจารย์ 3 รายการถูกตัดออก — 50 รายการ) — เขียนทับ hwai_courses_v2 (รายวิชาทั้งชุด เหมือน [2])
+     1) อาจารย์: ทุกวิชาที่เปิดในเทอมเดียวกันมีอาจารย์คนเดียวสอนทุก section (Programming 3 sec = สมศักดิ์, UX/UI = กานต์ ฯลฯ) — เขียนทับ hwai_managed_teachers_v1 (รายชื่ออาจารย์ทั้งชุด เหมือน [3])
+     2) Rubric: เกณฑ์ 21 ข้อของ c-mock-1 ผูกกับ CLO1–4 (cloIds) — เขียนทับ rubric ตาม id เท่านั้น และเติม CLO ตาม id ถ้ายังไม่มี; ไม่แตะ hwai_submissions_v1 / รายชื่อนักศึกษา (ต่างจาก [6]/[13] ที่เขียนทับผลตรวจทั้งชุด)
+     ดูผล: /admin/courses (Programming Sec 1–3 ชื่ออาจารย์เหมือนกัน), /teacher/courses/c-mock-1/clo (ผลลัพธ์ CLO), หน้าแก้ไขงาน → แถว "CLO ที่เกณฑ์นี้วัด"
+     (ทดสอบด้วย reload-teachers-clo.spec.ts — คำสั่งด้านล่างถูกดึงจากไฟล์นี้ไปรันจริงจากสถานะเก่า)
+
+     ภาษาไทย:
+
+fetch('/mock-data/courses-mockup.json').then(r=>r.json()).then(d=>{localStorage.setItem('hwai_courses_v2', JSON.stringify(d)); return fetch('/mock-data/teachers-mockup.json').then(r=>r.json());}).then(d=>{localStorage.setItem('hwai_managed_teachers_v1', JSON.stringify(d)); return fetch('/mock-data/student-flow-mockup.json').then(r=>r.json());}).then(d=>{const rids=new Set(d.rubrics.map(r=>r.id)); localStorage.setItem('hwai_rubrics_v1', JSON.stringify([...JSON.parse(localStorage.getItem('hwai_rubrics_v1')||'[]').filter(r=>!rids.has(r.id)),...d.rubrics])); const cids=new Set(d.clos.map(c=>c.id)); localStorage.setItem('hwai_clos_v1', JSON.stringify([...JSON.parse(localStorage.getItem('hwai_clos_v1')||'[]').filter(c=>!cids.has(c.id)),...d.clos])); location.reload();});
+
+     English:
+
+fetch('/mock-data/courses-mockup-en.json').then(r=>r.json()).then(d=>{localStorage.setItem('hwai_courses_v2', JSON.stringify(d)); return fetch('/mock-data/teachers-mockup-en.json').then(r=>r.json());}).then(d=>{localStorage.setItem('hwai_managed_teachers_v1', JSON.stringify(d)); return fetch('/mock-data/student-flow-mockup-en.json').then(r=>r.json());}).then(d=>{const rids=new Set(d.rubrics.map(r=>r.id)); localStorage.setItem('hwai_rubrics_v1', JSON.stringify([...JSON.parse(localStorage.getItem('hwai_rubrics_v1')||'[]').filter(r=>!rids.has(r.id)),...d.rubrics])); const cids=new Set(d.clos.map(c=>c.id)); localStorage.setItem('hwai_clos_v1', JSON.stringify([...JSON.parse(localStorage.getItem('hwai_clos_v1')||'[]').filter(c=>!cids.has(c.id)),...d.clos])); location.reload();});
+
+---
+
+[19] รีโหลดเฉพาะ "ถ้อยคำของ rubric" ทุกวิชา (11/10) — ชื่อเกณฑ์สองภาษา "C1 · English / ไทย" + คำอธิบายทั้ง 4 ระดับเขียนเฉพาะเจาะจง
+     เขียนทับเฉพาะ rubric ตาม id ของ c-mock-1 (7 ชุด), ประวัติรายวิชา (45 ชุด) และ UX/UI c-mock-4 (1 ชุด) — เกณฑ์/คะแนนเต็ม/น้ำหนักเท่าเดิม
+     ไม่แตะ hwai_submissions_v1 / รายชื่อนักศึกษา / งาน / รายวิชา (ผลตรวจและคะแนนรายเกณฑ์ของทุกคนคงเดิม) — rubric ของคนอื่นที่ id ไม่ตรงอยู่ครบ
+     ดูผล: /teacher/courses/c-mock-1/assignments/a-mock-1/grading (การ์ด Grading rubric), หน้าแก้ไขงาน (หัวระดับ "ระดับ 3 · 9 คะแนน")
+     (ทดสอบด้วย reload-rubric-wording.spec.ts — คำสั่งด้านล่างถูกดึงจากไฟล์นี้ไปรันจริงจากสถานะเก่า)
+
+     ภาษาไทย:
+
+const merge=(rs)=>{const ids=new Set(rs.map(r=>r.id)); localStorage.setItem('hwai_rubrics_v1', JSON.stringify([...JSON.parse(localStorage.getItem('hwai_rubrics_v1')||'[]').filter(r=>!ids.has(r.id)),...rs]));}; Promise.all(['flow','history','uxui'].map(n=>fetch('/mock-data/student-'+n+'-mockup.json').then(r=>r.json()))).then(([f,h,u])=>{merge(f.rubrics); merge(h.rubrics); merge(u.rubrics); location.reload();});
+
+     English:
+
+const merge=(rs)=>{const ids=new Set(rs.map(r=>r.id)); localStorage.setItem('hwai_rubrics_v1', JSON.stringify([...JSON.parse(localStorage.getItem('hwai_rubrics_v1')||'[]').filter(r=>!ids.has(r.id)),...rs]));}; Promise.all(['flow','history','uxui'].map(n=>fetch('/mock-data/student-'+n+'-mockup-en.json').then(r=>r.json()))).then(([f,h,u])=>{merge(f.rubrics); merge(h.rubrics); merge(u.rubrics); location.reload();});
+
+---
+
+[20] รีโหลดสิ่งที่แก้ใน mock รอบ 11/10 ทั้งหมดในครั้งเดียว — ไม่แตะนักศึกษา/งานอื่น/ผลตรวจที่เหลือ
+     0) รายวิชา (50 รายการ ทุกวิชามีอาจารย์) + อาจารย์ (คนเดียวสอนทุก section) — เขียนทับทั้งชุด เหมือน [18]
+     1) Rubric ทั้ง 53 ชุด (ชื่อเกณฑ์สองภาษา + คำอธิบายทุกระดับ) และป้าย CLO — เขียนทับตาม id เหมือน [18] + [19]
+     2) ผลตรวจของ 2 งานใน c-mock-1 กลับเป็น "ยังไม่ตรวจ" (ไว้ลองกด "ตรวจด้วย AI"): Introductory Python Exercise (10 ชิ้นรอ) และ Quiz 2 (4 ชิ้นรอ) — เขียนทับเฉพาะ submission ของ 2 งานนี้ตาม id; ผลตรวจของงานอื่นและของคนอื่นอยู่ครบ (ต่างจาก [6]/[13]/[15] ที่เขียนทับทุกชิ้น)
+     ดูผล: /teacher/courses/c-mock-1/grading (ปุ่ม "ตรวจด้วย AI (10)" ที่ Python Exercise), หน้า /admin/courses
+     (ทดสอบด้วย reload-1110.spec.ts — คำสั่งด้านล่างถูกดึงจากไฟล์นี้ไปรันจริงจากสถานะเก่า)
+
+     ภาษาไทย:
+
+const get=(u)=>fetch(u).then(r=>r.json()); const merge=(k,rs)=>{const ids=new Set(rs.map(r=>r.id)); localStorage.setItem(k, JSON.stringify([...JSON.parse(localStorage.getItem(k)||'[]').filter(r=>!ids.has(r.id)),...rs]));}; Promise.all([get('/mock-data/courses-mockup.json'), get('/mock-data/teachers-mockup.json'), get('/mock-data/student-flow-mockup.json'), get('/mock-data/student-history-mockup.json'), get('/mock-data/student-uxui-mockup.json')]).then(([c,t,f,h,u])=>{localStorage.setItem('hwai_courses_v2', JSON.stringify(c)); localStorage.setItem('hwai_managed_teachers_v1', JSON.stringify(t)); merge('hwai_rubrics_v1', [...f.rubrics,...h.rubrics,...u.rubrics]); merge('hwai_clos_v1', f.clos); merge('hwai_submissions_v1', f.submissions.filter(s=>s.assignmentId==='a-mock-1'||s.assignmentId==='a-mock-6')); location.reload();});
+
+     English:
+
+const get=(u)=>fetch(u).then(r=>r.json()); const merge=(k,rs)=>{const ids=new Set(rs.map(r=>r.id)); localStorage.setItem(k, JSON.stringify([...JSON.parse(localStorage.getItem(k)||'[]').filter(r=>!ids.has(r.id)),...rs]));}; Promise.all([get('/mock-data/courses-mockup-en.json'), get('/mock-data/teachers-mockup-en.json'), get('/mock-data/student-flow-mockup-en.json'), get('/mock-data/student-history-mockup-en.json'), get('/mock-data/student-uxui-mockup-en.json')]).then(([c,t,f,h,u])=>{localStorage.setItem('hwai_courses_v2', JSON.stringify(c)); localStorage.setItem('hwai_managed_teachers_v1', JSON.stringify(t)); merge('hwai_rubrics_v1', [...f.rubrics,...h.rubrics,...u.rubrics]); merge('hwai_clos_v1', f.clos); merge('hwai_submissions_v1', f.submissions.filter(s=>s.assignmentId==='a-mock-1'||s.assignmentId==='a-mock-6')); location.reload();});
+
+---
+
+[21] เพิ่มข้อมูลไว้ลองหน้า Rubrics > "เทียบข้ามปี" (12/10) — วิชาการเขียนโปรแกรม ของปี 2567 และ 2568 พร้อม rubric และผลตรวจของนักศึกษาสมมติ 36 คนต่องาน
+     เพิ่มรายวิชา c-mock-60 (2567/1) และ c-mock-61 (2568/1) ให้อาจารย์สมศักดิ์ (เก็บถาวร), งาน 4 ชิ้น (แบบฝึกหัด Python + Mini Project ปีละ 1 ชุด), rubric 4 ชุดที่ชื่อเกณฑ์ตรงกับของปีนี้บางส่วน (ปี 2567 ไม่มี Error handling, Mini Project ปี 2567 มี Style and documentation แทน), และผลตรวจ 144 ชิ้น
+     เติมแบบ merge ตาม id เท่านั้น — ไม่แตะรายวิชา/อาจารย์/งาน/ผลตรวจอื่น ใช้นักศึกษาสมมติ (รหัส 6799xxxx / 6899xxxx) จึงไม่กระทบประวัติรายวิชาของนักศึกษาจริงในระบบ
+     ดูผล: /teacher/courses/c-mock-1/rubrics (แท็บ "เทียบข้ามปี"), และปุ่ม "ใช้ rubric จากงานก่อนหน้า" ตอนสร้างงาน (มี "ปีที่แล้ว")
+     ต้องโหลด [2]/[3]/[5] หรือ [18]/[20] มาก่อน เพื่อให้มีรายวิชา c-mock-1 และ rubric ของปีนี้
+     (ทดสอบด้วย reload-rubric-years.spec.ts — คำสั่งด้านล่างถูกดึงจากไฟล์นี้ไปรันจริงจากสถานะเก่า)
+
+     ภาษาไทย:
+
+const get=(u)=>fetch(u).then(r=>r.json()); const merge=(k,rs)=>{const ids=new Set(rs.map(r=>r.id)); localStorage.setItem(k, JSON.stringify([...JSON.parse(localStorage.getItem(k)||'[]').filter(r=>!ids.has(r.id)),...rs]));}; get('/mock-data/rubric-years-mockup.json').then(d=>{merge('hwai_courses_v2', d.courses); merge('hwai_assignments_v1', d.assignments); merge('hwai_rubrics_v1', d.rubrics); merge('hwai_submissions_v1', d.submissions); const ts=JSON.parse(localStorage.getItem('hwai_managed_teachers_v1')||'[]'); ts.forEach(t=>{ if(t.id===d.teacherId) t.courseIds=[...new Set([...(t.courseIds||[]),...d.courses.map(c=>c.id)])]; }); localStorage.setItem('hwai_managed_teachers_v1', JSON.stringify(ts)); location.reload();});
+
+     English:
+
+const get=(u)=>fetch(u).then(r=>r.json()); const merge=(k,rs)=>{const ids=new Set(rs.map(r=>r.id)); localStorage.setItem(k, JSON.stringify([...JSON.parse(localStorage.getItem(k)||'[]').filter(r=>!ids.has(r.id)),...rs]));}; get('/mock-data/rubric-years-mockup-en.json').then(d=>{merge('hwai_courses_v2', d.courses); merge('hwai_assignments_v1', d.assignments); merge('hwai_rubrics_v1', d.rubrics); merge('hwai_submissions_v1', d.submissions); const ts=JSON.parse(localStorage.getItem('hwai_managed_teachers_v1')||'[]'); ts.forEach(t=>{ if(t.id===d.teacherId) t.courseIds=[...new Set([...(t.courseIds||[]),...d.courses.map(c=>c.id)])]; }); localStorage.setItem('hwai_managed_teachers_v1', JSON.stringify(ts)); location.reload();});
+
+---
+
 [4] ล้างข้อมูลทั้งหมด (ถ้าอยากเริ่มใหม่)
 
 ['hwai_user','hwai_managed_teachers_v1','hwai_cohort_students_v1','hwai_courses_v2','hwai_curriculum_versions_v1','hwai_course_templates_v1','hwai_students_v1','hwai_grading_categories_v1','hwai_assignments_v1','hwai_rubrics_v1','hwai_submissions_v1','hwai_student_groups_v1','hwai_clos_v1'].forEach(k=>localStorage.removeItem(k)); location.reload();
@@ -305,7 +373,7 @@ fetch('/mock-data/student-uxui-mockup-en.json').then(r=>r.json()).then(f=>fetch(
 - ไฟล์ json ต้นทางอยู่ใน public/mock-data/ (courses-mockup.json, curriculum-mockup.json, teachers-mockup.json, student-flow-mockup.json)
   ถ้าแก้ข้อมูล mock ให้แก้ที่ test-data/*.json ก่อน แล้ว copy ทับไฟล์ใน public/mock-data/ ด้วย
 - คำสั่งพวกนี้ทำงานเฉพาะตอน dev server รันอยู่ (npm run dev) เพราะ fetch ไปที่ localhost
-- teachers-mockup.json ใช้ courseId ที่ตรงกับ courses-mockup.json (c-mock-1..53; 1..6 เดิม ที่เหลือเพิ่ม 26/9/2569 สำหรับหน้า /admin/courses และ [14]) ทำ [2] ก่อน [3] เสมอ
+- teachers-mockup.json ใช้ courseId ที่ตรงกับ courses-mockup.json (c-mock-1..53 ข้ามเลข 15/28/33; 1..6 เดิม ที่เหลือเพิ่ม 26/9/2569 สำหรับหน้า /admin/courses และ [14]) ทำ [2] ก่อน [3] เสมอ
 - student-flow-mockup.json ก็ใช้ courseId c-mock-1 เหมือนกัน ทำ [2] ก่อน [5] เสมอ
 - students_sample.csv ([3b]) กับ course-import-test.csv ([7]) เป็นคนละไฟล์ คนละหน้า แต่ ID ใช้ scheme เดียวกัน:
   — [3b] คือ import นักศึกษาเข้า cohort กลางของระบบ (ผ่าน /admin/users, format 5 คอลัมน์ studentId,firstName,lastName,email,program — cohort field ถูกเอาออกแล้ว 23/9/2569)

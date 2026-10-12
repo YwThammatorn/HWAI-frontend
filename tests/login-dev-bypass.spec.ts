@@ -9,6 +9,7 @@ const BASE = "http://localhost:3000";
 // every seed combination ([5] alone, [12]'s 57-student cohort, and [14]'s extra current-term courses).
 
 test("the Dev Bypass Student shortcut logs into a real, enrolled account", async ({ page }) => {
+  test.skip(!!process.env.E2E_PROD, "the Dev Bypass panel only exists in `next dev` builds");
   await page.addInitScript(() => {
     const NOW = "2026-01-01T00:00:00.000Z";
     localStorage.setItem("hwai_lang", "en");

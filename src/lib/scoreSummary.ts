@@ -11,7 +11,7 @@ export type Letter = (typeof LETTERS)[number];
 
 /**
  * Where an assignment stands for the teacher:
- *  announced — Finish & announce was pressed, students see their scores
+ *  announced — the teacher pressed "Announce results", students see their scores
  *  ready     — nothing left to grade, only the announcement is missing
  *  grading   — some work graded, some still waiting
  *  none      — nothing graded yet

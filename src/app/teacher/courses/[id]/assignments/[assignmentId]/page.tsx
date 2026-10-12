@@ -9,6 +9,9 @@ import { useLanguage } from "@/context/LanguageContext";
 import { dateLocale } from "@/lib/dateLocale";
 import AssignmentTypeBadge from "@/components/AssignmentTypeBadge";
 import { AttachmentList } from "@/components/AssignmentAttachments";
+import CloChips from "@/components/CloChips";
+import CriterionName from "@/components/CriterionName";
+import { useCLOs } from "@/lib/clo";
 
 function fmtDate(dateStr: string, lang: string) {
   return new Date(dateStr + "T00:00:00").toLocaleDateString(dateLocale(lang), {
@@ -24,6 +27,7 @@ export default function ViewAssignmentPage() {
   const { getCourse } = useCourses();
   const { getAssignment, getSubmissionsByAssignment, getRubricsByAssignment } = useAssignments();
   const { getCategoriesByCourse } = useGradingCategories();
+  const { getCLOsByCourse } = useCLOs();
 
   const course = getCourse(id);
   const assignment = getAssignment(assignmentId);
@@ -206,7 +210,10 @@ export default function ViewAssignmentPage() {
                   {rubric.criteria.map((c) => (
                     <div key={c.id} className="rounded-xl border border-[var(--border-subtle)] p-3">
                       <div className="flex items-start justify-between gap-3 mb-1">
-                        <p className="text-sm font-semibold text-[var(--text-primary)]">{c.name}</p>
+                        <div className="min-w-0">
+                          <CriterionName name={c.name} />
+                          <CloChips cloIds={c.cloIds} clos={getCLOsByCourse(id)} />
+                        </div>
                         <span className="shrink-0 text-xs font-semibold text-[var(--accent)] tabular-nums">
                           {c.weight}% · {c.maxPoints} {t("คะแนน", "pts")}
                         </span>

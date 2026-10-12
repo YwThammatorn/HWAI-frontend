@@ -1140,13 +1140,16 @@ function DeactivateBatchModal({ open, onClose, students, onConfirm }: {
   onConfirm: (batch: string, ids: string[], programLabel?: string) => void;
 }) {
   const { t } = useLanguage();
-  // A few people outside the batch pattern (30/9/2569) — picked one at a time via search, on top
-  // of whatever the batch + program selection already covers. Cleared every time the modal opens,
-  // so a pick from a previous, cancelled run never silently rides along into a later one.
-  const [extraIds, setExtraIds] = useState<string[]>([]);
+  // The list under the pickers (11/10/2569) is the batch / program the pickers describe — everyone ticked, so the admin sees
+  // exactly who will go and unticks anyone who has not graduated (they stay active). On top of that, a few people OUTSIDE
+  // the selection can be added one at a time (30/9/2569) from a collapsed list. All of it is cleared every time the modal
+  // opens and whenever the batch / program changes, so a pick from a previous run never silently rides along.
+  const [keepIds, setKeepIds] = useState<string[]>([]);       // in the selection, but unticked = stays active
+  const [listQuery, setListQuery] = useState("");
+  const [extraIds, setExtraIds] = useState<string[]>([]);     // outside the selection, ticked = goes too
   const [addQuery, setAddQuery] = useState("");
   useEffect(() => {
-    if (open) { setExtraIds([]); setAddQuery(""); }
+    if (open) { setKeepIds([]); setListQuery(""); setExtraIds([]); setAddQuery(""); }
   }, [open]);
   // full program names, never the CE / CECS / CEI abbreviations (same 3-entry map as the other places in this file)
   const PROGRAM_NAME: Record<string, string> = {
@@ -1170,15 +1173,25 @@ function DeactivateBatchModal({ open, onClose, students, onConfirm }: {
   // Individually-added people, on top of the batch/program selection above — picking someone
   // already in it is harmless (the final list below dedupes by id).
   const inBatchIds = new Set(inBatch.map((s) => s.id));
-  const addCandidates = active.filter((s) => !inBatchIds.has(s.id) && !extraIds.includes(s.id));
-  const candidateLabel = (s: { firstName: string; lastName: string; studentId: string }) => `${s.firstName} ${s.lastName} (${s.studentId})`;
-  function handleAddQueryChange(v: string) {
-    setAddQuery(v);
-    const match = addCandidates.find((s) => candidateLabel(s) === v);
-    if (match) { setExtraIds((ids) => [...ids, match.id]); setAddQuery(""); }
+  // everyone still active that the selection leaves out — the people you can add by hand
+  const leftOut = active.filter((s) => !inBatchIds.has(s.id)).sort((a, b) => a.studentId.localeCompare(b.studentId));
+  const aq = addQuery.trim().toLowerCase();
+  const shownLeftOut = aq
+    ? leftOut.filter((s) => `${s.firstName} ${s.lastName} ${s.studentId} ${s.program} ${programName(s.program)}`.toLowerCase().includes(aq))
+    : leftOut;
+  const pickedLeftOut = leftOut.filter((s) => extraIds.includes(s.id)).length;
+  function toggleExtra(id: string) {
+    setExtraIds((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]));
   }
-  const extras = active.filter((s) => extraIds.includes(s.id));
-  const finalIds = [...new Set([...inBatch.map((s) => s.id), ...extraIds])];
+  const lq = listQuery.trim().toLowerCase();
+  const shownInBatch = lq
+    ? inBatch.filter((s) => `${s.firstName} ${s.lastName} ${s.studentId} ${s.program} ${programName(s.program)}`.toLowerCase().includes(lq))
+    : inBatch;
+  function toggleKeep(id: string) {
+    setKeepIds((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]));
+  }
+  const goingFromBatch = inBatch.filter((s) => !keepIds.includes(s.id));
+  const finalIds = [...new Set([...goingFromBatch.map((s) => s.id), ...extraIds])];
 
   return (
     <Modal open={open} onClose={onClose} size="md" title={t("ปิดใช้งานทั้งรุ่น", "Deactivate a whole batch")}
@@ -1199,7 +1212,7 @@ function DeactivateBatchModal({ open, onClose, students, onConfirm }: {
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-1.5">
           <label htmlFor="batch-select" className="text-xs font-semibold text-[var(--text-muted)]">{t("รุ่น (เลขสองหลักแรกของรหัสนักศึกษา)", "Batch (first two digits of the student ID)")}</label>
-          <select id="batch-select" value={batch} onChange={(e) => setPicked(e.target.value)}
+          <select id="batch-select" value={batch} onChange={(e) => { setPicked(e.target.value); setKeepIds([]); setListQuery(""); }}
             className="h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-3 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]">
             {batches.map((b) => {
               const n = active.filter((s) => batchOf(s.studentId) === b).length;
@@ -1209,7 +1222,7 @@ function DeactivateBatchModal({ open, onClose, students, onConfirm }: {
         </div>
         <div className="flex flex-col gap-1.5">
           <label htmlFor="batch-program-select" className="text-xs font-semibold text-[var(--text-muted)]">{t("สาขา", "Program")}</label>
-          <select id="batch-program-select" value={program} onChange={(e) => setPickedProgram(e.target.value)}
+          <select id="batch-program-select" value={program} onChange={(e) => { setPickedProgram(e.target.value); setKeepIds([]); setListQuery(""); }}
             className="h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-3 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]">
             <option value="all">{t(`ทุกสาขา — ${wholeBatch.length} คน`, `All programs — ${wholeBatch.length}`)}</option>
             {programsInBatch.map((p) => (
@@ -1223,38 +1236,103 @@ function DeactivateBatchModal({ open, onClose, students, onConfirm }: {
           <span className="text-[var(--text-muted)]">{program === "all" ? t("ทุกสาขา", "all programs") : programName(program)}</span>
         </p>
 
-        {/* A few people outside the batch pattern — found one at a time, not limited to this batch/program (30/9/2569) */}
-        <div className="flex flex-col gap-1.5 pt-1 border-t border-[var(--border-subtle)]">
-          <label htmlFor="batch-add-individual" className="text-xs font-semibold text-[var(--text-muted)] mt-3">
-            {t("เพิ่มคนที่ยังไม่จบเป็นรายคน (ไม่บังคับ)", "Also deactivate individually (optional)")}
-          </label>
-          <SearchInput
-            value={addQuery}
-            onChange={handleAddQueryChange}
-            placeholder={t("ค้นหาชื่อนักศึกษา...", "Search student name...")}
-            ariaLabel={t("เพิ่มคนที่ยังไม่จบเป็นรายคน", "Also deactivate individually")}
-            suggestions={addCandidates.map(candidateLabel)}
-          />
-          {extras.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mt-1">
-              {extras.map((s) => (
-                <span key={s.id} className="inline-flex items-center gap-1 pl-2.5 pr-1 py-1 rounded-full bg-[var(--accent-bright)]/10 text-[var(--accent)] text-xs font-medium">
-                  {s.firstName} {s.lastName}
-                  <button
-                    type="button"
-                    onClick={() => setExtraIds((ids) => ids.filter((id) => id !== s.id))}
-                    aria-label={t(`เอา ${s.firstName} ${s.lastName} ออก`, `Remove ${s.firstName} ${s.lastName}`)}
-                    className="w-4 h-4 flex items-center justify-center rounded-full hover:bg-black/10 transition-colors"
-                  >
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" aria-hidden="true">
-                      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                    </svg>
-                  </button>
-                </span>
-              ))}
-            </div>
+        {/* Who will be deactivated: the batch / program above, everyone ticked — untick anyone who has not graduated */}
+        <div className="flex flex-col gap-2 pt-1 border-t border-[var(--border-subtle)]" data-testid="deactivate-batch-list">
+          <div className="mt-3 flex items-baseline justify-between gap-3">
+            <p id="batch-who" className="text-xs font-semibold text-[var(--text-muted)]">
+              {t("รายชื่อที่จะปิดใช้งาน — เอาเครื่องหมายออกจากคนที่ยังไม่จบ", "Who will be deactivated — untick anyone who has not graduated")}
+            </p>
+            <p className="shrink-0 text-xs tabular-nums text-[var(--text-muted)]" aria-live="polite">
+              {t(`เลือก ${goingFromBatch.length} จาก ${inBatch.length}`, `${goingFromBatch.length} of ${inBatch.length} selected`)}
+            </p>
+          </div>
+          {inBatch.length > 8 && (
+            <input
+              type="search"
+              value={listQuery}
+              onChange={(e) => setListQuery(e.target.value)}
+              placeholder={t("กรองรายชื่อ — ชื่อ หรือรหัส", "Filter the list — name or ID")}
+              aria-label={t("กรองรายชื่อในรุ่นนี้", "Filter this batch's students")}
+              className="h-9 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
+            />
           )}
+          <ul aria-labelledby="batch-who" className="max-h-52 overflow-y-auto rounded-xl border border-[var(--border-subtle)] divide-y divide-[var(--border-subtle)]">
+            {shownInBatch.length === 0 && (
+              <li className="px-3 py-3 text-sm text-[var(--text-muted)]">{t("ไม่พบนักศึกษาที่ตรงกับตัวกรอง", "No student matches the filter")}</li>
+            )}
+            {shownInBatch.map((s) => (
+                  <li key={s.id}>
+                    <label className="flex cursor-pointer items-center gap-3 px-3 py-2 text-sm hover:bg-[var(--bg-subtle)]">
+                      <input
+                        type="checkbox"
+                        checked={!keepIds.includes(s.id)}
+                        onChange={() => toggleKeep(s.id)}
+                        className="h-4 w-4 shrink-0 accent-[var(--accent-solid)]"
+                      />
+                      <span className="min-w-0 flex-1">
+                        <span className="block">
+                          <span className="font-medium text-[var(--text-primary)]">{s.firstName} {s.lastName}</span>{" "}
+                          <span className="ml-2 tabular-nums text-xs text-[var(--text-muted)]">{s.studentId}</span>
+                        </span>
+                        <span className="block text-xs text-[var(--text-muted)]">{programName(s.program)}</span>
+                      </span>
+                    </label>
+                  </li>
+            ))}
+          </ul>
         </div>
+
+        {/* People outside the selection who should go too (30/9/2569) — collapsed: it is the exception, not the usual case */}
+        <details className="group rounded-xl border border-[var(--border-subtle)]" data-testid="deactivate-left-out">
+          <summary className="flex cursor-pointer select-none items-center justify-between gap-3 px-3 py-2.5 text-sm font-medium text-[var(--accent)] hover:underline">
+            <span>{t("เพิ่มคนนอกรุ่น/สาขาที่เลือก (ไม่บังคับ)", "Also deactivate people outside this selection (optional)")}</span>
+            <span className="shrink-0 text-xs font-normal tabular-nums text-[var(--text-muted)]">
+              {t(`เหลือ ${leftOut.length} คน · เลือกเพิ่ม ${pickedLeftOut}`, `${leftOut.length} left · ${pickedLeftOut} added`)}
+            </span>
+          </summary>
+          <div className="flex flex-col gap-2 border-t border-[var(--border-subtle)] p-3">
+            {leftOut.length === 0 ? (
+              <p className="text-sm text-[var(--text-secondary)]">
+                {t("นักศึกษาปกติทุกคนอยู่ในกลุ่มที่เลือกแล้ว", "Every active student is already in the selection.")}
+              </p>
+            ) : (
+              <>
+                <input
+                  type="search"
+                  value={addQuery}
+                  onChange={(e) => setAddQuery(e.target.value)}
+                  placeholder={t("กรองรายชื่อ — ชื่อ รหัส หรือสาขา", "Filter the list — name, ID or program")}
+                  aria-label={t("กรองรายชื่อที่เหลือ", "Filter the remaining students")}
+                  className="h-9 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
+                />
+                <ul className="max-h-48 overflow-y-auto rounded-xl border border-[var(--border-subtle)] divide-y divide-[var(--border-subtle)]">
+                  {shownLeftOut.length === 0 && (
+                    <li className="px-3 py-3 text-sm text-[var(--text-muted)]">{t("ไม่พบนักศึกษาที่ตรงกับตัวกรอง", "No student matches the filter")}</li>
+                  )}
+                  {shownLeftOut.map((s) => (
+                  <li key={s.id}>
+                    <label className="flex cursor-pointer items-center gap-3 px-3 py-2 text-sm hover:bg-[var(--bg-subtle)]">
+                      <input
+                        type="checkbox"
+                        checked={extraIds.includes(s.id)}
+                        onChange={() => toggleExtra(s.id)}
+                        className="h-4 w-4 shrink-0 accent-[var(--accent-solid)]"
+                      />
+                      <span className="min-w-0 flex-1">
+                        <span className="block">
+                          <span className="font-medium text-[var(--text-primary)]">{s.firstName} {s.lastName}</span>{" "}
+                          <span className="ml-2 tabular-nums text-xs text-[var(--text-muted)]">{s.studentId}</span>
+                        </span>
+                        <span className="block text-xs text-[var(--text-muted)]">{programName(s.program)}</span>
+                      </span>
+                    </label>
+                  </li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </div>
+        </details>
 
         <p className="text-xs text-[var(--text-muted)]">
           {t("ข้อมูลและรายวิชาที่เคยลงยังอยู่ครบ เปิดใช้งานคืนทีละคนได้ หรือกด “เลิกทำ” ทันทีหลังจากนี้", "Their records and course enrolments stay. You can activate people again one by one, or press “Undo” right after.")}

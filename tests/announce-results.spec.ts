@@ -83,16 +83,16 @@ test.describe("Announcing results — student side", () => {
 });
 
 test.describe("Announcing results — teacher side", () => {
-  test("Finish & announce asks first; Not yet changes nothing", async ({ page }) => {
+  test("Announce results asks first; Not yet changes nothing", async ({ page }) => {
     await seed(page, "teacher", false);
     await page.goto(`${BASE}/teacher/courses/c-an/assignments/hw/grading`);
     await page.waitForLoadState("networkidle");
-    await page.getByRole("button", { name: "Finish & announce" }).first().click();
+    await page.getByRole("button", { name: "Announce results" }).first().click();
 
     const dialog = page.getByRole("dialog", { name: "Announce results to students?" });
     await expect(dialog).toBeVisible();
-    await expect(dialog.getByText("All 2 of 2 are graded")).toBeVisible();
-    await expect(dialog.getByText(/Score Book are locked/)).toBeVisible();
+    await expect(dialog.getByText("All 2 of 2 graded")).toBeVisible();
+    await expect(dialog.getByText(/Score Book and rubric get locked/)).toBeVisible();
 
     await dialog.getByRole("button", { name: "Not yet" }).click();
     await expect(dialog).toHaveCount(0);
@@ -104,7 +104,7 @@ test.describe("Announcing results — teacher side", () => {
     await seed(page, "teacher", false);
     await page.goto(`${BASE}/teacher/courses/c-an/assignments/hw/grading`);
     await page.waitForLoadState("networkidle");
-    await page.getByRole("button", { name: "Finish & announce" }).first().click();
+    await page.getByRole("button", { name: "Announce results" }).first().click();
     await page.getByRole("dialog", { name: "Announce results to students?" }).getByRole("button", { name: "Announce results" }).click();
     await expect(page.getByText("Results announced")).toBeVisible();
     await expect(page.getByRole("link", { name: /view results/i }).first()).toBeVisible();
@@ -117,4 +117,14 @@ test.describe("Announcing results — teacher side", () => {
     await expect(page.getByText("Results announced")).toHaveCount(0);
     expect(await finalizedFlag(page)).toBe(false);
   });
+});
+
+test("the results page lists student and score only — no AI confidence column", async ({ page }) => {
+  await seed(page, "teacher", true);
+  await page.goto(`${BASE}/teacher/courses/c-an/assignments/hw/results`);
+  await page.waitForLoadState("networkidle");
+  const headers = page.getByRole("columnheader");
+  await expect(headers.filter({ hasText: "Score" })).toBeVisible();
+  await expect(headers.filter({ hasText: /Confidence/i })).toHaveCount(0);
+  await expect(page.getByText(/Confidence/i)).toHaveCount(0);
 });

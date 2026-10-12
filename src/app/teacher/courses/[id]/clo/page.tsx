@@ -2,10 +2,15 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import { useCourses } from "@/lib/courses";
 import { useCLOs, CLO } from "@/lib/clo";
 import { useLanguage } from "@/context/LanguageContext";
 import Modal from "@/components/Modal";
+import { useAssignments } from "@/lib/assignments";
+import { useStudents, isWithdrawn } from "@/lib/students";
+import { computeCloAttainment } from "@/lib/cloAttainment";
+import { toneForPct, SCORE_TONE_CLASSES } from "@/lib/scoreBook";
 
 export default function CLOPage() {
   const { id } = useParams<{ id: string }>();
@@ -18,6 +23,16 @@ export default function CLOPage() {
 
   const course = getCourse(id);
   const clos = getCLOsByCourse(id);
+
+  // How the class did on the criteria that measure each CLO (withdrawn students are not counted)
+  const { getAssignmentsByCourse, rubrics, submissions } = useAssignments();
+  const { getStudentsByCourse } = useStudents();
+  const activeIds = new Set(getStudentsByCourse(id).filter((s) => !isWithdrawn(s)).map((s) => s.studentId));
+  const courseAssignments = getAssignmentsByCourse(id);
+  const attainment = computeCloAttainment({
+    clos, assignments: courseAssignments, rubrics,
+    submissions: submissions.filter((s) => activeIds.has(s.studentId)),
+  });
 
   const [formMode, setFormMode] = useState<"idle" | "add" | "edit">("idle");
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -151,21 +166,11 @@ export default function CLOPage() {
           </div>
         ) : (
           <>
-            {/* One page-level note instead of repeating the same warning on every card — CLO↔criteria
-                linking isn't built yet (deferred, tracked since 19/9), so it's true of all of them at
-                once, not a per-CLO fact worth saying 4 times over. */}
-            <div className="flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 mb-5">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#B45309" strokeWidth="2" strokeLinecap="round" className="shrink-0 mt-0.5">
-                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-                <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
-              </svg>
-              <p className="text-xs text-amber-700 leading-relaxed">
-                {t("ยังไม่รองรับการผูก CLO เข้ากับเกณฑ์การให้คะแนนของชิ้นงาน — เป็นฟีเจอร์ที่วางแผนไว้ในอนาคต", "Linking a CLO to an assignment's grading criteria isn't available yet — planned for a future release")}
-              </p>
-            </div>
-
             <div className="flex flex-col gap-3">
-              {clos.map((clo) => (
+              {clos.map((clo) => {
+                const res = attainment.find((r) => r.clo.id === clo.id);
+                const pct = res?.pct ?? null;
+                return (
                 <div
                   key={clo.id}
                   className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5"
@@ -200,8 +205,52 @@ export default function CLOPage() {
                       </button>
                     </div>
                   </div>
+
+                  {/* What measures this CLO and how the class did on it */}
+                  <div className="mt-4 border-t border-[var(--border-subtle)] pt-4" data-testid={`clo-links-${clo.code}`}>
+                    {res && res.links.length > 0 ? (
+                      <>
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">{t("ผลลัพธ์ CLO ของห้อง", "Class attainment")}</p>
+                          {pct !== null ? (
+                            <span data-testid="clo-attainment" className={`inline-flex h-7 items-center rounded-lg px-3 text-sm font-bold tabular-nums ${SCORE_TONE_CLASSES[toneForPct(pct)]}`}>{Math.round(pct)}%</span>
+                          ) : (
+                            <span className="text-xs text-[var(--text-muted)]">{t("ยังไม่มีงานที่ตรวจ", "Nothing graded yet")}</span>
+                          )}
+                          {pct !== null && (
+                            <span className="text-xs text-[var(--text-muted)]">
+                              {t(`จากงานที่ตรวจแล้ว ${res.gradedCount} ชิ้น · ${res.links.length} เกณฑ์`, `from ${res.gradedCount} graded ${res.gradedCount === 1 ? "submission" : "submissions"} · ${res.links.length} ${res.links.length === 1 ? "criterion" : "criteria"}`)}
+                            </span>
+                          )}
+                        </div>
+                        <ul className="mt-3 divide-y divide-[var(--border-subtle)] rounded-xl border border-[var(--border-subtle)]">
+                          {res.links.map((l) => (
+                            <li key={l.criterionId} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 px-3 py-2 text-sm">
+                              <span className="min-w-0">
+                                <Link href={`/teacher/courses/${id}/assignments/${l.assignmentId}`} className="font-medium text-[var(--accent)] hover:underline">{l.assignmentName}</Link>
+                                <span className="text-[var(--text-secondary)]"> · {l.criterionName}</span>
+                              </span>
+                              <span className="flex shrink-0 items-center gap-2 text-xs tabular-nums text-[var(--text-muted)]">
+                                {l.maxPoints} {t("คะแนน", "pts")}
+                                {l.pct !== null ? (
+                                  <span className={`inline-flex h-6 items-center rounded-md px-2 font-semibold ${SCORE_TONE_CLASSES[toneForPct(l.pct)]}`}>{Math.round(l.pct)}%</span>
+                                ) : (
+                                  <span>—</span>
+                                )}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      </>
+                    ) : (
+                      <p data-testid="clo-unmeasured" className="text-xs leading-relaxed text-[var(--text-secondary)]">
+                        {t("ยังไม่มีเกณฑ์ใดวัด CLO นี้ — เลือก CLO ในส่วน Rubric ตอนสร้างหรือแก้ไขชิ้นงาน", "No criterion measures this CLO yet — pick it in a criterion's CLO row when you create or edit an assignment's rubric")}
+                      </p>
+                    )}
+                  </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
 
             <p className="text-xs text-gray-500 mt-4 text-right">{clos.length} CLO</p>

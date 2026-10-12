@@ -56,13 +56,14 @@ test.describe("Admin Courses — grouped by curriculum, then subject", () => {
   test("the same subject's sections sit together in one card, newest offering first", async ({ page }) => {
     await open(page);
     const prog = subjectCard(page, "การเขียนโปรแกรมคอมพิวเตอร์").first();
-    // CE 2569: three sections of the same term, in section order, one with no teacher
+    // CE 2569: three sections of the same term, in section order, all taught by the same teacher (11/10)
     const rows = prog.getByRole("button", { expanded: false });
     await expect(rows).toHaveCount(3);
     await expect(rows.nth(0)).toHaveAccessibleName("การเขียนโปรแกรมคอมพิวเตอร์ · Sec 1 · 2569 · Term 1");
     await expect(rows.nth(1)).toHaveAccessibleName("การเขียนโปรแกรมคอมพิวเตอร์ · Sec 2 · 2569 · Term 1");
     await expect(rows.nth(2)).toHaveAccessibleName("การเขียนโปรแกรมคอมพิวเตอร์ · Sec 3 · 2569 · Term 1");
-    await expect(prog.getByText("No teachers assigned")).toHaveCount(1);
+    await expect(prog.getByText("No teachers assigned")).toHaveCount(0);
+    await expect(prog.getByText("ผศ.ดร. สมศักดิ์ เจริญสุข")).toHaveCount(3);
     await expect(prog.getByText("3 sections")).toBeVisible();
 
     // Senior Project (โครงงานวิศวกรรมคอมพิวเตอร์): this term above the archived earlier one, in a single card
@@ -136,10 +137,10 @@ test.describe("Admin Courses — filters", () => {
   test("curriculum (incl. a whole program), year, term and status each narrow the list, and the counts follow", async ({ page }) => {
     await open(page);
     const summary = page.getByText(/sections? ·/).first();
-    await expect(summary).toHaveText("53 sections · 29 subjects · 8 curriculum");
+    await expect(summary).toHaveText("50 sections · 26 subjects · 8 curriculum");
 
     await page.getByLabel("Filter by curriculum").selectOption({ label: "All Computer Engineering International" });
-    await expect(summary).toHaveText("5 sections · 4 subjects · 2 curriculum");
+    await expect(summary).toHaveText("4 sections · 3 subjects · 2 curriculum");
     await page.getByLabel("Filter by curriculum").selectOption({ label: "Computer Engineering International · 2563" });
     await expect(summary).toHaveText("1 section · 1 subject · 1 curriculum");
 
@@ -192,7 +193,7 @@ test.describe("Admin Courses — filters", () => {
     await search.fill("zzz nothing");
     await expect(page.getByText("No courses match these filters")).toBeVisible();
     await page.getByRole("main").getByRole("button", { name: "Clear filters" }).last().click();
-    await expect(page.getByText("53 sections · 29 subjects · 8 curriculum")).toBeVisible();
+    await expect(page.getByText("50 sections · 26 subjects · 8 curriculum")).toBeVisible();
   });
 });
 

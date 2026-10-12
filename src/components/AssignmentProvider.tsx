@@ -220,7 +220,7 @@ export default function AssignmentProvider({ children }: { children: React.React
 
   const updateSubmission = useCallback((
     id: string,
-    data: Partial<Pick<Submission, "aiScore" | "instructorScore" | "instructorComment" | "criterionComments" | "criterionScores" | "status" | "fileUrl" | "attachments">>
+    data: Partial<Pick<Submission, "aiScore" | "instructorScore" | "instructorComment" | "criterionComments" | "criterionScores" | "aiCriterionScores" | "status" | "fileUrl" | "attachments">>
   ) => {
     persistS(prev => prev.map(s => s.id === id ? { ...s, ...data, updatedAt: new Date().toISOString() } : s));
     sync(() => api.updateSubmission(id, data));

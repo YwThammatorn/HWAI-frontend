@@ -44,3 +44,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# stop-verify hook state
+/.claude/.last-green
+/.claude/.stop-attempts
+/.claude/.nudged

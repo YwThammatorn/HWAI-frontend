@@ -6,7 +6,7 @@ import type { Assignment, Rubric, Submission } from "@/lib/assignments";
 // AssignmentProvider sends a client-generated one so its optimistic state and the server agree.
 
 type SubmissionChanges = Partial<Pick<Submission,
-  "aiScore" | "instructorScore" | "instructorComment" | "criterionComments" | "criterionScores" | "status" | "fileUrl" | "attachments">>;
+  "aiScore" | "instructorScore" | "instructorComment" | "criterionComments" | "criterionScores" | "aiCriterionScores" | "status" | "fileUrl" | "attachments">>;
 
 // ── Assignments ──────────────────────────────────────────────────────────────
 

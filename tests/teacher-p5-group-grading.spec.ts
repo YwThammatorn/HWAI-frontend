@@ -190,8 +190,10 @@ test.describe("P5 — Grade Adjustment table merges by team", () => {
     // 3 raw submissions collapse to 2 rows: the team (2 members) + the solo student.
     await expect(page.getByText(/2 row\(s\)/i)).toBeVisible();
 
-    await page.getByRole("button", { name: /Re-grade team Prototype Pals/i }).click();
-    await page.waitForTimeout(2000); // mock re-grade takes 1.5s
+    const regrade = page.getByRole("button", { name: /Re-grade team Prototype Pals/i });
+    await regrade.click();
+    await expect(regrade).toBeDisabled(); // the mock re-grade takes 1.5s: wait for it to start, then to finish
+    await expect(regrade).toBeEnabled();
 
     const subs = await page.evaluate(() => JSON.parse(localStorage.getItem("hwai_submissions_v1") ?? "[]"));
     const teamSubs = subs.filter((s: { groupId?: string }) => s.groupId === "sg-tp5-1");

@@ -7,8 +7,9 @@ import { useLanguage } from "@/context/LanguageContext";
 import { dateLocale } from "@/lib/dateLocale";
 import { useAuth } from "@/context/AuthContext";
 import { useCourses } from "@/lib/courses";
+import CriterionName from "@/components/CriterionName";
 import { useAssignments, submissionAttachments, studentVisibleSubmission, achievedLevelIndex, AssignmentAttachment } from "@/lib/assignments";
-import { computeExamStats } from "@/lib/examStats";
+import { computeExamStats, computeAssignmentStats } from "@/lib/examStats";
 import ExamStatsCard from "@/components/ExamStatsCard";
 import { removeFile } from "@/lib/fileStorage";
 import { useStudents } from "@/lib/students";
@@ -92,6 +93,8 @@ function ClassworkDetail() {
   // Class min / average / max / SD for an announced exam (null for anything else, and until results are announced)
   const examStats = computeExamStats(assignment, allSubs);
   const examResultShown = !!examStats && isGraded;
+  // An announced ordinary assignment gets the same "where do I stand" chart, below the brief (11/10/2569)
+  const classStats = examStats ?? computeAssignmentStats(assignment, allSubs);
   // A link is always offered when the assignment accepts attachments at all —
   // not just for fileTypes that include "figma" — since plenty of valid
   // submissions are links regardless of tool (GitHub repo, Google Doc, etc).
@@ -216,13 +219,13 @@ function ClassworkDetail() {
               <AttachmentList attachments={assignment.attachments} />
             </div>
 
-            {examStats && (
+            {classStats && (
               <ExamStatsCard
                 name={assignment.name}
                 maxPoints={assignment.maxPoints}
-                stats={examStats}
+                stats={classStats}
                 myScore={isGraded ? score : null}
-                comment={isGraded ? mySubmission?.instructorComment || undefined : undefined}
+                comment={examStats && isGraded ? mySubmission?.instructorComment || undefined : undefined}
                 showName={false}
               />
             )}
@@ -237,7 +240,7 @@ function ClassworkDetail() {
                   {rubrics.flatMap((rubric) => rubric.criteria).map((c) => (
                     <div key={c.id} className="rounded-xl border border-[var(--border-subtle)] p-3">
                       <div className="flex items-start justify-between gap-3 mb-1">
-                        <p className="text-sm font-semibold text-[var(--text-primary)]">{c.name}</p>
+                        <CriterionName name={c.name} />
                         {earnedByCriterion?.[c.id] !== undefined ? (
                           <span className="shrink-0 text-right leading-tight">
                             <span className="block text-sm font-bold text-[var(--text-primary)] tabular-nums">
@@ -267,7 +270,7 @@ function ClassworkDetail() {
                         <p className="text-xs text-[var(--text-muted)] mb-2">{c.description}</p>
                       )}
                       {c.levels.length > 0 && (
-                        <div className="grid gap-2 mt-2 [grid-template-columns:repeat(auto-fit,minmax(140px,1fr))]">
+                        <div className="grid gap-2 mt-2" style={{ gridTemplateColumns: c.levels.length === 4 ? "repeat(2, minmax(0, 1fr))" : "repeat(auto-fit, minmax(140px, 1fr))" }}>   {/* 4 levels sit 2 x 2, never 3 + 1 */}
                           {c.levels.map((lvl, i) => {
                             const earned = earnedByCriterion?.[c.id];
                             const mine = earned !== undefined && achievedLevelIndex(earned, c.maxPoints, c.levels.length) === i;

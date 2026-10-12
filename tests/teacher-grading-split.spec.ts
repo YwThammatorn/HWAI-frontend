@@ -5,7 +5,7 @@ const BASE = "http://localhost:3000";
 // Assignments (planning) / Grading (checking) split, 21/9/2569.
 //   Sidebar:  Overview · Assignments · Grading · Score Book
 //   /assignments        planning only — no grading stats, no Start Grading
-//   /grading            course-level queue with the four stat cards that used to live on Assignments
+//   /grading            course-level queue with three stat cards (all / graded / announced)
 
 const NOW = "2026-01-01T00:00:00.000Z";
 const COURSE = {
@@ -28,7 +28,7 @@ const sub = (id: string, assignmentId: string, studentId: string, status: string
 });
 
 const ASSIGNMENTS = [
-  assignment("a-done", "Done Quiz", "2026-01-10", { rubricIds: ["r-done"] }),
+  assignment("a-done", "Done Quiz", "2026-01-10", { rubricIds: ["r-done"], gradingFinalized: true }),
   assignment("a-review", "Review Me", "2099-12-31"),
   assignment("a-late", "Late One", "2026-01-05"),
   assignment("a-wait", "Waiting Project", "2099-12-31", { submissionType: "group", maxGroupSize: 3 }),
@@ -172,12 +172,13 @@ test.describe("Assignments page is planning only", () => {
 });
 
 test.describe("Course Grading page", () => {
-  test("the four stat cards moved here and count the same way as before", async ({ page }) => {
+  test("three stat cards only: all assignments, graded, announced", async ({ page }) => {
     await open(page, "/grading");
     await expect(statValue(page, "Total Assignments")).toHaveText("4");
     await expect(statValue(page, "Graded")).toHaveText("1");          // only Done Quiz is fully graded
-    await expect(statValue(page, "Pending Review")).toHaveText("1");  // one need_review submission
-    await expect(statValue(page, "Overdue")).toHaveText("1");         // Late One: past due with an ungraded submission
+    await expect(statValue(page, "Announced")).toHaveText("1");       // …and it is the one whose results were announced
+    await expect(page.getByText("Pending Review", { exact: true })).toHaveCount(0);   // ("Overdue" still tags the late row below)
+    await expect(page.locator("main p", { hasText: /^(Total Assignments|Graded|Announced)$/ })).toHaveCount(3);
   });
 
   test("queue order: needs review → overdue → waiting → completed", async ({ page }) => {
@@ -185,15 +186,20 @@ test.describe("Course Grading page", () => {
     expect(await rowNames(page)).toEqual(["Review Me", "Late One", "Waiting Project", "Done Quiz"]);
   });
 
-  test("row actions: Start Grading, View Results (+ Review) when complete, Awaiting when nobody submitted", async ({ page }) => {
+  test("row actions: Grade with AI / Grade manually, View Results (+ Review) when complete, Awaiting when nobody submitted", async ({ page }) => {
     await open(page, "/grading");
     const li = (name: string) => page.locator("main li", { hasText: name });
-    await expect(li("Review Me").getByRole("link", { name: "Start Grading" })).toHaveAttribute("href", "/teacher/courses/c-gs/assignments/a-review/grading");
+    // the single Start Grading button is now the choice of how to grade (11/10/2569); either one goes in
+    await expect(li("Review Me").getByRole("button", { name: "Grade with AI" })).toBeVisible();
+    await expect(li("Review Me").getByRole("button", { name: "Grade manually" })).toBeVisible();
+    await expect(li("Review Me").getByRole("link", { name: "Start Grading" })).toHaveCount(0);
     await expect(li("Done Quiz").getByRole("link", { name: "View Results" })).toHaveAttribute("href", "/teacher/courses/c-gs/assignments/a-done/results");
     await expect(li("Done Quiz").getByRole("link", { name: "Review", exact: true })).toHaveAttribute("href", "/teacher/courses/c-gs/assignments/a-done/grading");
     await expect(li("Done Quiz").getByRole("link", { name: "Start Grading" })).toHaveCount(0);
     await expect(li("Waiting Project")).toContainText("Awaiting submissions");
     await expect(li("Waiting Project").getByRole("link", { name: "Start Grading" })).toHaveCount(0);
+    await li("Review Me").getByRole("button", { name: "Grade with AI" }).click();
+    await expect(page).toHaveURL(/\/teacher\/courses\/c-gs\/assignments\/a-review\/grading$/);
   });
 
   test("progress shows submitted x / enrolled, the split, and the average of graded work", async ({ page }) => {
@@ -219,6 +225,18 @@ test.describe("Course Grading page", () => {
     await page.getByRole("tab", { name: /Not graded/ }).click();
     expect(await rowNames(page)).toEqual(["Review Me", "Late One"]);
     await expect(page.getByText("Showing 2 of 4 assignments")).toBeVisible();
+  });
+
+  test("filter tabs are separate boxes of one size, with no tick icon (same style as the per-assignment filter)", async ({ page }) => {
+    await open(page, "/grading");
+    const tabs = page.getByRole("tablist", { name: "Filter the grading queue" }).getByRole("tab");
+    await expect(tabs).toHaveCount(5);
+    const boxes = await tabs.evaluateAll((els) => els.map((e) => { const r = e.getBoundingClientRect(); return { w: Math.round(r.width), h: Math.round(r.height), border: getComputedStyle(e).borderTopWidth }; }));
+    expect(new Set(boxes.map((b) => b.w)).size).toBe(1);
+    expect(new Set(boxes.map((b) => b.h)).size).toBe(1);
+    for (const b of boxes) expect(b.border).toBe("2px");
+    await expect(page.locator("[role=tab] svg")).toHaveCount(0);
+    await expect(page.getByRole("tab", { selected: true })).toContainText("All");
   });
 
   test("search narrows the queue and offers suggestions; no match says so", async ({ page }) => {
@@ -254,7 +272,8 @@ test.describe("Course Grading page", () => {
   test("Thai UI", async ({ page }) => {
     await open(page, "/grading", { lang: "th" });
     await expect(page.getByRole("heading", { level: 1, name: "ตรวจงาน" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "เริ่มตรวจงาน" }).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: "ตรวจด้วย AI" }).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: "ตรวจเอง" }).first()).toBeVisible();
     await expect(page.getByText("รอนักศึกษาส่งงาน").first()).toBeVisible();
   });
 });

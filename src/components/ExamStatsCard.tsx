@@ -3,14 +3,14 @@
 import { useLanguage } from "@/context/LanguageContext";
 import { toneForPct, SCORE_TONE_CLASSES } from "@/lib/scoreBook";
 import { percentBetterThan, type ExamStats } from "@/lib/examStats";
-import BellCurve from "@/components/BellCurve";
+import ScoreHistogram from "@/components/ScoreHistogram";
 
 const one = (n: number) => n.toFixed(1);
 const num = (n: number) => (Number.isInteger(n) ? String(n) : one(n));
 
 /**
- * A student's view of one announced exam: their own score against the class's min / average / max / SD,
- * with a track that shows where they sit between the lowest and highest score in the room.
+ * A student's view of one announced result: their own score against the class's min / average / max / SD,
+ * with a bar chart of how many students scored in each range (their own range highlighted) so they can see where they stand.
  * Container-query layout: narrow (the Evaluation grid) stacks it; wide (the exam page) puts the score on
  * the left and the track + figures on the right, so the card fills the width instead of leaving it empty.
  */
@@ -29,17 +29,9 @@ export default function ExamStatsCard({ name, maxPoints, stats, myScore, comment
   unit?: string;
 }) {
   const { t } = useLanguage();
-  const at = (v: number) => (maxPoints > 0 ? Math.min(100, Math.max(0, (v / maxPoints) * 100)) : 0);
-  const lo = at(stats.min);
-  const hi = at(stats.max);
   const diff = myScore !== null ? myScore - stats.mean : null;
   const avgPct = maxPoints > 0 ? Math.round((stats.mean / maxPoints) * 100) : null;
   const myPct = myScore !== null && maxPoints > 0 ? Math.round((myScore / maxPoints) * 100) : null;
-
-  const summary = t(
-    `${name}: ต่ำสุด ${num(stats.min)} เฉลี่ย ${one(stats.mean)} สูงสุด ${num(stats.max)} จาก ${maxPoints}` + (myScore !== null ? ` คะแนนของคุณ ${num(myScore)}` : ""),
-    `${name}: lowest ${num(stats.min)}, average ${one(stats.mean)}, highest ${num(stats.max)} out of ${maxPoints}` + (myScore !== null ? `; your score ${num(myScore)}` : "")
-  );
 
   const u = unit ?? "";
   const tiles: { label: string; value: string; title?: string }[] = [
@@ -49,7 +41,6 @@ export default function ExamStatsCard({ name, maxPoints, stats, myScore, comment
     { label: "SD", value: stats.sd === null ? "—" : one(stats.sd), title: t("ส่วนเบี่ยงเบนมาตรฐาน", "Standard deviation") },
   ];
 
-  const hasBell = stats.sd !== null && stats.sd > 0;
   const better = myScore !== null ? percentBetterThan(stats, myScore) : null;
 
   const betterText = better === null ? null : t(`ดีกว่าเพื่อนร่วมห้อง ${better}%`, `Better than ${better}% of your classmates`);
@@ -103,36 +94,11 @@ export default function ExamStatsCard({ name, maxPoints, stats, myScore, comment
 
         {/* Where you sit in the room */}
         <div className="min-w-0">
-          {hasBell && (
-            <div className="mb-6 hidden @2xl:block">
-              <BellCurve mean={stats.mean} sd={stats.sd!} myScore={myScore} maxPoints={maxPoints} percentile={better} />
-            </div>
-          )}
-          <div className={hasBell ? "@2xl:hidden" : ""}>
-          <div role="img" aria-label={summary} className="relative h-8 @2xl:h-14">
-            <div className="absolute inset-x-0 top-1/2 h-2 -translate-y-1/2 rounded-full border border-[var(--border-subtle)] bg-[var(--bg-app)] @2xl:h-3.5" />
-            <div className="absolute top-1/2 h-2 -translate-y-1/2 rounded-full bg-[var(--accent-bright)]/35 @2xl:h-3.5" style={{ left: `${lo}%`, width: `${Math.max(hi - lo, 1.5)}%` }} />
-            <div className="absolute top-1/2 h-5 w-0.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--text-secondary)] @2xl:h-9 @2xl:w-[3px]" style={{ left: `${at(stats.mean)}%` }} />
-            {myScore !== null && (
-              <div className="absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-[var(--bg-surface)] bg-[var(--accent-solid)] shadow @2xl:h-6 @2xl:w-6 @2xl:border-[3px]" style={{ left: `${at(myScore)}%` }} />
-            )}
-          </div>
-          <div className="mt-1 flex justify-between text-[10px] tabular-nums text-[var(--text-muted)] @2xl:text-xs" aria-hidden="true">
-            <span>0</span>
-            <span className="hidden @2xl:inline">{num(maxPoints / 4)}</span>
-            <span className="hidden @2xl:inline">{num(maxPoints / 2)}</span>
-            <span className="hidden @2xl:inline">{num((maxPoints * 3) / 4)}</span>
-            <span>{maxPoints}</span>
+          <div className="mb-6">
+            <ScoreHistogram scores={stats.scores} maxPoints={maxPoints} myScore={myScore} mean={stats.mean} unit={unit} />
           </div>
 
-          <ul className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[var(--text-secondary)] @2xl:text-sm" aria-hidden="true">
-            <li className="inline-flex items-center gap-1.5"><span className="h-2 w-4 rounded-full bg-[var(--accent-bright)]/35" />{t("ช่วงคะแนนของห้อง", "Class range")}</li>
-            <li className="inline-flex items-center gap-1.5"><span className="h-3.5 w-0.5 rounded-full bg-[var(--text-secondary)]" />{t("ค่าเฉลี่ย", "Average")}</li>
-            {myScore !== null && <li className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded-full bg-[var(--accent-solid)]" />{t("คุณ", "You")}</li>}
-          </ul>
-          </div>
-
-          <dl className={`mt-5 grid grid-cols-4 gap-2 @2xl:gap-4 ${hasBell ? "@2xl:mt-0" : ""}`}>
+          <dl className="grid grid-cols-4 gap-2 @2xl:gap-4">
             {tiles.map((x) => (
               <div key={x.label} title={x.title} className="rounded-xl bg-[var(--bg-app)] px-3 py-2.5 @2xl:px-5 @2xl:py-4">
                 <dt className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)] @2xl:text-xs">{x.label}</dt>

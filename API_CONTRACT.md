@@ -105,6 +105,8 @@ freely, these are starting points, not a spec the frontend enforces.
 | `updateRubric` | `PATCH /api/rubrics/:id` | `Partial<Omit<Rubric, "id"\|"assignmentId"\|"createdAt">>` | `Rubric` |
 | `deleteRubric` | `DELETE /api/rubrics/:id` | — | `void` |
 
+Each rubric criterion may carry `cloIds?: string[]` (11/10/2569) — the ids of the course's CLOs (see the CLO endpoints below) it measures. It is metadata: it never changes how a score is computed, so a `PATCH` that only changes `cloIds` must not reset graded submissions. The CLO attainment shown on the CLO page is computed client-side from `Submission.criterionScores` (points earned ÷ points available over every criterion tagged with that CLO, withdrawn students excluded); a backend may serve it instead.
+
 ### Notifications — `lib/api/notifications.ts` ⚠️ speculative
 No live feature backs this today (the bell is behind `NOTIFICATIONS_DISABLED` in `lib/featureFlags.ts`,
 and even enabled it was never persisted — plain `useState` in `Navbar.tsx`/`teacher/notifications/page.tsx`).
@@ -255,3 +257,13 @@ fan-out server-side — either way `getAnnouncements`'s signature doesn't need t
 3. File uploads (`lib/fileStorage.ts`, used by submissions/materials/announcements attachments) aren't
    covered here — they're a distinct concern (multipart or presigned-URL upload flow) from the CRUD
    endpoints above.
+
+
+### Assignment.gradingMode (11/10/2569)
+`gradingMode?: "ai" | "manual"` — how the teacher grades: the AI scores first (default) or by hand with no AI result shown. An exam or an assignment without files is always manual regardless of this field. Switching to manual clears scores that only the AI produced (status back to not_graded); the teacher's own scores stay.
+
+### Rubric reuse and calibration (12/10/2569)
+- `RubricLibraryEntry { id, name, courseTemplateId?, criteria: RubricCriterion[], sourceAssignmentId?, createdAt }` — a rubric saved for reuse, per subject.
+- `Submission.aiCriterionScores?: Record<criterionId, number>` — what the AI gave each criterion, set when the work is sent through the rubric; never visible to students.
+- `Rubric.aiOffsets?: Record<criterionId, number>` — correction of the AI in levels (+ stricter, − more generous), set by "Use these values" on Calibration; applied to later AI grading of that assignment.
+- `CalibrationRun { id, assignmentId, createdAt, sampleIds, teacherLevels: Record<sampleId, Record<criterionId, number>>, completedAt?, appliedAt?, appliedOffsets? }` — levels are positions on the criterion's scale, 0 = best.

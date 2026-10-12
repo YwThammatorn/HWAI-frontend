@@ -201,9 +201,9 @@ test("after [15], the mini-project is ready: Finish & announce is enabled, and p
   await browserWithOldRunThenCommand(page);
   await page.goto(`${BASE}/teacher/courses/c-mock-1/assignments/a-mock-2/grading`);
   await page.waitForLoadState("networkidle");
-  const finishBtn = page.getByRole("button", { name: "Finish & announce" }).first();
+  const finishBtn = page.getByRole("button", { name: "Announce results" }).first();
   await expect(finishBtn).toBeEnabled();
-  await expect(page.getByRole("note")).toContainText("Everything is graded");
+  await expect(page.getByRole("note")).toContainText("All graded");
   await finishBtn.click();
   await page.getByRole("dialog", { name: "Announce results to students?" }).getByRole("button", { name: "Announce results" }).click();
   await expect(page.getByText("Results announced")).toBeVisible();
@@ -217,7 +217,7 @@ test("Lab 5: review the last 2 through the Grade screen → 100% → Finish & an
   await page.goto(lab5);
   await page.waitForLoadState("networkidle");
   await expect(page.getByText("Results announced")).toHaveCount(0);
-  await expect(page.getByRole("button", { name: "Finish & announce" })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Announce results" })).toBeDisabled();
   await expect(page.getByRole("note")).toContainText("Grade the remaining 2 submissions");
 
   for (let left = 2; left > 0; left--) {
@@ -234,9 +234,9 @@ test("Lab 5: review the last 2 through the Grade screen → 100% → Finish & an
   await page.goto(lab5);
   await page.waitForLoadState("networkidle");
   await expect(page.getByText("Results announced")).toHaveCount(0);                       // still not announced by itself
-  const finishBtn = page.getByRole("button", { name: "Finish & announce" }).first();
+  const finishBtn = page.getByRole("button", { name: "Announce results" }).first();
   await expect(finishBtn).toBeEnabled();                                                  // 100% graded → pressable
-  await expect(page.getByRole("note")).toContainText("Everything is graded");
+  await expect(page.getByRole("note")).toContainText("All graded");
   await finishBtn.click();
   await page.getByRole("dialog", { name: "Announce results to students?" }).getByRole("button", { name: "Announce results" }).click();
   await expect(page.getByText("Results announced")).toBeVisible();

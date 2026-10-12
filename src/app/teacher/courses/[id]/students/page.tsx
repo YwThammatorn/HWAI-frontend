@@ -57,10 +57,11 @@ export default function StudentsRosterPage() {
     if (status === "added-midterm") return t("เพิ่มกลางเทอม", "Added mid-term");
     return t("ลงทะเบียน", "Enrolled");
   }
+  // Status is a read-only fact, so it is a dot + coloured text; a filled, bordered pill read as a button here
   function statusToneClasses(status: Student["enrollmentStatus"]) {
-    if (status === "withdrawn") return "bg-[var(--s-err-bg)] text-[var(--s-err-text)] border-[var(--s-err-bd)]";
-    if (status === "added-midterm") return "bg-[var(--s-info-bg)] text-[var(--s-info-text)] border-[var(--s-info-bd)]";
-    return "bg-[var(--s-ok-bg)] text-[var(--s-ok-text)] border-[var(--s-ok-bd)]";
+    if (status === "withdrawn") return { text: "text-[var(--s-err-text)]", dot: "bg-[var(--s-err-text)]" };
+    if (status === "added-midterm") return { text: "text-[var(--s-info-text)]", dot: "bg-[var(--s-info-text)]" };
+    return { text: "text-[var(--s-ok-text)]", dot: "bg-[var(--s-ok-text)]" };
   }
   function handleWithdraw(s: Student) {
     if (!window.confirm(t(`ถอน ${s.firstName} ${s.lastName} ออกจากวิชานี้?`, `Withdraw ${s.firstName} ${s.lastName} from this course?`))) return;
@@ -121,7 +122,7 @@ export default function StudentsRosterPage() {
             <p className="text-sm text-gray-500">
               {course.name}
               {section && (
-                <span className="ml-2 inline-flex items-center rounded-full border border-[var(--s-info-bd)] bg-[var(--s-info-bg)] px-2 py-0.5 text-xs font-semibold text-[var(--s-info-text)]" title={t("section นี้รับเฉพาะนักศึกษาหลักสูตรนี้", "This section only takes students from this program")}>
+                <span className="ml-2 text-sm font-semibold text-[var(--text-secondary)]" title={t("section นี้รับเฉพาะนักศึกษาหลักสูตรนี้", "This section only takes students from this program")}>
                   {t("หลักสูตร", "Program")} {section.program}
                 </span>
               )}
@@ -253,13 +254,15 @@ export default function StudentsRosterPage() {
                           <td className="px-4 py-2 text-[var(--text-secondary)]">
                             {(() => { const p = findByStudentId(s.studentId)?.program; return p ? (PROGRAM_LABEL[p] ?? p) : "—"; })()}
                             {mismatchedIds.has(s.studentId) && section && (
-                              <span className="ml-2 inline-flex items-center rounded-full border border-[var(--s-warn-bd)] bg-[var(--s-warn-bg)] px-2 py-0.5 text-xs font-semibold text-[var(--s-warn-text)]">
+                              <span className="ml-2 inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--s-warn-text)]">
+                                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--s-warn-text)]" aria-hidden="true" />
                                 {t(`ไม่ใช่ ${section.program}`, `Not ${section.program}`)}
                               </span>
                             )}
                           </td>
                           <td className="px-4 py-2">
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold border ${statusToneClasses(status)}`}>
+                            <span className={`inline-flex items-center gap-1.5 text-sm font-semibold ${statusToneClasses(status).text}`}>
+                              <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${statusToneClasses(status).dot}`} aria-hidden="true" />
                               {statusLabel(status)}
                             </span>
                           </td>

@@ -36,14 +36,6 @@ function gradeTextClass(l: string) {
 }
 function gradeClass(l: string) { return `${gradeBgClass(l)} ${gradeTextClass(l)}`; }
 
-function confidence(sub: Submission, max: number): { label: string; labelTh: string; color: string; pct: number } {
-  const score = sub.aiScore ?? 0;
-  const pct = (score / max) * 100;
-  if (pct >= 85) return { label: "High", labelTh: "สูง", color: "#0F766E", pct: 92 };
-  if (pct >= 65) return { label: "Medium", labelTh: "ปานกลาง", color: "#B45309", pct: 72 };
-  return { label: "Review", labelTh: "ตรวจสอบ", color: "#DC2626", pct: 48 };
-}
-
 export default function ResultsPage() {
   const { id, assignmentId } = useParams<{ id: string; assignmentId: string }>();
   const { t, lang } = useLanguage();
@@ -369,7 +361,6 @@ export default function ResultsPage() {
                     <tr className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider border-b border-gray-50">
                       <th className="px-6 py-3">{t("ชื่อนักศึกษา", "Student Name")}</th>
                       <th className="px-6 py-3">{t("คะแนน", "Score")}</th>
-                      <th className="px-6 py-3">{t("ความมั่นใจ AI", "Confidence")}</th>
                       <th className="px-6 py-3">{t("ดำเนินการ", "Action")}</th>
                     </tr>
                   </thead>
@@ -377,7 +368,6 @@ export default function ResultsPage() {
                     {filtered.map((r) => {
                       const score = r.rep.instructorScore ?? r.rep.aiScore;
                       const letter = score !== null ? gradeLetter(score, max) : null;
-                      const conf = score !== null ? confidence(r.rep, max) : null;
                       return (
                         <tr key={r.key} className="hover:bg-gray-50/50 transition-colors">
                           <td className="px-6 py-3">
@@ -433,23 +423,6 @@ export default function ResultsPage() {
                               </div>
                             ) : (
                               <span className="text-xs text-gray-400">{t("ยังไม่ได้ตรวจ", "Not graded")}</span>
-                            )}
-                          </td>
-                          <td className="px-6 py-3">
-                            {conf ? (
-                              <div className="flex items-center gap-2">
-                                <div className="w-20 h-1.5 rounded-full bg-gray-100 overflow-hidden">
-                                  <div
-                                    className="h-full rounded-full transition-all"
-                                    style={{ width: `${conf.pct}%`, backgroundColor: conf.color }}
-                                  />
-                                </div>
-                                <span className="text-xs font-medium" style={{ color: conf.color }}>
-                                  {lang === "th" ? conf.labelTh : conf.label}
-                                </span>
-                              </div>
-                            ) : (
-                              <span className="text-xs text-gray-400">—</span>
                             )}
                           </td>
                           <td className="px-6 py-3">

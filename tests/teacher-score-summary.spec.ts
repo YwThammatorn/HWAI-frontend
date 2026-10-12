@@ -6,7 +6,7 @@ import { buildScoreSummary } from "../src/lib/scoreSummary";
 const BASE = "http://localhost:3000";
 
 // 4/10/2569 — Score Book gets a "Class summary" view: how the section is doing, using the student's own
-// stats card + bell curve (minus the "you" marker) plus what only a teacher needs.
+// stats card + bar chart (minus the "you" marker) plus what only a teacher needs.
 //
 // Seed, worked out by hand. Categories: Homework 40%, Exams 60%. HW 1 (/10, past due), Midterm (/50, exam, announced).
 //   S1 Ann   HW 9, Mid 45 → 36 + 54 = 90 / 100 → 90%  A
@@ -74,7 +74,7 @@ test.describe("Class summary view", () => {
     await expect(card.locator("dl")).toContainText("90%");
     await expect(card.locator("dl")).toContainText("19.3");
     await expect(card.getByText("Your score")).toHaveCount(0);
-    await expect(card.locator("svg[role=img]").first()).toBeVisible();   // the bell curve
+    await expect(card.getByTestId("score-histogram")).toBeVisible();   // the bar chart
   });
 
   test("grade distribution counts each letter", async ({ page }) => {
@@ -126,7 +126,7 @@ test.describe("Class summary view", () => {
     await expect(card.locator("dl")).toContainText("20");
     await expect(card.locator("dl")).toContainText("32.5");
     await expect(card.locator("dl")).toContainText("45");
-    await expect(card.locator("svg[role=img]").first()).toBeVisible();   // full-width, so the bell curve shows
+    await expect(card.getByTestId("score-histogram")).toBeVisible();   // full-width: the bar chart
   });
 
   test("Thai UI", async ({ page }) => {

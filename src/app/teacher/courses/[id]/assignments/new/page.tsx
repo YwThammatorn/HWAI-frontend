@@ -7,6 +7,7 @@ import { useAssignments, Assignment } from "@/lib/assignments";
 import { useGradingCategories } from "@/lib/gradingCategories";
 import { useLanguage } from "@/context/LanguageContext";
 import { AttachmentsEditor, useAttachmentsDraft } from "@/components/AssignmentAttachments";
+import { useCLOs } from "@/lib/clo";
 import RubricCriteriaEditor, { CriterionDraft, newCriterionDraft, criteriaPointsOk, criteriaTotalPoints, finalizeCriteria } from "@/components/RubricCriteriaEditor";
 
 export default function NewAssignmentPage() {
@@ -16,6 +17,7 @@ export default function NewAssignmentPage() {
   const { getCourse } = useCourses();
   const { addAssignment, addRubric, updateAssignment } = useAssignments();
   const { getCategoriesByCourse } = useGradingCategories();
+  const { getCLOsByCourse } = useCLOs();
 
   const CONFIRM_MSG = t(
     "ข้อมูลที่กรอกจะไม่ถูกบันทึก\nต้องการออกจากหน้านี้หรือไม่?",
@@ -373,6 +375,8 @@ export default function NewAssignmentPage() {
                 criteria={criteria}
                 setCriteria={(u) => { setRubricTouched(true); setCriteria(u); }}
                 assignmentName={name.trim()} assignmentDescription={description} assignmentAttachments={att.items}
+                clos={getCLOsByCourse(id)} cloHref={`/teacher/courses/${id}/clo`}
+                courseId={id}
               />
             </section>
           )}

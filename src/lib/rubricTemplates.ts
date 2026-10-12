@@ -3,6 +3,8 @@
 // rubrics written in the same shape. One source for two consumers: the AI Rubric Assistant (suggestions that fit what
 // the teacher typed) and the mock-data generator (every rubric in the demo data). Pure data + functions, no React.
 
+import { restLevelsFor } from "./rubricLevelText";
+
 export type RubricLang = "th" | "en";
 export interface Bi { th: string; en: string }
 type Four = [string, string, string, string];
@@ -31,6 +33,10 @@ export interface CriterionSpec {
   levels?: { th: Four; en: Four };
   aspect?: Bi;
   excellent?: Bi;
+  /** which wording in rubricLevelText.ts the lower levels use; defaults to the English name. Set for the topic-filled quiz / exam frames. */
+  key?: string;
+  /** the subject topic the quiz / exam wording is filled with */
+  topic?: Bi;
 }
 
 export interface BuiltLevel { label: string; description: string }
@@ -53,18 +59,22 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 function derivedLevels(spec: CriterionSpec, lang: RubricLang): Four {
   if (spec.levels) return spec.levels[lang];
+  // every level has wording of its own (11/10/2569) — only a criterion nobody wrote wording for falls back to the stock sentence
+  const rest = restLevelsFor(spec.key ?? spec.name.en, spec.topic);
+  if (rest) return [spec.excellent![lang], ...rest[lang]];
   const a = spec.aspect![lang];
   return lang === "th"
     ? [spec.excellent!.th, `${a} โดยรวมทำได้ดี แต่ยังมีข้อบกพร่องเล็กน้อยบางจุด`, `${a} มีข้อบกพร่องหลายจุด ยังไม่ตรงตามที่กำหนดอย่างชัดเจน`, `${a} ไม่เป็นไปตามที่กำหนด หรือไม่สามารถประเมินได้`]
     : [spec.excellent!.en, `${cap(a)} — mostly sound, with only minor gaps.`, `${cap(a)} — several gaps; clearly falls short of what was asked.`, `${cap(a)} — does not meet what was asked, or cannot be assessed.`];
 }
 
-/** Criteria ready to store: names carry the file's codes (C1, C2 …), points follow the weights, four levels each. */
+/** Criteria ready to store: names carry the file's codes and both languages, as the file's headings do ("C1 · English / ไทย"),
+ *  points follow the weights, four levels each. */
 export function buildCriteria(specs: CriterionSpec[], totalPoints: number, lang: RubricLang): BuiltCriterion[] {
   const pts = allocatePoints(totalPoints, specs.map((s) => s.weight));
   return specs.map((s, i) => ({
-    name: `C${i + 1} · ${s.name[lang]}`,
-    description: s.description[lang],
+    name: `C${i + 1} · ${s.name.en} / ${s.name.th}`,
+    description: lang === "en" ? (s.aspect ? `Looks at ${s.aspect.en}.` : cap(s.description.en)) : s.description.th,
     maxPoints: pts[i],
     weight: Math.round((pts[i] / totalPoints) * 100),
     levels: derivedLevels(s, lang).map((description, li) => ({ label: LEVEL_LABELS[lang][li], description })),
@@ -85,7 +95,7 @@ const spec = (nameTh: string, nameEn: string, aspectTh: string, aspectEn: string
 export const UXUI_FINAL: CriterionSpec[] = [
   {
     name: { th: "ความครบถ้วนขององค์ประกอบและความสมจริงของเนื้อหา", en: "Screen Completeness & Content Realism" },
-    description: { th: "Screen Completeness & Content Realism", en: "How complete the screens' elements are and how realistic the content is" },
+    description: { th: "องค์ประกอบของหน้าจอครบถ้วนและเนื้อหาสมจริงเพียงใด", en: "How complete the screens' elements are and how realistic the content is" },
     weight: 15,
     levels: {
       th: [
@@ -104,7 +114,7 @@ export const UXUI_FINAL: CriterionSpec[] = [
   },
   {
     name: { th: "การจัดวางและความสมดุลของหน้าจอ", en: "Layout & Balance" },
-    description: { th: "Layout & Balance", en: "How balanced the screen layout is" },
+    description: { th: "การจัดวางหน้าจอสมดุลเหมาะกับเนื้อหาเพียงใด", en: "How balanced the screen layout is" },
     weight: 15,
     levels: {
       th: [
@@ -123,7 +133,7 @@ export const UXUI_FINAL: CriterionSpec[] = [
   },
   {
     name: { th: "ระยะห่าง การจัดแนว และรูปแบบ Grid", en: "Spacing, Alignment & Grid Pattern" },
-    description: { th: "Spacing, Alignment & Grid Pattern", en: "Consistency of spacing, alignment and grid" },
+    description: { th: "ความสม่ำเสมอของระยะห่าง การจัดแนว และ Grid", en: "Consistency of spacing, alignment and grid" },
     weight: 10,
     levels: {
       th: [
@@ -142,7 +152,7 @@ export const UXUI_FINAL: CriterionSpec[] = [
   },
   {
     name: { th: "ความสม่ำเสมอของ Component และ Design System", en: "Component Consistency & Design System" },
-    description: { th: "Component Consistency & Design System", en: "Consistent use of components, styles and a design system" },
+    description: { th: "การใช้ Component, Style และ Design System อย่างสม่ำเสมอ", en: "Consistent use of components, styles and a design system" },
     weight: 15,
     levels: {
       th: [
@@ -161,7 +171,7 @@ export const UXUI_FINAL: CriterionSpec[] = [
   },
   {
     name: { th: "ลำดับความสำคัญทางสายตา", en: "Visual Hierarchy" },
-    description: { th: "Visual Hierarchy", en: "How clearly the screen shows what matters most" },
+    description: { th: "หน้าจอบอกชัดเพียงใดว่าอะไรสำคัญที่สุด", en: "How clearly the screen shows what matters most" },
     weight: 15,
     levels: {
       th: [
@@ -180,7 +190,7 @@ export const UXUI_FINAL: CriterionSpec[] = [
   },
   {
     name: { th: "ตัวอักษร สี และ Accessibility", en: "Typography, Color & Accessibility" },
-    description: { th: "Typography, Color & Accessibility", en: "Readable type, consistent color, sufficient contrast" },
+    description: { th: "ตัวอักษรอ่านง่าย สีสม่ำเสมอ และ Contrast เพียงพอ", en: "Readable type, consistent color, sufficient contrast" },
     weight: 15,
     levels: {
       th: [
@@ -199,7 +209,7 @@ export const UXUI_FINAL: CriterionSpec[] = [
   },
   {
     name: { th: "การเชื่อมโยง Flow และความสมบูรณ์ของ Interaction", en: "Prototype Flow & Interaction Completeness" },
-    description: { th: "Prototype Flow & Interaction Completeness", en: "Whether the prototype's core flow works end to end" },
+    description: { th: "Core Flow ของ Prototype ทำงานจบตั้งแต่ต้นจนจบหรือไม่", en: "Whether the prototype's core flow works end to end" },
     weight: 15,
     levels: {
       th: [
@@ -254,22 +264,22 @@ export const PROGRAMMING_AI: CriterionSpec[] = [{ ...CORRECT, weight: 40 }, { ..
 // ---------------------------------------------------------------------------------------------------------------------
 export function quizCriteria(topic: Bi): CriterionSpec[] {
   return [
-    spec(`ความเข้าใจแนวคิด${topic.th}`, `Understanding of ${topic.en}`, `ความเข้าใจแนวคิดเรื่อง${topic.th}`, `understanding of ${topic.en}`,
-      `ตอบคำถามเรื่อง${topic.th}ได้ถูกต้องครบถ้วน แสดงความเข้าใจแนวคิดอย่างชัดเจน`, `Answers on ${topic.en} are correct and complete and show clear understanding.`, 40),
-    spec("ความถูกต้องของคำตอบ", "Answer accuracy", "ความถูกต้องของคำตอบแต่ละข้อ", "the accuracy of each answer",
-      "คำตอบถูกต้องเกือบทุกข้อ ไม่มีข้อผิดพลาดสำคัญ", "Almost every answer is correct, with no major mistakes.", 30),
-    spec("การให้เหตุผลและอธิบายคำตอบ", "Reasoning and explanation", "การอธิบายเหตุผลประกอบคำตอบ", "the reasoning given with each answer",
-      "อธิบายเหตุผลประกอบคำตอบได้ชัดเจน เป็นลำดับ และอ้างอิงหลักการที่ถูกต้อง", "Reasoning is clear, in order, and based on the right principles.", 30),
+    { key: "quiz-understanding", topic, ...spec(`ความเข้าใจแนวคิด${topic.th}`, `Understanding of ${topic.en}`, `ความเข้าใจแนวคิดเรื่อง${topic.th}`, `understanding of ${topic.en}`,
+      `ตอบคำถามเรื่อง${topic.th}ได้ถูกต้องครบถ้วน แสดงความเข้าใจแนวคิดอย่างชัดเจน`, `Answers on ${topic.en} are correct and complete and show clear understanding.`, 40) },
+    { key: "quiz-accuracy", ...spec("ความถูกต้องของคำตอบ", "Answer accuracy", "ความถูกต้องของคำตอบแต่ละข้อ", "the accuracy of each answer",
+      "คำตอบถูกต้องเกือบทุกข้อ ไม่มีข้อผิดพลาดสำคัญ", "Almost every answer is correct, with no major mistakes.", 30) },
+    { key: "quiz-reasoning", ...spec("การให้เหตุผลและอธิบายคำตอบ", "Reasoning and explanation", "การอธิบายเหตุผลประกอบคำตอบ", "the reasoning given with each answer",
+      "อธิบายเหตุผลประกอบคำตอบได้ชัดเจน เป็นลำดับ และอ้างอิงหลักการที่ถูกต้อง", "Reasoning is clear, in order, and based on the right principles.", 30) },
   ];
 }
 export function examCriteria(topic: Bi): CriterionSpec[] {
   return [
-    spec(`ความเข้าใจทฤษฎี${topic.th}`, `Understanding of ${topic.en} theory`, `ความเข้าใจทฤษฎีและหลักการเรื่อง${topic.th}`, `understanding of the theory and principles of ${topic.en}`,
-      `อธิบายทฤษฎีและหลักการเรื่อง${topic.th}ได้ถูกต้อง ครบถ้วน และเชื่อมโยงกันเป็นระบบ`, `Theory and principles of ${topic.en} are explained correctly, completely and coherently.`, 30),
-    spec("การประยุกต์และการแก้โจทย์", "Applying and solving problems", "การนำหลักการไปแก้โจทย์ปัญหา", "applying the principles to solve problems",
-      "เลือกวิธีและนำหลักการไปแก้โจทย์ได้เหมาะสม ครอบคลุมโจทย์ทั้งง่ายและซับซ้อน", "Chooses suitable methods and applies the principles to both easy and complex problems.", 40),
-    spec("ความถูกต้องของการคำนวณและการเขียนตอบ", "Accuracy of working and written answers", "ความถูกต้องของขั้นตอนและคำตอบสุดท้าย", "the accuracy of the working and the final answers",
-      "แสดงวิธีทำครบถ้วน ขั้นตอนถูกต้อง และคำตอบสุดท้ายถูกต้อง", "Working is shown in full, the steps are correct, and the final answers are right.", 30),
+    { key: "exam-theory", topic, ...spec(`ความเข้าใจทฤษฎี${topic.th}`, `Understanding of ${topic.en} theory`, `ความเข้าใจทฤษฎีและหลักการเรื่อง${topic.th}`, `understanding of the theory and principles of ${topic.en}`,
+      `อธิบายทฤษฎีและหลักการเรื่อง${topic.th}ได้ถูกต้อง ครบถ้วน และเชื่อมโยงกันเป็นระบบ`, `Theory and principles of ${topic.en} are explained correctly, completely and coherently.`, 30) },
+    { key: "exam-apply", ...spec("การประยุกต์และการแก้โจทย์", "Applying and solving problems", "การนำหลักการไปแก้โจทย์ปัญหา", "applying the principles to solve problems",
+      "เลือกวิธีและนำหลักการไปแก้โจทย์ได้เหมาะสม ครอบคลุมโจทย์ทั้งง่ายและซับซ้อน", "Chooses suitable methods and applies the principles to both easy and complex problems.", 40) },
+    { key: "exam-accuracy", ...spec("ความถูกต้องของการคำนวณและการเขียนตอบ", "Accuracy of working and written answers", "ความถูกต้องของขั้นตอนและคำตอบสุดท้าย", "the accuracy of the working and the final answers",
+      "แสดงวิธีทำครบถ้วน ขั้นตอนถูกต้อง และคำตอบสุดท้ายถูกต้อง", "Working is shown in full, the steps are correct, and the final answers are right.", 30) },
   ];
 }
 /** What the AI assistant suggests for exams / quizzes (100 points). */

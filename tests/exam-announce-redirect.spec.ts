@@ -3,7 +3,7 @@ import { test, expect, Page } from "@playwright/test";
 const BASE = "http://localhost:3000";
 
 // 4/10/2569 — announcing an EXAM takes the teacher to its results page, which shows the same class-statistics
-// card (average / min / max / SD + bell curve) the students now see. Ordinary assignments stay on the grading page.
+// card (average / min / max / SD + bar chart) the students now see. Ordinary assignments stay on the grading page.
 //
 // Scores 40, 30, 20 → mean 30.0, min 20, max 40, SD 10.0 (sample, n − 1).
 
@@ -37,7 +37,7 @@ async function seed(page: Page, o: { exam: boolean; announced?: boolean }) {
 const announce = async (page: Page) => {
   await page.goto(`${BASE}/teacher/courses/c-ar/assignments/as1/grading`);
   await page.waitForLoadState("networkidle");
-  await page.getByRole("button", { name: "Finish & announce" }).first().click();
+  await page.getByRole("button", { name: "Announce results" }).first().click();
   await page.getByRole("dialog", { name: "Announce results to students?" }).getByRole("button", { name: "Announce results" }).click();
 };
 
@@ -56,7 +56,7 @@ test("announcing an exam lands on its results page, with the class statistics ca
   await expect(card.locator("dl")).toContainText("40");
   await expect(card.locator("dl")).toContainText("10.0");
   await expect(card.getByText("Your score")).toHaveCount(0);
-  await expect(card.locator("svg[role=img]").first()).toBeVisible();
+  await expect(card.getByTestId("score-histogram")).toBeVisible();
   await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem("hwai_assignments_v1") ?? "[]")[0].gradingFinalized)).toBe(true);
 });
 
@@ -64,7 +64,7 @@ test("'Not yet' on an exam stays on the grading page and announces nothing", asy
   await seed(page, { exam: true });
   await page.goto(`${BASE}/teacher/courses/c-ar/assignments/as1/grading`);
   await page.waitForLoadState("networkidle");
-  await page.getByRole("button", { name: "Finish & announce" }).first().click();
+  await page.getByRole("button", { name: "Announce results" }).first().click();
   await page.getByRole("dialog", { name: "Announce results to students?" }).getByRole("button", { name: "Not yet" }).click();
   await expect(page).toHaveURL(/\/grading$/);
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem("hwai_assignments_v1") ?? "[]")[0].gradingFinalized)).toBeFalsy();
