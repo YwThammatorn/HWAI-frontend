@@ -99,7 +99,7 @@ export default function RubricsPage() {
           activeKey={tab}
           onChange={(k) => setTab(k as "library" | "compare")}
           tabs={[
-            { key: "library", label: t("คลัง", "Library"), count: mine.length + subjectRubrics.length, tone: "info" },
+            { key: "library", label: t("คลัง", "Library"), count: mine.length, tone: "info" },
             { key: "compare", label: t("เทียบข้ามปี", "Compare years"), count: cmp.columns.length > 1 ? cmp.columns.length : undefined, tone: "neutral" },
           ]}
         />
