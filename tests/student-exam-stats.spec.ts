@@ -1,6 +1,6 @@
 import { test, expect, Page } from "@playwright/test";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 const NOW = "2026-01-01T00:00:00.000Z";
 
 // A student sees where their exam score sits in the class (min / average / max / SD) — but only for an

@@ -1,6 +1,6 @@
 import { test, expect, Page } from "@playwright/test";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 
 // Assignments (planning) / Grading (checking) split, 21/9/2569.
 //   Sidebar:  Overview · Assignments · Grading · Score Book

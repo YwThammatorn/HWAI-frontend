@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 
 // 11/10/2569 — console command [18] must reach a browser that still holds the OLD data (old teachers, rubrics without
 // CLO tags): the teachers and the CLO tags update, nothing else is touched. The command text is read out of

@@ -1,6 +1,6 @@
 import { test, expect, Page } from "@playwright/test";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 
 // 24/9/2569 — a student who withdrew is left out of every class-level number and sits on their own
 // "Withdrawn" tab (Score Book + the assignment's Grading page), the way archived courses do.

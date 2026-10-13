@@ -2,7 +2,7 @@ import { test, expect, Page } from "@playwright/test";
 import fs from "fs";
 import { LEVEL_LABELS, levelPoints, allocatePoints, buildCriteria, pickAiTemplate, UXUI_FINAL, SUBJECTS, quizCriteria, examCriteria } from "../src/lib/rubricTemplates";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 const rd = (f: string) => JSON.parse(fs.readFileSync(`public/mock-data/${f}`, "utf8"));
 
 // 4/10/2569 — every rubric in the demo data (and what the AI Rubric Assistant suggests) follows the format of the

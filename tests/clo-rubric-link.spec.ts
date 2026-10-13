@@ -3,7 +3,7 @@ import fs from "node:fs";
 import { computeCloAttainment } from "../src/lib/cloAttainment";
 import { scoringSignature, toDraft, finalizeCriteria } from "../src/components/RubricCriteriaEditor";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 
 // 11/10/2569 — a rubric criterion can be tagged with the course's CLOs; the teacher sees the tags on the rubric,
 // and the CLO page shows which criteria measure each CLO and how the class did on them (CLO attainment).

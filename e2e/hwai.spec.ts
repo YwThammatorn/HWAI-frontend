@@ -1,6 +1,6 @@
 import { test, expect, Page } from "@playwright/test";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "../tests/base";
 
 // Mirrors LANGUAGE_TOGGLE_DISABLED in src/context/LanguageContext.tsx — keep
 // in sync. The language-toggle button is hidden app-wide (15/9/2569,

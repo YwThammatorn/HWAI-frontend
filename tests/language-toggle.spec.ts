@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 
 // 26/9/2569 — the TH/EN button is back in every role's header (it had been hidden since 15/9).
 // The app's default language is English; the button shows the language currently on.

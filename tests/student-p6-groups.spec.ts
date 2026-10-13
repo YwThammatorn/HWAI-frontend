@@ -1,6 +1,6 @@
 import { test, expect, Page } from "@playwright/test";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────
 // Student-formed teams for group assignments (15/9/2569) — teammates can only

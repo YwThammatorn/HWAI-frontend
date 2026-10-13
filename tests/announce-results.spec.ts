@@ -1,6 +1,6 @@
 import { test, expect, Page } from "@playwright/test";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 
 // 25/9/2569 — "Finish Grading" is now "Finish & announce": students see no score (and no comment, no
 // breakdown) until the teacher confirms it, and a graded submission can't be overwritten meanwhile.

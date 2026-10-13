@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 
 // 29/9/2569 — the login page's "Dev Bypass" panel (dev builds only) had a Student shortcut hardcoded to
 // studentId "64070501", which exists in no current mock seed at all (only in various self-contained test

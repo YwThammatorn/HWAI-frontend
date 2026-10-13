@@ -1,6 +1,6 @@
 import { test, expect, Page } from "@playwright/test";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 
 // 7/10/2569 — changing a rubric under work that is already graded restarts that grading, and the teacher is told
 // first (a popup on Save). Once the results are announced ("Finish & announce") the rubric is locked altogether.

@@ -1,6 +1,6 @@
 import { test, expect, Page } from "@playwright/test";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 
 // Teacher grading screen (20/9/2569): the left pane shows what the student actually
 // submitted — images and PDFs inline, links and other files as buttons — instead of

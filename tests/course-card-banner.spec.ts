@@ -1,6 +1,6 @@
 import { test, expect, Page } from "@playwright/test";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 
 // My Courses cards (21/9/2569): the course code and name sit in the colour band together with
 // the icon (teacher and student cards share <CourseBanner>); Section / Term / Schedule / Room

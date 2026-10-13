@@ -2,7 +2,7 @@ import { test, expect, Page } from "@playwright/test";
 import fs from "fs";
 import path from "path";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 
 // Text sizes (21/9/2569): the admin pages are the reference. Page titles and stat numbers are 30px,
 // panel titles 18px, table headers 14px. Teacher and student pages must not render anything bigger

@@ -1,6 +1,6 @@
 import { test, expect, Page } from "@playwright/test";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 
 // Teacher-supplied reference material on an assignment (files, images, links).
 // Added 19/9/2569 — see src/components/AssignmentAttachments.tsx.

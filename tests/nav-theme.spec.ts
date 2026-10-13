@@ -1,6 +1,6 @@
 import { test, expect, Page } from "@playwright/test";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 const NOW = "2026-01-01T00:00:00.000Z";
 
 // 24/9/2569 — the navy/teal top-bar + sidebar theme is available to every role (was teacher only),

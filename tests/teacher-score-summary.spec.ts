@@ -3,7 +3,7 @@ import { statsFromScores } from "../src/lib/examStats";
 import { buildScoreBook } from "../src/lib/scoreBook";
 import { buildScoreSummary } from "../src/lib/scoreSummary";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 
 // 4/10/2569 — Score Book gets a "Class summary" view: how the section is doing, using the student's own
 // stats card + bar chart (minus the "you" marker) plus what only a teacher needs.

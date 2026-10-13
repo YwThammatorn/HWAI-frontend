@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 
 // 26/9/2569 — admin creates teacher accounts only. A teacher CSV row asking for role "ta" is rejected
 // with a pointer to where TAs really are added, and the preview has no Role column any more.

@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 
 // 11/10/2569 — console command [19] must reach a browser that still holds the OLD rubric wording: only the rubrics change
 // (by id) — submissions, other people's rubrics and everything else stay. The command is read out of

@@ -1,6 +1,6 @@
 import { test, expect, Page } from "@playwright/test";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 
 // Edit Assignment absorbs rubric editing inline now (23/9/2569 round 3) — was a separate list of
 // rubric shells linking out to a standalone /rubrics/[rubricId] route (now deleted). Mirrors

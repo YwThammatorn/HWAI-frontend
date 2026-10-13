@@ -21,5 +21,6 @@
 | เอกสาร, `report-ui/`, อย่างอื่น | ไม่รัน |
 - แดง → hook บล็อกการจบ (exit 2) ส่ง output กลับมาให้แก้ สูงสุด 3 ครั้งติด แล้วปล่อยผ่านพร้อมให้รายงานผู้ใช้
 - แก้ `src` แต่ไม่มี spec เปลี่ยนเลย → เตือนครั้งเดียวให้เขียน test หรือบอกเหตุผลว่าไม่ต้อง
-- รันมือ: `npm run test:e2e` (dev server) หรือ `npm run test:e2e:fast` (production build, เร็วกว่า ~40%)
+- รันมือ: `npm run test:e2e` (dev server, พอร์ต 3000) หรือ `npm run test:e2e:fast` (production build, เร็วกว่า ~40%, พอร์ต 3100 — เปิด `next dev` ค้างที่ 3000 ไว้ได้ ไม่ชนกัน)
+- ทุก spec ใช้ `BASE` จาก `tests/base.ts` (อ่านพอร์ตจาก `E2E_PORT`) — spec ใหม่ให้ `import { BASE } from "./base"` ห้ามฝัง `localhost:3000`
 - state ของ hook อยู่ใน `.claude/.last-green`, `.claude/.stop-attempts`, `.claude/.nudged` (gitignored) — ลบทิ้งเพื่อบังคับให้รันใหม่

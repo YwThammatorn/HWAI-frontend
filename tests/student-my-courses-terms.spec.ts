@@ -2,7 +2,7 @@ import { test, expect, Page } from "@playwright/test";
 import fs from "fs";
 import { currentAcademicTerm, courseTermStatus } from "../src/lib/academicTerm";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 
 // 26/9/2569 — student My Courses shows the courses of the current term as cards, and the courses of finished
 // terms (plus withdrawn / archived ones) apart under "Completed courses", grouped by term, with the final result.

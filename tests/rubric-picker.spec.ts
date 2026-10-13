@@ -1,6 +1,6 @@
 import { test, expect, Page } from "@playwright/test";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 
 // 12/10/2569 — "Use a rubric from before" on New / Edit Assignment: pick a rubric used earlier (same subject, last year first;
 // any of my courses; the subject's library), take or skip it criterion by criterion — a skipped one can be dropped, replaced by

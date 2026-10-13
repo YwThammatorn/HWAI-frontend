@@ -110,7 +110,7 @@ test("Thai and English history mocks hold the same scores, and the public and te
 // The browser the teacher actually has: the OLD scores (everything out of 100, identical history numbers) already
 // stored. The documented commands must replace them — [15] also for the rubrics — not sit beside them.
 import type { Page } from "@playwright/test";
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 const doc = fs.readFileSync("test-data/seed-commands.txt", "utf8");
 const block = (from: string, to: string) => doc.slice(doc.indexOf(from), doc.indexOf(to)).split("\n").filter((l) => l.startsWith("fetch("));
 const cmd14 = block("\n[14] ประวัติ", "\n[15] ห้อง")[0];

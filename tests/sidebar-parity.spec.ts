@@ -1,6 +1,6 @@
 import { test, expect, Page } from "@playwright/test";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 
 // 25–26/9/2569 — the Teacher and Student portal sidebars are built from the same SidebarParts, so
 // they keep the same width, item sizes and (inside a course) the same header block: back link,

@@ -1,7 +1,7 @@
 import { test, expect, type Page } from "@playwright/test";
 import fs from "fs";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 const rd = (f: string) => JSON.parse(fs.readFileSync(`public/mock-data/${f}`, "utf8"));
 
 // 3/10/2569 — the c-mock-1 class ("การเขียนโปรแกรมคอมพิวเตอร์", 01076112 sec 1) grew from 3 to 42 students with

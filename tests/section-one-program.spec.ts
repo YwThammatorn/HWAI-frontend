@@ -2,7 +2,7 @@ import { test, expect, Page } from "@playwright/test";
 import fs from "fs";
 import { sectionProgramOf, programFits, outOfProgram } from "../src/lib/sectionProgram";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 const rd = (f: string) => JSON.parse(fs.readFileSync(`public/mock-data/${f}`, "utf8"));
 
 // 4/10/2569 — one section = one program (หลักสูตร CE / CECS / CEI). A section never mixes students from several
