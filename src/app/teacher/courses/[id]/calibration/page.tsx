@@ -96,11 +96,11 @@ export default function CalibrationPage() {
         <span>/</span>
         <Link href={`/teacher/courses/${id}`} className="hover:text-[var(--accent)] transition-colors">{course.name}</Link>
         <span>/</span>
-        <span className="text-[var(--accent)] font-medium">Calibration</span>
+        <span className="text-[var(--accent)] font-medium">{t("ปรับเทียบ AI", "Calibration")}</span>
       </div>
 
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">Calibration</h1>
+        <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">{t("ปรับเทียบ AI", "Calibration")}</h1>
         <p className="text-sm text-[var(--text-secondary)] max-w-3xl">{t("ตรวจงานตัวอย่างเองไม่กี่ชิ้น (โดยยังไม่เห็นคะแนน AI) แล้วดูว่า AI ตรวจต่างจากคุณตรงไหน ปรับความเข้มของ AI และดูว่า rubric ควรแก้อะไร", "Score a few samples yourself, without seeing the AI's marks, then see where the AI differs from you — tune how strict it is and see what the rubric itself may need.")}</p>
       </div>
 
@@ -109,7 +109,7 @@ export default function CalibrationPage() {
           <EmptyState
             iconColor="var(--accent-bright)"
             icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>}
-            title={t("ยังไม่มีงานให้ calibrate", "Nothing to calibrate yet")}
+            title={t("ยังไม่มีงานให้ปรับเทียบ", "Nothing to calibrate yet")}
             description={t(`ต้องเป็นงานที่มี rubric รับไฟล์ ตรวจแบบให้ AI ช่วย และมีงานที่ส่งแล้วอย่างน้อย ${MIN_SAMPLES} ชิ้น`, `It needs an assignment with a rubric, files to check, AI-assisted grading and at least ${MIN_SAMPLES} submissions.`)}
           />
         </div>
@@ -286,7 +286,7 @@ export default function CalibrationPage() {
           {/* earlier calibrations of this course */}
           {runs.some((r) => r.completedAt && assignments.some((a) => a.id === r.assignmentId && a.courseId === id)) && (
             <section aria-labelledby="cal-hist" className={card}>
-              <h2 id="cal-hist" className="px-6 pt-5 pb-3 text-base font-bold text-[var(--text-primary)]">{t("การ calibrate ที่ผ่านมา", "Earlier calibrations")}</h2>
+              <h2 id="cal-hist" className="px-6 pt-5 pb-3 text-base font-bold text-[var(--text-primary)]">{t("การปรับเทียบที่ผ่านมา", "Earlier calibrations")}</h2>
               <ul className="divide-y divide-[var(--border-subtle)] border-t border-[var(--border-subtle)]">
                 {runs.filter((r) => r.completedAt && assignments.some((a) => a.id === r.assignmentId && a.courseId === id)).sort((a, b) => b.createdAt.localeCompare(a.createdAt)).map((r) => (
                   <li key={r.id} data-testid={`history-${r.id}`} className="flex flex-wrap items-center justify-between gap-3 px-6 py-3.5 text-sm">
@@ -353,13 +353,13 @@ function ResultSection({ run, units, assignment, rubric, locked, courseId, grade
     <section aria-labelledby="cal-3" className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-6">
       <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--accent-solid)] text-xs font-bold text-[var(--accent-solid-text)]">3</span>
+          <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--accent-solid)] text-xs font-bold text-[var(--accent-solid-text)]">2</span>
           <div>
             <h2 id="cal-3" className="text-base font-bold text-[var(--text-primary)]">{t("เทียบกับ AI แล้วปรับ", "Compare with the AI, then tune")}</h2>
             <p className="mt-0.5 text-xs text-[var(--text-muted)]">{t(`จาก ${run.sampleIds.length} ตัวอย่างที่คุณตรวจเอง`, `From the ${run.sampleIds.length} samples you scored`)}</p>
           </div>
         </div>
-        <button type="button" onClick={onAgain} className={ghost}>{t("calibrate ใหม่", "Start a new calibration")}</button>
+        <button type="button" onClick={onAgain} className={ghost}>{t("ปรับเทียบใหม่", "Start a new calibration")}</button>
       </div>
 
       <div className="overflow-x-auto rounded-xl border border-[var(--border-subtle)]">
@@ -422,7 +422,7 @@ function ResultSection({ run, units, assignment, rubric, locked, courseId, grade
                 <p className="mt-1 text-sm text-[var(--text-secondary)]">
                   {s.kind === "ceiling" && t(`${Math.round(s.value * 100)}% ของงานได้ระดับสูงสุด — เกณฑ์นี้แทบไม่แยกคน ลองยกมาตรฐานหรือเพิ่มระดับ`, `${Math.round(s.value * 100)}% of the work reaches the top level — this criterion barely separates anyone. Raise the bar or add a level.`)}
                   {s.kind === "floor" && t(`ไม่มีใครถึงระดับสูงสุดเลย (${s.value} ชิ้น) — อาจสูงเกินไปหรือเขียนคำอธิบายแคบเกิน`, `Nobody reaches the top level (${s.value} items) — it may be out of reach or worded too tightly.`)}
-                  {s.kind === "disagree" && t(`คุณกับ AI ต่างกันเฉลี่ย ${s.value.toFixed(1)} ระดับ — คำอธิบายระดับยังไม่ชัด ลองเขียนให้เห็นต่างกันมากขึ้น`, `You and the AI differ by ${s.value.toFixed(1)} levels on average — the level wording is not clear enough. Make the levels easier to tell apart.`)}
+                  {s.kind === "disagree" && t(`แม้ปรับความเข้มของ AI แล้ว คุณกับ AI ก็ยังต่างกันเฉลี่ย ${s.value.toFixed(1)} ระดับ — คำอธิบายระดับยังไม่ชัด ลองเขียนให้เห็นต่างกันมากขึ้น`, `Even after correcting how strict the AI is, you and it still differ by ${s.value.toFixed(1)} levels on average — the level wording is not clear enough. Make the levels easier to tell apart.`)}
                   {s.kind === "heavy-flat" && t(`เกณฑ์นี้มีคะแนนครึ่งหนึ่งขึ้นไป แต่ ${Math.round(s.value * 100)}% ของงานอยู่ระดับเดียวกัน — ไม่ช่วยแยกคน ลองลดคะแนนหรือแยกเป็นหลายเกณฑ์`, `This criterion carries half the points or more, yet ${Math.round(s.value * 100)}% of the work sits on one level — it does not separate students. Lower its points or split it.`)}
                 </p>
               </div>

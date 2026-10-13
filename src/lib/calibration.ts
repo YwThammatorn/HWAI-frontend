@@ -68,6 +68,9 @@ export interface CriterionComparison {
   bias: number;
   /** mean absolute difference in levels */
   meanAbs: number;
+  /** what is left of the difference once the AI's strictness is shifted by the suggested whole-level correction: a steady
+   *  "the AI is one level too generous" leaves 0; scattered disagreement stays — and no strictness setting can fix that */
+  residual: number;
   /** share of samples where both chose the same level, 0..1 */
   agreement: number;
   teacherMean: number;
@@ -89,8 +92,10 @@ export function compare(run: CalibrationRun, units: WorkUnit[], rubric: Pick<Rub
     const n = diffs.length;
     const mean = (xs: number[]) => (xs.length ? xs.reduce((x, y) => x + y, 0) / xs.length : 0);
     const bias = mean(diffs), meanAbs = mean(diffs.map(Math.abs));
+    const shift = Math.max(-MAX_OFFSET, Math.min(MAX_OFFSET, Math.round(bias)));
+    const residual = mean(diffs.map((d) => Math.abs(d - shift)));
     return {
-      criterionId: c.id, n, bias, meanAbs,
+      criterionId: c.id, n, bias, meanAbs, residual,
       agreement: n ? diffs.filter((d) => d === 0).length / n : 0,
       teacherMean: mean(t), aiMean: mean(a),
       verdict: bias >= 0.5 ? "lenient" : bias <= -0.5 ? "strict" : meanAbs >= 1 ? "inconsistent" : "aligned",
@@ -112,7 +117,7 @@ export interface RubricSuggestion { kind: RubricSuggestionKind; criterionId: str
  * from the teacher (criterionScores) or the AI (aiCriterionScores).
  *   ceiling    — at least 80 % of the work sits on the top level: the criterion does not separate anyone (value = share)
  *   floor      — nobody reaches the top level: it may be out of reach or worded too tightly (value = number of work items)
- *   disagree   — teacher and AI differ by a level or more on average: the level wording is not clear enough (value = mean difference)
+ *   disagree   — teacher and AI still differ by a level or more on average AFTER the AI's strictness is corrected (a steady lean is the strictness setting's job, not the wording's): the level wording is not clear enough (value = the remaining mean difference)
  *   heavy-flat — worth half of the points or more yet almost everyone is on the same level (value = share on the commonest level)
  */
 export function suggestRubricChanges(rubric: Pick<Rubric, "criteria">, graded: Submission[], cmp: CriterionComparison[]): RubricSuggestion[] {
@@ -134,7 +139,7 @@ export function suggestRubricChanges(rubric: Pick<Rubric, "criteria">, graded: S
       if (total > 0 && c.maxPoints / total >= 0.5 && common >= 0.8 && top < 0.8) out.push({ kind: "heavy-flat", criterionId: c.id, value: common });
     }
     const k = cmp.find((x) => x.criterionId === c.id);
-    if (k && k.n >= 3 && k.meanAbs >= 1) out.push({ kind: "disagree", criterionId: c.id, value: k.meanAbs });
+    if (k && k.n >= 3 && k.residual >= 1) out.push({ kind: "disagree", criterionId: c.id, value: k.residual });
   }
   return out;
 }

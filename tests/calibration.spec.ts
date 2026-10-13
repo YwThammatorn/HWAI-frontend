@@ -2,7 +2,7 @@ import { test, expect, Page } from "@playwright/test";
 import { pickSample, compare, suggestOffsets, suggestRubricChanges, type CalibrationRun, type WorkUnit } from "../src/lib/calibration";
 import { mockAiGradeCriteria } from "../src/lib/aiGrading";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 
 // 12/10/2569 — the Calibration tab: the teacher scores a few samples by hand (blind to the AI), sees where the AI differs per criterion,
 // tunes how strict it is, and sees what the rubric itself may need. The numbers on screen are checked against the same pure functions
@@ -150,6 +150,37 @@ test.describe("Calibration", () => {
     await expect(page.getByRole("radiogroup", { name: /sample 1$/ }).first().getByRole("radio", { checked: true })).toHaveCount(1);
   });
 
+  test("a steady lean of the AI is the strictness setting's job, not a 'level wording unclear' suggestion — scattered disagreement still is", () => {
+    const units = unitsOf("a-cal");
+    const sample = pickSample(units, { criteria: CRITERIA }, 5);
+    const aiK1 = (u: WorkUnit) => mockAiGradeCriteria(u.key, CRITERIA).levels.k1;
+    const runWith = (level: (u: WorkUnit) => number): CalibrationRun => ({
+      id: "r", assignmentId: "a-cal", createdAt: NOW, completedAt: NOW, sampleIds: sample.map((u) => u.key),
+      teacherLevels: Object.fromEntries(sample.map((u) => [u.key, { k1: level(u), k2: 0, k3: 0 }])),
+    });
+    const k1 = (run: CalibrationRun) => compare(run, units, { criteria: CRITERIA }).find((c) => c.criterionId === "k1")!;
+    const disagree = (run: CalibrationRun) => suggestRubricChanges({ criteria: CRITERIA }, [], compare(run, units, { criteria: CRITERIA })).filter((s) => s.kind === "disagree" && s.criterionId === "k1");
+
+    // always one level worse than the AI (kept inside the scale): the AI is steadily generous
+    const steady = runWith((u) => Math.min(3, aiK1(u) + 1));
+    expect(k1(steady).meanAbs).toBeGreaterThan(0.5);
+    expect(k1(steady).residual).toBeLessThan(1);                       // …and a correction of one level removes almost all of it
+    expect(disagree(steady)).toHaveLength(0);
+
+    // the teacher mirrors the AI (best ↔ worst): no single correction can fix that
+    const scattered = runWith((u) => 3 - aiK1(u));
+    expect(k1(scattered).residual).toBeGreaterThanOrEqual(1);
+    expect(disagree(scattered)).toHaveLength(1);
+  });
+
+  test("the AI feedback on the Grade screen names the criterion without its code or second-language name", async ({ page }) => {
+    await open(page);
+    await page.goto(`${BASE}/teacher/courses/c-cal/assignments/a-cal/recheck?sub=a-cal-s1`);
+    await page.waitForLoadState("networkidle");
+    await expect(page.getByText("Minor issues found in program correctness.", { exact: false })).toBeVisible();
+    await expect(page.getByText(/c1 ·/i).filter({ hasText: "Minor issues found" })).toHaveCount(0);
+  });
+
   test("scores are kept as you go and survive a reload; Compare with the AI waits until everything is scored", async ({ page }) => {
     await open(page);
     const compareBtn = page.getByRole("button", { name: "Compare with the AI" });
@@ -292,8 +323,8 @@ test.describe("Calibration", () => {
 
   test("the sidebar has a Calibration item; Thai UI", async ({ page }) => {
     await open(page, { lang: "th" });
-    await expect(page.getByLabel("เมนูผู้สอน").getByRole("link", { name: "Calibration" })).toBeVisible();
-    await expect(page.getByRole("heading", { level: 1, name: "Calibration" })).toBeVisible();
+    await expect(page.getByLabel("เมนูผู้สอน").getByRole("link", { name: "ปรับเทียบ AI" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "ปรับเทียบ AI" })).toBeVisible();
     await expect(page.getByText("ตรวจงานตัวอย่างเอง", { exact: false }).first()).toBeVisible();
     await expect(page.getByTestId("cal-progress")).toHaveText("ตรวจแล้ว 0 จาก 15");
   });
