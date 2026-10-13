@@ -7,10 +7,12 @@ import { useCourses } from "@/lib/courses";
 import { useAssignments, RubricCriterion, submissionAttachments, isManualGrading } from "@/lib/assignments";
 import SubmissionViewer from "@/components/SubmissionViewer";
 import CriterionName from "@/components/CriterionName";
+import { splitCriterionName } from "@/lib/rubricName";
 import { useStudentGroups } from "@/lib/studentGroups";
 import { useLanguage } from "@/context/LanguageContext";
 
-function genFeedback(name: string, level: "high" | "low"): string {
+function genFeedback(fullName: string, level: "high" | "low"): string {
+  const name = splitCriterionName(fullName).main; // "C1 · Program correctness / ความถูกต้อง" reads as "program correctness" in a sentence
   if (level === "high") {
     return `Good demonstration of ${name.toLowerCase()}. The work clearly meets expectations and shows solid understanding of the required concepts.`;
   }
