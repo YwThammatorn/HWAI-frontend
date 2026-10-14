@@ -9,6 +9,7 @@ import { ADMIN_DASHBOARD_DISABLED } from "@/lib/featureFlags";
 import type { UserRole } from "@/context/AuthContext";
 import { API_ENABLED } from "@/lib/api/client";
 import * as authApi from "@/lib/api/auth";
+import GoogleSignInButton from "@/components/GoogleSignInButton";
 
 function HwaiLogo() {
   return (
@@ -36,7 +37,7 @@ function detectRole(email: string): UserRole {
 export default function LoginPage() {
   const router = useRouter();
   const { user, login, logout } = useAuth();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const { findByStudentId } = useCohortStudents();
 
   const FEATURES = [
@@ -77,20 +78,21 @@ export default function LoginPage() {
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  // API mode: does HWAI-backend offer demo sign-in (DEMO_LOGIN=true)?
-  const [demoLogin, setDemoLogin] = useState(false);
+  // API mode: which sign-ins HWAI-backend offers (Google when GOOGLE_CLIENT_ID is set, demo when DEMO_LOGIN=true).
+  const [authCfg, setAuthCfg] = useState<authApi.AuthConfig | null>(null);
+  const demoLogin = !!authCfg?.demoLogin;
 
   useEffect(() => {
     if (!API_ENABLED) return;
-    authApi.authConfig().then((c) => setDemoLogin(c.demoLogin), () => setDemoLogin(false));
+    authApi.authConfig().then(setAuthCfg, () => setAuthCfg(null));
   }, []);
 
-  /** API mode: sign in through the backend's demo sign-in, acting as `role`. */
-  async function signInDemo(email: string, role: UserRole) {
+  /** API mode: run a sign-in call and start the UI session it returns (acting as `role`, or the default one). */
+  async function signInWith(start: () => Promise<authApi.Me>, role?: UserRole) {
     setError("");
     setLoading(true);
     try {
-      const me = await authApi.demoLogin(email);
+      const me = await start();
       login(authApi.userFromMe(me, role), me);
     } catch (err) {
       const raw = err instanceof Error ? err.message : String(err);
@@ -116,8 +118,8 @@ export default function LoginPage() {
     // With HWAI-backend there are no passwords: real sign-in will be Google (@kmitl.ac.th).
     if (API_ENABLED) {
       setError(t(
-        "ระบบจริงจะเข้าสู่ระบบด้วย Google (@kmitl.ac.th) — ระหว่างนี้ใช้บัญชีเดโมด้านล่าง",
-        "Sign-in will be with Google (@kmitl.ac.th) — for now, use a demo account below.",
+        "เข้าสู่ระบบด้วยปุ่ม Google ด้านล่าง (บัญชี @kmitl.ac.th)",
+        "Sign in with the Google button below (your @kmitl.ac.th account).",
       ));
       return;
     }
@@ -314,6 +316,15 @@ export default function LoginPage() {
             </div>
 
             <div className="grid grid-cols-1 gap-3">
+              {API_ENABLED && authCfg?.google && authCfg.googleClientId ? (
+                <GoogleSignInButton
+                  clientId={authCfg.googleClientId}
+                  domain={authCfg.googleDomain}
+                  lang={lang}
+                  onCredential={(credential) => signInWith(() => authApi.googleLogin(credential))}
+                  onError={setError}
+                />
+              ) : (
               <button
                 type="button"
                 disabled
@@ -328,6 +339,7 @@ export default function LoginPage() {
                 </svg>
                 Google
               </button>
+              )}
             </div>
 
             {/* ── DEMO SIGN-IN — API mode, only while HWAI-backend runs with DEMO_LOGIN=true. It skips the
@@ -351,7 +363,7 @@ export default function LoginPage() {
                       type="button"
                       disabled={loading}
                       title={demoEmail}
-                      onClick={() => signInDemo(demoEmail, role)}
+                      onClick={() => signInWith(() => authApi.demoLogin(demoEmail), role)}
                       className="py-2 rounded-lg text-xs font-semibold border border-amber-300 bg-white text-amber-700 hover:bg-amber-100 disabled:opacity-50 dark:bg-amber-900/20 dark:border-amber-700/60 dark:text-amber-300 dark:hover:bg-amber-900/40 transition-colors"
                     >
                       {label}

@@ -7,10 +7,10 @@ export type { AuthUser };
  * Sign-in through HWAI-backend. The session is an HttpOnly cookie set by the API — the page never
  * reads or stores a token; it only asks the API who is signed in (me()).
  *
- * Real sign-in will be Google (accounts @kmitl.ac.th, no self-registration). Until that exists the
- * only way in is demo sign-in: the backend lets a short allow-list of existing accounts in without a
- * password when it runs with DEMO_LOGIN=true (never in production). It skips the password only —
- * the account keeps exactly its own permissions.
+ * Real sign-in is Google (accounts @kmitl.ac.th, no self-registration): the login page's Google button
+ * gives an ID token, googleLogin() hands it to the backend, which verifies it. Demo sign-in lets a short
+ * allow-list of existing accounts in without Google while the backend runs with DEMO_LOGIN=true (never
+ * in production) — it skips Google only; the account keeps exactly its own permissions.
  */
 
 export interface AuthConfig {
@@ -19,6 +19,10 @@ export interface AuthConfig {
   demoAccounts: string[];
   /** Google sign-in is configured. */
   google: boolean;
+  /** The OAuth client for the "Sign in with Google" button (present when `google`). */
+  googleClientId?: string;
+  /** The only Workspace domain the backend accepts (kmitl.ac.th). */
+  googleDomain?: string;
 }
 
 /** GET /api/auth/me — who the session cookie belongs to, and every role they hold. */
@@ -36,6 +40,11 @@ export interface Me {
 
 export function authConfig(): Promise<AuthConfig> {
   return client.get<AuthConfig>("/api/auth/config");
+}
+
+/** Google's ID token from the "Sign in with Google" button — the backend verifies it and starts the session. */
+export function googleLogin(credential: string): Promise<Me> {
+  return client.post<Me>("/api/auth/google", { credential });
 }
 
 export function demoLogin(email: string): Promise<Me> {

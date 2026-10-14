@@ -76,12 +76,16 @@ they come back.
   and a 401 from the API fires `hwai:unauthorized` → the UI signs out → the shells send the user to /login.
   `loadFailed()` (`sync.ts`) keeps 401/403 on a Provider's initial load quiet — e.g. a student has no
   rubric library.
-- Sign-in today is **demo sign-in only** (the backend runs with `DEMO_LOGIN=true`): the login page's
-  "Demo sign-in" buttons — Admin / Teacher → `somsak.c@kmitl.ac.th`, Student → `69070101@kmitl.ac.th`.
-  It skips the password only; the account keeps exactly its own permissions. The email + password form
-  tells the user to use Google (coming) or the demo buttons. Without `NEXT_PUBLIC_API_URL` the old
-  localStorage login and "Dev Bypass" are unchanged.
-- **Google sign-in** (accounts @kmitl.ac.th, no self-registration) comes later, once there's a Client ID.
+- **Google sign-in** (shown when `/api/auth/config` says `google`): the login page renders Google's own
+  "Sign in with Google" button (`GoogleSignInButton`, Google Identity Services, popup). Its ID token goes
+  to `POST /api/auth/google`; the backend verifies it (signature, `aud`, verified email, `hd` = kmitl.ac.th)
+  and signs in the existing account with that email — no self-registration. The OAuth client must list the
+  frontend's origin under *Authorized JavaScript origins*.
+- **Demo sign-in** (only while the backend runs with `DEMO_LOGIN=true`): the login page's "Demo sign-in"
+  buttons — Admin / Teacher → `somsak.c@kmitl.ac.th`, Student → `69070101@kmitl.ac.th`. It skips Google
+  only; the account keeps exactly its own permissions.
+- The email + password form has no backend: in API mode it points to the Google button. Without
+  `NEXT_PUBLIC_API_URL` the old localStorage login and "Dev Bypass" are unchanged.
 - The backend enforces who may do what (see HWAI-backend's README, "การเข้าสู่ระบบและสิทธิ์") — the
   frontend's own hiding of controls is only UX now. A refused write (403) shows the usual
   "Failed to save" alert and the Provider resyncs.
@@ -98,7 +102,8 @@ freely, these are starting points, not a spec the frontend enforces.
 ### Auth — `lib/api/auth.ts` ✅ backed
 | Function | Verb + path | Request | Response |
 |---|---|---|---|
-| `authConfig` | `GET /api/auth/config` | — | `{ demoLogin, demoAccounts, google }` |
+| `authConfig` | `GET /api/auth/config` | — | `{ demoLogin, demoAccounts, google, googleClientId?, googleDomain? }` |
+| `googleLogin` | `POST /api/auth/google` | `{ credential }` (Google ID token) | `Me` (+ sets the cookie) |
 | `demoLogin` | `POST /api/auth/demo-login` | `{ email }` | `Me` (+ sets the cookie) |
 | `logout` | `POST /api/auth/logout` | — | `void` |
 | `me` | `GET /api/auth/me` | — | `Me` — `{ email, name, demo, roles, defaultRole, teacher, student }` |

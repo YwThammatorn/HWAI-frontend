@@ -36,7 +36,9 @@ export default function RoleSwitcher() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-  const isDev = process.env.NODE_ENV === "development";
+  // The any-role dev tool is for the localStorage mock only. With HWAI-backend the roles are what the
+  // API says the account holds — a student signed in with Google must not be offered teacher/admin.
+  const isDev = process.env.NODE_ENV === "development" && !API_ENABLED;
   const isTeacherPreview = user?.role === "teacher";
   const interactive = isDev || isTeacherPreview;
   const switchTargets = isDev ? DEV_SWITCHABLE : TEACHER_PREVIEW_TARGETS;
