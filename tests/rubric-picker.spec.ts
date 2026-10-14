@@ -188,6 +188,67 @@ test.describe("Use a rubric from before", () => {
     expect(n).toContain("C3 · Program correctness / ความถูกต้อง");     // renumbered to follow the two that were already there
   });
 
+  test("a legend explains the tags and numbers in the list, and the preview says what the coloured % is — or that there are no results to average", async ({ page }) => {
+    const entry = { id: "e1", name: "Saved by me", courseTemplateId: "ct-prog", criteria: [crit("x1", "C1 · Style / สไตล์", 5)], createdAt: NOW };
+    await open(page, NEW, { library: [entry] });
+    const d = await openPicker(page);
+    const legend = d.getByTestId("picker-legend");
+    await expect(legend).toContainText("Last year");
+    await expect(legend).toContainText("this subject's rubric from the previous academic year");
+    await expect(legend).toContainText("Library");
+    await expect(legend).toContainText("how many criteria, and the rubric's total points");
+    await expect(legend).toContainText("the class's average on that assignment (points earned ÷ points possible)");
+
+    await pickRow(d, "Python Exercise 2568").click();
+    const help = d.getByTestId("picker-preview-help");
+    await expect(help).toContainText("how the class did on each criterion when this rubric was used");
+    await expect(help).toContainText("green 80% and up");
+    await expect(d.getByTestId("picker-preview")).toContainText("max 10");                      // the criterion's own total, not a bare number
+
+    await d.getByRole("tab", { name: /Library\s*1/ }).click();
+    await pickRow(d, "Saved by me").click();
+    await expect(d.getByTestId("picker-preview-help")).toContainText("no graded results for this rubric");
+    await expect(d.getByTestId("picker-preview").getByText(/^\d+%$/)).toHaveCount(0);
+  });
+
+  test("a skipped criterion can come with a brief for the AI: criteria that mention its words come first", async ({ page }) => {
+    await open(page, NEW);
+    const d = await openPicker(page);
+    await pickRow(d, "Python Exercise 2568").click();
+    await d.getByRole("button", { name: "Next: choose criteria" }).click();
+    const row = d.getByTestId("pick-row-p3");
+    await row.getByRole("radio", { name: "Skip" }).click();
+    await expect(row.getByLabel(/Brief for the AI/)).toHaveCount(0);                                    // only once the AI is the chosen replacement
+    await row.getByRole("radio", { name: "Go to one the AI proposes" }).click();
+    const proposed = () => d.getByTestId("ai-proposal-p3").locator("p").first().innerText();
+    const without = await proposed();
+    expect(without).not.toContain("Visual Hierarchy");
+    await row.getByLabel(/Brief for the AI/).fill("should judge the visual hierarchy of the screens");
+    expect(await proposed()).toContain("Visual Hierarchy");
+    await d.getByTestId("ai-proposal-p3").getByRole("button", { name: "Ask again" }).click();
+    expect(await proposed()).not.toContain("Visual Hierarchy");                                        // Ask again still moves on to the next one
+    await row.getByLabel(/Brief for the AI/).fill("typography and colour");
+    expect(await proposed()).toContain("Typography");                                                  // a new brief starts again from its best match
+    // Thai works too: a mixed brief (a common Thai word must not drown the English one) and a pure Thai one
+    await row.getByLabel(/Brief for the AI/).fill("ดู visual hierarchy ของหน้าจอ");
+    expect(await proposed()).toContain("Visual Hierarchy");
+    await row.getByLabel(/Brief for the AI/).fill("ตัวอักษรและสี");
+    expect(await proposed()).toContain("Typography");
+  });
+
+  test("Replace / Add says what each does", async ({ page }) => {
+    await open(page, NEW);
+    await page.getByRole("button", { name: "Add New Criterion" }).click();
+    const d = await openPicker(page);
+    await pickRow(d, "Python Exercise 2567").click();
+    await d.getByRole("button", { name: "Next: choose criteria" }).click();
+    const help = d.getByTestId("picker-mode-help");
+    await expect(help).toContainText("are removed and this set takes their place");                    // Replace is the default
+    await d.getByRole("radio", { name: "Be added to the current ones" }).click();
+    await expect(help).toContainText("stay, and this set is added after them");
+    await expect(d.getByText("How to put this set into the assignment")).toBeVisible();
+  });
+
   test("Save to library keeps the rubric for the subject; it shows up under Library next time, and never in another subject", async ({ page }) => {
     await open(page, NEW);
     let d = await openPicker(page);
