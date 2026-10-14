@@ -21,6 +21,11 @@ export interface CalibrationRun {
   /** "Use these values" was pressed: the offsets that were saved on the rubric */
   appliedAt?: string;
   appliedOffsets?: Record<string, number>;
+  /** the blind-test switch: on = the AI's levels stay hidden while the teacher scores. Off by default (13/10), so a run without the field is "not blind" — only
+   *  runs finished before that day were always blind, and they carry no `sawAi` either. */
+  blind?: boolean;
+  /** at least one criterion was scored while the AI's level was on screen — the comparison is then not blind */
+  sawAi?: boolean;
 }
 
 export interface CalibrationContextValue {

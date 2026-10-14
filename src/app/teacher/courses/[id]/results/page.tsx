@@ -387,12 +387,12 @@ export default function ScoreBookPage() {
                         key={g.key}
                         colSpan={g.columns.length}
                         scope="colgroup"
-                        className={`sticky top-0 z-20 px-4 text-left border-l border-[var(--border-subtle)] ${headBase} ${headCaps} !text-[var(--accent)]`}
+                        className={`sticky top-0 z-20 px-4 text-left ${headBase} ${headCaps} !text-[var(--accent)]`}
                       >
                         {g.category ? `${g.category.name} · ${g.category.weight}%` : t("ไม่มีหมวด", "No category")}
                       </th>
                     ))}
-                    <th colSpan={2} scope="colgroup" className={`${stickyHead} top-0 right-0 px-4 text-left border-l border-[var(--border-subtle)] ${headBase} ${headCaps}`}>
+                    <th colSpan={2} scope="colgroup" className={`${stickyHead} top-0 right-0 px-4 text-left ${headBase} ${headCaps}`}>
                       {t("สรุป", "Summary")}
                     </th>
                   </tr>
@@ -449,7 +449,8 @@ export default function ScoreBookPage() {
                     </th>
                   </tr>
                 </thead>
-                <tbody>
+                {/* the last row has no bottom line: the footer's top line (or the card's own border) closes it — before, the two stacked into a double line */}
+                <tbody className="[&>tr:last-child>td]:border-b-0">
                   {rows.length === 0 && (
                     <tr>
                       <td colSpan={columns.length + 4} className="px-4 py-10 text-center text-sm text-[var(--text-muted)]">
@@ -508,7 +509,7 @@ export default function ScoreBookPage() {
                 {/* class averages only make sense for the enrolled group */}
                 {tab === "active" && <tfoot>
                   <tr>
-                    <td colSpan={2} className="sticky left-0 bottom-0 z-20 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] bg-[var(--bg-surface)] border-t border-[var(--border-subtle)]">
+                    <td colSpan={2} className="sticky left-0 bottom-0 z-20 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] bg-[var(--bg-surface)] border-t border-r border-[var(--border-subtle)]">
                       {t("เฉลี่ยทั้งห้อง", "Class average")}
                     </td>
                     {columns.map((a) => {

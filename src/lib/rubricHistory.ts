@@ -131,7 +131,7 @@ export function criterionStats(rubric: Rubric | { criteria: RubricCriterion[] },
 // ── "Ask the AI for another": a stand-in that offers criteria from the templates ──────────────────────────────────────────
 
 /** Replacement criteria for one skipped criterion, one per round (the "Ask again" button moves to the next round). */
-export function proposeReplacement(opts: { brief: string; skippedName: string; takenNames: string[]; round: number; points: number; lang: RubricLang }): BuiltCriterion | null {
+export function proposeReplacement(opts: { brief: string; skippedName: string; takenNames: string[]; round: number; points: number; lang: RubricLang; /** what the teacher typed for this criterion: criteria that mention those words come first */ userBrief?: string }): BuiltCriterion | null {
   // the template that fits the brief goes first, the others follow, so "Ask again" always has something new to offer
   const first = pickAiTemplate(opts.brief)?.criteria ?? PROGRAMMING_AI;
   const sets: CriterionSpec[][] = [first, ...[PROGRAMMING_AI, EXAM_AI, UXUI_FINAL].filter((x) => x !== first)];
@@ -144,6 +144,23 @@ export function proposeReplacement(opts: { brief: string; skippedName: string; t
     return true;
   });
   if (pool.length === 0) return null;
+  // the teacher's own words put the criteria that mention them first (stable: with no match the order is unchanged)
+  // Only words of 4+ letters count ("and", "the", "for" would match nearly every description). Thai has no spaces between words, so a
+  // Thai phrase is matched by its 4-character pieces (vowel and tone marks are p{M}, so they stay inside the word) — and the pieces of one phrase share ONE vote, or a common Thai word would drown the rest.
+  const votes = (opts.userBrief ?? "").toLowerCase().split(/[^\p{L}\p{M}\p{N}]+/u).filter((w) => w.length >= 4).flatMap((w) => {
+    if (!/[\u0E00-\u0E7F]/.test(w) || w.length <= 4) return [{ w, weight: 1 }];
+    const pieces = Array.from({ length: w.length - 3 }, (_, i) => w.slice(i, i + 4));
+    return pieces.map((piece) => ({ w: piece, weight: 1 / pieces.length }));
+  });
+  if (votes.length > 0) {
+    // a word in the criterion's name counts three times a word in its description: "visual hierarchy" finds Visual Hierarchy, not a
+    // criterion that merely mentions both words
+    const score = (c: BuiltCriterion) => {
+      const name = c.name.toLowerCase(), desc = c.description.toLowerCase();
+      return votes.reduce((n, v) => n + v.weight * ((name.includes(v.w) ? 3 : 0) + (desc.includes(v.w) ? 1 : 0)), 0);
+    };
+    pool.sort((x, y) => score(y) - score(x));
+  }
   const pick = pool[opts.round % pool.length];
   return { ...pick, maxPoints: Math.max(1, opts.points) };
 }

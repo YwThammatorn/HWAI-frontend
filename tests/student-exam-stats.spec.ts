@@ -171,7 +171,12 @@ test("Evaluation lists a card per announced exam and skips the unannounced one",
   await expect(page.getByRole("heading", { name: "Exam statistics" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Midterm", level: 3 })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Final", level: 3 })).toHaveCount(0);
-  // the card is narrow here but still shows the bar chart, with my bar marked
+  // one exam → its card takes the whole width of the section (it used to sit in the left half of a two-column grid), with the bar chart and my bar marked
+  const [wrap, card] = await Promise.all([
+    page.locator("section[aria-labelledby=exam-stats-heading]").boundingBox(),
+    page.locator("section", { has: page.getByText("Class statistics") }).last().boundingBox(),
+  ]);
+  expect(Math.abs(wrap!.width - card!.width)).toBeLessThan(2);
   await expect(page.getByTestId("score-histogram")).toHaveCount(1);
   await expect(page.locator("[data-testid=hist-bar][data-mine=true]")).toHaveAttribute("data-count", "4");
   await expect(page.getByText("Class statistics")).toHaveCount(1);

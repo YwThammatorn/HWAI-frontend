@@ -101,7 +101,7 @@ export default function CalibrationPage() {
 
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">{t("ปรับเทียบ AI", "Calibration")}</h1>
-        <p className="text-sm text-[var(--text-secondary)] max-w-3xl">{t("ตรวจงานตัวอย่างเองไม่กี่ชิ้น (โดยยังไม่เห็นคะแนน AI) แล้วดูว่า AI ตรวจต่างจากคุณตรงไหน ปรับความเข้มของ AI และดูว่า rubric ควรแก้อะไร", "Score a few samples yourself, without seeing the AI's marks, then see where the AI differs from you — tune how strict it is and see what the rubric itself may need.")}</p>
+        <p className="text-sm text-[var(--text-secondary)] max-w-3xl">{t("ตรวจงานตัวอย่างเองไม่กี่ชิ้น แล้วดูว่า AI ตรวจต่างจากคุณตรงไหน ปรับความเข้มของ AI และดูว่า rubric ควรแก้อะไร — เปิด Blind test ถ้าไม่อยากเห็นระดับที่ AI ให้ระหว่างตรวจ (ผลเทียบจะเชื่อถือได้กว่า)", "Score a few samples yourself, then see where the AI differs from you — tune how strict it is and see what the rubric itself may need. Turn on the Blind test to hide the AI's level while you score (the comparison is then more trustworthy).")}</p>
       </div>
 
       {eligible.length === 0 || !assignment || !rubric ? (
@@ -145,8 +145,10 @@ export default function CalibrationPage() {
                 const sample = draft.sampleIds.map((k) => units.find((u) => u.key === k)).filter((u): u is WorkUnit => !!u);
                 const total = sample.length * rubric.criteria.length;
                 const done = sample.reduce((n, u) => n + rubric.criteria.filter((c) => draft.teacherLevels[u.key]?.[c.id] !== undefined).length, 0);
-                const setLevel = (key: string, cid: string, lvl: number) => saveRun({ ...draft, teacherLevels: { ...draft.teacherLevels, [key]: { ...(draft.teacherLevels[key] ?? {}), [cid]: lvl } } });
-                const resample = (n: number) => { setCur(0); saveRun({ ...draft, sampleIds: pickSample(units, rubric, n).map((u) => u.key), teacherLevels: {} }); };
+                const blind = !!draft.blind;
+                // a mark given while the AI's level was on screen makes the whole run "not blind", and that stays true if the switch is turned on later
+                const setLevel = (key: string, cid: string, lvl: number) => saveRun({ ...draft, sawAi: draft.sawAi || !blind, teacherLevels: { ...draft.teacherLevels, [key]: { ...(draft.teacherLevels[key] ?? {}), [cid]: lvl } } });
+                const resample = (n: number) => { setCur(0); saveRun({ ...draft, sampleIds: pickSample(units, rubric, n).map((u) => u.key), teacherLevels: {}, sawAi: false }); };
                 const swap = (key: string) => {
                   const here = aiLevelsFor(units.find((u) => u.key === key)!, rubric).score;
                   const alt = units.filter((u) => !draft.sampleIds.includes(u.key))
@@ -162,10 +164,25 @@ export default function CalibrationPage() {
                         {stepBadge(2)}
                         <div>
                           <h2 id="cal-2" className="text-base font-bold text-[var(--text-primary)]">{t("ตรวจงานตัวอย่างเอง", "Score the samples yourself")}</h2>
-                          <p className="mt-0.5 text-xs text-[var(--text-muted)]">{t("เลือกจากงานที่ AI ให้คะแนนสูง กลาง ต่ำ — คุณยังไม่เห็นคะแนนของ AI", "Picked across what the AI would rate high, middle and low — you do not see its marks yet")}</p>
+                          <p className="mt-0.5 text-xs text-[var(--text-muted)]">
+                            {blind
+                              ? t("เลือกจากงานที่ AI ให้คะแนนสูง กลาง ต่ำ — คุณยังไม่เห็นคะแนนของ AI", "Picked across what the AI would rate high, middle and low — you do not see its marks yet")
+                              : t("เลือกจากงานที่ AI ให้คะแนนสูง กลาง ต่ำ — ระดับที่ AI ให้แสดงอยู่ข้างการ์ดระดับ (ตรวจเร็วขึ้น แต่คะแนนของคุณอาจเอนตาม AI)", "Picked across what the AI would rate high, middle and low — its level is marked on each criterion (quicker, but it can sway your marks)")}
+                          </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-4">
+                        <div className="flex flex-col gap-1">
+                          <span id="cal-blind-label" className="text-xs font-semibold text-[var(--text-muted)]">{t("Blind test", "Blind test")}</span>
+                          <button
+                            type="button" role="switch" aria-checked={blind} aria-labelledby="cal-blind-label"
+                            onClick={() => saveRun({ ...draft, blind: !blind })}
+                            className={`relative h-9 w-16 rounded-full border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] ${blind ? "border-[var(--accent)] bg-[var(--accent-solid)]" : "border-[var(--border)] bg-[var(--bg-surface)]"}`}
+                          >
+                            <span aria-hidden="true" className={`absolute top-1 h-6 w-6 rounded-full transition-all ${blind ? "left-[34px] bg-[var(--accent-solid-text)]" : "left-1 bg-[var(--text-muted)]"}`} />
+                            <span className="sr-only">{blind ? t("เปิด", "On") : t("ปิด", "Off")}</span>
+                          </button>
+                        </div>
                         <div className="flex flex-col gap-1">
                           <label htmlFor="cal-n" className="text-xs font-semibold text-[var(--text-muted)]">{t("จำนวนตัวอย่าง", "Samples")}</label>
                           <select id="cal-n" value={draft.sampleIds.length} onChange={(e) => resample(Number(e.target.value))} className="h-9 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] px-3 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]">
@@ -235,11 +252,16 @@ export default function CalibrationPage() {
                               <p className="mt-0.5 text-xs text-[var(--text-muted)]">
                                 {t(`ตัวอย่างที่ ${ci + 1} จาก ${sample.length} · ${u.name}`, `Sample ${ci + 1} of ${sample.length} · ${u.name}`)}
                               </p>
-                              <p className="mt-1 text-xs text-[var(--text-muted)]">{t("คลิกระดับที่ตรงกับงาน — ยังไม่เห็นคะแนนของ AI", "Click the level that fits the work — the AI's marks stay hidden")}</p>
+                              <p className="mt-1 text-xs text-[var(--text-muted)]">
+                                {blind
+                                  ? t("คลิกระดับที่ตรงกับงาน — ยังไม่เห็นคะแนนของ AI", "Click the level that fits the work — the AI's marks stay hidden")
+                                  : t("คลิกระดับที่ตรงกับงาน — ป้าย AI คือระดับที่ AI ให้", "Click the level that fits the work — the AI tag is the level it gave")}
+                              </p>
                             </div>
                             <ul className="flex flex-1 flex-col gap-3 overflow-y-auto px-5 py-4">
                               {rubric.criteria.map((c) => {
                                 const chosen = draft.teacherLevels[u.key]?.[c.id];
+                                const aiLevel = blind ? undefined : aiLevelsFor(u, rubric).levels[c.id];
                                 return (
                                   <li key={c.id} className="rounded-xl border border-[var(--border-subtle)] p-4">
                                     <CriterionName name={c.name} />
@@ -250,7 +272,10 @@ export default function CalibrationPage() {
                                           onClick={() => setLevel(u.key, c.id, li)}
                                           className={`rounded-lg border px-3 py-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] ${chosen === li ? "border-[var(--accent)] bg-[var(--accent-subtle)]" : "border-[var(--border)] hover:bg-[var(--bg-subtle)]"}`}
                                         >
-                                          <span className="block text-xs font-semibold tabular-nums text-[var(--text-primary)]">{lv.label} · {Math.round(c.maxPoints * levelShare(li, c.levels.length))}</span>
+                                          <span className="flex items-center gap-2 text-xs font-semibold tabular-nums text-[var(--text-primary)]">
+                                            {lv.label} · {Math.round(c.maxPoints * levelShare(li, c.levels.length))}
+                                            {aiLevel === li && <span data-testid={`mark-ai-${c.id}`} className="rounded-md border border-[var(--s-info-bd)] bg-[var(--s-info-bg)] px-1.5 py-0.5 text-[10px] font-semibold text-[var(--s-info-text)]">AI</span>}
+                                          </span>
                                           {lv.description && <span className="mt-0.5 block text-xs leading-snug text-[var(--text-secondary)]">{lv.description}</span>}
                                         </button>
                                       ))}
@@ -292,7 +317,7 @@ export default function CalibrationPage() {
                   <li key={r.id} data-testid={`history-${r.id}`} className="flex flex-wrap items-center justify-between gap-3 px-6 py-3.5 text-sm">
                     <span className="min-w-0">
                       <span className="font-semibold text-[var(--text-primary)]">{assignments.find((a) => a.id === r.assignmentId)?.name}</span>
-                      <span className="ml-2 text-xs tabular-nums text-[var(--text-muted)]">{new Date(r.completedAt!).toLocaleDateString()} · {t(`${r.sampleIds.length} ตัวอย่าง`, `${r.sampleIds.length} samples`)}</span>
+                      <span className="ml-2 text-xs tabular-nums text-[var(--text-muted)]">{new Date(r.completedAt!).toLocaleDateString()} · {t(`${r.sampleIds.length} ตัวอย่าง`, `${r.sampleIds.length} samples`)}{r.sawAi && ` · ${t("เห็นผล AI ตอนตรวจ", "AI's level was visible")}`}</span>
                     </span>
                     <span className="flex items-center gap-3">
                       <span className={`rounded-md border px-1.5 py-0.5 text-xs font-semibold ${r.appliedAt ? VERDICT_TONE.aligned : "border-[var(--border)] bg-[var(--bg-app)] text-[var(--text-secondary)]"}`}>{r.appliedAt ? t("ใช้ค่านี้แล้ว", "Applied") : t("ยังไม่ได้ใช้", "Not applied")}</span>
@@ -361,6 +386,11 @@ function ResultSection({ run, units, assignment, rubric, locked, courseId, grade
         </div>
         <button type="button" onClick={onAgain} className={ghost}>{t("ปรับเทียบใหม่", "Start a new calibration")}</button>
       </div>
+      {run.sawAi && (
+        <p data-testid="cal-not-blind" className="mb-4 rounded-xl border border-[var(--s-info-bd)] bg-[var(--s-info-bg)] px-4 py-3 text-sm text-[var(--s-info-text)]">
+          {t("รอบนี้ไม่ใช่ blind — คุณเห็นระดับที่ AI ให้ระหว่างตรวจ ความตรงกันจึงอาจสูงกว่าความจริง ถ้าจะใช้ปรับความเข้มของ AI ให้เชื่อถือได้ ควรปรับเทียบใหม่โดยเปิด Blind test", "This round was not blind — you could see the AI's level while scoring, so agreement may read higher than it really is. To tune the AI's strictness with confidence, run it again with the Blind test on.")}
+        </p>
+      )}
 
       <div className="overflow-x-auto rounded-xl border border-[var(--border-subtle)]">
         <table data-testid="cal-table" className="w-full min-w-[720px] text-sm">
