@@ -156,9 +156,9 @@ test.describe("Assignments page is planning only", () => {
     await expect(page.getByRole("menuitem", { name: "Delete" })).toBeVisible();
   });
 
-  test("Manage Collaborators goes to the collaborators page and Create Assignment to the form", async ({ page }) => {
+  test("Create Assignment goes to the form, and the page has no second way to the collaborators (the sidebar already has one)", async ({ page }) => {
     await open(page, "/assignments");
-    await expect(page.getByRole("link", { name: "Manage Collaborators" })).toHaveAttribute("href", "/teacher/courses/c-gs/collaborators");
+    await expect(page.getByRole("link", { name: "Manage Collaborators" })).toHaveCount(0);
     await expect(page.getByRole("link", { name: "Create Assignment" }).first()).toHaveAttribute("href", "/teacher/courses/c-gs/assignments/new");
   });
 
