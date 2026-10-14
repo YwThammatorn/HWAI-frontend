@@ -150,6 +150,50 @@ test.describe("Calibration", () => {
     await expect(page.getByRole("radiogroup", { name: /sample 1$/ }).first().getByRole("radio", { checked: true })).toHaveCount(1);
   });
 
+  test("Blind test is off by default: the AI's level is tagged on each criterion; turning it on hides the tags and the choice is kept", async ({ page }) => {
+    await open(page);
+    const sw = page.getByRole("switch", { name: "Blind test" });
+    await expect(sw).toHaveAttribute("aria-checked", "false");
+    const name = (await sampleNames(page))[0];
+    const unit = unitsOf("a-cal").find((u) => u.name === name)!;
+    const ai = mockAiGradeCriteria(unit.key, CRITERIA);
+    await expect(page.locator("[data-testid^=mark-ai-]")).toHaveCount(CRITERIA.length);                    // one tag per criterion…
+    for (const c of CRITERIA) {
+      const label = ["Excellent", "Fair", "Needs Improvement", "Fail"][ai.levels[c.id]];
+      await expect(page.getByTestId(`mark-ai-${c.id}`).locator("xpath=ancestor::button[1]")).toContainText(label);   // …on the level the AI gave
+    }
+    await expect(page.getByText("its level is marked on each criterion")).toBeVisible();
+
+    await sw.click();
+    await expect(sw).toHaveAttribute("aria-checked", "true");
+    await expect(page.locator("[data-testid^=mark-ai-]")).toHaveCount(0);
+    await expect(page.getByText("you do not see its marks yet")).toBeVisible();
+    expect((await runs(page))[0].blind).toBe(true);
+    await page.reload();
+    await expect(page.getByRole("switch", { name: "Blind test" })).toHaveAttribute("aria-checked", "true");
+    await expect(page.locator("[data-testid^=mark-ai-]")).toHaveCount(0);
+  });
+
+  test("a round scored with the AI's level on screen is marked 'not blind' on the result and in the history", async ({ page }) => {
+    await open(page);
+    await scoreAll(page);                                                                                  // blind test off (the default)
+    await page.getByRole("button", { name: "Compare with the AI" }).click();
+    await expect(page.getByTestId("cal-not-blind")).toContainText("This round was not blind");
+    expect((await runs(page))[0].sawAi).toBe(true);
+    await expect(page.getByText("AI's level was visible")).toBeVisible();                                  // in the history list
+  });
+
+  test("a round scored with the Blind test on has no 'not blind' note", async ({ page }) => {
+    await open(page);
+    await page.getByRole("switch", { name: "Blind test" }).click();
+    await scoreAll(page);
+    await page.getByRole("button", { name: "Compare with the AI" }).click();
+    await expect(page.getByTestId("cal-table")).toBeVisible();
+    await expect(page.getByTestId("cal-not-blind")).toHaveCount(0);
+    expect((await runs(page))[0].sawAi).toBeFalsy();
+    await expect(page.getByText("AI's level was visible")).toHaveCount(0);
+  });
+
   test("a steady lean of the AI is the strictness setting's job, not a 'level wording unclear' suggestion — scattered disagreement still is", () => {
     const units = unitsOf("a-cal");
     const sample = pickSample(units, { criteria: CRITERIA }, 5);
