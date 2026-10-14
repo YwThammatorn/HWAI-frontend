@@ -121,6 +121,17 @@ test.describe("Score Book — layout", () => {
     await expect(page.getByRole("columnheader", { name: "Grade" })).toBeVisible();
   });
 
+  test("the table's lines are even: the category row has no vertical lines of its own, and the last row has no bottom line", async ({ page }) => {
+    await open(page);
+    // a category label scrolls out of view with its columns, so a vertical line drawn from that row started at a different height from the lines under the other columns
+    const groups = page.locator("main thead tr:first-child th[scope='colgroup']");
+    await expect(groups.first()).toHaveCSS("border-left-width", "0px");
+    await expect(groups.last()).toHaveCSS("border-left-width", "0px");
+    // the footer's top line (or the card's own border) closes the table — a bottom line on the last row as well stacked into a double line
+    await expect(page.locator("main tbody tr").last().locator("td").first()).toHaveCSS("border-bottom-width", "0px");
+    await expect(page.locator("main tbody tr").first().locator("td").first()).toHaveCSS("border-bottom-width", "1px");
+  });
+
   test("assignment headers link to that assignment's grading page", async ({ page }) => {
     await open(page);
     await expect(page.getByRole("link", { name: "HW 1" })).toHaveAttribute("href", "/teacher/courses/c-sb/assignments/hw1/grading");

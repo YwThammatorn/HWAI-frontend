@@ -285,7 +285,7 @@ export default function StudentEvaluationPage() {
             <section className="mt-8" aria-labelledby="exam-stats-heading">
               <h2 id="exam-stats-heading" className="text-base font-bold text-[var(--text-primary)] mb-1">{t("สถิติการสอบ", "Exam statistics")}</h2>
               <p className="text-xs text-[var(--text-muted)] mb-3">{t("คะแนนของคุณเทียบกับทั้งห้อง แสดงเมื่ออาจารย์ประกาศผลสอบแล้ว", "Your score against the class, shown once your teacher has announced the exam results")}</p>
-              <div className="grid gap-4 xl:grid-cols-2">
+              <div className="grid gap-4">
                 {examCards.map((c) => (
                   <ExamStatsCard key={c.assignment.id} name={c.assignment.name} maxPoints={c.assignment.maxPoints} stats={c.stats} myScore={c.myScore} headingTag="h3" />
                 ))}

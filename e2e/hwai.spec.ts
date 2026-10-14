@@ -199,25 +199,22 @@ test.describe("Assignment Results", () => {
 test.describe("Recheck", () => {
   test.beforeEach(async ({ page }) => { await withAuth(page); });
 
-  test("loads with AI confidence and score inputs", async ({ page }) => {
+  test("loads with AI confidence and level cards to click", async ({ page }) => {
     await waitReady(page, "/teacher/courses/seed-1/assignments/a-seed-1-1/recheck?sub=sub-1-1-1");
     await expect(page.locator("text=/AI Confidence/i")).toBeVisible();
-    await expect(page.locator("input[type=number]").first()).toBeVisible();
+    await expect(page.getByRole("radiogroup").first().getByRole("radio").first()).toBeVisible();
   });
 
-  test("editing score shows MANUALLY EDITED badge", async ({ page }) => {
+  test("picking another level shows MANUALLY EDITED badge", async ({ page }) => {
     await waitReady(page, "/teacher/courses/seed-1/assignments/a-seed-1-1/recheck?sub=sub-1-1-1");
-    const input = page.locator("input[type=number]").first();
-    await input.fill("5");
-    await page.keyboard.press("Tab");
+    // the lowest level (0 points) is never what the AI gave this work
+    await page.getByRole("radiogroup").first().getByRole("radio").last().click();
     await expect(page.locator("text=/manually edited/i")).toBeVisible();
   });
 
   test("Reset to Default clears MANUALLY EDITED", async ({ page }) => {
     await waitReady(page, "/teacher/courses/seed-1/assignments/a-seed-1-1/recheck?sub=sub-1-1-1");
-    const input = page.locator("input[type=number]").first();
-    await input.fill("1");
-    await page.keyboard.press("Tab");
+    await page.getByRole("radiogroup").first().getByRole("radio").last().click();
     await page.getByRole("button", { name: /reset to default/i }).click();
     await expect(page.locator("text=/manually edited/i")).not.toBeVisible();
   });

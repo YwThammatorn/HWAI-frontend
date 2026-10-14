@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCourses } from "@/lib/courses";
-import { useAssignments, RubricCriterion, submissionAttachments, isManualGrading } from "@/lib/assignments";
+import { useAssignments, RubricCriterion, submissionAttachments, isManualGrading, levelShare } from "@/lib/assignments";
 import SubmissionViewer from "@/components/SubmissionViewer";
 import CriterionName from "@/components/CriterionName";
 import { splitCriterionName } from "@/lib/rubricName";
@@ -21,11 +21,24 @@ function genFeedback(fullName: string, level: "high" | "low"): string {
 
 interface CriterionScore {
   criterionId: string;
-  score: number;
+  /** Points now. null = not marked yet (a hand-graded submission starts that way). */
+  score: number | null;
+  /** The selected level card (0 = best). null when nothing is marked, or when the score sits on no level (a score typed before levels were clicked). */
+  level: number | null;
+  /** What the AI gave this criterion, in points; null when the AI did not grade this work. */
+  aiPts: number | null;
   maxPoints: number;
   aiFeedback: string;
   edited: boolean;
 }
+
+// Points a level is worth (levels are positions, 0 = best) — the same arithmetic the Calibration cards use.
+const levelPts = (c: RubricCriterion, li: number) => Math.round(c.maxPoints * levelShare(li, c.levels.length));
+const levelOfPts = (c: RubricCriterion, pts: number | null) => {
+  if (pts === null) return null;
+  const i = c.levels.findIndex((_, li) => levelPts(c, li) === pts);
+  return i < 0 ? null : i;
+};
 
 export default function RecheckPage() {
   const { id, assignmentId } = useParams<{ id: string; assignmentId: string }>();
@@ -57,24 +70,35 @@ export default function RecheckPage() {
   // Per-criterion notes ("why I changed this score"), keyed by criterion id
   const [criterionComments, setCriterionComments] = useState<Record<string, string>>(submission?.criterionComments ?? {});
 
+  // Where each criterion starts: what was saved for it, else what the AI gave it, else (work graded before per-criterion marks
+  // were kept) its share of the total. A hand-graded submission with nothing saved starts empty — every criterion gets clicked.
+  function buildScores(useSaved: boolean): CriterionScore[] {
+    if (!rubric || !submission || !assignment) return [];
+    const hasAi = !isManualGrading(assignment) && submission.aiScore !== null;
+    return rubric.criteria.map((c: RubricCriterion) => {
+      const aiPts = hasAi ? (submission.aiCriterionScores?.[c.id] ?? Math.round((c.weight / 100) * (submission.aiScore ?? 0))) : null;
+      const saved = useSaved ? submission.criterionScores?.[c.id] : undefined;
+      const legacy = useSaved && submission.instructorScore !== null && submission.instructorScore !== undefined
+        ? Math.round((c.weight / 100) * submission.instructorScore) : null;
+      const score = saved ?? (hasAi ? submission.aiCriterionScores?.[c.id] : undefined) ?? legacy ?? aiPts;
+      return {
+        criterionId: c.id,
+        score,
+        level: levelOfPts(c, score),
+        aiPts,
+        maxPoints: c.maxPoints,
+        aiFeedback: genFeedback(c.name, (score ?? 0) / c.maxPoints >= 0.7 ? "high" : "low"),
+        edited: false,
+      };
+    });
+  }
+
   useEffect(() => {
     if (!submission) return;
-    const aiScore = submission.instructorScore ?? submission.aiScore ?? 0;
     if (rubric) {
-      const initial: CriterionScore[] = rubric.criteria.map((c: RubricCriterion) => {
-        // what the AI gave this criterion, when it was sent through the rubric; otherwise its share of the AI's total
-        const pts = submission.aiCriterionScores?.[c.id] ?? Math.round((c.weight / 100) * aiScore);
-        return {
-          criterionId: c.id,
-          score: pts,
-          maxPoints: c.maxPoints,
-          aiFeedback: genFeedback(c.name, pts / c.maxPoints >= 0.7 ? "high" : "low"),
-          edited: false,
-        };
-      });
-      setScores(initial);
+      setScores(buildScores(true));
     } else {
-      setManualScore(aiScore);
+      setManualScore(submission.instructorScore ?? submission.aiScore ?? 0);
     }
     setCriterionComments(submission.criterionComments ?? {});
   }, [rubric?.id, submission?.id]);
@@ -95,7 +119,9 @@ export default function RecheckPage() {
 
   // Graded by hand (11/10/2569: the teacher's choice, an exam, or no file to check): nothing from the AI is shown here
   const handGraded = isManualGrading(assignment);
-  const totalScore = rubric ? scores.reduce((sum, s) => sum + s.score, 0) : manualScore;
+  const totalScore = rubric ? scores.reduce((sum, s) => sum + (s.score ?? 0), 0) : manualScore;
+  // A criterion with no mark would silently count as 0 in the student's total — saving waits until every one is marked.
+  const unmarked = rubric ? scores.filter((s) => s.score === null).length : 0;
   const totalMax = rubric ? (scores.reduce((sum, s) => sum + s.maxPoints, 0) || assignment.maxPoints) : assignment.maxPoints;
   const aiScore = submission.aiScore ?? 0;
   const aiPct = (aiScore / assignment.maxPoints) * 100;
@@ -105,9 +131,25 @@ export default function RecheckPage() {
     ? { label: "Medium", labelTh: "ปานกลาง", pct: 74, color: "#B45309" }
     : { label: "Low", labelTh: "ต่ำ", pct: 48, color: "#DC2626" };
 
-  function updateScore(cid: string, val: number) {
+  // The teacher clicks a level card; the criterion's points are that level's points.
+  function pickLevel(cid: string, li: number) {
+    const c = rubric?.criteria.find((x) => x.id === cid);
+    if (!c) return;
+    const pts = levelPts(c, li);
     setScores((prev) =>
-      prev.map((s) => s.criterionId === cid ? { ...s, score: Math.max(0, Math.min(s.maxPoints, val)), edited: true } : s)
+      prev.map((s) => s.criterionId === cid ? { ...s, score: pts, level: li, edited: s.aiPts !== null && pts !== s.aiPts } : s)
+    );
+    setSaved(false);
+  }
+
+  // A criterion with no levels at all (only very old data) has no cards to click — its points are typed, as before.
+  function typeScore(cid: string, val: number) {
+    setScores((prev) =>
+      prev.map((s) => {
+        if (s.criterionId !== cid) return s;
+        const pts = Math.max(0, Math.min(s.maxPoints, val));
+        return { ...s, score: pts, level: null, edited: s.aiPts !== null && pts !== s.aiPts };
+      })
     );
     setSaved(false);
   }
@@ -116,10 +158,7 @@ export default function RecheckPage() {
     if (!submission) return;
     const aiScore = submission.aiScore ?? 0;
     if (rubric) {
-      setScores(rubric.criteria.map((c: RubricCriterion) => {
-        const pts = submission.aiCriterionScores?.[c.id] ?? Math.round((c.weight / 100) * aiScore);
-        return { criterionId: c.id, score: pts, maxPoints: c.maxPoints, aiFeedback: genFeedback(c.name, pts / c.maxPoints >= 0.7 ? "high" : "low"), edited: false };
-      }));
+      setScores(buildScores(false));
     } else {
       setManualScore(aiScore);
     }
@@ -143,7 +182,7 @@ export default function RecheckPage() {
     );
     // Score Book shows a per-criterion breakdown (21/9/2569) — persist what each criterion actually
     // earned, not just the total, so that breakdown reflects a real edit instead of a weight guess.
-    const criterionScores = Object.fromEntries(scores.map((s) => [s.criterionId, s.score]));
+    const criterionScores = Object.fromEntries(scores.map((s) => [s.criterionId, s.score ?? 0]));
     teammates.forEach((s) => {
       updateSubmission(s.id, {
         instructorScore: totalScore,
@@ -246,7 +285,7 @@ export default function RecheckPage() {
         </div>
 
         {/* Right: grading panel */}
-        <div className="w-80 shrink-0 flex flex-col border-l border-gray-100 bg-white overflow-y-auto">
+        <div className="w-[26rem] shrink-0 flex flex-col border-l border-gray-100 bg-white overflow-y-auto">
           <div className="px-5 py-5 border-b border-gray-50">
             <h2 className="text-base font-bold text-[var(--text-primary)] mb-3">
               {t("ตรวจสอบการให้คะแนน", "Grading Review")}
@@ -331,26 +370,63 @@ export default function RecheckPage() {
                     s.edited ? "border-amber-200 bg-amber-50/30" : "border-gray-100 bg-white"
                   }`}
                 >
-                  <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-start justify-between gap-3 mb-3">
                     <CriterionName name={c.name} />
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      <span className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">
-                        {t("คะแนน", "Score")}
+                    {c.levels.length === 0 ? (
+                      <span className="flex shrink-0 items-center gap-1.5">
+                        <input
+                          type="number"
+                          min={0}
+                          max={s.maxPoints}
+                          value={s.score ?? 0}
+                          onChange={(e) => typeScore(s.criterionId, parseInt(e.target.value) || 0)}
+                          aria-label={t(`คะแนน ${splitCriterionName(c.name).main}`, `Score for ${splitCriterionName(c.name).main}`)}
+                          className="w-12 text-center text-sm font-bold text-[var(--text-primary)] border border-gray-200 rounded-lg px-1 py-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
+                        />
+                        <span className="text-xs text-gray-400">/ {s.maxPoints}</span>
                       </span>
-                      <input
-                        type="number"
-                        min={0}
-                        max={s.maxPoints}
-                        value={s.score}
-                        onChange={(e) => updateScore(s.criterionId, parseInt(e.target.value) || 0)}
-                        className="w-12 text-center text-sm font-bold text-[var(--text-primary)] border border-gray-200 rounded-lg px-1 py-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
-                      />
-                      <span className="text-xs text-gray-400">/ {s.maxPoints}</span>
-                    </div>
+                    ) : (
+                      <span data-testid={`crit-score-${s.criterionId}`} className="shrink-0 text-sm tabular-nums text-[var(--text-muted)]">
+                        <span className="font-bold text-[var(--text-primary)]">{s.score ?? "—"}</span> / {s.maxPoints}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* A score that sits on no level (typed before levels were clicked): kept as it is until a level is clicked */}
+                  {c.levels.length > 0 && s.score !== null && s.level === null && (
+                    <p data-testid={`crit-offlevel-${s.criterionId}`} className="mb-2 text-xs leading-snug text-[var(--text-secondary)]">
+                      {t(`คะแนนเดิม ${s.score} / ${s.maxPoints} ไม่ตรงระดับใดเลย — คลิกระดับเพื่อเปลี่ยน`, `Earlier score ${s.score} / ${s.maxPoints} sits on no level — click a level to change it`)}
+                    </p>
+                  )}
+
+                  {/* Click the level that fits the work — the same cards as Calibration */}
+                  <div
+                    role="radiogroup"
+                    aria-label={t(`ระดับของ ${splitCriterionName(c.name).main}`, `Level for ${splitCriterionName(c.name).main}`)}
+                    className={c.levels.length === 0 ? "hidden" : "flex flex-col gap-1.5"}
+                  >
+                    {c.levels.map((lv, li) => (
+                      <button
+                        key={li}
+                        type="button"
+                        role="radio"
+                        aria-checked={s.level === li}
+                        onClick={() => pickLevel(s.criterionId, li)}
+                        className={`rounded-lg border px-3 py-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] ${s.level === li ? "border-[var(--accent)] bg-[var(--accent-subtle)]" : "border-[var(--border)] hover:bg-[var(--bg-subtle)]"}`}
+                      >
+                        <span className="flex items-center gap-2 text-xs font-semibold tabular-nums text-[var(--text-primary)]">
+                          {lv.label} · {levelPts(c, li)}
+                          {!handGraded && s.aiPts !== null && levelOfPts(c, s.aiPts) === li && (
+                            <span data-testid={`mark-ai-${s.criterionId}`} className="rounded-md border border-[var(--s-info-bd)] bg-[var(--s-info-bg)] px-1.5 py-0.5 text-[10px] font-semibold text-[var(--s-info-text)]">AI</span>
+                          )}
+                        </span>
+                        {lv.description && <span className="mt-0.5 block text-xs leading-snug text-[var(--text-secondary)]">{lv.description}</span>}
+                      </button>
+                    ))}
                   </div>
 
                   {s.edited && !handGraded && (
-                    <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded mb-2">
+                    <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded mt-3 mb-1">
                       {t("แก้ไขแล้ว", "Manually Edited")}
                     </span>
                   )}
@@ -424,6 +500,11 @@ export default function RecheckPage() {
             </div>
           </div>
 
+          {unmarked > 0 && (
+            <p data-testid="grade-unmarked" role="status" className="px-5 pt-3 text-xs text-[var(--text-secondary)]">
+              {t(`เลือกระดับอีก ${unmarked} เกณฑ์ก่อนบันทึก`, `Pick a level for ${unmarked} more ${unmarked === 1 ? "criterion" : "criteria"} before saving`)}
+            </p>
+          )}
           {/* Footer actions */}
           <div className="px-5 py-4 border-t border-gray-100 flex gap-3">
             <button
@@ -438,7 +519,8 @@ export default function RecheckPage() {
             </button>
             <button
               onClick={handleSave}
-              className="flex-1 py-2.5 rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-xs font-semibold transition-colors"
+              disabled={unmarked > 0}
+              className="flex-1 py-2.5 rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-xs font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[var(--accent-solid)]"
             >
               {saved ? `✓ ${t("บันทึกแล้ว!", "Saved!")}` : t("บันทึกการเปลี่ยนแปลง", "Save Changes")}
             </button>
