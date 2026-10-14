@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 
 // 12/10/2569 — console command [21] adds the two earlier offerings of the programming subject (with rubrics and class results)
 // the Rubrics > Compare years page needs. It must merge by id into a browser that already holds data and touch nothing else.

@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 
 // 11/10/2569 — console command [20] must reach a browser holding the OLD mock: it brings courses / teachers / rubric wording / CLO tags
 // up to date and sends two of c-mock-1's assignments back to "not graded", while every other submission, student and assignment

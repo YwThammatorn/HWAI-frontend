@@ -1,6 +1,6 @@
 import { test, expect, Page } from "@playwright/test";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 
 // 4/10/2569 — teacher grading page (per assignment):
 //  · "Finish & announce" is always visible: enabled once everything is graded, otherwise disabled with the reason,

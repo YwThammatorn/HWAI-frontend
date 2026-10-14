@@ -7,10 +7,12 @@ import { useCourses } from "@/lib/courses";
 import { useAssignments, RubricCriterion, submissionAttachments, isManualGrading } from "@/lib/assignments";
 import SubmissionViewer from "@/components/SubmissionViewer";
 import CriterionName from "@/components/CriterionName";
+import { splitCriterionName } from "@/lib/rubricName";
 import { useStudentGroups } from "@/lib/studentGroups";
 import { useLanguage } from "@/context/LanguageContext";
 
-function genFeedback(name: string, level: "high" | "low"): string {
+function genFeedback(fullName: string, level: "high" | "low"): string {
+  const name = splitCriterionName(fullName).main; // "C1 · Program correctness / ความถูกต้อง" reads as "program correctness" in a sentence
   if (level === "high") {
     return `Good demonstration of ${name.toLowerCase()}. The work clearly meets expectations and shows solid understanding of the required concepts.`;
   }
@@ -330,18 +332,7 @@ export default function RecheckPage() {
                   }`}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      {s.score / s.maxPoints >= 0.7 ? (
-                        <div className="w-4 h-4 rounded-full bg-emerald-100 flex items-center justify-center">
-                          <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="3" strokeLinecap="round">
-                            <polyline points="20 6 9 17 4 12"/>
-                          </svg>
-                        </div>
-                      ) : (
-                        <div className="w-4 h-4 rounded-full bg-gray-100" />
-                      )}
-                      <CriterionName name={c.name} />
-                    </div>
+                    <CriterionName name={c.name} />
                     <div className="flex items-center gap-1.5 shrink-0">
                       <span className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">
                         {t("คะแนน", "Score")}

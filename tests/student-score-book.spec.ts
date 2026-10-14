@@ -1,6 +1,6 @@
 import { test, expect, Page } from "@playwright/test";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 
 // Student Evaluation page, redesigned (22/9/2569) to adapt the teacher Score Book's visual language:
 // same ScoreCell tones/legend/rubric-breakdown as the teacher's matrix, transposed to one row (rows =

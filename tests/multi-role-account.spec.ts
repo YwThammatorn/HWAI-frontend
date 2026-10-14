@@ -1,6 +1,6 @@
 import { test, expect, Page } from "@playwright/test";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 
 // One sign-in, three roles (20/9/2569): somsak.c@kmitl.ac.th holds admin + teacher +
 // student(69070101) and switches between them — see src/lib/accounts.ts.

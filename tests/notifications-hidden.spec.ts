@@ -1,6 +1,6 @@
 import { test, expect, Page } from "@playwright/test";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 
 // Mirrors NOTIFICATIONS_DISABLED in src/lib/featureFlags.ts — keep in sync.
 // Notifications are folded away for now (21/9/2569): no bell in the teacher or admin top bar,

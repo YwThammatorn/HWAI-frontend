@@ -1,6 +1,6 @@
 import { test, expect, Page, Locator } from "@playwright/test";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 
 // 20/9/2569 — every add / edit / import form is a centred popup now (was a right-hand
 // drawer). Each popup is opened from its real button and must: sit in the middle of the

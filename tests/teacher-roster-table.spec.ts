@@ -1,6 +1,6 @@
 import { test, expect, Page } from "@playwright/test";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 
 // Teacher › Students roster (21/9/2569): laid out like the admin Students tab —
 // Student ID · Title · Name (first + last together) · Email. The honorific is looked up

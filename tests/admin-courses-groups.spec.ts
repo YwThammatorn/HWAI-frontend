@@ -1,7 +1,7 @@
 import { test, expect, Page } from "@playwright/test";
 import fs from "fs";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 
 // 26/9/2569 — admin Courses is grouped by curriculum, then by subject (a subject's sections and earlier
 // terms stack in one card), with filters. Schedule / room are gone from this page (the teacher sets them).

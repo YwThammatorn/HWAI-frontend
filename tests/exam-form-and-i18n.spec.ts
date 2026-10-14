@@ -1,6 +1,6 @@
 import { test, expect, Page } from "@playwright/test";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 
 // 26/9/2569 — three small clean-ups:
 //  1. the Exam form no longer shows file / submission-type controls (nothing is submitted),

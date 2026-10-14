@@ -1,6 +1,6 @@
 import { test, expect, Page } from "@playwright/test";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────
 // One continuous walk of the whole group-assignment feature (15/9/2569),

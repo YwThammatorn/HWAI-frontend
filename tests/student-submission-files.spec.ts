@@ -1,6 +1,6 @@
 import { test, expect, Page } from "@playwright/test";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 
 // Student submission (20/9/2569): files are a list — each can be removed before
 // submitting, and several can be attached (plus an optional link).

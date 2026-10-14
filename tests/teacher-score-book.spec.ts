@@ -1,7 +1,7 @@
 import { test, expect, Page } from "@playwright/test";
 import fs from "fs";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 
 // Score Book (21/9/2569): the teacher's Results page redesigned as a students × assignments matrix,
 // grouped by grading category, with the weighted "total so far" and a letter grade.

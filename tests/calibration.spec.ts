@@ -2,7 +2,7 @@ import { test, expect, Page } from "@playwright/test";
 import { pickSample, compare, suggestOffsets, suggestRubricChanges, type CalibrationRun, type WorkUnit } from "../src/lib/calibration";
 import { mockAiGradeCriteria } from "../src/lib/aiGrading";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 
 // 12/10/2569 — the Calibration tab: the teacher scores a few samples by hand (blind to the AI), sees where the AI differs per criterion,
 // tunes how strict it is, and sees what the rubric itself may need. The numbers on screen are checked against the same pure functions
@@ -67,7 +67,7 @@ async function open(page: Page, opts: { runs?: unknown[]; lang?: "en" | "th"; su
   await page.waitForLoadState("networkidle");
 }
 
-const sampleNames = (page: Page) => page.locator("[data-testid^=sample-]").evaluateAll((els) => els.map((e) => (e.querySelector("p")?.textContent ?? "").replace(/^Sample \d+ · /, "")));
+const sampleNames = (page: Page) => page.locator("[data-testid^=sample-]").evaluateAll((els) => els.map((e) => e.getAttribute("data-sample-name") ?? ""));
 const runs = (page: Page) => page.evaluate(() => JSON.parse(localStorage.getItem("hwai_calibrations_v1") ?? "[]") as CalibrationRun[]);
 const rubricOf = (page: Page, aid: string) => page.evaluate((id) => (JSON.parse(localStorage.getItem("hwai_rubrics_v1") ?? "[]") as { assignmentId: string; aiOffsets?: Record<string, number> }[]).find((r) => r.assignmentId === id), aid);
 
@@ -81,6 +81,7 @@ async function scoreAll(page: Page, aid = "a-cal") {
   for (let i = 0; i < names.length; i++) {
     const unit = units.find((u) => u.name === names[i])!;
     const ai = mockAiGradeCriteria(unit.key, CRITERIA);
+    await page.getByRole("button", { name: `Sample ${i + 1}`, exact: true }).click(); // one sample is open at a time
     for (const c of CRITERIA) {
       const label = ["Excellent", "Fair", "Needs Improvement", "Fail"][teacherLevel(ai.levels[c.id], c.id)];
       await page.getByRole("radiogroup", { name: new RegExp(`Level for ${c.name.replace(/[/·]/g, ".")} — sample ${i + 1}`) }).getByRole("radio", { name: new RegExp(`^${label} ·`) }).click();
@@ -116,12 +117,68 @@ test.describe("Calibration", () => {
     await page.getByLabel("Samples", { exact: true }).selectOption("3");
     await expect(page.locator("[data-testid^=sample-]")).toHaveCount(3);
     const before = await sampleNames(page);
-    await page.getByTestId("sample-1").getByRole("button", { name: "Swap for another" }).click();
+    await page.getByRole("button", { name: "Sample 2", exact: true }).click();
+    await page.getByRole("button", { name: "Swap for another" }).click();
     const after = await sampleNames(page);
     expect(after[0]).toBe(before[0]);
     expect(after[2]).toBe(before[2]);
     expect(before).not.toContain(after[1]);                                  // a different piece of work…
     expect(new Set(after).size).toBe(3);                                      // …and never a duplicate
+  });
+
+  test("scoring happens in a Grade-style workspace: one sample at a time, levels picked by clicking, Previous/Next, a tick once a sample is done", async ({ page }) => {
+    await open(page);
+    // one sample's marking at a time — the others' level groups are not on the page
+    await expect(page.getByRole("radiogroup", { name: /sample 1$/ })).toHaveCount(CRITERIA.length);
+    await expect(page.getByRole("radiogroup", { name: /sample 2$/ })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Previous", exact: true })).toBeDisabled();
+    await expect(page.getByText("Sample 1 of 5 ·")).toBeVisible();
+    await expect(page.locator("input[type=number]")).toHaveCount(0);        // clicking a level, not typing a score
+    // every level shows its wording from the rubric
+    await expect(page.getByRole("radiogroup", { name: /sample 1$/ }).first().getByRole("radio").first()).toContainText(/\S+ · \d+\s*\S/);
+
+    for (const c of CRITERIA) {
+      await page.getByRole("radiogroup", { name: new RegExp(`Level for ${c.name.replace(/[/·]/g, ".")} — sample 1`) }).getByRole("radio").first().click();
+    }
+    await expect(page.getByTestId("sample-0").locator("svg")).toHaveCount(1);   // the tick on a finished sample
+    await expect(page.getByTestId("sample-1").locator("svg")).toHaveCount(0);
+    await page.getByRole("button", { name: "Next", exact: true }).click();
+    await expect(page.getByText("Sample 2 of 5 ·")).toBeVisible();
+    await expect(page.getByRole("radiogroup", { name: /sample 2$/ })).toHaveCount(CRITERIA.length);
+    await expect(page.getByRole("radiogroup", { name: /sample 2$/ }).first().getByRole("radio", { checked: true })).toHaveCount(0);
+    await page.getByRole("button", { name: "Previous", exact: true }).click();
+    await expect(page.getByRole("radiogroup", { name: /sample 1$/ }).first().getByRole("radio", { checked: true })).toHaveCount(1);
+  });
+
+  test("a steady lean of the AI is the strictness setting's job, not a 'level wording unclear' suggestion — scattered disagreement still is", () => {
+    const units = unitsOf("a-cal");
+    const sample = pickSample(units, { criteria: CRITERIA }, 5);
+    const aiK1 = (u: WorkUnit) => mockAiGradeCriteria(u.key, CRITERIA).levels.k1;
+    const runWith = (level: (u: WorkUnit) => number): CalibrationRun => ({
+      id: "r", assignmentId: "a-cal", createdAt: NOW, completedAt: NOW, sampleIds: sample.map((u) => u.key),
+      teacherLevels: Object.fromEntries(sample.map((u) => [u.key, { k1: level(u), k2: 0, k3: 0 }])),
+    });
+    const k1 = (run: CalibrationRun) => compare(run, units, { criteria: CRITERIA }).find((c) => c.criterionId === "k1")!;
+    const disagree = (run: CalibrationRun) => suggestRubricChanges({ criteria: CRITERIA }, [], compare(run, units, { criteria: CRITERIA })).filter((s) => s.kind === "disagree" && s.criterionId === "k1");
+
+    // always one level worse than the AI (kept inside the scale): the AI is steadily generous
+    const steady = runWith((u) => Math.min(3, aiK1(u) + 1));
+    expect(k1(steady).meanAbs).toBeGreaterThan(0.5);
+    expect(k1(steady).residual).toBeLessThan(1);                       // …and a correction of one level removes almost all of it
+    expect(disagree(steady)).toHaveLength(0);
+
+    // the teacher mirrors the AI (best ↔ worst): no single correction can fix that
+    const scattered = runWith((u) => 3 - aiK1(u));
+    expect(k1(scattered).residual).toBeGreaterThanOrEqual(1);
+    expect(disagree(scattered)).toHaveLength(1);
+  });
+
+  test("the AI feedback on the Grade screen names the criterion without its code or second-language name", async ({ page }) => {
+    await open(page);
+    await page.goto(`${BASE}/teacher/courses/c-cal/assignments/a-cal/recheck?sub=a-cal-s1`);
+    await page.waitForLoadState("networkidle");
+    await expect(page.getByText("Minor issues found in program correctness.", { exact: false })).toBeVisible();
+    await expect(page.getByText(/c1 ·/i).filter({ hasText: "Minor issues found" })).toHaveCount(0);
   });
 
   test("scores are kept as you go and survive a reload; Compare with the AI waits until everything is scored", async ({ page }) => {
@@ -266,8 +323,8 @@ test.describe("Calibration", () => {
 
   test("the sidebar has a Calibration item; Thai UI", async ({ page }) => {
     await open(page, { lang: "th" });
-    await expect(page.getByLabel("เมนูผู้สอน").getByRole("link", { name: "Calibration" })).toBeVisible();
-    await expect(page.getByRole("heading", { level: 1, name: "Calibration" })).toBeVisible();
+    await expect(page.getByLabel("เมนูผู้สอน").getByRole("link", { name: "ปรับเทียบ AI" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "ปรับเทียบ AI" })).toBeVisible();
     await expect(page.getByText("ตรวจงานตัวอย่างเอง", { exact: false }).first()).toBeVisible();
     await expect(page.getByTestId("cal-progress")).toHaveText("ตรวจแล้ว 0 จาก 15");
   });

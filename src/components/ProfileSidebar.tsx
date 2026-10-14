@@ -203,7 +203,7 @@ export default function ProfileSidebar() {
         { label: t("ตรวจงาน", "Grading"),         href: `/teacher/courses/${activeCourseId}/grading`,       active: onGrading,     icon: GRADING_ICON        },
         { label: t("สมุดคะแนน", "Score Book"),    href: `/teacher/courses/${activeCourseId}/results`,       active: onScoreBook,   icon: RESULTS_ICON        },
         { label: t("เกณฑ์การให้คะแนน", "Rubrics"), href: `/teacher/courses/${activeCourseId}/rubrics`,       active: isAt(`/teacher/courses/${activeCourseId}/rubrics`),     icon: RUBRICS_ICON        },
-        { label: "Calibration", href: `/teacher/courses/${activeCourseId}/calibration`, active: isAt(`/teacher/courses/${activeCourseId}/calibration`), icon: CALIBRATION_ICON    },
+        { label: t("ปรับเทียบ AI", "Calibration"), href: `/teacher/courses/${activeCourseId}/calibration`, active: isAt(`/teacher/courses/${activeCourseId}/calibration`), icon: CALIBRATION_ICON    },
         ...(GRADING_SPLIT_DISABLED ? [] : [
           { label: t("แบ่งงานตรวจ", "Grading Split"), href: `/teacher/courses/${activeCourseId}/grading-split`, active: isAt(`/teacher/courses/${activeCourseId}/grading-split`), icon: GRADING_SPLIT_ICON },
         ]),

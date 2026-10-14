@@ -1,6 +1,6 @@
 import { test, expect, Page } from "@playwright/test";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 
 // 20/9/2569 — stakeholder wants centred popups instead of right-hand drawers.
 // Sample round: the shared <Modal>, the NEW teacher "Add Student" (by ID) and the

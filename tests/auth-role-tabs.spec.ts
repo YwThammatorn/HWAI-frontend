@@ -1,6 +1,6 @@
 import { test, expect, Page } from "@playwright/test";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 
 // Mock CohortStudent matching hwai_cohort_students_v1 schema
 const MOCK_COHORT_STUDENT = {

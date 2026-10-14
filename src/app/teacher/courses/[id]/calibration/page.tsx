@@ -12,6 +12,7 @@ import { groupSubmissionsByTeam } from "@/lib/groupSubmissions";
 import { useCalibrations, pickSample, compare, suggestOffsets, suggestRubricChanges, aiLevelsFor, MAX_OFFSET, type CalibrationRun, type WorkUnit, type CriterionComparison } from "@/lib/calibration";
 import CriterionName from "@/components/CriterionName";
 import EmptyState from "@/components/EmptyState";
+import SubmissionViewer from "@/components/SubmissionViewer";
 
 const MIN_SAMPLES = 3, MAX_SAMPLES = 10, DEFAULT_SAMPLES = 5;
 
@@ -49,6 +50,9 @@ export default function CalibrationPage() {
     return a.courseId === id && !a.isExam && a.acceptsFiles !== false && !isManualGrading(a) && !!r && r.criteria.length > 0 && unitsOf(a).length >= MIN_SAMPLES;
   });
   const [pickedId, setPickedId] = useState("");
+  // which sample is open in the grading workspace, and the zoom of the work next to it
+  const [cur, setCur] = useState(0);
+  const [zoom, setZoom] = useState(100);
   const assignment = eligible.find((a) => a.id === pickedId) ?? eligible[0];
   const rubric = assignment ? rubricOf(assignment) : undefined;
   const units = useMemo(() => (assignment ? unitsOf(assignment) : []), [assignment, submissions, withdrawn]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -92,11 +96,11 @@ export default function CalibrationPage() {
         <span>/</span>
         <Link href={`/teacher/courses/${id}`} className="hover:text-[var(--accent)] transition-colors">{course.name}</Link>
         <span>/</span>
-        <span className="text-[var(--accent)] font-medium">Calibration</span>
+        <span className="text-[var(--accent)] font-medium">{t("ปรับเทียบ AI", "Calibration")}</span>
       </div>
 
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">Calibration</h1>
+        <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">{t("ปรับเทียบ AI", "Calibration")}</h1>
         <p className="text-sm text-[var(--text-secondary)] max-w-3xl">{t("ตรวจงานตัวอย่างเองไม่กี่ชิ้น (โดยยังไม่เห็นคะแนน AI) แล้วดูว่า AI ตรวจต่างจากคุณตรงไหน ปรับความเข้มของ AI และดูว่า rubric ควรแก้อะไร", "Score a few samples yourself, without seeing the AI's marks, then see where the AI differs from you — tune how strict it is and see what the rubric itself may need.")}</p>
       </div>
 
@@ -105,7 +109,7 @@ export default function CalibrationPage() {
           <EmptyState
             iconColor="var(--accent-bright)"
             icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>}
-            title={t("ยังไม่มีงานให้ calibrate", "Nothing to calibrate yet")}
+            title={t("ยังไม่มีงานให้ปรับเทียบ", "Nothing to calibrate yet")}
             description={t(`ต้องเป็นงานที่มี rubric รับไฟล์ ตรวจแบบให้ AI ช่วย และมีงานที่ส่งแล้วอย่างน้อย ${MIN_SAMPLES} ชิ้น`, `It needs an assignment with a rubric, files to check, AI-assisted grading and at least ${MIN_SAMPLES} submissions.`)}
           />
         </div>
@@ -142,7 +146,7 @@ export default function CalibrationPage() {
                 const total = sample.length * rubric.criteria.length;
                 const done = sample.reduce((n, u) => n + rubric.criteria.filter((c) => draft.teacherLevels[u.key]?.[c.id] !== undefined).length, 0);
                 const setLevel = (key: string, cid: string, lvl: number) => saveRun({ ...draft, teacherLevels: { ...draft.teacherLevels, [key]: { ...(draft.teacherLevels[key] ?? {}), [cid]: lvl } } });
-                const resample = (n: number) => saveRun({ ...draft, sampleIds: pickSample(units, rubric, n).map((u) => u.key), teacherLevels: {} });
+                const resample = (n: number) => { setCur(0); saveRun({ ...draft, sampleIds: pickSample(units, rubric, n).map((u) => u.key), teacherLevels: {} }); };
                 const swap = (key: string) => {
                   const here = aiLevelsFor(units.find((u) => u.key === key)!, rubric).score;
                   const alt = units.filter((u) => !draft.sampleIds.includes(u.key))
@@ -172,45 +176,98 @@ export default function CalibrationPage() {
                       </div>
                     </div>
 
-                    <ol className="flex flex-col gap-4">
-                      {sample.map((u, si) => (
-                        <li key={u.key} data-testid={`sample-${si}`} className="rounded-xl border border-[var(--border-subtle)] p-4">
-                          <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-                            <div className="min-w-0">
-                              <p className="text-sm font-semibold text-[var(--text-primary)]">{t(`ตัวอย่างที่ ${si + 1}`, `Sample ${si + 1}`)} · {u.name}</p>
-                              <p className="mt-0.5 text-xs text-[var(--text-muted)]">
-                                {submissionAttachments(u.subs[0]).length > 0
-                                  ? submissionAttachments(u.subs[0]).map((a) => a.name).join(", ")
-                                  : t("ไม่มีไฟล์แนบในข้อมูลจำลอง", "No file attached in the demo data")}
-                              </p>
-                            </div>
-                            <button type="button" onClick={() => swap(u.key)} className={ghost}>{t("สลับชิ้นอื่น", "Swap for another")}</button>
-                          </div>
-                          <ul className="flex flex-col gap-3">
-                            {rubric.criteria.map((c) => {
-                              const chosen = draft.teacherLevels[u.key]?.[c.id];
-                              return (
-                                <li key={c.id} className="flex flex-wrap items-start justify-between gap-3">
-                                  <CriterionName name={c.name} className="min-w-52 flex-1" />
-                                  <div role="radiogroup" aria-label={t(`ระดับของ ${c.name} — ตัวอย่างที่ ${si + 1}`, `Level for ${c.name} — sample ${si + 1}`)} className="flex flex-wrap gap-1.5">
-                                    {c.levels.map((lv, li) => (
-                                      <button
-                                        key={li} type="button" role="radio" aria-checked={chosen === li}
-                                        title={lv.description}
-                                        onClick={() => setLevel(u.key, c.id, li)}
-                                        className={`h-9 whitespace-nowrap rounded-lg border px-3 text-xs font-semibold tabular-nums transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] ${chosen === li ? "border-[var(--accent)] bg-[var(--accent-subtle)] text-[var(--text-primary)]" : "border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)]"}`}
-                                      >
-                                        {lv.label} · {Math.round(c.maxPoints * levelShare(li, c.levels.length))}
-                                      </button>
-                                    ))}
-                                  </div>
+                    {(() => {
+                      // the same shape as the Grade screen: the work on the left, the marking on the right —
+                      // but the marks are picked by clicking a level of the rubric, and the AI's are hidden
+                      const ci = Math.min(cur, sample.length - 1);
+                      const u = sample[ci];
+                      if (!u) return null;
+                      const attachments = submissionAttachments(u.subs[0]);
+                      const scoredHere = rubric.criteria.filter((c) => draft.teacherLevels[u.key]?.[c.id] !== undefined).length;
+                      const complete = (x: WorkUnit) => rubric.criteria.every((c) => draft.teacherLevels[x.key]?.[c.id] !== undefined);
+                      return (
+                        <div className="grid overflow-hidden rounded-xl border border-[var(--border-subtle)] lg:h-[min(720px,calc(100vh-13rem))] lg:grid-cols-[minmax(0,1fr)_400px]">
+                          {/* left — the work */}
+                          <div className="flex min-h-[420px] min-w-0 flex-col bg-[var(--surface)] lg:min-h-0">
+                            <ol aria-label={t("รายการตัวอย่าง", "Sample list")} className="flex gap-2 overflow-x-auto border-b border-[var(--border-subtle)] bg-[var(--bg-surface)] px-4 py-2.5">
+                              {sample.map((x, si) => (
+                                <li key={x.key} data-testid={`sample-${si}`} data-sample-name={x.name} className="shrink-0">
+                                  <button
+                                    type="button" onClick={() => setCur(si)} aria-current={si === ci ? "true" : undefined}
+                                    aria-label={t(`ตัวอย่างที่ ${si + 1}`, `Sample ${si + 1}`)}
+                                    className={`inline-flex h-8 min-w-8 items-center justify-center gap-1 rounded-lg border px-2.5 text-xs font-semibold tabular-nums transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] ${si === ci ? "border-[var(--accent)] bg-[var(--accent-subtle)] text-[var(--text-primary)]" : "border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)]"}`}
+                                  >
+                                    {si + 1}
+                                    {complete(x) && <svg aria-hidden="true" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>}
+                                  </button>
                                 </li>
-                              );
-                            })}
-                          </ul>
-                        </li>
-                      ))}
-                    </ol>
+                              ))}
+                            </ol>
+                            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border-subtle)] bg-[var(--bg-surface)] px-4 py-2">
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-[10px] font-semibold uppercase tracking-widest text-[var(--text-muted)]">{t("มุมมอง", "View")}</span>
+                                <button type="button" aria-label={t("ซูมออก", "Zoom out")} onClick={() => setZoom((z) => Math.max(25, z - 25))} className={`${ghost} !h-7 !w-7 !px-0 justify-center`}>−</button>
+                                <span className="w-12 text-center text-sm font-medium tabular-nums text-[var(--text-primary)]">{zoom}%</span>
+                                <button type="button" aria-label={t("ซูมเข้า", "Zoom in")} onClick={() => setZoom((z) => Math.min(200, z + 25))} className={`${ghost} !h-7 !w-7 !px-0 justify-center`}>+</button>
+                              </div>
+                              <button type="button" onClick={() => swap(u.key)} className={ghost}>{t("สลับชิ้นอื่น", "Swap for another")}</button>
+                            </div>
+                            <SubmissionViewer
+                              key={u.key}
+                              attachments={attachments}
+                              zoom={zoom}
+                              caption={u.name}
+                              empty={
+                                <div className="flex flex-1 items-center justify-center p-8 text-center">
+                                  <div>
+                                    <p className="text-sm font-semibold text-[var(--text-primary)]">{u.name}</p>
+                                    <p className="mt-1 text-xs text-[var(--text-muted)]">{t("ไม่มีไฟล์แนบในข้อมูลจำลอง", "No file attached in the demo data")}</p>
+                                  </div>
+                                </div>
+                              }
+                            />
+                          </div>
+
+                          {/* right — the marking */}
+                          <div className="flex min-h-0 flex-col border-t border-[var(--border-subtle)] bg-[var(--bg-surface)] lg:border-l lg:border-t-0">
+                            <div className="border-b border-[var(--border-subtle)] px-5 py-4">
+                              <h3 className="text-base font-bold text-[var(--text-primary)]">{t("ให้คะแนนงานนี้", "Score this work")}</h3>
+                              <p className="mt-0.5 text-xs text-[var(--text-muted)]">
+                                {t(`ตัวอย่างที่ ${ci + 1} จาก ${sample.length} · ${u.name}`, `Sample ${ci + 1} of ${sample.length} · ${u.name}`)}
+                              </p>
+                              <p className="mt-1 text-xs text-[var(--text-muted)]">{t("คลิกระดับที่ตรงกับงาน — ยังไม่เห็นคะแนนของ AI", "Click the level that fits the work — the AI's marks stay hidden")}</p>
+                            </div>
+                            <ul className="flex flex-1 flex-col gap-3 overflow-y-auto px-5 py-4">
+                              {rubric.criteria.map((c) => {
+                                const chosen = draft.teacherLevels[u.key]?.[c.id];
+                                return (
+                                  <li key={c.id} className="rounded-xl border border-[var(--border-subtle)] p-4">
+                                    <CriterionName name={c.name} />
+                                    <div role="radiogroup" aria-label={t(`ระดับของ ${c.name} — ตัวอย่างที่ ${ci + 1}`, `Level for ${c.name} — sample ${ci + 1}`)} className="mt-3 flex flex-col gap-1.5">
+                                      {c.levels.map((lv, li) => (
+                                        <button
+                                          key={li} type="button" role="radio" aria-checked={chosen === li}
+                                          onClick={() => setLevel(u.key, c.id, li)}
+                                          className={`rounded-lg border px-3 py-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] ${chosen === li ? "border-[var(--accent)] bg-[var(--accent-subtle)]" : "border-[var(--border)] hover:bg-[var(--bg-subtle)]"}`}
+                                        >
+                                          <span className="block text-xs font-semibold tabular-nums text-[var(--text-primary)]">{lv.label} · {Math.round(c.maxPoints * levelShare(li, c.levels.length))}</span>
+                                          {lv.description && <span className="mt-0.5 block text-xs leading-snug text-[var(--text-secondary)]">{lv.description}</span>}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  </li>
+                                );
+                              })}
+                            </ul>
+                            <div className="flex items-center justify-between gap-3 border-t border-[var(--border-subtle)] px-5 py-3">
+                              <button type="button" disabled={ci === 0} onClick={() => setCur(ci - 1)} className={ghost}>{t("ก่อนหน้า", "Previous")}</button>
+                              <span className="text-xs tabular-nums text-[var(--text-muted)]">{t(`${scoredHere} จาก ${rubric.criteria.length} เกณฑ์`, `${scoredHere} of ${rubric.criteria.length} criteria`)}</span>
+                              <button type="button" disabled={ci >= sample.length - 1} onClick={() => setCur(ci + 1)} className={ghost}>{t("ถัดไป", "Next")}</button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
 
                     <div className="mt-5 flex justify-end">
                       <button type="button" disabled={done < total || total === 0} onClick={() => saveRun({ ...draft, completedAt: new Date().toISOString() })} className={primary}>
@@ -229,7 +286,7 @@ export default function CalibrationPage() {
           {/* earlier calibrations of this course */}
           {runs.some((r) => r.completedAt && assignments.some((a) => a.id === r.assignmentId && a.courseId === id)) && (
             <section aria-labelledby="cal-hist" className={card}>
-              <h2 id="cal-hist" className="px-6 pt-5 pb-3 text-base font-bold text-[var(--text-primary)]">{t("การ calibrate ที่ผ่านมา", "Earlier calibrations")}</h2>
+              <h2 id="cal-hist" className="px-6 pt-5 pb-3 text-base font-bold text-[var(--text-primary)]">{t("การปรับเทียบที่ผ่านมา", "Earlier calibrations")}</h2>
               <ul className="divide-y divide-[var(--border-subtle)] border-t border-[var(--border-subtle)]">
                 {runs.filter((r) => r.completedAt && assignments.some((a) => a.id === r.assignmentId && a.courseId === id)).sort((a, b) => b.createdAt.localeCompare(a.createdAt)).map((r) => (
                   <li key={r.id} data-testid={`history-${r.id}`} className="flex flex-wrap items-center justify-between gap-3 px-6 py-3.5 text-sm">
@@ -296,13 +353,13 @@ function ResultSection({ run, units, assignment, rubric, locked, courseId, grade
     <section aria-labelledby="cal-3" className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-6">
       <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--accent-solid)] text-xs font-bold text-[var(--accent-solid-text)]">3</span>
+          <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--accent-solid)] text-xs font-bold text-[var(--accent-solid-text)]">2</span>
           <div>
             <h2 id="cal-3" className="text-base font-bold text-[var(--text-primary)]">{t("เทียบกับ AI แล้วปรับ", "Compare with the AI, then tune")}</h2>
             <p className="mt-0.5 text-xs text-[var(--text-muted)]">{t(`จาก ${run.sampleIds.length} ตัวอย่างที่คุณตรวจเอง`, `From the ${run.sampleIds.length} samples you scored`)}</p>
           </div>
         </div>
-        <button type="button" onClick={onAgain} className={ghost}>{t("calibrate ใหม่", "Start a new calibration")}</button>
+        <button type="button" onClick={onAgain} className={ghost}>{t("ปรับเทียบใหม่", "Start a new calibration")}</button>
       </div>
 
       <div className="overflow-x-auto rounded-xl border border-[var(--border-subtle)]">
@@ -365,7 +422,7 @@ function ResultSection({ run, units, assignment, rubric, locked, courseId, grade
                 <p className="mt-1 text-sm text-[var(--text-secondary)]">
                   {s.kind === "ceiling" && t(`${Math.round(s.value * 100)}% ของงานได้ระดับสูงสุด — เกณฑ์นี้แทบไม่แยกคน ลองยกมาตรฐานหรือเพิ่มระดับ`, `${Math.round(s.value * 100)}% of the work reaches the top level — this criterion barely separates anyone. Raise the bar or add a level.`)}
                   {s.kind === "floor" && t(`ไม่มีใครถึงระดับสูงสุดเลย (${s.value} ชิ้น) — อาจสูงเกินไปหรือเขียนคำอธิบายแคบเกิน`, `Nobody reaches the top level (${s.value} items) — it may be out of reach or worded too tightly.`)}
-                  {s.kind === "disagree" && t(`คุณกับ AI ต่างกันเฉลี่ย ${s.value.toFixed(1)} ระดับ — คำอธิบายระดับยังไม่ชัด ลองเขียนให้เห็นต่างกันมากขึ้น`, `You and the AI differ by ${s.value.toFixed(1)} levels on average — the level wording is not clear enough. Make the levels easier to tell apart.`)}
+                  {s.kind === "disagree" && t(`แม้ปรับความเข้มของ AI แล้ว คุณกับ AI ก็ยังต่างกันเฉลี่ย ${s.value.toFixed(1)} ระดับ — คำอธิบายระดับยังไม่ชัด ลองเขียนให้เห็นต่างกันมากขึ้น`, `Even after correcting how strict the AI is, you and it still differ by ${s.value.toFixed(1)} levels on average — the level wording is not clear enough. Make the levels easier to tell apart.`)}
                   {s.kind === "heavy-flat" && t(`เกณฑ์นี้มีคะแนนครึ่งหนึ่งขึ้นไป แต่ ${Math.round(s.value * 100)}% ของงานอยู่ระดับเดียวกัน — ไม่ช่วยแยกคน ลองลดคะแนนหรือแยกเป็นหลายเกณฑ์`, `This criterion carries half the points or more, yet ${Math.round(s.value * 100)}% of the work sits on one level — it does not separate students. Lower its points or split it.`)}
                 </p>
               </div>

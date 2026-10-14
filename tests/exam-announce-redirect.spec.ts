@@ -1,6 +1,6 @@
 import { test, expect, Page } from "@playwright/test";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 
 // 4/10/2569 — announcing an EXAM takes the teacher to its results page, which shows the same class-statistics
 // card (average / min / max / SD + bar chart) the students now see. Ordinary assignments stay on the grading page.

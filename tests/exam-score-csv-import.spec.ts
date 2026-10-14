@@ -2,7 +2,7 @@ import { test, expect, Page } from "@playwright/test";
 import fs from "fs";
 import { parseExamScoreCsv, parseCsvText, scoreCsvTemplate } from "../src/lib/examScoreCsv";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 
 // 4/10/2569 — the exam score page can be filled from a CSV: each student ID in the file is matched against the
 // course roster, the matching rows fill the score boxes (nothing is saved until "Save scores"), and everything that

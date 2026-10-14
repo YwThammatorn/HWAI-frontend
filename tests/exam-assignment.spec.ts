@@ -1,6 +1,6 @@
 import { test, expect, Page } from "@playwright/test";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 
 // 25/9/2569 — an Exam has no due date, students never submit it, and the teacher types every score into
 // one table (there is no submission to open). The student only waits for the score.

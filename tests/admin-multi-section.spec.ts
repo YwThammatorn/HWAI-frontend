@@ -1,6 +1,6 @@
 import { test, expect, Page } from "@playwright/test";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 
 // 25/9/2569 — admin New Course: the course details are entered once and several sections are opened at
 // the same time. Each section becomes its own course row with its own section number and teacher; the

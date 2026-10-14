@@ -1,6 +1,6 @@
 import { test, expect, Page } from "@playwright/test";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 
 // 11/10/2569 — "Grading method" per assignment. On the course Grading list the button that starts grading IS the choice:
 // "Grade with AI" (as before) or "Grade manually" (no AI at all). Manual hides every AI figure and the Re-grade button,

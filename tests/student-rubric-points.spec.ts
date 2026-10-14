@@ -1,7 +1,7 @@
 import { test, expect, Page } from "@playwright/test";
 import fs from "fs";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 
 // 26/9/2569 — a student looking at a graded assignment sees what each rubric criterion earned
 // (56 / 60 with a bar), not only the total. Only real per-criterion scores are shown, never an estimate,

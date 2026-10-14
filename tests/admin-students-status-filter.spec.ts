@@ -1,7 +1,7 @@
 import { test, expect, Page } from "@playwright/test";
 import fs from "fs";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 
 // 26/9/2569 — admin Users → Students: inactive students were hidden by default behind a single
 // "Show inactive (n)" switch in the filter row, which brought them in below the active ones.

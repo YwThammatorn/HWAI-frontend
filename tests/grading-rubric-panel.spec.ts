@@ -1,6 +1,6 @@
 import { test, expect, Page } from "@playwright/test";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 
 // 4/10/2569 — the teacher's grading page shows the assignment's rubric: each criterion with its points, how the graded
 // work so far spreads over its levels (a bar + counts), the class average, and — opened — the wording of every level.

@@ -1,7 +1,7 @@
 import { test, expect, Page } from "@playwright/test";
 import fs from "node:fs";
 
-const BASE = "http://localhost:3000";
+import { BASE } from "./base";
 
 // 12/10/2569 — the Rubrics page (teacher course sidebar): Library (saved rubrics + this subject's rubrics term by term) and Compare
 // years (the same rubric — same subject, same assignment name — next to its earlier years, criteria matched by name).
@@ -63,6 +63,7 @@ test.describe("Rubrics page", () => {
   test("Library: nothing saved yet; this subject's rubrics are listed newest term first with Last year marked", async ({ page }) => {
     await open(page);
     await expect(page.getByTestId("library-empty")).toBeVisible();
+    await expect(page.getByRole("tab", { name: /^Library/ })).toHaveText(/^Library\s*0$/);     // the count is what is saved, not the subject's rubrics listed below
     const rows = page.getByTestId(/^subject-/);
     const first = rows.first();
     await expect(first).toContainText("Term 1/2568");
@@ -77,6 +78,7 @@ test.describe("Rubrics page", () => {
     await expect(page.getByTestId("subject-a-yr-68-1").getByRole("button", { name: "Saved" })).toBeDisabled();
     const saved = page.locator("[data-testid^=library-]").filter({ hasNot: page.getByTestId("library-empty") }).first();
     await expect(saved).toContainText("3 criteria · 15 pts");
+    await expect(page.getByRole("tab", { name: /^Library/ })).toHaveText(/^Library\s*1$/);
     expect(await page.evaluate(() => JSON.parse(localStorage.getItem("hwai_rubric_library_v1")!)[0].courseTemplateId)).toBe("ct-18");
 
     await saved.getByRole("button", { name: "View criteria" }).click();
