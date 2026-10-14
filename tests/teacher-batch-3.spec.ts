@@ -153,12 +153,16 @@ test.describe("Recheck — comment on a manually adjusted score", () => {
     await page.waitForLoadState("networkidle");
   };
 
+  // Scores are picked by clicking a level card (Excellent 60 / Good 30 / Needs Improvement 0 for Layout, 40 / 20 / 0 for Accessibility).
+  // The AI's 80 starts as round(0.6 × 80) = 48 and 32 — on no level, so nothing is highlighted until a card is clicked.
+  const level = (page: Page, criterion: string, label: string) =>
+    page.getByRole("radiogroup", { name: `Level for ${criterion}` }).getByRole("radio", { name: new RegExp(`^${label}`) });
+
   test("the comment box appears only after the score is changed, and is saved per criterion", async ({ page }) => {
     await open(page);
     await expect(page.getByLabel("Feedback to AI")).toHaveCount(0);
 
-    // Layout starts at round(0.6 × 80) = 48 — push it to 55
-    await page.locator('input[type="number"]').first().fill("55");
+    await level(page, "Layout", "Good").click(); // 48 → 30
     await expect(page.getByText("Manually Edited")).toBeVisible();
     const note = page.getByLabel("Feedback to AI");
     await expect(note).toHaveCount(1);
@@ -168,14 +172,14 @@ test.describe("Recheck — comment on a manually adjusted score", () => {
     const sub = (await page.evaluate(() => JSON.parse(localStorage.getItem("hwai_submissions_v1") ?? "[]")))
       .find((s: { id: string }) => s.id === "sub-tb3");
     expect(sub.criterionComments).toEqual({ "crit-a": "Strong grid work, bumped up" });
-    expect(sub.instructorScore).toBe(55 + 32);
+    expect(sub.instructorScore).toBe(30 + 32);
   });
 
   test("a saved note is still there when the page is reopened, blank notes are not stored", async ({ page }) => {
     await open(page);
-    await page.locator('input[type="number"]').first().fill("55");
+    await level(page, "Layout", "Excellent").click();
     await page.getByLabel("Feedback to AI").fill("Bumped up");
-    await page.locator('input[type="number"]').nth(1).fill("30");
+    await level(page, "Accessibility", "Good").click();
     await page.getByLabel("Feedback to AI").nth(1).fill("   ");
     await page.getByRole("button", { name: /save changes/i }).click();
     const sub = (await page.evaluate(() => JSON.parse(localStorage.getItem("hwai_submissions_v1") ?? "[]")))
@@ -190,7 +194,7 @@ test.describe("Recheck — comment on a manually adjusted score", () => {
 
   test("Reset to Default drops unsaved notes", async ({ page }) => {
     await open(page);
-    await page.locator('input[type="number"]').first().fill("55");
+    await level(page, "Layout", "Excellent").click();
     await page.getByLabel("Feedback to AI").fill("temp");
     await page.getByRole("button", { name: /reset to default/i }).click();
     await expect(page.getByLabel("Feedback to AI")).toHaveCount(0);
