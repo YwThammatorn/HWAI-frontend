@@ -13,13 +13,15 @@ const HEAD = 46;
  * The student's own range is the dark bar tagged "You", so they can see where they stand and how many others
  * are around them; the dashed line is the class average. Counts only — no one else's score is shown.
  */
-export default function ScoreHistogram({ scores, maxPoints, myScore, mean, unit = "" }: {
+export default function ScoreHistogram({ scores, maxPoints, myScore, mean, unit = "", tall = false }: {
   scores: number[];
   maxPoints: number;
   myScore: number | null;
   mean: number;
   /** appended to the range labels when the scale isn't raw points, e.g. "%" */
   unit?: string;
+  /** a taller chart, for where the chart is the main thing on the page (the teacher's Class summary) */
+  tall?: boolean;
 }) {
   const { t } = useLanguage();
   const bins = histogramBins(scores, maxPoints);
@@ -38,7 +40,7 @@ export default function ScoreHistogram({ scores, maxPoints, myScore, mean, unit 
     <figure className="m-0" data-testid="score-histogram">
       <div role="group" aria-label={summary}>
         <div className="relative">
-        <ol className="flex h-48 items-stretch gap-1 border-b border-[var(--border-subtle)] @2xl:h-56 @2xl:gap-2">
+        <ol className={`flex items-stretch gap-1 border-b border-[var(--border-subtle)] @2xl:gap-2 ${tall ? "h-80 @2xl:h-[26rem]" : "h-48 @2xl:h-56"}`}>
           {bins.map((b, i) => {
             const isMine = i === mine;
             return (

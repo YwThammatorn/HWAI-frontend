@@ -6,9 +6,6 @@ import type { ScoreBook, ScoreBookRow } from "./scoreBook";
 // The teacher's class summary, derived from the same ScoreBook the matrix is drawn from — so the two
 // views of one section can never disagree. Pure functions (no React) so every number can be checked.
 
-export const LETTERS = ["A", "B", "C", "D", "F"] as const;
-export type Letter = (typeof LETTERS)[number];
-
 /**
  * Where an assignment stands for the teacher:
  *  announced — the teacher pressed "Announce results", students see their scores
@@ -39,29 +36,19 @@ export interface CategorySummary {
 
 export interface AttentionRow {
   row: ScoreBookRow;
-  /** Running grade is under 60%. */
+  /** Running total is under 60%. */
   lowGrade: boolean;
   missing: number;
 }
 
 export interface ScoreSummary {
-  /** Spread of every student's running grade (0–100) — null until anyone has a graded score. */
+  /** Spread of every student's running total (0–100) — null until anyone has a graded score. No letter grades since 15/10/2569. */
   overall: ExamStats | null;
-  gradeCounts: Record<Letter, number>;
-  /** Students with no graded work yet (no letter). */
-  ungraded: number;
   categories: CategorySummary[];
   attention: AttentionRow[];
 }
 
 export function buildScoreSummary(book: ScoreBook): ScoreSummary {
-  const gradeCounts: Record<Letter, number> = { A: 0, B: 0, C: 0, D: 0, F: 0 };
-  let ungraded = 0;
-  for (const r of book.rows) {
-    if (r.letter && r.letter in gradeCounts) gradeCounts[r.letter as Letter]++;
-    else ungraded++;
-  }
-
   const overall = statsFromScores(book.rows.map((r) => r.normalized).filter((v): v is number => v !== null));
 
   const categories: CategorySummary[] = book.groups.map((g) => {
@@ -88,7 +75,7 @@ export function buildScoreSummary(book: ScoreBook): ScoreSummary {
       b.missing - a.missing ||
       (a.row.normalized ?? 101) - (b.row.normalized ?? 101));
 
-  return { overall, gradeCounts, ungraded, categories, attention };
+  return { overall, categories, attention };
 }
 
 function summariseAssignment(book: ScoreBook, assignment: Assignment): AssignmentSummary {

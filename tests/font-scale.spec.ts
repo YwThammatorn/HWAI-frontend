@@ -16,7 +16,7 @@ const SEED = {
 };
 const USERS = {
   admin: { name: "Admin", email: "admin@kmitl.ac.th", role: "admin" },
-  teacher: { name: "Somsak", email: "somsak.c@kmitl.ac.th", role: "teacher" },
+  teacher: { name: "Somsak", email: "kiatnarong.to@kmitl.ac.th", role: "teacher" },
   student: { name: "Somchai", email: "69070101@kmitl.ac.th", role: "student", studentId: "69070101" },
 };
 

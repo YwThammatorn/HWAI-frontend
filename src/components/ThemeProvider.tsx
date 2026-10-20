@@ -3,10 +3,6 @@ import { createContext, useContext, useLayoutEffect, useState } from "react";
 
 export type ThemePreference = "light" | "dark" | "system";
 type EffectiveTheme = "light" | "dark";
-// Chrome (Navbar + the 3 portal sidebars) colour — independent of light/dark. "navy" is today's
-// look; "teal" is the advisor-suggested variant (22/9/2569, matches --accent-solid / the Sign-in
-// button). See globals.css's "Chrome theme toggle" block for what it actually repaints.
-export type NavTheme = "navy" | "teal";
 
 interface ThemeContextValue {
   preference: ThemePreference;
@@ -15,8 +11,6 @@ interface ThemeContextValue {
   savePreference: (p: ThemePreference) => void;
   revertPreference: () => void;
   toggleTheme: () => void;
-  navTheme: NavTheme;
-  toggleNavTheme: () => void;
 }
 
 const ThemeContext = createContext<ThemeContextValue>({
@@ -26,8 +20,6 @@ const ThemeContext = createContext<ThemeContextValue>({
   savePreference: () => {},
   revertPreference: () => {},
   toggleTheme: () => {},
-  navTheme: "navy",
-  toggleNavTheme: () => {},
 });
 
 export function useTheme() {
@@ -45,28 +37,18 @@ function applyToDom(effective: EffectiveTheme) {
   document.documentElement.setAttribute("data-theme", effective);
 }
 
-function applyNavThemeToDom(navTheme: NavTheme) {
-  document.documentElement.setAttribute("data-nav-theme", navTheme);
-}
-
 export default function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [preference, setPreference] = useState<ThemePreference>("light");
   const [effectiveTheme, setEffectiveTheme] = useState<EffectiveTheme>("light");
-  const [navTheme, setNavTheme] = useState<NavTheme>("navy");
 
   useLayoutEffect(() => {
-    // Default = "light" (not OS) if nothing stored yet
-    const stored = (localStorage.getItem("hwai-theme") as ThemePreference | null) ?? "light";
-    const effective = resolveEffective(stored);
-    setPreference(stored);
-    setEffectiveTheme(effective);
-    applyToDom(effective);
-
-    // Chrome colour — separate preference, separate key. Default "navy" (unchanged look) if nothing
-    // stored, so nobody sees a different site unless they opt in.
-    const storedNav = (localStorage.getItem("hwai-nav-theme") as NavTheme | null) ?? "navy";
-    setNavTheme(storedNav);
-    applyNavThemeToDom(storedNav);
+    // Dark mode is switched off (15/10/2569): its button was removed from the top bars, so a "dark" or "system" choice stored by an earlier
+    // visit must not keep anyone in a mode they can no longer leave. Always light; the stored value is cleared. The dark colour tokens stay in
+    // globals.css, and the rest of this provider is untouched, so bringing the button back is one component per shell.
+    try { localStorage.removeItem("hwai-theme"); } catch { /* storage blocked */ }
+    setPreference("light");
+    setEffectiveTheme("light");
+    applyToDom("light");
   }, []);
 
   function applyPreference(p: ThemePreference) {
@@ -91,16 +73,9 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
     savePreference(next);
   }
 
-  function toggleNavTheme() {
-    const next: NavTheme = navTheme === "navy" ? "teal" : "navy";
-    setNavTheme(next);
-    applyNavThemeToDom(next);
-    localStorage.setItem("hwai-nav-theme", next);
-  }
-
   return (
     <ThemeContext.Provider
-      value={{ preference, effectiveTheme, applyPreference, savePreference, revertPreference, toggleTheme, navTheme, toggleNavTheme }}
+      value={{ preference, effectiveTheme, applyPreference, savePreference, revertPreference, toggleTheme }}
     >
       {children}
     </ThemeContext.Provider>

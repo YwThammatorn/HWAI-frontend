@@ -115,7 +115,8 @@ const contrastInPage = (page: Page, selector: string, bgSelector = selector) => 
   return (a + 0.05) / (b + 0.05);
 }, [selector, bgSelector]);
 
-for (const theme of ["light", "dark"] as const) {
+// dark mode is switched off since 15/10/2569 (no button; a stored "dark" is ignored) — add "dark" back here when it returns
+for (const theme of ["light"] as const) {
   test.describe(`Score cell contrast (${theme})`, () => {
     test("the score, its /max, the AI figure and the Edited chip all pass 4.5:1", async ({ page }) => {
       await open(page, { theme, all: true });

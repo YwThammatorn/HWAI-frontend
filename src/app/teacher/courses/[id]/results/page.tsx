@@ -8,7 +8,7 @@ import { useStudents, isWithdrawn } from "@/lib/students";
 import { useCohortStudents } from "@/lib/cohort-students";
 import { useAssignments, type Assignment } from "@/lib/assignments";
 import { useGradingCategories } from "@/lib/gradingCategories";
-import { buildScoreBook, scoreBookToCsv, toneForPct, SCORE_TONE_CLASSES, PENDING_CHIP_CLASSES, MISSING_CHIP_CLASSES, type ScoreCell, type ScoreBookRow } from "@/lib/scoreBook";
+import { buildScoreBook, scoreBookToCsv, toneForPct, SCORE_TEXT_CLASSES, PENDING_TEXT_CLASSES, MISSING_TEXT_CLASSES, type ScoreCell, type ScoreBookRow } from "@/lib/scoreBook";
 import { useLanguage } from "@/context/LanguageContext";
 import SearchInput from "@/components/SearchInput";
 import FilterSelect from "@/components/FilterSelect";
@@ -27,7 +27,6 @@ type SortKey = "id" | "name" | "total";
 const ID_W = 120;
 const NAME_W = 232;
 const TOTAL_W = 132;
-const GRADE_W = 84;
 const HEAD1_H = 45; // height of the category row (h-10 at the 4.5px spacing unit), where row 2 sticks
 
 const TEAM_GLYPH = (
@@ -133,7 +132,7 @@ export default function ScoreBookPage() {
   function exportCsv() {
     const csv = scoreBookToCsv(book, {
       id: t("รหัสนักศึกษา", "Student ID"), title: t("คำนำหน้า", "Title"), first: t("ชื่อ", "First name"), last: t("นามสกุล", "Last name"),
-      total: t("คะแนนรวมเท่าที่ตรวจแล้ว", "Total so far"), grade: t("เกรด", "Grade"),
+      total: t("คะแนนรวมเท่าที่ตรวจแล้ว", "Total so far"),
       pending: t("รอตรวจ", "pending"), missing: t("ไม่ส่ง", "missing"),
       categoryPct: (name) => `${name} (%)`,
     });
@@ -147,7 +146,9 @@ export default function ScoreBookPage() {
 
   function renderCell(cell: ScoreCell, assignment: Assignment, row: ScoreBookRow) {
     const recheck = (submissionId: string) => `/teacher/courses/${id}/assignments/${assignment.id}/recheck?sub=${submissionId}`;
-    const chip = "inline-flex items-center justify-center gap-1 min-w-[3.5rem] h-8 px-2 rounded-lg text-sm font-semibold tabular-nums whitespace-nowrap";
+    // Text only, no box (15/10/2569): the score in its tone colour, "..." while pending, "-" when missing — the words stay for screen readers.
+    const chip = "inline-flex items-center gap-1 text-sm font-semibold tabular-nums whitespace-nowrap";
+    const link = "hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] rounded-sm";
     const rubric = rubricsByAssignment.get(assignment.id);
     const hasRubric = !!rubric && rubric.criteria.length > 0;
     // Score Book is view-only once the teacher finishes grading an assignment (23/9/2569) — no more
@@ -161,7 +162,7 @@ export default function ScoreBookPage() {
             {locked ? (
               <span
                 title={t("ตรวจเสร็จสิ้นแล้ว — ดูได้อย่างเดียว", "Grading finished — view only")}
-                className={`${chip} ${SCORE_TONE_CLASSES[toneForPct(cell.pct)]}`}
+                className={`${chip} ${SCORE_TEXT_CLASSES[toneForPct(cell.pct)]}`}
               >
                 {assignment.submissionType === "group" && <span aria-label={t("คะแนนทีม", "Team score")}>{TEAM_GLYPH}</span>}
                 {Number.isInteger(cell.score) ? cell.score : cell.score.toFixed(1)}
@@ -170,7 +171,7 @@ export default function ScoreBookPage() {
               <Link
                 href={recheck(cell.submissionId)}
                 title={t("เปิดดู/ตรวจใหม่", "Open / recheck")}
-                className={`${chip} ${SCORE_TONE_CLASSES[toneForPct(cell.pct)]} hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition`}
+                className={`${chip} ${SCORE_TEXT_CLASSES[toneForPct(cell.pct)]} ${link}`}
               >
                 {assignment.submissionType === "group" && <span aria-label={t("คะแนนทีม", "Team score")}>{TEAM_GLYPH}</span>}
                 {Number.isInteger(cell.score) ? cell.score : cell.score.toFixed(1)}
@@ -196,28 +197,18 @@ export default function ScoreBookPage() {
             )}
           </div>
         );
-      case "pending":
+      case "pending": {
+        const body = (<><span aria-hidden="true">...</span><span className="sr-only">{t("รอตรวจ", "Pending")}</span></>);
         return locked ? (
-          <span className={`${chip} ${PENDING_CHIP_CLASSES}`}>
-            <span className="w-1.5 h-1.5 rounded-full bg-current" aria-hidden="true" />
-            {t("รอตรวจ", "Pending")}
-          </span>
+          <span title={t("รอตรวจ", "Pending")} className={`${chip} ${PENDING_TEXT_CLASSES}`}>{body}</span>
         ) : (
-          <Link
-            href={recheck(cell.submissionId)}
-            className={`${chip} ${PENDING_CHIP_CLASSES} hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition`}
-          >
-            <span className="w-1.5 h-1.5 rounded-full bg-current" aria-hidden="true" />
-            {t("รอตรวจ", "Pending")}
-          </Link>
+          <Link href={recheck(cell.submissionId)} title={t("รอตรวจ", "Pending")} className={`${chip} ${PENDING_TEXT_CLASSES} ${link}`}>{body}</Link>
         );
+      }
       case "missing":
-        // Filled + bordered like every other tinted status pill (DESIGN.md §6) — an outline-only
-        // treatment on a white cell reads as almost nothing there, which is the opposite of "missing".
         return (
-          <span className={`${chip} ${MISSING_CHIP_CLASSES} font-medium`}>
-            <span className="w-1.5 h-1.5 rounded-full bg-current" aria-hidden="true" />
-            {t("ไม่ส่ง", "Missing")}
+          <span title={t("ไม่ส่ง", "Missing")} className={`${chip} ${MISSING_TEXT_CLASSES}`}>
+            <span aria-hidden="true">-</span><span className="sr-only">{t("ไม่ส่ง", "Missing")}</span>
           </span>
         );
       default:
@@ -310,8 +301,8 @@ export default function ScoreBookPage() {
         />
       ) : (
         <>
-          {/* Summary — class numbers, so not shown for the withdrawn group */}
-          {tab === "active" && <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          {/* Summary — class numbers, so not shown for the withdrawn group, nor on the Class summary view (16/10/2569: the chart there gets the room instead) */}
+          {tab === "active" && view !== "summary" && <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <StatCard
               label={t("นักศึกษา", "Students")} value={roster.length} color="var(--s-info-text)" bg="var(--s-info-bg)"
               icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>}
@@ -365,13 +356,13 @@ export default function ScoreBookPage() {
                 </FilterSelect>
               )}
             </div>
-            {/* Swatches use the exact same bg/border tokens as the cells they explain (DESIGN.md §6). */}
+            {/* The legend shows the same text colours the cells use — no boxes (15/10/2569). */}
             <ul className="flex items-center gap-3 text-xs text-[var(--text-secondary)]" aria-label={t("คำอธิบายสี", "Legend")}>
-              <li className="inline-flex items-center gap-1.5"><span className={`w-4 h-4 rounded ${SCORE_TONE_CLASSES.ok}`} aria-hidden="true" />≥ 80%</li>
-              <li className="inline-flex items-center gap-1.5"><span className={`w-4 h-4 rounded ${SCORE_TONE_CLASSES.info}`} aria-hidden="true" />60–79%</li>
-              <li className="inline-flex items-center gap-1.5"><span className={`w-4 h-4 rounded ${SCORE_TONE_CLASSES.err}`} aria-hidden="true" />&lt; 60%</li>
-              <li className="inline-flex items-center gap-1.5"><span className={`w-4 h-4 rounded ${PENDING_CHIP_CLASSES}`} aria-hidden="true" />{t("รอตรวจ", "Pending")}</li>
-              <li className="inline-flex items-center gap-1.5"><span className={`w-4 h-4 rounded ${MISSING_CHIP_CLASSES}`} aria-hidden="true" />{t("ไม่ส่ง", "Missing")}</li>
+              <li className={`font-semibold tabular-nums ${SCORE_TEXT_CLASSES.ok}`}>≥ 80%</li>
+              <li className={`font-semibold tabular-nums ${SCORE_TEXT_CLASSES.info}`}>60–79%</li>
+              <li className={`font-semibold tabular-nums ${SCORE_TEXT_CLASSES.err}`}>&lt; 60%</li>
+              <li className={`font-semibold ${PENDING_TEXT_CLASSES}`}><span aria-hidden="true">...</span> {t("รอตรวจ", "Pending")}</li>
+              <li className={`font-semibold ${MISSING_TEXT_CLASSES}`}><span aria-hidden="true">-</span> {t("ไม่ส่ง", "Missing")}</li>
             </ul>
           </div>
 
@@ -392,7 +383,7 @@ export default function ScoreBookPage() {
                         {g.category ? `${g.category.name} · ${g.category.weight}%` : t("ไม่มีหมวด", "No category")}
                       </th>
                     ))}
-                    <th colSpan={2} scope="colgroup" className={`${stickyHead} top-0 right-0 px-4 text-left ${headBase} ${headCaps}`}>
+                    <th scope="colgroup" className={`${stickyHead} top-0 right-0 px-4 text-left ${headBase} ${headCaps}`}>
                       {t("สรุป", "Summary")}
                     </th>
                   </tr>
@@ -418,12 +409,12 @@ export default function ScoreBookPage() {
                         key={a.id}
                         scope="col"
                         className={`sticky z-20 px-3 py-1 text-left border-b border-l border-[var(--border-subtle)] ${headBase}`}
-                        style={{ top: HEAD1_H, minWidth: 128 }}
+                        style={{ top: HEAD1_H, minWidth: 96 }}
                       >
                         <Link
                           href={`/teacher/courses/${id}/assignments/${a.id}/grading`}
                           title={a.name}
-                          className="block truncate max-w-[10rem] text-[var(--text-primary)] hover:text-[var(--accent)] hover:underline"
+                          className="block truncate max-w-[8rem] text-[var(--text-primary)] hover:text-[var(--accent)] hover:underline"
                         >
                           {a.name}
                         </Link>
@@ -438,15 +429,8 @@ export default function ScoreBookPage() {
                       onClick={() => cycleSort("total")}
                       hint={t("คลิกเพื่อเรียงตามคะแนนรวม (มาก→น้อย → น้อย→มาก → ลำดับเดิม)", "Click to sort by total (high → low → low → high → roster order)")}
                       className={`${stickyHead} border-b border-l border-[var(--border-subtle)]`}
-                      style={{ top: HEAD1_H, right: GRADE_W, width: TOTAL_W, minWidth: TOTAL_W }}
+                      style={{ top: HEAD1_H, right: 0, width: TOTAL_W, minWidth: TOTAL_W }}
                     />
-                    <th
-                      scope="col"
-                      className={`${stickyHead} px-4 py-1 text-left border-b border-[var(--border-subtle)] ${headBase} ${headCaps}`}
-                      style={{ top: HEAD1_H, right: 0, width: GRADE_W, minWidth: GRADE_W }}
-                    >
-                      {t("เกรด", "Grade")}
-                    </th>
                   </tr>
                 </thead>
                 {/* the last row has no bottom line: the footer's top line (or the card's own border) closes it — before, the two stacked into a double line */}
@@ -461,13 +445,13 @@ export default function ScoreBookPage() {
                   {rows.map((r) => (
                     <tr key={r.student.studentId} className="group">
                       <td
-                        className="sticky left-0 z-10 px-4 py-2 tabular-nums text-[var(--text-secondary)] bg-[var(--bg-surface)] group-hover:bg-[var(--bg-subtle)] border-b border-[var(--border-subtle)]"
+                        className="sticky left-0 z-10 px-4 py-1 tabular-nums text-[var(--text-secondary)] bg-[var(--bg-surface)] group-hover:bg-[var(--bg-subtle)] border-b border-[var(--border-subtle)]"
                         style={{ width: ID_W, minWidth: ID_W }}
                       >
                         {r.student.studentId}
                       </td>
                       <td
-                        className="sticky z-10 px-4 py-2 bg-[var(--bg-surface)] group-hover:bg-[var(--bg-subtle)] border-b border-[var(--border-subtle)]"
+                        className="sticky z-10 px-4 py-1 bg-[var(--bg-surface)] group-hover:bg-[var(--bg-subtle)] border-b border-[var(--border-subtle)]"
                         style={{ left: ID_W, width: NAME_W, minWidth: NAME_W }}
                       >
                         <span className="block truncate font-medium text-[var(--text-primary)]" style={{ maxWidth: NAME_W - 32 }}>
@@ -476,31 +460,21 @@ export default function ScoreBookPage() {
                         </span>
                       </td>
                       {columns.map((a) => (
-                        <td key={a.id} className="px-3 py-2 border-b border-l border-[var(--border-subtle)] group-hover:bg-[var(--bg-subtle)]">
+                        <td key={a.id} className="px-3 py-1 border-b border-l border-[var(--border-subtle)] group-hover:bg-[var(--bg-subtle)]">
                           {renderCell(r.cells[a.id], a, r)}
                         </td>
                       ))}
                       <td
-                        className="sticky z-10 px-4 py-2 tabular-nums bg-[var(--bg-surface)] group-hover:bg-[var(--bg-subtle)] border-b border-l border-[var(--border-subtle)]"
-                        style={{ right: GRADE_W, width: TOTAL_W, minWidth: TOTAL_W }}
+                        className="sticky z-10 px-4 py-1 tabular-nums bg-[var(--bg-surface)] group-hover:bg-[var(--bg-subtle)] border-b border-l border-[var(--border-subtle)]"
+                        style={{ right: 0, width: TOTAL_W, minWidth: TOTAL_W }}
                       >
                         {r.total === null ? (
                           <span className="text-[var(--text-muted)]">—</span>
                         ) : (
-                          <span title={t(`คิดจากหมวดที่มีงานตรวจแล้ว (น้ำหนักรวม ${r.gradedWeight}%)`, `Counts only categories with graded work (${r.gradedWeight}% of the grade so far)`)}>
+                          <span title={t(`คิดจากหมวดที่มีงานตรวจแล้ว (น้ำหนักรวม ${r.gradedWeight}%)`, `Counts only categories with graded work (${r.gradedWeight}% of the total so far)`)}>
                             <span className="font-semibold text-[var(--text-primary)]">{r.total.toFixed(1)}</span>
                             <span className="text-[var(--text-muted)]"> / {r.gradedWeight}</span>
                           </span>
-                        )}
-                      </td>
-                      <td
-                        className="sticky z-10 px-4 py-2 bg-[var(--bg-surface)] group-hover:bg-[var(--bg-subtle)] border-b border-[var(--border-subtle)]"
-                        style={{ right: 0, width: GRADE_W, minWidth: GRADE_W }}
-                      >
-                        {r.letter && r.normalized !== null ? (
-                          <span className={`inline-flex items-center justify-center min-w-[2rem] h-7 px-2 rounded-lg text-sm font-bold ${SCORE_TONE_CLASSES[toneForPct(r.normalized)]}`}>{r.letter}</span>
-                        ) : (
-                          <span className="text-[var(--text-muted)]">—</span>
                         )}
                       </td>
                     </tr>
@@ -509,18 +483,18 @@ export default function ScoreBookPage() {
                 {/* class averages only make sense for the enrolled group */}
                 {tab === "active" && <tfoot>
                   <tr>
-                    <td colSpan={2} className="sticky left-0 bottom-0 z-20 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] bg-[var(--bg-surface)] border-t border-r border-[var(--border-subtle)]">
+                    <td colSpan={2} className="sticky left-0 bottom-0 z-20 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] bg-[var(--bg-surface)] border-t border-r border-[var(--border-subtle)]">
                       {t("เฉลี่ยทั้งห้อง", "Class average")}
                     </td>
                     {columns.map((a) => {
                       const avg = book.columnAverages[a.id];
                       return (
-                        <td key={a.id} className="sticky bottom-0 z-10 px-3 py-2 tabular-nums text-[var(--text-secondary)] bg-[var(--bg-surface)] border-t border-l border-[var(--border-subtle)]">
+                        <td key={a.id} className="sticky bottom-0 z-10 px-3 py-1.5 tabular-nums text-[var(--text-secondary)] bg-[var(--bg-surface)] border-t border-l border-[var(--border-subtle)]">
                           {avg === null ? "—" : `${Math.round(avg)}%`}
                         </td>
                       );
                     })}
-                    <td colSpan={2} className="sticky right-0 bottom-0 z-20 px-4 py-2 tabular-nums text-[var(--text-secondary)] bg-[var(--bg-surface)] border-t border-l border-[var(--border-subtle)]">
+                    <td className="sticky right-0 bottom-0 z-20 px-4 py-1.5 tabular-nums text-[var(--text-secondary)] bg-[var(--bg-surface)] border-t border-l border-[var(--border-subtle)]">
                       {book.classAverage === null ? "—" : `${book.classAverage.toFixed(1)}%`}
                     </td>
                   </tr>

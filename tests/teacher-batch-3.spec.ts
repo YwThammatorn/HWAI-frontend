@@ -22,7 +22,7 @@ const CRITERIA = [
   { id: "crit-b", name: "Accessibility", description: "", maxPoints: 40, weight: 40, levels: [{ label: "Excellent", description: "" }, { label: "Good", description: "" }, { label: "Needs Improvement", description: "" }] },
 ];
 const ASSIGNMENT = {
-  id: "a-tb3", courseId: "c-tb3", name: "Landing page", description: "", dueDate: "2099-12-31",
+  id: "a-tb3", courseId: "c-tb3", name: "Landing page", description: "", dueDate: "2026-01-05",
   maxPoints: 100, submissionType: "individual", maxGroupSize: null, acceptsFiles: true, fileTypes: [],
   rubricIds: ["r-tb3"], createdAt: NOW, updatedAt: NOW,
 };
@@ -91,44 +91,59 @@ test.describe("Rubric — more than 3 levels", () => {
   // .last() = innermost match, i.e. the criterion card itself rather than a wrapper around it
   const firstCard = (page: Page) => page.locator("div.rounded-2xl", { has: page.getByLabel("Criterion name") }).last();
 
-  test("starts with 3 levels, Add level inserts above the lowest, capped at 6", async ({ page }) => {
+  // 14/10/2569 — one level count for the whole rubric: the header control adds or removes a level on EVERY criterion.
+  const levelNames = (page: Page) => page.getByLabel("Level name").evaluateAll((els) => els.map((e) => (e as HTMLInputElement).value));
+  const header = (page: Page) => page.getByTestId("level-control");
+
+  test("starts with 3 levels; the header + inserts above the lowest on every criterion, capped at 6", async ({ page }) => {
     await openNew(page);
+    await page.getByRole("button", { name: "Add New Criterion" }).click();
     const card = firstCard(page);
     const names = card.getByLabel("Level name");
     await expect(names).toHaveCount(3);
+    await expect(header(page).getByTestId("level-count")).toHaveText("3 levels");
 
-    await card.getByRole("button", { name: "Add level" }).click();
-    await expect(names).toHaveCount(4);
-    expect(await names.evaluateAll((els) => els.map((e) => (e as HTMLInputElement).value)))
-      .toEqual(["Excellent", "Good", "Fair", "Needs Improvement"]);
+    await header(page).getByRole("button", { name: "Add a level to every criterion" }).click();
+    await expect(header(page).getByTestId("level-count")).toHaveText("4 levels");
+    expect((await levelNames(page))).toEqual(["Excellent", "Good", "Fair", "Needs Improvement", "Excellent", "Good", "Fair", "Needs Improvement"]);   // both criteria grew
 
-    await card.getByRole("button", { name: "Add level" }).click();
-    await card.getByRole("button", { name: "Add level" }).click();
-    await expect(names).toHaveCount(6);
-    await expect(card.getByRole("button", { name: "Add level" })).toBeDisabled();
-    await expect(card.getByText("6 / 6 levels")).toBeVisible();
-    // the last one is still the lowest rung
-    expect(await names.last().inputValue()).toBe("Needs Improvement");
+    await header(page).getByRole("button", { name: "Add a level to every criterion" }).click();
+    await header(page).getByRole("button", { name: "Add a level to every criterion" }).click();
+    await expect(page.getByLabel("Level name")).toHaveCount(12);   // 2 criteria × 6
+    await expect(header(page).getByRole("button", { name: "Add a level to every criterion" })).toBeDisabled();
+    await expect(header(page).getByTestId("level-count")).toHaveText("6 levels");
+    expect(await names.last().inputValue()).toBe("Needs Improvement");   // the last one is still the lowest rung
+
+    // no per-criterion add / remove any more
+    await expect(page.getByRole("button", { name: "Add level", exact: true })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /^Remove level/ })).toHaveCount(0);
   });
 
-  test("levels can be renamed and removed, but never below 2", async ({ page }) => {
+  test("levels can be renamed; the header − drops the level above the lowest from every criterion, never below 2; a new criterion matches", async ({ page }) => {
     await openNew(page);
     const card = firstCard(page);
     const names = card.getByLabel("Level name");
     await names.nth(1).fill("Very good");
     await expect(names.nth(1)).toHaveValue("Very good");
+    await page.getByRole("button", { name: "Add New Criterion" }).click();
 
-    await card.getByRole("button", { name: "Remove level Very good" }).click();
-    await expect(names).toHaveCount(2);
-    await expect(card.getByRole("button", { name: /^Remove level/ })).toHaveCount(0);
+    await header(page).getByRole("button", { name: "Remove a level from every criterion" }).click();
+    await expect(header(page).getByTestId("level-count")).toHaveText("2 levels");
+    await expect(page.getByLabel("Level name")).toHaveCount(4);                // 2 criteria × 2
+    expect((await levelNames(page))).toEqual(["Excellent", "Needs Improvement", "Excellent", "Needs Improvement"]);   // best and worst stay
+    await expect(header(page).getByRole("button", { name: "Remove a level from every criterion" })).toBeDisabled();
+
+    // a criterion added later follows the rubric's count
+    await page.getByRole("button", { name: "Add New Criterion" }).click();
+    await expect(page.getByLabel("Level name")).toHaveCount(6);
   });
 
   test("Generate writes a description for every level, and the saved rubric keeps them all", async ({ page }) => {
     await openNew(page);
     const card = firstCard(page);
     await page.getByLabel("Criterion name").first().fill("Layout");
-    await card.getByRole("button", { name: "Add level" }).click();
-    await card.getByRole("button", { name: "Add level" }).click(); // 5 levels
+    await header(page).getByRole("button", { name: "Add a level to every criterion" }).click();
+    await header(page).getByRole("button", { name: "Add a level to every criterion" }).click(); // 5 levels
     await card.getByRole("button", { name: "Generate" }).click();
     await expect(card.locator("textarea[aria-label^='Layout — ']")).toHaveCount(5);
     await expect.poll(async () =>

@@ -10,10 +10,10 @@ const NOTIFICATIONS_DISABLED = true;
 test.skip(!NOTIFICATIONS_DISABLED, "Notifications are enabled — nothing is hidden");
 
 const USERS = {
-  // somsak.c@kmitl.ac.th is a multi-role account (src/lib/accounts.ts) — AuthContext normalizes any
+  // kiatnarong.to@kmitl.ac.th is a multi-role account (src/lib/accounts.ts) — AuthContext normalizes any
   // session under that email to the account's own name on load, which is always Thai for a teacher
   // identity (30/9/2569), regardless of what "name" is seeded here.
-  teacher: { name: "Somsak", email: "somsak.c@kmitl.ac.th", role: "teacher" },
+  teacher: { name: "Somsak", email: "kiatnarong.to@kmitl.ac.th", role: "teacher" },
   admin: { name: "Admin", email: "admin@kmitl.ac.th", role: "admin" },
   student: { name: "Somchai", email: "69070101@kmitl.ac.th", role: "student", studentId: "69070101" },
 };
@@ -32,15 +32,15 @@ test.describe("Notifications are folded away", () => {
     await open(page, "teacher", "/teacher/courses");
     await expect(page.getByRole("link", { name: "Notifications" })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Notifications" })).toHaveCount(0);
-    await expect(page.getByRole("button", { name: /theme|dark|light/i }).first()).toBeVisible();
-    await expect(page.getByText("สมศักดิ์", { exact: false }).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: "Toggle language" }).first()).toBeVisible();   // the language button stays (the dark mode button was removed 15/10)
+    await expect(page.getByText("เกียรติณรงค์", { exact: false }).first()).toBeVisible();
   });
 
   test("admin top bar has no bell, but the rest of the bar is intact", async ({ page }) => {
     await open(page, "admin", "/admin/users");
     await expect(page.getByRole("button", { name: "Notifications" })).toHaveCount(0);
     await expect(page.getByRole("link", { name: "Notifications" })).toHaveCount(0);
-    await expect(page.getByRole("button", { name: /theme|dark|light/i }).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: "Toggle language" }).first()).toBeVisible();   // the language button stays (the dark mode button was removed 15/10)
     await expect(page.getByText("Admin", { exact: false }).first()).toBeVisible();
   });
 

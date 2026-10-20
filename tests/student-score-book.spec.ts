@@ -172,13 +172,13 @@ test.describe("Student Evaluation — rubric breakdown", () => {
   });
 });
 
-test.describe("Student Evaluation — total and letter", () => {
-  test("weighted total so far, what it is out of, and the letter grade", async ({ page }) => {
+test.describe("Student Evaluation — total", () => {
+  test("weighted total so far and what it is based on — no letter grade next to it (15/10/2569)", async ({ page }) => {
     await open(page);
     await expect(page.getByText("Total so far")).toBeVisible();
     await expect(page.getByText("40.0%")).toBeVisible();
     await expect(page.getByText(/Based on 1\/2 categories graded/i)).toBeVisible();
-    await expect(page.getByText("A", { exact: true })).toBeVisible();
+    await expect(page.getByText("A", { exact: true })).toHaveCount(0);
   });
 });
 
