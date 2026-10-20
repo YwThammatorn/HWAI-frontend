@@ -168,11 +168,10 @@ test.describe("Grading Progress", () => {
 test.describe("Assignment Results", () => {
   test.beforeEach(async ({ page }) => { await withAuth(page); });
 
-  test("grade distribution labels A-F visible", async ({ page }) => {
+  test("no grade distribution on the results page — no letter grades (15/10/2569)", async ({ page }) => {
     await waitReady(page, "/teacher/courses/seed-1/assignments/a-seed-1-1/results");
-    for (const grade of ["A", "B", "C", "D", "F"]) {
-      await expect(page.locator(`text="${grade}"`).first()).toBeVisible();
-    }
+    await expect(page.getByText(/grade distribution/i)).toHaveCount(0);
+    for (const grade of ["A", "B", "C", "D", "F"]) await expect(page.locator(`text="${grade}"`)).toHaveCount(0);
   });
 
   test("student search box present", async ({ page }) => {
@@ -199,9 +198,9 @@ test.describe("Assignment Results", () => {
 test.describe("Recheck", () => {
   test.beforeEach(async ({ page }) => { await withAuth(page); });
 
-  test("loads with AI confidence and level cards to click", async ({ page }) => {
+  test("loads with level cards to click, and no AI confidence (removed 15/10)", async ({ page }) => {
     await waitReady(page, "/teacher/courses/seed-1/assignments/a-seed-1-1/recheck?sub=sub-1-1-1");
-    await expect(page.locator("text=/AI Confidence/i")).toBeVisible();
+    await expect(page.locator("text=/AI Confidence/i")).toHaveCount(0);
     await expect(page.getByRole("radiogroup").first().getByRole("radio").first()).toBeVisible();
   });
 
@@ -598,16 +597,17 @@ test.describe("Collaborators Page", () => {
 test.describe("Student Import", () => {
   test.beforeEach(async ({ page }) => { await withAuth(page); });
 
-  test("Import CSV opens a popup with the upload area", async ({ page }) => {
+  test("Import Excel opens a popup with the upload area", async ({ page }) => {
     await waitReady(page, "/teacher/courses/seed-1/students");
-    await page.getByRole("button", { name: /Import CSV|Import Students/ }).first().click();
+    await page.getByRole("button", { name: /Import Excel|Import Students/ }).first().click();
     await expect(page.getByRole("dialog", { name: "Import Students" })).toBeVisible();
-    await expect(page.getByText(/Drag CSV here/i)).toBeVisible();
+    await expect(page.getByText(/Drag a file here/i)).toBeVisible();
+    await expect(page.getByText(/Supports Excel/i)).toBeVisible();   // the registrar sheet is accepted too (15/10/2569)
   });
 
   test("Download Template link is present in the popup", async ({ page }) => {
     await waitReady(page, "/teacher/courses/seed-1/students");
-    await page.getByRole("button", { name: /Import CSV|Import Students/ }).first().click();
+    await page.getByRole("button", { name: /Import Excel|Import Students/ }).first().click();
     await expect(page.getByRole("dialog").getByRole("link", { name: /download/i }).first()).toBeVisible();
   });
 });
