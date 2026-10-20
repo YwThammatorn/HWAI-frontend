@@ -11,12 +11,15 @@ import ImportExamScoresModal from "@/components/ImportExamScoresModal";
  * open — every enrolled student gets a row here and the teacher types each score in, then saves them
  * all at once. Empty = not scored yet.
  */
-export default function ExamScoreTable({ students, titleOf, scores, maxPoints, readOnly, readOnlyReason, withdrawnIds, onSave }: {
+export default function ExamScoreTable({ students, titleOf, scores, maxPoints, examName, weight, readOnly, readOnlyReason, withdrawnIds, onSave }: {
   students: Student[];
   titleOf: (studentId: string) => string | undefined;
   /** Current saved score per studentId (absent = not scored). */
   scores: Record<string, number>;
   maxPoints: number;
+  /** Which exam this is ("สอบปลายภาค") and the share of the course total its category is worth — shown in the heading so the "/ 35" is not a mystery. */
+  examName?: string;
+  weight?: number | null;
   readOnly: boolean;
   /** Shown instead of the Save button while the table can't be edited. */
   readOnlyReason?: string;
@@ -69,9 +72,9 @@ export default function ExamScoreTable({ students, titleOf, scores, maxPoints, r
     <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-subtle)] shadow-sm mt-6 overflow-hidden">
       <div className="flex items-center justify-between gap-4 px-5 py-4 border-b border-[var(--border-subtle)] flex-wrap">
         <div>
-          <h2 className="text-sm font-bold text-[var(--text-primary)]">{t("คะแนนสอบ", "Exam scores")}</h2>
+          <h2 className="text-sm font-bold text-[var(--text-primary)]">{t("คะแนนสอบ", "Exam scores")}{examName ? ` · ${examName}` : ""}</h2>
           <p className="text-xs text-[var(--text-muted)] mt-0.5">
-            {t(`นักศึกษาไม่ต้องส่งงาน — กรอกคะแนนเต็ม ${maxPoints} ของแต่ละคน ช่องที่เว้นว่างคือยังไม่มีคะแนน`, `Students don't submit an exam — enter each score out of ${maxPoints}. A blank box means not scored yet.`)}
+            {t(`นักศึกษาไม่ต้องส่งงาน — กรอกคะแนนเต็ม ${maxPoints}${weight ? ` (คิดเป็น ${weight}% ของคะแนนรวมวิชา)` : ""} ของแต่ละคน ช่องที่เว้นว่างคือยังไม่มีคะแนน`, `Students don't submit an exam — enter each score out of ${maxPoints}${weight ? ` (worth ${weight}% of the course total)` : ""}. A blank box means not scored yet.`)}
           </p>
         </div>
         {readOnly ? (

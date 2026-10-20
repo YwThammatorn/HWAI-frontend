@@ -167,6 +167,7 @@ test.describe("Exam — student side", () => {
     await page.goto(`${BASE}/student/courses/c-ex/classwork`);
     await page.waitForLoadState("networkidle");
     await expect(page.getByText("Awaiting score (1)")).toBeVisible();
+    await page.getByRole("button", { name: /^Awaiting score \(/ }).click();   // folded away until opened (14/10/2569)
     await expect(page.getByText("Exam · nothing to submit")).toBeVisible();
 
     await page.getByRole("link", { name: /Midterm exam/ }).first().click();

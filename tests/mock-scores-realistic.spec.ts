@@ -26,8 +26,8 @@ for (const sfx of ["", "-en"]) {
       const items = asg.filter((a) => a.categoryId === "gcat-seed-c1-1");   // the 40% "assignments" category
       expect(new Set(items.map((a) => a.maxPoints)).size).toBeGreaterThanOrEqual(3);   // 10, 15 and 25
       expect(items.reduce((n, a) => n + a.maxPoints, 0)).toBe(100);
-      expect(by("a-mock-5").maxPoints).toBe(50);   // midterm
-      expect(by("a-mock-9").maxPoints).toBe(100);  // final
+      expect(by("a-mock-5").maxPoints).toBe(25);   // midterm — full marks = its category weight (25%), so the points add up to the course total (15/10/2569)
+      expect(by("a-mock-9").maxPoints).toBe(35);   // final — 35% category
     });
 
     test("nobody is perfect and nobody is near zero: every graded score sits between a third and 95% of the full mark", () => {
@@ -143,7 +143,7 @@ test("[14] from a browser holding the old history scores: every earlier course e
 
 test("[15] from a browser holding the old c-mock-1 data: assignments, rubrics and scores are all replaced together", async ({ page }) => {
   const flow = rd("student-flow-mockup.json");
-  const staleAsg = flow.assignments.map((a: Asg) => ({ ...a, maxPoints: a.id === "a-mock-5" || a.id === "a-mock-9" ? a.maxPoints : 100 }));
+  const staleAsg = flow.assignments.map((a: Asg) => ({ ...a, maxPoints: a.id === "a-mock-5" || a.id === "a-mock-9" ? (a.id === "a-mock-5" ? 50 : 100) : 100 }));
   const staleRub = flow.rubrics.map((r: Rubric) => ({ ...r, criteria: r.criteria.map((c) => ({ ...c, maxPoints: c.weight })) }));   // old: criterion marks = weights, summing to 100
   await page.goto(`${BASE}/login`);
   await page.evaluate(([a, r, courses]) => {
@@ -158,7 +158,7 @@ test("[15] from a browser holding the old c-mock-1 data: assignments, rubrics an
   const rub = (await stored(page, "hwai_rubrics_v1")) as Rubric[];
   const subs = (await stored(page, "hwai_submissions_v1")) as Sub[];
   expect(Object.fromEntries(asg.filter((a) => a.id.startsWith("a-mock-")).map((a) => [a.id, a.maxPoints]))).toEqual({
-    "a-mock-1": 15, "a-mock-2": 25, "a-mock-3": 15, "a-mock-4": 10, "a-mock-5": 50, "a-mock-6": 10, "a-mock-7": 10, "a-mock-8": 15, "a-mock-9": 100,
+    "a-mock-1": 15, "a-mock-2": 25, "a-mock-3": 15, "a-mock-4": 10, "a-mock-5": 25, "a-mock-6": 10, "a-mock-7": 10, "a-mock-8": 15, "a-mock-9": 35,
   });
   expect(rub).toHaveLength(flow.rubrics.length);
   for (const r of rub) expect(r.criteria.reduce((n, c) => n + c.maxPoints, 0), r.assignmentId).toBe(asg.find((a) => a.id === r.assignmentId)!.maxPoints);

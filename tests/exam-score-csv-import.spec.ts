@@ -189,12 +189,12 @@ test.describe("examScoreCsv lib", () => {
   });
 });
 
-// The two sample files in test-data/ — for trying the import on c-mock-1's final exam (a-mock-9, out of 100, 42 students).
+// The two sample files in test-data/ — for trying the import on c-mock-1's final exam (a-mock-9, out of 35 since 15/10/2569 — the weight of its category — 42 students).
 test.describe("sample files for c-mock-1's final exam", () => {
   const rd = (f: string) => JSON.parse(fs.readFileSync(`public/mock-data/${f}`, "utf8"));
   const flow = rd("student-flow-mockup.json");
   const enrolled = new Map<string, string>(flow.courseStudents.map((r: { studentId: string; firstName: string; lastName: string }) => [r.studentId, `${r.firstName} ${r.lastName}`]));
-  const parse = (file: string) => parseExamScoreCsv(fs.readFileSync(`test-data/${file}`, "utf8"), { maxPoints: 100, enrolled, withdrawn: new Set(), current: () => "" });
+  const parse = (file: string) => parseExamScoreCsv(fs.readFileSync(`test-data/${file}`, "utf8"), { maxPoints: 35, enrolled, withdrawn: new Set(), current: () => "" });
   const count = (rows: { status: string }[]) => rows.reduce<Record<string, number>>((m, r) => ({ ...m, [r.status]: (m[r.status] ?? 0) + 1 }), {});
 
   test("the clean file has all 42 students, every score valid, and the spread of a real class", () => {
@@ -204,14 +204,14 @@ test.describe("sample files for c-mock-1's final exam", () => {
     expect(new Set(rows.map((r) => r.studentId))).toEqual(new Set(enrolled.keys()));
     const sc = rows.map((r) => r.score!);
     const mean = sc.reduce((a, b) => a + b, 0) / sc.length;
-    expect(mean).toBeGreaterThan(58); expect(mean).toBeLessThan(72);
-    expect(Math.max(...sc)).toBeLessThan(100); expect(Math.min(...sc)).toBeGreaterThan(25);
+    expect((mean / 35) * 100).toBeGreaterThan(58); expect((mean / 35) * 100).toBeLessThan(72);
+    expect(Math.max(...sc)).toBeLessThan(35); expect(Math.min(...sc)).toBeGreaterThan(35 * 0.25);
   });
 
   test("the file with problems has each kind once: 36 ready, 1 blank skipped, 4 errors, 3 students left out", () => {
     const { rows } = parse("exam-scores-final-c-mock-1-with-errors.csv");
     expect(count(rows)).toEqual({ new: 36, empty: 1, bad_score: 2, not_enrolled: 1, duplicate: 1 });
-    expect(rows.find((r) => r.rawId === "69070205")!.status).toBe("bad_score");     // 105
+    expect(rows.find((r) => r.rawId === "69070205")!.status).toBe("bad_score");     // 38 — over 35
     expect(rows.find((r) => r.rawScore === "ขาดสอบ")!.status).toBe("bad_score");
     expect(rows.find((r) => r.rawId === "69079999")!.status).toBe("not_enrolled");
     expect(rows.filter((r) => r.studentId === "69070201").map((r) => r.status)).toEqual(["new", "duplicate"]);
@@ -230,10 +230,14 @@ test.describe("sample files for c-mock-1's final exam", () => {
       localStorage.setItem("hwai_assignments_v1", JSON.stringify(f.assignments));
       localStorage.setItem("hwai_rubrics_v1", JSON.stringify(f.rubrics));
       localStorage.setItem("hwai_submissions_v1", JSON.stringify(f.submissions));
-      localStorage.setItem("hwai_user", JSON.stringify({ name: "Somsak", email: "somsak.c@kmitl.ac.th", role: "teacher" }));
+      localStorage.setItem("hwai_user", JSON.stringify({ name: "Somsak", email: "kiatnarong.to@kmitl.ac.th", role: "teacher" }));
     }, [rd("courses-mockup.json"), rd("teachers-mockup.json"), rd("students-mockup.json"), flow] as const);
     await page.goto(`${BASE}/teacher/courses/c-mock-1/assignments/a-mock-9/grading`);
     await page.waitForLoadState("networkidle");
+    // the heading says which exam this is and what it is worth, so "/ 35" is not a mystery (15/10/2569)
+    await expect(page.getByRole("heading", { name: "คะแนนสอบ · สอบปลายภาค" })).toBeVisible();
+    await expect(page.getByText("กรอกคะแนนเต็ม 35 (คิดเป็น 35% ของคะแนนรวมวิชา)")).toBeVisible();
+    await expect(page.getByText("/ 35").first()).toBeVisible();
     await page.getByRole("button", { name: "นำเข้าด้วย CSV" }).click();
     const dialog = page.getByRole("dialog", { name: "นำเข้าคะแนนสอบจาก CSV" });
     await dialog.locator("input[type=file]").setInputFiles("test-data/exam-scores-final-c-mock-1.csv");
@@ -243,6 +247,6 @@ test.describe("sample files for c-mock-1's final exam", () => {
     await page.getByRole("button", { name: "บันทึกคะแนน" }).click();
     await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem("hwai_submissions_v1") ?? "[]").filter((s: { assignmentId: string; status: string }) => s.assignmentId === "a-mock-9" && s.status === "graded").length)).toBe(42);
     const first = await page.evaluate(() => JSON.parse(localStorage.getItem("hwai_submissions_v1") ?? "[]").find((s: { assignmentId: string; studentId: string }) => s.assignmentId === "a-mock-9" && s.studentId === "69070101").instructorScore);
-    expect(first).toBe(81.5);
+    expect(first).toBe(28.5);
   });
 });
