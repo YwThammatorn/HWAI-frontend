@@ -390,10 +390,98 @@ const isUxUi = (b: string) => /\b(ux|ui|gui)\b/i.test(b) || has(b.toLowerCase(),
 const isExam = (b: string) => /\b(exam|quiz|test|midterm|final exam)\b/i.test(b) || has(b, ["สอบ", "แบบทดสอบ", "ควิซ", "ข้อสอบ"]);
 const isCode = (b: string) => /\b(code|coding|program|programming|python|java|javascript|c\+\+|lab|algorithm|sql|debug|function)\b/i.test(b) || has(b, ["โปรแกรม", "โค้ด", "แล็บ", "เขียนโค้ด", "ฟังก์ชัน", "อัลกอริทึม", "ฐานข้อมูล"]);
 
+/**
+ * The language the AI assistant writes its suggestions in (16/10/2569): the language of what the teacher typed, not of the screen — a Thai brief gets
+ * Thai criteria even with the English interface, and an English brief gets English ones. A brief with no letters falls back to the interface language.
+ */
+export function briefLanguage(brief: string, fallback: "th" | "en"): "th" | "en" {
+  if (/[฀-๿]/.test(brief)) return "th";
+  if (/[A-Za-z]/.test(brief)) return "en";
+  return fallback;
+}
+
 /** null → nothing specific matched: the assistant falls back to its general-purpose suggestions. UX/UI wins over exams, exams over code. */
 export function pickAiTemplate(brief: string): AiTemplate | null {
   if (isUxUi(brief)) return { id: "uxui", criteria: UXUI_FINAL };
   if (isExam(brief)) return { id: "exam", criteria: EXAM_AI };
   if (isCode(brief)) return { id: "programming", criteria: PROGRAMMING_AI };
   return null;
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// Level scale helpers (14/10/2569). A rubric's criteria all use the SAME number of levels, so anything that brings criteria in from
+// elsewhere (the picker, the AI assistant, old data) has to be able to reshape a criterion's levels to the rubric's count.
+// ---------------------------------------------------------------------------------------------------------------------
+
+/** 0 = best … 1 = worst, by position on a scale of `total` levels. */
+export function levelRatio(i: number, total: number): number {
+  return total <= 1 ? 0 : i / (total - 1);
+}
+
+/** Placeholder wording for a level, chosen by where it sits on the scale (used by "Generate" and when a level is added). */
+export function levelDescription(i: number, total: number, name: string, lang: string): string {
+  const r = levelRatio(i, total);
+  const en = lang === "en";
+  const n = en ? name.toLowerCase() : name;
+  if (r === 0) return en
+    ? `Clearly demonstrates ${n} with strong evidence and meets all expectations.`
+    : `แสดงความเข้าใจ ${n} ได้อย่างชัดเจนและครบถ้วน มีหลักฐานประกอบที่น่าเชื่อถือ`;
+  if (r === 1) return en
+    ? `${name} is insufficient and requires significant revision and development.`
+    : `${name} ยังไม่เพียงพอ จำเป็นต้องแก้ไขและพัฒนาเพิ่มเติมอย่างมีนัยสำคัญ`;
+  if (r < 0.5) return en
+    ? `Demonstrates ${n} well and meets most expectations, with only minor gaps.`
+    : `แสดง ${n} ได้ดี ตรงตามความคาดหวังเป็นส่วนใหญ่ มีข้อบกพร่องเล็กน้อย`;
+  if (r === 0.5) return en
+    ? `Demonstrates ${n} at an acceptable level but with some areas for improvement.`
+    : `แสดง ${n} ได้ในระดับที่ยอมรับได้ แต่ยังมีบางส่วนที่ต้องปรับปรุง`;
+  return en
+    ? `Only partly demonstrates ${n}; several expectations are not yet met.`
+    : `แสดง ${n} ได้เพียงบางส่วน ยังไม่ตรงตามความคาดหวังหลายประการ`;
+}
+
+/** Level names (stored in Thai, shown translated by the editor), best → worst. */
+const SCALE_LABELS = ["ดีมาก", "ดี", "พอใช้", "ต้องปรับปรุง", "ไม่ผ่าน"] as const;
+
+/** The name for position `i` of `n`: picked off the 5-step scale, and never one a neighbour already has. */
+function scaleLabel(i: number, n: number, taken: string[], lang: string): string {
+  const pick = SCALE_LABELS[Math.round(levelRatio(i, n) * (SCALE_LABELS.length - 1))];
+  return taken.includes(pick) ? (lang === "en" ? `Level ${n - 1 - i}` : `ระดับที่ ${n - 1 - i}`) : pick;
+}
+
+/** `n` empty levels (names only), best → worst. */
+export function blankLevels(n: number, lang = "th"): BuiltLevel[] {
+  const out: BuiltLevel[] = [];
+  for (let i = 0; i < n; i++) out.push({ label: scaleLabel(i, n, out.map((l) => l.label), lang), description: "" });
+  return out;
+}
+
+/**
+ * Reshape one criterion's levels to exactly `n` (stand-in for "let the AI add or remove levels to fit"). Best and worst always stay.
+ * Fewer: the kept levels are spread evenly over the old ones, so the scale keeps its range and its wording. More: the new
+ * levels land where the old scale has gaps, with wording chosen by position (the same placeholder text "Generate" writes).
+ */
+export function resizeLevels(levels: BuiltLevel[], n: number, criterionName: string, lang = "th"): BuiltLevel[] {
+  const len = levels.length;
+  if (n < 2 || len === n) return levels.map((l) => ({ ...l }));
+  if (len === 0) return blankLevels(n, lang).map((l, i) => ({ ...l, description: levelDescription(i, n, criterionName, lang) }));
+  const out: BuiltLevel[] = [];
+  for (let k = 0; k < n; k++) {
+    const src = len === 1 ? 0 : (k * (len - 1)) / (n - 1);
+    const whole = Math.abs(src - Math.round(src)) < 1e-9;
+    if (n < len || whole) out.push({ ...levels[Math.round(src)] });   // shrinking always keeps real levels
+    else out.push({ label: scaleLabel(k, n, out.map((l) => l.label).concat(levels.map((l) => l.label)), lang), description: levelDescription(k, n, criterionName, lang) });
+  }
+  return out;
+}
+
+/** Every criterion of a rubric uses the same number of levels (14/10/2569), so "Level 2" means the same step everywhere. */
+export function levelsUniform(criteria: { levels: unknown[] }[]): boolean {
+  return criteria.every((c) => c.levels.length === criteria[0].levels.length);
+}
+/** How many levels the rubric uses: the most common count, the larger one on a tie (only differs from every criterion's count in old, mixed data). */
+export function rubricLevelCount(criteria: { levels: unknown[] }[]): number {
+  const tally = new Map<number, number>();
+  criteria.forEach((c) => tally.set(c.levels.length, (tally.get(c.levels.length) ?? 0) + 1));
+  return [...tally.entries()].sort((a, b) => b[1] - a[1] || b[0] - a[0])[0]?.[0] ?? 4;
 }

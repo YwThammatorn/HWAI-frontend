@@ -9,7 +9,7 @@ import { useGradingCategories } from "@/lib/gradingCategories";
 import { useLanguage } from "@/context/LanguageContext";
 import { AttachmentsEditor, useAttachmentsDraft } from "@/components/AssignmentAttachments";
 import Modal from "@/components/Modal";
-import RubricCriteriaEditor, { CriterionDraft, newCriterionDraft, toDraft, criteriaPointsOk, criteriaTotalPoints, finalizeCriteria, scoringSignature } from "@/components/RubricCriteriaEditor";
+import RubricCriteriaEditor, { CriterionDraft, newCriterionDraft, toDraft, criteriaPointsOk, levelsUniform, criteriaTotalPoints, finalizeCriteria, scoringSignature } from "@/components/RubricCriteriaEditor";
 import { useCLOs } from "@/lib/clo";
 
 export default function EditAssignmentPage() {
@@ -58,6 +58,8 @@ export default function EditAssignmentPage() {
   // Rubric editing lives on this page now (23/9/2569 round 3, was a separate step via the
   // standalone rubrics/[rubricId] route — mirrors how New Assignment already does it inline).
   const [criteria, setCriteria] = useState<CriterionDraft[]>([]);
+  // which rubric a "Use a rubric from before" set came from — kept on the rubric (14/10/2569)
+  const [sourceRubricId, setSourceRubricId] = useState<string | undefined>();
 
   const origRef = useRef({
     name: "", description: "", dueDate: "", isExam: false, maxPoints: "", categoryId: "",
@@ -185,11 +187,11 @@ export default function EditAssignmentPage() {
     if (!needsManualScore && !rubricLocked) {
       const finalized = finalizeCriteria(criteria, t("ไม่มีชื่อ", "Untitled"));
       if (linkedRubrics[0]) {
-        updateRubric(linkedRubrics[0].id, { name: linkedRubrics[0].name, criteria: finalized });
+        updateRubric(linkedRubrics[0].id, { name: linkedRubrics[0].name, criteria: finalized, ...(sourceRubricId ? { sourceRubricId } : {}) });
       } else {
         // Edge case: a rubric-less legacy assignment gets one created on first save, same as New
         // Assignment does at creation time — there was nothing to link to before this.
-        const rubric = addRubric({ assignmentId, name: t("เกณฑ์การให้คะแนน", "Grading Rubric"), criteria: finalized });
+        const rubric = addRubric({ assignmentId, name: t("เกณฑ์การให้คะแนน", "Grading Rubric"), criteria: finalized, ...(sourceRubricId ? { sourceRubricId } : {}) });
         updateAssignment(assignmentId, { rubricIds: [rubric.id] });
       }
     }
@@ -231,8 +233,9 @@ export default function EditAssignmentPage() {
   const scoredSubs = getSubmissionsByAssignment(assignmentId).filter((sub) => sub.status !== "not_graded");
   const totalPoints = criteriaTotalPoints(criteria);
   const pointsOk = criteriaPointsOk(criteria);
+  const levelsOk = levelsUniform(criteria);   // every criterion has the same number of levels (14/10/2569)
   const isValid = name.trim().length > 0 && (isExam || dueDate !== "") && (isExam || !acceptsFiles || fileTypes.length > 0) &&
-    (needsManualScore ? (parseInt(maxPoints) || 0) > 0 : pointsOk);
+    (needsManualScore ? (parseInt(maxPoints) || 0) > 0 : pointsOk && levelsOk);
 
   return (
       <main className="w-full px-8 py-8">
@@ -479,6 +482,7 @@ export default function EditAssignmentPage() {
                   assignmentName={name.trim()} assignmentDescription={description} assignmentAttachments={att.items}
                   clos={getCLOsByCourse(id)} cloHref={`/teacher/courses/${id}/clo`}
                   courseId={id} assignmentId={assignmentId}
+                  onSourceRubric={setSourceRubricId}
                 />
               </fieldset>
             </section>
@@ -503,6 +507,9 @@ export default function EditAssignmentPage() {
               buttons gets flex-shrunk down to almost nothing on a narrower viewport (see New
               Assignment's identical fix, same underlying pattern; same classes as New's own Actions row). */}
           <div className="flex flex-wrap items-center justify-end gap-3 mt-8 pt-6 pb-4 border-t border-gray-100">
+            {!needsManualScore && pointsOk && !levelsOk && (
+              <span className="text-xs text-amber-600 basis-full text-left">{t("ทุกเกณฑ์ต้องมีจำนวนระดับเท่ากัน ก่อนบันทึก", "Every criterion needs the same number of levels before you can save")}</span>
+            )}
             {!needsManualScore && !pointsOk && (
               <span className="text-xs text-amber-600 basis-full text-left">{t("ทุกเกณฑ์ต้องมีคะแนนมากกว่า 0 ก่อนบันทึก", "Every criterion needs more than 0 points before you can save")}</span>
             )}

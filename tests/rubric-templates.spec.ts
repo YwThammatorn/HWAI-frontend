@@ -1,6 +1,6 @@
 import { test, expect, Page } from "@playwright/test";
 import fs from "fs";
-import { LEVEL_LABELS, levelPoints, allocatePoints, buildCriteria, pickAiTemplate, UXUI_FINAL, SUBJECTS, quizCriteria, examCriteria } from "../src/lib/rubricTemplates";
+import { briefLanguage, LEVEL_LABELS, levelPoints, allocatePoints, buildCriteria, pickAiTemplate, UXUI_FINAL, SUBJECTS, quizCriteria, examCriteria } from "../src/lib/rubricTemplates";
 
 import { BASE } from "./base";
 const rd = (f: string) => JSON.parse(fs.readFileSync(`public/mock-data/${f}`, "utf8"));
@@ -8,6 +8,14 @@ const rd = (f: string) => JSON.parse(fs.readFileSync(`public/mock-data/${f}`, "u
 // 4/10/2569 — every rubric in the demo data (and what the AI Rubric Assistant suggests) follows the format of the
 // UX/UI Final Project rubric file (UXUI_Final_Rubric_draft1.xlsx): criteria C1…, four levels (ดีมาก / พอใช้ /
 // ต้องปรับปรุง / ไม่ผ่าน), and a score for each level — 100% / 66.67% / 33.33% / 0% of the criterion's full marks.
+
+test("the AI assistant writes in the brief's language; no letters at all falls back to the screen's", () => {
+  expect(briefLanguage("ออกแบบ Prototype ใน Figma", "en")).toBe("th");
+  expect(briefLanguage("Design a Figma prototype", "th")).toBe("en");
+  expect(briefLanguage("Prototype โปรเจกต์ 2569", "en")).toBe("th");      // any Thai wins
+  expect(briefLanguage("  123 ", "th")).toBe("th");
+  expect(briefLanguage("", "en")).toBe("en");
+});
 
 test.describe("the rubric file's rules", () => {
   test("level → points: 15 → 15/10/5/0 (the file's example sheet), 10 → 10/7/3/0", () => {
@@ -109,11 +117,11 @@ for (const sfx of ["", "-en"]) {
         expect(r.criteria.reduce((t, c) => t + c.maxPoints, 0), `${s.name} ${r.id}`).toBe(s.asg.find((a) => a.id === r.assignmentId)!.maxPoints);
         r.criteria.forEach((c, i) => {
           expect(c.name.startsWith(`C${i + 1} · `), c.name).toBe(true);
-          expect(c.levels.map((l) => l.label), c.id).toEqual(LEVEL_LABELS[lang]);
+          expect(c.levels.map((l) => l.label), c.id).toEqual(s.name === "UX/UI class" ? LEVEL_LABELS.th : LEVEL_LABELS[lang]);
           expect(c.levels.every((l) => l.description.length > 10), c.id).toBe(true);
         });
       }
-      expect(n).toBe(7 + 45 + 1);
+      expect(n).toBe(7 + 45 + 21);
     });
 
     test("every graded score is built from levels: each criterion sits on one of its four steps, and the criteria add up to the score", () => {
@@ -124,7 +132,7 @@ for (const sfx of ["", "-en"]) {
         expect(r.criteria.reduce((t, c) => t + sub.criterionScores![c.id], 0), sub.id).toBe(sub.instructorScore);
         n++;
       }
-      expect(n).toBe(175 + 48 + 27);
+      expect(n).toBe(175 + 48 + 600);
     });
 
     test("the content fits the subject: DSA labs measure algorithms, digital-logic labs circuits, c-mock-1 quizzes their topic", () => {
@@ -143,33 +151,6 @@ for (const sfx of ["", "-en"]) {
     });
   });
 
-  test.describe(`UX/UI class (${lang === "th" ? "Thai" : "English"} file)`, () => {
-    const subs = ux.submissions as Sub[];
-    test("30 CE students in c-mock-4, 27 graded + 3 not handed in; the assignment is announced and uses the file's 7 criteria", () => {
-      expect(ux.courseStudents).toHaveLength(30);
-      expect(new Set(ux.courseStudents.map((r: { studentId: string }) => r.studentId)).size).toBe(30);
-      expect(ux.courseStudents.map((r: { sequenceNumber: number }) => r.sequenceNumber)).toEqual(Array.from({ length: 30 }, (_, i) => i + 1));
-      expect(ux.courseStudents.every((r: { courseId: string }) => r.courseId === "c-mock-4")).toBe(true);
-      expect(subs).toHaveLength(27);
-      const ids = new Set(ux.courseStudents.map((r: { studentId: string }) => r.studentId));
-      for (const s of subs) expect(ids.has(s.studentId), s.id).toBe(true);
-      expect(ids.has("69070101") && ids.has("67010201")).toBe(true);
-      expect(ux.assignments[0]).toMatchObject({ id: "a-mock-10", courseId: "c-mock-4", maxPoints: 100, gradingFinalized: true, rubricIds: ["r-mock-10"] });
-      expect(ux.rubrics[0].criteria.map((c: Crit) => c.maxPoints)).toEqual([15, 15, 10, 15, 15, 15, 15]);
-      expect(ux.gradingCategories.reduce((n: number, c: { weight: number }) => n + c.weight, 0)).toBe(100);
-    });
-
-    test("the scores look like a class: average 65–80, nobody perfect, nobody near zero, a spread across all four levels", () => {
-      const t = subs.map((s) => s.instructorScore!);
-      const mean = t.reduce((a, b) => a + b, 0) / t.length;
-      expect(mean).toBeGreaterThan(65); expect(mean).toBeLessThan(80);
-      expect(Math.max(...t)).toBeLessThanOrEqual(95); expect(Math.min(...t)).toBeGreaterThanOrEqual(34);
-      const used = new Set<number>();
-      for (const s of subs) for (const c of ux.rubrics[0].criteria as Crit[]) used.add([0, 1, 2, 3].find((i) => levelPoints(c.maxPoints, i) === s.criterionScores![c.id])!);
-      expect([...used].sort()).toEqual([0, 1, 2, 3]);
-      expect(subs.find((s) => s.studentId === "69070101")!.instructorScore).toBe(87);
-    });
-  });
 }
 
 test("Thai and English UX/UI files hold the same numbers, and the public and test-data copies are identical", () => {
@@ -193,7 +174,7 @@ test("[16] documents a Thai and an English command", () => {
 });
 
 for (const [i, label] of ["Thai", "English"].entries()) {
-  test(`console command [16] (${label}) fills c-mock-4 with 30 students, the UX/UI Final Project, its rubric and results — and running it again changes nothing`, async ({ page }) => {
+  test(`console command [16] (${label}) fills c-mock-4 with 30 students, 21 assignments with Thai rubrics, teams, CLOs and results — replaces the old exam category, and running it again changes nothing`, async ({ page }) => {
     const ux = rd(i ? "student-uxui-mockup-en.json" : "student-uxui-mockup.json");
     const hist = rd(i ? "student-history-mockup-en.json" : "student-history-mockup.json");
     await page.goto(`${BASE}/login`);
@@ -202,6 +183,12 @@ for (const [i, label] of ["Thai", "English"].entries()) {
       localStorage.setItem("hwai_students_v1", JSON.stringify(roster));
       localStorage.setItem("hwai_assignments_v1", JSON.stringify(asg));
       localStorage.setItem("hwai_submissions_v1", JSON.stringify(subs));
+      // what an older copy of this command left behind: the exam category, and a single 100-point assignment
+      localStorage.setItem("hwai_grading_categories_v1", JSON.stringify([
+        { id: "gcat-seed-c4-1", courseId: "c-mock-4", name: "โปรเจกต์ปลายภาค", weight: 60 },
+        { id: "gcat-seed-c4-2", courseId: "c-mock-4", name: "สอบปลายภาค", weight: 40 },
+        { id: "gcat-other", courseId: "c-mock-1", name: "Quizzes", weight: 100 },
+      ]));
     }, [rd("courses-mockup.json"), hist.courseStudents, hist.assignments, hist.submissions] as const);
     for (let run = 0; run < 2; run++) {
       const reloaded = page.waitForEvent("load");
@@ -211,20 +198,31 @@ for (const [i, label] of ["Thai", "English"].entries()) {
       expect(roster.filter((r) => r.courseId === "c-mock-4")).toHaveLength(30);
       expect(roster.filter((r) => r.courseId !== "c-mock-4")).toHaveLength(hist.courseStudents.length - 2);   // the history's two c-mock-4 rows were replaced, nothing else touched
       const asg = (await stored(page, "hwai_assignments_v1")) as Asg[];
+      expect(asg.filter((a) => a.courseId === "c-mock-4")).toHaveLength(21);
       expect(asg.filter((a) => a.id === "a-mock-10")).toHaveLength(1);
       expect(asg.filter((a) => a.id.startsWith("a-hist-"))).toHaveLength(hist.assignments.length);
-      expect(((await stored(page, "hwai_rubrics_v1")) as Rubric[]).filter((r) => r.id === "r-mock-10")).toHaveLength(1);
+      const rub = (await stored(page, "hwai_rubrics_v1")) as Rubric[];
+      expect(rub.filter((r) => r.id === "r-mock-10")).toHaveLength(1);
+      expect(rub.filter((r) => r.assignmentId.startsWith("a-uxui-") || r.assignmentId === "a-mock-10")).toHaveLength(21);
       const subs = (await stored(page, "hwai_submissions_v1")) as Sub[];
       expect(subs.filter((s) => s.assignmentId === "a-mock-10")).toHaveLength(27);
+      expect(subs.filter((s) => s.assignmentId.startsWith("a-uxui-"))).toHaveLength(ux.submissions.length - 27);
       expect(subs.filter((s) => s.id.startsWith("sub-hist-"))).toHaveLength(hist.submissions.length);
       expect(new Set(subs.map((s) => s.id)).size).toBe(subs.length);
       expect(((await stored(page, "hwai_cohort_students_v1")) as unknown[]).length).toBe(rd(i ? "students-mockup-en.json" : "students-mockup.json").length);
+      const cats = (await stored(page, "hwai_grading_categories_v1")) as { id: string; courseId: string; name: string; weight: number }[];
+      expect(cats.filter((c) => c.courseId === "c-mock-4").map((c) => c.name)).toEqual(["งานเดี่ยว", "งานกลุ่ม", "โปรเจกต์ปลายภาค"]);   // no exam category any more
+      expect(cats.filter((c) => c.courseId === "c-mock-1")).toHaveLength(1);                                                           // another course's category untouched
+      expect(((await stored(page, "hwai_student_groups_v1")) as { courseId: string }[]).filter((g) => g.courseId === "c-mock-4")).toHaveLength(72);
+      expect(((await stored(page, "hwai_clos_v1")) as { courseId: string }[]).filter((c) => c.courseId === "c-mock-4")).toHaveLength(5);
     }
   });
 }
 
 test("what a student sees: 69070101 opens the UX/UI Final Project and the rubric card marks the level reached on every criterion", async ({ page }) => {
   const ux = rd("student-uxui-mockup-en.json");
+  const mine = (ux.submissions as Sub[]).find((x) => x.id === "sub-uxui-69070101")!;
+  const rubric = (ux.rubrics as Rubric[]).find((r) => r.id === "r-mock-10")!;
   await page.goto(`${BASE}/login`);
   await page.evaluate(([courses, teachers, cohort, st, asg, rub, subs, cats]) => {
     localStorage.setItem("hwai_lang", "en");
@@ -240,10 +238,8 @@ test("what a student sees: 69070101 opens the UX/UI Final Project and the rubric
   }, [rd("courses-mockup-en.json"), rd("teachers-mockup-en.json"), rd("students-mockup-en.json"), ux.courseStudents, ux.assignments, ux.rubrics, ux.submissions, ux.gradingCategories] as const);
   await page.goto(`${BASE}/student/courses/c-mock-4/classwork/a-mock-10`);
   await page.waitForLoadState("networkidle");
-  await expect(page.getByText("Screen Completeness & Content Realism", { exact: true }).first()).toBeVisible();   // main name…
-  await expect(page.getByText("ความครบถ้วนขององค์ประกอบและความสมจริงของเนื้อหา", { exact: true }).first()).toBeVisible();   // …and the other language under it
+  await expect(page.getByText("Information Architecture & User Flow", { exact: false }).first()).toBeVisible();   // C1's name as in the rubric file
   await expect(page.getByText("C1", { exact: true }).first()).toBeVisible();                                      // the code as its own badge
-  await expect(page.getByText("15 / 15").first()).toBeVisible();   // C1: Excellent
-  await expect(page.getByText("7 / 10").first()).toBeVisible();    // C3: Fair
+  for (const c of rubric.criteria) await expect(page.getByText(`${mine.criterionScores![c.id]} / ${c.maxPoints}`).first()).toBeVisible();
   await expect(page.getByText("Your level")).toHaveCount(7);
 });

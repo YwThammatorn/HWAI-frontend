@@ -182,10 +182,30 @@ test.describe("Use a rubric from before", () => {
     await pickRow(d, "Python Exercise 2567").click();
     await d.getByRole("button", { name: "Next: choose criteria" }).click();
     await d.getByRole("radio", { name: "Be added to the current ones" }).click();
+    // 14/10/2569 — the editor's criteria use 3 levels, the picked one 4: warned, and not usable until the AI has fitted it
+    await expect(d.getByTestId("picker-levels-warning")).toContainText("This assignment uses 3 levels but 1 of the chosen criterion uses 4");
+    await expect(d.getByRole("button", { name: /^Use 1 criterion/ })).toBeDisabled();
+    await d.getByTestId("picker-fit-levels").click();
+    await expect(d.getByTestId("picker-levels-warning")).toHaveCount(0);
     await d.getByRole("button", { name: /^Use 1 criterion/ }).click();
     const n = (await names(page)).filter(Boolean);
     expect(n[0]).toBe("My own first");
     expect(n).toContain("C3 · Program correctness / ความถูกต้อง");     // renumbered to follow the two that were already there
+    await expect(page.getByTestId("level-count")).toHaveText("3 levels");                       // the rubric still has one level count…
+    await expect(page.getByLabel("Level name")).toHaveCount(9);                                  // …3 criteria × 3
+    await expect(page.getByTestId("levels-mixed")).toHaveCount(0);
+  });
+
+  test("replacing needs no fitting: the rubric takes the picked criteria's own level count", async ({ page }) => {
+    await open(page, NEW);
+    await page.getByRole("button", { name: "Add New Criterion" }).click();
+    await page.getByLabel("Criterion name").first().fill("My own first");
+    const d = await openPicker(page);
+    await pickRow(d, "Python Exercise 2567").click();
+    await d.getByRole("button", { name: "Next: choose criteria" }).click();
+    await expect(d.getByTestId("picker-levels-warning")).toHaveCount(0);                         // Replace is the default
+    await d.getByRole("button", { name: /^Use 1 criterion/ }).click();
+    await expect(page.getByTestId("level-count")).toHaveText("4 levels");
   });
 
   test("a legend explains the tags and numbers in the list, and the preview says what the coloured % is — or that there are no results to average", async ({ page }) => {
