@@ -49,3 +49,7 @@ next-env.d.ts
 /.claude/.last-green
 /.claude/.stop-attempts
 /.claude/.nudged
+
+# real class data stays on this machine (public repo): see scripts/build-local-class.ts
+/local-data/
+/public/local-data/

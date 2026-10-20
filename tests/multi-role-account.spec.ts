@@ -2,7 +2,7 @@ import { test, expect, Page } from "@playwright/test";
 
 import { BASE } from "./base";
 
-// One sign-in, three roles (20/9/2569): somsak.c@kmitl.ac.th holds admin + teacher +
+// One sign-in, three roles (20/9/2569): kiatnarong.to@kmitl.ac.th holds admin + teacher +
 // student(69070101) and switches between them — see src/lib/accounts.ts.
 
 const NOW = "2026-01-01T00:00:00.000Z";
@@ -13,8 +13,8 @@ const COURSE = {
 };
 const TEACHER = {
   // Teacher names are always Thai regardless of the language toggle (30/9/2569) — matches the
-  // hardcoded name in src/lib/accounts.ts for this same somsak.c account.
-  id: "t-mr", title: "ผศ.ดร.", name: "สมศักดิ์ เจริญสุข", email: "somsak.c@kmitl.ac.th",
+  // hardcoded name in src/lib/accounts.ts for this same kiatnarong.to account.
+  id: "t-mr", title: "ผศ.", name: "เกียรติณรงค์ ทองประเสริฐ", email: "kiatnarong.to@kmitl.ac.th",
   role: "teacher", status: "active", courseIds: ["c-mr"],
 };
 const COHORT = [{
@@ -36,7 +36,7 @@ async function seedData(page: Page, opts: { legacyUser?: boolean } = {}) {
     // A session saved before multi-role existed — must still pick up the roles on load. Seed once so a later switch survives reloads.
     if (data.legacyUser && !sessionStorage.getItem("mr_seeded")) {
       sessionStorage.setItem("mr_seeded", "1");
-      localStorage.setItem("hwai_user", JSON.stringify({ name: "Somsak C", email: "somsak.c@kmitl.ac.th", role: "teacher" }));
+      localStorage.setItem("hwai_user", JSON.stringify({ name: "Somsak C", email: "kiatnarong.to@kmitl.ac.th", role: "teacher" }));
     }
   }, { course: COURSE, teacher: TEACHER, cohort: COHORT, roster: ROSTER, legacyUser: !!opts.legacyUser });
 }
@@ -56,13 +56,13 @@ async function switchTo(page: Page, role: "Admin" | "Teacher" | "Student") {
   await page.getByRole("menuitemradio", { name: new RegExp(role) }).click();
 }
 
-test.describe("Multi-role account — somsak.c holds admin, teacher and student", () => {
+test.describe("Multi-role account — kiatnarong.to holds admin, teacher and student", () => {
   test.beforeEach(async ({ page }) => { await seedData(page); });
 
   test("signing in lands on the default role (teacher) and the menu lists exactly the three held roles", async ({ page }) => {
-    await signIn(page, "somsak.c@kmitl.ac.th");
+    await signIn(page, "kiatnarong.to@kmitl.ac.th");
     await expect(page).toHaveURL(/\/teacher\/courses/, { timeout: 20_000 });
-    await expect(page.getByText("สมศักดิ์ เจริญสุข").first()).toBeVisible();
+    await expect(page.getByText("เกียรติณรงค์ ทองประเสริฐ").first()).toBeVisible();
 
     await switcher(page).click();
     const items = page.getByRole("menuitemradio");
@@ -73,11 +73,11 @@ test.describe("Multi-role account — somsak.c holds admin, teacher and student"
     await expect(items.nth(1)).toHaveAttribute("aria-checked", "true");
     // each role shows the identity it acts as
     await expect(items.nth(2)).toContainText("69070101@kmitl.ac.th");
-    await expect(items.nth(1)).toContainText("somsak.c@kmitl.ac.th");
+    await expect(items.nth(1)).toContainText("kiatnarong.to@kmitl.ac.th");
   });
 
-  test("Student acts as 69070101 (own courses + name), Admin opens user management, Teacher restores somsak.c", async ({ page }) => {
-    await signIn(page, "somsak.c@kmitl.ac.th");
+  test("Student acts as 69070101 (own courses + name), Admin opens user management, Teacher restores kiatnarong.to", async ({ page }) => {
+    await signIn(page, "kiatnarong.to@kmitl.ac.th");
     await expect(page).toHaveURL(/\/teacher\/courses/, { timeout: 20_000 });
 
     await switchTo(page, "Student");
@@ -86,22 +86,22 @@ test.describe("Multi-role account — somsak.c holds admin, teacher and student"
     await expect(page.getByText("Programming").first()).toBeVisible();
     expect(await storedUser(page)).toMatchObject({
       role: "student", studentId: "69070101", email: "69070101@kmitl.ac.th",
-      accountEmail: "somsak.c@kmitl.ac.th", roles: ["admin", "teacher", "student"],
+      accountEmail: "kiatnarong.to@kmitl.ac.th", roles: ["admin", "teacher", "student"],
     });
 
     await switchTo(page, "Admin");
     await expect(page).toHaveURL(/\/admin\/users/, { timeout: 20_000 });
-    expect(await storedUser(page)).toMatchObject({ role: "admin", email: "somsak.c@kmitl.ac.th", name: "สมศักดิ์ เจริญสุข" });
+    expect(await storedUser(page)).toMatchObject({ role: "admin", email: "kiatnarong.to@kmitl.ac.th", name: "เกียรติณรงค์ ทองประเสริฐ" });
     expect((await storedUser(page)).studentId).toBeUndefined();
 
     await switchTo(page, "Teacher");
     await expect(page).toHaveURL(/\/teacher\/courses/, { timeout: 20_000 });
     await expect(page.getByText("Programming").first()).toBeVisible();
-    expect(await storedUser(page)).toMatchObject({ role: "teacher", email: "somsak.c@kmitl.ac.th" });
+    expect(await storedUser(page)).toMatchObject({ role: "teacher", email: "kiatnarong.to@kmitl.ac.th" });
   });
 
   test("the active role survives a reload", async ({ page }) => {
-    await signIn(page, "somsak.c@kmitl.ac.th");
+    await signIn(page, "kiatnarong.to@kmitl.ac.th");
     await expect(page).toHaveURL(/\/teacher\/courses/, { timeout: 20_000 });
     await switchTo(page, "Student");
     await expect(page).toHaveURL(/\/student/, { timeout: 20_000 });
@@ -134,7 +134,7 @@ test.describe("Multi-role account — somsak.c holds admin, teacher and student"
 });
 
 test.describe("Multi-role account — sessions saved before the feature", () => {
-  test("an existing somsak.c teacher session gains the other roles on load", async ({ page }) => {
+  test("an existing kiatnarong.to teacher session gains the other roles on load", async ({ page }) => {
     await seedData(page, { legacyUser: true });
     await page.goto(`${BASE}/teacher/courses`);
     await page.waitForLoadState("networkidle");

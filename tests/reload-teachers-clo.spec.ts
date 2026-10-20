@@ -48,7 +48,7 @@ for (const lang of ["th", "en"] as const) {
 
     // teachers: whole list replaced, and one teacher now has all three Programming sections
     const owner = (id: string) => after.teachers.filter((t) => t.courseIds.includes(id)).map((t) => t.id);
-    expect(after.teachers.length).toBe(6);
+    expect(after.teachers.length).toBe(22);   // the department's real teachers (15/10/2569), was 6 made-up ones
     expect(owner("c-mock-1")).toEqual(["t-mock-1"]);
     expect(owner("c-mock-7")).toEqual(["t-mock-1"]);
     expect(owner("c-mock-8")).toEqual(["t-mock-1"]);
@@ -82,7 +82,7 @@ test("[18]: from an old browser with the course loaded but no CLO tags, the real
     localStorage.setItem("hwai_rubrics_v1", JSON.stringify(flow.rubrics.map((r: { criteria: Record<string, unknown>[] }) => ({ ...r, criteria: r.criteria.map(({ cloIds: _gone, ...c }) => c) }))));
     localStorage.setItem("hwai_clos_v1", "[]");
     localStorage.setItem("hwai_lang", "en");
-    localStorage.setItem("hwai_user", JSON.stringify({ name: "Somsak", email: "somsak.c@kmitl.ac.th", role: "teacher" }));
+    localStorage.setItem("hwai_user", JSON.stringify({ name: "Somsak", email: "kiatnarong.to@kmitl.ac.th", role: "teacher" }));
   });
   await page.goto(`${BASE}/teacher/courses/c-mock-1/assignments/a-mock-1`);
   await page.waitForLoadState("networkidle");
@@ -95,6 +95,6 @@ test("[18]: from an old browser with the course loaded but no CLO tags, the real
 
   await page.goto(`${BASE}/teacher/courses/c-mock-1/clo`);
   await page.waitForLoadState("networkidle");
-  await expect(page.getByTestId("clo-links-CLO1").getByTestId("clo-attainment")).toBeVisible();
+  await expect(page.getByTestId("clo-links-CLO1").getByRole("listitem").first()).toBeVisible();
   await expect(page.getByTestId("clo-unmeasured")).toHaveCount(0);      // all four CLOs are measured
 });
