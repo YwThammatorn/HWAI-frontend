@@ -15,7 +15,7 @@ const COURSE = {
 };
 const TEACHER = { id: "t-gm", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", role: "teacher", status: "active", courseIds: ["c-gm"] };
 const assignment = (id: string, name: string, extra: Record<string, unknown> = {}) => ({
-  id, courseId: "c-gm", name, description: "", dueDate: "2099-12-31", maxPoints: 100,
+  id, courseId: "c-gm", name, description: "", dueDate: "2026-01-05", maxPoints: 100,
   acceptsFiles: true, fileTypes: ["pdf"], submissionType: "individual", maxGroupSize: null, rubricIds: [],
   createdAt: NOW, updatedAt: NOW, ...extra,
 });
@@ -108,7 +108,7 @@ test.describe("Grading method — the button that starts grading is the choice",
     const dialog = page.getByRole("dialog", { name: "Switch to manual grading?" });
     await expect(dialog).toBeVisible();
     await expect(dialog).toContainText("2 submissions scored only by the AI will go back to “Not graded”");   // m1 and m2
-    await expect(dialog).toContainText("Scores you set yourself stay");
+    await expect(dialog).toContainText("Scores you set yourself stay — 1 submission kept as they are");   // m3: the dialog says what stays, not only what goes
     await dialog.getByRole("button", { name: "Not yet" }).click();
     await expect(dialog).toHaveCount(0);
     await expect(page).toHaveURL(/\/teacher\/courses\/c-gm\/grading$/);
@@ -128,6 +128,9 @@ test.describe("Grading method — the button that starts grading is the choice",
     expect(after.subs.find((s) => s.id === "d1")?.aiScore).toBe(80);                    // another assignment is untouched
 
     await expect(page.getByTestId("grading-mode-note")).toContainText("Manual — no AI");
+    // the stat cards say whose work they count: the 1 graded is the teacher's own, the 3 waiting are waiting for the teacher
+    await expect(page.getByText("scored by you", { exact: true })).toBeVisible();
+    await expect(page.getByText("waiting for you", { exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: /Re-grade/ })).toHaveCount(0);
     await expect(page.getByRole("columnheader", { name: "Re-grade" })).toHaveCount(0);
     await expect(page.getByText(/AI: \d/)).toHaveCount(0);

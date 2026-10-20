@@ -5,11 +5,13 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
 import { useCourses } from "@/lib/courses";
-import { useAssignments, isManualGrading, submissionAttachments, levelShare, type Assignment } from "@/lib/assignments";
+import { useAssignments, isManualGrading, submissionAttachments, levelShare, gradingOpen, type Assignment } from "@/lib/assignments";
+import { useNow } from "@/lib/clock";
 import { useStudents, withdrawnIds } from "@/lib/students";
 import { useStudentGroups } from "@/lib/studentGroups";
-import { groupSubmissionsByTeam } from "@/lib/groupSubmissions";
-import { useCalibrations, pickSample, compare, suggestOffsets, suggestRubricChanges, aiLevelsFor, MAX_OFFSET, type CalibrationRun, type WorkUnit, type CriterionComparison } from "@/lib/calibration";
+import { useCalibrations, pickSample, compare, suggestOffsets, suggestRubricChanges, aiLevelsFor, aiGradedUnits, workUnitsOf, MAX_OFFSET, type CalibrationRun, type WorkUnit, type CriterionComparison } from "@/lib/calibration";
+import RubricEditModal from "@/components/RubricEditModal";
+import CalibrationRegrade from "@/components/CalibrationRegrade";
 import CriterionName from "@/components/CriterionName";
 import EmptyState from "@/components/EmptyState";
 import SubmissionViewer from "@/components/SubmissionViewer";
@@ -32,22 +34,24 @@ export default function CalibrationPage() {
   const { getGroupsByAssignment } = useStudentGroups();
   const { runs, saveRun, removeRun } = useCalibrations();
   const course = getCourse(id);
+  const now = useNow();      // an assignment is offered only once grading has opened (15/10/2569)
 
   const roster = getStudentsByCourse(id);
   const withdrawn = withdrawnIds(roster);
 
-  // the work of an assignment as units (a team is one unit)
-  const unitsOf = (a: Assignment): WorkUnit[] => {
-    const subs = submissions.filter((s) => s.assignmentId === a.id && !withdrawn.has(s.studentId));
-    if (a.submissionType === "group") return groupSubmissionsByTeam(subs, getGroupsByAssignment(a.id), t("ทีม", "Team")).map((r) => ({ key: r.key, name: r.teamName ?? r.subs[0].studentName, subs: r.subs }));
-    return subs.map((s) => ({ key: s.id, name: s.studentName, subs: [s] }));
-  };
+  // the work of an assignment as units (a team is one unit) — and, for Calibration, only the units the AI has already graded (14/10/2569):
+  // it compares the teacher with what the AI really gave, so there has to be something it gave
   const rubricOf = (a: Assignment) => rubrics.find((r) => r.assignmentId === a.id);
+  const unitsOf = (a: Assignment): WorkUnit[] => {
+    const r = rubricOf(a);
+    const all = workUnitsOf(a, submissions, getGroupsByAssignment(a.id), withdrawn, t("ทีม", "Team"));
+    return r ? aiGradedUnits(all, r) : [];
+  };
 
-  // assignments the AI could be corrected on: a rubric, files for it to check, AI-assisted, enough work to sample
+  // assignments the AI could be corrected on: a rubric, files for it to check, AI-assisted, and enough work the AI has graded to sample
   const eligible = assignments.filter((a) => {
     const r = rubricOf(a);
-    return a.courseId === id && !a.isExam && a.acceptsFiles !== false && !isManualGrading(a) && !!r && r.criteria.length > 0 && unitsOf(a).length >= MIN_SAMPLES;
+    return a.courseId === id && !a.isExam && a.acceptsFiles !== false && !isManualGrading(a) && gradingOpen(a, now) && !!r && r.criteria.length > 0 && unitsOf(a).length >= MIN_SAMPLES;
   });
   const [pickedId, setPickedId] = useState("");
   // which sample is open in the grading workspace, and the zoom of the work next to it
@@ -63,7 +67,7 @@ export default function CalibrationPage() {
 
   const newDraft = (n: number): CalibrationRun | null => {
     if (!assignment || !rubric) return null;
-    return { id: crypto.randomUUID(), assignmentId: assignment.id, createdAt: new Date().toISOString(), sampleIds: pickSample(units, rubric, n).map((u) => u.key), teacherLevels: {} };
+    return { id: crypto.randomUUID(), assignmentId: assignment.id, createdAt: new Date().toISOString(), sampleIds: pickSample(units, rubric, n).map((u) => u.key), teacherLevels: {}, blind: true };
   };
   // the first time an assignment is opened here, start a sample for it
   useEffect(() => {
@@ -101,7 +105,7 @@ export default function CalibrationPage() {
 
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">{t("ปรับเทียบ AI", "Calibration")}</h1>
-        <p className="text-sm text-[var(--text-secondary)] max-w-3xl">{t("ตรวจงานตัวอย่างเองไม่กี่ชิ้น แล้วดูว่า AI ตรวจต่างจากคุณตรงไหน ปรับความเข้มของ AI และดูว่า rubric ควรแก้อะไร — เปิด Blind test ถ้าไม่อยากเห็นระดับที่ AI ให้ระหว่างตรวจ (ผลเทียบจะเชื่อถือได้กว่า)", "Score a few samples yourself, then see where the AI differs from you — tune how strict it is and see what the rubric itself may need. Turn on the Blind test to hide the AI's level while you score (the comparison is then more trustworthy).")}</p>
+        <p className="text-sm text-[var(--text-secondary)] max-w-3xl">{t("ตรวจงานตัวอย่างเองไม่กี่ชิ้น แล้วดูว่า AI ตรวจต่างจากคุณตรงไหน ปรับความเข้มของ AI และดูว่า rubric ควรแก้อะไร — Blind test เปิดไว้ให้ตั้งแต่แรก ซ่อนระดับที่ AI ให้และชื่อนักศึกษา (ผลเทียบเชื่อถือได้กว่า) ปิดได้ถ้าอยากเห็น", "Score a few samples yourself, then see where the AI differs from you — tune how strict it is and see what the rubric itself may need. The Blind test starts on: it hides the AI's level and the students' names while you score (the comparison is then more trustworthy). Turn it off if you want to see them.")}</p>
       </div>
 
       {eligible.length === 0 || !assignment || !rubric ? (
@@ -110,7 +114,7 @@ export default function CalibrationPage() {
             iconColor="var(--accent-bright)"
             icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>}
             title={t("ยังไม่มีงานให้ปรับเทียบ", "Nothing to calibrate yet")}
-            description={t(`ต้องเป็นงานที่มี rubric รับไฟล์ ตรวจแบบให้ AI ช่วย และมีงานที่ส่งแล้วอย่างน้อย ${MIN_SAMPLES} ชิ้น`, `It needs an assignment with a rubric, files to check, AI-assisted grading and at least ${MIN_SAMPLES} submissions.`)}
+            description={t(`ต้องเป็นงานที่มี rubric รับไฟล์ ตรวจแบบให้ AI ช่วย และ AI ตรวจไปแล้วอย่างน้อย ${MIN_SAMPLES} ชิ้น — กด “ตรวจด้วย AI” ที่หน้าตรวจงานก่อน`, `It needs an assignment with a rubric, files to check, AI-assisted grading and at least ${MIN_SAMPLES} pieces the AI has already graded — press “Grade with AI” on the Grading page first.`)}
           />
         </div>
       ) : (
@@ -123,7 +127,7 @@ export default function CalibrationPage() {
                 <div>
                   <h2 id="cal-1" className="text-base font-bold text-[var(--text-primary)]">{t("เลือกงาน", "Pick the assignment")}</h2>
                   <p className="mt-0.5 text-xs text-[var(--text-muted)]">
-                    {t(`${units.length} ชิ้นงาน · ${rubric.criteria.length} เกณฑ์`, `${units.length} ${units.length === 1 ? "item" : "items"} · ${rubric.criteria.length} criteria`)}
+                    {t(`AI ตรวจแล้ว ${units.length} ชิ้น · ${rubric.criteria.length} เกณฑ์`, `${units.length} graded by the AI · ${rubric.criteria.length} ${rubric.criteria.length === 1 ? "criterion" : "criteria"}`)}
                     {" · "}
                     {rubric.aiOffsets && Object.values(rubric.aiOffsets).some((v) => v !== 0) ? t("AI ถูกปรับความเข้มแล้ว", "AI already tuned") : t("ยังไม่ได้ปรับ AI", "AI not tuned yet")}
                   </p>
@@ -136,6 +140,9 @@ export default function CalibrationPage() {
                 </select>
               </div>
             </div>
+            <p data-testid="cal-ai-note" className="mt-4 max-w-3xl rounded-xl bg-[var(--bg-app)] px-4 py-3 text-xs leading-relaxed text-[var(--text-secondary)]">
+              {t("ในรายการนี้มีเฉพาะงานที่ผ่านการตรวจโดย AI มาแล้ว (อย่างน้อย 3 ชิ้น) — ระบบเอาผลที่ AI ตรวจไว้จริงมาเทียบกับระดับที่คุณให้ แล้วบอกว่าควรปรับ rubric หรือความเข้มของ AI อย่างไร ปรับเสร็จแล้วสั่งให้ AI ตรวจใหม่ได้ (เฉพาะงานที่ยังไม่ประกาศผล)", "Only assignments the AI has already graded appear here (at least 3 pieces) — the system compares what the AI really gave with the levels you choose, then tells you how to adjust the rubric or the AI's strictness. After tuning you can have the AI grade again (only work whose results are not announced yet).")}
+            </p>
           </section>
 
           {/* 2 — score the samples */}
@@ -145,6 +152,7 @@ export default function CalibrationPage() {
                 const sample = draft.sampleIds.map((k) => units.find((u) => u.key === k)).filter((u): u is WorkUnit => !!u);
                 const total = sample.length * rubric.criteria.length;
                 const done = sample.reduce((n, u) => n + rubric.criteria.filter((c) => draft.teacherLevels[u.key]?.[c.id] !== undefined).length, 0);
+                const sampleDone = sample.filter((u) => rubric.criteria.every((c) => draft.teacherLevels[u.key]?.[c.id] !== undefined)).length;
                 const blind = !!draft.blind;
                 // a mark given while the AI's level was on screen makes the whole run "not blind", and that stays true if the switch is turned on later
                 const setLevel = (key: string, cid: string, lvl: number) => saveRun({ ...draft, sawAi: draft.sawAi || !blind, teacherLevels: { ...draft.teacherLevels, [key]: { ...(draft.teacherLevels[key] ?? {}), [cid]: lvl } } });
@@ -166,7 +174,7 @@ export default function CalibrationPage() {
                           <h2 id="cal-2" className="text-base font-bold text-[var(--text-primary)]">{t("ตรวจงานตัวอย่างเอง", "Score the samples yourself")}</h2>
                           <p className="mt-0.5 text-xs text-[var(--text-muted)]">
                             {blind
-                              ? t("เลือกจากงานที่ AI ให้คะแนนสูง กลาง ต่ำ — คุณยังไม่เห็นคะแนนของ AI", "Picked across what the AI would rate high, middle and low — you do not see its marks yet")
+                              ? t("เลือกจากงานที่ AI ให้คะแนนสูง กลาง ต่ำ — ซ่อนคะแนนของ AI และชื่อนักศึกษาไว้", "Picked across what the AI rated high, middle and low — its marks and the students' names are hidden")
                               : t("เลือกจากงานที่ AI ให้คะแนนสูง กลาง ต่ำ — ระดับที่ AI ให้แสดงอยู่ข้างการ์ดระดับ (ตรวจเร็วขึ้น แต่คะแนนของคุณอาจเอนตาม AI)", "Picked across what the AI would rate high, middle and low — its level is marked on each criterion (quicker, but it can sway your marks)")}
                           </p>
                         </div>
@@ -189,7 +197,10 @@ export default function CalibrationPage() {
                             {Array.from({ length: Math.min(MAX_SAMPLES, units.length) - MIN_SAMPLES + 1 }, (_, i) => MIN_SAMPLES + i).map((n) => <option key={n} value={n}>{n}</option>)}
                           </select>
                         </div>
-                        <p aria-live="polite" data-testid="cal-progress" className="pt-5 text-sm tabular-nums text-[var(--text-secondary)]">{t(`ตรวจแล้ว ${done} จาก ${total}`, `${done} of ${total} scored`)}</p>
+                        <p aria-live="polite" data-testid="cal-progress" className="pt-4 text-sm tabular-nums text-[var(--text-secondary)]">
+                          <span className="font-semibold text-[var(--text-primary)]">{t(`ให้ระดับครบแล้ว ${sampleDone} จาก ${sample.length} ตัวอย่าง`, `${sampleDone} of ${sample.length} samples fully scored`)}</span>
+                          <span className="block text-xs text-[var(--text-muted)]">{t(`(${done} จาก ${total} เกณฑ์)`, `(${done} of ${total} criteria)`)}</span>
+                        </p>
                       </div>
                     </div>
 
@@ -208,7 +219,7 @@ export default function CalibrationPage() {
                           <div className="flex min-h-[420px] min-w-0 flex-col bg-[var(--surface)] lg:min-h-0">
                             <ol aria-label={t("รายการตัวอย่าง", "Sample list")} className="flex gap-2 overflow-x-auto border-b border-[var(--border-subtle)] bg-[var(--bg-surface)] px-4 py-2.5">
                               {sample.map((x, si) => (
-                                <li key={x.key} data-testid={`sample-${si}`} data-sample-name={x.name} className="shrink-0">
+                                <li key={x.key} data-testid={`sample-${si}`} data-sample-name={blind ? undefined : x.name} className="shrink-0">
                                   <button
                                     type="button" onClick={() => setCur(si)} aria-current={si === ci ? "true" : undefined}
                                     aria-label={t(`ตัวอย่างที่ ${si + 1}`, `Sample ${si + 1}`)}
@@ -233,11 +244,12 @@ export default function CalibrationPage() {
                               key={u.key}
                               attachments={attachments}
                               zoom={zoom}
-                              caption={u.name}
+                              caption={blind ? undefined : u.name}
+                              anonymous={blind}
                               empty={
                                 <div className="flex flex-1 items-center justify-center p-8 text-center">
                                   <div>
-                                    <p className="text-sm font-semibold text-[var(--text-primary)]">{u.name}</p>
+                                    <p className="text-sm font-semibold text-[var(--text-primary)]">{blind ? t(`ตัวอย่างที่ ${ci + 1}`, `Sample ${ci + 1}`) : u.name}</p>
                                     <p className="mt-1 text-xs text-[var(--text-muted)]">{t("ไม่มีไฟล์แนบในข้อมูลจำลอง", "No file attached in the demo data")}</p>
                                   </div>
                                 </div>
@@ -250,7 +262,7 @@ export default function CalibrationPage() {
                             <div className="border-b border-[var(--border-subtle)] px-5 py-4">
                               <h3 className="text-base font-bold text-[var(--text-primary)]">{t("ให้คะแนนงานนี้", "Score this work")}</h3>
                               <p className="mt-0.5 text-xs text-[var(--text-muted)]">
-                                {t(`ตัวอย่างที่ ${ci + 1} จาก ${sample.length} · ${u.name}`, `Sample ${ci + 1} of ${sample.length} · ${u.name}`)}
+                                {blind ? t(`ตัวอย่างที่ ${ci + 1} จาก ${sample.length}`, `Sample ${ci + 1} of ${sample.length}`) : t(`ตัวอย่างที่ ${ci + 1} จาก ${sample.length} · ${u.name}`, `Sample ${ci + 1} of ${sample.length} · ${u.name}`)}
                               </p>
                               <p className="mt-1 text-xs text-[var(--text-muted)]">
                                 {blind
@@ -348,19 +360,21 @@ function ResultSection({ run, units, assignment, rubric, locked, courseId, grade
   onAgain: () => void;
 }) {
   const { t } = useLanguage();
-  // compared against the AI as it was when this run was scored: the saved correction at that time is not known here, so use the one
-  // saved now minus whatever this run itself applied (a run that was applied must not be compared against its own correction)
-  const baseOffsets = useMemo(() => {
-    const cur = rubric.aiOffsets ?? {};
-    if (!run.appliedOffsets) return cur;
-    return Object.fromEntries(rubric.criteria.map((c) => [c.id, (cur[c.id] ?? 0) - (run.appliedOffsets![c.id] ?? 0)]));
-  }, [rubric.aiOffsets, rubric.criteria, run.appliedOffsets]);
-  const asScored = useMemo(() => ({ criteria: rubric.criteria, aiOffsets: baseOffsets }), [rubric.criteria, baseOffsets]);
-  const cmp = useMemo(() => compare(run, units, asScored), [run, units, asScored]);
-  const suggested = useMemo(() => suggestOffsets(cmp, baseOffsets), [cmp, baseOffsets]);
+  // compared with the marks the AI really stored (14/10/2569); each carries the correction that was inside it, so the suggestion is that plus
+  // how far off the marks were — never the saved value plus the bias, which would count a correction twice
+  const cmp = useMemo(() => compare(run, units, rubric), [run, units, rubric]);
+  const suggested = useMemo(() => suggestOffsets(cmp, rubric.aiOffsets), [cmp, rubric.aiOffsets]);
+  const [editOpen, setEditOpen] = useState(false);
+  const [afterEdit, setAfterEdit] = useState(false);
   const [offsets, setOffsets] = useState<Record<string, number>>(run.appliedOffsets ?? suggested);
   useEffect(() => { setOffsets(run.appliedOffsets ?? suggested); }, [run.id]); // eslint-disable-line react-hooks/exhaustive-deps
   const changes = suggestRubricChanges(rubric, graded, cmp);
+  const suggestionText = (s: (typeof changes)[number]) =>
+    s.kind === "ceiling" ? t(`${Math.round(s.value * 100)}% ของงานได้ระดับสูงสุด — เกณฑ์นี้แทบไม่แยกคน ลองยกมาตรฐานหรือเพิ่มระดับ`, `${Math.round(s.value * 100)}% of the work reaches the top level — this criterion barely separates anyone. Raise the bar or add a level.`)
+    : s.kind === "floor" ? t(`ไม่มีใครถึงระดับสูงสุดเลย (${s.value} ชิ้น) — อาจสูงเกินไปหรือเขียนคำอธิบายแคบเกิน`, `Nobody reaches the top level (${s.value} items) — it may be out of reach or worded too tightly.`)
+    : s.kind === "disagree" ? t(`แม้ปรับความเข้มของ AI แล้ว คุณกับ AI ก็ยังต่างกันเฉลี่ย ${s.value.toFixed(1)} ระดับ — คำอธิบายระดับยังไม่ชัด ลองเขียนให้เห็นต่างกันมากขึ้น`, `Even after correcting how strict the AI is, you and it still differ by ${s.value.toFixed(1)} levels on average — the level wording is not clear enough. Make the levels easier to tell apart.`)
+    : t(`เกณฑ์นี้มีคะแนนครึ่งหนึ่งขึ้นไป แต่ ${Math.round(s.value * 100)}% ของงานอยู่ระดับเดียวกัน — ไม่ช่วยแยกคน ลองลดคะแนนหรือแยกเป็นหลายเกณฑ์`, `This criterion carries half the points or more, yet ${Math.round(s.value * 100)}% of the work sits on one level — it does not separate students. Lower its points or split it.`);
+  const flagged = Object.fromEntries(changes.map((c) => [c.criterionId, suggestionText(c)]));
 
   const ghost = "inline-flex h-8 items-center whitespace-nowrap rounded-lg border border-[var(--border)] bg-[var(--bg-surface)] px-3 text-xs font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)] active:scale-[.97] disabled:opacity-50 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors";
   const primary = "h-10 px-5 whitespace-nowrap rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-semibold active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors";
@@ -432,7 +446,7 @@ function ResultSection({ run, units, assignment, rubric, locked, courseId, grade
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
         <p data-testid="cal-apply-note" className="text-sm text-[var(--text-secondary)] max-w-2xl">
           {run.appliedAt
-            ? t("ใช้ค่านี้แล้ว — “ตรวจด้วย AI” ครั้งถัดไปของงานนี้จะใช้ค่าที่ปรับ", "Applied — the next “Grade with AI” on this assignment uses these corrections.")
+            ? t("ใช้ค่านี้แล้ว — “ตรวจด้วย AI” ครั้งถัดไปของงานนี้จะใช้ค่าที่ปรับ ส่วนงานที่ AI ตรวจไปแล้วให้ตรวจใหม่ได้ที่ด้านล่าง", "Applied — the next “Grade with AI” on this assignment uses these corrections. Work the AI already graded can be graded again below.")
             : locked
               ? t("ประกาศผลแล้ว จึงไม่มี “ตรวจด้วย AI” อีก — ใช้ค่านี้ไม่ได้", "Results are announced, so there is no more AI grading on this assignment — the values cannot be used.")
               : t("ค่านี้ยังไม่ถูกใช้ — กด “ใช้ค่านี้” เมื่อพอใจ", "Nothing is changed yet — press “Use these values” when you are happy with them.")}
@@ -449,20 +463,27 @@ function ResultSection({ run, units, assignment, rubric, locked, courseId, grade
             <li key={i} data-testid={`suggest-${s.kind}-${s.criterionId}`} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[var(--border-subtle)] px-4 py-3">
               <div className="min-w-0">
                 <CriterionName name={nameOf(s.criterionId)} />
-                <p className="mt-1 text-sm text-[var(--text-secondary)]">
-                  {s.kind === "ceiling" && t(`${Math.round(s.value * 100)}% ของงานได้ระดับสูงสุด — เกณฑ์นี้แทบไม่แยกคน ลองยกมาตรฐานหรือเพิ่มระดับ`, `${Math.round(s.value * 100)}% of the work reaches the top level — this criterion barely separates anyone. Raise the bar or add a level.`)}
-                  {s.kind === "floor" && t(`ไม่มีใครถึงระดับสูงสุดเลย (${s.value} ชิ้น) — อาจสูงเกินไปหรือเขียนคำอธิบายแคบเกิน`, `Nobody reaches the top level (${s.value} items) — it may be out of reach or worded too tightly.`)}
-                  {s.kind === "disagree" && t(`แม้ปรับความเข้มของ AI แล้ว คุณกับ AI ก็ยังต่างกันเฉลี่ย ${s.value.toFixed(1)} ระดับ — คำอธิบายระดับยังไม่ชัด ลองเขียนให้เห็นต่างกันมากขึ้น`, `Even after correcting how strict the AI is, you and it still differ by ${s.value.toFixed(1)} levels on average — the level wording is not clear enough. Make the levels easier to tell apart.`)}
-                  {s.kind === "heavy-flat" && t(`เกณฑ์นี้มีคะแนนครึ่งหนึ่งขึ้นไป แต่ ${Math.round(s.value * 100)}% ของงานอยู่ระดับเดียวกัน — ไม่ช่วยแยกคน ลองลดคะแนนหรือแยกเป็นหลายเกณฑ์`, `This criterion carries half the points or more, yet ${Math.round(s.value * 100)}% of the work sits on one level — it does not separate students. Lower its points or split it.`)}
-                </p>
+                <p className="mt-1 text-sm text-[var(--text-secondary)]">{suggestionText(s)}</p>
               </div>
               {locked
                 ? <span className="text-xs text-[var(--text-muted)]">{t("ล็อกแล้ว — ประกาศผลแล้ว", "Locked once announced")}</span>
-                : <Link href={`/teacher/courses/${courseId}/assignments/${assignment.id}/edit`} className={ghost}>{t("แก้ rubric", "Edit rubric")}</Link>}
+                : <button type="button" data-testid={`edit-rubric-${s.criterionId}`} onClick={() => setEditOpen(true)} className={ghost}>{t("แก้ rubric", "Edit rubric")}</button>}
             </li>
           ))}
         </ul>
       )}
+
+      {!locked && <CalibrationRegrade assignment={assignment} rubric={rubric} courseId={courseId} emphasise={afterEdit} />}
+
+      <RubricEditModal
+        open={editOpen}
+        onClose={() => setEditOpen(false)}
+        assignment={assignment}
+        rubric={rubric}
+        courseId={courseId}
+        flagged={flagged}
+        onSaved={() => setAfterEdit(true)}
+      />
     </section>
   );
 }

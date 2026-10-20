@@ -113,6 +113,7 @@ test.describe("P3b — Student Classwork List (/student/courses/[secId]/classwor
     await seedStudent(page, { submissions: [SUBMISSION_GRADED] });
     await page.goto(`${BASE}/student/courses/c-p3/classwork`);
     await page.waitForLoadState("networkidle");
+    await page.getByRole("button", { name: /^Submitted \(/ }).click();   // "Submitted" is folded away until opened (14/10/2569)
     await expect(page.getByText("Graded")).toBeVisible();
   });
 
@@ -120,6 +121,7 @@ test.describe("P3b — Student Classwork List (/student/courses/[secId]/classwor
     await seedStudent(page, { submissions: [SUBMISSION_GRADED] });
     await page.goto(`${BASE}/student/courses/c-p3/classwork`);
     await page.waitForLoadState("networkidle");
+    await page.getByRole("button", { name: /^Submitted \(/ }).click();   // "Submitted" is folded away until opened (14/10/2569)
     // Score cell: "10/10" or similar
     await expect(page.getByText(/10\/10|10\s*\/\s*10/)).toBeVisible();
   });
@@ -163,6 +165,7 @@ test.describe("P3b — Assignment status colours", () => {
     });
     await page.goto(`${BASE}/student/courses/c-p3/classwork`);
     await page.waitForLoadState("networkidle");
+    await page.getByRole("button", { name: /^Submitted \(/ }).click();   // "Submitted" is folded away until opened (14/10/2569)
 
     for (const [label, want] of Object.entries(EXPECTED)) {
       const badge = page.locator("a span.rounded-full", { hasText: new RegExp(`^${label}$`) }).first();

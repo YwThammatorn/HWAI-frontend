@@ -1,15 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCourses } from "@/lib/courses";
-import { useAssignments, RubricCriterion, submissionAttachments, isManualGrading, levelShare } from "@/lib/assignments";
+import { useAssignments, RubricCriterion, submissionAttachments, isManualGrading, levelShare, gradingOpen, gradingOpensAt } from "@/lib/assignments";
+import { useNow } from "@/lib/clock";
 import SubmissionViewer from "@/components/SubmissionViewer";
+import FloatingPanel, { openFloatingWindow } from "@/components/FloatingPanel";
 import CriterionName from "@/components/CriterionName";
 import { splitCriterionName } from "@/lib/rubricName";
 import { useStudentGroups } from "@/lib/studentGroups";
 import { useLanguage } from "@/context/LanguageContext";
+import { dateLocale } from "@/lib/dateLocale";
 
 function genFeedback(fullName: string, level: "high" | "low"): string {
   const name = splitCriterionName(fullName).main; // "C1 · Program correctness / ความถูกต้อง" reads as "program correctness" in a sentence
@@ -50,6 +53,7 @@ export default function RecheckPage() {
   const { getCourse } = useCourses();
   const { getAssignment, getSubmissionsByAssignment, getRubricsByAssignment, updateSubmission } = useAssignments();
   const { getGroupsByAssignment } = useStudentGroups();
+  const now = useNow();
 
   const course = getCourse(id);
   const assignment = getAssignment(assignmentId);
@@ -62,6 +66,13 @@ export default function RecheckPage() {
     : undefined;
 
   const [zoom, setZoom] = useState(100);
+  // The grading part in its own small window (14/10/2569): for a submitted link, which opens in another tab, so the teacher can grade
+  // while looking at it. The state stays in this page; the small window just shows the same panel.
+  const [floatWin, setFloatWin] = useState<Window | null>(null);
+  const [floatBlocked, setFloatBlocked] = useState(false);
+  const floatRef = useRef<Window | null>(null);
+  floatRef.current = floatWin;
+  useEffect(() => () => { try { floatRef.current?.close(); } catch { /* already closed */ } }, []);
   const [scores, setScores] = useState<CriterionScore[]>([]);
   // Exam-type assignments have no rubric (23/9/2569) — the whole score is typed in directly here.
   const [manualScore, setManualScore] = useState(0);
@@ -117,20 +128,32 @@ export default function RecheckPage() {
     );
   }
 
+  // Nothing is graded while the work can still change (15/10/2569): this page opens only after the due date and the late hour. A URL typed
+  // in early lands here instead of on the grading panel.
+  if (!gradingOpen(assignment, now)) {
+    const opens = gradingOpensAt(assignment);
+    const when = opens ? opens.toLocaleString(dateLocale(lang), { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "";
+    return (
+      <main className="flex-1 flex items-center justify-center p-8">
+        <div data-testid="grade-window-closed" role="note" className="max-w-md rounded-2xl border border-[var(--s-warn-bd)] bg-[var(--s-warn-bg)] px-6 py-5 text-center text-[var(--s-warn-text)]">
+          <p className="text-base font-semibold">{t("ยังไม่เปิดให้ตรวจงานนี้", "This assignment is not open for grading yet")}</p>
+          <p className="mt-2 text-sm leading-relaxed">
+            {t(`นักศึกษายังส่งหรือส่งซ้ำได้อยู่ (เลยกำหนดแล้วยังส่งช้าได้ 1 ชั่วโมง) จะตรวจได้ตั้งแต่ ${when} น.`, `Students can still submit or resubmit (one late hour after the due date). Grading opens ${when}.`)}
+          </p>
+          <Link href={`/teacher/courses/${id}/grading`} className="mt-4 inline-flex h-9 items-center rounded-xl border border-[var(--s-warn-bd)] px-4 text-sm font-semibold hover:bg-[var(--bg-card)]">
+            {t("กลับหน้าตรวจงาน", "Back to Grading")}
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
   // Graded by hand (11/10/2569: the teacher's choice, an exam, or no file to check): nothing from the AI is shown here
   const handGraded = isManualGrading(assignment);
   const totalScore = rubric ? scores.reduce((sum, s) => sum + (s.score ?? 0), 0) : manualScore;
   // A criterion with no mark would silently count as 0 in the student's total — saving waits until every one is marked.
   const unmarked = rubric ? scores.filter((s) => s.score === null).length : 0;
   const totalMax = rubric ? (scores.reduce((sum, s) => sum + s.maxPoints, 0) || assignment.maxPoints) : assignment.maxPoints;
-  const aiScore = submission.aiScore ?? 0;
-  const aiPct = (aiScore / assignment.maxPoints) * 100;
-  const aiConfidence = aiPct >= 85
-    ? { label: "High", labelTh: "สูง", pct: 92, color: "#0F766E" }
-    : aiPct >= 65
-    ? { label: "Medium", labelTh: "ปานกลาง", pct: 74, color: "#B45309" }
-    : { label: "Low", labelTh: "ต่ำ", pct: 48, color: "#DC2626" };
-
   // The teacher clicks a level card; the criterion's points are that level's points.
   function pickLevel(cid: string, li: number) {
     const c = rubric?.criteria.find((x) => x.id === cid);
@@ -203,6 +226,240 @@ export default function RecheckPage() {
     (rubric?.criteria ?? []).map((c: RubricCriterion) => [c.id, c])
   );
 
+  const hasLink = submissionAttachments(submission).some((a) => a.source === "url");
+  async function openFloat() {
+    if (floatRef.current) return;
+    setFloatBlocked(false);
+    const w = await openFloatingWindow({ width: 420, height: 680, name: "hwai-grade-panel" });
+    if (w) setFloatWin(w); else setFloatBlocked(true);
+  }
+  function closeFloat() {
+    try { floatWin?.close(); } catch { /* already closed */ }
+    setFloatWin(null);
+  }
+
+  // The grading panel — drawn in the page, or in the small window while it floats
+  const gradePanel = (floating: boolean) => (
+    <div className={floating ? "flex-1 min-h-0 flex flex-col bg-white overflow-y-auto" : "w-[26rem] shrink-0 flex flex-col border-l border-gray-100 bg-white overflow-y-auto"}>
+      <div className="px-5 py-5 border-b border-gray-50">
+        {/* No "AI confidence" any more (15/10/2569, user's request): only a note when there is no AI result behind this submission. */}
+        <h2 className="text-base font-bold text-[var(--text-primary)]">
+          {t("ตรวจสอบการให้คะแนน", "Grading Review")}
+        </h2>
+        {handGraded ? (
+          <p className="mt-3 text-xs text-[var(--text-secondary)]">
+            {t("ตรวจเอง — ไม่ใช้ AI ในงานนี้", "Graded by hand — no AI on this assignment")}
+          </p>
+        ) : submission.aiScore === null ? (
+          <p className="mt-3 text-xs text-gray-400">
+            {t("ยังไม่ผ่านการตรวจของ AI — ให้คะแนนด้วยตนเอง", "Not yet AI-graded — grading manually")}
+          </p>
+        ) : null}
+      </div>
+
+      {/* Criteria */}
+      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
+        {!rubric && (
+          <div className="rounded-xl border border-gray-100 bg-white p-4">
+            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">
+              {/* A no-rubric assignment reaches here for either reason now (23/9/2569 round 3):
+                  isExam, or acceptsFiles turned off — the old label always said "exam", which was
+                  wrong for the second case. */}
+              {assignment.isExam
+                ? t("งานประเภทสอบ — ไม่มี rubric", "Exam assignment — no rubric")
+                : !assignment.acceptsFiles
+                ? t("ไม่รับไฟล์ — ไม่มี rubric", "No file submission — no rubric")
+                : t("ยังไม่มี rubric", "No rubric yet")}
+            </p>
+            <p className="text-xs text-gray-500 mb-3">
+              {t("พิมพ์คะแนนรวมของงานนี้โดยตรง", "Enter this submission's total score directly")}
+            </p>
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                min={0}
+                max={assignment.maxPoints}
+                value={manualScore}
+                onChange={(e) => {
+                  const v = Math.max(0, Math.min(assignment.maxPoints, parseInt(e.target.value) || 0));
+                  setManualScore(v);
+                  setSaved(false);
+                }}
+                aria-label={t("คะแนนรวม", "Total score")}
+                className="w-20 text-center text-sm font-bold text-[var(--text-primary)] border border-gray-200 rounded-lg px-1 py-1.5 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
+              />
+              <span className="text-xs text-gray-400">/ {assignment.maxPoints}</span>
+            </div>
+          </div>
+        )}
+        {scores.map((s) => {
+          const c = criteriaMap[s.criterionId];
+          if (!c) return null;
+          return (
+            <div
+              key={s.criterionId}
+              className={`rounded-xl border p-4 transition-colors ${
+                s.edited ? "border-amber-200 bg-amber-50/30" : "border-gray-100 bg-white"
+              }`}
+            >
+              <div className="flex items-start justify-between gap-3 mb-3">
+                <CriterionName name={c.name} />
+                {c.levels.length === 0 ? (
+                  <span className="flex shrink-0 items-center gap-1.5">
+                    <input
+                      type="number"
+                      min={0}
+                      max={s.maxPoints}
+                      value={s.score ?? 0}
+                      onChange={(e) => typeScore(s.criterionId, parseInt(e.target.value) || 0)}
+                      aria-label={t(`คะแนน ${splitCriterionName(c.name).main}`, `Score for ${splitCriterionName(c.name).main}`)}
+                      className="w-12 text-center text-sm font-bold text-[var(--text-primary)] border border-gray-200 rounded-lg px-1 py-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
+                    />
+                    <span className="text-xs text-gray-400">/ {s.maxPoints}</span>
+                  </span>
+                ) : (
+                  <span data-testid={`crit-score-${s.criterionId}`} className="shrink-0 text-sm tabular-nums text-[var(--text-muted)]">
+                    <span className="font-bold text-[var(--text-primary)]">{s.score ?? "—"}</span> / {s.maxPoints}
+                  </span>
+                )}
+              </div>
+
+              {/* A score that sits on no level (typed before levels were clicked): kept as it is until a level is clicked */}
+              {c.levels.length > 0 && s.score !== null && s.level === null && (
+                <p data-testid={`crit-offlevel-${s.criterionId}`} className="mb-2 text-xs leading-snug text-[var(--text-secondary)]">
+                  {t(`คะแนนเดิม ${s.score} / ${s.maxPoints} ไม่ตรงระดับใดเลย — คลิกระดับเพื่อเปลี่ยน`, `Earlier score ${s.score} / ${s.maxPoints} sits on no level — click a level to change it`)}
+                </p>
+              )}
+
+              {/* Click the level that fits the work — the same cards as Calibration */}
+              <div
+                role="radiogroup"
+                aria-label={t(`ระดับของ ${splitCriterionName(c.name).main}`, `Level for ${splitCriterionName(c.name).main}`)}
+                className={c.levels.length === 0 ? "hidden" : "flex flex-col gap-1.5"}
+              >
+                {c.levels.map((lv, li) => (
+                  <button
+                    key={li}
+                    type="button"
+                    role="radio"
+                    aria-checked={s.level === li}
+                    onClick={() => pickLevel(s.criterionId, li)}
+                    className={`rounded-lg border px-3 py-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] ${s.level === li ? "border-[var(--accent)] bg-[var(--accent-subtle)]" : "border-[var(--border)] hover:bg-[var(--bg-subtle)]"}`}
+                  >
+                    <span className="flex items-center gap-2 text-xs font-semibold tabular-nums text-[var(--text-primary)]">
+                      {lv.label} · {levelPts(c, li)}
+                      {!handGraded && s.aiPts !== null && levelOfPts(c, s.aiPts) === li && (
+                        <span data-testid={`mark-ai-${s.criterionId}`} className="rounded-md border border-[var(--s-info-bd)] bg-[var(--s-info-bg)] px-1.5 py-0.5 text-[10px] font-semibold text-[var(--s-info-text)]">AI</span>
+                      )}
+                    </span>
+                    {lv.description && <span className="mt-0.5 block text-xs leading-snug text-[var(--text-secondary)]">{lv.description}</span>}
+                  </button>
+                ))}
+              </div>
+
+              {s.edited && !handGraded && (
+                <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded mt-3 mb-1">
+                  {t("แก้ไขแล้ว", "Manually Edited")}
+                </span>
+              )}
+
+              {!handGraded && (
+              <div className="mt-2">
+                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">
+                  {t("ความคิดเห็น AI", "AI Feedback")}
+                </p>
+                <p className="text-xs text-gray-600 leading-relaxed">{s.aiFeedback}</p>
+              </div>
+              )}
+
+              {/* Shown once the instructor overrides the score (or a note already exists) */}
+              {!handGraded && (s.edited || criterionComments[s.criterionId]) && (
+                <div className="mt-3">
+                  <label
+                    htmlFor={`criterion-note-${s.criterionId}`}
+                    className="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1"
+                  >
+                    {t("ข้อเสนอแนะถึง AI", "Feedback to AI")}
+                  </label>
+                  <p id={`criterion-note-hint-${s.criterionId}`} className="text-[11px] text-gray-400 leading-snug mb-1.5">
+                    {t(
+                      "บอก AI ว่าทำไมถึงปรับคะแนน — ไม่แสดงให้นักศึกษาเห็น เก็บไว้ใช้ปรับปรุงการตรวจของ AI",
+                      "Tell the AI why you changed this score — not shown to students; kept to help refine AI grading",
+                    )}
+                  </p>
+                  <textarea
+                    id={`criterion-note-${s.criterionId}`}
+                    aria-describedby={`criterion-note-hint-${s.criterionId}`}
+                    value={criterionComments[s.criterionId] ?? ""}
+                    onChange={(e) => {
+                      const text = e.target.value;
+                      setCriterionComments((prev) => ({ ...prev, [s.criterionId]: text }));
+                      setSaved(false);
+                    }}
+                    rows={2}
+                    placeholder="เช่น AI ให้เข้มเกินไป เพราะ... (ไม่บังคับ)"
+                    className="w-full text-xs text-[var(--text-primary)] resize-none border border-gray-200 rounded-lg px-2.5 py-2 bg-white placeholder:text-gray-300 leading-relaxed focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
+                  />
+                </div>
+              )}
+            </div>
+          );
+        })}
+
+        {/* Comment */}
+        <div className="rounded-xl border border-gray-100 p-4">
+          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">
+            {t("ความคิดเห็นอาจารย์", "Instructor Comment")}
+          </p>
+          <textarea
+            value={comment}
+            onChange={(e) => { setComment(e.target.value); setSaved(false); }}
+            rows={3}
+            placeholder="เพิ่มความคิดเห็นสำหรับนักศึกษา..."
+            className="w-full text-xs text-[var(--text-primary)] resize-none border-0 outline-none bg-transparent placeholder:text-gray-300 leading-relaxed"
+          />
+        </div>
+
+        {/* Total */}
+        <div className="rounded-xl bg-[var(--bg-nav)] p-4">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-white/60">{t("คะแนนรวม", "Total Score")}</span>
+            <span className="text-xl font-bold text-white">
+              {totalScore}
+              <span className="text-sm font-normal text-white/50"> / {totalMax}</span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {unmarked > 0 && (
+        <p data-testid="grade-unmarked" role="status" className="px-5 pt-3 text-xs text-[var(--text-secondary)]">
+          {t(`เลือกระดับอีก ${unmarked} เกณฑ์ก่อนบันทึก`, `Pick a level for ${unmarked} more ${unmarked === 1 ? "criterion" : "criteria"} before saving`)}
+        </p>
+      )}
+      {/* Footer actions */}
+      <div className="px-5 py-4 border-t border-gray-100 flex gap-3">
+        <button
+          onClick={resetToDefault}
+          className="flex-1 py-2.5 rounded-xl border border-gray-200 text-xs font-semibold text-gray-500 hover:bg-gray-50 transition-colors flex items-center justify-center gap-1.5"
+        >
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <polyline points="1 4 1 10 7 10"/>
+            <path d="M3.51 15a9 9 0 1 0 .49-4.5"/>
+          </svg>
+          {t("คืนค่าเดิม", "Reset to Default")}
+        </button>
+        <button
+          onClick={handleSave}
+          disabled={unmarked > 0}
+          className="flex-1 py-2.5 rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-xs font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[var(--accent-solid)]"
+        >
+          {saved ? `✓ ${t("บันทึกแล้ว!", "Saved!")}` : t("บันทึกการเปลี่ยนแปลง", "Save Changes")}
+        </button>
+      </div>
+    </div>
+  );
+
   return (
       <div className="flex h-full overflow-hidden">
         {/* Left: file viewer */}
@@ -236,12 +493,27 @@ export default function RecheckPage() {
                 <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
               </svg>
             </button>
+            {hasLink && (
+              <>
+                <div className="w-px h-4 bg-gray-200 mx-1" />
+                <button
+                  type="button"
+                  data-testid="grade-float-open"
+                  onClick={floatWin ? closeFloat : openFloat}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+                >
+                  {floatWin ? t("เอาส่วนตรวจกลับมาในหน้านี้", "Bring the grading back here") : t("ส่วนตรวจลอยในหน้าต่างเล็ก", "Float the grading in a small window")}
+                </button>
+                {floatBlocked && <span role="status" data-testid="grade-float-blocked" className="text-xs text-[var(--s-err-text)]">{t("เบราว์เซอร์บล็อกหน้าต่างเล็ก — อนุญาต pop-up ของเว็บนี้แล้วลองใหม่", "The browser blocked the small window — allow pop-ups for this site and try again")}</span>}
+              </>
+            )}
           </div>
 
           {/* What the student submitted; the sandbox placeholder when nothing was attached */}
           <SubmissionViewer
             attachments={submissionAttachments(submission)}
             zoom={zoom}
+            onOpenLink={floatWin ? undefined : openFloat}
             caption={[
               submission.studentName,
               team ? t(`ทีม ${team.name}`, `Team ${team.name}`) : null,
@@ -284,248 +556,16 @@ export default function RecheckPage() {
           />
         </div>
 
-        {/* Right: grading panel */}
-        <div className="w-[26rem] shrink-0 flex flex-col border-l border-gray-100 bg-white overflow-y-auto">
-          <div className="px-5 py-5 border-b border-gray-50">
-            <h2 className="text-base font-bold text-[var(--text-primary)] mb-3">
-              {t("ตรวจสอบการให้คะแนน", "Grading Review")}
-            </h2>
-            {/* AI confidence — only meaningful once AI has actually scored this submission (23/9/2569
-                round 3: the Grade link is now reachable before that happens too, e.g. a not_graded row
-                or a no-file assignment that's never AI-graded at all — showing "Low confidence" there
-                would be misleading, since there's no AI score behind it). */}
-            {handGraded ? (
-              <p className="text-xs text-[var(--text-secondary)]">
-                {t("ตรวจเอง — ไม่ใช้ AI ในงานนี้", "Graded by hand — no AI on this assignment")}
-              </p>
-            ) : submission.aiScore !== null ? (
-              <>
-                <div className="flex items-center gap-2 mb-1">
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" className="text-[var(--accent)]">
-                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                  </svg>
-                  <span className="text-xs font-medium text-[var(--text-primary)]">
-                    {t("ความมั่นใจ AI", "AI Confidence")}:{" "}
-                    <span style={{ color: aiConfidence.color }} className="font-semibold">
-                      {lang === "th" ? aiConfidence.labelTh : aiConfidence.label} ({aiConfidence.pct}%)
-                    </span>
-                  </span>
-                </div>
-                <div className="h-1.5 rounded-full bg-gray-100 overflow-hidden">
-                  <div
-                    className="h-full rounded-full transition-all"
-                    style={{ width: `${aiConfidence.pct}%`, backgroundColor: aiConfidence.color }}
-                  />
-                </div>
-              </>
-            ) : (
-              <p className="text-xs text-gray-400">
-                {t("ยังไม่ผ่านการตรวจของ AI — ให้คะแนนด้วยตนเอง", "Not yet AI-graded — grading manually")}
-              </p>
-            )}
-          </div>
-
-          {/* Criteria */}
-          <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
-            {!rubric && (
-              <div className="rounded-xl border border-gray-100 bg-white p-4">
-                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">
-                  {/* A no-rubric assignment reaches here for either reason now (23/9/2569 round 3):
-                      isExam, or acceptsFiles turned off — the old label always said "exam", which was
-                      wrong for the second case. */}
-                  {assignment.isExam
-                    ? t("งานประเภทสอบ — ไม่มี rubric", "Exam assignment — no rubric")
-                    : !assignment.acceptsFiles
-                    ? t("ไม่รับไฟล์ — ไม่มี rubric", "No file submission — no rubric")
-                    : t("ยังไม่มี rubric", "No rubric yet")}
-                </p>
-                <p className="text-xs text-gray-500 mb-3">
-                  {t("พิมพ์คะแนนรวมของงานนี้โดยตรง", "Enter this submission's total score directly")}
-                </p>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="number"
-                    min={0}
-                    max={assignment.maxPoints}
-                    value={manualScore}
-                    onChange={(e) => {
-                      const v = Math.max(0, Math.min(assignment.maxPoints, parseInt(e.target.value) || 0));
-                      setManualScore(v);
-                      setSaved(false);
-                    }}
-                    aria-label={t("คะแนนรวม", "Total score")}
-                    className="w-20 text-center text-sm font-bold text-[var(--text-primary)] border border-gray-200 rounded-lg px-1 py-1.5 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
-                  />
-                  <span className="text-xs text-gray-400">/ {assignment.maxPoints}</span>
-                </div>
-              </div>
-            )}
-            {scores.map((s) => {
-              const c = criteriaMap[s.criterionId];
-              if (!c) return null;
-              return (
-                <div
-                  key={s.criterionId}
-                  className={`rounded-xl border p-4 transition-colors ${
-                    s.edited ? "border-amber-200 bg-amber-50/30" : "border-gray-100 bg-white"
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-3 mb-3">
-                    <CriterionName name={c.name} />
-                    {c.levels.length === 0 ? (
-                      <span className="flex shrink-0 items-center gap-1.5">
-                        <input
-                          type="number"
-                          min={0}
-                          max={s.maxPoints}
-                          value={s.score ?? 0}
-                          onChange={(e) => typeScore(s.criterionId, parseInt(e.target.value) || 0)}
-                          aria-label={t(`คะแนน ${splitCriterionName(c.name).main}`, `Score for ${splitCriterionName(c.name).main}`)}
-                          className="w-12 text-center text-sm font-bold text-[var(--text-primary)] border border-gray-200 rounded-lg px-1 py-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
-                        />
-                        <span className="text-xs text-gray-400">/ {s.maxPoints}</span>
-                      </span>
-                    ) : (
-                      <span data-testid={`crit-score-${s.criterionId}`} className="shrink-0 text-sm tabular-nums text-[var(--text-muted)]">
-                        <span className="font-bold text-[var(--text-primary)]">{s.score ?? "—"}</span> / {s.maxPoints}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* A score that sits on no level (typed before levels were clicked): kept as it is until a level is clicked */}
-                  {c.levels.length > 0 && s.score !== null && s.level === null && (
-                    <p data-testid={`crit-offlevel-${s.criterionId}`} className="mb-2 text-xs leading-snug text-[var(--text-secondary)]">
-                      {t(`คะแนนเดิม ${s.score} / ${s.maxPoints} ไม่ตรงระดับใดเลย — คลิกระดับเพื่อเปลี่ยน`, `Earlier score ${s.score} / ${s.maxPoints} sits on no level — click a level to change it`)}
-                    </p>
-                  )}
-
-                  {/* Click the level that fits the work — the same cards as Calibration */}
-                  <div
-                    role="radiogroup"
-                    aria-label={t(`ระดับของ ${splitCriterionName(c.name).main}`, `Level for ${splitCriterionName(c.name).main}`)}
-                    className={c.levels.length === 0 ? "hidden" : "flex flex-col gap-1.5"}
-                  >
-                    {c.levels.map((lv, li) => (
-                      <button
-                        key={li}
-                        type="button"
-                        role="radio"
-                        aria-checked={s.level === li}
-                        onClick={() => pickLevel(s.criterionId, li)}
-                        className={`rounded-lg border px-3 py-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] ${s.level === li ? "border-[var(--accent)] bg-[var(--accent-subtle)]" : "border-[var(--border)] hover:bg-[var(--bg-subtle)]"}`}
-                      >
-                        <span className="flex items-center gap-2 text-xs font-semibold tabular-nums text-[var(--text-primary)]">
-                          {lv.label} · {levelPts(c, li)}
-                          {!handGraded && s.aiPts !== null && levelOfPts(c, s.aiPts) === li && (
-                            <span data-testid={`mark-ai-${s.criterionId}`} className="rounded-md border border-[var(--s-info-bd)] bg-[var(--s-info-bg)] px-1.5 py-0.5 text-[10px] font-semibold text-[var(--s-info-text)]">AI</span>
-                          )}
-                        </span>
-                        {lv.description && <span className="mt-0.5 block text-xs leading-snug text-[var(--text-secondary)]">{lv.description}</span>}
-                      </button>
-                    ))}
-                  </div>
-
-                  {s.edited && !handGraded && (
-                    <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded mt-3 mb-1">
-                      {t("แก้ไขแล้ว", "Manually Edited")}
-                    </span>
-                  )}
-
-                  {!handGraded && (
-                  <div className="mt-2">
-                    <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">
-                      {t("ความคิดเห็น AI", "AI Feedback")}
-                    </p>
-                    <p className="text-xs text-gray-600 leading-relaxed">{s.aiFeedback}</p>
-                  </div>
-                  )}
-
-                  {/* Shown once the instructor overrides the score (or a note already exists) */}
-                  {!handGraded && (s.edited || criterionComments[s.criterionId]) && (
-                    <div className="mt-3">
-                      <label
-                        htmlFor={`criterion-note-${s.criterionId}`}
-                        className="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1"
-                      >
-                        {t("ข้อเสนอแนะถึง AI", "Feedback to AI")}
-                      </label>
-                      <p id={`criterion-note-hint-${s.criterionId}`} className="text-[11px] text-gray-400 leading-snug mb-1.5">
-                        {t(
-                          "บอก AI ว่าทำไมถึงปรับคะแนน — ไม่แสดงให้นักศึกษาเห็น เก็บไว้ใช้ปรับปรุงการตรวจของ AI",
-                          "Tell the AI why you changed this score — not shown to students; kept to help refine AI grading",
-                        )}
-                      </p>
-                      <textarea
-                        id={`criterion-note-${s.criterionId}`}
-                        aria-describedby={`criterion-note-hint-${s.criterionId}`}
-                        value={criterionComments[s.criterionId] ?? ""}
-                        onChange={(e) => {
-                          const text = e.target.value;
-                          setCriterionComments((prev) => ({ ...prev, [s.criterionId]: text }));
-                          setSaved(false);
-                        }}
-                        rows={2}
-                        placeholder="เช่น AI ให้เข้มเกินไป เพราะ... (ไม่บังคับ)"
-                        className="w-full text-xs text-[var(--text-primary)] resize-none border border-gray-200 rounded-lg px-2.5 py-2 bg-white placeholder:text-gray-300 leading-relaxed focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
-                      />
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-
-            {/* Comment */}
-            <div className="rounded-xl border border-gray-100 p-4">
-              <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">
-                {t("ความคิดเห็นอาจารย์", "Instructor Comment")}
-              </p>
-              <textarea
-                value={comment}
-                onChange={(e) => { setComment(e.target.value); setSaved(false); }}
-                rows={3}
-                placeholder="เพิ่มความคิดเห็นสำหรับนักศึกษา..."
-                className="w-full text-xs text-[var(--text-primary)] resize-none border-0 outline-none bg-transparent placeholder:text-gray-300 leading-relaxed"
-              />
+        {floatWin ? (
+          <>
+            <div data-testid="grade-floating-note" className="w-[26rem] shrink-0 flex flex-col items-center justify-center gap-3 border-l border-gray-100 bg-white px-8 text-center">
+              <p className="text-sm font-semibold text-[var(--text-primary)]">{t("ส่วนตรวจลอยอยู่ในหน้าต่างเล็ก", "The grading is in the small window")}</p>
+              <p className="text-xs leading-relaxed text-[var(--text-secondary)]">{t("ให้คะแนนที่นั่นได้เลย — คะแนนที่คลิกจะอยู่ในหน้านี้ด้วย ปิดหน้าต่างเล็กหรือกดปุ่มด้านล่างเพื่อเอากลับมา", "Grade there — what you click is held in this page too. Close the small window, or press the button below, to bring it back.")}</p>
+              <button type="button" data-testid="grade-float-return" onClick={closeFloat} className="h-9 rounded-xl border border-[var(--border)] px-4 text-xs font-semibold text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]">{t("เอาส่วนตรวจกลับมา", "Bring it back")}</button>
             </div>
-
-            {/* Total */}
-            <div className="rounded-xl bg-[var(--bg-nav)] p-4">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-white/60">{t("คะแนนรวม", "Total Score")}</span>
-                <span className="text-xl font-bold text-white">
-                  {totalScore}
-                  <span className="text-sm font-normal text-white/50"> / {totalMax}</span>
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {unmarked > 0 && (
-            <p data-testid="grade-unmarked" role="status" className="px-5 pt-3 text-xs text-[var(--text-secondary)]">
-              {t(`เลือกระดับอีก ${unmarked} เกณฑ์ก่อนบันทึก`, `Pick a level for ${unmarked} more ${unmarked === 1 ? "criterion" : "criteria"} before saving`)}
-            </p>
-          )}
-          {/* Footer actions */}
-          <div className="px-5 py-4 border-t border-gray-100 flex gap-3">
-            <button
-              onClick={resetToDefault}
-              className="flex-1 py-2.5 rounded-xl border border-gray-200 text-xs font-semibold text-gray-500 hover:bg-gray-50 transition-colors flex items-center justify-center gap-1.5"
-            >
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <polyline points="1 4 1 10 7 10"/>
-                <path d="M3.51 15a9 9 0 1 0 .49-4.5"/>
-              </svg>
-              {t("คืนค่าเดิม", "Reset to Default")}
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={unmarked > 0}
-              className="flex-1 py-2.5 rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-xs font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[var(--accent-solid)]"
-            >
-              {saved ? `✓ ${t("บันทึกแล้ว!", "Saved!")}` : t("บันทึกการเปลี่ยนแปลง", "Save Changes")}
-            </button>
-          </div>
-        </div>
+            <FloatingPanel target={floatWin} title={`${t("ตรวจงาน", "Grade")} — ${submission.studentName}`} onClosed={() => setFloatWin(null)}>{gradePanel(true)}</FloatingPanel>
+          </>
+        ) : gradePanel(false)}
       </div>
   );
 }

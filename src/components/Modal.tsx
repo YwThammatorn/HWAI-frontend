@@ -1,9 +1,15 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { useLanguage } from "@/context/LanguageContext";
 
-const SIZE = { sm: "max-w-sm", md: "max-w-lg", lg: "max-w-2xl" } as const;
+const SIZE = { sm: "max-w-sm", md: "max-w-lg", lg: "max-w-2xl", xl: "max-w-5xl" } as const;
+
+// Popups can open popups (the rubric editor in a popup has its own picker and AI assistant, 14/10/2569). Each one is drawn on <body>, not
+// inside the popup that opened it — a transformed parent would otherwise become the containing block of a `fixed` child and clip it — and
+// only the newest open one answers Esc.
+const openStack: string[] = [];
 
 const FOCUSABLE =
   'button:not([disabled]),[href],input:not([disabled]):not([tabindex="-1"]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
@@ -50,15 +56,21 @@ export default function Modal({ open, onClose, title, description, size = "md", 
 
   useEffect(() => {
     if (!open) return;
+    openStack.push(titleId);
     function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape" && openStack[openStack.length - 1] === titleId) onClose();
     }
     document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [open, onClose]);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      const at = openStack.lastIndexOf(titleId);
+      if (at >= 0) openStack.splice(at, 1);
+    };
+  }, [open, onClose, titleId]);
 
   function trapTab(e: React.KeyboardEvent<HTMLDivElement>) {
     if (e.key !== "Tab" || !dialogRef.current) return;
+    e.stopPropagation();   // a popup inside this one must not have its Tab handled by this one as well
     const focusable = Array.from(dialogRef.current.querySelectorAll<HTMLElement>(FOCUSABLE));
     if (focusable.length === 0) return;
     const first = focusable[0];
@@ -67,9 +79,9 @@ export default function Modal({ open, onClose, title, description, size = "md", 
     else if (!e.shiftKey && document.activeElement === last) { first.focus(); e.preventDefault(); }
   }
 
-  if (!open) return null;
+  if (!open || typeof document === "undefined") return null;
 
-  return (
+  return createPortal(
     <>
       {/* z above the sticky top bar (z-50) so the popup covers the whole page and nothing behind it is clickable */}
       <div className="hwai-modal-overlay fixed inset-0 bg-black/40 z-[60]" onClick={onClose} aria-hidden="true" />
@@ -103,6 +115,7 @@ export default function Modal({ open, onClose, title, description, size = "md", 
           <div className="px-6 py-4 border-t border-[var(--border-subtle)] flex justify-end gap-2 shrink-0">{footer}</div>
         )}
       </div>
-    </>
+    </>,
+    document.body,
   );
 }

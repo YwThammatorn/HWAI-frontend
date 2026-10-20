@@ -5,11 +5,12 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCourses } from "@/lib/courses";
 import { useStudents, isWithdrawn, withdrawnIds } from "@/lib/students";
-import { useAssignments, isManualGrading, isAiOnlyGraded, type Assignment, type Submission } from "@/lib/assignments";
+import { useAssignments, isManualGrading, isAiOnlyGraded, gradingOpen, gradingOpensAt, type Assignment, type Submission } from "@/lib/assignments";
+import { appNow, useNow } from "@/lib/clock";
 import { useGradingCategories } from "@/lib/gradingCategories";
 import { useStudentGroups } from "@/lib/studentGroups";
 import { groupSubmissionsByTeam } from "@/lib/groupSubmissions";
-import { mockAiGrade, mockAiGradeCriteria, waitingForAi } from "@/lib/aiGrading";
+import { aiGradingUpdate, waitingForAi } from "@/lib/aiGrading";
 import { useLanguage } from "@/context/LanguageContext";
 import { dateLocale } from "@/lib/dateLocale";
 import SearchInput from "@/components/SearchInput";
@@ -25,6 +26,12 @@ function fmtDate(dateStr: string, lang: string) {
   return new Date(dateStr + "T00:00:00").toLocaleDateString(dateLocale(lang), {
     month: "short", day: "numeric", year: "numeric",
   });
+}
+
+/** "16 Oct, 01:00" — when grading opens for this assignment. */
+function opensText(a: Assignment, lang: string) {
+  const d = gradingOpensAt(a);
+  return d ? d.toLocaleString(dateLocale(lang), { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "";
 }
 
 /** What still needs doing on one assignment — the numbers every row and stat card is built from. */
@@ -56,6 +63,8 @@ export default function CourseGradingPage() {
   const { getAssignmentsByCourse, getSubmissionsByAssignment, getRubricsByAssignment, updateAssignment, updateSubmission } = useAssignments();
   const { getCategoriesByCourse } = useGradingCategories();
   const { getGroupsByAssignment } = useStudentGroups();
+  // Grading opens only once the due date and the students' late window have passed (15/10/2569) — see gradingOpen in lib/assignments.ts
+  const now = useNow();
 
   const [filter, setFilter] = useState<QueueFilter>("all");
   const [search, setSearch] = useState("");
@@ -99,6 +108,8 @@ export default function CourseGradingPage() {
   //   "Grade manually"  → the AI is not used: the teacher opens the assignment and scores each submission by hand. Work that only
   //                       the AI scored goes back to "not graded" (the teacher's own scores stay), so that asks first.
   const aiOnlyOf = (a: Assignment) => getSubmissionsByAssignment(a.id).filter(isAiOnlyGraded);
+  // the other half, shown in the same dialog so the "Graded" count on the assignment page afterwards is no surprise
+  const handScoredOf = (a: Assignment) => getSubmissionsByAssignment(a.id).filter((s) => s.status !== "not_graded" && s.instructorScore !== null);
   // one unit of work per submission, or per team for a group assignment (every member shares the team's score)
   const waitingUnits = (a: Assignment) => {
     const subs = getSubmissionsByAssignment(a.id).filter((x) => !withdrawn.has(x.studentId));
@@ -122,8 +133,8 @@ export default function CourseGradingPage() {
         // with a rubric the AI scores every criterion (through the correction Calibration saved, if any); without one, a total only
         const rubric = getRubricsByAssignment(a.id)[0];
         units.forEach((u) => {
-          const res = rubric && rubric.criteria.length > 0 ? mockAiGradeCriteria(u.key, rubric.criteria, rubric.aiOffsets) : { ...mockAiGrade(u.key, a.maxPoints), criterionScores: undefined };
-          u.subs.filter(waitingForAi).forEach((sub) => updateSubmission(sub.id, { aiScore: res.score, aiCriterionScores: res.criterionScores, instructorScore: null, status: res.status, criterionScores: undefined, criterionComments: undefined }));
+          const update = aiGradingUpdate(u.key, a.maxPoints, rubric);
+          u.subs.filter(waitingForAi).forEach((sub) => updateSubmission(sub.id, update));
         });
         setSendingId(null);
       }
@@ -131,7 +142,7 @@ export default function CourseGradingPage() {
     router.push(gradingHref(a));
   }
   function startGrading(a: Assignment, mode: "ai" | "manual") {
-    if (sendingId) return;
+    if (sendingId || !gradingOpen(a, appNow())) return;
     if (mode === "manual" && !isManualGrading(a) && aiOnlyOf(a).length > 0) { setManualFor(a); return; }
     void applyAndGo(a, mode);
   }
@@ -354,6 +365,17 @@ export default function CourseGradingPage() {
                           </>
                         ) : total === 0 ? (
                           <span className="text-xs text-[var(--text-muted)]">{t("รอนักศึกษาส่งงาน", "Awaiting submissions")}</span>
+                        ) : !gradingOpen(a, now) ? (
+                          // the due date or the late hour has not passed yet: nothing can be graded while the work can still change
+                          <div data-testid="grading-locked" className="flex flex-col items-end gap-0.5 text-right">
+                            <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--text-secondary)]">
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+                              {t("ยังตรวจไม่ได้", "Not open for grading yet")}
+                            </span>
+                            <span className="text-xs text-[var(--text-muted)]">
+                              {t(`เปิดตรวจได้ ${opensText(a, lang)} น.`, `Opens ${opensText(a, lang)}`)}
+                            </span>
+                          </div>
                         ) : a.isExam || a.acceptsFiles === false || a.gradingFinalized ? (
                           // nothing to choose: an exam is typed in, no files means nothing for the AI, announced work keeps its method
                           <div className="flex flex-col items-end gap-1">
@@ -452,7 +474,11 @@ export default function CourseGradingPage() {
               )}
             </p>
             <ul className="mt-3 flex flex-col gap-1.5 text-sm text-[var(--text-secondary)] list-disc pl-5">
-              <li>{t("คะแนนที่คุณให้เองยังอยู่ครบ", "Scores you set yourself stay.")}</li>
+              <li>
+                {handScoredOf(manualFor).length > 0
+                  ? t(`คะแนนที่คุณให้เองแล้ว ${handScoredOf(manualFor).length} ชิ้นยังอยู่ครบ — ไม่ถูกล้าง`, `Scores you set yourself stay — ${handScoredOf(manualFor).length} submission${handScoredOf(manualFor).length === 1 ? "" : "s"} kept as they are.`)
+                  : t("คะแนนที่คุณให้เองยังอยู่ครบ", "Scores you set yourself stay.")}
+              </li>
               <li>{t("คะแนน AI และปุ่ม Re-grade จะถูกซ่อน", "AI scores and the Re-grade button are hidden.")}</li>
               <li>{t("เปลี่ยนกลับเป็น “ให้ AI ช่วยตรวจ” ได้ แต่ผลที่ถูกล้างจะไม่กลับมา", "You can switch back to AI-assisted, but the cleared AI results do not come back.")}</li>
             </ul>

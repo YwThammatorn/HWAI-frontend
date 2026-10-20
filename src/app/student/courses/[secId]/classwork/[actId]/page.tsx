@@ -8,7 +8,8 @@ import { dateLocale } from "@/lib/dateLocale";
 import { useAuth } from "@/context/AuthContext";
 import { useCourses } from "@/lib/courses";
 import CriterionName from "@/components/CriterionName";
-import { useAssignments, submissionAttachments, studentVisibleSubmission, achievedLevelIndex, AssignmentAttachment } from "@/lib/assignments";
+import { useAssignments, submissionAttachments, studentVisibleSubmission, achievedLevelIndex, AssignmentAttachment, dueAt, isLate, submissionOpen, submissionClosesAt, CLEARED_RESULT } from "@/lib/assignments";
+import { appNow, useNow } from "@/lib/clock";
 import { computeExamStats, computeAssignmentStats } from "@/lib/examStats";
 import ExamStatsCard from "@/components/ExamStatsCard";
 import { removeFile } from "@/lib/fileStorage";
@@ -48,6 +49,7 @@ function ClassworkDetail() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [teamModalOpen, setTeamModalOpen] = useState(false);
+  const now = useNow();
 
   const course = getCourse(secId);
   const assignment = getAssignment(actId);
@@ -82,8 +84,12 @@ function ClassworkDetail() {
     );
   }
 
-  const due = assignment.dueDate ? new Date(assignment.dueDate + "T23:59:59") : null;
-  const isPast = !!due && new Date() > due;
+  // Past the deadline; students can still submit during the late window (submissionOpen) — after it the form closes and grading may start
+  const due = dueAt(assignment);
+  const isPast = !!due && now > due.getTime();
+  const open = submissionOpen(assignment, now);
+  const late = isLate(assignment, now);
+  const closesAt = submissionClosesAt(assignment);
   const isGraded = mySubmission?.status === "graded";
   const locked = isGraded || beingGraded;
   const score = mySubmission?.instructorScore ?? mySubmission?.aiScore ?? null;
@@ -114,7 +120,10 @@ function ClassworkDetail() {
   const canSubmit = (!isGroup || !!myGroup) && attachmentOk && !linkInvalid;
 
   function handleSubmit() {
+    if (!submissionOpen(assignment!, appNow())) return;     // the window closed while the form was open
     setSubmitting(true);
+    const lateNow = isLate(assignment!, appNow());
+    const submittedAt = new Date(appNow()).toISOString();
     const attachments: AssignmentAttachment[] = [
       ...files.items,
       ...(linkUrl ? [{ id: crypto.randomUUID(), kind: "link" as const, name: linkUrl, source: "url" as const, ref: linkUrl }] : []),
@@ -127,7 +136,8 @@ function ClassworkDetail() {
       const existing = allSubs.find((s) => s.studentId === id);
       if (existing) {
         submissionAttachments(existing).forEach((a) => { if (a.source === "upload") replacedRefs.add(a.ref); });
-        updateSubmission(existing.id, { status: "not_graded", fileUrl, attachments });
+        // a resubmission is a new piece of work: the earlier file's result (AI marks, teacher marks, comments) does not stay on it
+        updateSubmission(existing.id, { ...CLEARED_RESULT, status: "not_graded", fileUrl, attachments, submittedAt, late: lateNow });
         return;
       }
       const info = memberInfo(id);
@@ -136,7 +146,8 @@ function ClassworkDetail() {
         studentId: id,
         studentName: info.name,
         email: info.email,
-        submittedAt: new Date().toISOString(),
+        submittedAt,
+        late: lateNow,
         fileUrl,
         attachments,
         aiScore: null,
@@ -420,7 +431,14 @@ function ClassworkDetail() {
               )}
 
               {/* Attach a file or link — only for assignments configured to accept one */}
-              {!isExam && !locked && !isPast && assignment.acceptsFiles && (
+              {!isExam && late && !locked && closesAt && (
+                <p data-testid="late-note" role="status" className="mb-4 rounded-xl border border-[var(--s-warn-bd)] bg-[var(--s-warn-bg)] px-3 py-2 text-xs leading-relaxed text-[var(--s-warn-text)]">
+                  {t(`เลยกำหนดแล้ว — ยังส่งช้าได้ถึง ${closesAt.toLocaleString(dateLocale(lang), { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} น. หลังจากนั้นจะปิดรับ`,
+                    `Past due — you can still submit late until ${closesAt.toLocaleString(dateLocale(lang), { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}. After that submissions close.`)}
+                </p>
+              )}
+
+              {!isExam && !locked && open && assignment.acceptsFiles && (
                 <div className="mb-4 flex flex-col gap-3">
                   {mySubmission && (
                     <p className="text-xs text-[var(--text-muted)]">
@@ -457,7 +475,7 @@ function ClassworkDetail() {
               )}
 
               {/* Submit button (hidden if graded) */}
-              {!isExam && !locked && !isPast && (
+              {!isExam && !locked && open && (
                 <button
                   onClick={() => setConfirmOpen(true)}
                   disabled={submitting || !canSubmit}
@@ -475,8 +493,8 @@ function ClassworkDetail() {
                   {SUBMIT_BTN_LABEL}
                 </button>
               )}
-              {!isExam && isPast && !mySubmission && (
-                <p className="text-xs text-[var(--st-overdue-text)] text-center">{t("เกินกำหนดแล้ว ไม่สามารถส่งได้", "Past due — submission closed")}</p>
+              {!isExam && !open && !mySubmission && (
+                <p data-testid="submission-closed" className="text-xs text-[var(--st-overdue-text)] text-center">{t("ปิดรับส่งงานแล้ว — เลยกำหนดและช่วงส่งช้าไปแล้ว", "Submission closed — the due date and the late window have passed")}</p>
               )}
             </div>
           </div>
