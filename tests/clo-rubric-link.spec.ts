@@ -1,12 +1,12 @@
 import { test, expect, Page } from "@playwright/test";
 import fs from "node:fs";
-import { computeCloAttainment } from "../src/lib/cloAttainment";
+import { cloLinks } from "../src/lib/cloLinks";
 import { scoringSignature, toDraft, finalizeCriteria } from "../src/components/RubricCriteriaEditor";
 
 import { BASE } from "./base";
 
 // 11/10/2569 — a rubric criterion can be tagged with the course's CLOs; the teacher sees the tags on the rubric,
-// and the CLO page shows which criteria measure each CLO and how the class did on them (CLO attainment).
+// and the CLO page shows which assignments mention each CLO. (15/10/2569: only the assignment names — the class attainment figure, each criterion's points / average and then the criterion names were taken off.)
 //
 // Seed, worked out by hand. Rubric as1: k1 "Layout" /10 → CLO1, k2 "Accessibility" /10 → CLO1 + CLO2, k3 "Notes" /5 → no CLO.
 //   Ann  k1 10  k2 6   graded
@@ -72,39 +72,28 @@ const subsOnDisk = (page: Page) => page.evaluate(() => JSON.parse(localStorage.g
 
 // ── the calculation ──────────────────────────────────────────────────────────────
 
-test.describe("computeCloAttainment", () => {
+test.describe("cloLinks", () => {
   const assignments = [{ id: "as1", name: "Landing page" }] as never;
-  const sub = (id: string, k: [number, number], status = "graded") => ({ id, assignmentId: "as1", status, criterionScores: { k1: k[0], k2: k[1] } }) as never;
 
-  test("points earned over points available across every criterion that measures the CLO", () => {
-    const r = computeCloAttainment({ clos: CLOS as never, assignments, rubrics: [RUBRIC] as never, submissions: [sub("a", [10, 6]), sub("b", [8, 6])] });
-    expect(r[0].pct).toBeCloseTo(75);   // 30 of 40
-    expect(r[1].pct).toBeCloseTo(60);   // 12 of 20
-    expect(r[0].links.map((l) => [l.criterionName, Math.round(l.pct!)])).toEqual([["Layout", 90], ["Accessibility", 60]]);
-    expect(r[0].gradedCount).toBe(2);
+  test("each CLO lists the assignments with a criterion tagged with it — once each, however many criteria carry the tag", () => {
+    const r = cloLinks({ clos: CLOS as never, assignments, rubrics: [RUBRIC] as never });
+    expect(r[0].assignments).toEqual([{ id: "as1", name: "Landing page" }]);   // Layout and Accessibility both carry CLO1: one line
+    expect(r[1].assignments).toEqual([{ id: "as1", name: "Landing page" }]);   // Accessibility carries CLO2
   });
 
-  test("a criterion with more points counts for more (it is not an average of percentages)", () => {
-    const rubric = { ...RUBRIC, criteria: [
-      { id: "k1", name: "Big", maxPoints: 18, weight: 90, levels, cloIds: ["clo1"] },
-      { id: "k2", name: "Small", maxPoints: 2, weight: 10, levels, cloIds: ["clo1"] },
-    ] };
-    const r = computeCloAttainment({ clos: [CLOS[0]] as never, assignments, rubrics: [rubric] as never, submissions: [sub("a", [18, 0])] });
-    expect(r[0].pct).toBeCloseTo(90);   // 18 of 20; the plain average of 100% and 0% would say 50%
-  });
-
-  test("not graded, or graded without a per-criterion breakdown, adds nothing; an unlinked CLO has no figure", () => {
-    const none = computeCloAttainment({ clos: CLOS as never, assignments, rubrics: [RUBRIC] as never, submissions: [sub("a", [10, 10], "not_graded"), { id: "x", assignmentId: "as1", status: "graded" } as never] });
-    expect(none[0].pct).toBeNull();
-    expect(none[0].links).toHaveLength(2);   // still listed as measuring it
-    expect(none[2].links).toEqual([]);       // CLO3: nothing measures it
-    expect(none[2].pct).toBeNull();
+  test("a CLO nothing mentions has no assignments", () => {
+    expect(cloLinks({ clos: CLOS as never, assignments, rubrics: [RUBRIC] as never })[2].assignments).toEqual([]);
   });
 
   test("a deleted CLO id on a criterion is simply ignored", () => {
     const rubric = { ...RUBRIC, criteria: [{ ...RUBRIC.criteria[0], cloIds: ["gone"] }] };
-    const r = computeCloAttainment({ clos: CLOS as never, assignments, rubrics: [rubric] as never, submissions: [sub("a", [10, 10])] });
-    expect(r.every((x) => x.links.length === 0)).toBe(true);
+    expect(cloLinks({ clos: CLOS as never, assignments, rubrics: [rubric] as never }).every((x) => x.assignments.length === 0)).toBe(true);
+  });
+
+  test("the assignments keep the order given; one without a rubric, or whose rubric has no tag, is left out", () => {
+    const two = [{ id: "as1", name: "Landing page" }, { id: "as9", name: "No rubric" }, { id: "as2", name: "Second" }] as never;
+    const r2 = { ...RUBRIC, id: "r2", assignmentId: "as2" };
+    expect(cloLinks({ clos: [CLOS[0]] as never, assignments: two, rubrics: [RUBRIC, r2] as never })[0].assignments.map((x) => x.name)).toEqual(["Landing page", "Second"]);
   });
 });
 
@@ -268,53 +257,38 @@ test.describe("CLO page", () => {
     await expect(page.getByText(/planned for a future release/)).toHaveCount(0);
   });
 
-  test("each CLO lists the criteria that measure it with how the class did, and its attainment — withdrawn students and exams left out", async ({ page }) => {
+  test("each CLO lists the assignments that mention it — names only: no criteria, no attainment figure, no points, no percentages", async ({ page }) => {
     await seed(page);
     await page.goto(`${C}/clo`);
     await page.waitForLoadState("networkidle");
     const clo1 = page.getByTestId("clo-links-CLO1");
-    await expect(clo1.getByTestId("clo-attainment")).toHaveText("75%");
-    await expect(clo1).toContainText("from 2 graded submissions · 2 criteria");
-    await expect(clo1.getByRole("listitem")).toHaveCount(2);
-    await expect(clo1.getByRole("listitem").nth(0)).toContainText("Landing page · Layout");
-    await expect(clo1.getByRole("listitem").nth(0)).toContainText("10 pts");
-    await expect(clo1.getByRole("listitem").nth(0)).toContainText("90%");
-    await expect(clo1.getByRole("listitem").nth(1)).toContainText("Accessibility");
-    await expect(clo1.getByRole("listitem").nth(1)).toContainText("60%");
-    await expect(clo1.getByRole("link", { name: "Landing page" }).first()).toHaveAttribute("href", "/teacher/courses/c-clo/assignments/as1");
-
-    const clo2 = page.getByTestId("clo-links-CLO2");
-    await expect(clo2.getByTestId("clo-attainment")).toHaveText("60%");
-    await expect(clo2.getByRole("listitem")).toHaveCount(1);
+    await expect(clo1).toContainText("Assignments that mention this CLO");
+    await expect(clo1.getByRole("listitem")).toHaveCount(1);                    // two criteria of the same assignment carry CLO1 — still one line
+    await expect(clo1.getByRole("listitem").nth(0)).toHaveText("Landing page");
+    await expect(clo1.getByRole("link", { name: "Landing page" })).toHaveAttribute("href", "/teacher/courses/c-clo/assignments/as1");
+    await expect(page.getByTestId("clo-links-CLO2").getByRole("listitem")).toHaveCount(1);
+    await expect(page.getByText("Layout")).toHaveCount(0);                      // the criterion names are gone too
+    await expect(page.getByText("Accessibility")).toHaveCount(0);
+    await expect(page.getByTestId("clo-attainment")).toHaveCount(0);
+    await expect(page.getByText(/attainment/i)).toHaveCount(0);
+    await expect(page.getByText(/\d+%/)).toHaveCount(0);
+    await expect(page.getByText(/\bpts\b/)).toHaveCount(0);
   });
 
-  test("a CLO nothing measures says so, instead of showing a number", async ({ page }) => {
+  test("a CLO no assignment mentions says so", async ({ page }) => {
     await seed(page);
     await page.goto(`${C}/clo`);
     await page.waitForLoadState("networkidle");
-    const clo3 = page.getByTestId("clo-links-CLO3");
-    await expect(clo3.getByTestId("clo-unmeasured")).toContainText("No criterion measures this CLO yet");
-    await expect(clo3.getByTestId("clo-attainment")).toHaveCount(0);
+    await expect(page.getByTestId("clo-links-CLO3").getByTestId("clo-unmeasured")).toContainText("No assignment mentions this CLO yet");
   });
 
-  test("linked but nothing graded yet: the criteria are listed and the figure says nothing is graded", async ({ page }) => {
+  test("the list does not depend on anything being graded", async ({ page }) => {
     await seed(page);
     await page.addInitScript(() => localStorage.setItem("hwai_submissions_v1", "[]"));
     await page.goto(`${C}/clo`);
     await page.waitForLoadState("networkidle");
-    const clo2 = page.getByTestId("clo-links-CLO2");
-    await expect(clo2).toContainText("Nothing graded yet");
-    await expect(clo2.getByRole("listitem")).toHaveCount(1);
-    await expect(clo2.getByTestId("clo-attainment")).toHaveCount(0);
-  });
-
-  test("a CLO's tone follows the same colours as the Score Book (80+ green, 60–79 blue, below 60 red)", async ({ page }) => {
-    await seed(page);
-    await page.goto(`${C}/clo`);
-    await page.waitForLoadState("networkidle");
-    const tone = (code: string) => page.getByTestId(`clo-links-${code}`).getByTestId("clo-attainment").evaluate((el) => el.className);
-    expect(await tone("CLO1")).toContain("s-info");   // 75%
-    expect(await tone("CLO2")).toContain("s-info");   // 60%
+    await expect(page.getByTestId("clo-links-CLO2").getByRole("listitem")).toHaveCount(1);
+    await expect(page.getByText("Nothing graded yet")).toHaveCount(0);
   });
 
   test("Thai UI", async ({ page }) => {
@@ -322,8 +296,9 @@ test.describe("CLO page", () => {
     await page.goto(`${C}/clo`);
     await page.waitForLoadState("networkidle");
     const clo1 = page.getByTestId("clo-links-CLO1");
-    await expect(clo1).toContainText("ผลลัพธ์ CLO ของห้อง");
-    await expect(clo1).toContainText("จากงานที่ตรวจแล้ว 2 ชิ้น · 2 เกณฑ์");
-    await expect(page.getByTestId("clo-links-CLO3")).toContainText("ยังไม่มีเกณฑ์ใดวัด CLO นี้");
+    await expect(clo1).toContainText("งานที่กล่าวถึง CLO นี้");
+    await expect(clo1.getByRole("listitem")).toHaveCount(1);
+    await expect(page.getByText("ผลลัพธ์ CLO")).toHaveCount(0);
+    await expect(page.getByTestId("clo-links-CLO3")).toContainText("ยังไม่มีงานใดกล่าวถึง CLO นี้");
   });
 });
