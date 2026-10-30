@@ -7,7 +7,7 @@ import { BASE } from "./base";
 
 const NOW = "2026-01-01T00:00:00.000Z";
 const COURSE = {
-  id: "c-glc", name: "Programming", description: "", status: "active", source: "manual",
+  id: "c-glc", name: "Programming", description: "", status: "active",
   coverColor: "#2DD4BF", courseTemplateId: "ct-glc", term: 1, academicYear: 2569,
   sectionNumber: "1", code: "01076112", schedule: "Mon", room: "811", createdAt: NOW, updatedAt: NOW,
 };
