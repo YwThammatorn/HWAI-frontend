@@ -13,7 +13,7 @@ const COURSE = {
 };
 const TEACHER = { id: "t-sv", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", role: "teacher", status: "active", courseIds: ["c-sv"] };
 const ASSIGNMENT = {
-  id: "a-sv", courseId: "c-sv", name: "Lab report", description: "", dueDate: "2099-12-31", maxPoints: 100,
+  id: "a-sv", courseId: "c-sv", name: "Lab report", description: "", dueDate: "2026-01-05", maxPoints: 100,
   submissionType: "individual", maxGroupSize: null, acceptsFiles: true, fileTypes: ["pdf", "image"],
   rubricIds: ["r-sv"], createdAt: NOW, updatedAt: NOW,
 };

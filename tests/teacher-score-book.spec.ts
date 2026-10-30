@@ -4,7 +4,7 @@ import fs from "fs";
 import { BASE } from "./base";
 
 // Score Book (21/9/2569): the teacher's Results page redesigned as a students × assignments matrix,
-// grouped by grading category, with the weighted "total so far" and a letter grade.
+// grouped by grading category, with the weighted "total so far" (and, until 15/10/2569, a letter grade — the course is not graded with letters, so the Grade column is gone).
 //
 // Seed, and the numbers worked out by hand:
 //   Homework 30%: HW 1 (/100, past due), HW 2 (/50, past due)     Project 70%: Team Project (/100, group, open)
@@ -97,8 +97,8 @@ async function open(page: Page, o: Opts = {}, url = "/teacher/courses/c-sb/resul
   await page.waitForLoadState("networkidle");
 }
 
-// column indexes inside a student row: 0 ID · 1 Name · 2 HW 1 · 3 HW 2 · 4 Team Project · 5 Extra · 6 Total · 7 Grade
-const COL = { id: 0, name: 1, hw1: 2, hw2: 3, proj: 4, extra: 5, total: 6, grade: 7 } as const;
+// column indexes inside a student row: 0 ID · 1 Name · 2 HW 1 · 3 HW 2 · 4 Team Project · 5 Extra · 6 Total
+const COL = { id: 0, name: 1, hw1: 2, hw2: 3, proj: 4, extra: 5, total: 6 } as const;
 const rowOf = (page: Page, studentId: string) => page.locator("main tbody tr", { hasText: studentId });
 const cell = (page: Page, studentId: string, col: keyof typeof COL) => rowOf(page, studentId).locator("td").nth(COL[col]);
 const ids = (page: Page) => page.locator("main tbody tr td:first-child").allTextContents();
@@ -110,7 +110,7 @@ test.describe("Score Book — layout", () => {
     const groups = await page.locator("main thead tr:first-child th[scope='colgroup']").allTextContents();
     expect(groups.map((g) => g.trim())).toEqual(["Homework · 30%", "Project · 70%", "No category", "Summary"]);
     const heads = page.locator("main thead tr:nth-child(2) th");
-    await expect(heads).toHaveCount(8);
+    await expect(heads).toHaveCount(7);
     await expect(heads.nth(2)).toContainText("HW 1");
     await expect(heads.nth(2)).toContainText("100 pts");
     await expect(heads.nth(3)).toContainText("50 pts");
@@ -118,7 +118,8 @@ test.describe("Score Book — layout", () => {
     await expect(heads.nth(4)).toContainText("group");
     await expect(heads.nth(4)).toHaveCSS("text-transform", "none"); // assignment names keep their own case
     await expect(page.getByRole("columnheader", { name: "Total" })).toBeVisible();
-    await expect(page.getByRole("columnheader", { name: "Grade" })).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Grade" })).toHaveCount(0);   // no letter grades (15/10/2569)
+    await expect(page.locator("main thead tr:nth-child(2) th")).toHaveCount(7);          // ID, Name, 4 assignments, Total
   });
 
   test("the table's lines are even: the category row has no vertical lines of its own, and the last row has no bottom line", async ({ page }) => {
@@ -150,16 +151,16 @@ test.describe("Score Book — cells", () => {
     await open(page);
     const s90 = cell(page, "69070101", "hw1").getByRole("link");
     await expect(s90).toHaveText("90");
-    await expect(s90).toHaveClass(/s-ok-bg/);
+    await expect(s90).toHaveClass(/s-ok-text/);
     const s70 = cell(page, "69070102", "hw1").getByRole("link");
     await expect(s70).toHaveText("70");
-    await expect(s70).toHaveClass(/s-info-bg/);
+    await expect(s70).toHaveClass(/s-info-text/);
     const s50 = cell(page, "69070103", "hw1").getByRole("link");
     await expect(s50).toHaveText("50");
-    await expect(s50).toHaveClass(/s-err-bg/);
+    await expect(s50).toHaveClass(/s-err-text/);
     // HW 2 is out of 50: 45/50 = 90% is green, 25/50 = 50% is red
-    await expect(cell(page, "69070101", "hw2").getByRole("link")).toHaveClass(/s-ok-bg/);
-    await expect(cell(page, "69070102", "hw2").getByRole("link")).toHaveClass(/s-err-bg/);
+    await expect(cell(page, "69070101", "hw2").getByRole("link")).toHaveClass(/s-ok-text/);
+    await expect(cell(page, "69070102", "hw2").getByRole("link")).toHaveClass(/s-err-text/);
   });
 
   test("pending, missing and not-yet cells are told apart", async ({ page }) => {
@@ -170,6 +171,37 @@ test.describe("Score Book — cells", () => {
     await expect(cell(page, "69070104", "hw2")).toContainText("Missing");
     await expect(cell(page, "69070104", "proj")).toHaveText("—");                // open, not handed in yet
     await expect(cell(page, "69070101", "extra")).toHaveText("—");
+  });
+
+  test("rows are compact: a body row is well under the old 48px (15/10/2569)", async ({ page }) => {
+    await open(page);
+    const h = await rowOf(page, "69070101").evaluate((el) => el.getBoundingClientRect().height);
+    expect(h).toBeLessThan(40);
+  });
+
+  test("cells are text only, no boxes: the score in its tone colour, \"...\" for pending, \"-\" for missing", async ({ page }) => {
+    await open(page);
+    const noBox = async (loc: ReturnType<typeof cell> | ReturnType<ReturnType<typeof cell>["locator"]>) => {
+      await expect(loc).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+      await expect(loc).toHaveCSS("border-top-width", "0px");
+    };
+    const score = cell(page, "69070101", "hw1").getByRole("link");
+    await noBox(score);
+    await expect(score).toHaveText("90");
+    const pending = cell(page, "69070104", "hw1").getByRole("link");
+    await noBox(pending);
+    await expect(pending.locator("[aria-hidden=true]")).toHaveText("...");
+    await expect(pending).toHaveClass(/s-warn-text/);
+    const missing = cell(page, "69070105", "hw1").locator("span").first();
+    await noBox(missing);
+    await expect(missing.locator("[aria-hidden=true]")).toHaveText("-");
+    await expect(missing).toHaveClass(/s-err-text/);
+    // the words are still there for a screen reader
+    await expect(pending.getByText("Pending")).toHaveClass(/sr-only/);
+    await expect(missing.getByText("Missing")).toHaveClass(/sr-only/);
+    // so the cell is only as wide as the column's header needs, not a 3.5rem box
+    const w = await cell(page, "69070105", "hw1").evaluate((el) => el.getBoundingClientRect().width);
+    expect(w).toBeLessThan(120);
   });
 
   test("group work: every teammate shows the team's score, marked with a team glyph", async ({ page }) => {
@@ -262,18 +294,14 @@ test.describe("Score Book — rubric breakdown", () => {
 });
 
 test.describe("Score Book — totals", () => {
-  test("weighted total so far, what it is out of, and the letter", async ({ page }) => {
+  test("weighted total so far and what it is out of — and no letter grade", async ({ page }) => {
     await open(page);
     await expect(cell(page, "69070101", "total")).toContainText("83.0 / 100");
-    await expect(cell(page, "69070101", "grade")).toHaveText("A");
     await expect(cell(page, "69070102", "total")).toContainText("75.0 / 100");
-    await expect(cell(page, "69070102", "grade")).toHaveText("B");
     // only Homework has graded work for Chai, so the total is out of 30, not 100
     await expect(cell(page, "69070103", "total")).toContainText("15.0 / 30");
-    await expect(cell(page, "69070103", "grade")).toHaveText("D");
     for (const sid of ["69070104", "69070105"]) {
       await expect(cell(page, sid, "total")).toHaveText("—");
-      await expect(cell(page, sid, "grade")).toHaveText("—");
     }
   });
 
@@ -360,7 +388,7 @@ test.describe("Score Book — search, sort, filter", () => {
   test("category filter narrows the columns but not the totals", async ({ page }) => {
     await open(page);
     await page.getByRole("combobox", { name: "Filter by category" }).selectOption({ label: "Project (70%)" });
-    await expect(page.locator("main thead tr:nth-child(2) th")).toHaveCount(5);   // ID, Name, Team Project, Total, Grade
+    await expect(page.locator("main thead tr:nth-child(2) th")).toHaveCount(4);   // ID, Name, Team Project, Total
     await expect(page.getByRole("link", { name: "HW 1" })).toHaveCount(0);
     await expect(page.getByRole("link", { name: "Team Project" })).toBeVisible();
     await expect(rowOf(page, "69070101").locator("td").nth(3)).toContainText("83.0 / 100");
@@ -377,17 +405,17 @@ test.describe("Score Book — export", () => {
     const text = fs.readFileSync((await download.path())!, "utf8");
     expect(text.charCodeAt(0)).toBe(0xfeff); // BOM so Thai opens correctly in Excel
     const lines = text.slice(1).split("\r\n");
-    expect(lines[0]).toBe("Student ID,Title,First name,Last name,HW 1 (/100),HW 2 (/50),Team Project (/100),Extra (/10),Homework 30% (%),Project 70% (%),Total so far,Grade");
-    expect(lines[1]).toBe("69070101,Mr.,Somchai,Jaidee,90,45,80,,90.0,80.0,83.0,A");
-    expect(lines[2]).toBe("69070102,Miss,Malee,Suksan,70,25,80,,63.3,80.0,75.0,B");
-    expect(lines[3]).toBe("69070103,,Chai,Notitle,50,pending,pending,,50.0,,15.0,D");
-    expect(lines[4]).toBe("69070104,,Dao,Pending,pending,missing,,,,,,");
-    expect(lines[5]).toBe("69070105,,Ek,Missing,missing,missing,,,,,,");
+    expect(lines[0]).toBe("Student ID,Title,First name,Last name,HW 1 (/100),HW 2 (/50),Team Project (/100),Extra (/10),Homework 30% (%),Project 70% (%),Total so far");
+    expect(lines[1]).toBe("69070101,Mr.,Somchai,Jaidee,90,45,80,,90.0,80.0,83.0");
+    expect(lines[2]).toBe("69070102,Miss,Malee,Suksan,70,25,80,,63.3,80.0,75.0");
+    expect(lines[3]).toBe("69070103,,Chai,Notitle,50,pending,pending,,50.0,,15.0");
+    expect(lines[4]).toBe("69070104,,Dao,Pending,pending,missing,,,,,");
+    expect(lines[5]).toBe("69070105,,Ek,Missing,missing,missing,,,,,");
   });
 });
 
 test.describe("Score Book — wide matrix, empty states, Thai", () => {
-  test("ID and Name stay put, and Total / Grade stay in view, while the matrix scrolls sideways", async ({ page }) => {
+  test("ID and Name stay put, and Total stays in view, while the matrix scrolls sideways", async ({ page }) => {
     await page.setViewportSize({ width: 1000, height: 800 });
     await open(page);
     const scroller = page.locator("main div.overflow-auto");
@@ -395,9 +423,9 @@ test.describe("Score Book — wide matrix, empty states, Thai", () => {
     await scroller.evaluate((el) => { el.scrollLeft = el.scrollWidth; });
     const box = await scroller.boundingBox();
     const idCell = await cell(page, "69070101", "id").boundingBox();
-    const gradeCell = await cell(page, "69070101", "grade").boundingBox();
+    const totalCell = await cell(page, "69070101", "total").boundingBox();
     expect(Math.abs(idCell!.x - box!.x)).toBeLessThan(3);                                   // pinned left
-    expect(Math.abs(gradeCell!.x + gradeCell!.width - (box!.x + box!.width))).toBeLessThan(20); // pinned right
+    expect(Math.abs(totalCell!.x + totalCell!.width - (box!.x + box!.width))).toBeLessThan(20); // pinned right
     await expect(cell(page, "69070101", "name")).toBeVisible();
   });
 
@@ -419,7 +447,7 @@ test.describe("Score Book — wide matrix, empty states, Thai", () => {
     await expect(page.getByRole("heading", { level: 1, name: "สมุดคะแนน" })).toBeVisible();
     await expect(page.getByRole("button", { name: "ส่งออก CSV" })).toBeVisible();
     await expect(page.getByRole("columnheader", { name: "รวม" })).toBeVisible();
-    await expect(page.getByRole("columnheader", { name: "เกรด" })).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "เกรด" })).toHaveCount(0);
     await expect(cell(page, "69070104", "hw1")).toContainText("รอตรวจ");
     await expect(cell(page, "69070105", "hw1")).toContainText("ไม่ส่ง");
     await expect(page.getByRole("columnheader", { name: /ไม่มีหมวด/ })).toBeVisible();

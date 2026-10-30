@@ -11,7 +11,7 @@ import { useAssignments, studentVisibleSubmission, type Assignment } from "@/lib
 import { useGradingCategories, computeCategoryGradeRows, computeTotalSoFar, scoreForAssignment, type CategoryGradeRow } from "@/lib/gradingCategories";
 import { computeExamStats } from "@/lib/examStats";
 import ExamStatsCard from "@/components/ExamStatsCard";
-import { buildScoreBook, gradeLetter, toneForPct, SCORE_TONE_CLASSES, PENDING_CHIP_CLASSES, MISSING_CHIP_CLASSES, type ScoreCell } from "@/lib/scoreBook";
+import { buildScoreBook, toneForPct, SCORE_TONE_CLASSES, PENDING_CHIP_CLASSES, MISSING_CHIP_CLASSES, type ScoreCell } from "@/lib/scoreBook";
 import EmptyState from "@/components/EmptyState";
 import StatCard from "@/components/StatCard";
 import RubricBreakdownModal from "@/components/RubricBreakdownModal";
@@ -60,8 +60,6 @@ export default function StudentEvaluationPage() {
     return sub?.status === "graded";
   });
   const gradedWeight = gradedCategoryRows.reduce((sum, r) => sum + r.category.weight, 0);
-  const normalized = gradedWeight > 0 ? (totalSoFar / gradedWeight) * 100 : null;
-  const letter = normalized !== null ? gradeLetter(normalized, 100) : null;
 
   // Per-assignment cell states (graded/pending/missing/none) + category grouping, reusing the exact
   // same logic the teacher's matrix uses — just for a single student.
@@ -182,11 +180,6 @@ export default function StudentEvaluationPage() {
                 </p>
               </div>
               <div className="flex items-center gap-3">
-                {letter && normalized !== null && (
-                  <span className={`inline-flex items-center justify-center min-w-[2rem] h-8 px-2.5 rounded-lg text-sm font-bold ${SCORE_TONE_CLASSES[toneForPct(normalized)]}`}>
-                    {letter}
-                  </span>
-                )}
                 <p className="text-xs text-[var(--text-muted)] text-right max-w-[200px]">
                   {t(
                     `นับจาก ${gradedCategoryRows.length}/${categories.length} หมวดที่มีคะแนนแล้ว`,

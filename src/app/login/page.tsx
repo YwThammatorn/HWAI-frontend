@@ -7,6 +7,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { useCohortStudents } from "@/lib/cohort-students";
 import { ADMIN_DASHBOARD_DISABLED } from "@/lib/featureFlags";
 import type { UserRole } from "@/context/AuthContext";
+import { demoStudent } from "@/lib/accounts";
 import { API_ENABLED } from "@/lib/api/client";
 import * as authApi from "@/lib/api/auth";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
@@ -394,7 +395,14 @@ export default function LoginPage() {
                     <button
                       key={role}
                       type="button"
-                      onClick={() => { logout(); login({ name, email: devEmail, role, ...(studentId ? { studentId } : {}) }); }}
+                      onClick={() => {
+                        // the demo student can be swapped for another one on this machine (lib/accounts.ts demoStudent)
+                        const swap = role === "student" ? demoStudent() : null;
+                        logout();
+                        login(swap
+                          ? { name: swap.name ?? name, email: `${swap.studentId}@kmitl.ac.th`, role, studentId: swap.studentId }
+                          : { name, email: devEmail, role, ...(studentId ? { studentId } : {}) });
+                      }}
                       className="py-2 rounded-lg text-xs font-semibold border border-amber-300 bg-white text-amber-700 hover:bg-amber-100 dark:bg-amber-900/20 dark:border-amber-700/60 dark:text-amber-300 dark:hover:bg-amber-900/40 transition-colors"
                     >
                       {label}

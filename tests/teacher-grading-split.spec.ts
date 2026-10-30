@@ -29,9 +29,9 @@ const sub = (id: string, assignmentId: string, studentId: string, status: string
 
 const ASSIGNMENTS = [
   assignment("a-done", "Done Quiz", "2026-01-10", { rubricIds: ["r-done"], gradingFinalized: true }),
-  assignment("a-review", "Review Me", "2099-12-31"),
+  assignment("a-review", "Review Me", "2026-01-05"),
   assignment("a-late", "Late One", "2026-01-05"),
-  assignment("a-wait", "Waiting Project", "2099-12-31", { submissionType: "group", maxGroupSize: 3 }),
+  assignment("a-wait", "Waiting Project", "2026-01-05", { submissionType: "group", maxGroupSize: 3 }),
 ];
 const RUBRICS = [{
   id: "r-done", assignmentId: "a-done", name: "Done rubric", createdAt: NOW, updatedAt: NOW,

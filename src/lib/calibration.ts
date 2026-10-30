@@ -1,9 +1,12 @@
 "use client";
 
 import { createContext, useContext } from "react";
-import type { Rubric, RubricCriterion, Submission } from "./assignments";
+import type { Assignment, Rubric, RubricCriterion, Submission } from "./assignments";
 import { achievedLevelIndex } from "./assignments";
 import { mockAiGradeCriteria } from "./aiGrading";
+import { criterionKey } from "./rubricHistory";
+import { groupSubmissionsByTeam } from "./groupSubmissions";
+import type { StudentGroup } from "./studentGroups";
 
 // Calibration (12/10/2569): the teacher scores a few sample submissions by hand, blind to the AI; the same work is then put through the
 // AI and the two are compared criterion by criterion. Levels are positions on the criterion's scale, 0 = best.
@@ -44,9 +47,71 @@ export function useCalibrations(): CalibrationContextValue {
 /** One piece of work to grade: a submission, or a whole team. */
 export interface WorkUnit { key: string; name: string; subs: Submission[] }
 
-/** What the AI would give each unit right now (with the correction already saved on the rubric), criterion → level. */
-export function aiLevelsFor(unit: WorkUnit, rubric: Pick<Rubric, "criteria" | "aiOffsets">) {
-  return mockAiGradeCriteria(unit.key, rubric.criteria, rubric.aiOffsets);
+/** The work of an assignment as units — one per submission, or one per team for a group assignment — leaving out withdrawn students. */
+export function workUnitsOf(a: Assignment, submissions: Submission[], groups: StudentGroup[], withdrawn: Set<string>, teamLabel: string): WorkUnit[] {
+  const subs = submissions.filter((s) => s.assignmentId === a.id && !withdrawn.has(s.studentId));
+  if (a.submissionType === "group") return groupSubmissionsByTeam(subs, groups, teamLabel).map((r) => ({ key: r.key, name: r.teamName ?? r.subs[0].studentName, subs: r.subs }));
+  return subs.map((s) => ({ key: s.id, name: s.studentName, subs: [s] }));
+}
+
+/** Rubrics that descend from the same one (`sourceRubricId` links, followed both ways) — the assignments that share a rubric. Includes `rubric` itself. */
+export function rubricLineage(rubric: Pick<Rubric, "id">, rubrics: Pick<Rubric, "id" | "sourceRubricId">[]): Set<string> {
+  const near = new Map<string, Set<string>>();
+  const link = (a: string, b: string) => { (near.get(a) ?? near.set(a, new Set()).get(a)!).add(b); (near.get(b) ?? near.set(b, new Set()).get(b)!).add(a); };
+  rubrics.forEach((r) => { if (r.sourceRubricId) link(r.id, r.sourceRubricId); });
+  const seen = new Set([rubric.id]);
+  const todo = [rubric.id];
+  while (todo.length) for (const n of near.get(todo.pop()!) ?? []) if (!seen.has(n)) { seen.add(n); todo.push(n); }
+  return seen;
+}
+
+/** For rubrics with no recorded link (copied before the link existed): the same number of levels and at least 80 % of the criteria named alike. */
+export function rubricsLookAlike(a: Pick<Rubric, "criteria">, b: Pick<Rubric, "criteria">): { same: number; of: number } | null {
+  if (a.criteria.length === 0 || b.criteria.length === 0 || a.criteria[0].levels.length !== b.criteria[0].levels.length) return null;
+  const keys = new Set(a.criteria.map((c) => criterionKey(c.name)));
+  const same = b.criteria.filter((c) => keys.has(criterionKey(c.name))).length;
+  const of = Math.max(a.criteria.length, b.criteria.length);
+  return same / of >= 0.8 ? { same, of } : null;
+}
+
+/** The correction `from` carries, laid onto the criteria of `to`: matched by name, or by position when both have as many criteria. */
+export function offsetsFor(from: Pick<Rubric, "criteria" | "aiOffsets">, to: Pick<Rubric, "criteria">): Record<string, number> {
+  const out: Record<string, number> = {};
+  to.criteria.forEach((c, i) => {
+    const m = from.criteria.find((x) => criterionKey(x.name) === criterionKey(c.name)) ?? (from.criteria.length === to.criteria.length ? from.criteria[i] : undefined);
+    const v = m ? from.aiOffsets?.[m.id] ?? 0 : 0;
+    if (v !== 0) out[c.id] = v;
+  });
+  return out;
+}
+
+/** What the AI actually gave one unit (14/10/2569): the levels it put on each criterion, the total it gave, and the correction that was
+ *  inside those marks. Calibration compares the teacher with THIS, not with a fresh simulation. */
+export interface StoredAi { levels: Record<string, number>; score: number; used: Record<string, number> }
+
+/**
+ * The AI's stored result for a unit, or null when the AI has not graded it. Per-criterion marks are read as they were saved
+ * (`aiCriterionScores`); work the AI only scored as a whole (older data) gets its share of the total on each criterion, the same
+ * split the Grade screen starts from.
+ */
+export function storedAiFor(unit: WorkUnit, rubric: Pick<Rubric, "criteria">): StoredAi | null {
+  const sub = unit.subs.find((s) => s.aiScore !== null);
+  if (!sub || sub.aiScore === null) return null;
+  const maxTotal = rubric.criteria.reduce((n, c) => n + c.maxPoints, 0);
+  const levels: Record<string, number> = {};
+  for (const c of rubric.criteria) {
+    const pts = sub.aiCriterionScores?.[c.id] ?? (maxTotal > 0 ? (sub.aiScore * c.maxPoints) / maxTotal : 0);
+    levels[c.id] = achievedLevelIndex(pts, c.maxPoints, c.levels.length) ?? 0;
+  }
+  return { levels, score: sub.aiScore, used: sub.aiOffsetsUsed ?? {} };
+}
+
+/** The units the AI has graded — the only ones Calibration can compare the teacher with. */
+export const aiGradedUnits = (units: WorkUnit[], rubric: Pick<Rubric, "criteria">) => units.filter((u) => storedAiFor(u, rubric) !== null);
+
+/** The AI's levels for a unit: its stored result; for a unit it has not graded, what the stand-in would give with the saved correction. */
+export function aiLevelsFor(unit: WorkUnit, rubric: Pick<Rubric, "criteria" | "aiOffsets">): StoredAi {
+  return storedAiFor(unit, rubric) ?? (() => { const r = mockAiGradeCriteria(unit.key, rubric.criteria, rubric.aiOffsets); return { levels: r.levels, score: r.score, used: rubric.aiOffsets ?? {} }; })();
 }
 
 /**
@@ -80,19 +145,22 @@ export interface CriterionComparison {
   agreement: number;
   teacherMean: number;
   aiMean: number;
+  /** mean of the correction that was inside the AI's marks on these samples (what `suggestOffsets` adds the bias to) */
+  usedOffset: number;
   verdict: "lenient" | "strict" | "aligned" | "inconsistent";
 }
 
 /** Teacher vs AI on every criterion of the run. Samples missing a teacher level for a criterion are left out of that criterion. */
 export function compare(run: CalibrationRun, units: WorkUnit[], rubric: Pick<Rubric, "criteria" | "aiOffsets">): CriterionComparison[] {
   return rubric.criteria.map((c) => {
-    const diffs: number[] = [], t: number[] = [], a: number[] = [];
+    const diffs: number[] = [], t: number[] = [], a: number[] = [], used: number[] = [];
     for (const key of run.sampleIds) {
       const unit = units.find((u) => u.key === key);
       const tl = run.teacherLevels[key]?.[c.id];
       if (!unit || tl === undefined) continue;
-      const al = aiLevelsFor(unit, rubric).levels[c.id];
-      diffs.push(tl - al); t.push(tl); a.push(al);
+      const ai = aiLevelsFor(unit, rubric);
+      const al = ai.levels[c.id];
+      diffs.push(tl - al); t.push(tl); a.push(al); used.push(ai.used[c.id] ?? 0);
     }
     const n = diffs.length;
     const mean = (xs: number[]) => (xs.length ? xs.reduce((x, y) => x + y, 0) / xs.length : 0);
@@ -102,16 +170,20 @@ export function compare(run: CalibrationRun, units: WorkUnit[], rubric: Pick<Rub
     return {
       criterionId: c.id, n, bias, meanAbs, residual,
       agreement: n ? diffs.filter((d) => d === 0).length / n : 0,
-      teacherMean: mean(t), aiMean: mean(a),
+      teacherMean: mean(t), aiMean: mean(a), usedOffset: mean(used),
       verdict: bias >= 0.5 ? "lenient" : bias <= -0.5 ? "strict" : meanAbs >= 1 ? "inconsistent" : "aligned",
     };
   });
 }
 
 export const MAX_OFFSET = 2;
-/** The correction the comparison suggests: what is saved now plus how far off the AI was, never more than ±2 levels. */
-export function suggestOffsets(cmp: CriterionComparison[], current: Record<string, number> = {}): Record<string, number> {
-  return Object.fromEntries(cmp.map((c) => [c.criterionId, Math.max(-MAX_OFFSET, Math.min(MAX_OFFSET, (current[c.criterionId] ?? 0) + Math.round(c.bias)))]));
+/**
+ * The correction the comparison suggests: the correction that was inside the AI's marks plus how far off those marks were, never more
+ * than ±2 levels. (Not "what is saved now": the saved value may have been set after the marks were made, and adding the bias to it would
+ * count the same correction twice.) `fallback` is used for a criterion with no sample.
+ */
+export function suggestOffsets(cmp: CriterionComparison[], fallback: Record<string, number> = {}): Record<string, number> {
+  return Object.fromEntries(cmp.map((c) => [c.criterionId, Math.max(-MAX_OFFSET, Math.min(MAX_OFFSET, c.n > 0 ? Math.round(c.usedOffset + c.bias) : (fallback[c.criterionId] ?? 0)))]));
 }
 
 export type RubricSuggestionKind = "ceiling" | "floor" | "disagree" | "heavy-flat";

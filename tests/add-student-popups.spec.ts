@@ -49,11 +49,11 @@ test.describe("Teacher — Add Student (by ID) popup", () => {
     return page.getByRole("dialog", { name: "Add Student" });
   }
 
-  test("opens as a centred popup over the page, next to Import CSV", async ({ page }) => {
+  test("opens as a centred popup over the page, next to Import Excel", async ({ page }) => {
     const dialog = await openPopup(page);
     await expect(dialog).toBeVisible();
     await assertCentred(page, dialog);
-    await expect(page.getByRole("button", { name: "Import CSV" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Import Excel" })).toBeVisible();
     await expect(dialog.getByLabel("Student ID")).toBeFocused();
   });
 

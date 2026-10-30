@@ -65,9 +65,9 @@ test.describe("Class summary view", () => {
     await expect(page.getByRole("tab", { name: "Class summary" })).toHaveAttribute("aria-selected", "true");
   });
 
-  test("overall card: the class's running grade — average, min, max, SD, no 'you' marker", async ({ page }) => {
+  test("overall card: the class's running total — average, min, max, SD, no 'you' marker", async ({ page }) => {
     await openSummary(page);
-    const card = page.getByTestId("score-summary").locator("section").filter({ hasText: "Class running grade" }).first();
+    const card = page.getByTestId("score-summary").locator("section").filter({ hasText: "Class running total" }).first();
     await expect(card).toContainText("Class statistics · 4 students");
     await expect(card).toContainText("66.0");
     await expect(card.locator("dl")).toContainText("44%");
@@ -77,16 +77,24 @@ test.describe("Class summary view", () => {
     await expect(card.getByTestId("score-histogram")).toBeVisible();   // the bar chart
   });
 
-  test("grade distribution counts each letter", async ({ page }) => {
+  test("the four number cards of the Score Book are not repeated on the Class summary, and the bar chart takes the room (16/10/2569)", async ({ page }) => {
     await openSummary(page);
-    for (const [l, n] of [["A", 1], ["B", 1], ["C", 1], ["D", 0], ["F", 1]] as const) {
-      await expect(page.getByTestId(`grade-row-${l}`)).toContainText(`${n} ${n === 1 ? "student" : "students"}`);
-    }
-    await expect(page.getByTestId("grade-row-A")).toContainText("25%");
-    await expect(page.getByTestId("grade-row-none")).toContainText("0");
+    await expect(page.getByText("Awaiting grading", { exact: true })).toHaveCount(0);
+    const h = await page.getByTestId("score-histogram").first().locator("ol").evaluate((el) => el.getBoundingClientRect().height);
+    expect(h).toBeGreaterThan(300);                                  // was 224px
+    await page.getByRole("tab", { name: "Score matrix" }).or(page.getByRole("button", { name: "Score matrix" })).first().click();
+    await expect(page.getByText("Awaiting grading", { exact: true })).toBeVisible();   // the matrix view keeps them
   });
 
-  test("follow-up lists Ben (grade under 60%) then Dan (missing work); 'View in matrix' lands on that student", async ({ page }) => {
+  test("no letter grades anywhere in the class summary: no distribution, no A–F rows (15/10/2569)", async ({ page }) => {
+    await openSummary(page);
+    const view = page.getByTestId("score-summary");
+    await expect(view.getByText(/grade distribution|Class running grade/i)).toHaveCount(0);
+    for (const l of ["A", "B", "C", "D", "F"]) await expect(page.getByTestId(`grade-row-${l}`)).toHaveCount(0);
+    await expect(view.getByText(/running grade|letter/i)).toHaveCount(0);   // ("1 to grade" is the verb, it stays)
+  });
+
+  test("follow-up lists Ben (total under 60%) then Dan (missing work); 'View in matrix' lands on that student", async ({ page }) => {
     await openSummary(page);
     await expect(page.getByTestId("attention-count")).toHaveText("2");
     const items = page.getByTestId("attention-list").getByRole("listitem");
@@ -131,7 +139,8 @@ test.describe("Class summary view", () => {
 
   test("Thai UI", async ({ page }) => {
     await openSummary(page, "th");
-    await expect(page.getByText("การกระจายเกรด")).toBeVisible();
+    await expect(page.getByText("คะแนนรวมสะสมของห้อง")).toBeVisible();
+    await expect(page.getByText("การกระจายเกรด")).toHaveCount(0);
     await expect(page.getByText("ควรติดตาม", { exact: true })).toBeVisible();
     await expect(page.getByText("สรุปรายชิ้นงาน")).toBeVisible();
     await expect(page.getByText("สถิติการสอบ")).toBeVisible();
@@ -164,8 +173,7 @@ test.describe("scoreSummary lib", () => {
     const s = buildScoreSummary(book);
     expect(s.overall).toBeNull();
     expect(s.attention).toEqual([]);
-    expect(s.ungraded).toBe(0);
-    expect(s.gradeCounts).toEqual({ A: 0, B: 0, C: 0, D: 0, F: 0 });
+    expect(s).not.toHaveProperty("gradeCounts");
   });
 
   test("a fully graded assignment that is not announced is 'ready'; announced wins over everything", () => {

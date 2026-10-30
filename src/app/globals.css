@@ -89,10 +89,10 @@
 
   /* Navbar's own top-bar fill — split off from --bg-nav (22/9/2569) the same way --sidebar-bg was
      (see below): --bg-nav is a general-purpose "navy" reused in ~15 unrelated places (dashboard/course
-     tab active-states, filter chips, cards) that a chrome-theme toggle must never touch. Starts equal
-     to --bg-nav so this split alone changes nothing; [data-nav-theme="teal"] below is what actually
-     recolours it. */
-  --navbar-bg:     #243C5A;
+     tab active-states, filter chips, cards) that the chrome colour must never touch. Teal (14/10/2569):
+     the navbar/sidebar are teal in light AND dark mode — the navy/teal toggle was removed, see "Chrome"
+     note below the dark block. */
+  --navbar-bg:     #084541;
 
   /* Shared portal-sidebar theme (9/9/2569) — NOT --bg-nav. --bg-nav turned out
      to be reused as a general-purpose "navy" accent across ~15 other places
@@ -110,11 +110,11 @@
      lighter sidebar-bg only hit ~3.85:1, under WCAG AA's 4.5:1. Lightened to a
      paler teal (same hue) that clears 4.5:1 against the actual composited
      background, not just the flat sidebar color. */
-  --sidebar-bg:        #1A2D45;
+  --sidebar-bg:        #0F766E;
   /* Sidebar's inactive item / section-label text (was a hard-coded text-white/55 in the 3 sidebars).
-     A token so the teal theme can raise it — see [data-nav-theme="teal"]. */
-  --sidebar-text-muted: rgba(255, 255, 255, 0.55);
-  --nav-active-text:   #99D2CC;
+     Raised to 0.9 for the teal sidebar — see the "Chrome" note below the dark block. */
+  --sidebar-text-muted: rgba(255, 255, 255, 0.9);
+  --nav-active-text:   #FFFFFF;
   --text-primary:  #1A2D45;
   --text-secondary:#4A6478;
   --text-muted:    #607080;  /* unchanged — 4.42:1 on --bg-card, passes WCAG AA */
@@ -130,11 +130,9 @@
   /* Nav sidebar — always-dark surface, needs its own always-legible text pair */
   --nav-text:       #D4EEF0;
   --nav-text-muted: #A8BCCE;
-  /* The active-nav-item highlight (22/9/2569): was previously unused — the 3 sidebar components had
-     bg-[var(--accent-bright)]/20 hardcoded inline instead. Wired them onto this token so a chrome-theme
-     toggle can repaint it without touching those files; value updated to match that exact colour+opacity
-     (was .18 here vs the real .20 in code) so this change alone is a no-op in navy mode. */
-  --nav-active-bg:  rgba(78, 168, 160, 0.2);
+  /* The active-nav-item highlight: the 3 sidebar components read this token (they used to hardcode
+     bg-[var(--accent-bright)]/20). On the teal sidebar it DARKENS the row — see the "Chrome" note below. */
+  --nav-active-bg:  rgba(0, 0, 0, 0.18);
 
   --disabled-bg:     #EEF1F5;
   --disabled-text:   #A0AEBC;
@@ -182,11 +180,11 @@
   --bg-stripe:       #1E2E40;
   --bg-stripe-hover: #27394E;
   --bg-nav:        #0A1218;
-  --navbar-bg:     #0A1218;
-  /* Dark mode keeps its existing (already much darker) sidebar look —
-     the 3 candidate colors were only ever proposed for light mode. */
-  --sidebar-bg:        #0A1218;
-  --nav-active-text:   #4EA8A0;
+  /* Chrome stays teal in dark mode but a much deeper one (14/10/2569: the light-mode #0F766E sidebar glared
+     against the dark page). White/90 on #0A4640 is ≈ 10:1, so --sidebar-text-muted (set in :root) still passes. */
+  --navbar-bg:     #052E2B;
+  --sidebar-bg:        #0A4640;
+  --nav-active-text:   #FFFFFF;
   --text-primary:  #D4E4F0;
   --text-secondary:#7A9AB2;
   --text-muted:    #7090A8;  /* 4.84:1 on --bg-card, passes WCAG AA */
@@ -202,7 +200,8 @@
 
   --nav-text:       #D4EEF0;
   --nav-text-muted: #A8BCCE;
-  --nav-active-bg:  rgba(78, 168, 160, 0.2);
+  /* the deep teal is dark enough for the row to LIGHTEN again (as it did on navy) — a black overlay would vanish */
+  --nav-active-bg:  rgba(255, 255, 255, 0.12);
 
   --disabled-bg:     #1A2634;
   --disabled-text:   #4A6070;
@@ -230,58 +229,18 @@
   --role-ta-border: #3A2F5C;
 }
 
-/* ── Chrome theme toggle (22/9/2569) ─────────────────────────────────────────
-   Advisor feedback: try the Navbar/sidebar in the same teal as the "Sign in" button
-   (--accent-solid) instead of the fixed navy. That cuts against §1's "everything calm
-   stays within ~40° of navy, hot colour is reserved for the one moment it needs
-   attention" principle, so this is opt-in (data-nav-theme="teal", default "navy" =
-   today's look, toggled from Navbar next to the light/dark button — see ThemeProvider.tsx)
-   rather than a replacement. Only repaints --navbar-bg / --sidebar-bg / --nav-active-bg /
-   --nav-active-text — never --bg-nav, which ~15 unrelated tab/chip/card backgrounds still
-   read (see the --navbar-bg comment above for why that split was necessary first).
-
-   --nav-active-text: recomputed for teal, NOT reused from navy's #99D2CC/#4EA8A0 — those
-   were tuned against --accent-bright/20 over near-black navy. Over the flat teal itself,
-   plain white already clears 4.5:1 (4.76:1 light, 4.73:1 dark) so no dedicated colour is
-   needed. --nav-active-bg is the one that actually broke: the navy recipe LIGHTENS the
-   active row (accent-bright at 20% opacity) — composited over already-mid-lightness teal
-   that overshoots to where NO text colour (not even white) can reach 4.5:1 again (verified:
-   max possible ~4.24:1). Darkening the row instead (black at 18-20%) keeps it legible with
-   plenty of margin (6-7:1) and still reads as a highlight against the teal.
-
-   (The rest of this comment describes the 22/9 arrangement — darker sidebar, lighter navbar. It was
-   swapped on 24/9/2569, see the note above the [data-nav-theme="teal"] block; the contrast maths still applies.)
-   --sidebar-bg deliberately != --navbar-bg here (follow-up, 22/9/2569: user wanted the two
-   surfaces to read as visually distinct, the way --bg-nav/--sidebar-bg already do in navy).
-   It's not just a lighter/darker pick of the same flat teal, either — the flat teal
-   (#0F766E) is already light enough (relative luminance 0.14, much higher than navy's ~0.02
-   at a comparable "visual" darkness, because green/teal hues weigh heavily in the luminance
-   formula) that the sidebar's existing text-white/55 inactive-nav-item treatment — which
-   clears 4.6:1 on navy — drops to ~2.8:1 on flat teal. A *darker* teal for the sidebar fixes
-   both asks at once: visually distinct from the navbar, and back over 4.5:1 for that
-   existing white/55 text (verified 4.6-4.7:1) without having to touch the 3 sidebar
-   components. Kept identical between light/dark chrome-teal (unlike navy, where the
-   distinction only exists in light mode) since the contrast fix applies in both. */
-/* Navbar/sidebar SWAPPED (24/9/2569, user's "ลองสลับสี"): the navbar takes the darker colour, the
-   sidebar the lighter one — in navy (#243C5A navbar / #1A2D45 sidebar) and here in teal. That put the
-   inactive sidebar text back on the flat #0F766E it originally failed on (white/55 ≈ 2.8:1), so the
-   teal sidebar uses --sidebar-text-muted at 0.9 alpha (≈ 4.8:1). Dark+teal uses the same #0F766E
-   sidebar rather than a literal swap to #12817A: white/90 on #12817A is only ≈ 4.1:1. */
-[data-nav-theme="teal"] {
-  --navbar-bg:          #084541;
-  --sidebar-bg:         #0F766E;
-  --sidebar-text-muted: rgba(255, 255, 255, 0.9);
-  --nav-active-bg:      rgba(0, 0, 0, 0.18);
-  --nav-active-text:    #FFFFFF;
-}
-
-[data-theme="dark"][data-nav-theme="teal"] {
-  --navbar-bg:          #084541;
-  --sidebar-bg:         #0F766E;
-  --sidebar-text-muted: rgba(255, 255, 255, 0.9);
-  --nav-active-bg:      rgba(0, 0, 0, 0.2);
-  --nav-active-text:    #FFFFFF;
-}
+/* ── Chrome: teal navbar + sidebar (14/10/2569) ───────────────────────────────
+   Started 22/9/2569 as an opt-in navy/teal toggle (advisor feedback: same teal as the Sign-in button);
+   the toggle was removed on 14/10 and teal is now the only chrome, in light and dark mode. Navbar #084541,
+   sidebar #0F766E (24/9: the navbar takes the darker colour, the sidebar the lighter one); dark mode uses a deeper pair, navbar #052E2B / sidebar #0A4640 (14/10). It repaints only
+   --navbar-bg / --sidebar-bg / --sidebar-text-muted / --nav-active-bg / --nav-active-text — never --bg-nav,
+   which ~15 unrelated tab/chip/card backgrounds still read.
+   Contrast (why the values differ from the old navy recipe):
+   - the flat teal is much lighter than navy at the same visual depth, so the sidebar's old text-white/55
+     inactive text fell to ~2.8:1 → --sidebar-text-muted is white at 0.9 alpha (≈ 4.8:1);
+   - the old active row LIGHTENED the background (accent-bright at 20%) — over mid-lightness teal no text
+     colour can reach 4.5:1 again (max ~4.24:1). It darkens instead (black at 18–20%, 6–7:1), and the active
+     text is plain white (4.76:1 light / 4.73:1 dark). */
 
 body {
   background: var(--bg-app);

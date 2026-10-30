@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
@@ -12,6 +12,13 @@ import { useGradingCategories, GradingCategory } from "@/lib/gradingCategories";
 import AssignmentStatusBadge, { AssignmentStatus } from "@/components/AssignmentStatusBadge";
 import AssignmentTypeBadge from "@/components/AssignmentTypeBadge";
 import { CourseIcon } from "@/components/CourseIcon";
+import CollapsibleSection from "@/components/CollapsibleSection";
+
+// The groups of the list, most urgent first. Only the ones that need the student stay open at first (14/10/2569); what they open or
+// close is remembered per course in this browser.
+type GroupKey = "overdue" | "dueSoon" | "notSubmitted" | "awaiting" | "submitted";
+const OPEN_BY_DEFAULT: Record<GroupKey, boolean> = { overdue: true, dueSoon: true, notSubmitted: true, awaiting: false, submitted: false };
+const OPEN_KEY = "hwai_classwork_open_v1";
 
 
 // ── Status helper ──────────────────────────────────────────────────────────
@@ -156,9 +163,25 @@ export default function StudentClassworkPage() {
     return map;
   }, [assignments, getSubmissionsByAssignment, studentId]);
 
-  // Grouped by urgency, top to bottom: due soon (or overdue) → not submitted → submitted.
+  // Which groups the student has opened / closed themselves. Read after mount (never during render), so server and browser agree first.
+  const [openMap, setOpenMap] = useState<Partial<Record<GroupKey, boolean>>>({});
+  useEffect(() => {
+    try { setOpenMap((JSON.parse(localStorage.getItem(OPEN_KEY) ?? "{}") as Record<string, Partial<Record<GroupKey, boolean>>>)[secId] ?? {}); } catch { /* no storage: the defaults stand */ }
+  }, [secId]);
+  const isOpen = (g: GroupKey) => openMap[g] ?? OPEN_BY_DEFAULT[g];
+  const toggle = (g: GroupKey) => {
+    const next = { ...openMap, [g]: !isOpen(g) };
+    setOpenMap(next);
+    try {
+      const all = JSON.parse(localStorage.getItem(OPEN_KEY) ?? "{}") as Record<string, unknown>;
+      localStorage.setItem(OPEN_KEY, JSON.stringify({ ...all, [secId]: next }));
+    } catch { /* not remembered, still works for this visit */ }
+  };
+
+  // Grouped by urgency, top to bottom: overdue → due soon → not submitted → awaiting a score → submitted.
   const now = new Date().getTime();
-  const { dueSoon, notSubmitted, awaiting, submitted } = useMemo(() => {
+  const { overdue, dueSoon, notSubmitted, awaiting, submitted } = useMemo(() => {
+    const overdue: Assignment[] = [];
     const dueSoon: Assignment[] = [];
     const notSubmitted: Assignment[] = [];
     const awaiting: Assignment[] = [];
@@ -173,12 +196,13 @@ export default function StudentClassworkPage() {
         return;
       }
       const daysUntilDue = (new Date((a.dueDate ?? "") + "T23:59:59").getTime() - now) / (24 * 3_600_000);
-      (daysUntilDue <= DUE_SOON_DAYS ? dueSoon : notSubmitted).push(a);
+      (daysUntilDue < 0 ? overdue : daysUntilDue <= DUE_SOON_DAYS ? dueSoon : notSubmitted).push(a);
     });
+    overdue.sort((a, b) => (a.dueDate ?? "").localeCompare(b.dueDate ?? ""));
     dueSoon.sort((a, b) => (a.dueDate ?? "").localeCompare(b.dueDate ?? ""));
     notSubmitted.sort((a, b) => (a.dueDate ?? "").localeCompare(b.dueDate ?? ""));
     submitted.sort((a, b) => (mySubmissions.get(b.id)?.submittedAt ?? "").localeCompare(mySubmissions.get(a.id)?.submittedAt ?? ""));
-    return { dueSoon, notSubmitted, awaiting, submitted };
+    return { overdue, dueSoon, notSubmitted, awaiting, submitted };
   }, [assignments, mySubmissions, now]);
 
   const categories = useMemo(() => (course ? getCategoriesByCourse(secId) : []), [course, secId, getCategoriesByCourse]);
@@ -229,60 +253,46 @@ export default function StudentClassworkPage() {
           </div>
         ) : (
           <div className="flex flex-col gap-6">
-            {/* Due soon (or overdue), not yet submitted — most urgent, shown first */}
-            {dueSoon.length > 0 && (
-              <section>
-                <h2 className="text-xs font-semibold uppercase tracking-wider text-[var(--s-err-text)] mb-3">
-                  {t(`ใกล้ส่ง (${dueSoon.length})`, `Due soon (${dueSoon.length})`)}
-                </h2>
-                <div className="flex flex-col gap-3">
-                  {dueSoon.map((a) => (
-                    <ClassworkCard key={a.id} assignment={a} submission={mySubmissions.get(a.id)} courseId={secId} />
-                  ))}
-                </div>
-              </section>
+            {overdue.length > 0 && (
+              <CollapsibleSection testId="group-overdue" title={t("เลยกำหนด", "Overdue")} count={overdue.length} open={isOpen("overdue")} onToggle={() => toggle("overdue")} toneClass="text-[var(--s-err-text)]">
+              {overdue.map((a) => (
+                <ClassworkCard key={a.id} assignment={a} submission={mySubmissions.get(a.id)} courseId={secId} />
+              ))}
+              </CollapsibleSection>
             )}
 
-            {/* Not submitted, due later */}
+            {dueSoon.length > 0 && (
+              <CollapsibleSection testId="group-dueSoon" title={t("ใกล้ส่ง", "Due soon")} count={dueSoon.length} open={isOpen("dueSoon")} onToggle={() => toggle("dueSoon")} toneClass="text-[var(--s-warn-text)]">
+              {dueSoon.map((a) => (
+                <ClassworkCard key={a.id} assignment={a} submission={mySubmissions.get(a.id)} courseId={secId} />
+              ))}
+              </CollapsibleSection>
+            )}
+
             {notSubmitted.length > 0 && (
-              <section>
-                <h2 className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)] mb-3">
-                  {t(`ยังไม่ส่ง (${notSubmitted.length})`, `Not submitted (${notSubmitted.length})`)}
-                </h2>
-                <div className="flex flex-col gap-3">
-                  {notSubmitted.map((a) => (
-                    <ClassworkCard key={a.id} assignment={a} submission={mySubmissions.get(a.id)} courseId={secId} />
-                  ))}
-                </div>
-              </section>
+              <CollapsibleSection testId="group-notSubmitted" title={t("ยังไม่ส่ง", "Not submitted")} count={notSubmitted.length} open={isOpen("notSubmitted")} onToggle={() => toggle("notSubmitted")}>
+              {notSubmitted.map((a) => (
+                <ClassworkCard key={a.id} assignment={a} submission={mySubmissions.get(a.id)} courseId={secId} />
+              ))}
+              </CollapsibleSection>
             )}
 
             {/* Exams: nothing to submit, waiting for the teacher's score */}
             {awaiting.length > 0 && (
-              <section>
-                <h2 className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)] mb-3">
-                  {t(`รอคะแนนสอบ (${awaiting.length})`, `Awaiting score (${awaiting.length})`)}
-                </h2>
-                <div className="flex flex-col gap-3">
-                  {awaiting.map((a) => (
-                    <ClassworkCard key={a.id} assignment={a} submission={mySubmissions.get(a.id)} courseId={secId} />
-                  ))}
-                </div>
-              </section>
+              <CollapsibleSection testId="group-awaiting" title={t("รอคะแนนสอบ", "Awaiting score")} count={awaiting.length} open={isOpen("awaiting")} onToggle={() => toggle("awaiting")}>
+              {awaiting.map((a) => (
+                <ClassworkCard key={a.id} assignment={a} submission={mySubmissions.get(a.id)} courseId={secId} />
+              ))}
+              </CollapsibleSection>
             )}
 
             {/* Submitted (or graded) — most recently submitted first */}
             {submitted.length > 0 && (
-              <section>
-                <h2 className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)] mb-3">
-                  {t(`ส่งแล้ว (${submitted.length})`, `Submitted (${submitted.length})`)}
-                </h2>
-                <div className="flex flex-col gap-3">
-                  {submitted.map((a) => (
-                    <ClassworkCard key={a.id} assignment={a} submission={mySubmissions.get(a.id)} courseId={secId} />
-                  ))}
-                </div>
-              </section>
+              <CollapsibleSection testId="group-submitted" title={t("ส่งแล้ว", "Submitted")} count={submitted.length} open={isOpen("submitted")} onToggle={() => toggle("submitted")}>
+              {submitted.map((a) => (
+                <ClassworkCard key={a.id} assignment={a} submission={mySubmissions.get(a.id)} courseId={secId} />
+              ))}
+              </CollapsibleSection>
             )}
           </div>
         )}

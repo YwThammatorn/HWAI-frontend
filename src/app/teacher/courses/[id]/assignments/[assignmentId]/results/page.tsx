@@ -19,23 +19,6 @@ function initials(name: string) {
   return name.trim().split(" ").slice(0, 2).map((p) => p[0] ?? "").join("").toUpperCase();
 }
 
-function gradeLetter(score: number, max: number): string {
-  const pct = (score / max) * 100;
-  if (pct >= 80) return "A";
-  if (pct >= 70) return "B";
-  if (pct >= 60) return "C";
-  if (pct >= 50) return "D";
-  return "F";
-}
-
-function gradeBgClass(l: string) {
-  return ({ A:"bg-green-100",B:"bg-blue-100",C:"bg-yellow-100",D:"bg-orange-100",F:"bg-[var(--s-err-bg)]" }[l]??"bg-gray-100");
-}
-function gradeTextClass(l: string) {
-  return ({ A:"text-green-700",B:"text-blue-700",C:"text-yellow-700",D:"text-orange-700",F:"text-[var(--s-err-text)]" }[l]??"text-gray-500");
-}
-function gradeClass(l: string) { return `${gradeBgClass(l)} ${gradeTextClass(l)}`; }
-
 export default function ResultsPage() {
   const { id, assignmentId } = useParams<{ id: string; assignmentId: string }>();
   const { t, lang } = useLanguage();
@@ -86,13 +69,6 @@ export default function ResultsPage() {
       ? scoredRows.reduce((sum, r) => sum + (r.rep.instructorScore ?? r.rep.aiScore ?? 0), 0) / scoredRows.length
       : null;
 
-  const gradeCounts: Record<string, number> = { F: 0, D: 0, C: 0, B: 0, A: 0 };
-  scoredRows.forEach((r) => {
-    const score = r.rep.instructorScore ?? r.rep.aiScore ?? 0;
-    gradeCounts[gradeLetter(score, max)]++;
-  });
-  const maxCount = Math.max(1, ...Object.values(gradeCounts));
-
   // Exam: the same class-statistics card (with the bell curve) a student gets once the results are announced.
   const examStats = assignment.isExam
     ? statsFromScores(allSubs.filter((s) => s.status === "graded").map((s) => s.instructorScore ?? s.aiScore ?? 0))
@@ -116,11 +92,10 @@ export default function ResultsPage() {
 
   function exportCSV() {
     const rows = [
-      ["Student Name", "Email", "Score", "Max", "Grade", "Status"],
+      ["Student Name", "Email", "Score", "Max", "Status"],
       ...allSubs.map((s) => {
         const score = s.instructorScore ?? s.aiScore ?? "";
-        const letter = score !== "" ? gradeLetter(Number(score), max) : "—";
-        return [s.studentName, s.email, score, max, letter, s.status];
+        return [s.studentName, s.email, score, max, s.status];
       }),
     ];
     const csv = rows.map((r) => r.join(",")).join("\n");
@@ -184,8 +159,9 @@ export default function ResultsPage() {
       labelTh: "คะแนนเฉลี่ย",
       labelEn: "Avg. Score",
       value: avgScore !== null ? avgScore.toFixed(1) : "—",
-      subTh: "จนถึงขณะนี้",
-      subEn: "so far",
+      // Out of what, and over how many (15/10/2569, same as the Grading page card): "7.7 / 10 pts · 26 scored"
+      subTh: `/ ${max} คะแนน · มีคะแนนแล้ว ${scoredRows.length} ${isGroupAssignment ? "ทีม" : "ชิ้น"}`,
+      subEn: `/ ${max} pts · ${scoredRows.length} ${isGroupAssignment ? "team(s)" : ""} scored`.replace("  ", " "),
       color: "#1B2A4A",
       icon: (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="#FCD34D" stroke="#F59E0B" strokeWidth="1.5">
@@ -298,42 +274,6 @@ export default function ResultsPage() {
         <div className="flex gap-5">
           {/* Left column */}
           <div className="flex-1 min-w-0 space-y-5">
-            {/* Grade distribution */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-2">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round">
-                    <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/>
-                    <line x1="6" y1="20" x2="6" y2="14"/>
-                  </svg>
-                  <h2 className="text-sm font-semibold text-[var(--text-primary)]">
-                    {t("การกระจายเกรด", "Grade Distribution")}
-                  </h2>
-                </div>
-                <button className="text-xs text-[var(--accent)] hover:underline">
-                  {t("ดูรายละเอียด", "View Details")}
-                </button>
-              </div>
-              <div className="flex items-end justify-around h-32 gap-3">
-                {["F", "D", "C", "B", "A"].map((letter) => {
-                  const count = gradeCounts[letter];
-                  const heightPct = (count / maxCount) * 100;
-                  return (
-                    <div key={letter} className="flex flex-col items-center gap-2 flex-1">
-                      <span className="text-xs text-gray-400">{count}</span>
-                      <div
-                        className={`w-full rounded-t-lg transition-all border ${count > 0 ? `${gradeBgClass(letter)} border-gray-200` : "bg-gray-100 border-gray-100"}`}
-                        style={{ height: `${Math.max(4, heightPct)}%`, minHeight: "4px" }}
-                      />
-                      <span className={`text-xs font-semibold ${count > 0 ? gradeTextClass(letter) : "text-gray-400"}`}>
-                        {letter}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
             {/* Student results table */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
               <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50">
@@ -367,10 +307,9 @@ export default function ResultsPage() {
                   <tbody className="divide-y divide-gray-50">
                     {filtered.map((r) => {
                       const score = r.rep.instructorScore ?? r.rep.aiScore;
-                      const letter = score !== null ? gradeLetter(score, max) : null;
                       return (
                         <tr key={r.key} className="hover:bg-gray-50/50 transition-colors">
-                          <td className="px-6 py-3">
+                          <td className="px-6 py-3 max-w-[22rem]">
                             {r.isTeam ? (
                               <div>
                                 <div className="flex items-center gap-1.5 mb-1">
@@ -391,7 +330,7 @@ export default function ResultsPage() {
                                       {initials(s.studentName)}
                                     </div>
                                   ))}
-                                  <p className="text-xs text-gray-400 ml-2 truncate">
+                                  <p className="text-xs text-gray-400 ml-2 truncate min-w-0">
                                     {r.members.map((s) => s.studentName).join(", ")}
                                   </p>
                                 </div>
@@ -412,13 +351,10 @@ export default function ResultsPage() {
                             )}
                           </td>
                           <td className="px-6 py-3">
-                            {score !== null && letter ? (
+                            {score !== null ? (
                               <div className="flex items-baseline gap-1.5">
                                 <span className="font-semibold text-[var(--text-primary)]">
                                   {score}/{max}
-                                </span>
-                                <span className={`text-xs font-semibold px-1.5 py-0.5 rounded ${gradeClass(letter)}`}>
-                                  {letter}
                                 </span>
                               </div>
                             ) : (
@@ -472,7 +408,6 @@ export default function ResultsPage() {
                 <div className="space-y-2">
                   {requiresAttention.map((r) => {
                     const score = r.rep.instructorScore ?? r.rep.aiScore ?? 0;
-                    const letter = gradeLetter(score, max);
                     return (
                       <div
                         key={r.key}
@@ -480,8 +415,8 @@ export default function ResultsPage() {
                       >
                         <div>
                           <p className="text-xs font-semibold text-[var(--text-primary)]">{r.displayName}</p>
-                          <p className={`text-xs ${gradeTextClass(letter)}`}>
-                            {t("คะแนน", "Score")}: {score}/{max} ({letter})
+                          <p className="text-xs text-[var(--s-err-text)]">
+                            {t("คะแนน", "Score")}: {score}/{max}
                           </p>
                         </div>
                         <Link
@@ -506,7 +441,7 @@ export default function ResultsPage() {
                 <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-100">
                   <p className="text-xs font-semibold text-[var(--text-primary)]">{topPerformer.displayName}</p>
                   <p className="text-xs text-emerald-700 font-medium mt-0.5">
-                    {t("คะแนน", "Score")}: {topPerformer.rep.instructorScore ?? topPerformer.rep.aiScore}/{max} (A+)
+                    {t("คะแนน", "Score")}: {topPerformer.rep.instructorScore ?? topPerformer.rep.aiScore}/{max}
                   </p>
                 </div>
               </div>

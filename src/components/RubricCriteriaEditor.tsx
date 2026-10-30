@@ -7,7 +7,7 @@ import RubricPickerModal, { type PickedCriterion } from "@/components/RubricPick
 import { useRubricLibrary } from "@/lib/rubricLibrary";
 import { useCourses } from "@/lib/courses";
 import Modal from "@/components/Modal";
-import { buildCriteria, pickAiTemplate } from "@/lib/rubricTemplates";
+import { buildCriteria, pickAiTemplate, briefLanguage, blankLevels, resizeLevels, levelRatio, levelDescription, levelsUniform, rubricLevelCount } from "@/lib/rubricTemplates";
 
 // Shared by the "New Assignment" form and the standalone rubric editor page, so
 // both edit criteria exactly the same way. The parent owns the draft state and
@@ -54,9 +54,12 @@ export function toDraft(c: RubricCriterion): CriterionDraft {
   };
 }
 
-export function newCriterionDraft(name: string, points = "0"): CriterionDraft {
-  return { id: crypto.randomUUID(), name, description: "", points, levels: defaultLevels(), cloIds: [] };
+/** `levelCount` = how many levels the rubric already uses, so a criterion added later matches the others (14/10/2569). */
+export function newCriterionDraft(name: string, points = "0", levelCount?: number): CriterionDraft {
+  return { id: crypto.randomUUID(), name, description: "", points, levels: levelCount && levelCount !== 3 ? blankLevels(levelCount) : defaultLevels(), cloIds: [] };
 }
+
+export { levelsUniform, rubricLevelCount };
 
 const pctText = (share: number) => `${Math.round(share * 10000) / 100}%`;
 
@@ -109,34 +112,8 @@ const LEVEL_TONES = [
   { label: "text-[var(--s-err-text)]", dot: "bg-[var(--s-err-text)]" },
 ];
 
-function levelRatio(i: number, total: number): number {
-  return total <= 1 ? 0 : i / (total - 1);
-}
-
 function levelTone(i: number, total: number) {
   return LEVEL_TONES[Math.round(levelRatio(i, total) * (LEVEL_TONES.length - 1))];
-}
-
-/** Placeholder wording for "Generate", chosen by where the level sits on the scale. */
-function levelDescription(i: number, total: number, name: string, lang: string): string {
-  const r = levelRatio(i, total);
-  const en = lang === "en";
-  const n = en ? name.toLowerCase() : name;
-  if (r === 0) return en
-    ? `Clearly demonstrates ${n} with strong evidence and meets all expectations.`
-    : `แสดงความเข้าใจ ${n} ได้อย่างชัดเจนและครบถ้วน มีหลักฐานประกอบที่น่าเชื่อถือ`;
-  if (r === 1) return en
-    ? `${name} is insufficient and requires significant revision and development.`
-    : `${name} ยังไม่เพียงพอ จำเป็นต้องแก้ไขและพัฒนาเพิ่มเติมอย่างมีนัยสำคัญ`;
-  if (r < 0.5) return en
-    ? `Demonstrates ${n} well and meets most expectations, with only minor gaps.`
-    : `แสดง ${n} ได้ดี ตรงตามความคาดหวังเป็นส่วนใหญ่ มีข้อบกพร่องเล็กน้อย`;
-  if (r === 0.5) return en
-    ? `Demonstrates ${n} at an acceptable level but with some areas for improvement.`
-    : `แสดง ${n} ได้ในระดับที่ยอมรับได้ แต่ยังมีบางส่วนที่ต้องปรับปรุง`;
-  return en
-    ? `Only partly demonstrates ${n}; several expectations are not yet met.`
-    : `แสดง ${n} ได้เพียงบางส่วน ยังไม่ตรงตามความคาดหวังหลายประการ`;
 }
 
 interface AiSuggestion { name: string; description: string; points: number; levels: CriterionLevel[] }
@@ -154,7 +131,13 @@ export default function RubricCriteriaEditor({
   cloHref,
   courseId,
   assignmentId,
+  onSourceRubric,
+  flagged,
 }: {
+  /** Criteria Calibration pointed at (criterion id → what it found), 14/10/2569: each gets its note and a "let the AI adjust it" button. */
+  flagged?: Record<string, string>;
+  /** Told which rubric a "Use a rubric from before" set was copied from, so the page can store it as `Rubric.sourceRubricId`. */
+  onSourceRubric?: (rubricId: string) => void;
   /** The course this rubric is for — switches on "Use a rubric from before" and "Save to library". */
   courseId?: string;
   /** The assignment being edited (never offered as its own source). */
@@ -203,24 +186,27 @@ export default function RubricCriteriaEditor({
     }));
   }
 
-  // New levels slot in just above the lowest one so the scale stays best → worst.
-  function addLevel(cid: string) {
+  // One level count for the whole rubric (14/10/2569): adding or removing a level happens on EVERY criterion at once.
+  // A new level slots in just above the lowest one (the scale stays best → worst); removing drops that same one, so best and worst stay.
+  function setLevelCount(n: number) {
+    if (n < MIN_LEVELS || n > MAX_LEVELS) return;
     setCriteria((prev) => prev.map((c) => {
-      if (c.id !== cid || c.levels.length >= MAX_LEVELS) return c;
-      const label = c.levels.some((lv) => lv.label === "พอใช้")
-        ? t(`ระดับที่ ${c.levels.length}`, `Level ${c.levels.length}`)
-        : "พอใช้";
+      if (c.levels.length === n) return c;
       const levels = [...c.levels];
-      levels.splice(levels.length - 1, 0, { label, description: "" });
+      while (levels.length < n) {
+        const pos = levels.length - 1;
+        const label = levels.some((lv) => lv.label === "พอใช้") ? t(`ระดับที่ ${levels.length}`, `Level ${levels.length}`) : "พอใช้";
+        levels.splice(pos, 0, { label, description: levelDescription(pos, levels.length + 1, c.name || t("เกณฑ์นี้", "this criterion"), lang) });
+      }
+      while (levels.length > n && levels.length > 2) levels.splice(levels.length - 2, 1);
       return { ...c, levels };
     }));
   }
 
-  function removeLevel(cid: string, li: number) {
-    setCriteria((prev) => prev.map((c) => {
-      if (c.id !== cid || c.levels.length <= MIN_LEVELS) return c;
-      return { ...c, levels: c.levels.filter((_, i) => i !== li) };
-    }));
+  // Old data can still hold criteria with different counts: the "let the AI even them out" button reshapes them all to the usual one.
+  function unifyLevels() {
+    const n = rubricLevelCount(criteria);
+    setCriteria((prev) => prev.map((c) => ({ ...c, levels: resizeLevels(c.levels, n, c.name || t("เกณฑ์นี้", "this criterion"), lang) })));
   }
 
   function generateLevels(cid: string) {
@@ -267,13 +253,14 @@ export default function RubricCriteriaEditor({
     setTimeout(() => {
       // A brief about UX/UI, an exam or code gets the rubric that fits it (4 levels, level-scored — see lib/rubricTemplates.ts);
       // anything else keeps the general-purpose suggestions below.
+      const writeIn = briefLanguage(aiBrief, lang === "en" ? "en" : "th");   // the brief's language, not the screen's
       const tpl = pickAiTemplate(aiBrief);
       if (tpl) {
-        setAiSuggestions(buildCriteria(tpl.criteria, 100, lang === "en" ? "en" : "th").map((c) => ({ name: c.name, description: c.description, points: c.maxPoints, levels: c.levels })));
+        setAiSuggestions(buildCriteria(tpl.criteria, 100, writeIn).map((c) => ({ name: c.name, description: c.description, points: c.maxPoints, levels: c.levels })));
         setAiStep("results");
         return;
       }
-      const base = lang === "en"
+      const base = writeIn === "en"
         ? [
             { name: "Content Completeness", description: "Covers all key points as required", points: 40 },
             { name: "Accuracy", description: "Information and analysis are academically correct", points: 30 },
@@ -288,7 +275,7 @@ export default function RubricCriteriaEditor({
           ];
       setAiSuggestions(base.map((b) => ({
         ...b,
-        levels: AI_LEVEL_LABELS.map((label, i) => ({ label, description: levelDescription(i, AI_LEVEL_LABELS.length, b.name, lang) })),
+        levels: AI_LEVEL_LABELS.map((label, i) => ({ label, description: levelDescription(i, AI_LEVEL_LABELS.length, b.name, writeIn) })),
       })));
       setAiStep("results");
     }, 1500);
@@ -307,13 +294,17 @@ export default function RubricCriteriaEditor({
     setAiOpen(false);
   }
 
-  function applyPicked(picked: PickedCriterion[], mode: "replace" | "add") {
+  function applyPicked(picked: PickedCriterion[], mode: "replace" | "add", meta: { sourceRubricId?: string } = {}) {
+    if (meta.sourceRubricId) onSourceRubric?.(meta.sourceRubricId);
     setCriteria((prev) => {
       const offset = mode === "add" ? prev.length : 0;
+      // every criterion of the rubric has the same number of levels: an added set follows what is already there, a replacing set follows itself
+      const target = mode === "add" && prev.length > 0 ? rubricLevelCount(prev) : rubricLevelCount(picked.map((p) => ({ levels: p.levels ?? [] })).filter((p) => p.levels.length > 0)) ;
       // a criterion named "C2 · …" takes its place in the NEW list: C1, C2, C3 … with no gaps or repeats after skips and replacements
       const drafts: CriterionDraft[] = picked.map((p, i) => {
         const d = newCriterionDraft(p.name.replace(/^C\d+ · /, `C${offset + i + 1} · `), String(p.points));
-        return { ...d, description: p.description, levels: p.levels ?? d.levels, cloIds: p.cloIds };
+        const nm = d.name || t("เกณฑ์นี้", "this criterion");
+        return { ...d, description: p.description, levels: p.levels ? resizeLevels(p.levels, target, nm, lang) : blankLevels(target, lang), cloIds: p.cloIds };
       });
       return mode === "add" ? [...prev, ...drafts] : drafts;
     });
@@ -339,7 +330,7 @@ export default function RubricCriteriaEditor({
   }
 
   function addCriterion() {
-    setCriteria((prev) => [...prev, newCriterionDraft(t(`เกณฑ์ที่ ${prev.length + 1}`, `Criterion ${prev.length + 1}`))]);
+    setCriteria((prev) => [...prev, newCriterionDraft(t(`เกณฑ์ที่ ${prev.length + 1}`, `Criterion ${prev.length + 1}`), "0", prev.length > 0 ? rubricLevelCount(prev) : undefined)]);
   }
 
   function removeCriterion(cid: string, name: string) {
@@ -422,8 +413,43 @@ export default function RubricCriteriaEditor({
         </div>
       </div>
 
+      {/* One level count for the whole rubric (14/10/2569) */}
+      {criteria.length > 0 && (
+        <div data-testid="level-control" className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-gray-100 bg-white px-5 py-3">
+          <div>
+            <p className="text-sm font-semibold text-[var(--text-primary)]">{t("จำนวนระดับของ rubric", "Levels in this rubric")}</p>
+            <p className="text-xs text-gray-500">{t("ทุกเกณฑ์ใช้จำนวนระดับเท่ากัน — เพิ่มหรือลดที่นี่ ทุกเกณฑ์เปลี่ยนตามกัน", "Every criterion uses the same number of levels — add or remove one here and all of them follow")}</p>
+          </div>
+          <div className="ml-auto flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setLevelCount(rubricLevelCount(criteria) - 1)}
+              disabled={rubricLevelCount(criteria) <= MIN_LEVELS}
+              aria-label={t("ลดหนึ่งระดับในทุกเกณฑ์", "Remove a level from every criterion")}
+              className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 text-base font-semibold text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]"
+            >−</button>
+            <span data-testid="level-count" className="min-w-[5.5rem] text-center text-sm font-semibold tabular-nums text-[var(--text-primary)]">{t(`${rubricLevelCount(criteria)} ระดับ`, `${rubricLevelCount(criteria)} levels`)}</span>
+            <button
+              type="button"
+              onClick={() => setLevelCount(rubricLevelCount(criteria) + 1)}
+              disabled={rubricLevelCount(criteria) >= MAX_LEVELS}
+              aria-label={t("เพิ่มหนึ่งระดับในทุกเกณฑ์", "Add a level to every criterion")}
+              className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 text-base font-semibold text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]"
+            >+</button>
+          </div>
+        </div>
+      )}
+      {criteria.length > 0 && !levelsUniform(criteria) && (
+        <div role="alert" data-testid="levels-mixed" className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-100 bg-amber-50 px-5 py-3 text-sm text-amber-800">
+          <span>{t(`เกณฑ์มีจำนวนระดับไม่เท่ากัน (${[...new Set(criteria.map((c) => c.levels.length))].sort((a, b) => a - b).join(" / ")} ระดับ) — บันทึกไม่ได้จนกว่าจะเท่ากัน`, `The criteria have different numbers of levels (${[...new Set(criteria.map((c) => c.levels.length))].sort((a, b) => a - b).join(" / ")}) — it can't be saved until they match`)}</span>
+          <button type="button" onClick={unifyLevels} className="inline-flex items-center gap-1.5 rounded-lg border border-amber-300 bg-white px-3 py-1.5 text-xs font-semibold text-amber-800 hover:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]">
+            {t(`ให้ AI ปรับให้เป็น ${rubricLevelCount(criteria)} ระดับเท่ากัน`, `Let the AI even them out to ${rubricLevelCount(criteria)} levels`)}
+          </button>
+        </div>
+      )}
+
       {/* How a level turns into points — same for every criterion (the rubric file's "level → score" sheet) */}
-      {criteria.length > 0 && criteria.every((c) => c.levels.length === criteria[0].levels.length) && (
+      {criteria.length > 0 && levelsUniform(criteria) && (
         <p data-testid="level-scale" className="mb-4 -mt-2 text-xs leading-relaxed text-gray-500">
           <span className="font-semibold text-[var(--text-secondary)]">{t("คิดคะแนนตามระดับ", "Level → points")}:</span>{" "}
           {criteria[0].levels.map((_, li, all) => `${t("ระดับ", "Level")} ${all.length - 1 - li} = ${pctText(levelShare(li, all.length))}`).join(" · ")}{" "}
@@ -436,7 +462,22 @@ export default function RubricCriteriaEditor({
         {criteria.map((c, idx) => {
           const pctOfTotal = totalPoints > 0 ? Math.round(((Math.round(parseFloat(c.points)) || 0) / totalPoints) * 100) : 0;
           return (
-            <div key={c.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            <div key={c.id} data-testid={`criterion-card-${c.id}`} className={`bg-white rounded-2xl border shadow-sm overflow-hidden ${flagged?.[c.id] ? "border-amber-300 ring-2 ring-amber-200" : "border-gray-100"}`}>
+              {flagged?.[c.id] && (
+                <div data-testid={`flag-note-${c.id}`} className="flex flex-wrap items-center justify-between gap-3 border-b border-amber-100 bg-amber-50 px-5 py-3 text-sm text-amber-800">
+                  <span className="min-w-0 flex-1"><span className="font-semibold">{t("ข้อเสนอแนะจากการปรับเทียบ", "From the calibration")}:</span> {flagged[c.id]}</span>
+                  <button
+                    type="button"
+                    data-testid={`flag-ai-${c.id}`}
+                    onClick={() => generateLevels(c.id)}
+                    disabled={generating[c.id]}
+                    title={t("เขียนคำอธิบายของทุกระดับในเกณฑ์นี้ใหม่ให้ต่างกันชัดขึ้น", "Rewrites the wording of every level of this criterion so they are easier to tell apart")}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-amber-300 bg-white px-3 py-1.5 text-xs font-semibold text-amber-800 hover:bg-amber-100 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]"
+                  >
+                    {t("ให้ AI ปรับเกณฑ์นี้ตามข้อเสนอแนะ", "Let the AI adjust this criterion")}
+                  </button>
+                </div>
+              )}
               <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-50">
                 <span className="text-xs font-mono text-gray-300 w-5 shrink-0">{String(idx + 1).padStart(2, "0")}</span>
                 <input
@@ -563,19 +604,6 @@ export default function RubricCriteriaEditor({
                         <span className="flex-1 min-w-0 text-[11px] text-gray-400 tabular-nums">
                           {t("ระดับ", "Level")} {c.levels.length - 1 - li} · <span data-testid="level-points" className="font-semibold text-gray-500">{levelPts} {t("คะแนน", "pts")}</span>
                         </span>
-                        {c.levels.length > MIN_LEVELS && (
-                          <button
-                            type="button"
-                            onClick={() => removeLevel(c.id, li)}
-                            title={t("ลบระดับนี้", "Remove level")}
-                            aria-label={`${t("ลบระดับ", "Remove level")} ${levelName}`}
-                            className="p-1 rounded text-gray-300 hover:text-[var(--s-err-text)] hover:bg-[var(--s-err-bg)] transition-colors shrink-0"
-                          >
-                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                            </svg>
-                          </button>
-                        )}
                       </div>
                       <input
                         value={levelName}
@@ -596,22 +624,6 @@ export default function RubricCriteriaEditor({
                 })}
               </div>
 
-              <div className="px-5 py-3 border-t border-gray-50 flex items-center justify-between gap-3">
-                <button
-                  type="button"
-                  onClick={() => addLevel(c.id)}
-                  disabled={c.levels.length >= MAX_LEVELS}
-                  className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--accent)] hover:underline disabled:text-gray-300 disabled:no-underline disabled:cursor-not-allowed"
-                >
-                  <svg width="11" height="11" viewBox="0 0 16 16" fill="none">
-                    <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
-                  </svg>
-                  {t("เพิ่มระดับ", "Add level")}
-                </button>
-                <span className="text-[11px] text-gray-400 tabular-nums">
-                  {t(`${c.levels.length} / ${MAX_LEVELS} ระดับ`, `${c.levels.length} / ${MAX_LEVELS} levels`)}
-                </span>
-              </div>
             </div>
           );
         })}
@@ -636,6 +648,7 @@ export default function RubricCriteriaEditor({
             courseId={courseId}
             assignmentId={assignmentId}
             hasCriteria={criteria.some((c) => c.name.trim() !== "" || c.description.trim() !== "")}
+            levelCount={criteria.length > 0 ? rubricLevelCount(criteria) : undefined}
             clos={clos}
             brief={assignmentBrief()}
             onApply={applyPicked}

@@ -14,7 +14,7 @@ const num = (n: number) => (Number.isInteger(n) ? String(n) : one(n));
  * Container-query layout: narrow (the Evaluation grid) stacks it; wide (the exam page) puts the score on
  * the left and the track + figures on the right, so the card fills the width instead of leaving it empty.
  */
-export default function ExamStatsCard({ name, maxPoints, stats, myScore, comment, showName = true, headingTag: Heading = "h2", badge, unit }: {
+export default function ExamStatsCard({ name, maxPoints, stats, myScore, comment, showName = true, headingTag: Heading = "h2", badge, unit, tall }: {
   name: string;
   maxPoints: number;
   stats: ExamStats;
@@ -27,6 +27,8 @@ export default function ExamStatsCard({ name, maxPoints, stats, myScore, comment
   badge?: React.ReactNode;
   /** Appended to the figures when the scale isn't raw points, e.g. "%". */
   unit?: string;
+  /** taller bar chart (the teacher's Class summary) */
+  tall?: boolean;
 }) {
   const { t } = useLanguage();
   const diff = myScore !== null ? myScore - stats.mean : null;
@@ -69,7 +71,7 @@ export default function ExamStatsCard({ name, maxPoints, stats, myScore, comment
           {myScore === null && (
             <div className="shrink-0 text-right @2xl:text-left">
               <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">{t("ค่าเฉลี่ยของห้อง", "Class average")}</p>
-              <p className="text-2xl font-bold leading-tight tabular-nums text-[var(--text-primary)] @2xl:text-5xl">
+              <p className="text-2xl font-bold leading-tight tabular-nums text-[var(--text-primary)]">
                 {one(stats.mean)}<span className="text-sm font-semibold text-[var(--text-muted)] @2xl:text-xl">{unit ?? ` / ${maxPoints}`}</span>
               </p>
               {avgPct !== null && unit !== "%" && (
@@ -80,7 +82,7 @@ export default function ExamStatsCard({ name, maxPoints, stats, myScore, comment
           {myScore !== null && (
             <div className="shrink-0 text-right @2xl:text-left">
               <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">{t("คะแนนของคุณ", "Your score")}</p>
-              <p className="text-2xl font-bold leading-tight tabular-nums text-[var(--text-primary)] @2xl:text-5xl">
+              <p className="text-2xl font-bold leading-tight tabular-nums text-[var(--text-primary)]">
                 {num(myScore)}<span className="text-sm font-semibold text-[var(--text-muted)] @2xl:text-xl"> / {maxPoints}</span>
               </p>
               {myPct !== null && (
@@ -95,14 +97,14 @@ export default function ExamStatsCard({ name, maxPoints, stats, myScore, comment
         {/* Where you sit in the room */}
         <div className="min-w-0">
           <div className="mb-6">
-            <ScoreHistogram scores={stats.scores} maxPoints={maxPoints} myScore={myScore} mean={stats.mean} unit={unit} />
+            <ScoreHistogram scores={stats.scores} maxPoints={maxPoints} myScore={myScore} mean={stats.mean} unit={unit} tall={tall} />
           </div>
 
           <dl className="grid grid-cols-4 gap-2 @2xl:gap-4">
             {tiles.map((x) => (
               <div key={x.label} title={x.title} className="rounded-xl bg-[var(--bg-app)] px-3 py-2.5 @2xl:px-5 @2xl:py-4">
                 <dt className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)] @2xl:text-xs">{x.label}</dt>
-                <dd className="mt-0.5 text-lg font-bold tabular-nums text-[var(--text-primary)] @2xl:mt-1 @2xl:text-3xl">{x.value}</dd>
+                <dd className="mt-0.5 text-lg font-bold tabular-nums text-[var(--text-primary)] @2xl:mt-1 @2xl:text-2xl">{x.value}</dd>
               </div>
             ))}
           </dl>

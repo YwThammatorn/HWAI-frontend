@@ -67,12 +67,12 @@ for (const sfx of ["", "-en"]) {
       expect(sc).toHaveLength(42);
       const mean = sc.reduce((a, b) => a + b, 0) / sc.length;
       const sd = Math.sqrt(sc.reduce((a, b) => a + (b - mean) ** 2, 0) / (sc.length - 1));
-      expect(mean).toBeGreaterThan(30); expect(mean).toBeLessThan(38);       // about two thirds of 50
-      expect(sd).toBeGreaterThan(5); expect(sd).toBeLessThan(10);
-      expect(Math.min(...sc)).toBeLessThan(25);                               // some struggled
-      expect(Math.max(...sc)).toBeGreaterThanOrEqual(45); expect(Math.max(...sc)).toBeLessThan(50);
+      expect(mean).toBeGreaterThan(15); expect(mean).toBeLessThan(19);       // about two thirds of 25
+      expect(sd).toBeGreaterThan(2.5); expect(sd).toBeLessThan(5);
+      expect(Math.min(...sc)).toBeLessThan(13);                               // some struggled
+      expect(Math.max(...sc)).toBeGreaterThanOrEqual(22); expect(Math.max(...sc)).toBeLessThan(25);
       // the three original students keep their scores
-      for (const [id, v] of [["69070101", 42], ["69070102", 38], ["69070103", 45]] as const) expect(subs.find((s) => s.assignmentId === "a-mock-5" && s.studentId === id)!.instructorScore).toBe(v);
+      for (const [id, v] of [["69070101", 21], ["69070102", 19], ["69070103", 23]] as const) expect(subs.find((s) => s.assignmentId === "a-mock-5" && s.studentId === id)!.instructorScore).toBe(v);
     });
 
     test("not everyone hands everything in; the mini-project is fully graded but NOT announced — the one assignment ready for \"Finish & announce\"", () => {
@@ -181,7 +181,7 @@ async function browserWithOldRunThenCommand(page: Page) {
     localStorage.setItem("hwai_assignments_v1", JSON.stringify(asg));
     localStorage.setItem("hwai_rubrics_v1", JSON.stringify(f.rubrics));
     localStorage.setItem("hwai_submissions_v1", JSON.stringify(f.submissions.slice(0, 13)));
-    localStorage.setItem("hwai_user", JSON.stringify({ name: "Somsak", email: "somsak.c@kmitl.ac.th", role: "teacher" }));
+    localStorage.setItem("hwai_user", JSON.stringify({ name: "Somsak", email: "kiatnarong.to@kmitl.ac.th", role: "teacher" }));
   }, [flow, rd("courses-mockup.json"), rd("teachers-mockup.json"), oldAssignments]);
   const reloaded = page.waitForEvent("load");
   await page.evaluate((c) => { (0, eval)(c); }, commands[0]);

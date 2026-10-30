@@ -8,6 +8,7 @@ import { useCourses } from "@/lib/courses";
 import { useAssignments, type CriterionLevel, type RubricCriterion } from "@/lib/assignments";
 import { useRubricLibrary } from "@/lib/rubricLibrary";
 import { useMyCourseIds } from "@/lib/useMyCourseIds";
+import { resizeLevels, rubricLevelCount } from "@/lib/rubricTemplates";
 import { rubricCandidates, criterionStats, proposeReplacement, type RubricCandidate, type CandidateSource } from "@/lib/rubricHistory";
 import { toneForPct, SCORE_TONE_CLASSES } from "@/lib/scoreBook";
 import { termHeading } from "@/lib/academicTerm";
@@ -23,7 +24,7 @@ type Decision = { take: boolean; action: "drop" | "own" | "ai"; ownName: string;
  * criterion Take or Skip; a skipped criterion can simply go, be replaced by one the teacher names, or be replaced by one the
  * (stand-in) AI proposes, and "Ask again" gives another. Finish by replacing the current criteria or adding to them.
  */
-export default function RubricPickerModal({ open, onClose, courseId, assignmentId, hasCriteria, clos, brief, onApply }: {
+export default function RubricPickerModal({ open, onClose, courseId, assignmentId, hasCriteria, levelCount, clos, brief, onApply }: {
   open: boolean;
   onClose: () => void;
   courseId: string;
@@ -31,11 +32,14 @@ export default function RubricPickerModal({ open, onClose, courseId, assignmentI
   assignmentId?: string;
   /** the editor already holds criteria → offer "add to current" next to "replace" */
   hasCriteria: boolean;
+  /** how many levels the criteria already in the editor use — an added set has to match it (14/10/2569) */
+  levelCount?: number;
   /** this course's CLOs: a tag is kept only when its CLO exists here */
   clos?: { id: string }[];
   /** name + description of the assignment, to steer the AI's replacement */
   brief: string;
-  onApply: (criteria: PickedCriterion[], mode: "replace" | "add") => void;
+  /** `meta.sourceRubricId`: the rubric the criteria were copied from, when there is one — recorded so Calibration can find the assignments that share it */
+  onApply: (criteria: PickedCriterion[], mode: "replace" | "add", meta: { sourceRubricId?: string }) => void;
 }) {
   const { t, lang } = useLanguage();
   const { courses } = useCourses();
@@ -48,9 +52,11 @@ export default function RubricPickerModal({ open, onClose, courseId, assignmentI
   const [step, setStep] = useState<"choose" | "criteria">("choose");
   const [decisions, setDecisions] = useState<Record<string, Decision>>({});
   const [mode, setMode] = useState<"replace" | "add">("replace");
+  // the teacher pressed "let the AI fit the levels": every criterion that differs is reshaped to the rubric's count
+  const [fitted, setFitted] = useState(false);
 
   useEffect(() => {
-    if (open) { setTab("subject"); setSelected(null); setStep("choose"); setDecisions({}); setMode("replace"); }
+    if (open) { setTab("subject"); setSelected(null); setStep("choose"); setDecisions({}); setMode("replace"); setFitted(false); }
   }, [open]);
 
   const all = useMemo(
@@ -83,13 +89,24 @@ export default function RubricPickerModal({ open, onClose, courseId, assignmentI
   const aiFor = (c: RubricCriterion) =>
     proposeReplacement({ brief: `${decision(c.id).aiBrief}\n${brief}\n${chosen?.title ?? ""}\n${c.name}`, userBrief: decision(c.id).aiBrief, skippedName: c.name, takenNames, round: decision(c.id).round, points: c.maxPoints, lang: lang === "en" ? "en" : "th" });
 
-  const result: PickedCriterion[] = chosen ? chosen.criteria.flatMap((c): PickedCriterion[] => {
+  const rawResult: PickedCriterion[] = chosen ? chosen.criteria.flatMap((c): PickedCriterion[] => {
     const d = decision(c.id);
     if (d.take) return [{ name: c.name, description: c.description, points: c.maxPoints, levels: c.levels.map((l) => ({ ...l })), cloIds: (c.cloIds ?? []).filter((id) => !clos || clos.some((x) => x.id === id)) }];
     if (d.action === "own") return d.ownName.trim() ? [{ name: d.ownName.trim(), description: "", points: c.maxPoints, cloIds: [] }] : [];
     if (d.action === "ai") { const r = aiFor(c); return r ? [{ name: r.name, description: r.description, points: r.maxPoints, levels: r.levels.map((l) => ({ ...l })), cloIds: [] }] : []; }
     return [];
   }) : [];
+  // All criteria of a rubric share one level count (14/10/2569). An added set follows the criteria already in the editor; a replacing set
+  // follows itself (most common count). Own-named criteria carry no levels, so they simply start at that count.
+  const applyMode = hasCriteria ? mode : "replace";
+  const targetLevels = applyMode === "add" && levelCount ? levelCount : rubricLevelCount(rawResult.filter((c) => c.levels).map((c) => ({ levels: c.levels! })));
+  const result: PickedCriterion[] = fitted ? rawResult.map((c) => (c.levels && c.levels.length !== targetLevels ? { ...c, levels: resizeLevels(c.levels, targetLevels, c.name, lang) } : c)) : rawResult;
+  const misfit = result.filter((c) => c.levels && c.levels.length !== targetLevels);
+  // the rubric this set comes from: the chosen assignment's own, or — for a library entry — the one the entry was saved from
+  const sourceRubricId = chosen
+    ? (chosen.assignmentId ? rubrics.find((r) => r.assignmentId === chosen.assignmentId)?.id
+      : rubrics.find((r) => r.assignmentId === entries.find((e) => e.id === chosen.libraryId)?.sourceAssignmentId)?.id)
+    : undefined;
   const ownMissing = chosen ? chosen.criteria.some((c) => !decision(c.id).take && decision(c.id).action === "own" && !decision(c.id).ownName.trim()) : false;
   const totalPts = result.reduce((n, c) => n + c.points, 0);
 
@@ -122,7 +139,7 @@ export default function RubricPickerModal({ open, onClose, courseId, assignmentI
         ) : (
           <>
             <button type="button" onClick={() => setStep("choose")} className={secondary}>{t("ย้อนกลับ", "Back")}</button>
-            <button type="button" disabled={result.length === 0 || ownMissing} onClick={() => { onApply(result, hasCriteria ? mode : "replace"); onClose(); }} className={primary}>
+            <button type="button" disabled={result.length === 0 || ownMissing || misfit.length > 0} onClick={() => { onApply(result, applyMode, { sourceRubricId }); onClose(); }} className={primary}>
               {t(`ใช้ ${result.length} เกณฑ์ (${totalPts} คะแนน)`, `Use ${result.length} ${result.length === 1 ? "criterion" : "criteria"} (${totalPts} pts)`)}
             </button>
           </>
@@ -288,6 +305,19 @@ export default function RubricPickerModal({ open, onClose, courseId, assignmentI
               );
             })}
           </ul>
+
+          {misfit.length > 0 && (
+            <div role="alert" data-testid="picker-levels-warning" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[var(--s-warn-bd)] bg-[var(--s-warn-bg)] px-4 py-3 text-sm text-[var(--s-warn-text)]">
+              <span>
+                {applyMode === "add"
+                  ? t(`งานนี้ใช้ ${targetLevels} ระดับ แต่ ${misfit.length} เกณฑ์ที่เลือกใช้ ${[...new Set(misfit.map((c) => c.levels!.length))].join(" / ")} ระดับ — ทุกเกณฑ์ใน rubric ต้องมีจำนวนระดับเท่ากัน`, `This assignment uses ${targetLevels} levels but ${misfit.length} of the chosen ${misfit.length === 1 ? "criterion uses" : "criteria use"} ${[...new Set(misfit.map((c) => c.levels!.length))].join(" / ")} — every criterion of a rubric needs the same number of levels`)
+                  : t(`เกณฑ์ที่เลือกมีจำนวนระดับไม่เท่ากัน (${[...new Set(result.filter((c) => c.levels).map((c) => c.levels!.length))].sort((a, b) => a - b).join(" / ")} ระดับ) — ทุกเกณฑ์ใน rubric ต้องเท่ากัน`, `The chosen criteria have different numbers of levels (${[...new Set(result.filter((c) => c.levels).map((c) => c.levels!.length))].sort((a, b) => a - b).join(" / ")}) — every criterion of a rubric needs the same number`)}
+              </span>
+              <button type="button" data-testid="picker-fit-levels" onClick={() => setFitted(true)} className="h-8 shrink-0 whitespace-nowrap rounded-lg border border-[var(--s-warn-bd)] bg-[var(--bg-surface)] px-3 text-xs font-semibold text-[var(--s-warn-text)] hover:bg-[var(--bg-subtle)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]">
+                {t(`ให้ AI ปรับระดับให้เป็น ${targetLevels} ระดับ`, `Let the AI fit them to ${targetLevels} levels`)}
+              </button>
+            </div>
+          )}
 
           {hasCriteria && (
             <div role="radiogroup" aria-label={t("ใส่ลงใน rubric ปัจจุบัน", "Put into the current rubric")} className="flex flex-wrap items-center gap-2 pt-1">

@@ -8,7 +8,7 @@ import { useStudents, isWithdrawn } from "@/lib/students";
 import { useCourses, type Course } from "@/lib/courses";
 import { useAssignments, studentVisibleSubmission } from "@/lib/assignments";
 import { useGradingCategories, computeCategoryGradeRows, computeTotalSoFar } from "@/lib/gradingCategories";
-import { gradeLetter, toneForPct, SCORE_TONE_CLASSES } from "@/lib/scoreBook";
+import { toneForPct, SCORE_TEXT_CLASSES } from "@/lib/scoreBook";
 import { currentAcademicTerm, courseTermStatus, compareTermsDesc, termHeading } from "@/lib/academicTerm";
 import { CourseIcon } from "@/components/CourseIcon";
 import EmptyState from "@/components/EmptyState";
@@ -53,14 +53,14 @@ export default function StudentCoursesPage() {
   // Final result of a finished course: the same weighted total the Evaluation page shows, from the scores the
   // teacher has announced. null = nothing graded (yet), so no grade is invented.
   const studentId = user?.studentId ?? "";
-  function finalResult(courseId: string): { pct: number; letter: string } | null {
+  function finalResult(courseId: string): { pct: number } | null {
     const asg = getAssignmentsByCourse(courseId);
     const subs = asg.flatMap((a) => getSubmissionsByAssignment(a.id).map((s) => studentVisibleSubmission(a, s)));
     const rows = computeCategoryGradeRows(getCategoriesByCourse(courseId), asg, subs, studentId);
     const gradedWeight = rows.filter((r) => r.percent !== null).reduce((n, r) => n + r.category.weight, 0);
     if (gradedWeight <= 0) return null;
     const pct = (computeTotalSoFar(rows) / gradedWeight) * 100;
-    return { pct, letter: gradeLetter(pct, 100) };
+    return { pct };
   }
 
   return (
@@ -214,7 +214,7 @@ export default function StudentCoursesPage() {
   );
 }
 
-function PastCourseRow({ course, withdrawn, result }: { course: Course; withdrawn: boolean; result: { pct: number; letter: string } | null }) {
+function PastCourseRow({ course, withdrawn, result }: { course: Course; withdrawn: boolean; result: { pct: number } | null }) {
   const { t } = useLanguage();
   const { getTeachersByCourse } = useManagedTeachers();
   const instructor = getTeachersByCourse(course.id)[0];
@@ -239,12 +239,9 @@ function PastCourseRow({ course, withdrawn, result }: { course: Course; withdraw
         {withdrawn ? (
           <span className="text-xs font-semibold px-2 py-1 rounded-full bg-[var(--s-warn-bg)] text-[var(--s-warn-text)] border border-[var(--s-warn-bd)]">{t("ถอนแล้ว", "Withdrawn")}</span>
         ) : result ? (
-          <>
-            <span className="text-sm font-semibold tabular-nums text-[var(--text-primary)]" aria-label={t(`คะแนนรวม ${result.pct.toFixed(1)} เปอร์เซ็นต์`, `Total ${result.pct.toFixed(1)} percent`)}>{result.pct.toFixed(1)}%</span>
-            <span className={`inline-flex items-center justify-center min-w-[2rem] h-8 px-2 rounded-lg text-sm font-bold ${SCORE_TONE_CLASSES[toneForPct(result.pct)]}`} aria-label={t(`เกรด ${result.letter}`, `Grade ${result.letter}`)}>{result.letter}</span>
-          </>
+          <span className={`text-sm font-semibold tabular-nums ${SCORE_TEXT_CLASSES[toneForPct(result.pct)]}`} aria-label={t(`คะแนนรวม ${result.pct.toFixed(1)} เปอร์เซ็นต์`, `Total ${result.pct.toFixed(1)} percent`)}>{result.pct.toFixed(1)}%</span>
         ) : (
-          <span className="text-xs text-[var(--text-muted)]">{t("ยังไม่มีคะแนน", "No grade yet")}</span>
+          <span className="text-xs text-[var(--text-muted)]">{t("ยังไม่มีคะแนน", "No score yet")}</span>
         )}
       </div>
     </Link>

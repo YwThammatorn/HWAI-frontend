@@ -253,7 +253,7 @@ test.describe("P4 — Students Roster + CSV Import Cross-Check", () => {
   test("CSV import (popup) cross-checks each row against the cohort database", async ({ page }) => {
     await page.goto(`${BASE}/teacher/courses/c-p4/students`);
     await page.waitForLoadState("networkidle");
-    await page.getByRole("button", { name: "Import CSV" }).click();
+    await page.getByRole("button", { name: "Import Excel" }).click();
     await expect(page.getByRole("dialog", { name: "Import Students" })).toBeVisible();
 
     const csv = [
@@ -281,7 +281,7 @@ test.describe("P4 — Students Roster + CSV Import Cross-Check", () => {
   test("importing enrolls only the valid, unenrolled, in-cohort row", async ({ page }) => {
     await page.goto(`${BASE}/teacher/courses/c-p4/students`);
     await page.waitForLoadState("networkidle");
-    await page.getByRole("button", { name: "Import CSV" }).click();
+    await page.getByRole("button", { name: "Import Excel" }).click();
     await expect(page.getByRole("dialog", { name: "Import Students" })).toBeVisible();
 
     const csv = [

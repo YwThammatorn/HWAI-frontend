@@ -5,14 +5,7 @@ import { computeCategoryGradeRows, computeTotalSoFar, type GradingCategory } fro
 // Pure functions only (no React) so the numbers can be checked without rendering. The weighted
 // total reuses the same math as the student's Evaluation page, so both screens always agree.
 
-export function gradeLetter(score: number, max: number): string {
-  const pct = max > 0 ? (score / max) * 100 : 0;
-  if (pct >= 80) return "A";
-  if (pct >= 70) return "B";
-  if (pct >= 60) return "C";
-  if (pct >= 50) return "D";
-  return "F";
-}
+// No letter grades: the course is not graded with A–F (15/10/2569) — gradeLetter() and ScoreBookRow.letter were removed (git has them).
 
 /** Colour band for a graded score. `warn` is reserved for "awaiting grading", so it never appears here. */
 export type ScoreTone = "ok" | "info" | "err";
@@ -32,6 +25,15 @@ export const SCORE_TONE_CLASSES: Record<ScoreTone, string> = {
   err: "bg-[var(--s-err-bg)] text-[var(--s-err-text)] border border-[var(--s-err-bd)]",
 };
 export const PENDING_CHIP_CLASSES = "bg-[var(--s-warn-bg)] text-[var(--s-warn-text)] border border-[var(--s-warn-bd)]";
+// Text-only versions for the teacher Score Book matrix (15/10/2569, user's request): no fill, no border — just the colour of the number,
+// so a cell is only as wide as its content. The chip classes above stay for every other screen.
+export const SCORE_TEXT_CLASSES: Record<ScoreTone, string> = {
+  ok: "text-[var(--s-ok-text)]",
+  info: "text-[var(--s-info-text)]",
+  err: "text-[var(--s-err-text)]",
+};
+export const PENDING_TEXT_CLASSES = "text-[var(--s-warn-text)]";
+export const MISSING_TEXT_CLASSES = "text-[var(--s-err-text)]";
 export const MISSING_CHIP_CLASSES = "bg-[var(--s-err-bg)] text-[var(--s-err-text)] border border-[var(--s-err-bd)]";
 
 export type ScoreCell =
@@ -65,7 +67,6 @@ export interface ScoreBookRow {
   gradedWeight: number;
   /** total / gradedWeight × 100 — the running grade so far. */
   normalized: number | null;
-  letter: string | null;
 }
 
 export interface ScoreBook {
@@ -137,7 +138,6 @@ export function buildScoreBook(input: {
     const normalized = total !== null && gradedWeight > 0 ? (total / gradedWeight) * 100 : null;
     return {
       student, cells, categoryPct, total, gradedWeight, normalized,
-      letter: normalized !== null ? gradeLetter(normalized, 100) : null,
     };
   });
 
@@ -158,10 +158,10 @@ const csvCell = (v: string | number) => {
   return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 };
 
-/** CSV text (with a UTF-8 BOM so Thai opens correctly in Excel). Column order follows the on-screen groups. */
+/** CSV text (with a UTF-8 BOM so Thai opens correctly in Excel). Column order follows the on-screen groups. No grade column since 15/10/2569 — the course is not graded with letters. */
 export function scoreBookToCsv(
   book: ScoreBook,
-  labels: { id: string; title: string; first: string; last: string; total: string; grade: string; pending: string; missing: string; categoryPct: (name: string) => string },
+  labels: { id: string; title: string; first: string; last: string; total: string; pending: string; missing: string; categoryPct: (name: string) => string },
 ): string {
   const columns = book.groups.flatMap((g) => g.columns);
   const cats = book.groups.filter((g) => g.category).map((g) => g.category!);
@@ -169,7 +169,7 @@ export function scoreBookToCsv(
     labels.id, labels.title, labels.first, labels.last,
     ...columns.map((a) => `${a.name} (/${a.maxPoints})`),
     ...cats.map((c) => labels.categoryPct(`${c.name} ${c.weight}%`)),
-    labels.total, labels.grade,
+    labels.total,
   ];
   const lines = book.rows.map((r) => {
     const cells = columns.map((a) => {
@@ -180,7 +180,7 @@ export function scoreBookToCsv(
     return [
       r.student.studentId, r.student.title ?? "", r.student.firstName, r.student.lastName,
       ...cells, ...catCells,
-      r.total === null ? "" : r.total.toFixed(1), r.letter ?? "",
+      r.total === null ? "" : r.total.toFixed(1),
     ];
   });
   return "﻿" + [header, ...lines].map((row) => row.map(csvCell).join(",")).join("\r\n");

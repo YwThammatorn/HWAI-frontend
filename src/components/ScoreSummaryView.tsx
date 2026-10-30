@@ -3,15 +3,11 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
-import { toneForPct, SCORE_TONE_CLASSES, PENDING_CHIP_CLASSES, MISSING_CHIP_CLASSES, type ScoreBook, type ScoreTone } from "@/lib/scoreBook";
-import { LETTERS, type AssignmentState, type AssignmentSummary, type Letter, type ScoreSummary } from "@/lib/scoreSummary";
+import { toneForPct, SCORE_TONE_CLASSES, PENDING_CHIP_CLASSES, MISSING_CHIP_CLASSES, type ScoreBook } from "@/lib/scoreBook";
+import type { AssignmentState, AssignmentSummary, ScoreSummary } from "@/lib/scoreSummary";
 import ExamStatsCard from "@/components/ExamStatsCard";
 
 const NEUTRAL_CHIP = "bg-[var(--bg-app)] text-[var(--text-secondary)] border border-[var(--border)]";
-const BAR_FILL: Record<ScoreTone, string> = { ok: "bg-[var(--s-ok-text)]", info: "bg-[var(--s-info-text)]", err: "bg-[var(--s-err-text)]" };
-// A letter's colour is the band it stands for (A ≥ 80 → ok, B/C 60–79 → info, D/F → err) — same bands as the matrix.
-const LETTER_TONE: Record<Letter, ScoreTone> = { A: "ok", B: "info", C: "info", D: "err", F: "err" };
-const LETTER_RANGE: Record<Letter, string> = { A: "≥ 80%", B: "70–79%", C: "60–69%", D: "50–59%", F: "< 50%" };
 
 const num = (n: number) => (Number.isInteger(n) ? String(n) : n.toFixed(1));
 const ATTENTION_PREVIEW = 6;
@@ -29,7 +25,7 @@ function StateChip({ s }: { s: AssignmentSummary }) {
 }
 
 /**
- * The teacher's class summary for one section: how the room is doing overall, the grade spread, who needs a
+ * The teacher's class summary for one section: how the room is doing overall, who needs a
  * nudge, and one line per assignment. Same cards and bell curve the student sees on their own Evaluation page —
  * minus the "you" marker, plus what only a teacher needs (who to follow up, what is still unannounced).
  */
@@ -42,8 +38,6 @@ export default function ScoreSummaryView({ courseId, book, summary, onShowStuden
 }) {
   const { t } = useLanguage();
   const [showAllAttention, setShowAllAttention] = useState(false);
-  const total = book.rows.length;
-  const maxCount = Math.max(1, ...LETTERS.map((l) => summary.gradeCounts[l]), summary.ungraded);
   const attention = showAllAttention ? summary.attention : summary.attention.slice(0, ATTENTION_PREVIEW);
   const exams = summary.categories.flatMap((c) => c.assignments).filter((a) => a.assignment.isExam && a.stats);
   const showGroupHeaders = !(summary.categories.length === 1 && summary.categories[0].category === null);
@@ -53,14 +47,15 @@ export default function ScoreSummaryView({ courseId, book, summary, onShowStuden
 
   return (
     <div className="space-y-6" data-testid="score-summary">
-      {/* Overall: spread of every student's running grade */}
+      {/* Overall: spread of every student's running total */}
       {summary.overall ? (
         <ExamStatsCard
-          name={t("เกรดสะสมของห้อง", "Class running grade")}
+          name={t("คะแนนรวมสะสมของห้อง", "Class running total")}
           maxPoints={100}
           unit="%"
           stats={summary.overall}
           myScore={null}
+          tall
         />
       ) : (
         <div className={`${card} px-6 py-10 text-center text-sm text-[var(--text-secondary)]`}>
@@ -68,43 +63,13 @@ export default function ScoreSummaryView({ courseId, book, summary, onShowStuden
         </div>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Grade spread */}
-        <section className={`${card} p-5`} aria-labelledby="grade-spread-h">
-          <h2 id="grade-spread-h" className="text-base font-bold text-[var(--text-primary)]">{t("การกระจายเกรด", "Grade distribution")}</h2>
-          <p className="mt-0.5 mb-4 text-xs text-[var(--text-muted)]">{t("เกรดสะสมเท่าที่ตรวจแล้ว ของนักศึกษาที่ยังเรียนอยู่", "Running grade so far, enrolled students only")}</p>
-          <ul className="space-y-2.5">
-            {LETTERS.map((l) => {
-              const n = summary.gradeCounts[l];
-              return (
-                <li key={l} className="flex items-center gap-3" data-testid={`grade-row-${l}`}>
-                  <span className={`inline-flex h-8 w-9 shrink-0 items-center justify-center rounded-lg text-sm font-bold ${SCORE_TONE_CLASSES[LETTER_TONE[l]]}`}>{l}</span>
-                  <div className="h-3.5 flex-1 overflow-hidden rounded-full border border-[var(--border-subtle)] bg-[var(--bg-app)]" aria-hidden="true">
-                    {n > 0 && <div className={`hwai-bar-grow h-full rounded-full ${BAR_FILL[LETTER_TONE[l]]}`} style={{ width: `${(n / maxCount) * 100}%` }} />}
-                  </div>
-                  <span className="w-36 shrink-0 whitespace-nowrap text-right text-sm tabular-nums text-[var(--text-primary)]">
-                    <span className="font-semibold">{n}</span>
-                    <span className="text-[var(--text-muted)]"> {n === 1 ? t("คน", "student") : t("คน", "students")} · {total > 0 ? Math.round((n / total) * 100) : 0}%</span>
-                  </span>
-                  <span className="hidden w-16 shrink-0 text-xs tabular-nums text-[var(--text-muted)] sm:block">{LETTER_RANGE[l]}</span>
-                </li>
-              );
-            })}
-            <li className="flex items-center gap-3 border-t border-[var(--border-subtle)] pt-2.5" data-testid="grade-row-none">
-              <span className={`inline-flex h-8 w-9 shrink-0 items-center justify-center rounded-lg text-sm font-bold ${NEUTRAL_CHIP}`}>—</span>
-              <span className="flex-1 text-sm text-[var(--text-secondary)]">{t("ยังไม่มีงานที่ตรวจแล้ว", "Nothing graded yet")}</span>
-              <span className="w-36 shrink-0 text-right text-sm tabular-nums font-semibold text-[var(--text-primary)]">{summary.ungraded}</span>
-              <span className="hidden w-16 shrink-0 sm:block" />
-            </li>
-          </ul>
-        </section>
-
+      <div>
         {/* Who needs a nudge */}
         <section className={`${card} p-5`} aria-labelledby="attention-h">
           <div className="flex items-start justify-between gap-3">
             <div>
               <h2 id="attention-h" className="text-base font-bold text-[var(--text-primary)]">{t("ควรติดตาม", "Needs follow-up")}</h2>
-              <p className="mt-0.5 mb-4 text-xs text-[var(--text-muted)]">{t("เกรดสะสมต่ำกว่า 60% หรือมีงานที่เลยกำหนดแล้วไม่ส่ง", "Running grade under 60%, or work past its due date that was never handed in")}</p>
+              <p className="mt-0.5 mb-4 text-xs text-[var(--text-muted)]">{t("คะแนนรวมสะสมต่ำกว่า 60% หรือมีงานที่เลยกำหนดแล้วไม่ส่ง", "Running total under 60%, or work past its due date that was never handed in")}</p>
             </div>
             {summary.attention.length > 0 && (
               <span className={`inline-flex h-7 shrink-0 items-center rounded-lg px-2.5 text-xs font-bold tabular-nums ${PENDING_CHIP_CLASSES}`} data-testid="attention-count">{summary.attention.length}</span>
@@ -125,7 +90,7 @@ export default function ScoreSummaryView({ courseId, book, summary, onShowStuden
                       <p className="text-xs tabular-nums text-[var(--text-muted)]">{row.student.studentId}</p>
                     </div>
                     {row.normalized !== null && (
-                      <span className={`inline-flex h-7 items-center rounded-lg px-2 text-xs font-semibold tabular-nums ${SCORE_TONE_CLASSES[toneForPct(row.normalized)]}`} title={t("เกรดสะสม", "Running grade")}>
+                      <span className={`inline-flex h-7 items-center rounded-lg px-2 text-xs font-semibold tabular-nums ${SCORE_TONE_CLASSES[toneForPct(row.normalized)]}`} title={t("คะแนนรวมสะสม", "Running total")}>
                         {Math.round(row.normalized)}%
                       </span>
                     )}

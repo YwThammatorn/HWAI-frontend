@@ -6,48 +6,16 @@ import { useLanguage } from "@/context/LanguageContext";
 import { useStudents } from "@/lib/students";
 import { useCohortStudents, CohortStudent } from "@/lib/cohort-students";
 import { useSectionProgram } from "@/lib/sectionProgram";
+import { useCourses } from "@/lib/courses";
+import { csvToGrid, excelToGrid, fileKind, parseRosterGrid, type SheetRow, type ParsedSheet } from "@/lib/rosterSheet";
 
-interface ParsedRow {
-  line: number;
-  studentId: string;
-  firstName: string;
-  lastName: string;
-  email: string;
+interface ParsedRow extends Omit<SheetRow, "error"> {
   error?: string;
   match?: CohortStudent;
 }
 
-function parseCSV(text: string): ParsedRow[] {
-  const lines = text.split(/\r?\n/).filter((l) => l.trim());
-  if (lines.length === 0) return [];
-
-  const first = lines[0].toLowerCase();
-  const hasHeader =
-    first.includes("student_id") ||
-    first.includes("รหัส") ||
-    first.includes("first") ||
-    first.includes("ชื่อ");
-
-  const dataLines = hasHeader ? lines.slice(1) : lines;
-
-  return dataLines.map((line, i) => {
-    const cols = line.split(",").map((c) => c.trim().replace(/^"|"$/g, ""));
-    const studentId = cols[0] ?? "";
-    const firstName = cols[1] ?? "";
-    const lastName = cols[2] ?? "";
-    const email = cols[3] ?? "";
-
-    let error: string | undefined;
-    if (!studentId) error = "missing_id";
-    else if (!firstName) error = "missing_first";
-    else if (!lastName) error = "missing_last";
-
-    return { line: i + (hasHeader ? 2 : 1), studentId, firstName, lastName, email, error };
-  });
-}
-
 /**
- * Teacher: import a CSV of students into ONE course, as a centred popup (DESIGN.md §9a — same as
+ * Teacher: import students into ONE course from a CSV or from the registrar's exam sheet (.xls, 15/10/2569), as a centred popup (DESIGN.md §9a — same as
  * the admin Import Students modal). Every ID is cross-checked against the system's student
  * database: a match pulls the real name/email from there (so a typo in the file can't drift the
  * enrolled record from the real account), an unknown ID or an already-enrolled one is skipped.
@@ -62,12 +30,16 @@ export default function ImportCourseStudentsModal({ courseId, courseName, onClos
   const { addStudents, getStudentsByCourse } = useStudents();
   const { findByStudentId } = useCohortStudents();
   const { section } = useSectionProgram(courseId);
+  const { getCourse } = useCourses();
+  const course = getCourse(courseId);
   const fileRef = useRef<HTMLInputElement>(null);
   const [step, setStep] = useState<"upload" | "preview" | "done">("upload");
   const [rows, setRows] = useState<ParsedRow[]>([]);
   const [fileName, setFileName] = useState("");
   const [isDragging, setIsDragging] = useState(false);
   const [importedCount, setImportedCount] = useState(0);
+  const [fileError, setFileError] = useState<"unsupported" | "unreadable" | null>(null);
+  const [sheet, setSheet] = useState<ParsedSheet | null>(null);
 
   const validRows = rows.filter((r) => !r.error);
   const errorRows = rows.filter((r) => r.error);
@@ -79,6 +51,10 @@ export default function ImportCourseStudentsModal({ courseId, courseName, onClos
     if (code === "missing_last") return t("ไม่มีนามสกุล", "Missing last name");
     if (code === "not_in_system") return t("ไม่พบในระบบ", "Not found in system");
     if (code === "already_enrolled") return t("ลงทะเบียนแล้ว", "Already enrolled");
+    if (code.startsWith("other_group:")) {
+      const g = code.slice("other_group:".length);
+      return t(`อยู่กลุ่ม ${g} ไม่ใช่กลุ่มของ section นี้`, `In group ${g}, not this section's group`);
+    }
     if (code.startsWith("wrong_program:")) {
       const p = code.slice("wrong_program:".length);
       return t(`คนละหลักสูตรกับ section นี้ (${p})`, `Different program from this section (${p})`);
@@ -86,34 +62,48 @@ export default function ImportCourseStudentsModal({ courseId, courseName, onClos
     return code;
   }
 
-  function handleFile(file: File) {
+  async function handleFile(file: File) {
     setFileName(file.name);
+    setFileError(null);
+    const kind = fileKind(file.name);
+    if (kind === "unsupported") { setFileError("unsupported"); return; }
+    let parsedSheet: ParsedSheet;
+    try {
+      const grid = kind === "csv" ? csvToGrid(await file.text()) : await excelToGrid(await file.arrayBuffer());
+      parsedSheet = parseRosterGrid(grid);
+    } catch {
+      setFileError("unreadable");
+      return;
+    }
     const enrolledIds = new Set(getStudentsByCourse(courseId).map((s) => s.studentId));
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      // One section = one program (4/10/2569). A section that no curriculum or earlier student pins down yet is
-      // pinned by the first student this file would add, so one file can't smuggle in a mix either.
-      let pinned = section?.program ?? null;
-      const parsed = parseCSV(e.target?.result as string).map((row) => {
-        if (row.error) return row;
-        if (enrolledIds.has(row.studentId)) return { ...row, error: "already_enrolled" };
-        const match = findByStudentId(row.studentId);
-        if (!match) return { ...row, error: "not_in_system" };
-        const named = { ...row, firstName: match.firstName, lastName: match.lastName, email: match.email, match };
-        if (pinned && match.program && match.program !== pinned) return { ...named, error: `wrong_program:${match.program}` };
-        if (!pinned && match.program) pinned = match.program;
-        return named;
-      });
-      setRows(parsed);
-      setStep("preview");
-    };
-    reader.readAsText(file, "UTF-8");
+    // The registrar's sheet holds every section of the subject: only the rows under this section's "กลุ่ม" belong here.
+    const sectionNo = course?.sectionNumber ? Number(course.sectionNumber) : NaN;
+    const filterByGroup = parsedSheet.kind === "registrar" && parsedSheet.groups.length > 0 && Number.isFinite(sectionNo);
+    // One section = one program (4/10/2569). A section that no curriculum or earlier student pins down yet is
+    // pinned by the first student this file would add, so one file can't smuggle in a mix either.
+    let pinned = section?.program ?? null;
+    const parsed: ParsedRow[] = parsedSheet.rows.map((row) => {
+      if (row.error) return row;
+      if (filterByGroup && row.group !== sectionNo) return { ...row, error: `other_group:${row.group}` };
+      if (enrolledIds.has(row.studentId)) return { ...row, error: "already_enrolled" };
+      const match = findByStudentId(row.studentId);
+      if (!match) return { ...row, error: "not_in_system" };
+      const named = { ...row, firstName: match.firstName, lastName: match.lastName, email: match.email, match };
+      if (pinned && match.program && match.program !== pinned) return { ...named, error: `wrong_program:${match.program}` };
+      if (!pinned && match.program) pinned = match.program;
+      return named;
+    });
+    setSheet(parsedSheet);
+    setRows(parsed);
+    setStep("preview");
   }
 
   function reset() {
     setStep("upload");
     setRows([]);
     setFileName("");
+    setFileError(null);
+    setSheet(null);
     if (fileRef.current) fileRef.current.value = "";
   }
 
@@ -136,7 +126,7 @@ export default function ImportCourseStudentsModal({ courseId, courseName, onClos
       onClose={onClose}
       size="lg"
       title={t("นำเข้านักศึกษา", "Import Students")}
-      description={t(`เข้าวิชา ${courseName} จากไฟล์ CSV`, `Enroll students in ${courseName} from a CSV file`)}
+      description={t(`เข้าวิชา ${courseName} จากไฟล์ Excel (ใบคะแนนสอบจากทะเบียน) หรือ .csv`, `Enroll students in ${courseName} from an Excel file (the registrar's exam sheet) or a .csv file`)}
       footer={
         step === "preview" ? (
           <>
@@ -184,7 +174,7 @@ export default function ImportCourseStudentsModal({ courseId, courseName, onClos
               <input
                 ref={fileRef}
                 type="file"
-                accept=".csv,text/csv"
+                accept=".xls,.xlsx,.csv,text/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 className="hidden"
                 onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
               />
@@ -193,8 +183,25 @@ export default function ImportCourseStudentsModal({ courseId, courseName, onClos
                 <polyline points="14 2 14 8 20 8"/>
                 <line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>
               </svg>
-              <p className="text-sm font-semibold text-[var(--text-primary)]">{t("ลากไฟล์ CSV มาวาง หรือคลิกเลือก", "Drag CSV here or click to browse")}</p>
-              <p className="text-xs text-[var(--text-muted)] mt-1">{t("รองรับ .csv • UTF-8", "Supports .csv • UTF-8 encoding")}</p>
+              <p className="text-sm font-semibold text-[var(--text-primary)]">{t("ลากไฟล์มาวาง หรือคลิกเลือก", "Drag a file here or click to browse")}</p>
+              <p className="text-xs text-[var(--text-muted)] mt-1">{t("รองรับ Excel (.xls / .xlsx — ใบคะแนนสอบจากทะเบียน) และ .csv (UTF-8)", "Supports Excel (.xls / .xlsx — the registrar's exam sheet) and .csv (UTF-8)")}</p>
+            </div>
+            {fileError && (
+              <p role="alert" className="rounded-xl border border-[var(--s-err-bd)] bg-[var(--s-err-bg)] px-4 py-2.5 text-xs font-medium text-[var(--s-err-text)]">
+                {fileName} — {fileError === "unsupported"
+                  ? t("ไฟล์ชนิดนี้ไม่รองรับ — ใช้ไฟล์ Excel (.xls / .xlsx) จากทะเบียน หรือ .csv", "This file type isn't supported — use the registrar's Excel file (.xls / .xlsx) or a .csv")
+                  : t("อ่านไฟล์ไม่ได้ — ไฟล์อาจเสียหรือมีรหัสผ่าน ลองเปิดแล้วบันทึกเป็น CSV", "Couldn't read this file — it may be damaged or password-protected; try saving it as CSV")}
+              </p>
+            )}
+
+            <div className="rounded-xl border border-[var(--border-subtle)] p-3.5">
+              <p className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-1.5">{t("ใบคะแนนสอบจากทะเบียน (Excel)", "Registrar exam sheet (Excel)")}</p>
+              <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
+                {t(
+                  "ใช้ไฟล์ stdfinsec_… ที่ได้จากระบบทะเบียนได้เลย ไม่ต้องแก้ — ระบบอ่านรหัสและชื่อจากตาราง และนำเข้าเฉพาะนักศึกษาในกลุ่มเรียนเดียวกับ section นี้",
+                  "Use the stdfinsec_… file from the registrar as it is — the IDs and names are read from the table, and only the students in this section's group are imported.",
+                )}
+              </p>
             </div>
 
             <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-app)] p-3.5 flex items-center justify-between gap-3">
@@ -249,6 +256,19 @@ export default function ImportCourseStudentsModal({ courseId, courseName, onClos
 
         {step === "preview" && (
           <div className="flex flex-col gap-3">
+            {sheet?.kind === "registrar" && (
+              <p data-testid="sheet-info" className="rounded-xl border border-[var(--s-info-bd)] bg-[var(--s-info-bg)] px-4 py-2.5 text-xs text-[var(--s-info-text)]">
+                {t("ใบคะแนนสอบจากทะเบียน", "Registrar exam sheet")}
+                {sheet.courseCode ? ` · ${sheet.courseCode}${sheet.courseName ? ` ${sheet.courseName}` : ""}` : ""}
+                {sheet.groups.length > 0 ? ` · ${t("กลุ่ม", "group")} ${sheet.groups.join(", ")}` : ""}
+                {course?.sectionNumber && sheet.groups.length > 0 ? ` — ${t(`นำเข้าเฉพาะกลุ่ม ${course.sectionNumber}`, `importing group ${course.sectionNumber} only`)}` : ""}
+              </p>
+            )}
+            {sheet?.kind === "registrar" && sheet.courseCode && course?.code && sheet.courseCode !== course.code && (
+              <p role="alert" data-testid="sheet-code-warning" className="rounded-xl border border-[var(--s-warn-bd)] bg-[var(--s-warn-bg)] px-4 py-2.5 text-xs font-medium text-[var(--s-warn-text)]">
+                {t(`ไฟล์นี้เป็นของวิชา ${sheet.courseCode} แต่คุณกำลังนำเข้าวิชา ${course.code} — ตรวจสอบว่าเลือกไฟล์ถูกวิชา`, `This sheet is for subject ${sheet.courseCode}, but you are importing into ${course.code} — check it is the right file`)}
+              </p>
+            )}
             <div className="flex items-center gap-4 text-sm flex-wrap">
               <span className="font-medium text-[var(--text-primary)]">{fileName}</span>
               <span className="text-[var(--s-ok-text)] font-medium">

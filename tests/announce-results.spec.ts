@@ -55,6 +55,7 @@ test.describe("Announcing results — student side", () => {
     await seed(page, "student", false);
     await page.goto(`${BASE}/student/courses/c-an/classwork`);
     await page.waitForLoadState("networkidle");
+    await page.getByRole("button", { name: /^Submitted \(/ }).click();   // folded away until opened (14/10/2569)
     await expect(page.getByText("Submitted", { exact: true }).first()).toBeVisible();
     await expect(page.getByText("9/10")).toHaveCount(0);
     await expect(page.getByText("Graded", { exact: true })).toHaveCount(0);

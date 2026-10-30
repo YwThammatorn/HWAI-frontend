@@ -1,112 +1,264 @@
 [
   {
     "id": "t-mock-1",
-    "title": "ผศ.ดร.",
-    "name": "สมศักดิ์ เจริญสุข",
-    "email": "somsak.c@kmitl.ac.th",
+    "title": "ผศ.",
+    "name": "เกียรติณรงค์ ทองประเสริฐ",
+    "email": "kiatnarong.to@kmitl.ac.th",
     "role": "teacher",
     "status": "active",
     "courseIds": [
       "c-mock-1",
       "c-mock-2",
+      "c-mock-3",
       "c-mock-7",
       "c-mock-8",
       "c-mock-9",
       "c-mock-10",
+      "c-mock-11",
       "c-mock-17",
       "c-mock-18",
-      "c-mock-38",
-      "c-mock-44",
-      "c-mock-50"
-    ]
-  },
-  {
-    "id": "t-mock-2",
-    "title": "รศ.ดร.",
-    "name": "ประเสริฐ ดีเลิศ",
-    "email": "prasert.d@kmitl.ac.th",
-    "role": "teacher",
-    "status": "active",
-    "courseIds": [
-      "c-mock-3",
-      "c-mock-11",
       "c-mock-19",
-      "c-mock-39",
-      "c-mock-45",
-      "c-mock-51",
-      "c-mock-53"
-    ]
-  },
-  {
-    "id": "t-mock-3",
-    "title": "อ.",
-    "name": "กานต์ ศรีสุวรรณ",
-    "email": "karn.s@kmitl.ac.th",
-    "role": "teacher",
-    "status": "active",
-    "courseIds": [
-      "c-mock-4",
-      "c-mock-5",
-      "c-mock-12",
-      "c-mock-26",
-      "c-mock-29",
-      "c-mock-32",
-      "c-mock-34",
+      "c-mock-38",
       "c-mock-40",
+      "c-mock-44",
       "c-mock-46",
+      "c-mock-48",
       "c-mock-52"
     ]
   },
   {
-    "id": "t-mock-6",
+    "id": "t-mock-2",
     "title": "ผศ.ดร.",
-    "name": "วรรณา ใจดี",
-    "email": "wanna.j@kmitl.ac.th",
+    "name": "อำนาจ ขาวเน",
+    "email": "amnach.kh@kmitl.ac.th",
+    "role": "teacher",
+    "status": "active",
+    "courseIds": []
+  },
+  {
+    "id": "t-mock-3",
+    "title": "รศ.ดร.",
+    "name": "เจริญ วงษ์ชุ่มเย็น",
+    "email": "charoen.vo@kmitl.ac.th",
+    "role": "teacher",
+    "status": "active",
+    "courseIds": [
+      "c-mock-5"
+    ]
+  },
+  {
+    "id": "t-mock-6",
+    "title": "รศ.ดร.",
+    "name": "เกียรติกูล เจียรนัยธนะกิจ",
+    "email": "kietikul.je@kmitl.ac.th",
+    "role": "teacher",
+    "status": "active",
+    "courseIds": [
+      "c-mock-29",
+      "c-mock-34"
+    ]
+  },
+  {
+    "id": "t-mock-7",
+    "title": "รศ.ดร.",
+    "name": "อรฉัตร จิตต์โสภักตร์",
+    "email": "orachat.ch@kmitl.ac.th",
+    "role": "teacher",
+    "status": "active",
+    "courseIds": [
+      "c-mock-39",
+      "c-mock-47"
+    ]
+  },
+  {
+    "id": "t-mock-8",
+    "title": "รศ.ดร.",
+    "name": "รัฐชัย ชาวอุทัย",
+    "email": "rathachai.ch@kmitl.ac.th",
     "role": "teacher",
     "status": "active",
     "courseIds": [
       "c-mock-21",
       "c-mock-22",
-      "c-mock-30",
-      "c-mock-31",
       "c-mock-35",
       "c-mock-36",
-      "c-mock-41",
-      "c-mock-47"
+      "c-mock-45",
+      "c-mock-53"
     ]
   },
   {
-    "id": "t-mock-7",
-    "title": "รศ.",
-    "name": "ธนากร พงษ์ไทย",
-    "email": "thanakorn.p@kmitl.ac.th",
+    "id": "t-mock-9",
+    "title": "รศ.ดร.",
+    "name": "สุรินทร์ กิตติธรกุล",
+    "email": "surin.ki@kmitl.ac.th",
+    "role": "teacher",
+    "status": "active",
+    "courseIds": [
+      "c-mock-16",
+      "c-mock-42",
+      "c-mock-50"
+    ]
+  },
+  {
+    "id": "t-mock-10",
+    "title": "ผศ.ดร.",
+    "name": "อรัญญา วลัยรัชต์",
+    "email": "kwaranya@kmitl.ac.th",
     "role": "teacher",
     "status": "active",
     "courseIds": [
       "c-mock-13",
       "c-mock-14",
-      "c-mock-23",
-      "c-mock-27",
-      "c-mock-37",
-      "c-mock-42",
-      "c-mock-48"
+      "c-mock-43",
+      "c-mock-51"
     ]
   },
   {
-    "id": "t-mock-8",
-    "title": "อ.ดร.",
-    "name": "ปิยะ รักเรียน",
-    "email": "piya.r@kmitl.ac.th",
+    "id": "t-mock-11",
+    "title": "ผศ.ดร.",
+    "name": "ชมพูนุท เต็งเจริญ",
+    "email": "chompoonuch.te@kmitl.ac.th",
+    "role": "teacher",
+    "status": "active",
+    "courseIds": [
+      "c-mock-4",
+      "c-mock-12",
+      "c-mock-26",
+      "c-mock-32"
+    ]
+  },
+  {
+    "id": "t-mock-12",
+    "title": "ผศ.ดร.",
+    "name": "ชุติเมษฏ์ ศรีนิลทา",
+    "email": "kschutim@kmitl.ac.th",
+    "role": "teacher",
+    "status": "active",
+    "courseIds": [
+      "c-mock-41",
+      "c-mock-49"
+    ]
+  },
+  {
+    "id": "t-mock-13",
+    "title": "ผศ.ดร.",
+    "name": "ปกรณ์ วัฒนจตุรพร",
+    "email": "pakorn.wa@kmitl.ac.th",
+    "role": "teacher",
+    "status": "active",
+    "courseIds": [
+      "c-mock-27"
+    ]
+  },
+  {
+    "id": "t-mock-14",
+    "title": "ผศ.ดร.",
+    "name": "พงษ์ศักดิ์ กีรติวินทกร",
+    "email": "phongsak.ke@kmitl.ac.th",
     "role": "teacher",
     "status": "active",
     "courseIds": [
       "c-mock-6",
-      "c-mock-16",
-      "c-mock-20",
+      "c-mock-20"
+    ]
+  },
+  {
+    "id": "t-mock-15",
+    "title": "ผศ.ดร.",
+    "name": "ธนัญชัย ตรีภาค",
+    "email": "thanunchai.th@kmitl.ac.th",
+    "role": "teacher",
+    "status": "active",
+    "courseIds": [
       "c-mock-24",
-      "c-mock-25",
-      "c-mock-43",
-      "c-mock-49"
+      "c-mock-25"
+    ]
+  },
+  {
+    "id": "t-mock-16",
+    "title": "ผศ.",
+    "name": "อัครเดช วัชระภูพงษ์",
+    "email": "kwakkrad@kmitl.ac.th",
+    "role": "teacher",
+    "status": "active",
+    "courseIds": [
+      "c-mock-37"
+    ]
+  },
+  {
+    "id": "t-mock-17",
+    "title": "ผศ.",
+    "name": "บัณฑิต พัสยา",
+    "email": "bundit.pa@kmitl.ac.th",
+    "role": "teacher",
+    "status": "active",
+    "courseIds": []
+  },
+  {
+    "id": "t-mock-18",
+    "title": "ผศ.",
+    "name": "สรยุทธ กลมกล่อม",
+    "email": "sorayut.gl@kmitl.ac.th",
+    "role": "teacher",
+    "status": "active",
+    "courseIds": []
+  },
+  {
+    "id": "t-mock-19",
+    "title": "ผศ.",
+    "name": "ธนา หงษ์สุวรรณ",
+    "email": "khthana@kmitl.ac.th",
+    "role": "teacher",
+    "status": "active",
+    "courseIds": []
+  },
+  {
+    "id": "t-mock-20",
+    "title": "ดร.",
+    "name": "จิรายุ เพชรแหน",
+    "email": "jirayu.pe@kmitl.ac.th",
+    "role": "teacher",
+    "status": "active",
+    "courseIds": []
+  },
+  {
+    "id": "t-mock-21",
+    "title": "ดร.",
+    "name": "ปริญญา เอกปริญญา",
+    "email": "parinya.ek@kmitl.ac.th",
+    "role": "teacher",
+    "status": "active",
+    "courseIds": []
+  },
+  {
+    "id": "t-mock-22",
+    "title": "อ.",
+    "name": "คณัฐ ตังติสานนท์",
+    "email": "ktkanut@kmitl.ac.th",
+    "role": "teacher",
+    "status": "active",
+    "courseIds": [
+      "c-mock-30",
+      "c-mock-31"
+    ]
+  },
+  {
+    "id": "t-mock-23",
+    "title": "อ.",
+    "name": "วัจนพงศ์ เกษมศิริ",
+    "email": "watjanapong.ka@kmitl.ac.th",
+    "role": "teacher",
+    "status": "active",
+    "courseIds": []
+  },
+  {
+    "id": "t-mock-24",
+    "name": "จิระศักดิ์ สิทธิกร",
+    "email": "jirasak.si@kmitl.ac.th",
+    "role": "teacher",
+    "status": "active",
+    "courseIds": [
+      "c-mock-23"
     ]
   }
 ]

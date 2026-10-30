@@ -27,7 +27,7 @@ const ROSTER = [
 
 const GROUP_ASSIGNMENT = {
   id: "a-tp5-1", courseId: "c-tp5", name: "Capstone Prototype",
-  description: "Build the prototype as a team", dueDate: "2099-12-31",
+  description: "Build the prototype as a team", dueDate: "2026-01-05",
   maxPoints: 100, submissionType: "group", maxGroupSize: 3,
   acceptsFiles: true, fileTypes: [], rubricIds: [],
   createdAt: "2026-01-01T00:00:00.000Z", updatedAt: "2026-01-01T00:00:00.000Z",
@@ -170,6 +170,28 @@ test.describe("P5 — Results page merges by team", () => {
     // dedup: 2 teams total (Prototype Pals + Solo Student), not 3 submissions.
     await expect(page.getByText(/2 team\(s\)/i)).toBeVisible();
     await expect(page.getByText("90.0")).toBeVisible();
+  });
+
+  test("no letter grades on the page: no grade distribution, no A–F next to scores, no 'A+' on the top performer (15/10/2569)", async ({ page }) => {
+    await seedTeacher(page, {
+      submissions: [
+        gradedTeamSubmission("64070701", "Fah Test", "64070701@kmitl.ac.th", 90),
+        gradedTeamSubmission("64070702", "Beam Suk", "64070702@kmitl.ac.th", 90),
+        SOLO_SUBMISSION,
+      ],
+    });
+    await page.goto(`${BASE}/teacher/courses/c-tp5/assignments/a-tp5-1/results`);
+    await page.waitForLoadState("networkidle");
+    await expect(page.getByText("Student Results")).toBeVisible();
+    await expect(page.getByText(/grade distribution/i)).toHaveCount(0);
+    await expect(page.getByText("90/100").first()).toBeVisible();                       // the score stays, as score/max
+    await expect(page.getByText("A+")).toHaveCount(0);
+    // the Avg. Score card says what it is out of and over how many (15/10/2569)
+    const avg = page.locator("main div.grid > div").filter({ hasText: "Avg. Score" });
+    await expect(avg).toContainText("90.0");
+    await expect(avg).toContainText("/ 100 pts · 1 team(s) scored");
+    await expect(page.locator("main td").filter({ hasText: /^\s*90\/100\s*[A-F]\s*$/ })).toHaveCount(0);
+    await expect(page.getByText(/\(\s*[A-F]\s*\)/)).toHaveCount(0);                      // "Score: 40/100 (F)" in the attention box
   });
 });
 

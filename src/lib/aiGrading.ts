@@ -56,3 +56,22 @@ export function mockAiGradeCriteria(seed: string, criteria: Pick<RubricCriterion
   }
   return { levels, criterionScores, score, status: max > 0 && score / max < 0.65 ? "need_review" : "graded" };
 }
+
+// ── one place that writes the AI's marks (14/10/2569) ───────────────────────────────────────────────────────────────────────
+
+/** The fields that change on a submission when the AI (re)grades it: the AI's marks, the offsets those marks used, and everything the
+ *  teacher had put on top of an earlier AI result cleared. Used by "Grade with AI", the per-row Re-grade and Calibration's re-grade. */
+export function aiGradingUpdate(seed: string, maxPoints: number, rubric?: { criteria: Pick<RubricCriterion, "id" | "name" | "maxPoints" | "levels">[]; aiOffsets?: Record<string, number> }):
+  Pick<Submission, "aiScore" | "aiCriterionScores" | "aiOffsetsUsed" | "instructorScore" | "status" | "criterionScores" | "criterionComments"> {
+  const withRubric = !!rubric && rubric.criteria.length > 0;
+  const res = withRubric ? mockAiGradeCriteria(seed, rubric!.criteria, rubric!.aiOffsets) : { ...mockAiGrade(seed, maxPoints), criterionScores: undefined };
+  return {
+    aiScore: res.score,
+    aiCriterionScores: res.criterionScores,
+    aiOffsetsUsed: withRubric ? { ...(rubric!.aiOffsets ?? {}) } : undefined,
+    instructorScore: null,
+    status: res.status,
+    criterionScores: undefined,
+    criterionComments: undefined,
+  };
+}

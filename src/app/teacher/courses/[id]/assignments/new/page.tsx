@@ -8,7 +8,7 @@ import { useGradingCategories } from "@/lib/gradingCategories";
 import { useLanguage } from "@/context/LanguageContext";
 import { AttachmentsEditor, useAttachmentsDraft } from "@/components/AssignmentAttachments";
 import { useCLOs } from "@/lib/clo";
-import RubricCriteriaEditor, { CriterionDraft, newCriterionDraft, criteriaPointsOk, criteriaTotalPoints, finalizeCriteria } from "@/components/RubricCriteriaEditor";
+import RubricCriteriaEditor, { CriterionDraft, newCriterionDraft, criteriaPointsOk, levelsUniform, criteriaTotalPoints, finalizeCriteria } from "@/components/RubricCriteriaEditor";
 
 export default function NewAssignmentPage() {
   const { id } = useParams<{ id: string }>();
@@ -44,6 +44,8 @@ export default function NewAssignmentPage() {
   // Rubric lives on this page now (was a separate step after creating). Start with one
   // criterion worth 100% so a fresh form is already a valid rubric; the teacher splits it up.
   const [criteria, setCriteria] = useState<CriterionDraft[]>(() => [newCriterionDraft(t("เกณฑ์ที่ 1", "Criterion 1"), "100")]);
+  // which rubric a "Use a rubric from before" set came from — kept on the new rubric (14/10/2569)
+  const [sourceRubricId, setSourceRubricId] = useState<string | undefined>();
   const [initialCriteriaJson] = useState(() => JSON.stringify(criteria));
   const [rubricTouched, setRubricTouched] = useState(false);
 
@@ -108,6 +110,7 @@ export default function NewAssignmentPage() {
         assignmentId: a.id,
         name: t("เกณฑ์การให้คะแนน", "Grading Rubric"),
         criteria: finalizeCriteria(criteria, t("ไม่มีชื่อ", "Untitled")),
+        ...(sourceRubricId ? { sourceRubricId } : {}),
       });
       updateAssignment(a.id, { rubricIds: [rubric.id] });
     }
@@ -117,8 +120,9 @@ export default function NewAssignmentPage() {
 
   const totalPoints = criteriaTotalPoints(criteria);
   const pointsOk = criteriaPointsOk(criteria);
+  const levelsOk = levelsUniform(criteria);   // every criterion has the same number of levels (14/10/2569)
   const isValid = name.trim().length > 0 && (isExam || dueDate !== "") && (isExam || !acceptsFiles || fileTypes.length > 0) &&
-    (needsManualScore ? (parseInt(maxPoints) || 0) > 0 : pointsOk);
+    (needsManualScore ? (parseInt(maxPoints) || 0) > 0 : pointsOk && levelsOk);
 
   return (
       <main className="w-full px-8 py-8">
@@ -377,6 +381,7 @@ export default function NewAssignmentPage() {
                 assignmentName={name.trim()} assignmentDescription={description} assignmentAttachments={att.items}
                 clos={getCLOsByCourse(id)} cloHref={`/teacher/courses/${id}/clo`}
                 courseId={id}
+                onSourceRubric={setSourceRubricId}
               />
             </section>
           )}
@@ -388,6 +393,9 @@ export default function NewAssignmentPage() {
               warning looked like it wasn't showing at all. basis-full forces it onto its own full-width
               line above the buttons at any viewport size. */}
           <div className="flex flex-wrap items-center justify-end gap-3 mt-8 pt-6 pb-4 border-t border-gray-100">
+            {!needsManualScore && pointsOk && !levelsOk && (
+              <span className="text-xs text-amber-600 basis-full text-left">{t("ทุกเกณฑ์ต้องมีจำนวนระดับเท่ากัน ก่อนสร้างชิ้นงาน", "Every criterion needs the same number of levels before you can create the assignment")}</span>
+            )}
             {!needsManualScore && !pointsOk && (
               <span className="text-xs text-amber-600 basis-full text-left">{t("ทุกเกณฑ์ต้องมีคะแนนมากกว่า 0 ก่อนสร้างชิ้นงาน", "Every criterion needs more than 0 points before you can create the assignment")}</span>
             )}

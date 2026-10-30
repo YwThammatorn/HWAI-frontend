@@ -63,7 +63,7 @@ test.describe("Admin Courses — grouped by curriculum, then subject", () => {
     await expect(rows.nth(1)).toHaveAccessibleName("การเขียนโปรแกรมคอมพิวเตอร์ · Sec 2 · 2569 · Term 1");
     await expect(rows.nth(2)).toHaveAccessibleName("การเขียนโปรแกรมคอมพิวเตอร์ · Sec 3 · 2569 · Term 1");
     await expect(prog.getByText("No teachers assigned")).toHaveCount(0);
-    await expect(prog.getByText("ผศ.ดร. สมศักดิ์ เจริญสุข")).toHaveCount(3);
+    await expect(prog.getByText("ผศ. เกียรติณรงค์ ทองประเสริฐ")).toHaveCount(3);
     await expect(prog.getByText("3 sections")).toBeVisible();
 
     // Senior Project (โครงงานวิศวกรรมคอมพิวเตอร์): this term above the archived earlier one, in a single card
@@ -181,7 +181,7 @@ test.describe("Admin Courses — filters", () => {
     await page.getByRole("button", { name: "Collapse all" }).click();
     const search = page.getByLabel("Search courses");
 
-    await search.fill("วรรณา");                         // a teacher — teacher names are always Thai
+    await search.fill("รัฐชัย");                         // a teacher (teaches Software Engineering) — teacher names are always Thai
     await expect(subjectCard(page, "ระบบฐานข้อมูล")).toHaveCount(0);
     await expect(subjectCard(page, "วิศวกรรมซอฟต์แวร์")).toHaveCount(1); // groups open again while filtering
     await expect(page.getByRole("button", { name: "Collapse all" })).toHaveCount(0);

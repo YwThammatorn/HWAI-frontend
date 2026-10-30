@@ -93,6 +93,19 @@ test.describe("New assignment — rubric on the same page", () => {
     expect(await page.evaluate(() => JSON.parse(localStorage.getItem("hwai_assignments_v1") ?? "[]").length)).toBe(0);
   });
 
+  test("AI assistant writes in the language of the brief, not of the screen (16/10/2569): English interface + Thai brief → Thai criteria", async ({ page }) => {
+    await page.goto(`${BASE}/teacher/courses/c-rub/assignments/new`);
+    await page.waitForLoadState("networkidle");
+    await page.getByRole("button", { name: /AI Rubric Assistant/i }).click();
+    await page.getByLabel("What should this assignment assess?").fill("ออกแบบและสร้าง Prototype ของแอปพลิเคชันใน Figma ให้ครบ Core User Flow");
+    await page.getByRole("button", { name: "Generate criteria" }).click();
+    const dialog = page.getByRole("dialog", { name: "AI Rubric Assistant" });
+    await expect(dialog.getByRole("button", { name: "Apply Suggestions" })).toBeVisible({ timeout: 8000 });
+    await expect(dialog).toContainText("องค์ประกอบที่จำเป็นตามหน้าจอ");           // the level wording is Thai…
+    await expect(dialog).not.toContainText("All elements required by the screens");  // …not English
+    await expect(dialog.getByText("Excellent").first()).toBeVisible();              // the interface itself stays English
+  });
+
   test("AI assistant fills the criteria (points sum to 100)", async ({ page }) => {
     await page.goto(`${BASE}/teacher/courses/c-rub/assignments/new`);
     await page.waitForLoadState("networkidle");

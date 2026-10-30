@@ -22,8 +22,8 @@ fetch('/mock-data/curriculum-mockup.json').then(r=>r.json()).then(d=>{localStora
 
 ---
 
-[3] อาจารย์ พร้อม assign เข้าวิชาแล้ว (6 คน ทุกคนเป็น teacher — ระบบยังไม่มี TA และ admin ไม่ assign TA — ต้องทำ [2] ก่อน จะได้ courseId ตรงกัน)
-    สมศักดิ์ / ประเสริฐ / กานต์ + วรรณา ใจดี, ธนากร พงษ์ไทย, ปิยะ รักเรียน ที่รับหลาย section ข้ามหลักสูตร
+[3] อาจารย์ พร้อม assign เข้าวิชาแล้ว (22 คน ทุกคนเป็น teacher — ระบบยังไม่มี TA และ admin ไม่ assign TA — ต้องทำ [2] ก่อน จะได้ courseId ตรงกัน)
+    (ตั้งแต่ 15/10 เป็นอาจารย์จริงของภาควิชา 22 คน — ดู scripts/build-real-teachers.ts) เกียรติณรงค์ รับวิชาโปรแกรมมิ่ง/โครงสร้างข้อมูล/ฐานข้อมูลหลาย section
 
 fetch('/mock-data/teachers-mockup.json').then(r=>r.json()).then(d=>{localStorage.setItem('hwai_managed_teachers_v1', JSON.stringify(d)); location.reload();});
 
@@ -59,7 +59,7 @@ fetch('/mock-data/teachers-mockup.json').then(r=>r.json()).then(d=>{localStorage
                      [2] งานเดี่ยว ยังไม่ถึงกำหนด มี rubric 3 เกณฑ์ (4 ระดับ ดีมาก/พอใช้/ต้องปรับปรุง/ไม่ผ่าน) ยังไม่มีใครส่ง
                      [3] งานกลุ่ม (a-mock-3, จับคู่ 2 คน) ยังไม่ถึงกำหนด มี rubric 3 เกณฑ์ (4 ระดับ ดีมาก/พอใช้/ต้องปรับปรุง/ไม่ผ่าน) ยังไม่มีทีม/ใครส่ง
                          — ไว้ทดสอบ flow จับกลุ่ม: login 69070101 จับทีมกับ 69070102 → ส่งงาน →
-                         login somsak.c@kmitl.ac.th (ทำ [3] ก่อนถึงจะ login ได้) → Start Grading
+                         login kiatnarong.to@kmitl.ac.th (ทำ [3] ก่อนถึงจะ login ได้) → Start Grading
                          หรือกด Review/Recheck (ตอนนี้มี rubric แล้ว หน้า Grading Review จะเห็นเกณฑ์จริง)
                          → ให้คะแนนครั้งเดียว ทั้ง 69070101 และ 69070102 ได้คะแนนพร้อมกัน
     ล็อกอินเป็นนักศึกษาด้วยอีเมล 69070101@kmitl.ac.th (รหัสผ่านอะไรก็ได้ 4 ตัวขึ้นไป) จะเห็นวิชา+งานนี้
@@ -127,7 +127,7 @@ localStorage.setItem('hwai_submissions_v1', JSON.stringify(JSON.parse(localStora
 
 fetch('/mock-data/curriculum-mockup-en.json').then(r=>r.json()).then(d=>{localStorage.setItem('hwai_curriculum_versions_v1', JSON.stringify(d.curriculumVersions)); localStorage.setItem('hwai_course_templates_v1', JSON.stringify(d.courseTemplates)); return fetch('/mock-data/courses-mockup-en.json').then(r=>r.json());}).then(d=>{localStorage.setItem('hwai_courses_v2', JSON.stringify(d)); return fetch('/mock-data/teachers-mockup-en.json').then(r=>r.json());}).then(d=>{localStorage.setItem('hwai_managed_teachers_v1', JSON.stringify(d)); return fetch('/mock-data/student-flow-mockup-en.json').then(r=>r.json());}).then(d=>{localStorage.setItem('hwai_cohort_students_v1', JSON.stringify(d.cohortStudents)); localStorage.setItem('hwai_students_v1', JSON.stringify(d.courseStudents)); localStorage.setItem('hwai_grading_categories_v1', JSON.stringify(d.gradingCategories)); localStorage.setItem('hwai_assignments_v1', JSON.stringify(d.assignments)); localStorage.setItem('hwai_rubrics_v1', JSON.stringify(d.rubrics)); localStorage.setItem('hwai_submissions_v1', JSON.stringify(d.submissions)); localStorage.setItem('hwai_clos_v1', JSON.stringify(d.clos)); if(!localStorage.getItem('hwai_student_groups_v1')) localStorage.setItem('hwai_student_groups_v1', '[]'); localStorage.setItem('hwai_lang', 'en'); location.reload();});
 
-     ล็อกอิน: somsak.c@kmitl.ac.th (teacher), 69070101@kmitl.ac.th (student) — รหัสผ่านอะไรก็ได้ตามเงื่อนไขเดิม
+     ล็อกอิน: kiatnarong.to@kmitl.ac.th (teacher), 69070101@kmitl.ac.th (student) — รหัสผ่านอะไรก็ได้ตามเงื่อนไขเดิม
      อยากกลับไทย ก็รัน [1]/[2]/[3]/[5] เดิมทับได้เลย (คนละไฟล์ json แต่ id ชนกันพอดี ข้อมูลจะสลับกลับเป็นไทยทั้งชุด)
 
 ---
@@ -138,7 +138,7 @@ fetch('/mock-data/curriculum-mockup-en.json').then(r=>r.json()).then(d=>{localSt
        - วิชาเดียวกันหลาย section (Computer Programming 3 sec, DSA 3 sec, OS 2 sec) — ต้องอยู่ในการ์ดเดียวกัน
        - วิชาเดียวกันคนละเทอม/ปี (Senior Project 2569/1 + ที่เก็บถาวร 2568/1, DSA 2569/1 + 2569/2, Programming 2568/1+2)
        - เทอม 3 (Database Systems 2569/3)
-       - วิชาที่มีหลาย section อาจารย์คนเดียวสอนทุก section (Programming 3 sec = สมศักดิ์, DSA 2569/1 = สมศักดิ์, UX/UI = กานต์) — ไม่มี section ว่าง ไม่มีหลายอาจารย์ใน section เดียว (7/10, ทดสอบด้วย section-one-teacher.spec)
+       - วิชาที่มีหลาย section อาจารย์คนเดียวสอนทุก section (Programming 3 sec = เกียรติณรงค์, DSA 2569/1 = เกียรติณรงค์, UX/UI = เจริญ) — ไม่มี section ว่าง ไม่มีหลายอาจารย์ใน section เดียว (7/10, ทดสอบด้วย section-one-teacher.spec)
        - ทุกรายวิชามีอาจารย์ 1 คนพอดี (ตอนสร้างวิชาในระบบต้องเลือกอาจารย์เสมอ จึงไม่มีเคส "No teachers assigned" ใน mock — ทดสอบด้วย section-one-teacher.spec)
        - ชื่อวิชาเดียวกันแต่คนละหลักสูตร (UX/UI ใน CE 2569 / CECS 2565 / CEI 2568) — ต้องไม่ปนกัน
        - หลักสูตรที่มีแต่ section เก็บถาวร (CE 2559, CECS 2560, CEI 2563) — ทดสอบตัวกรองสถานะ + ไม่มีปุ่ม + Section
@@ -225,11 +225,11 @@ fetch('/mock-data/courses-mockup-en.json').then(r=>r.json()).then(c=>{localStora
      ทุกคนเป็นรุ่น 69 (เข้าปีนี้) ตรงกับวิชาปี 1 เทอม 1; รหัสไม่ชนกับ students_sample.csv ([3b]) และ course-import-test.csv ([7]) 10 คนที่ [7] ใช้ยังไม่ลงวิชาเหมือนเดิม
      คะแนนสร้างจากความสามารถรายคน + สุ่มเล็กน้อย (seed คงที่ ได้ผลเดิมทุกครั้ง) คนที่อ่อนมีโอกาสไม่ส่งงานมากกว่าเล็กน้อย — ของ 3 คนเดิมไม่ถูกแตะ:
      4/10: คะแนนเต็มของแต่ละงานไม่เท่ากันแล้ว เพื่อให้เห็นสัดส่วนว่างานไหนมีน้ำหนักเท่าไร — หมวด "งานที่มอบหมาย" 40% รวมเต็ม 100 คะแนน:
-       Python 15 · Quiz 1 10 · Quiz 2 10 · Lab 5 15 · โปรเจกต์เล็ก 25 · โปรเจกต์กลุ่ม 15 และ 10   |   สอบกลางภาค 50 (25%)   |   สอบปลายภาค 100 (35%)
+       Python 15 · Quiz 1 10 · Quiz 2 10 · Lab 5 15 · โปรเจกต์เล็ก 25 · โปรเจกต์กลุ่ม 15 และ 10   |   สอบกลางภาค 25 (25%)   |   สอบปลายภาค 35 (35%)   ← 15/10: คะแนนเต็มข้อสอบ = น้ำหนักหมวด คะแนนที่ได้จึงเป็นคะแนนจริงที่บวกเข้าคะแนนรวม 100
        คะแนนไม่สุดโต่ง: ไม่มีใครได้เต็มสักงาน ต่ำสุดไม่ต่ำกว่า 1 ใน 3 ของคะแนนเต็ม งานเล็ก (Quiz) กระจายกว้างกว่างานใหญ่ (โปรเจกต์ สอบ)
      rubric ของทุกงานเป็นแบบเดียวกับไฟล์ UXUI_Final_Rubric_draft1.xlsx: เกณฑ์ C1, C2 … แต่ละเกณฑ์มี 4 ระดับ (ดีมาก 100% / พอใช้ 66.67% / ต้องปรับปรุง 33.33% / ไม่ผ่าน 0%)
      และคะแนนรายเกณฑ์ของนักศึกษาก็เป็นขั้นตามระดับนั้น (เกณฑ์เต็ม 9 → 9/6/3/0) เกณฑ์เนื้อหาเข้ากับงาน: โปรแกรม (ถูกต้อง/อ่านง่าย/จัดการ Error), Quiz (แนวคิด/คำตอบ/เหตุผล), งานกลุ่ม (ฟังก์ชัน/โครงสร้าง/ทีม)
-       สอบกลางภาค (เต็ม 50, ประกาศผลแล้ว)  ได้คะแนนครบ 42 คน  เฉลี่ย 33.0  SD 7.5  ต่ำสุด 17  สูงสุด 47  — ไว้ดูกราฟระฆังคว่ำ/สถิติของ role student
+       สอบกลางภาค (เต็ม 25, ประกาศผลแล้ว)  ได้คะแนนครบ 42 คน  เฉลี่ย 16.7  SD 3.7  ต่ำสุด 9  สูงสุด 23  — ไว้ดูกราฟระฆังคว่ำ/สถิติของ role student
        แบบฝึกหัด Python (ยังไม่ประกาศ)    ตรวจแล้ว 30 (เฉลี่ย 12.0/15) · รอตรวจ 6 · ยังไม่ตรวจ 4 · ไม่ส่ง 2
        Quiz 1 (ประกาศผลแล้ว)             ตรวจแล้ว 39 (เฉลี่ย 7.5/10) · ไม่ส่ง 3
        Quiz 2 (ยังไม่ประกาศ)              ตรวจแล้ว 32 (เฉลี่ย 7.0/10) · รอตรวจ 4 · ไม่ส่ง 6
@@ -240,7 +240,7 @@ fetch('/mock-data/courses-mockup-en.json').then(r=>r.json()).then(c=>{localStora
      ทุกงานที่มี rubric: คะแนนรายเกณฑ์รวมเท่ากับคะแนนรวมเป๊ะ และไม่เกินคะแนนเต็มของเกณฑ์นั้น (เหมือน [13])
      ไม่เขียนทับข้อมูลอื่น: เปลี่ยนเฉพาะรายชื่อห้อง c-mock-1, ตัวงานของวิชานี้ (รวมสถานะ “ประกาศผลแล้ว/ยังไม่ประกาศ” ซึ่งเก็บอยู่ที่ตัวงาน — จึงรีเซ็ตกลับเป็นค่าตั้งต้นทุกครั้งที่รัน) และผลตรวจของงานเหล่านั้น — รายชื่อ/ผลตรวจของวิชาอื่น (เช่นประวัติจาก [14]) อยู่ครบ
      และรวมรายชื่อนักศึกษากลางเข้ากับของเดิม (ที่เพิ่มเองด้วยปุ่ม Add Student ไม่หาย) ใช้ได้ไม่ว่าเคยรัน [5], [12], [14] มาแล้วหรือไม่ แต่ต้องเคยรัน [2] และ [5] (ให้มีวิชา/งานของ c-mock-1)
-     ล็อกอิน somsak.c@kmitl.ac.th (อาจารย์) → c-mock-1 → สมุดคะแนน / นักศึกษา จะเห็น 42 คน; ล็อกอิน 69070101@kmitl.ac.th → ผลการประเมิน / สอบกลางภาค เห็นกราฟเทียบทั้งห้อง
+     ล็อกอิน kiatnarong.to@kmitl.ac.th (อาจารย์) → c-mock-1 → สมุดคะแนน / นักศึกษา จะเห็น 42 คน; ล็อกอิน 69070101@kmitl.ac.th → ผลการประเมิน / สอบกลางภาค เห็นกราฟเทียบทั้งห้อง
 
      ภาษาไทย:
 
@@ -252,28 +252,32 @@ fetch('/mock-data/student-flow-mockup-en.json').then(r=>r.json()).then(f=>fetch(
 
 ---
 
-[16] วิชา UX/UI (c-mock-4 "การออกแบบประสบการณ์และส่วนติดต่อผู้ใช้" กลุ่ม 1 · 2569 เทอม 1) — 30 คน + งาน UX/UI Final Project พร้อม rubric จากไฟล์ UXUI_Final_Rubric_draft1.xlsx
-     ต้องมีรายวิชา c-mock-4 กับอาจารย์ก่อน (รัน [14] หรือ [2] [3] มาแล้ว) — คำสั่งนี้ใส่เฉพาะรายชื่อ งาน rubric และผลตรวจของวิชานี้ ไม่แตะวิชาอื่น และรันซ้ำได้
+[16] วิชา UX/UI (c-mock-4 "การออกแบบประสบการณ์และส่วนติดต่อผู้ใช้" กลุ่ม 1 · 2569 เทอม 1) — 30 คน + งานในชั้นเรียน 21 ชิ้น (20 งานจาก Classroom + โปรเจกต์ปลายภาค) พร้อม rubric ภาษาไทย ทีมงานกลุ่ม และผลงานที่นักศึกษาส่ง
+     ต้องมีรายวิชา c-mock-4 กับอาจารย์ก่อน (รัน [14] หรือ [2] [3] มาแล้ว) — คำสั่งนี้ใส่เฉพาะรายชื่อ งาน rubric ทีม CLO และผลตรวจของวิชานี้ ไม่แตะวิชาอื่น และรันซ้ำได้
+     (ข้อมูลสร้างจาก scripts/build-uxui-class.ts + scripts/uxui-assignments.ts — แก้ที่สองไฟล์นั้นแล้วรัน node scripts/build-uxui-class.ts)
      ห้อง 30 คน เป็นนักศึกษา CE ทั้งหมด (1 section = 1 หลักสูตร): 69070101 กับ 67010201 ที่เรียนอยู่เดิม + อีก 11 คนรุ่น 66–68 + 17 คนรุ่น 69 จาก [15]
-     งาน "โปรเจกต์ UX/UI ปลายภาค (Final Project)" เต็ม 100 หมวด "โปรเจกต์ปลายภาค" 60% (หมวด "สอบปลายภาค" 40% ยังไม่มีงาน) ตรวจแล้ว 27 คน ไม่ส่ง 3 คน และประกาศผลแล้ว
-     rubric 7 เกณฑ์ตามไฟล์ (C1–C7 คะแนน 15/15/10/15/15/15/15) 4 ระดับ: ดีมาก = เต็ม, พอใช้ = 66.67%, ต้องปรับปรุง = 33.33%, ไม่ผ่าน = 0%
-     → เกณฑ์เต็ม 15 ได้ 15/10/5/0 ส่วนเกณฑ์เต็ม 10 (C3) ได้ 10/7/3/0 (ปัดเป็นจำนวนเต็ม) — คะแนนรายเกณฑ์ของนักศึกษาทุกคนเป็นค่าตามระดับเหล่านี้
-     คะแนนรวม: เฉลี่ย 73.4  SD 15.7  ต่ำสุด 48  สูงสุด 92 (ไม่มีใครเต็ม) — ข้อที่ได้ "ดีมาก" น้อยสุดคือ C6 ตัวอักษร สี และ Accessibility (4 คน)
-     ดูที่: ล็อกอิน karn.s@kmitl.ac.th (อาจารย์วิชานี้) → UX/UI → สมุดคะแนน → สรุปผลทั้งห้อง; หรือล็อกอิน 69070101@kmitl.ac.th (87 คะแนน) → วิชา UX/UI → งาน Final Project → การ์ดเกณฑ์จะไฮไลต์ระดับที่ได้ในแต่ละเกณฑ์
+     ไม่มีสอบกลางภาค/ปลายภาค: หมวดคะแนนมี 3 หมวด งานเดี่ยว 20% · งานกลุ่ม 30% · โปรเจกต์ปลายภาค 50% (หมวดสอบเดิมถูกแทนที่ — อาจารย์ปรับได้ที่ Settings)
+     งาน 21 ชิ้น: เดี่ยว 8 (UI design, UX Principles, Neilsen's 10 Heuristics, Persona, Brand & Tone, Hooked, Usability Testing, Flower workshop) · กลุ่ม 12 (ทีมละ 5 คน 6 ทีม) · โปรเจกต์ UX/UI ปลายภาค (เดี่ยว เต็ม 75)
+     แต่ละงานมี rubric ภาษาไทย 1–4 เกณฑ์ผูกกับ CLO1–CLO5 ของวิชา; โปรเจกต์ปลายภาคใช้ rubric 7 เกณฑ์จากไฟล์ UXUI_Final_Rubric.xlsx; งานกลุ่มทุกชิ้นมีเกณฑ์ "การทำงานเป็นทีมและความตรงต่อเวลา"
+     ระดับคะแนน 4 ระดับ: ดีมาก = เต็ม, พอใช้ = 66.67%, ต้องปรับปรุง = 33.33%, ไม่ผ่าน = 0% (ปัดเป็นจำนวนเต็ม); งานที่เต็ม ≥ 10 ไม่มีใครได้เต็มทุกเกณฑ์
+     งานกลุ่ม: 6 ทีมเดิมทุกงาน ยกเว้น How Might We กับ Crazy Idea ที่สลับทีมใหม่ ("กลุ่ม A–F"); ทุกคนในทีมได้คะแนนเท่ากัน; ส่งช้าในช่วง 1 ชั่วโมงหลังกำหนด (Done late): ส่งเอกสาร Final project 2 ทีม, Wireframe and Wireflow 1 ทีม
+     ประกาศผลแล้วทุกงาน ยกเว้น Hooked · Usability Testing · Reorder / Redesign UI (ยังไม่ประกาศ — Usability Testing กับ Reorder ยังมีชิ้นรอตรวจ/รอ review ให้ลองหน้า Grading)
+     ดูที่: ล็อกอิน chompoonuch.te@kmitl.ac.th (อาจารย์วิชานี้) → UX/UI → งาน / ตรวจงาน / สมุดคะแนน / CLO; หรือล็อกอินนักศึกษาในห้อง เช่น 69070101@kmitl.ac.th → วิชา UX/UI → งาน
+     (เดิมคำสั่งนี้ใส่งานเดียวคือ Final Project เต็ม 100 หมวด 60% + หมวดสอบ 40% — ถูกแทนที่ทั้งหมดแล้ว)
 
      ภาษาไทย:
 
-fetch('/mock-data/student-uxui-mockup.json').then(r=>r.json()).then(f=>fetch('/mock-data/students-mockup.json').then(r=>r.json()).then(st=>{const get=k=>JSON.parse(localStorage.getItem(k)||'[]');const put=(k,items)=>{const ids=new Set(items.map(x=>x.id));localStorage.setItem(k,JSON.stringify([...get(k).filter(x=>!ids.has(x.id)),...items]));};const sids=new Set(st.map(x=>x.studentId));localStorage.setItem('hwai_cohort_students_v1',JSON.stringify([...st,...get('hwai_cohort_students_v1').filter(x=>!sids.has(x.studentId))]));localStorage.setItem('hwai_students_v1',JSON.stringify([...get('hwai_students_v1').filter(x=>x.courseId!=='c-mock-4'),...f.courseStudents]));put('hwai_grading_categories_v1',f.gradingCategories);put('hwai_assignments_v1',f.assignments);put('hwai_rubrics_v1',f.rubrics);const aids=new Set(f.assignments.map(a=>a.id));localStorage.setItem('hwai_submissions_v1',JSON.stringify([...get('hwai_submissions_v1').filter(x=>!aids.has(x.assignmentId)),...f.submissions]));location.reload();}));
+fetch('/mock-data/student-uxui-mockup.json').then(r=>r.json()).then(f=>fetch('/mock-data/students-mockup.json').then(r=>r.json()).then(st=>{const get=k=>JSON.parse(localStorage.getItem(k)||'[]');const sids=new Set(st.map(x=>x.studentId));localStorage.setItem('hwai_cohort_students_v1',JSON.stringify([...st,...get('hwai_cohort_students_v1').filter(x=>!sids.has(x.studentId))]));localStorage.setItem('hwai_students_v1',JSON.stringify([...get('hwai_students_v1').filter(x=>x.courseId!=='c-mock-4'),...f.courseStudents]));localStorage.setItem('hwai_grading_categories_v1',JSON.stringify([...get('hwai_grading_categories_v1').filter(x=>x.courseId!=='c-mock-4'),...f.gradingCategories]));const old=new Set(get('hwai_assignments_v1').filter(x=>x.courseId==='c-mock-4').map(x=>x.id));const aids=new Set(f.assignments.map(a=>a.id));localStorage.setItem('hwai_assignments_v1',JSON.stringify([...get('hwai_assignments_v1').filter(x=>x.courseId!=='c-mock-4'),...f.assignments]));const rids=new Set(f.rubrics.map(r=>r.id));localStorage.setItem('hwai_rubrics_v1',JSON.stringify([...get('hwai_rubrics_v1').filter(r=>!rids.has(r.id)&&!old.has(r.assignmentId)),...f.rubrics]));localStorage.setItem('hwai_submissions_v1',JSON.stringify([...get('hwai_submissions_v1').filter(x=>!aids.has(x.assignmentId)&&!old.has(x.assignmentId)),...f.submissions]));localStorage.setItem('hwai_student_groups_v1',JSON.stringify([...get('hwai_student_groups_v1').filter(x=>x.courseId!=='c-mock-4'),...f.groups]));const cids=new Set(f.clos.map(c=>c.id));localStorage.setItem('hwai_clos_v1',JSON.stringify([...get('hwai_clos_v1').filter(c=>!cids.has(c.id)),...f.clos]));location.reload();}));
 
-     English:
+     English: (the course's new content is Thai in both languages — only the roster/app labels follow the language)
 
-fetch('/mock-data/student-uxui-mockup-en.json').then(r=>r.json()).then(f=>fetch('/mock-data/students-mockup-en.json').then(r=>r.json()).then(st=>{const get=k=>JSON.parse(localStorage.getItem(k)||'[]');const put=(k,items)=>{const ids=new Set(items.map(x=>x.id));localStorage.setItem(k,JSON.stringify([...get(k).filter(x=>!ids.has(x.id)),...items]));};const sids=new Set(st.map(x=>x.studentId));localStorage.setItem('hwai_cohort_students_v1',JSON.stringify([...st,...get('hwai_cohort_students_v1').filter(x=>!sids.has(x.studentId))]));localStorage.setItem('hwai_students_v1',JSON.stringify([...get('hwai_students_v1').filter(x=>x.courseId!=='c-mock-4'),...f.courseStudents]));put('hwai_grading_categories_v1',f.gradingCategories);put('hwai_assignments_v1',f.assignments);put('hwai_rubrics_v1',f.rubrics);const aids=new Set(f.assignments.map(a=>a.id));localStorage.setItem('hwai_submissions_v1',JSON.stringify([...get('hwai_submissions_v1').filter(x=>!aids.has(x.assignmentId)),...f.submissions]));location.reload();}));
+fetch('/mock-data/student-uxui-mockup-en.json').then(r=>r.json()).then(f=>fetch('/mock-data/students-mockup-en.json').then(r=>r.json()).then(st=>{const get=k=>JSON.parse(localStorage.getItem(k)||'[]');const sids=new Set(st.map(x=>x.studentId));localStorage.setItem('hwai_cohort_students_v1',JSON.stringify([...st,...get('hwai_cohort_students_v1').filter(x=>!sids.has(x.studentId))]));localStorage.setItem('hwai_students_v1',JSON.stringify([...get('hwai_students_v1').filter(x=>x.courseId!=='c-mock-4'),...f.courseStudents]));localStorage.setItem('hwai_grading_categories_v1',JSON.stringify([...get('hwai_grading_categories_v1').filter(x=>x.courseId!=='c-mock-4'),...f.gradingCategories]));const old=new Set(get('hwai_assignments_v1').filter(x=>x.courseId==='c-mock-4').map(x=>x.id));const aids=new Set(f.assignments.map(a=>a.id));localStorage.setItem('hwai_assignments_v1',JSON.stringify([...get('hwai_assignments_v1').filter(x=>x.courseId!=='c-mock-4'),...f.assignments]));const rids=new Set(f.rubrics.map(r=>r.id));localStorage.setItem('hwai_rubrics_v1',JSON.stringify([...get('hwai_rubrics_v1').filter(r=>!rids.has(r.id)&&!old.has(r.assignmentId)),...f.rubrics]));localStorage.setItem('hwai_submissions_v1',JSON.stringify([...get('hwai_submissions_v1').filter(x=>!aids.has(x.assignmentId)&&!old.has(x.assignmentId)),...f.submissions]));localStorage.setItem('hwai_student_groups_v1',JSON.stringify([...get('hwai_student_groups_v1').filter(x=>x.courseId!=='c-mock-4'),...f.groups]));const cids=new Set(f.clos.map(c=>c.id));localStorage.setItem('hwai_clos_v1',JSON.stringify([...get('hwai_clos_v1').filter(c=>!cids.has(c.id)),...f.clos]));location.reload();}));
 
 ---
 
 [17] ทดสอบนำเข้าคะแนนสอบจาก CSV (หน้ากรอกคะแนนสอบของอาจารย์) — ไม่ต้องใช้ console
-     ต้องมีห้อง c-mock-1 ครบ 42 คนก่อน (รัน [2] [3] [14] [15] มาแล้ว) — ใช้ "สอบปลายภาค" (a-mock-9, เต็ม 100) เพราะยังไม่มีคะแนนและยังไม่ประกาศผล
-     ล็อกอิน somsak.c@kmitl.ac.th → c-mock-1 → Grading → เลือก "สอบปลายภาค" → ตารางคะแนนสอบ → กด "นำเข้าด้วย CSV" → เลือกไฟล์:
+     ต้องมีห้อง c-mock-1 ครบ 42 คนก่อน (รัน [2] [3] [14] [15] มาแล้ว) — ใช้ "สอบปลายภาค" (a-mock-9, เต็ม 35) เพราะยังไม่มีคะแนนและยังไม่ประกาศผล
+     ล็อกอิน kiatnarong.to@kmitl.ac.th → c-mock-1 → Grading → เลือก "สอบปลายภาค" → ตารางคะแนนสอบ → กด "นำเข้าด้วย CSV" → เลือกไฟล์:
 
      test-data/exam-scores-final-c-mock-1.csv  (ไฟล์ถูกต้อง)
        42 คนครบทุกคน หัวตารางภาษาไทย (รหัสนักศึกษา, ชื่อ-นามสกุล, คะแนน) คะแนนเฉลี่ยราว 64.5 SD 14.5 ต่ำสุด 32 สูงสุด 93 มีครึ่งคะแนน (81.5)
@@ -298,7 +302,7 @@ fetch('/mock-data/student-uxui-mockup-en.json').then(r=>r.json()).then(f=>fetch(
 
 [18] รีโหลดเฉพาะ "รายวิชา + อาจารย์คนเดียวสอนทุก section" + ป้าย CLO บนเกณฑ์ (11/10) — ไม่แตะนักศึกษา/ผลตรวจ/ประวัติ
      0) รายวิชา: ทุกรายวิชามีอาจารย์ (วิชา ML ที่ไม่มีอาจารย์ 3 รายการถูกตัดออก — 50 รายการ) — เขียนทับ hwai_courses_v2 (รายวิชาทั้งชุด เหมือน [2])
-     1) อาจารย์: ทุกวิชาที่เปิดในเทอมเดียวกันมีอาจารย์คนเดียวสอนทุก section (Programming 3 sec = สมศักดิ์, UX/UI = กานต์ ฯลฯ) — เขียนทับ hwai_managed_teachers_v1 (รายชื่ออาจารย์ทั้งชุด เหมือน [3])
+     1) อาจารย์: ทุกวิชาที่เปิดในเทอมเดียวกันมีอาจารย์คนเดียวสอนทุก section (Programming 3 sec = เกียรติณรงค์, UX/UI = เจริญ ฯลฯ) — เขียนทับ hwai_managed_teachers_v1 (รายชื่ออาจารย์ทั้งชุด เหมือน [3])
      2) Rubric: เกณฑ์ 21 ข้อของ c-mock-1 ผูกกับ CLO1–4 (cloIds) — เขียนทับ rubric ตาม id เท่านั้น และเติม CLO ตาม id ถ้ายังไม่มี; ไม่แตะ hwai_submissions_v1 / รายชื่อนักศึกษา (ต่างจาก [6]/[13] ที่เขียนทับผลตรวจทั้งชุด)
      ดูผล: /admin/courses (Programming Sec 1–3 ชื่ออาจารย์เหมือนกัน), /teacher/courses/c-mock-1/clo (ผลลัพธ์ CLO), หน้าแก้ไขงาน → แถว "CLO ที่เกณฑ์นี้วัด"
      (ทดสอบด้วย reload-teachers-clo.spec.ts — คำสั่งด้านล่างถูกดึงจากไฟล์นี้ไปรันจริงจากสถานะเก่า)
@@ -347,7 +351,7 @@ const get=(u)=>fetch(u).then(r=>r.json()); const merge=(k,rs)=>{const ids=new Se
 ---
 
 [21] เพิ่มข้อมูลไว้ลองหน้า Rubrics > "เทียบข้ามปี" (12/10) — วิชาการเขียนโปรแกรม ของปี 2567 และ 2568 พร้อม rubric และผลตรวจของนักศึกษาสมมติ 36 คนต่องาน
-     เพิ่มรายวิชา c-mock-60 (2567/1) และ c-mock-61 (2568/1) ให้อาจารย์สมศักดิ์ (เก็บถาวร), งาน 4 ชิ้น (แบบฝึกหัด Python + Mini Project ปีละ 1 ชุด), rubric 4 ชุดที่ชื่อเกณฑ์ตรงกับของปีนี้บางส่วน (ปี 2567 ไม่มี Error handling, Mini Project ปี 2567 มี Style and documentation แทน), และผลตรวจ 144 ชิ้น
+     เพิ่มรายวิชา c-mock-60 (2567/1) และ c-mock-61 (2568/1) ให้อาจารย์เกียรติณรงค์ (เก็บถาวร), งาน 4 ชิ้น (แบบฝึกหัด Python + Mini Project ปีละ 1 ชุด), rubric 4 ชุดที่ชื่อเกณฑ์ตรงกับของปีนี้บางส่วน (ปี 2567 ไม่มี Error handling, Mini Project ปี 2567 มี Style and documentation แทน), และผลตรวจ 144 ชิ้น
      เติมแบบ merge ตาม id เท่านั้น — ไม่แตะรายวิชา/อาจารย์/งาน/ผลตรวจอื่น ใช้นักศึกษาสมมติ (รหัส 6799xxxx / 6899xxxx) จึงไม่กระทบประวัติรายวิชาของนักศึกษาจริงในระบบ
      ดูผล: /teacher/courses/c-mock-1/rubrics (แท็บ "เทียบข้ามปี"), และปุ่ม "ใช้ rubric จากงานก่อนหน้า" ตอนสร้างงาน (มี "ปีที่แล้ว")
      ต้องโหลด [2]/[3]/[5] หรือ [18]/[20] มาก่อน เพื่อให้มีรายวิชา c-mock-1 และ rubric ของปีนี้
@@ -360,6 +364,31 @@ const get=(u)=>fetch(u).then(r=>r.json()); const merge=(k,rs)=>{const ids=new Se
      English:
 
 const get=(u)=>fetch(u).then(r=>r.json()); const merge=(k,rs)=>{const ids=new Set(rs.map(r=>r.id)); localStorage.setItem(k, JSON.stringify([...JSON.parse(localStorage.getItem(k)||'[]').filter(r=>!ids.has(r.id)),...rs]));}; get('/mock-data/rubric-years-mockup-en.json').then(d=>{merge('hwai_courses_v2', d.courses); merge('hwai_assignments_v1', d.assignments); merge('hwai_rubrics_v1', d.rubrics); merge('hwai_submissions_v1', d.submissions); const ts=JSON.parse(localStorage.getItem('hwai_managed_teachers_v1')||'[]'); ts.forEach(t=>{ if(t.id===d.teacherId) t.courseIds=[...new Set([...(t.courseIds||[]),...d.courses.map(c=>c.id)])]; }); localStorage.setItem('hwai_managed_teachers_v1', JSON.stringify(ts)); location.reload();});
+
+---
+
+[22] เลื่อนนาฬิกาของระบบไว้ลองสาธิต (15/10) — งานที่สร้างใหม่ตรวจไม่ได้จนกว่าจะพ้นกำหนดส่ง + ช่วงส่งช้า 1 ชั่วโมง คำสั่งนี้ขยับ "เวลาปัจจุบัน" ของระบบ (เฉพาะเรื่องส่งงาน/เปิดตรวจ) โดยไม่ต้องรอข้ามวัน
+
+     ใช้ไม่ได้กับเวลาจริงของเครื่อง ไม่แตะข้อมูลอื่น — เก็บใน localStorage ตัวเดียว (hwai_clock_offset_min = จำนวนนาทีที่บวกเพิ่ม)
+     ตัวอย่าง: สร้างงานที่กำหนดส่งวันนี้ → นักศึกษาส่ง → รันคำสั่งนี้ (+1500 นาที ≈ 1 วัน) → อาจารย์กด "ตรวจด้วย AI" ได้
+     ล้างค่า: รัน localStorage.removeItem('hwai_clock_offset_min'); location.reload();
+
+     ภาษาไทย / English (คำสั่งเดียวกัน — แก้เลข 1500 เป็นจำนวนนาทีที่ต้องการ):
+
+localStorage.setItem('hwai_clock_offset_min','1500'); location.reload();
+
+---
+
+[23] ห้อง c-mock-1 ใช้รายชื่อนักศึกษาจริง (15/10) — เฉพาะในเครื่องนี้ ข้อมูลจริงไม่เข้า git (repo เป็น public)
+
+     ไฟล์ข้อมูลอยู่ที่ public/local-data/real-class.json (ถูก .gitignore) สร้างจากใบรายชื่อของทะเบียนด้วย: node scripts/build-local-class.ts local-data/real-roster.csv <รหัสนักศึกษาที่จะเป็นตัวแทนเดโม>
+     (ขั้นตอนเต็มอยู่ที่หัวไฟล์ scripts/build-local-class.ts — ต้องแปลง .xls เป็น CSV ก่อน) คนอื่นที่ clone repo ไม่มีไฟล์นี้ คำสั่งจะแจ้งว่ายังไม่มีไฟล์
+     ผล: c-mock-1 (กลุ่ม 1) เปลี่ยนเป็นนักศึกษาจริงทั้งกลุ่ม ส่วนกลุ่ม 2 ของใบรายชื่อไปอยู่ที่ c-mock-7 (กลุ่ม 2 ของวิชาเดียวกัน) ผลตรวจ/คะแนนไม่ได้แต่งใหม่ — นักศึกษาจริงแต่ละคนยืมผลตรวจของนักศึกษาหนึ่งคนในห้องเดิมที่สมจริงอยู่แล้ว (ผลรวมรายเกณฑ์ สถานะ สอบกลางภาคที่ประกาศแล้ว ฯลฯ ยังครบเหมือนเดิม)
+     นักศึกษาเดโม 69070101 ย้ายไปเป็นนักศึกษาจริงหนึ่งคน (ข้อมูลของเขาในทุกวิชาย้ายตาม) — ปุ่ม Dev Bypass "Student" และการสลับ role ของ kiatnarong.to ใช้คนนี้แทน (เก็บใน localStorage: hwai_demo_student)
+     ต้องรัน [2] [3] [5] และ [15] มาก่อน (มี c-mock-1) รันซ้ำได้ ผลเหมือนเดิม
+     ย้อนกลับ: รัน localStorage.removeItem('hwai_demo_student') แล้วรัน [15] [14] ใหม่ จะได้ห้อง 42 คนและนักศึกษาเดโมเดิม
+
+fetch('/local-data/real-class.json').then(r=>{if(!r.ok)throw new Error('ยังไม่มีไฟล์ข้อมูลในเครื่อง — ดูหัวไฟล์ scripts/build-local-class.ts');return r.json()}).then(d=>{const get=k=>JSON.parse(localStorage.getItem(k)||'[]'),set=(k,v)=>localStorage.setItem(k,JSON.stringify(v)),f=d.demo.from,to=d.demo.studentId,nm=d.demo.name.split(' '),real=new Set(d.cohortStudents.map(s=>s.studentId)),mine=new Set(d.assignmentIds),cs=d.courses;set('hwai_cohort_students_v1',[...get('hwai_cohort_students_v1').filter(s=>s.studentId!==f&&!real.has(s.studentId)),...d.cohortStudents]);set('hwai_students_v1',[...get('hwai_students_v1').filter(s=>s.courseId!==cs.primary&&s.courseId!==cs.second).map(s=>s.studentId===f?{...s,studentId:to,firstName:nm[0],lastName:nm.slice(1).join(' '),email:d.demo.email}:s),...d.courseStudents]);set('hwai_submissions_v1',[...get('hwai_submissions_v1').filter(s=>!mine.has(s.assignmentId)).map(s=>s.studentId===f?{...s,studentId:to,studentName:d.demo.name,email:d.demo.email}:s),...d.submissions]);set('hwai_student_groups_v1',get('hwai_student_groups_v1').map(g=>({...g,memberStudentIds:(g.memberStudentIds||[]).map(i=>i===f?to:i)})));localStorage.setItem('hwai_demo_student',JSON.stringify({studentId:to,name:d.demo.name}));const u=JSON.parse(localStorage.getItem('hwai_user')||'null');if(u&&u.role==='student'&&u.studentId===f)localStorage.setItem('hwai_user',JSON.stringify({...u,studentId:to,email:d.demo.email,name:d.demo.name}));location.reload()}).catch(e=>alert(e.message));
 
 ---
 

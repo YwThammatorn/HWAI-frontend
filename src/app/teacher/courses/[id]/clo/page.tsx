@@ -8,9 +8,7 @@ import { useCLOs, CLO } from "@/lib/clo";
 import { useLanguage } from "@/context/LanguageContext";
 import Modal from "@/components/Modal";
 import { useAssignments } from "@/lib/assignments";
-import { useStudents, isWithdrawn } from "@/lib/students";
-import { computeCloAttainment } from "@/lib/cloAttainment";
-import { toneForPct, SCORE_TONE_CLASSES } from "@/lib/scoreBook";
+import { cloLinks } from "@/lib/cloLinks";
 
 export default function CLOPage() {
   const { id } = useParams<{ id: string }>();
@@ -24,15 +22,9 @@ export default function CLOPage() {
   const course = getCourse(id);
   const clos = getCLOsByCourse(id);
 
-  // How the class did on the criteria that measure each CLO (withdrawn students are not counted)
-  const { getAssignmentsByCourse, rubrics, submissions } = useAssignments();
-  const { getStudentsByCourse } = useStudents();
-  const activeIds = new Set(getStudentsByCourse(id).filter((s) => !isWithdrawn(s)).map((s) => s.studentId));
-  const courseAssignments = getAssignmentsByCourse(id);
-  const attainment = computeCloAttainment({
-    clos, assignments: courseAssignments, rubrics,
-    submissions: submissions.filter((s) => activeIds.has(s.studentId)),
-  });
+  // Which assignments mention each CLO (names only — no criteria, no scores, since 15/10/2569)
+  const { getAssignmentsByCourse, rubrics } = useAssignments();
+  const linked = cloLinks({ clos, assignments: getAssignmentsByCourse(id), rubrics });
 
   const [formMode, setFormMode] = useState<"idle" | "add" | "edit">("idle");
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -138,8 +130,8 @@ export default function CLOPage() {
         </div>
         <p className="text-sm text-[var(--text-muted)] max-w-2xl mb-8">
           {t(
-            "สิ่งที่นักศึกษาควรทำได้เมื่อเรียนจบวิชานี้ ใช้เป็นฐานสำหรับวัด CLO Attainment และผูกกับเกณฑ์การให้คะแนนของแต่ละชิ้นงาน",
-            "What a student should be able to do after completing this course — the basis for measuring CLO Attainment and linking to each assignment's grading criteria."
+            "สิ่งที่นักศึกษาควรทำได้เมื่อเรียนจบวิชานี้ ใช้ผูกกับเกณฑ์การให้คะแนนของแต่ละชิ้นงาน",
+            "What a student should be able to do after completing this course — linked to each assignment's grading criteria."
           )}
         </p>
 
@@ -153,7 +145,7 @@ export default function CLOPage() {
               </svg>
             </div>
             <p className="text-sm font-medium text-gray-500 mb-1">{t("ยังไม่มี CLO กำหนดไว้", "No CLOs defined yet")}</p>
-            <p className="text-xs text-gray-500 mb-6">{t("เพิ่ม CLO เพื่อวัดผลลัพธ์การเรียนรู้และ CLO Attainment ของนักศึกษา", "Add CLOs to measure student learning outcomes and CLO Attainment")}</p>
+            <p className="text-xs text-gray-500 mb-6">{t("เพิ่ม CLO แล้วผูกกับเกณฑ์การให้คะแนนของแต่ละชิ้นงาน", "Add CLOs, then link them to each assignment's grading criteria")}</p>
             <button
               onClick={openAdd}
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-medium transition-colors"
@@ -168,8 +160,7 @@ export default function CLOPage() {
           <>
             <div className="flex flex-col gap-3">
               {clos.map((clo) => {
-                const res = attainment.find((r) => r.clo.id === clo.id);
-                const pct = res?.pct ?? null;
+                const res = linked.find((r) => r.clo.id === clo.id);
                 return (
                 <div
                   key={clo.id}
@@ -206,45 +197,22 @@ export default function CLOPage() {
                     </div>
                   </div>
 
-                  {/* What measures this CLO and how the class did on it */}
+                  {/* The assignments that mention this CLO — one line each, no criteria, no scores */}
                   <div className="mt-4 border-t border-[var(--border-subtle)] pt-4" data-testid={`clo-links-${clo.code}`}>
-                    {res && res.links.length > 0 ? (
+                    {res && res.assignments.length > 0 ? (
                       <>
-                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-                          <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">{t("ผลลัพธ์ CLO ของห้อง", "Class attainment")}</p>
-                          {pct !== null ? (
-                            <span data-testid="clo-attainment" className={`inline-flex h-7 items-center rounded-lg px-3 text-sm font-bold tabular-nums ${SCORE_TONE_CLASSES[toneForPct(pct)]}`}>{Math.round(pct)}%</span>
-                          ) : (
-                            <span className="text-xs text-[var(--text-muted)]">{t("ยังไม่มีงานที่ตรวจ", "Nothing graded yet")}</span>
-                          )}
-                          {pct !== null && (
-                            <span className="text-xs text-[var(--text-muted)]">
-                              {t(`จากงานที่ตรวจแล้ว ${res.gradedCount} ชิ้น · ${res.links.length} เกณฑ์`, `from ${res.gradedCount} graded ${res.gradedCount === 1 ? "submission" : "submissions"} · ${res.links.length} ${res.links.length === 1 ? "criterion" : "criteria"}`)}
-                            </span>
-                          )}
-                        </div>
+                        <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">{t("งานที่กล่าวถึง CLO นี้", "Assignments that mention this CLO")}</p>
                         <ul className="mt-3 divide-y divide-[var(--border-subtle)] rounded-xl border border-[var(--border-subtle)]">
-                          {res.links.map((l) => (
-                            <li key={l.criterionId} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 px-3 py-2 text-sm">
-                              <span className="min-w-0">
-                                <Link href={`/teacher/courses/${id}/assignments/${l.assignmentId}`} className="font-medium text-[var(--accent)] hover:underline">{l.assignmentName}</Link>
-                                <span className="text-[var(--text-secondary)]"> · {l.criterionName}</span>
-                              </span>
-                              <span className="flex shrink-0 items-center gap-2 text-xs tabular-nums text-[var(--text-muted)]">
-                                {l.maxPoints} {t("คะแนน", "pts")}
-                                {l.pct !== null ? (
-                                  <span className={`inline-flex h-6 items-center rounded-md px-2 font-semibold ${SCORE_TONE_CLASSES[toneForPct(l.pct)]}`}>{Math.round(l.pct)}%</span>
-                                ) : (
-                                  <span>—</span>
-                                )}
-                              </span>
+                          {res.assignments.map((a) => (
+                            <li key={a.id} className="px-3 py-2 text-sm">
+                              <Link href={`/teacher/courses/${id}/assignments/${a.id}`} className="font-medium text-[var(--accent)] hover:underline">{a.name}</Link>
                             </li>
                           ))}
                         </ul>
                       </>
                     ) : (
                       <p data-testid="clo-unmeasured" className="text-xs leading-relaxed text-[var(--text-secondary)]">
-                        {t("ยังไม่มีเกณฑ์ใดวัด CLO นี้ — เลือก CLO ในส่วน Rubric ตอนสร้างหรือแก้ไขชิ้นงาน", "No criterion measures this CLO yet — pick it in a criterion's CLO row when you create or edit an assignment's rubric")}
+                        {t("ยังไม่มีงานใดกล่าวถึง CLO นี้ — เลือก CLO ในส่วน Rubric ตอนสร้างหรือแก้ไขชิ้นงาน", "No assignment mentions this CLO yet — pick it in a criterion's CLO row when you create or edit an assignment's rubric")}
                       </p>
                     )}
                   </div>

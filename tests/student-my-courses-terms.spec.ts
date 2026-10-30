@@ -105,17 +105,17 @@ test.describe("My Courses page", () => {
     await expect(groups.nth(2).getByRole("link")).toHaveCount(2);
   });
 
-  test("each finished course shows its weighted total and grade; only announced scores count; a withdrawn one has no grade", async ({ page }) => {
+  test("each finished course shows its weighted total (no letter grade); only announced scores count; a withdrawn one has none", async ({ page }) => {
     await open(page, "/student/courses");
     const row = (name: string) => pastSection(page).getByRole("link", { name: new RegExp(name) });
     await expect(row("Last Term Course")).toContainText("72.0%");                       // 80×60% + 60×40%
-    await expect(row("Last Term Course").getByLabel("Grade B")).toBeVisible();
+    await expect(row("Last Term Course").getByLabel("Total 72.0 percent")).toBeVisible();
     await expect(row("Older Course")).toContainText("90.0%");                           // only the graded category counts (so far)
-    await expect(row("Older Course").getByLabel("Grade A")).toBeVisible();
-    await expect(row("Ungraded Old")).toContainText("No grade yet");                    // graded, but results not announced
-    await expect(row("Archived Now")).toContainText("No grade yet");                    // nothing graded
+    await expect(row("Ungraded Old")).toContainText("No score yet");                    // graded, but results not announced
+    await expect(row("Archived Now")).toContainText("No score yet");                    // nothing graded
     await expect(row("Dropped Course")).toContainText("Withdrawn");
-    await expect(row("Dropped Course").getByLabel(/^Grade/)).toHaveCount(0);
+    await expect(row("Dropped Course").getByLabel(/^Total /)).toHaveCount(0);
+    await expect(pastSection(page).getByLabel(/^Grade /)).toHaveCount(0);   // no letters anywhere (15/10/2569)
   });
 
   test("a finished course opens like any other", async ({ page }) => {
@@ -280,8 +280,8 @@ test.describe("term-history mock (console command [14])", () => {
     await expect(groups.nth(1)).toHaveAccessibleName("Term 1/2567");
     await expect(groups.nth(2)).toHaveAccessibleName("Term 2/2566");
     await expect(groups.nth(3)).toHaveAccessibleName("Term 1/2566");   // their own first term — nothing earlier exists
-    const letters = await pastSection(page).getByLabel(/^Grade /).evaluateAll((els) => els.map((e) => e.getAttribute("aria-label")?.slice(-1)));
-    expect(letters.slice().sort().join("")).toBe("AAABCD".split("").sort().join(""));   // A A A B C D, no subject repeated
+    const totals = await pastSection(page).getByLabel(/^Total /).evaluateAll((els) => els.map((e) => e.getAttribute("aria-label")));
+    expect(totals).toHaveLength(6);                                                     // six finished subjects with a score, no subject repeated
   });
 
   test("67010201 (3rd year, admitted 2567): the F, the D, and a term whose results are not announced yet — nothing before 2567", async ({ page }) => {
@@ -289,10 +289,10 @@ test.describe("term-history mock (console command [14])", () => {
     const past = pastSection(page);
     await expect(past.getByRole("group")).toHaveCount(3);
     await expect(past.getByRole("group").nth(0)).toHaveAccessibleName("Term 1/2568");
-    await expect(past.getByRole("group").nth(0)).toContainText("No grade yet");
+    await expect(past.getByRole("group").nth(0)).toContainText("No score yet");
     await expect(past.getByRole("group").nth(2)).toHaveAccessibleName("Term 1/2567");   // their own first term
-    await expect(past.getByLabel("Grade F")).toHaveCount(1);
-    await expect(past.getByLabel("Grade D")).toHaveCount(1);
+    await expect(past.getByLabel(/^Total /)).toHaveCount(4);   // 47.0 (was the F), 55.0 (the D), 86.0 and 79.0 — percentages only now
+    await expect(past.getByLabel(/^Grade /)).toHaveCount(0);
     await expect(past.getByText("47.0%")).toBeVisible();
   });
 
@@ -321,7 +321,6 @@ test.describe("term-history mock (console command [14])", () => {
     await expect(groups).toHaveCount(2);
     await expect(groups.nth(0)).toHaveAccessibleName("Term 2/2568");
     await expect(groups.nth(1)).toHaveAccessibleName("Term 1/2568");
-    await expect(past.getByLabel("Grade A")).toHaveCount(1);
-    await expect(past.getByLabel("Grade B")).toHaveCount(1);
+    await expect(past.getByLabel(/^Total /)).toHaveCount(2);
   });
 });

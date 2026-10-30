@@ -36,7 +36,7 @@ const COURSE: CourseSeed = {
 
 const ASSIGNMENT: AssignmentSeed = {
   id: "a-p2", courseId: "c-p2", name: "Lab 1: Hello World",
-  description: "First lab assignment", dueDate: "2026-12-31",
+  description: "First lab assignment", dueDate: "2026-01-05",
   maxPoints: 100, submissionType: "individual",
   attachments: [], createdAt: "2026-01-01T00:00:00.000Z", updatedAt: "2026-01-01T00:00:00.000Z",
 };

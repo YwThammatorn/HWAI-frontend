@@ -15,7 +15,7 @@ const TEACHER = { id: "t-glc", title: "Dr.", name: "Somsak", email: "somsak@kmit
 const lv = (label: string) => ({ label, description: `${label} wording` });
 const LEVELS = [lv("Excellent"), lv("Fair"), lv("Needs work"), lv("Fail")];
 const ASSIGNMENT = {
-  id: "a-glc", courseId: "c-glc", name: "Exercise", description: "", dueDate: "2099-12-31", maxPoints: 12, submissionType: "individual",
+  id: "a-glc", courseId: "c-glc", name: "Exercise", description: "", dueDate: "2026-01-05", maxPoints: 12, submissionType: "individual",
   maxGroupSize: null, acceptsFiles: true, fileTypes: [], rubricIds: ["r-glc"], createdAt: NOW, updatedAt: NOW,
 };
 const RUBRIC = {
@@ -169,4 +169,24 @@ test("Thai UI", async ({ page }) => {
   await open(page, "blank", { manual: true, lang: "th" });
   await expect(page.getByRole("radiogroup", { name: "ระดับของ Correctness" })).toBeVisible();
   await expect(page.getByTestId("grade-unmarked")).toHaveText("เลือกระดับอีก 2 เกณฑ์ก่อนบันทึก");
+});
+
+// 15/10/2569 — "AI confidence" is gone from the Grade screen (user's request): no label, no percentage bar, in English or Thai, with or without an AI result.
+test("the Grade screen shows no AI confidence (label, High/Medium/Low, percentage) whatever the AI scored", async ({ page }) => {
+  for (const id of ["ai-levels", "ai-total", "blank"]) {
+    await page.goto("about:blank");
+    await open(page, id);
+    await expect(page.getByText("Grading Review")).toBeVisible();
+    await expect(page.getByText(/Confidence/i)).toHaveCount(0);
+    await expect(page.getByText(/\((92|74|48)%\)/)).toHaveCount(0);
+    await expect(page.getByText(/^(High|Medium|Low)$/)).toHaveCount(0);
+  }
+  // the one note that stays: nothing from the AI behind this submission
+  await expect(page.getByText("Not yet AI-graded — grading manually")).toBeVisible();
+});
+
+test("Thai: no 'ความมั่นใจ AI' either", async ({ page }) => {
+  await open(page, "ai-levels", { lang: "th" });
+  await expect(page.getByText("ตรวจสอบการให้คะแนน")).toBeVisible();
+  await expect(page.getByText("ความมั่นใจ")).toHaveCount(0);
 });

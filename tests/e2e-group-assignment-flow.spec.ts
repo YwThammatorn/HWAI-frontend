@@ -33,7 +33,7 @@ const ROSTER = [
 
 const ASSIGNMENT = {
   id: "a-e2e", courseId: "c-e2e", name: "Team Poster", description: "Design a poster together",
-  dueDate: "2099-12-31", maxPoints: 100, submissionType: "group", maxGroupSize: 2,
+  dueDate: "2026-03-10", maxPoints: 100, submissionType: "group", maxGroupSize: 2,
   acceptsFiles: true, fileTypes: [], rubricIds: [], createdAt: "2026-01-01T00:00:00.000Z", updatedAt: "2026-01-01T00:00:00.000Z",
 };
 
@@ -63,6 +63,8 @@ async function loginAs(page: Page, user: { name: string; email: string; role: st
 }
 
 test("cold start: a student forms a team, submits, the teacher grades once, and every teammate sees the result", async ({ page }) => {
+  // 15/10/2569: students submit before the deadline, the teacher can grade only after the late hour — the clock moves between the two
+  await page.clock.setFixedTime(new Date("2026-03-10T12:00:00"));
   await seedStatic(page);
 
   // Establish the origin before logging in, then land on the assignment as Fah.
@@ -100,6 +102,7 @@ test("cold start: a student forms a team, submits, the teacher grades once, and 
   // (23/9/2569) — grading a team happens via Re-grade (to get it out of "not graded" so Recheck
   // appears) then Recheck, where the actual score is set. This assignment has no rubric, so Recheck
   // falls back to a single "enter the total score directly" input (23/9/2569).
+  await page.clock.setFixedTime(new Date("2026-03-11T01:05:00"));
   await loginAs(page, { name: TEACHER.name, email: TEACHER.email, role: "teacher" });
   await page.goto(GRADING_URL);
   await page.waitForLoadState("networkidle");
@@ -139,6 +142,7 @@ test("cold start: a student forms a team, submits, the teacher grades once, and 
   // And the classwork list (a different page again) reflects it too.
   await page.goto(`${BASE}/student/courses/c-e2e/classwork`);
   await page.waitForLoadState("networkidle");
+  await page.getByRole("button", { name: /^Submitted \(/ }).click();   // folded away until opened (14/10/2569)
   await expect(page.getByText("88/100")).toBeVisible();
   await expect(page.getByText("Graded")).toBeVisible();
 });

@@ -55,6 +55,43 @@ export function isManualGrading(a: Pick<Assignment, "isExam" | "acceptsFiles" | 
   return !!a.isExam || a.acceptsFiles === false || a.gradingMode === "manual";
 }
 
+// ── when students may submit and when the teacher may start grading (15/10/2569) ───────────────────────────────────────────────
+// `dueDate` is a date only; the deadline is the end of that day. Students get LATE_WINDOW_MS more to submit or resubmit, and grading may
+// start only after that: nothing is graded while the work can still change. One value for the whole system, no teacher override.
+// An exam (scores are typed or imported) and an assignment without a due date are never locked. `now` is epoch ms (see lib/clock.ts).
+export const LATE_WINDOW_MS = 60 * 60 * 1000;
+
+type Dated = Pick<Assignment, "dueDate" | "isExam">;
+/** The deadline: 23:59:59 of the due date. Null without one. */
+export const dueAt = (a: Pick<Assignment, "dueDate">): Date | null => (a.dueDate ? new Date(a.dueDate + "T23:59:59") : null);
+/** The last moment a student can still submit: the deadline plus the late window. Null without a due date or for an exam. */
+export const submissionClosesAt = (a: Dated): Date | null => {
+  const d = a.isExam ? null : dueAt(a);
+  return d ? new Date(d.getTime() + LATE_WINDOW_MS) : null;
+};
+/** Past the deadline but still inside the late window. */
+export const isLate = (a: Dated, now: number): boolean => {
+  const d = a.isExam ? null : dueAt(a), c = submissionClosesAt(a);
+  return !!d && !!c && now > d.getTime() && now <= c.getTime();
+};
+export const submissionOpen = (a: Dated, now: number): boolean => {
+  const c = submissionClosesAt(a);
+  return !c || now <= c.getTime();
+};
+export const gradingOpen = (a: Dated, now: number): boolean => {
+  const c = submissionClosesAt(a);
+  return !c || now > c.getTime();
+};
+/** When grading becomes possible (the first second after the window closes), for "opens at …". Null = always open. */
+export const gradingOpensAt = (a: Dated): Date | null => {
+  const c = submissionClosesAt(a);
+  return c ? new Date(c.getTime() + 1000) : null;
+};
+/** What a resubmission clears: the earlier file's result must not stay on the new file. */
+export const CLEARED_RESULT = {
+  aiScore: null, instructorScore: null, instructorComment: "", criterionScores: undefined, aiCriterionScores: undefined, aiOffsetsUsed: undefined, criterionComments: undefined,
+} as const;
+
 /** A submission the AI graded and the teacher has not scored by hand — what "switch to manual" sends back to not graded. */
 export const isAiOnlyGraded = (s: Pick<Submission, "status" | "instructorScore" | "aiScore">) =>
   s.status !== "not_graded" && s.instructorScore === null;
@@ -85,8 +122,13 @@ export interface Submission {
   /** What the AI gave each criterion, keyed by RubricCriterion.id (12/10/2569) — set when the teacher sends the work to the AI, so the
    *  Grade screen can start from it and Calibration can compare it with the teacher's own levels. Never shown to students. */
   aiCriterionScores?: Record<string, number>;
+  /** The rubric's AI correction (`Rubric.aiOffsets`) that was in effect when the AI produced this work's marks (14/10/2569). Calibration
+   *  needs it to suggest a correction without adding it on top of one that is already inside the marks. Absent = none. */
+  aiOffsetsUsed?: Record<string, number>;
   // Security: student work must not leave faculty without explicit consent
   externalUseConsent: boolean;
+  /** Handed in after the due date, inside the late window (15/10/2569). Absent/false = on time. Set again on every resubmission. */
+  late?: boolean;
   status: "not_graded" | "need_review" | "graded";
   /** Set when this submission was created as part of a group assignment —
    *  every StudentGroup member gets their own row sharing this id, so a
@@ -167,6 +209,9 @@ export interface Rubric {
   /** How the AI is corrected on this rubric (12/10/2569, set by "Use these values" on the Calibration page): per criterion, levels to move
    *  the AI's judgement toward stricter (+) or more generous (−). Applies to the next "Grade with AI"; absent = no correction. */
   aiOffsets?: Record<string, number>;
+  /** The rubric this one was copied from ("Use a rubric from before", 14/10/2569) — how Calibration finds the other assignments that
+   *  share a rubric when it offers to re-grade them. Absent = written from scratch (or copied before this existed). */
+  sourceRubricId?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -181,7 +226,7 @@ export interface AssignmentContextValue {
   getAssignment: (id: string) => Assignment | undefined;
   getAssignmentsByCourse: (courseId: string) => Assignment[];
   addSubmission: (data: Omit<Submission, "id" | "updatedAt">) => Submission;
-  updateSubmission: (id: string, data: Partial<Pick<Submission, "aiScore" | "instructorScore" | "instructorComment" | "criterionComments" | "criterionScores" | "aiCriterionScores" | "status" | "fileUrl" | "attachments">>) => void;
+  updateSubmission: (id: string, data: Partial<Pick<Submission, "aiScore" | "instructorScore" | "instructorComment" | "criterionComments" | "criterionScores" | "aiCriterionScores" | "aiOffsetsUsed" | "status" | "fileUrl" | "attachments" | "submittedAt" | "late">>) => void;
   getSubmissionsByAssignment: (assignmentId: string) => Submission[];
   addRubric: (data: Omit<Rubric, "id" | "createdAt" | "updatedAt">) => Rubric;
   updateRubric: (id: string, data: Partial<Omit<Rubric, "id" | "assignmentId" | "createdAt" | "updatedAt">>) => void;

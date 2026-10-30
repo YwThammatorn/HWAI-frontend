@@ -18,18 +18,28 @@ interface Resolved {
  * as a download; links open in a new tab since most sites refuse to be framed).
  * Falls back to `empty` when nothing was submitted.
  */
-export default function SubmissionViewer({ attachments, zoom, caption, empty }: {
+export default function SubmissionViewer({ attachments, zoom, caption, empty, anonymous = false, onOpenLink }: {
   attachments: AssignmentAttachment[];
   /** Same 25–200 % scale as the grading toolbar. */
   zoom: number;
   caption?: string;
   empty: ReactNode;
+  /** Blind calibration (14/10/2569): file and link names can carry a student's name or account, so they are shown as "File 1", "Link 1"
+   *  (the link itself still opens). The caption is the caller's to leave out. */
+  anonymous?: boolean;
+  /** Called when the teacher opens a submitted link (the link still opens in its own tab). The Grade screen uses it to float the grading part in a small window next to it. */
+  onOpenLink?: () => void;
 }) {
   const { t } = useLanguage();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [resolved, setResolved] = useState<Resolved | null>(null);
 
   const sel = attachments.find((a) => a.id === selectedId) ?? attachments[0];
+  const shownName = (a: AssignmentAttachment) => {
+    if (!anonymous) return a.name;
+    const nth = attachments.filter((x) => x.kind === a.kind).indexOf(a) + 1;
+    return a.kind === "link" ? `${t("ลิงก์", "Link")} ${nth}` : `${t("ไฟล์", "File")} ${nth}`;
+  };
   const selId = sel?.id;
   const selRef = sel?.ref;
   const selSource = sel?.source;
@@ -74,16 +84,19 @@ export default function SubmissionViewer({ attachments, zoom, caption, empty }: 
   if (sel.source === "url") {
     body = (
       <div className={card} style={{ width: paperWidth }}>
-        <p className="text-sm font-semibold text-[var(--text-primary)] break-all">{sel.ref}</p>
+        <p className="text-sm font-semibold text-[var(--text-primary)] break-all">{anonymous ? shownName(sel) : sel.ref}</p>
         <p className="text-xs text-gray-400">{t("ลิงก์ที่นักศึกษาส่ง — เปิดในแท็บใหม่", "Link submitted by the student — opens in a new tab")}</p>
         <a
           href={sel.ref}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={onOpenLink}
+          data-testid="open-link"
           className="inline-flex items-center h-9 px-4 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] transition-colors"
         >
-          {t("เปิดลิงก์", "Open link")}
+          {onOpenLink ? t("เปิดลิงก์และตรวจในก้อนเล็ก", "Open link and grade in a small window") : t("เปิดลิงก์", "Open link")}
         </a>
+        {onOpenLink && <p className="text-xs text-gray-400">{t("ส่วนตรวจจะลอยอยู่ในหน้าต่างเล็ก ให้ตรวจไปพร้อมดูลิงก์ได้", "The grading part floats in a small window, so you can grade while you look at the link")}</p>}
       </div>
     );
   } else if (!ready) {
@@ -91,18 +104,18 @@ export default function SubmissionViewer({ attachments, zoom, caption, empty }: 
   } else if (!ready.url) {
     body = (
       <div className={card} style={{ width: paperWidth }}>
-        <p className="text-sm font-semibold text-[var(--text-primary)]">{sel.name}</p>
+        <p className="text-sm font-semibold text-[var(--text-primary)]">{shownName(sel)}</p>
         <p className="text-xs text-gray-400">{t("ไม่พบไฟล์นี้ในที่เก็บข้อมูลแล้ว", "This file is no longer in storage")}</p>
       </div>
     );
   } else if (sel.kind === "image" || ready.type.startsWith("image/")) {
     // eslint-disable-next-line @next/next/no-img-element
-    body = <img src={ready.url} alt={sel.name} style={{ width: paperWidth, maxWidth: "none" }} className="shrink-0 bg-white shadow-xl rounded-sm" />;
-  } else if (ready.type === "application/pdf") {
+    body = <img src={ready.url} alt={shownName(sel)} style={{ width: paperWidth, maxWidth: "none" }} className="shrink-0 bg-white shadow-xl rounded-sm" />;
+  } else if (ready.type === "application/pdf" || /\.pdf$/i.test(sel.name)) {
     body = (
       <iframe
         src={ready.url}
-        title={sel.name}
+        title={shownName(sel)}
         style={{ width: paperWidth, height: paperHeight }}
         className="shrink-0 bg-white shadow-xl rounded-sm border-0"
       />
@@ -110,11 +123,11 @@ export default function SubmissionViewer({ attachments, zoom, caption, empty }: 
   } else {
     body = (
       <div className={card} style={{ width: paperWidth }}>
-        <p className="text-sm font-semibold text-[var(--text-primary)] break-all">{sel.name}</p>
+        <p className="text-sm font-semibold text-[var(--text-primary)] break-all">{shownName(sel)}</p>
         <p className="text-xs text-gray-400">{t("ไม่สามารถแสดงตัวอย่างไฟล์ประเภทนี้ — ดาวน์โหลดเพื่อเปิดดู", "No preview for this file type — download it to open")}</p>
         <a
           href={ready.url}
-          download={sel.name}
+          download={anonymous ? shownName(sel) : sel.name}
           className="inline-flex items-center h-9 px-4 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] transition-colors"
         >
           {t("ดาวน์โหลด", "Download")}
@@ -136,14 +149,14 @@ export default function SubmissionViewer({ attachments, zoom, caption, empty }: 
                   type="button"
                   onClick={() => setSelectedId(a.id)}
                   aria-pressed={active}
-                  title={a.name}
+                  title={shownName(a)}
                   className={`max-w-[220px] truncate h-8 px-3 rounded-lg border text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] ${
                     active
                       ? "border-[var(--accent)] bg-[var(--accent-subtle)] text-[var(--accent)]"
                       : "border-gray-200 text-gray-600 hover:border-[var(--accent)] hover:text-[var(--accent)]"
                   }`}
                 >
-                  {a.kind === "link" ? `${t("ลิงก์", "Link")}: ${a.name}` : a.name}
+                  {a.kind === "link" && !anonymous ? `${t("ลิงก์", "Link")}: ${a.name}` : shownName(a)}
                 </button>
               </li>
             );

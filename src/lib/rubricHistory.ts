@@ -165,90 +165,73 @@ export function proposeReplacement(opts: { brief: string; skippedName: string; t
   return { ...pick, maxPoints: Math.max(1, opts.points) };
 }
 
-// ── Comparing the same rubric across years ──────────────────────────────────────────────────────────────────────────────
+// ── Comparing rubrics the teacher picks (14/10/2569) ────────────────────────────────────────────────────────────────────────
+// Before this the page chose the columns itself (same subject, same assignment name or overlapping criteria) and lined criteria up by
+// name — a rubric renamed from one year to the next silently fell out of the comparison. Now the teacher picks which assignments' rubrics
+// to put side by side, like phones on a spec sheet, and says which criterion goes on which row.
 
+/** One cell of the table: how the class did on one criterion of one rubric. */
 export interface YearCell { avgPct: number | null; n: number; counts: number[]; maxPoints: number }
-export interface YearColumn {
-  key: string;
+
+/** An assignment whose rubric can be put in the comparison. */
+export interface CompareOption {
   assignmentId: string;
   courseId: string;
+  courseName: string;
   title: string;
   academicYear?: number;
   term?: Course["term"];
   sectionNumber?: string;
   order: number;
-  isReference: boolean;
-  /** the assignment's own class average, null when nothing was graded */
+  criteriaCount: number;
+  /** levels per criterion (a rubric's criteria share one count; older data may differ — then the largest) */
+  levelCount: number;
+  maxPoints: number;
   avgPct: number | null;
   gradedCount: number;
 }
-export interface YearRow {
-  key: string;                              // criterionKey
-  name: string;                             // as written in the newest rubric that has it
-  cells: Record<string, YearCell | undefined>;
-  /** in how many of the compared rubrics this criterion exists */
-  presentIn: number;
+
+/** Every non-exam assignment with a rubric in the teacher's own courses, newest term first. */
+export function compareOptions(inp: { courses: Course[]; assignments: Assignment[]; rubrics: Rubric[]; submissions: Submission[]; myCourseIds: Set<string> }): CompareOption[] {
+  const out: CompareOption[] = [];
+  for (const r of inp.rubrics) {
+    if (r.criteria.length === 0) continue;
+    const a = inp.assignments.find((x) => x.id === r.assignmentId);
+    if (!a || a.isExam) continue;
+    const course = inp.courses.find((c) => c.id === a.courseId);
+    if (!course || !inp.myCourseIds.has(course.id)) continue;
+    out.push({
+      assignmentId: a.id, courseId: course.id, courseName: course.name, title: a.name,
+      academicYear: course.academicYear, term: course.term, sectionNumber: course.sectionNumber, order: termOrder(course),
+      criteriaCount: r.criteria.length, levelCount: Math.max(...r.criteria.map((c) => c.levels.length)),
+      maxPoints: a.maxPoints, ...assignmentAvgPct(a, inp.submissions),
+    });
+  }
+  return out.sort((x, y) => y.order - x.order || x.courseName.localeCompare(y.courseName) || x.title.localeCompare(y.title));
 }
 
-const titleKey = (title: string) => title.toLowerCase().replace(/[0-9๐-๙]+/g, "").replace(/\s+/g, " ").trim();
+/** A chosen rubric with its criteria and how the class did on each (from graded work that carries per-criterion scores). */
+export interface CompareColumn extends CompareOption { criteria: RubricCriterion[]; stats: Record<string, CriterionStat> }
 
-/**
- * The reference assignment's rubric next to the rubrics of the same subject in other terms / years that are "the same one":
- * their criteria overlap by at least half (by criterionKey), or the assignment carries the same name apart from numbers.
- * Columns run oldest → newest; rows are the criteria (matched by name), with a cell where the criterion exists.
- */
-export function compareRubricYears(inp: { referenceAssignmentId: string; courses: Course[]; assignments: Assignment[]; rubrics: Rubric[]; submissions: Submission[] }): { columns: YearColumn[]; rows: YearRow[] } {
-  const ref = inp.assignments.find((a) => a.id === inp.referenceAssignmentId);
-  const refCourse = ref && inp.courses.find((c) => c.id === ref.courseId);
-  const refRubric = ref && inp.rubrics.find((r) => r.assignmentId === ref.id);
-  if (!ref || !refCourse || !refRubric) return { columns: [], rows: [] };
-  const refKeys = new Set(refRubric.criteria.map((c) => criterionKey(c.name)));
+export function compareColumn(assignmentId: string, inp: { courses: Course[]; assignments: Assignment[]; rubrics: Rubric[]; submissions: Submission[]; myCourseIds: Set<string> }): CompareColumn | null {
+  const option = compareOptions(inp).find((o) => o.assignmentId === assignmentId);
+  const rubric = inp.rubrics.find((r) => r.assignmentId === assignmentId);
+  if (!option || !rubric) return null;
+  return { ...option, criteria: rubric.criteria, stats: criterionStats(rubric, inp.submissions.filter((s) => s.assignmentId === assignmentId)) };
+}
 
-  // other terms / sections of the same subject only — a course's other assignments are different tasks, not the same rubric a year on
-  const others: { a: Assignment; course: Course; rubric: Rubric; overlap: number }[] = [];
-  for (const rb of inp.rubrics) {
-    const a = inp.assignments.find((x) => x.id === rb.assignmentId);
-    if (!a || a.isExam || a.id === ref.id) continue;
-    const course = inp.courses.find((c) => c.id === a.courseId);
-    if (!course || course.id === refCourse.id || !refCourse.courseTemplateId || course.courseTemplateId !== refCourse.courseTemplateId) continue;
-    const keys = new Set(rb.criteria.map((c) => criterionKey(c.name)));
-    const overlap = [...keys].filter((k) => refKeys.has(k)).length / Math.max(1, new Set([...keys, ...refKeys]).size);
-    others.push({ a, course, rubric: rb, overlap });
-  }
-  // the same assignment under the same name (numbers / years aside) is the same rubric; a teacher who renames it every year still
-  // gets the best match of each other course when its criteria overlap by at least half
-  const sameName = others.filter((o) => titleKey(o.a.name) === titleKey(ref.name));
-  const matched = sameName.length > 0
-    ? sameName
-    : [...new Set(others.map((o) => o.course.id))].flatMap((cid) => {
-        const best = others.filter((o) => o.course.id === cid).sort((x, y) => y.overlap - x.overlap)[0];
-        return best && best.overlap >= 0.5 ? [best] : [];
-      });
-  const picked: { a: Assignment; course: Course; rubric: Rubric }[] = [{ a: ref, course: refCourse, rubric: refRubric }, ...matched];
-  picked.sort((x, y) => termOrder(x.course) - termOrder(y.course) || x.a.name.localeCompare(y.a.name));
+/** "No criterion on this row for this rubric". */
+export const NO_CRITERION = "";
 
-  const columns: YearColumn[] = picked.map(({ a, course }) => ({
-    key: a.id, assignmentId: a.id, courseId: course.id, title: a.name, academicYear: course.academicYear, term: course.term, sectionNumber: course.sectionNumber,
-    order: termOrder(course), isReference: a.id === ref.id, ...assignmentAvgPct(a, inp.submissions),
-  }));
+/** Which criterion sits on row `rowIndex` of a column: the teacher's choice, else the one in the same position (none past the end). */
+export function criterionOnRow(col: CompareColumn, rowIndex: number, overrides: Record<string, string> | undefined): string {
+  const chosen = overrides?.[String(rowIndex)];
+  return chosen !== undefined ? chosen : col.criteria[rowIndex]?.id ?? NO_CRITERION;
+}
 
-  const rowMap = new Map<string, YearRow>();
-  picked.forEach(({ a, rubric }) => {
-    const st = criterionStats(rubric, inp.submissions.filter((s) => s.assignmentId === a.id));
-    for (const c of rubric.criteria) {
-      const k = criterionKey(c.name);
-      const row = rowMap.get(k) ?? { key: k, name: c.name, cells: {}, presentIn: 0 };
-      row.name = c.name;                                    // newest wins (picked is oldest → newest)
-      row.cells[a.id] = { avgPct: st[c.id].avgPct, n: st[c.id].n, counts: st[c.id].counts, maxPoints: c.maxPoints };
-      row.presentIn++;
-      rowMap.set(k, row);
-    }
-  });
-  // the reference's own criteria first, in its order; criteria that only other years had after them
-  const order = refRubric.criteria.map((c) => criterionKey(c.name));
-  const rows = [...rowMap.values()].sort((x, y) => {
-    const ix = order.indexOf(x.key), iy = order.indexOf(y.key);
-    return (ix < 0 ? 999 : ix) - (iy < 0 ? 999 : iy);
-  });
-  return { columns, rows };
+/** The cell for a criterion of a column, or undefined when the row is empty for it. */
+export function compareCell(col: CompareColumn, criterionId: string): YearCell | undefined {
+  const c = col.criteria.find((x) => x.id === criterionId);
+  const st = c && col.stats[c.id];
+  return c && st ? { avgPct: st.avgPct, n: st.n, counts: st.counts, maxPoints: c.maxPoints } : undefined;
 }

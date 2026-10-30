@@ -130,7 +130,7 @@ test.describe("Import CSV", () => {
   test("rows from another program are skipped with the reason; only the matching ones are imported", async ({ page }) => {
     await seed(page);
     await page.goto(`${BASE}/teacher/courses/c-ce/students`);
-    await page.getByRole("button", { name: "Import CSV" }).click();
+    await page.getByRole("button", { name: "Import Excel" }).click();
     const dialog = page.getByRole("dialog");
     await expect(dialog).toContainText("This section is for CE");
     const csv = "student_id,first_name,last_name,email\n69071001,Ann,Test,\n69071003,Cam,Test,\n69071002,Bea,Test,\n69071004,Dee,Test,\n";
@@ -169,7 +169,7 @@ test.describe("a section with no curriculum", () => {
   test("one CSV can't smuggle in a mix either: the first row pins the program", async ({ page }) => {
     await seed(page);
     await page.goto(`${BASE}/teacher/courses/c-free/students`);
-    await page.getByRole("button", { name: "Import CSV" }).first().click();
+    await page.getByRole("button", { name: "Import Excel" }).first().click();
     const dialog = page.getByRole("dialog");
     const csv = "student_id,first_name,last_name,email\n69071004,Dee,Test,\n69071001,Ann,Test,\n69071003,Cam,Test,\n";
     await dialog.locator("input[type=file]").setInputFiles({ name: "s.csv", mimeType: "text/csv", buffer: Buffer.from(csv) });
@@ -226,7 +226,7 @@ test("from a stale browser that still holds the mixed roster, running [15] leave
     localStorage.setItem("hwai_course_templates_v1", JSON.stringify(curriculum.courseTemplates));
     localStorage.setItem("hwai_cohort_students_v1", JSON.stringify(staleCohort));
     localStorage.setItem("hwai_students_v1", JSON.stringify(staleRoster));
-    localStorage.setItem("hwai_user", JSON.stringify({ name: "Somsak", email: "somsak.c@kmitl.ac.th", role: "teacher" }));
+    localStorage.setItem("hwai_user", JSON.stringify({ name: "Somsak", email: "kiatnarong.to@kmitl.ac.th", role: "teacher" }));
   }, [rd("courses-mockup.json"), rd("teachers-mockup.json"), rd("curriculum-mockup.json"), stale, flow.courseStudents] as const);
   await page.goto(`${BASE}/teacher/courses/c-mock-1/students`);
   await expect(page.getByTestId("program-mismatch")).toContainText("not in CE");       // the stale state IS flagged
@@ -251,10 +251,10 @@ test("[7] course-import-test.csv into c-mock-1: the 6 CE rows are ready, the 4 C
     localStorage.setItem("hwai_course_templates_v1", JSON.stringify(curriculum.courseTemplates));
     localStorage.setItem("hwai_cohort_students_v1", JSON.stringify(cohort));
     localStorage.setItem("hwai_students_v1", JSON.stringify(roster));
-    localStorage.setItem("hwai_user", JSON.stringify({ name: "Somsak", email: "somsak.c@kmitl.ac.th", role: "teacher" }));
+    localStorage.setItem("hwai_user", JSON.stringify({ name: "Somsak", email: "kiatnarong.to@kmitl.ac.th", role: "teacher" }));
   }, [rd("courses-mockup.json"), rd("teachers-mockup.json"), rd("curriculum-mockup.json"), flow.cohortStudents.slice(0, 13), flow.courseStudents.slice(0, 3)] as const);
   await page.goto(`${BASE}/teacher/courses/c-mock-1/students`);
-  await page.getByRole("button", { name: "Import CSV" }).first().click();
+  await page.getByRole("button", { name: "Import Excel" }).first().click();
   const dialog = page.getByRole("dialog");
   await dialog.locator("input[type=file]").setInputFiles("test-data/course-import-test.csv");
   await expect(dialog).toContainText("6 ready to import");

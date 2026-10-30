@@ -27,20 +27,32 @@ export interface MultiRoleAccount {
 
 export const MULTI_ROLE_ACCOUNTS: MultiRoleAccount[] = [
   {
-    email: "somsak.c@kmitl.ac.th",
+    email: "kiatnarong.to@kmitl.ac.th",
     // Teacher names are always Thai regardless of the language toggle (30/9/2569) — this is the
     // same person as teachers-mockup.json's t-mock-1, so the name must match exactly.
-    name: "สมศักดิ์ เจริญสุข",
+    name: "เกียรติณรงค์ ทองประเสริฐ",
     roles: ["admin", "teacher", "student"],
     defaultRole: "teacher",
     studentId: "69070101",
   },
 ];
 
+/** Which student the demo logins act as, when this machine has swapped the mock's 69070101 for someone else (15/10/2569). Set by console command [23]
+ *  (a real class kept out of git); absent = the committed mock student. Read from localStorage so no real id ever sits in the source. */
+export const DEMO_STUDENT_KEY = "hwai_demo_student";
+export function demoStudent(): { studentId: string; name?: string } | null {
+  try {
+    const v = JSON.parse(localStorage.getItem(DEMO_STUDENT_KEY) ?? "null");
+    return v && typeof v.studentId === "string" && v.studentId ? v : null;
+  } catch { return null; }
+}
+
 export function findMultiRoleAccount(email: string | undefined | null): MultiRoleAccount | undefined {
   if (!email) return undefined;
   const key = email.trim().toLowerCase();
-  return MULTI_ROLE_ACCOUNTS.find((a) => a.email.toLowerCase() === key);
+  const account = MULTI_ROLE_ACCOUNTS.find((a) => a.email.toLowerCase() === key);
+  const swap = account?.studentId ? demoStudent() : null;
+  return account && swap ? { ...account, studentId: swap.studentId } : account;
 }
 
 /** The email a role acts as (a student persona signs in as `<id>@kmitl.ac.th`). */

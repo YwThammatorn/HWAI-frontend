@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useCourses } from "@/lib/courses";
-import { useAssignments } from "@/lib/assignments";
+import { useAssignments, submissionClosesAt, gradingOpensAt } from "@/lib/assignments";
 import { useGradingCategories } from "@/lib/gradingCategories";
 import { useLanguage } from "@/context/LanguageContext";
 import { dateLocale } from "@/lib/dateLocale";
@@ -97,6 +97,15 @@ export default function ViewAssignmentPage() {
       ),
     },
   ];
+  // The window the due date opens (15/10/2569): students can submit until the late hour is over, and only then can grading start.
+  const closes = submissionClosesAt(assignment), opens = gradingOpensAt(assignment);
+  if (closes && opens) {
+    const when = (d: Date) => d.toLocaleString(dateLocale(lang), { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+    detailRows.splice(1, 0, {
+      label: t("ส่งช้า · เริ่มตรวจ", "Late · grading"),
+      value: <span data-testid="grading-window-row">{t(`ส่งช้าได้ถึง ${when(closes)} น. · เริ่มตรวจได้ตั้งแต่ ${when(opens)} น.`, `Late work accepted until ${when(closes)} · grading opens ${when(opens)}`)}</span>,
+    });
+  }
 
   return (
     <main className="w-full px-8 py-8">
