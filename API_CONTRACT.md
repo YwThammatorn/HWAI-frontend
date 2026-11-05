@@ -161,10 +161,24 @@ section's) — the frontend already blocks it in the UI (`lib/sectionProgram.ts`
 When a batch contains a mix, enrol the matching rows and report the rest per row, as the CSV import preview does.
 
 **HWAI-backend enforces this.** `POST /api/courses/:courseId/students` answers
-`201 { enrolled: Student[], rejected: { studentId, program, sectionProgram, reason: "wrong_program" }[] }`
-(`rejected` is `[]` when everyone fit), or `422 { error, rejected }` when nobody did. A student unknown to the
-cohort list has no program and is accepted, as in the UI. `api/students.ts` throws when anything was rejected, so
-the write queue alerts and reloads the rosters instead of showing a student the server didn't enrol.
+`201 { enrolled: Student[], rejected: RejectedEnrollment[] }` (`rejected` is `[]` when everyone fit), or
+`422 { error, rejected }` when nobody did. A rejected row is `{ studentId, program, sectionProgram, reason: "wrong_program" }`
+or `{ studentId, reason: "not_in_system" }`. `api/students.ts` throws when anything was rejected, so the write queue
+alerts and reloads the rosters instead of showing a student the server didn't enrol.
+
+**A roster row needs a student account (5/11/2569).** Only a `CohortStudent` can sign in, so the server refuses a
+`studentId` with no account (`not_in_system`): `enrollments.student_id` is a foreign key to `students.student_id`
+(`ON UPDATE CASCADE ON DELETE CASCADE`). The UI already only enrols matched ids (`EnrollStudentModal`,
+`ImportCourseStudentsModal`). The roster's `firstName` / `lastName` / `email` come from that account; the request may
+still send them, but the account wins.
+
+**New rows get the next free `sequenceNumber`:** highest on the roster + 1, never roster size + 1 (after a removal
+that would hand out a number someone still holds). `(courseId, sequenceNumber)` is unique.
+
+**Other database rules the UI now checks before saving (5/11/2569)** — the server answers `409` / `400` if one slips
+through: `CohortStudent.program` is one of `CE` / `CECS` / `CEI` (the student CSV upper-cases it, emails are lower-cased);
+one curriculum version per `(program, effectiveFrom)`; one course template per `(curriculumVersionId, code)`
+(case-insensitive, also within one CSV); a grading category's `weight` is `> 0` and `≤ 100`; `maxGroupSize` is 2–20.
 
 ### Cohort students (account-level) — `lib/api/cohort-students.ts`
 | Function | Verb + path | Request | Response |
@@ -172,7 +186,7 @@ the write queue alerts and reloads the rosters instead of showing a student the 
 | `getCohortStudents` | `GET /api/cohort-students` | — | `CohortStudent[]` |
 | `addCohortStudents` | `POST /api/cohort-students` | `Omit<CohortStudent, "id">[]` | `CohortStudent[]` |
 | `updateCohortStudent` | `PATCH /api/cohort-students/:id` | `Partial<Omit<CohortStudent, "id">>` | `CohortStudent` |
-| `removeCohortStudent` | `DELETE /api/cohort-students/:id` | — (cascade-delete this account's section-roles + grading-assignments server-side) | `void` |
+| `removeCohortStudent` | `DELETE /api/cohort-students/:id` | — (cascade-delete this account's section-roles, roster rows, submissions + their uploaded files server-side; the usual path is `status: "inactive"`) | `void` |
 
 ### Grading categories — `lib/api/grading-categories.ts`
 | Function | Verb + path | Request | Response |

@@ -68,8 +68,13 @@ function CourseTemplateImportModal({
 
   const existingCodes = new Set(getCourseTemplatesByCurriculum(curriculumVersionId).map((c) => c.code.toLowerCase()));
   const errorRows = rows?.filter((r) => r.error) ?? [];
-  const dupRows = rows?.filter((r) => !r.error && existingCodes.has(r.code.toLowerCase())) ?? [];
-  const newRows = rows?.filter((r) => !r.error && !existingCodes.has(r.code.toLowerCase())) ?? [];
+  // A code already in this curriculum, or repeated earlier in the same file, is a duplicate (the database
+  // keeps one template per code per curriculum). Only the first occurrence in the file counts as new.
+  const isDupRow = (r: ParsedCourseRow, i: number) =>
+    existingCodes.has(r.code.toLowerCase()) ||
+    (rows ?? []).slice(0, i).some((o) => !o.error && o.code.toLowerCase() === r.code.toLowerCase());
+  const dupRows = rows?.filter((r, i) => !r.error && isDupRow(r, i)) ?? [];
+  const newRows = rows?.filter((r, i) => !r.error && !isDupRow(r, i)) ?? [];
 
   function handleFile(file: File) {
     if (!file.name.endsWith(".csv")) return;
@@ -183,7 +188,7 @@ function CourseTemplateImportModal({
                   </thead>
                   <tbody>
                     {rows.map((row, idx) => {
-                      const isDup = !row.error && existingCodes.has(row.code.toLowerCase());
+                      const isDup = !row.error && isDupRow(row, idx);
                       return (
                         <tr key={idx} className={`border-t border-[var(--border-subtle)] ${row.error ? "bg-[var(--s-err-bg)]" : isDup ? "bg-[var(--s-warn-bg)]" : ""}`}>
                           <td className="px-3 py-2 text-[var(--text-primary)] tabular-nums max-w-[110px] truncate">{row.code || <span className="text-[var(--text-muted)] italic">—</span>}</td>
@@ -241,7 +246,7 @@ function CurriculumModal({
   onClose: () => void;
 }) {
   const { t } = useLanguage();
-  const { addCurriculumVersion, updateCurriculumVersion } = useCurriculum();
+  const { addCurriculumVersion, updateCurriculumVersion, curriculumVersions } = useCurriculum();
 
   // Same 3-entry map pattern already duplicated per-component elsewhere in this codebase
   // (admin/users.tsx's AddStudentModal/StudentsTab, teacher/courses/[id]/students/page.tsx).
@@ -272,7 +277,9 @@ function CurriculumModal({
 
   const fromNum = parseInt(effectiveFrom, 10);
   const toNum = effectiveTo.trim() === "" ? undefined : parseInt(effectiveTo, 10);
-  const isValid = label.trim() !== "" && !isNaN(fromNum) && (toNum === undefined || (!isNaN(toNum) && toNum >= fromNum));
+  // One version per program per start year (UNIQUE (program, effective_from) in the database).
+  const clash = !isNaN(fromNum) && curriculumVersions.some((v) => v.id !== version?.id && v.program === program && v.effectiveFrom === fromNum);
+  const isValid = label.trim() !== "" && !isNaN(fromNum) && (toNum === undefined || (!isNaN(toNum) && toNum >= fromNum)) && !clash;
 
   function handleSave() {
     if (!isValid) return;
@@ -361,6 +368,9 @@ function CurriculumModal({
         {effectiveTo.trim() !== "" && toNum !== undefined && !isNaN(toNum) && toNum < fromNum && (
           <p className="text-xs text-[var(--s-err-text)]">{t("ปีสิ้นสุดต้องไม่น้อยกว่าปีเริ่มใช้", "End year must not be before the start year")}</p>
         )}
+        {clash && (
+          <p role="alert" className="text-xs text-[var(--s-err-text)]">{t(`มีหลักสูตร ${program} ที่เริ่มใช้ปี ${fromNum} อยู่แล้ว`, `A ${program} version starting in ${fromNum} already exists`)}</p>
+        )}
       </div>
 
     </Modal>
@@ -381,7 +391,7 @@ function CourseTemplateModal({
   onClose: () => void;
 }) {
   const { t } = useLanguage();
-  const { addCourseTemplate, updateCourseTemplate } = useCurriculum();
+  const { addCourseTemplate, updateCourseTemplate, getCourseTemplatesByCurriculum } = useCurriculum();
 
   const [code, setCode] = useState(template?.code ?? "");
   const [name, setName] = useState(template?.name ?? "");
@@ -390,7 +400,10 @@ function CourseTemplateModal({
 
   useEffect(() => { codeRef.current?.focus(); }, []);
 
-  const isValid = code.trim() !== "" && name.trim() !== "";
+  // One template per code in a curriculum (UNIQUE (curriculum_version_id, code) in the database).
+  const codeTaken = code.trim() !== "" && getCourseTemplatesByCurriculum(curriculumVersionId)
+    .some((c) => c.id !== template?.id && c.code.trim().toLowerCase() === code.trim().toLowerCase());
+  const isValid = code.trim() !== "" && name.trim() !== "" && !codeTaken;
 
   function handleSave() {
     if (!isValid) return;
@@ -429,8 +442,10 @@ function CourseTemplateModal({
             value={code}
             onChange={(e) => setCode(e.target.value)}
             placeholder="เช่น 01076312"
+            aria-invalid={codeTaken}
             className="h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] tabular-nums focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
           />
+          {codeTaken && <p role="alert" className="text-xs text-[var(--s-err-text)]">{t("มีรหัสวิชานี้ในหลักสูตรแล้ว", "This code is already in the curriculum")}</p>}
         </div>
         <div className="flex flex-col gap-1.5">
           <label className="text-xs font-semibold text-[var(--text-muted)]">

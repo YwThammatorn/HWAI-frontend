@@ -6,6 +6,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { useManagedTeachers, ManagedTeacher, splitTeacherTitle } from "@/lib/managed-teachers";
 import { useCohortStudents, CohortStudent } from "@/lib/cohort-students";
 import { splitCsvLine } from "@/lib/csv";
+import { isProgram } from "@/lib/curriculum";
 import EmptyState from "@/components/EmptyState";
 import Modal from "@/components/Modal";
 import SearchInput from "@/components/SearchInput";
@@ -493,7 +494,8 @@ type StudentRowError =
   | { type: "missing_fields"; fields: string[] }
   | { type: "invalid_email" }
   | { type: "invalid_student_id" }
-  | { type: "email_mismatch" };
+  | { type: "email_mismatch" }
+  | { type: "invalid_program" };
 
 // Confirmed format (reviewer feedback item 1.4, closed 9/9/2569): student
 // email is always the 8-digit student ID followed by @kmitl.ac.th — not a
@@ -527,14 +529,16 @@ function parseStudentCsv(raw: string): StudentParseResult {
       title: colIndex.title !== undefined ? cells[colIndex.title] ?? "" : "",
       firstName: cells[colIndex.firstName] ?? "",
       lastName: cells[colIndex.lastName] ?? "",
-      email: cells[colIndex.email] ?? "",
-      program: cells[colIndex.program] ?? "",
+      email: (cells[colIndex.email] ?? "").trim().toLowerCase(),
+      // The database keeps program as an enum (CE / CECS / CEI): "ce " is read as "CE", anything else is a row error.
+      program: (cells[colIndex.program] ?? "").trim().toUpperCase(),
     };
     const missing = REQUIRED_STUDENT_COLS.filter((k) => !row[k]);
     if (missing.length > 0) row.error = { type: "missing_fields", fields: [...missing] };
     else if (!STUDENT_ID_RE.test(row.studentId)) row.error = { type: "invalid_student_id" };
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(row.email)) row.error = { type: "invalid_email" };
-    else if (row.email.toLowerCase() !== expectedStudentEmail(row.studentId)) row.error = { type: "email_mismatch" };
+    else if (row.email !== expectedStudentEmail(row.studentId)) row.error = { type: "email_mismatch" };
+    else if (!isProgram(row.program)) row.error = { type: "invalid_program" };
     return row;
   });
   return { rows, totalErrors: rows.filter((r) => r.error).length };
@@ -583,6 +587,7 @@ function ImportStudentModal({ open, onClose }: { open: boolean; onClose: () => v
     if (err.type === "missing_fields") return t(`ขาด: ${err.fields.join(", ")}`, `Missing: ${err.fields.join(", ")}`);
     if (err.type === "invalid_student_id") return t("รหัสนักศึกษาต้องเป็นตัวเลข 8 หลัก", "Student ID must be 8 digits");
     if (err.type === "email_mismatch") return t("อีเมลต้องเป็น รหัสนักศึกษา@kmitl.ac.th", "Email must be studentID@kmitl.ac.th");
+    if (err.type === "invalid_program") return t("สาขาต้องเป็น CE, CECS หรือ CEI", "Program must be CE, CECS or CEI");
     return t("อีเมลไม่ถูกต้อง", "Invalid email");
   }
 
@@ -1836,6 +1841,13 @@ function StudentsTab({ statusTabsSlot }: { statusTabsSlot: HTMLDivElement | null
                 {t(
                   `ลบ "${deletingStudent.firstName} ${deletingStudent.lastName}" (${deletingStudent.studentId}) ออกจาก cohort?`,
                   `Remove "${deletingStudent.firstName} ${deletingStudent.lastName}" (${deletingStudent.studentId}) from cohort?`
+                )}
+              </p>
+              {/* The database cascades: roster rows, hand-ins and scores go with the account (5/11/2569). */}
+              <p className="text-xs text-[var(--s-err-text)] mt-2">
+                {t(
+                  "รายชื่อในทุกวิชา งานที่ส่ง และคะแนนทั้งหมดของนักศึกษาคนนี้จะถูกลบถาวร กู้คืนไม่ได้ — ถ้าแค่ไม่ให้เข้าใช้ ให้ปิดใช้งาน (inactive) แทน",
+                  "Their place on every roster, every hand-in and every score are deleted for good — to only stop them signing in, set them inactive instead."
                 )}
               </p>
             </div>

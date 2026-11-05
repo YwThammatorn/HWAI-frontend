@@ -42,10 +42,11 @@ export default function StudentProvider({ children }: { children: React.ReactNod
   const addStudents = useCallback(
     (courseId: string, incoming: Omit<Student, "id" | "courseId">[]) => {
       // Append to the existing roster for this section — do not replace it.
-      // sequenceNumber continues from the current roster size (มติที่ประชุม
-      // 4/9/2569: คนใหม่ที่เพิ่มกลางเทอมได้เลขต่อท้าย ไม่ renumber ของเดิม).
+      // sequenceNumber continues after the highest number on the roster (มติที่ประชุม
+      // 4/9/2569: คนใหม่ที่เพิ่มกลางเทอมได้เลขต่อท้าย ไม่ renumber ของเดิม). Not roster size + 1:
+      // after a removal that would hand out a number someone still holds.
       const existingInCourse = students.filter((s) => s.courseId === courseId);
-      let nextSeq = existingInCourse.length + 1;
+      let nextSeq = existingInCourse.reduce((max, s) => Math.max(max, s.sequenceNumber ?? 0), 0) + 1;
       const next: Student[] = incoming.map((s) => ({
         ...s,
         id: crypto.randomUUID(),

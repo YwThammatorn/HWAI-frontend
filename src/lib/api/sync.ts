@@ -14,6 +14,16 @@ let queue: Promise<void> = Promise.resolve();
  * Queue a server write. If it fails, `onError` runs — Providers pass their `resync` there so local
  * state snaps back to what the server actually has.
  */
+/** The server's `{ error }` text when the message is that JSON body (409 duplicates, 400 rule breaks), else the message. */
+function errorDetail(err: unknown): string {
+  const message = err instanceof Error ? err.message : String(err);
+  try {
+    const body = JSON.parse(message) as { error?: unknown };
+    if (typeof body?.error === "string") return body.error;
+  } catch {}
+  return message;
+}
+
 export function enqueueWrite(task: () => Promise<unknown>, onError: () => void): void {
   queue = queue.then(() =>
     task().then(
@@ -21,8 +31,7 @@ export function enqueueWrite(task: () => Promise<unknown>, onError: () => void):
       (err: unknown) => {
         console.error("[api] write failed", err);
         if (typeof window !== "undefined") {
-          const detail = err instanceof Error ? err.message : String(err);
-          window.alert(`บันทึกข้อมูลไม่สำเร็จ / Failed to save\n\n${detail}`);
+          window.alert(`บันทึกข้อมูลไม่สำเร็จ / Failed to save\n\n${errorDetail(err)}`);
         }
         onError();
       },

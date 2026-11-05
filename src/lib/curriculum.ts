@@ -3,6 +3,8 @@
 import { createContext, useContext } from "react";
 
 export type Program = "CECS" | "CEI" | "CE";
+export const PROGRAMS: readonly Program[] = ["CE", "CECS", "CEI"];
+export const isProgram = (v: string): v is Program => (PROGRAMS as readonly string[]).includes(v);
 
 export interface CurriculumVersion {
   id: string;

@@ -101,7 +101,8 @@ export default function NewAssignmentPage() {
       acceptsFiles: isExam ? false : acceptsFiles,
       fileTypes: acceptsFiles && !isExam ? fileTypes : [],
       submissionType: isExam ? "individual" : submissionType,
-      maxGroupSize: !isExam && submissionType === "group" && maxGroupSize ? parseInt(maxGroupSize) : null,
+      // 2–20 like the input's min/max, which the browser doesn't enforce on typed values (CHECK ≥ 2 in the database).
+      maxGroupSize: !isExam && submissionType === "group" && maxGroupSize && !isNaN(parseInt(maxGroupSize)) ? Math.min(20, Math.max(2, parseInt(maxGroupSize))) : null,
       rubricIds: [],
       isExam,
     });

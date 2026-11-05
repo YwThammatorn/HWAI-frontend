@@ -106,7 +106,8 @@ export default function CourseDetailPage() {
   function handleSaveCategory() {
     const name = catName.trim();
     const weight = Number(catWeight);
-    if (!name || !Number.isFinite(weight) || weight <= 0) return;
+    // 0 < weight ≤ 100: one category is at most the whole grade (CHECK in the database).
+    if (!name || !Number.isFinite(weight) || weight <= 0 || weight > 100) return;
     if (catEditingId) {
       updateCategory(catEditingId, { name, weight });
     } else {
@@ -436,7 +437,7 @@ export default function CourseDetailPage() {
                         </button>
                         <button
                           onClick={handleSaveCategory}
-                          disabled={!catName.trim() || !Number(catWeight)}
+                          disabled={!catName.trim() || !(Number(catWeight) > 0 && Number(catWeight) <= 100)}
                           className="p-1 rounded-lg hover:bg-[var(--accent-bright)]/10 text-[var(--accent)] transition-colors disabled:opacity-40"
                           title={t("บันทึก", "Save")}
                         >
@@ -517,7 +518,7 @@ export default function CourseDetailPage() {
                       </button>
                       <button
                         onClick={handleSaveCategory}
-                        disabled={!catName.trim() || !Number(catWeight)}
+                        disabled={!catName.trim() || !(Number(catWeight) > 0 && Number(catWeight) <= 100)}
                         className="p-1 rounded-lg hover:bg-[var(--accent-bright)]/10 text-[var(--accent)] transition-colors disabled:opacity-40"
                         title={t("บันทึก", "Save")}
                       >
