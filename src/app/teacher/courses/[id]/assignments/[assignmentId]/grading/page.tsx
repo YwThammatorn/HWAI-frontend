@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCourses } from "@/lib/courses";
-import { useAssignments, isManualGrading, gradingOpen, gradingOpensAt, submissionClosesAt, type Submission } from "@/lib/assignments";
+import { useAssignments, isManualGrading, gradingOpen, gradingOpensAt, submissionClosesAt, latePenaltyOf, finalScoreOf, activeLatePolicy, type Assignment, type Submission } from "@/lib/assignments";
 import { appNow, useNow } from "@/lib/clock";
 import { aiGradingUpdate } from "@/lib/aiGrading";
 import { useStudents, isWithdrawn } from "@/lib/students";
@@ -21,31 +21,14 @@ import WithdrawnTabs, { type WithdrawnTab } from "@/components/WithdrawnTabs";
 import ExamScoreTable from "@/components/ExamScoreTable";
 import Modal from "@/components/Modal";
 import GradingRubricPanel from "@/components/GradingRubricPanel";
+import AiGradePreviewModal from "@/components/AiGradePreviewModal";
+import { useAiGrading } from "@/lib/useAiGrading";
 import { useCLOs } from "@/lib/clo";
 import { useCohortStudents } from "@/lib/cohort-students";
 
-// ── Stat card ─────────────────────────────────────────────────────────────
-
-function StatCard({
-  label, value, sub, icon, color,
-}: {
-  label: string; value: string | number; sub: string;
-  icon: React.ReactNode; color?: string;
-}) {
-  return (
-    <div className="bg-[var(--bg-surface)] rounded-xl border border-[var(--border-subtle)] p-5">
-      <div className="flex items-start justify-between mb-3">
-        <p className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{label}</p>
-        {icon}
-      </div>
-      <p className="text-2xl font-bold" style={{ color: color ?? "var(--text-primary)" }}>
-        {value}{" "}
-        <span className="text-sm font-normal text-[var(--text-muted)]">{sub}</span>
-      </p>
-    </div>
-  );
-}
-
+import Icon from "@/components/Icon";
+import MetricCard from "@/components/MetricCard";
+import Avatar from "@/components/Avatar";
 // ── Circle progress ────────────────────────────────────────────────────────
 
 function CircleProgress({ pct, className }: { pct: number; className?: string }) {
@@ -61,7 +44,7 @@ function CircleProgress({ pct, className }: { pct: number; className?: string })
 
   return (
     <svg width="200" height="200" viewBox="0 0 200 200" className={className}>
-      <circle cx="100" cy="100" r={r} fill="none" stroke="#E5E7EB" strokeWidth="12" />
+      <circle cx="100" cy="100" r={r} fill="none" stroke="var(--border)" strokeWidth="12" />
       <circle
         cx="100" cy="100" r={r}
         fill="none" stroke="var(--accent)" strokeWidth="12" strokeLinecap="round"
@@ -69,7 +52,7 @@ function CircleProgress({ pct, className }: { pct: number; className?: string })
         transform="rotate(-90 100 100)"
         style={{ transition: "stroke-dasharray 1.2s cubic-bezier(0.23, 1, 0.32, 1)" }}
       />
-      <text x="100" y="112" textAnchor="middle" fill="var(--text-primary, #1B2A4A)"
+      <text x="100" y="112" textAnchor="middle" fill="var(--text-primary)"
         fontSize="38" fontWeight="700" fontFamily="ui-sans-serif, system-ui, sans-serif">
         {Math.round(displayPct)}%
       </text>
@@ -103,6 +86,7 @@ interface RowState {
 function GradeRow({
   row,
   maxPoints,
+  penalty,
   rowState,
   onRegrade,
   reviewHref,
@@ -111,6 +95,8 @@ function GradeRow({
 }: {
   row: SubmissionRow;
   maxPoints: number;
+  /** Points taken off for late work under the assignment's late policy (0 = none), applied to the shown score. */
+  penalty: number;
   rowState: RowState;
   onRegrade: () => void;
   /** Grading has not opened yet (the due date or the late window has not passed, 15/10/2569): Grade and Re-grade are off. */
@@ -129,14 +115,15 @@ function GradeRow({
   // edits a score inline in this table; the only place to change one is the per-criterion recheck page,
   // reached via the Review/Recheck link below). The effective score is the instructor's saved override
   // once one exists, else the AI's own score; "Edited" marks a submission where those two differ.
-  const displayScore = aiGraded ? rep.instructorScore ?? rep.aiScore : rep.instructorScore;
+  const rawScore = aiGraded ? rep.instructorScore ?? rep.aiScore : rep.instructorScore;
+  const displayScore = rawScore !== null ? Math.max(0, rawScore - penalty) : null;
   const isModified = aiGraded && rep.instructorScore !== null && rep.instructorScore !== rep.aiScore;
   // The score reads as a chip in the Score Book colours (green ≥ 80%, blue 60–79%, red < 60%): a bare number with a
   // faint "/100" beside it was hard to scan down a long column. Every pair below is ≥ 4.5:1 (see HANDOFF).
   const scoreTone = displayScore !== null && maxPoints > 0 ? toneForPct((displayScore / maxPoints) * 100) : null;
 
   const STATUS_MAP = {
-    not_graded: { label: t("ยังไม่ได้ตรวจ", "Not graded"), cls: "bg-[var(--bg-subtle)] text-[var(--text-secondary)]" },
+    not_graded: { label: t("ยังไม่ได้ตรวจ", "Not graded"), cls: "bg-[var(--bg-app)] text-[var(--text-secondary)]" },
     need_review: { label: t("รอตรวจสอบ", "Needs review"), cls: "bg-[var(--s-warn-bg)] text-[var(--s-warn-text)]" },
     graded: { label: t("ตรวจแล้ว", "Graded"), cls: "bg-[var(--s-ok-bg)] text-[var(--s-ok-text)]" },
   };
@@ -146,7 +133,7 @@ function GradeRow({
     : STATUS_MAP[rep.status];
 
   return (
-    <tr className={`border-b border-gray-100 last:border-0 transition-colors ${isModified ? "bg-[var(--s-warn-bg)]/60" : "hover:bg-gray-50"}`}>
+    <tr className={`border-b border-[var(--border-subtle)] last:border-0 transition-colors ${isModified ? "bg-[var(--s-warn-bg)]/60" : "hover:bg-[var(--bg-subtle)]"}`}>
       {/* Student / team */}
       <td className="px-4 py-3">
         {isTeam ? (
@@ -156,34 +143,32 @@ function GradeRow({
               {row.subs.map((s, idx) => (
                 <div
                   key={s.id}
-                  className="w-6 h-6 rounded-full bg-[var(--accent-bright)]/20 text-[var(--accent)] text-[9px] font-bold flex items-center justify-center shrink-0 select-none border-2 border-white"
+                  className="w-6 h-6 rounded-full bg-[var(--accent-bright)]/20 text-[var(--accent)] text-[9px] font-bold flex items-center justify-center shrink-0 select-none border-2 border-[var(--bg-surface)]"
                   style={{ marginLeft: idx > 0 ? "-8px" : 0 }}
                   title={s.studentName}
                 >
                   {getInitials(s.studentName)}
                 </div>
               ))}
-              <p className="text-xs text-gray-400 truncate ml-2">{row.subs.map((s) => s.studentName).join(", ")}</p>
+              <p className="text-xs text-[var(--text-muted)] truncate ml-2">{row.subs.map((s) => s.studentName).join(", ")}</p>
             </div>
           </div>
         ) : (
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-full bg-[var(--accent-bright)]/20 text-[var(--accent)] text-[10px] font-bold flex items-center justify-center shrink-0 select-none" aria-hidden="true">
-              {getInitials(rep.studentName)}
-            </div>
+            <Avatar initials={getInitials(rep.studentName)} />
             <div className="min-w-0">
               <p className="text-sm font-medium text-[var(--text-primary)] truncate">{rep.studentName}</p>
-              <p className="text-xs text-gray-400 truncate">{rep.email}</p>
+              <p className="text-xs text-[var(--text-muted)] truncate">{rep.email}</p>
             </div>
           </div>
         )}
       </td>
 
       {/* Submitted at */}
-      <td className="px-4 py-3 text-xs text-gray-400 whitespace-nowrap">
+      <td className="px-4 py-3 text-xs text-[var(--text-muted)] whitespace-nowrap">
         {new Date(rep.submittedAt).toLocaleDateString(dateLocale(lang), { day: "numeric", month: "short" })}
         {row.subs.some((s) => s.late) && (
-          <span data-testid="late-chip" className="ml-2 rounded-md border border-[var(--s-warn-bd)] bg-[var(--s-warn-bg)] px-1.5 py-0.5 text-xs font-semibold text-[var(--s-warn-text)]">{t("ส่งช้า", "Late")}</span>
+          <span data-testid="late-chip" className="ml-2 rounded-md border border-[var(--s-warn-bd)] bg-[var(--s-warn-bg)] px-1.5 py-0.5 text-xs font-semibold text-[var(--s-warn-text)]">{t("ส่งช้า", "Late")}{penalty > 0 && <span data-testid="late-penalty" className="tabular-nums"> · −{penalty}</span>}</span>
         )}
       </td>
 
@@ -246,17 +231,12 @@ function GradeRow({
             onClick={onRegrade}
             disabled={rowState.regrading || gradeLocked}
             aria-label={isTeam ? t(`Re-grade team ${row.teamName}`, `Re-grade team ${row.teamName}`) : t(`Re-grade ${rep.studentName}`, `Re-grade ${rep.studentName}`)}
-            className="flex items-center gap-1.5 h-7 px-2.5 whitespace-nowrap rounded-lg border border-gray-200 text-xs font-medium text-gray-500 hover:border-[var(--accent-bright)] hover:text-[var(--accent)] hover:bg-[var(--accent-bright)]/5 active:scale-[0.97] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-all"
+            className="flex items-center gap-1.5 h-7 px-2.5 whitespace-nowrap rounded-lg border border-[var(--border)] text-xs font-medium text-[var(--text-secondary)] hover:border-[var(--accent-bright)] hover:text-[var(--accent)] hover:bg-[var(--accent-bright)]/5 active:scale-[0.97] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-all"
           >
             {rowState.regrading ? (
-              <svg className="animate-spin" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
-                <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
-              </svg>
+              <Icon name="spinner" size="sm" className="animate-spin" />
             ) : (
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                <polyline points="1 4 1 10 7 10"/>
-                <path d="M3.51 15a9 9 0 1 0 .49-4.56"/>
-              </svg>
+              <Icon name="rotate-ccw" size="sm" />
             )}
             {t("Re-grade", "Re-grade")}
           </button>
@@ -274,6 +254,7 @@ type StatusFilter = "all" | "need_review" | "not_graded" | "graded";
 function GradeAdjustmentTable({
   rows,
   maxPoints,
+  assignment,
   courseId,
   assignmentId,
   isGroup,
@@ -284,6 +265,8 @@ function GradeAdjustmentTable({
 }: {
   rows: SubmissionRow[];
   maxPoints: number;
+  /** For the late deduction on each row (Assignment.latePolicy). */
+  assignment: Assignment;
   courseId: string;
   assignmentId: string;
   isGroup: boolean;
@@ -320,12 +303,12 @@ function GradeAdjustmentTable({
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm mt-6 overflow-hidden">
+    <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-subtle)] shadow-sm mt-6 overflow-hidden">
       {/* Section header */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border-subtle)]">
         <div>
           <h2 className="text-sm font-bold text-[var(--text-primary)]">{t("ปรับคะแนน", "Grade Adjustment")}</h2>
-          <p className="text-xs text-gray-400 mt-0.5">
+          <p className="text-xs text-[var(--text-muted)] mt-0.5">
             {aiGraded
               ? t(
                   `${rows.length} รายการ — กด "ตรวจ" เพื่อแก้คะแนนรายเกณฑ์ หรือกด Re-grade เพื่อให้ AI ตรวจใหม่ทั้งชิ้น`,
@@ -340,7 +323,7 @@ function GradeAdjustmentTable({
       </div>
 
       {rows.length > 0 && (
-        <div className="flex items-center justify-between gap-3 px-5 py-3 border-b border-gray-100 flex-wrap">
+        <div className="flex items-center justify-between gap-3 px-5 py-3 border-b border-[var(--border-subtle)] flex-wrap">
           <PillTabBar
             ariaLabel={t("กรองตามสถานะ", "Filter by status")}
             variant="boxed"
@@ -365,18 +348,18 @@ function GradeAdjustmentTable({
       )}
 
       {rows.length === 0 ? (
-        <div className="py-12 text-center text-sm text-gray-400">
+        <div className="py-12 text-center text-sm text-[var(--text-muted)]">
           {t("ยังไม่มีการส่งงาน", "No submissions yet")}
         </div>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full min-w-[820px]">
             <thead>
-              <tr className="bg-gray-50 border-b border-gray-100">
-                <th scope="col" className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">{t("นักศึกษา", "Student")}</th>
-                <th scope="col" className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">{t("วันที่ส่ง", "Submitted")}</th>
-                <th scope="col" className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">{t("คะแนน", "Score")}</th>
-                <th scope="col" className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">{t("สถานะ", "Status")}</th>
+              <tr className="bg-[var(--bg-app)] border-b border-[var(--border-subtle)]">
+                <th scope="col" className="px-4 py-2.5 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider whitespace-nowrap">{t("นักศึกษา", "Student")}</th>
+                <th scope="col" className="px-4 py-2.5 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider whitespace-nowrap">{t("วันที่ส่ง", "Submitted")}</th>
+                <th scope="col" className="px-4 py-2.5 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider whitespace-nowrap">{t("คะแนน", "Score")}</th>
+                <th scope="col" className="px-4 py-2.5 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider whitespace-nowrap">{t("สถานะ", "Status")}</th>
                 <th scope="col" className="px-4 py-2.5 w-32" aria-label={t("ตรวจ", "Grade")}></th>
                 {aiGraded && <th scope="col" className="px-4 py-2.5 w-32" aria-label={t("Re-grade", "Re-grade")}></th>}
               </tr>
@@ -392,6 +375,7 @@ function GradeAdjustmentTable({
                   key={row.key}
                   row={row}
                   maxPoints={maxPoints}
+                  penalty={latePenaltyOf(assignment, row.subs[0])}
                   rowState={rowStates[row.key] ?? { regrading: false }}
                   onRegrade={() => handleRegrade(row)}
                   reviewHref={`/teacher/courses/${courseId}/assignments/${assignmentId}/recheck?sub=${row.subs[0].id}`}
@@ -404,7 +388,7 @@ function GradeAdjustmentTable({
         </div>
       )}
       {rows.length > 0 && (
-        <div className="px-5 py-3 text-xs text-[var(--text-secondary)] border-t border-gray-100" aria-live="polite">
+        <div className="px-5 py-3 text-xs text-[var(--text-secondary)] border-t border-[var(--border-subtle)]" aria-live="polite">
           {t("แสดง", "Showing")} <span className="font-medium text-[var(--text-primary)]">1–{visibleRows.length}</span> {t("จาก", "of")} <span className="font-medium text-[var(--text-primary)]">{visibleRows.length}</span>{" "}
           {isGroup ? t("ทีม", "team(s)") : t("งาน", "submissions")}
         </div>
@@ -427,6 +411,10 @@ export default function GradingProgressPage() {
   const { getCategoriesByCourse } = useGradingCategories();
   const [tabState, setTabState] = useState<WithdrawnTab>("active");
   const [announceOpen, setAnnounceOpen] = useState(false);
+  // the rubric was changed after grading had started: the earlier scores were cleared, and this sends the work to the AI again (22/10/2569)
+  const [regradeOpen, setRegradeOpen] = useState(false);
+  const [regrading, setRegrading] = useState(false);
+  const { waitingUnits, sendWaiting } = useAiGrading();
   const now = useNow();
 
   const course = getCourse(id);
@@ -437,7 +425,7 @@ export default function GradingProgressPage() {
 
   if (!course || !assignment) {
     return (
-        <main className="flex-1 flex items-center justify-center text-gray-500 text-sm">
+        <main className="flex-1 flex items-center justify-center text-[var(--text-secondary)] text-sm">
           {t("ไม่พบข้อมูล", "Not found")} —{" "}
           <Link href={`/teacher/courses/${id}/assignments`} className="text-[var(--accent)] ml-1 hover:underline">
             {t("กลับหน้างาน", "Back to assignments")}
@@ -475,7 +463,7 @@ export default function GradingProgressPage() {
   const withdrawnCount = isExam ? withdrawnStudents.length : withdrawnRows.length;
   const tab: WithdrawnTab = withdrawnCount === 0 ? "active" : tabState;
   const repSubs = rows.map((r) => r.subs[0]);
-  const gradedOf = new Map(submissions.filter((s) => s.status === "graded").map((s) => [s.studentId, s.instructorScore ?? s.aiScore ?? 0]));
+  const gradedOf = new Map(submissions.filter((s) => s.status === "graded").map((s) => [s.studentId, finalScoreOf(assignment, s) ?? 0]));
   const examScores = Object.fromEntries(gradedOf);
   const activeScores = activeStudents.filter((s) => gradedOf.has(s.studentId)).map((s) => gradedOf.get(s.studentId) as number);
 
@@ -486,7 +474,7 @@ export default function GradingProgressPage() {
   // Grading method (11/10/2569). An exam or an assignment without files is manual whatever was chosen.
   const manual = isManualGrading(assignment);
   const scoredSubs = repSubs.filter((s) => s.aiScore !== null);
-  const handScored = repSubs.filter((s) => s.status === "graded").map((s) => s.instructorScore ?? s.aiScore ?? 0);
+  const handScored = repSubs.filter((s) => s.status === "graded").map((s) => finalScoreOf(assignment, s) ?? 0);
   const avgScore = isExam
     ? (activeScores.length > 0 ? activeScores.reduce((a, b) => a + b, 0) / activeScores.length : null)
     : manual
@@ -585,7 +573,7 @@ export default function GradingProgressPage() {
   return (
       <main className="w-full px-8 py-8">
         {/* Breadcrumb */}
-        <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-5 flex-wrap">
+        <div className="flex items-center gap-1.5 text-xs text-[var(--text-muted)] mb-5 flex-wrap">
           <Link href="/teacher/courses" className="hover:text-[var(--accent)] transition-colors">{t("รายวิชา", "Courses")}</Link>
           <span>/</span>
           <Link href={`/teacher/courses/${id}`} className="hover:text-[var(--accent)] transition-colors">{course.name}</Link>
@@ -599,7 +587,7 @@ export default function GradingProgressPage() {
         <div className="flex items-start justify-between gap-4 mb-6">
           <div>
             <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">{assignment.name}</h1>
-            <div className="flex items-center gap-3 text-sm text-gray-400">
+            <div className="flex items-center gap-3 text-sm text-[var(--text-muted)]">
               <span>
                 {assignment.dueDate
                   ? <>{t("ส่งภายใน", "Due")}{" "}{new Date(assignment.dueDate + "T00:00:00").toLocaleDateString(dateLocale(lang), {
@@ -614,12 +602,9 @@ export default function GradingProgressPage() {
           <div className="flex items-center gap-3 shrink-0">
             <Link
               href={`/teacher/courses/${id}/assignments/${assignmentId}/edit`}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-200 text-sm text-gray-500 hover:bg-gray-50 transition-colors"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-[var(--border)] text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] transition-colors"
             >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-              </svg>
+              <Icon name="edit" />
               {t("แก้ไขงาน", "Edit Assignment")}
             </Link>
             {finalized ? (
@@ -628,10 +613,7 @@ export default function GradingProgressPage() {
                   href={`/teacher/courses/${id}/assignments/${assignmentId}/results`}
                   className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-semibold transition-colors"
                 >
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                    <polyline points="9 11 12 14 22 4"/>
-                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
-                  </svg>
+                  <Icon name="check-square" />
                   {t("ดูผลลัพธ์", "View Results")}
                 </Link>
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border bg-[var(--s-ok-bg)] text-[var(--s-ok-text)] border-[var(--s-ok-bd)]">
@@ -647,7 +629,7 @@ export default function GradingProgressPage() {
                 <button
                   type="button"
                   onClick={handleReopenGrading}
-                  className="text-xs text-gray-400 hover:text-[var(--text-secondary)] hover:underline transition-colors"
+                  className="text-xs text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:underline transition-colors"
                 >
                   {t("เปิดตรวจใหม่", "Reopen grading")}
                 </button>
@@ -660,9 +642,7 @@ export default function GradingProgressPage() {
                 onClick={() => setAnnounceOpen(true)}
                 className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-semibold transition-colors"
               >
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                  <polyline points="20 6 9 17 4 12"/>
-                </svg>
+                <Icon name="check" />
                 {t("ประกาศผล", "Announce results")}
               </button>
             ) : (
@@ -675,9 +655,7 @@ export default function GradingProgressPage() {
                 title={!gradeOpen ? t("ยังไม่เปิดให้ตรวจ จึงยังประกาศผลไม่ได้", "Grading is not open yet, so results cannot be announced") : total === 0 ? t("ยังไม่มีงานให้ประกาศ", "Nothing to announce yet") : t(`ตรวจให้ครบก่อน — เหลือ ${pending} ${pendingUnit}`, `Finish grading first — ${pending} ${pendingUnit} left`)}
                 className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] text-sm font-semibold text-[var(--text-secondary)] cursor-not-allowed"
               >
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-                  <polyline points="20 6 9 17 4 12"/>
-                </svg>
+                <Icon name="check" />
                 {t("ประกาศผล", "Announce results")}
               </button>
             )}
@@ -690,10 +668,10 @@ export default function GradingProgressPage() {
             role="note"
             className="mb-5 flex items-start gap-3 rounded-xl border border-[var(--s-warn-bd)] bg-[var(--s-warn-bg)] px-4 py-3 text-sm leading-relaxed text-[var(--s-warn-text)]"
           >
-            <svg className="mt-0.5 shrink-0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+            <Icon name="lock" className="mt-0.5 shrink-0" />
             <p>
-              {t(`ยังไม่เปิดให้ตรวจ — นักศึกษาส่งได้ถึง ${fmtWhen(submissionClosesAt(assignment))} น. (เลยกำหนด + ช่วงส่งช้า 1 ชั่วโมง) จะเริ่มตรวจ ประกาศผล หรือให้ AI ตรวจใหม่ได้ตั้งแต่ ${fmtWhen(gradingOpensAt(assignment))} น.`,
-                `Not open for grading yet — students can submit until ${fmtWhen(submissionClosesAt(assignment))} (the due date plus a 1-hour late window). You can grade, announce or re-grade from ${fmtWhen(gradingOpensAt(assignment))}.`)}
+              {t(`ยังไม่เปิดให้ตรวจ — นักศึกษาส่งได้ถึง ${fmtWhen(submissionClosesAt(assignment))} น. (${activeLatePolicy(assignment) ? "รวมช่วงรับงานส่งช้า" : "ไม่รับงานส่งช้า"}) จะเริ่มตรวจ ประกาศผล หรือให้ AI ตรวจใหม่ได้ตั้งแต่ ${fmtWhen(gradingOpensAt(assignment))} น.`,
+                `Not open for grading yet — students can submit until ${fmtWhen(submissionClosesAt(assignment))} (${activeLatePolicy(assignment) ? "including the late-work period" : "late work is not accepted"}). You can grade, announce or re-grade from ${fmtWhen(gradingOpensAt(assignment))}.`)}
             </p>
           </div>
         )}
@@ -704,14 +682,31 @@ export default function GradingProgressPage() {
             role="note"
             className={`mb-5 flex items-start gap-3 rounded-xl border px-4 py-3 text-sm leading-relaxed ${finalized ? "border-[var(--s-ok-bd)] bg-[var(--s-ok-bg)] text-[var(--s-ok-text)]" : "border-[var(--s-info-bd)] bg-[var(--s-info-bg)] text-[var(--s-info-text)]"}`}
           >
-            <svg className="mt-0.5 shrink-0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-              <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
-            </svg>
+            <Icon name="info" className="mt-0.5 shrink-0" />
             <p>{finishHint}</p>
           </div>
         )}
 
         {!isExam && <GradingModeNote manual={manual} forced={modeForced} courseId={id} />}
+
+        {/* Rubric changed while grading was under way: the earlier scores are gone, so offer the AI run again — right here, with the new rubric */}
+        {!isExam && !manual && !finalized && gradeOpen && assignment.rubricRestartedAt && waitingUnits(assignment).length > 0 && (
+          <div data-testid="regrade-banner" role="note" className="mb-5 flex flex-wrap items-center gap-3 rounded-xl border border-[var(--s-info-bd)] bg-[var(--s-info-bg)] px-4 py-3 text-sm leading-relaxed text-[var(--s-info-text)]">
+            <p className="min-w-0 flex-1">
+              {t(`แก้ rubric หลังเริ่มตรวจ คะแนนเดิมถูกล้างแล้ว — เหลือ ${waitingUnits(assignment).length} ${isGroupAssignment ? "ทีม" : "งาน"}ที่รอตรวจตาม rubric ใหม่`,
+                `The rubric was changed after grading started and the earlier scores were cleared — ${waitingUnits(assignment).length} ${isGroupAssignment ? "team(s)" : "submission(s)"} wait to be graded under the new rubric.`)}
+            </p>
+            <button
+              type="button"
+              data-testid="regrade-new-rubric"
+              disabled={regrading}
+              onClick={() => setRegradeOpen(true)}
+              className="h-9 px-4 whitespace-nowrap rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-semibold active:scale-[0.97] disabled:cursor-wait disabled:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
+            >
+              {regrading ? t("AI กำลังตรวจ…", "AI grading…") : t("Regrade ด้วย rubric ใหม่", "Regrade with new rubric")}
+            </button>
+          </div>
+        )}
 
         {/* Enrolled / Withdrawn — only appears once someone has withdrawn */}
         <WithdrawnTabs tab={tab} onChange={setTabState} activeCount={isExam ? activeCount : rows.length} withdrawnCount={withdrawnCount} />
@@ -719,20 +714,14 @@ export default function GradingProgressPage() {
         {tab === "active" && (<>
         {/* Stats */}
         <div className="grid grid-cols-4 gap-4 mb-6">
-          <StatCard
+          <MetricCard
             label={isExam ? t("ให้คะแนนแล้ว", "Scored") : t("ตรวจแล้ว", "Processed")}
             value={processed}
             sub={isExam ? t(`จาก ${total} คน`, `of ${total} students`) : manual ? t("ที่คุณให้คะแนนเอง", "scored by you") : t("เสร็จสิ้น", "completed")}
-            color="var(--s-ok-text)"
-            icon={
-              <div className="w-7 h-7 rounded-full bg-[var(--s-ok-bg)] flex items-center justify-center">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--s-ok-text)" strokeWidth="2.5" strokeLinecap="round">
-                  <polyline points="20 6 9 17 4 12"/>
-                </svg>
-              </div>
-            }
+            tone="ok"
+            icon="check"
           />
-          <StatCard
+          <MetricCard
             label={isExam ? t("ยังไม่มีคะแนน", "Not scored yet") : isGroupAssignment ? t("ทีมทั้งหมด", "Total Teams") : t("ส่งแล้ว", "Submitted")}
             value={isExam ? total - processed : total}
             sub={isExam ? t("คน", "students") : isGroupAssignment
@@ -740,52 +729,30 @@ export default function GradingProgressPage() {
               : enrolled > 0
                 ? t(`/ ${enrolled} · ยังไม่ส่ง ${Math.max(0, enrolled - total)}`, `/ ${enrolled} · ${Math.max(0, enrolled - total)} pending`)
                 : t("งานที่ส่ง", "submissions")}
-            icon={
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                <polyline points="14 2 14 8 20 8"/>
-                <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
-                <polyline points="10 9 9 9 8 9"/>
-              </svg>
-            }
+            tone="neutral"
+            icon="file-text"
           />
-          <StatCard
+          <MetricCard
             label={isExam ? t("คะแนนสูงสุด", "Highest") : manual ? t("ยังไม่ได้ตรวจ", "Not graded") : t("รอตรวจสอบ", "Needs Review")}
             value={isExam ? (topScore ?? "—") : manual ? Math.max(0, total - processed) : needsReview}
             sub={isExam ? t(`เต็ม ${assignment.maxPoints}`, `of ${assignment.maxPoints}`) : manual ? t("รอคุณให้คะแนน", "waiting for you") : t("รอดำเนินการ", "Pending")}
-            color={isExam ? "var(--accent)" : "var(--s-warn-text)"}
-            icon={isExam ? (
-              <div className="w-7 h-7 rounded-lg bg-[var(--accent-subtle)] flex items-center justify-center">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>
-                </svg>
-              </div>
-            ) : (
-              <div className="w-7 h-7 rounded-lg bg-[var(--s-warn-bg)] flex items-center justify-center">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--s-warn-text)" strokeWidth="2" strokeLinecap="round">
-                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-                  <line x1="12" y1="9" x2="12" y2="13"/>
-                  <line x1="12" y1="17" x2="12.01" y2="17"/>
-                </svg>
-              </div>
-            )}
+            tone={isExam ? "accent" : "warn"}
+            icon={isExam ? "trending-up" : "alert-triangle"}
           />
-          <StatCard
+          <MetricCard
             label={t("คะแนนเฉลี่ย", "Avg. Score")}
             value={avgScore !== null ? avgScore.toFixed(1) : "—"}
-            // Out of what, and over which pieces of work (15/10/2569, the teacher asked): "11.9 / 15 pts · AI score, 40 submitted"
+            // Only what a teacher needs to read at a glance (21/10/2569): the average, with the full score and the highest and lowest score beside it
+            // (it was "11.9 / 15 pts · AI score, 40 submitted" — too much in one cell).
             sub={(() => {
-              const n = isExam ? activeScores.length : manual ? handScored.length : scoredSubs.length;
-              const basis = isExam || manual
-                ? t(`ตรวจแล้ว ${n} ชิ้น`, `${n} graded`)
-                : t(`คะแนน AI ของ ${n} ชิ้นที่ส่ง`, `AI score, ${n} submitted`);
-              return t(`/ ${assignment.maxPoints} คะแนน · ${basis}`, `/ ${assignment.maxPoints} pts · ${basis}`);
+              const xs = isExam ? activeScores : manual ? handScored : scoredSubs.map((s) => s.aiScore ?? 0);
+              const full = assignment.maxPoints;
+              if (xs.length === 0) return t(`เต็ม ${full} · สูงสุด — · ต่ำสุด —`, `of ${full} · Max — · Min —`);
+              return t(`เต็ม ${full} · สูงสุด ${Math.max(...xs)} · ต่ำสุด ${Math.min(...xs)}`, `of ${full} · Max ${Math.max(...xs)} · Min ${Math.min(...xs)}`);
             })()}
-            icon={
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="#FCD34D" stroke="#F59E0B" strokeWidth="1.5">
-                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-              </svg>
-            }
+            tone="rating"
+            icon="star"
+            filled
           />
         </div>
 
@@ -805,7 +772,7 @@ export default function GradingProgressPage() {
                   : (isExam ? t("กำลังกรอกคะแนน", "Entering scores") : manual ? t("กำลังตรวจ", "Grading by hand") : t("กำลังวิเคราะห์งาน", "Analyzing Submissions"))}
               </p>
               {!isDone && total > 0 && !manual && (
-                <p className="text-sm text-gray-400 mt-1">
+                <p className="text-sm text-[var(--text-muted)] mt-1">
                   {t("เวลาที่เหลือโดยประมาณ:", "Estimated remaining time:")}{" "}
                   <span className="text-[var(--accent)] font-medium">
                     ~{Math.max(1, Math.round((total - processed) * 0.3))} {t("นาที", "mins")}
@@ -869,6 +836,7 @@ export default function GradingProgressPage() {
           key={`${tab}-${manual}`}
           rows={tab === "active" ? rows : withdrawnRows}
           maxPoints={assignment.maxPoints}
+          assignment={assignment}
           courseId={id}
           assignmentId={assignmentId}
           isGroup={isGroupAssignment}
@@ -877,6 +845,14 @@ export default function GradingProgressPage() {
           aiGraded={!manual}
           gradeLocked={!gradeOpen}
         />
+        )}
+        {regradeOpen && (
+          <AiGradePreviewModal
+            assignment={assignment}
+            open
+            onClose={() => setRegradeOpen(false)}
+            onConfirm={async () => { setRegradeOpen(false); setRegrading(true); await sendWaiting(assignment); setRegrading(false); }}
+          />
         )}
         <Modal
           open={announceOpen}

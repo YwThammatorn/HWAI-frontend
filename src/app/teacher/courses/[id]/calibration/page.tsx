@@ -16,6 +16,8 @@ import CriterionName from "@/components/CriterionName";
 import EmptyState from "@/components/EmptyState";
 import SubmissionViewer from "@/components/SubmissionViewer";
 
+import Icon from "@/components/Icon";
+import IconButton from "@/components/IconButton";
 const MIN_SAMPLES = 3, MAX_SAMPLES = 10, DEFAULT_SAMPLES = 5;
 
 const VERDICT_TONE: Record<CriterionComparison["verdict"], string> = {
@@ -94,9 +96,7 @@ export default function CalibrationPage() {
   return (
     <main className="w-full px-8 py-8">
       <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)] mb-6">
-        <Link href="/teacher/courses" className="hover:text-[var(--accent)] transition-colors" aria-label={t("รายวิชาทั้งหมด", "All courses")}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        </Link>
+        <IconButton icon="home" label={t("รายวิชาทั้งหมด", "All courses")} href="/teacher/courses" />
         <span>/</span>
         <Link href={`/teacher/courses/${id}`} className="hover:text-[var(--accent)] transition-colors">{course.name}</Link>
         <span>/</span>
@@ -111,8 +111,7 @@ export default function CalibrationPage() {
       {eligible.length === 0 || !assignment || !rubric ? (
         <div className={`${card} p-6`}>
           <EmptyState
-            iconColor="var(--accent-bright)"
-            icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>}
+          icon="sliders"
             title={t("ยังไม่มีงานให้ปรับเทียบ", "Nothing to calibrate yet")}
             description={t(`ต้องเป็นงานที่มี rubric รับไฟล์ ตรวจแบบให้ AI ช่วย และ AI ตรวจไปแล้วอย่างน้อย ${MIN_SAMPLES} ชิ้น — กด “ตรวจด้วย AI” ที่หน้าตรวจงานก่อน`, `It needs an assignment with a rubric, files to check, AI-assisted grading and at least ${MIN_SAMPLES} pieces the AI has already graded — press “Grade with AI” on the Grading page first.`)}
           />
@@ -226,7 +225,7 @@ export default function CalibrationPage() {
                                     className={`inline-flex h-8 min-w-8 items-center justify-center gap-1 rounded-lg border px-2.5 text-xs font-semibold tabular-nums transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] ${si === ci ? "border-[var(--accent)] bg-[var(--accent-subtle)] text-[var(--text-primary)]" : "border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)]"}`}
                                   >
                                     {si + 1}
-                                    {complete(x) && <svg aria-hidden="true" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>}
+                                    {complete(x) && <Icon name="check" size="sm" />}
                                   </button>
                                 </li>
                               ))}

@@ -13,7 +13,10 @@ import SearchInput from "@/components/SearchInput";
 import FilterSelect from "@/components/FilterSelect";
 import { groupCourses, curriculumKeyOf, NO_CURRICULUM_KEY, type SubjectGroup, type CurriculumGroup } from "@/lib/courseGroups";
 import { useStudents } from "@/lib/students";
-
+
+import Icon from "@/components/Icon";
+import IconButton from "@/components/IconButton";
+import Avatar from "@/components/Avatar";
 // Same 3-entry map as admin/users.tsx, admin/curriculum/page.tsx and teacher/courses/[id]/students/page.tsx —
 // full program names instead of the CE/CECS/CEI abbreviation, used by both the curriculum group
 // heading badge and the Curriculum filter dropdown below (30/9/2569).
@@ -309,7 +312,7 @@ function CourseModal({
                 onClick={addRow}
                 className="shrink-0 inline-flex items-center gap-1.5 h-8 px-3 rounded-lg border border-[var(--accent)] text-xs font-medium text-[var(--accent)] hover:bg-[var(--accent-subtle)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
               >
-                <svg width="11" height="11" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/></svg>
+                <Icon name="plus" size="sm" />
                 {t("เพิ่ม Section", "Add section")}
               </button>
             </div>
@@ -354,15 +357,7 @@ function CourseModal({
                       )}
                       {shared && <span className="flex-1 min-w-0 text-xs text-[var(--text-muted)] truncate">{teacherQuery.trim() || t("ใช้อาจารย์ด้านบน", "Uses the teacher above")}</span>}
                       {rows.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => removeRow(r.key)}
-                          aria-label={t(`ลบ section แถวที่ ${i + 1}`, `Remove section row ${i + 1}`)}
-                          title={t("ลบแถวนี้", "Remove this row")}
-                          className="w-8 h-8 shrink-0 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--s-err-text)] hover:bg-[var(--s-err-bg)] transition-colors"
-                        >
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                        </button>
+                        <IconButton icon="x" label={t(`ลบ section แถวที่ ${i + 1}`, `Remove section row ${i + 1}`)} tone="danger" onClick={() => removeRow(r.key)} />
                       )}
                     </div>
                     {showErr && <p role="alert" className="text-[11px] text-[var(--s-err-text)] pl-1">{err}</p>}
@@ -524,20 +519,13 @@ function CourseAssignPanel({ course }: { course: Course }) {
                       onChange={() => toggleTeacher(teacher.id, assigned)}
                       className="w-4 h-4 accent-[var(--accent)] cursor-pointer shrink-0"
                     />
-                    <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 select-none transition-colors ${assigned ? "bg-[var(--accent-solid)] text-[var(--accent-solid-text)]" : "bg-[var(--accent-bright)]/20 text-[var(--accent)]"}`}
-                      aria-hidden="true"
-                    >
-                      {getInitials(teacher.name)}
-                    </div>
+                    <Avatar initials={getInitials(teacher.name)} tone={assigned ? "solid" : "accent"} bg="var(--accent-solid)" />
                     <div className="flex-1 min-w-0">
                       <p className={`text-sm font-medium truncate ${assigned ? "text-[var(--text-primary)]" : "text-[var(--text-secondary)]"}`}>{teacher.name}</p>
                       <p className="text-[11px] text-[var(--text-muted)]">{TEACHER_ROLE_LABEL[teacher.role]}</p>
                     </div>
                     {assigned && (
-                      <svg className="text-[var(--accent)] shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="20 6 9 17 4 12"/>
-                      </svg>
+                      <Icon name="check" size="sm" className="text-[var(--accent)] shrink-0" />
                     )}
                   </label>
                 </div>
@@ -619,9 +607,7 @@ function CourseRow({
               : t("ยังไม่มีอาจารย์ assigned", "No teachers assigned")}
           </p>
           <span className={`transition-transform duration-200 text-[var(--text-muted)] shrink-0 ${expanded ? "rotate-180" : ""}`} aria-hidden="true">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <polyline points="6 9 12 15 18 9"/>
-            </svg>
+            <Icon name="chevron-down" size="sm" />
           </span>
         </button>
 
@@ -632,44 +618,9 @@ function CourseRow({
             <p className="text-[10px] text-[var(--text-muted)]">{t("นักศึกษา", "students")}</p>
           </div>
           <div className="flex items-center gap-1">
-            <button
-              onClick={() => onEdit(course)}
-              title={t("แก้ไขรายวิชา", "Edit course")}
-              aria-label={t("แก้ไขรายวิชา", "Edit course")}
-              className="w-7 h-7 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--accent)] hover:bg-[var(--accent-bright)]/10 transition-colors"
-            >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-              </svg>
-            </button>
-            <button
-              onClick={() => onAction({ type: archived ? "restore" : "archive", course })}
-              title={archived ? t("คืนสถานะ", "Restore") : t("เก็บถาวร", "Archive")}
-              aria-label={archived ? t("คืนสถานะ", "Restore") : t("เก็บถาวร", "Archive")}
-              className="w-7 h-7 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-amber-600 hover:bg-amber-50 transition-colors"
-            >
-              {!archived ? (
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                  <polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/>
-                </svg>
-              ) : (
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                  <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.34"/>
-                </svg>
-              )}
-            </button>
-            <button
-              onClick={() => onAction({ type: "delete", course })}
-              title={t("ลบรายวิชา", "Delete course")}
-              aria-label={t("ลบรายวิชา", "Delete course")}
-              className="w-7 h-7 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--s-err-text)] hover:bg-[var(--s-err-bg)] transition-colors"
-            >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
-              </svg>
-            </button>
+            <IconButton icon="edit" label={t("แก้ไขรายวิชา", "Edit course")} onClick={() => onEdit(course)} />
+            <IconButton icon={archived ? "rotate-ccw" : "archive"} tone="warn" label={archived ? t("คืนสถานะ", "Restore") : t("เก็บถาวร", "Archive")} onClick={() => onAction({ type: archived ? "restore" : "archive", course })} />
+            <IconButton icon="trash" label={t("ลบรายวิชา", "Delete course")} tone="danger" onClick={() => onAction({ type: "delete", course })} />
           </div>
         </div>
       </div>
@@ -735,9 +686,7 @@ function SubjectCard({
             title={t("เพิ่ม Section ใหม่จากวิชานี้", "Add a new section from this course")}
             className="flex items-center gap-1 h-7 px-2 rounded-lg border border-[var(--accent)]/30 text-[var(--accent)] text-[11px] font-medium hover:border-[var(--accent)] hover:bg-[var(--accent-bright)]/10 transition-colors shrink-0"
           >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>
+            <Icon name="plus" size="xs" />
             {t("กลุ่มเรียน", "Section")}
           </button>
         )}
@@ -776,7 +725,7 @@ function CurriculumSection({
           className="flex items-center gap-3 w-full text-left rounded-xl px-2 py-1.5 hover:bg-[var(--bg-subtle)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
         >
           <span className={`text-[var(--text-muted)] transition-transform duration-200 ${open ? "" : "-rotate-90"}`} aria-hidden="true">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+            <Icon name="chevron-down" size="sm" />
           </span>
           {group.version && (
             <span className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-[var(--accent-solid)] text-[var(--accent-solid-text)] shrink-0 whitespace-nowrap">
@@ -799,9 +748,7 @@ function CurriculumSection({
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 const FILTER_ICON = (
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
-  </svg>
+  <Icon name="filter" size="xs" />
 );
 
 export default function AdminCoursesPage() {
@@ -947,9 +894,7 @@ export default function AdminCoursesPage() {
           onClick={() => { setEditTarget(undefined); setModalMode("create"); }}
           className="flex items-center gap-2 h-10 px-4 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors shrink-0"
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-          </svg>
+          <Icon name="plus" />
           {t("สร้างรายวิชา", "New Course")}
         </button>
       </div>
@@ -959,51 +904,23 @@ export default function AdminCoursesPage() {
         <StatCard
           label={t("รายวิชาทั้งหมด", "Total Courses")}
           value={courses.length}
-          color="var(--accent)"
-          bg="var(--accent-subtle)"
-          icon={
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
-              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-            </svg>
-          }
+          tone="accent" icon="book"
         />
         <StatCard
           label={t("เปิดสอน", "Active")}
           value={activeCourses.length}
-          color="#2563EB"
-          bg="rgba(37,99,235,0.1)"
-          icon={
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
-              <polyline points="9 11 12 14 22 4"/>
-              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
-            </svg>
-          }
+          tone="info" icon="check-square"
         />
         <StatCard
           label={t("เก็บถาวร", "Archived")}
           value={archivedCourses.length}
-          color="#92400E"
-          bg="rgba(146,64,14,0.1)"
-          icon={
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
-              <polyline points="21 8 21 21 3 21 3 8"/>
-              <rect x="1" y="3" width="22" height="5"/>
-              <line x1="10" y1="12" x2="14" y2="12"/>
-            </svg>
-          }
+          tone="warn" icon="archive"
         />
       </div>
 
       {courses.length === 0 ? (
         <EmptyState
-          iconColor="var(--accent-bright)"
-          icon={
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
-              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-            </svg>
-          }
+          icon="book"
           title={t("ยังไม่มีรายวิชาในระบบ", "No courses yet")}
           description={t("สร้างรายวิชาแรกได้เลย", "Create your first course")}
           action={
@@ -1011,9 +928,7 @@ export default function AdminCoursesPage() {
               onClick={() => { setEditTarget(undefined); setModalMode("create"); }}
               className="flex items-center gap-2 h-9 px-4 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] transition-colors"
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-              </svg>
+              <Icon name="plus" />
               {t("สร้างรายวิชา", "New Course")}
             </button>
           }
@@ -1087,12 +1002,7 @@ export default function AdminCoursesPage() {
 
           {groups.length === 0 ? (
             <EmptyState
-              iconColor="var(--accent-bright)"
-              icon={
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
-                  <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                </svg>
-              }
+          icon="search"
               title={t("ไม่พบรายวิชาที่ตรงกับตัวกรอง", "No courses match these filters")}
               description={t("ลองเปลี่ยนคำค้นหรือล้างตัวกรอง", "Try a different search or clear the filters")}
               action={

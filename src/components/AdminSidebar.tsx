@@ -5,7 +5,8 @@ import { usePathname } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
 import { useState, useEffect } from "react";
 import { ADMIN_DASHBOARD_DISABLED } from "@/lib/featureFlags";
-
+
+import Icon from "@/components/Icon";
 const COLLAPSED_KEY = "hwai_admin_sidebar_collapsed";
 
 export default function AdminSidebar() {
@@ -33,12 +34,7 @@ export default function AdminSidebar() {
         href: "/admin",
         exact: true,
         icon: (
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-            <rect x="3" y="3" width="7" height="7" rx="1"/>
-            <rect x="14" y="3" width="7" height="7" rx="1"/>
-            <rect x="3" y="14" width="7" height="7" rx="1"/>
-            <rect x="14" y="14" width="7" height="7" rx="1"/>
-          </svg>
+          <Icon name="layout-grid" />
         ),
         labelEn: "Dashboard",
         label: t("หน้าหลัก", "Dashboard"),
@@ -48,12 +44,7 @@ export default function AdminSidebar() {
       href: "/admin/users",
       exact: false,
       icon: (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-          <circle cx="9" cy="7" r="4"/>
-          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-        </svg>
+        <Icon name="users" />
       ),
       labelEn: "Users",
       label: t("จัดการผู้ใช้", "User Management"),
@@ -62,10 +53,7 @@ export default function AdminSidebar() {
       href: "/admin/courses",
       exact: false,
       icon: (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-        </svg>
+        <Icon name="book" />
       ),
       labelEn: "Courses",
       label: t("จัดการรายวิชา", "Courses"),
@@ -74,10 +62,7 @@ export default function AdminSidebar() {
       href: "/admin/curriculum",
       exact: false,
       icon: (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-          <path d="M22 10v6M2 10l10-5 10 5-10 5-10-5z"/>
-          <path d="M6 12v5c3 3 9 3 12 0v-5"/>
-        </svg>
+        <Icon name="graduation-cap" />
       ),
       labelEn: "Curriculum",
       label: t("จัดการหลักสูตร", "Curriculum"),
@@ -138,20 +123,7 @@ export default function AdminSidebar() {
             collapsed ? "justify-center px-0" : "gap-2 px-3",
           ].join(" ")}
         >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            aria-hidden="true"
-            className={collapsed ? "rotate-180" : ""}
-            style={{ transition: "transform 0.2s" }}
-          >
-            <polyline points="15 18 9 12 15 6" />
-          </svg>
+          <Icon name="chevron-left" className={collapsed ? "rotate-180" : ""} style={{ transition: "transform 0.2s" }} />
           {!collapsed && (
             <span className="text-xs font-medium">{t("ย่อเมนู", "Collapse")}</span>
           )}

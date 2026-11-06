@@ -8,6 +8,7 @@ import { useAnnouncements, announcementReachesCourse } from "@/lib/announcements
 import EmptyState from "@/components/EmptyState";
 import { ANNOUNCEMENTS_DISABLED } from "@/lib/featureFlags";
 
+import Icon from "@/components/Icon";
 function fmtDateTime(iso: string, lang: string) {
   return new Date(iso).toLocaleDateString(lang === "th" ? "th-TH" : "en-US", {
     day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit",
@@ -42,12 +43,7 @@ export default function StudentAnnouncementsPage() {
 
       {visible.length === 0 ? (
         <EmptyState
-          iconColor="var(--accent-bright)"
-          icon={
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent-bright)" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
-              <path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3zm-8.27 4a2 2 0 0 1-3.46 0"/>
-            </svg>
-          }
+          icon="bell"
           title={t("ยังไม่มีประกาศ", "No announcements yet")}
           description={t("อาจารย์จะโพสต์ประกาศสำคัญที่นี่", "Your instructor will post important announcements here")}
         />

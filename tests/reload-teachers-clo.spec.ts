@@ -95,6 +95,7 @@ test("[18]: from an old browser with the course loaded but no CLO tags, the real
 
   await page.goto(`${BASE}/teacher/courses/c-mock-1/clo`);
   await page.waitForLoadState("networkidle");
+  for (const code of ["CLO1", "CLO2", "CLO3", "CLO4"]) await page.getByTestId(`clo-links-toggle-${code}`).click();
   await expect(page.getByTestId("clo-links-CLO1").getByRole("listitem").first()).toBeVisible();
   await expect(page.getByTestId("clo-unmeasured")).toHaveCount(0);      // all four CLOs are measured
 });

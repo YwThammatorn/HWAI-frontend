@@ -7,13 +7,15 @@ import { useLanguage } from "@/context/LanguageContext";
 import { dateLocale } from "@/lib/dateLocale";
 import { useAuth } from "@/context/AuthContext";
 import { useCourses } from "@/lib/courses";
-import { useAssignments, Assignment, Submission, studentVisibleSubmission, DUE_SOON_DAYS, URGENT_HOURS } from "@/lib/assignments";
+import { useAssignments, Assignment, Submission, studentVisibleSubmission, finalScoreOf, DUE_SOON_DAYS, URGENT_HOURS } from "@/lib/assignments";
 import { useGradingCategories, GradingCategory } from "@/lib/gradingCategories";
 import AssignmentStatusBadge, { AssignmentStatus } from "@/components/AssignmentStatusBadge";
 import AssignmentTypeBadge from "@/components/AssignmentTypeBadge";
 import { CourseIcon } from "@/components/CourseIcon";
 import CollapsibleSection from "@/components/CollapsibleSection";
-
+
+import Icon from "@/components/Icon";
+import IconTile from "@/components/IconTile";
 // The groups of the list, most urgent first. Only the ones that need the student stay open at first (14/10/2569); what they open or
 // close is remembered per course in this browser.
 type GroupKey = "overdue" | "dueSoon" | "notSubmitted" | "awaiting" | "submitted";
@@ -54,7 +56,7 @@ function ClassworkCard({
   const hoursLeft = due ? (due.getTime() - Date.now()) / 3_600_000 : Infinity;
   const isUrgent = hoursLeft > 0 && hoursLeft < URGENT_HOURS;
 
-  const score = submission?.instructorScore ?? submission?.aiScore ?? null;
+  const score = submission ? finalScoreOf(assignment, submission) : null;
 
   return (
     <Link
@@ -62,13 +64,7 @@ function ClassworkCard({
       className="flex items-center gap-4 p-4 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] hover:shadow-sm hover:-translate-y-0.5 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]"
     >
       {/* Left icon */}
-      <div className="w-10 h-10 rounded-xl bg-[var(--accent-bright)]/10 flex items-center justify-center shrink-0">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-bright)" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-          <polyline points="14 2 14 8 20 8"/>
-          <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
-        </svg>
-      </div>
+      <IconTile icon="file-text" size="md" tone="accent" />
 
       {/* Middle */}
       <div className="flex-1 min-w-0">
@@ -220,9 +216,7 @@ export default function StudentClassworkPage() {
         <div className="relative h-36 rounded-2xl mb-6 overflow-hidden" style={{ background: course.coverColor }}>
           <div className="absolute inset-0 bg-black/10" />
           <div className="absolute bottom-4 left-5 right-5 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center shrink-0" aria-hidden="true">
-              <CourseIcon iconKey={course.icon} size={20} className="text-white" />
-            </div>
+            <IconTile course={course.icon} size="md" tone="onDark" />
             <div className="min-w-0">
               {course.code && <p className="text-white/80 text-xs font-semibold tracking-wide tabular-nums truncate">{course.code}</p>}
               <h1 className="text-xl font-bold text-white truncate">{course.name}</h1>
@@ -232,7 +226,7 @@ export default function StudentClassworkPage() {
 
         {/* Description — its own card, separate from the banner (30/9/2569); read-only for students */}
         {course.description && (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-6">
+          <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-subtle)] shadow-sm p-6 mb-6">
             <h2 className="text-base font-bold text-[var(--text-primary)] mb-2">{t("คำอธิบายรายวิชา", "Description")}</h2>
             <p className="text-sm text-[var(--text-secondary)] whitespace-pre-wrap">{course.description}</p>
           </div>
@@ -244,11 +238,7 @@ export default function StudentClassworkPage() {
         <div className="min-w-0">
         {assignments.length === 0 ? (
           <div className="flex flex-col items-center py-16 text-center">
-            <div className="w-12 h-12 rounded-full bg-[var(--accent-bright)]/10 flex items-center justify-center mb-3">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent-bright)" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-              </svg>
-            </div>
+            <IconTile icon="file" size="lg" shape="round" tone="accent" className="mb-3" />
             <p className="text-sm font-semibold text-[var(--text-primary)]">{t("ยังไม่มีงาน", "No assignments yet")}</p>
           </div>
         ) : (

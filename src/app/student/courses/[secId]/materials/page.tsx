@@ -9,25 +9,12 @@ import { resolveFileUrl } from "@/lib/fileStorage";
 import EmptyState from "@/components/EmptyState";
 import { MATERIALS_DISABLED } from "@/lib/featureFlags";
 
-const TYPE_ICON: Record<TeachingMaterialType, React.ReactNode> = {
-  link: (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
-    </svg>
-  ),
-  file: (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-      <polyline points="14 2 14 8 20 8"/>
-    </svg>
-  ),
-  recording: (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-      <polygon points="23 7 16 12 23 17 23 7"/>
-      <rect x="1" y="5" width="15" height="14" rx="2"/>
-    </svg>
-  ),
+import Icon, { type IconName } from "@/components/Icon";
+import IconTile from "@/components/IconTile";
+const TYPE_ICON: Record<TeachingMaterialType, IconName> = {
+  link: "link",
+  file: "file",
+  recording: "video",
 };
 
 export default function StudentMaterialsPage() {
@@ -63,12 +50,7 @@ export default function StudentMaterialsPage() {
 
       {materials.length === 0 ? (
         <EmptyState
-          iconColor="var(--accent-bright)"
-          icon={
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent-bright)" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
-            </svg>
-          }
+          icon="file"
           title={t("ยังไม่มีสื่อการสอน", "No materials yet")}
           description={t("อาจารย์ยังไม่ได้แนบลิงก์ เอกสาร หรือบันทึกการสอน", "Your instructor hasn't attached any links, documents, or recordings yet")}
         />
@@ -83,17 +65,12 @@ export default function StudentMaterialsPage() {
                 idx < materials.length - 1 ? "border-b border-[var(--border-subtle)]" : "",
               ].join(" ")}
             >
-              <span className="shrink-0 w-9 h-9 rounded-xl bg-[var(--accent-subtle)] text-[var(--accent)] flex items-center justify-center">
-                {TYPE_ICON[m.type]}
-              </span>
+              <IconTile icon={TYPE_ICON[m.type]} size="sm" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-[var(--text-primary)] truncate">{m.title}</p>
                 <p className="text-xs text-[var(--text-muted)] mt-0.5">{TYPE_LABEL[m.type]}</p>
               </div>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="shrink-0 text-[var(--text-muted)]" aria-hidden="true">
-                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
-              </svg>
+              <Icon name="external-link" size="sm" className="shrink-0 text-[var(--text-muted)]" />
             </button>
           ))}
         </div>

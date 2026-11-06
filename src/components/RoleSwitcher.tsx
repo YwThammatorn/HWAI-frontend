@@ -8,7 +8,8 @@ import { useCohortStudents } from "@/lib/cohort-students";
 import { findMultiRoleAccount, identityEmail } from "@/lib/accounts";
 import { ADMIN_DASHBOARD_DISABLED } from "@/lib/featureFlags";
 import type { UserRole } from "@/context/AuthContext";
-
+
+import Icon from "@/components/Icon";
 const ROLE_ROUTE: Record<UserRole, string> = {
   admin:   "/admin",
   teacher: "/teacher/courses",
@@ -17,10 +18,10 @@ const ROLE_ROUTE: Record<UserRole, string> = {
 };
 
 const ROLE_LABELS: Record<UserRole, { th: string; en: string; color: string; bg: string }> = {
-  admin:   { th: "แอดมิน", en: "Admin",   color: "#2DD4BF", bg: "rgba(45,212,191,.15)" },
-  teacher: { th: "อาจารย์", en: "Teacher", color: "#93C5FD", bg: "rgba(37,99,235,.15)" },
-  ta:      { th: "TA",      en: "TA",      color: "#C4B5FD", bg: "rgba(124,58,237,.15)" },
-  student: { th: "นักศึกษา", en: "Student", color: "#6EE7B7", bg: "rgba(5,150,105,.15)" },
+  admin:   { th: "แอดมิน", en: "Admin",   color: "var(--brand-bright)", bg: "color-mix(in srgb, var(--brand-bright) 15%, transparent)" },
+  teacher: { th: "อาจารย์", en: "Teacher", color: "var(--on-chrome-info)", bg: "color-mix(in srgb, var(--on-chrome-info) 15%, transparent)" },
+  ta:      { th: "TA",      en: "TA",      color: "var(--on-chrome-ta)", bg: "color-mix(in srgb, var(--on-chrome-ta) 15%, transparent)" },
+  student: { th: "นักศึกษา", en: "Student", color: "var(--on-chrome-ok)", bg: "color-mix(in srgb, var(--on-chrome-ok) 15%, transparent)" },
 };
 
 // Dev tool (any role, any target) vs. real teacher-facing preview feature
@@ -75,16 +76,14 @@ export default function RoleSwitcher() {
           aria-haspopup="menu"
           aria-expanded={open}
           className="flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[10px] font-bold transition-colors hover:opacity-80"
-          style={{ color: meta.color, background: meta.bg, borderColor: meta.color + "80" }}
+          style={{ color: meta.color, background: meta.bg, borderColor: `color-mix(in srgb, ${meta.color} 50%, transparent)` }}
         >
           {lang === "th" ? meta.th : meta.en}
-          <svg width="8" height="8" viewBox="0 0 10 10" fill="currentColor" style={{ opacity: .6 }}>
-            <path d="M5 7L1 3h8L5 7z"/>
-          </svg>
+          <Icon name="chevron-down" size="xs" filled style={{ opacity: .6 }} />
         </button>
 
         {open && (
-          <div role="menu" className="absolute right-0 top-full mt-1.5 w-60 rounded-xl border border-white/10 bg-[#0D1628] shadow-xl z-50 py-1 overflow-hidden">
+          <div role="menu" className="absolute right-0 top-full mt-1.5 w-60 rounded-xl border border-white/10 bg-[var(--chrome-menu-bg)] shadow-xl z-50 py-1 overflow-hidden">
             <p className="text-[9px] font-bold tracking-widest uppercase text-white/30 px-3 pt-2 pb-1">{t("สลับบทบาท", "Switch role")}</p>
             {account.roles.map((r) => {
               const m = ROLE_LABELS[r];
@@ -99,10 +98,10 @@ export default function RoleSwitcher() {
                   className="w-full text-left px-3 py-1.5 flex items-center gap-2 transition-colors hover:bg-white/5"
                 >
                   <span className="w-2 shrink-0 flex items-center" style={{ color: m.color }}>
-                    {isActive && <svg width="8" height="8" viewBox="0 0 10 10" fill="currentColor"><circle cx="5" cy="5" r="4"/></svg>}
+                    {isActive && <span className="h-2 w-2 rounded-full bg-current" aria-hidden="true" />}
                   </span>
                   <span className="flex flex-col min-w-0">
-                    <span className="text-xs font-medium" style={{ color: isActive ? m.color : "#94A3B8" }}>
+                    <span className="text-xs font-medium" style={{ color: isActive ? m.color : "var(--on-chrome-muted)" }}>
                       {lang === "th" ? m.th : m.en}
                     </span>
                     <span className="text-[10px] text-white/55 truncate">{identityEmail(account, r)}</span>
@@ -138,20 +137,18 @@ export default function RoleSwitcher() {
         style={{
           color: meta.color,
           background: meta.bg,
-          borderColor: meta.color + "80",
+          borderColor: `color-mix(in srgb, ${meta.color} 50%, transparent)`,
         }}
       >
         {lang === "th" ? meta.th : meta.en}
         {viewAs && (
           <span className="opacity-60 font-normal">{t("มุมมอง", "view")}</span>
         )}
-        <svg width="8" height="8" viewBox="0 0 10 10" fill="currentColor" style={{ opacity: .6 }}>
-          <path d="M5 7L1 3h8L5 7z"/>
-        </svg>
+        <Icon name="chevron-down" size="xs" filled style={{ opacity: .6 }} />
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-1.5 w-36 rounded-xl border border-white/10 bg-[#0D1628] shadow-xl z-50 py-1 overflow-hidden">
+        <div className="absolute right-0 top-full mt-1.5 w-36 rounded-xl border border-white/10 bg-[var(--chrome-menu-bg)] shadow-xl z-50 py-1 overflow-hidden">
           <p className="text-[9px] font-bold tracking-widest uppercase text-white/30 px-3 pt-2 pb-1">{t("ดูในมุมมอง", "View as")}</p>
           {switchTargets.map((r) => {
             const m = ROLE_LABELS[r];
@@ -167,10 +164,10 @@ export default function RoleSwitcher() {
                   router.push(ROLE_ROUTE[r]);
                 }}
                 className="w-full text-left px-3 py-1.5 text-xs font-medium flex items-center gap-2 transition-colors hover:bg-white/5"
-                style={{ color: isActive ? m.color : "#64748B" }}
+                style={{ color: isActive ? m.color : "var(--on-chrome-faint)" }}
               >
                 {isActive && (
-                  <svg width="8" height="8" viewBox="0 0 10 10" fill="currentColor"><circle cx="5" cy="5" r="4"/></svg>
+                  <span className="h-2 w-2 rounded-full bg-current" aria-hidden="true" />
                 )}
                 {!isActive && <span className="w-2" />}
                 {lang === "th" ? m.th : m.en}

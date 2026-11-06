@@ -11,58 +11,18 @@ import {
 } from "@/lib/notifications";
 import { useLanguage } from "@/context/LanguageContext";
 import { NOTIFICATIONS_DISABLED } from "@/lib/featureFlags";
-
+
+import Icon from "@/components/Icon";
+import IconTile, { type IconTileTone } from "@/components/IconTile";
+import type { IconName } from "@/components/Icon";
 // ─── Icons ────────────────────────────────────────────────────────────────────
 
-const ICON_CONFIG: Record<
-  NotifType,
-  { bg: string; el: React.ReactNode }
-> = {
-  ai_grading_complete: {
-    bg: "bg-[var(--accent-bright)]/15",
-    el: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinecap="round">
-        <polyline points="20 6 9 17 4 12" />
-      </svg>
-    ),
-  },
-  late_submission: {
-    bg: "bg-blue-100",
-    el: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-        <polyline points="14 2 14 8 20 8" />
-        <line x1="12" y1="18" x2="12" y2="12" />
-        <line x1="9" y1="15" x2="15" y2="15" />
-      </svg>
-    ),
-  },
-  ta_invitation: {
-    bg: "bg-purple-100",
-    el: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth="2" strokeLinecap="round">
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-      </svg>
-    ),
-  },
-  plagiarism_alert: {
-    bg: "bg-orange-100",
-    el: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#EA580C" strokeWidth="2" strokeLinecap="round">
-        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-        <line x1="12" y1="9" x2="12" y2="13" />
-        <line x1="12" y1="17" x2="12.01" y2="17" />
-      </svg>
-    ),
-  },
-  joining_approved: {
-    bg: "bg-[var(--accent-bright)]/15",
-    el: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinecap="round">
-        <polyline points="20 6 9 17 4 12" />
-      </svg>
-    ),
-  },
+const ICON_CONFIG: Record<Notif["type"], { icon: IconName; tone: IconTileTone }> = {
+  ai_grading_complete: { icon: "check", tone: "accent" },
+  late_submission: { icon: "file-plus", tone: "info" },
+  ta_invitation: { icon: "message-square", tone: "ta" },
+  plagiarism_alert: { icon: "alert-triangle", tone: "warn" },
+  joining_approved: { icon: "check", tone: "accent" },
 };
 
 // ─── Notification Card ────────────────────────────────────────────────────────
@@ -88,11 +48,11 @@ function NotifCard({
           <>
             <button className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-xs font-medium hover:bg-[var(--accent-solid-hover)] transition-colors">
               {t("ดูผลลัพธ์", "View Results")}
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+              <Icon name="arrow-right" size="sm" />
             </button>
             <button
               onClick={() => onDismiss(notif.id)}
-              className="text-xs text-gray-500 hover:text-gray-600 transition-colors px-1"
+              className="text-xs text-[var(--text-secondary)] hover:text-[var(--text-secondary)] transition-colors px-1"
             >
               {t("ปิด", "Dismiss")}
             </button>
@@ -123,7 +83,7 @@ function NotifCard({
         );
       case "plagiarism_alert":
         return (
-          <button className="inline-flex items-center px-4 py-1.5 rounded-lg border border-gray-200 text-gray-600 text-xs font-medium hover:bg-gray-50 transition-colors">
+          <button className="inline-flex items-center px-4 py-1.5 rounded-lg border border-[var(--border)] text-[var(--text-secondary)] text-xs font-medium hover:bg-[var(--bg-subtle)] transition-colors">
             {t("ดูรายละเอียด", "View Detail")}
           </button>
         );
@@ -135,26 +95,24 @@ function NotifCard({
   return (
     <div
       className={[
-        "bg-white rounded-2xl border shadow-sm p-4 flex gap-3.5 transition-opacity",
-        notif.read ? "border-gray-100 opacity-70" : "border-gray-100",
+        "bg-[var(--bg-surface)] rounded-2xl border shadow-sm p-4 flex gap-3.5 transition-opacity",
+        notif.read ? "border-[var(--border-subtle)] opacity-70" : "border-[var(--border-subtle)]",
       ].join(" ")}
     >
       {/* Icon */}
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${icon.bg}`}>
-        {icon.el}
-      </div>
+      <IconTile icon={icon.icon} size="md" tone={icon.tone} />
 
       {/* Content */}
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-3">
           <p className="text-sm font-semibold text-[var(--text-primary)] leading-snug">{notif.title}</p>
           <div className="flex items-center gap-1.5 shrink-0 mt-0.5">
-            <span className="text-xs text-gray-500 whitespace-nowrap">{formatNotifTime(notif.createdAt)}</span>
-            {!notif.read && <span className="w-2 h-2 rounded-full bg-green-500 shrink-0" />}
+            <span className="text-xs text-[var(--text-secondary)] whitespace-nowrap">{formatNotifTime(notif.createdAt)}</span>
+            {!notif.read && <span className="w-2 h-2 rounded-full bg-[var(--s-ok-text)] shrink-0" />}
           </div>
         </div>
 
-        <p className="text-sm text-gray-500 mt-0.5 leading-relaxed"
+        <p className="text-sm text-[var(--text-secondary)] mt-0.5 leading-relaxed"
           dangerouslySetInnerHTML={{
             __html: notif.body.replace(
               /\*\*(.+?)\*\*/g,
@@ -173,7 +131,7 @@ function NotifCard({
 
 function GroupLabel({ label }: { label: string }) {
   return (
-    <p className="text-xs font-semibold text-gray-500 tracking-widest uppercase mb-3 mt-6 first:mt-0">
+    <p className="text-xs font-semibold text-[var(--text-secondary)] tracking-widest uppercase mb-3 mt-6 first:mt-0">
       {label}
     </p>
   );
@@ -215,11 +173,8 @@ export default function NotificationsPage() {
           <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-6">{t("การแจ้งเตือน", "Notifications")}</h1>
 
           {isEmpty ? (
-            <div className="flex flex-col items-center justify-center py-24 text-gray-500">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="mb-3 opacity-40">
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-              </svg>
+            <div className="flex flex-col items-center justify-center py-24 text-[var(--text-secondary)]">
+              <Icon name="bell" size="xl" className="mb-3 opacity-40" />
               <p className="text-sm">{t("ไม่มีการแจ้งเตือน", "No notifications")}</p>
             </div>
           ) : (

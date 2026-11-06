@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCourses } from "@/lib/courses";
-import { useAssignments, RubricCriterion, submissionAttachments, isManualGrading, levelShare, gradingOpen, gradingOpensAt } from "@/lib/assignments";
+import { useAssignments, RubricCriterion, submissionAttachments, isManualGrading, levelShare, gradingOpen, gradingOpensAt, latePenaltyOf, daysLate } from "@/lib/assignments";
 import { useNow } from "@/lib/clock";
 import SubmissionViewer from "@/components/SubmissionViewer";
 import FloatingPanel, { openFloatingWindow } from "@/components/FloatingPanel";
@@ -13,7 +13,10 @@ import { splitCriterionName } from "@/lib/rubricName";
 import { useStudentGroups } from "@/lib/studentGroups";
 import { useLanguage } from "@/context/LanguageContext";
 import { dateLocale } from "@/lib/dateLocale";
-
+
+import Icon from "@/components/Icon";
+import IconTile from "@/components/IconTile";
+import IconButton from "@/components/IconButton";
 function genFeedback(fullName: string, level: "high" | "low"): string {
   const name = splitCriterionName(fullName).main; // "C1 · Program correctness / ความถูกต้อง" reads as "program correctness" in a sentence
   if (level === "high") {
@@ -116,7 +119,7 @@ export default function RecheckPage() {
 
   if (!course || !assignment || !submission) {
     return (
-        <main className="flex-1 flex items-center justify-center text-gray-500 text-sm">
+        <main className="flex-1 flex items-center justify-center text-[var(--text-secondary)] text-sm">
           {t("ไม่พบข้อมูล", "Not found")} —{" "}
           <Link
             href={`/teacher/courses/${id}/assignments/${assignmentId}/results`}
@@ -138,7 +141,7 @@ export default function RecheckPage() {
         <div data-testid="grade-window-closed" role="note" className="max-w-md rounded-2xl border border-[var(--s-warn-bd)] bg-[var(--s-warn-bg)] px-6 py-5 text-center text-[var(--s-warn-text)]">
           <p className="text-base font-semibold">{t("ยังไม่เปิดให้ตรวจงานนี้", "This assignment is not open for grading yet")}</p>
           <p className="mt-2 text-sm leading-relaxed">
-            {t(`นักศึกษายังส่งหรือส่งซ้ำได้อยู่ (เลยกำหนดแล้วยังส่งช้าได้ 1 ชั่วโมง) จะตรวจได้ตั้งแต่ ${when} น.`, `Students can still submit or resubmit (one late hour after the due date). Grading opens ${when}.`)}
+            {t(`นักศึกษายังส่งหรือส่งซ้ำได้อยู่ (ยังไม่พ้นวันปิดรับงาน) จะตรวจได้ตั้งแต่ ${when} น.`, `Students can still submit or resubmit (submissions have not closed yet). Grading opens ${when}.`)}
           </p>
           <Link href={`/teacher/courses/${id}/grading`} className="mt-4 inline-flex h-9 items-center rounded-xl border border-[var(--s-warn-bd)] px-4 text-sm font-semibold hover:bg-[var(--bg-card)]">
             {t("กลับหน้าตรวจงาน", "Back to Grading")}
@@ -150,6 +153,7 @@ export default function RecheckPage() {
 
   // Graded by hand (11/10/2569: the teacher's choice, an exam, or no file to check): nothing from the AI is shown here
   const handGraded = isManualGrading(assignment);
+  const latePenalty = submission ? latePenaltyOf(assignment, submission) : 0;
   const totalScore = rubric ? scores.reduce((sum, s) => sum + (s.score ?? 0), 0) : manualScore;
   // A criterion with no mark would silently count as 0 in the student's total — saving waits until every one is marked.
   const unmarked = rubric ? scores.filter((s) => s.score === null).length : 0;
@@ -240,8 +244,8 @@ export default function RecheckPage() {
 
   // The grading panel — drawn in the page, or in the small window while it floats
   const gradePanel = (floating: boolean) => (
-    <div className={floating ? "flex-1 min-h-0 flex flex-col bg-white overflow-y-auto" : "w-[26rem] shrink-0 flex flex-col border-l border-gray-100 bg-white overflow-y-auto"}>
-      <div className="px-5 py-5 border-b border-gray-50">
+    <div className={floating ? "flex-1 min-h-0 flex flex-col bg-[var(--bg-surface)] overflow-y-auto" : "w-[26rem] shrink-0 flex flex-col border-l border-[var(--border-subtle)] bg-[var(--bg-surface)] overflow-y-auto"}>
+      <div className="px-5 py-5 border-b border-[var(--border-subtle)]">
         {/* No "AI confidence" any more (15/10/2569, user's request): only a note when there is no AI result behind this submission. */}
         <h2 className="text-base font-bold text-[var(--text-primary)]">
           {t("ตรวจสอบการให้คะแนน", "Grading Review")}
@@ -251,7 +255,7 @@ export default function RecheckPage() {
             {t("ตรวจเอง — ไม่ใช้ AI ในงานนี้", "Graded by hand — no AI on this assignment")}
           </p>
         ) : submission.aiScore === null ? (
-          <p className="mt-3 text-xs text-gray-400">
+          <p className="mt-3 text-xs text-[var(--text-muted)]">
             {t("ยังไม่ผ่านการตรวจของ AI — ให้คะแนนด้วยตนเอง", "Not yet AI-graded — grading manually")}
           </p>
         ) : null}
@@ -260,8 +264,8 @@ export default function RecheckPage() {
       {/* Criteria */}
       <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
         {!rubric && (
-          <div className="rounded-xl border border-gray-100 bg-white p-4">
-            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">
+          <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-4">
+            <p className="text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-2">
               {/* A no-rubric assignment reaches here for either reason now (23/9/2569 round 3):
                   isExam, or acceptsFiles turned off — the old label always said "exam", which was
                   wrong for the second case. */}
@@ -271,7 +275,7 @@ export default function RecheckPage() {
                 ? t("ไม่รับไฟล์ — ไม่มี rubric", "No file submission — no rubric")
                 : t("ยังไม่มี rubric", "No rubric yet")}
             </p>
-            <p className="text-xs text-gray-500 mb-3">
+            <p className="text-xs text-[var(--text-secondary)] mb-3">
               {t("พิมพ์คะแนนรวมของงานนี้โดยตรง", "Enter this submission's total score directly")}
             </p>
             <div className="flex items-center gap-2">
@@ -286,9 +290,9 @@ export default function RecheckPage() {
                   setSaved(false);
                 }}
                 aria-label={t("คะแนนรวม", "Total score")}
-                className="w-20 text-center text-sm font-bold text-[var(--text-primary)] border border-gray-200 rounded-lg px-1 py-1.5 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
+                className="w-20 text-center text-sm font-bold text-[var(--text-primary)] border border-[var(--border)] rounded-lg px-1 py-1.5 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
               />
-              <span className="text-xs text-gray-400">/ {assignment.maxPoints}</span>
+              <span className="text-xs text-[var(--text-muted)]">/ {assignment.maxPoints}</span>
             </div>
           </div>
         )}
@@ -299,7 +303,7 @@ export default function RecheckPage() {
             <div
               key={s.criterionId}
               className={`rounded-xl border p-4 transition-colors ${
-                s.edited ? "border-amber-200 bg-amber-50/30" : "border-gray-100 bg-white"
+                s.edited ? "border-[var(--s-warn-bd)] bg-[var(--s-warn-bg)]/30" : "border-[var(--border-subtle)] bg-[var(--bg-surface)]"
               }`}
             >
               <div className="flex items-start justify-between gap-3 mb-3">
@@ -313,9 +317,9 @@ export default function RecheckPage() {
                       value={s.score ?? 0}
                       onChange={(e) => typeScore(s.criterionId, parseInt(e.target.value) || 0)}
                       aria-label={t(`คะแนน ${splitCriterionName(c.name).main}`, `Score for ${splitCriterionName(c.name).main}`)}
-                      className="w-12 text-center text-sm font-bold text-[var(--text-primary)] border border-gray-200 rounded-lg px-1 py-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
+                      className="w-12 text-center text-sm font-bold text-[var(--text-primary)] border border-[var(--border)] rounded-lg px-1 py-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
                     />
-                    <span className="text-xs text-gray-400">/ {s.maxPoints}</span>
+                    <span className="text-xs text-[var(--text-muted)]">/ {s.maxPoints}</span>
                   </span>
                 ) : (
                   <span data-testid={`crit-score-${s.criterionId}`} className="shrink-0 text-sm tabular-nums text-[var(--text-muted)]">
@@ -358,17 +362,17 @@ export default function RecheckPage() {
               </div>
 
               {s.edited && !handGraded && (
-                <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded mt-3 mb-1">
+                <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-[var(--s-warn-text)] bg-[var(--s-warn-bg)] px-1.5 py-0.5 rounded mt-3 mb-1">
                   {t("แก้ไขแล้ว", "Manually Edited")}
                 </span>
               )}
 
               {!handGraded && (
               <div className="mt-2">
-                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">
+                <p className="text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-1">
                   {t("ความคิดเห็น AI", "AI Feedback")}
                 </p>
-                <p className="text-xs text-gray-600 leading-relaxed">{s.aiFeedback}</p>
+                <p className="text-xs text-[var(--text-secondary)] leading-relaxed">{s.aiFeedback}</p>
               </div>
               )}
 
@@ -377,11 +381,11 @@ export default function RecheckPage() {
                 <div className="mt-3">
                   <label
                     htmlFor={`criterion-note-${s.criterionId}`}
-                    className="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1"
+                    className="block text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-1"
                   >
                     {t("ข้อเสนอแนะถึง AI", "Feedback to AI")}
                   </label>
-                  <p id={`criterion-note-hint-${s.criterionId}`} className="text-[11px] text-gray-400 leading-snug mb-1.5">
+                  <p id={`criterion-note-hint-${s.criterionId}`} className="text-[11px] text-[var(--text-muted)] leading-snug mb-1.5">
                     {t(
                       "บอก AI ว่าทำไมถึงปรับคะแนน — ไม่แสดงให้นักศึกษาเห็น เก็บไว้ใช้ปรับปรุงการตรวจของ AI",
                       "Tell the AI why you changed this score — not shown to students; kept to help refine AI grading",
@@ -398,7 +402,7 @@ export default function RecheckPage() {
                     }}
                     rows={2}
                     placeholder="เช่น AI ให้เข้มเกินไป เพราะ... (ไม่บังคับ)"
-                    className="w-full text-xs text-[var(--text-primary)] resize-none border border-gray-200 rounded-lg px-2.5 py-2 bg-white placeholder:text-gray-300 leading-relaxed focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
+                    className="w-full text-xs text-[var(--text-primary)] resize-none border border-[var(--border)] rounded-lg px-2.5 py-2 bg-[var(--bg-surface)] placeholder:text-[var(--text-muted)] leading-relaxed focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
                   />
                 </div>
               )}
@@ -407,8 +411,8 @@ export default function RecheckPage() {
         })}
 
         {/* Comment */}
-        <div className="rounded-xl border border-gray-100 p-4">
-          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">
+        <div className="rounded-xl border border-[var(--border-subtle)] p-4">
+          <p className="text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-2">
             {t("ความคิดเห็นอาจารย์", "Instructor Comment")}
           </p>
           <textarea
@@ -416,7 +420,7 @@ export default function RecheckPage() {
             onChange={(e) => { setComment(e.target.value); setSaved(false); }}
             rows={3}
             placeholder="เพิ่มความคิดเห็นสำหรับนักศึกษา..."
-            className="w-full text-xs text-[var(--text-primary)] resize-none border-0 outline-none bg-transparent placeholder:text-gray-300 leading-relaxed"
+            className="w-full text-xs text-[var(--text-primary)] resize-none border-0 outline-none bg-transparent placeholder:text-[var(--text-muted)] leading-relaxed"
           />
         </div>
 
@@ -429,6 +433,18 @@ export default function RecheckPage() {
               <span className="text-sm font-normal text-white/50"> / {totalMax}</span>
             </span>
           </div>
+          {latePenalty > 0 && (
+            <div data-testid="late-deduction" className="mt-2 border-t border-white/15 pt-2 text-xs text-white/70 tabular-nums">
+              <div className="flex items-center justify-between">
+                <span>{t(`ส่งช้า ${daysLate(assignment, submission.submittedAt)} วัน`, `Handed in ${daysLate(assignment, submission.submittedAt)} day${daysLate(assignment, submission.submittedAt) === 1 ? "" : "s"} late`)}</span>
+                <span>−{latePenalty}</span>
+              </div>
+              <div className="mt-1 flex items-center justify-between font-semibold text-white">
+                <span>{t("คะแนนที่นับ", "Counted score")}</span>
+                <span>{Math.max(0, totalScore - latePenalty)} / {totalMax}</span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -438,15 +454,12 @@ export default function RecheckPage() {
         </p>
       )}
       {/* Footer actions */}
-      <div className="px-5 py-4 border-t border-gray-100 flex gap-3">
+      <div className="px-5 py-4 border-t border-[var(--border-subtle)] flex gap-3">
         <button
           onClick={resetToDefault}
-          className="flex-1 py-2.5 rounded-xl border border-gray-200 text-xs font-semibold text-gray-500 hover:bg-gray-50 transition-colors flex items-center justify-center gap-1.5"
+          className="flex-1 py-2.5 rounded-xl border border-[var(--border)] text-xs font-semibold text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] transition-colors flex items-center justify-center gap-1.5"
         >
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-            <polyline points="1 4 1 10 7 10"/>
-            <path d="M3.51 15a9 9 0 1 0 .49-4.5"/>
-          </svg>
+          <Icon name="rotate-ccw" size="sm" />
           {t("คืนค่าเดิม", "Reset to Default")}
         </button>
         <button
@@ -465,42 +478,33 @@ export default function RecheckPage() {
         {/* Left: file viewer */}
         <div className="flex-1 min-w-0 flex flex-col bg-[var(--surface)] overflow-hidden">
           {/* Zoom toolbar */}
-          <div className="flex items-center gap-3 px-5 py-2.5 bg-white border-b border-gray-100 shadow-sm">
-            <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">
+          <div className="flex items-center gap-3 px-5 py-2.5 bg-[var(--bg-surface)] border-b border-[var(--border-subtle)] shadow-sm">
+            <span className="text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-widest">
               {t("มุมมอง", "View")}:
             </span>
             <button
               onClick={() => setZoom((z) => Math.max(25, z - 25))}
-              className="w-6 h-6 flex items-center justify-center rounded hover:bg-gray-100 text-gray-500 text-sm font-bold transition-colors"
+              className="w-6 h-6 flex items-center justify-center rounded hover:bg-[var(--bg-subtle)] text-[var(--text-secondary)] text-sm font-bold transition-colors"
             >
               −
             </button>
             <span className="text-sm font-medium text-[var(--text-primary)] w-12 text-center">{zoom}%</span>
             <button
               onClick={() => setZoom((z) => Math.min(200, z + 25))}
-              className="w-6 h-6 flex items-center justify-center rounded hover:bg-gray-100 text-gray-500 text-sm font-bold transition-colors"
+              className="w-6 h-6 flex items-center justify-center rounded hover:bg-[var(--bg-subtle)] text-[var(--text-secondary)] text-sm font-bold transition-colors"
             >
               +
             </button>
-            <div className="w-px h-4 bg-gray-200 mx-1" />
-            <button
-              onClick={() => setZoom(100)}
-              className="w-6 h-6 flex items-center justify-center rounded hover:bg-gray-100 text-gray-500 transition-colors"
-              title={t("รีเซ็ตการซูม", "Reset zoom")}
-            >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/>
-                <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
-              </svg>
-            </button>
+            <div className="w-px h-4 bg-[var(--border)] mx-1" />
+            <IconButton icon="refresh" label={t("รีเซ็ตการซูม", "Reset zoom")} onClick={() => setZoom(100)} />
             {hasLink && (
               <>
-                <div className="w-px h-4 bg-gray-200 mx-1" />
+                <div className="w-px h-4 bg-[var(--border)] mx-1" />
                 <button
                   type="button"
                   data-testid="grade-float-open"
                   onClick={floatWin ? closeFloat : openFloat}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border)] px-2.5 py-1 text-xs font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] transition-colors"
                 >
                   {floatWin ? t("เอาส่วนตรวจกลับมาในหน้านี้", "Bring the grading back here") : t("ส่วนตรวจลอยในหน้าต่างเล็ก", "Float the grading in a small window")}
                 </button>
@@ -522,16 +526,11 @@ export default function RecheckPage() {
             empty={
           <div className="flex-1 overflow-auto flex items-start justify-center p-8">
             <div
-              className="bg-white shadow-xl rounded-sm transition-all origin-top"
+              className="bg-[var(--bg-surface)] shadow-xl rounded-sm transition-all origin-top"
               style={{ width: `${zoom * 5}px`, minHeight: `${zoom * 7}px`, transform: `scale(1)` }}
             >
               <div className="w-full h-full flex flex-col items-center justify-center gap-4 p-8 text-center">
-                <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center">
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="1.5">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                  </svg>
-                </div>
+                <IconTile icon="file" size="lg" tone="accent" />
                 <div>
                   <p className="text-sm font-semibold text-[var(--text-primary)] mb-1">{submission.studentName}</p>
                   {team && (
@@ -539,13 +538,13 @@ export default function RecheckPage() {
                       {t(`ทีม ${team.name} — คะแนนนี้จะใช้กับสมาชิกทุกคน`, `Team ${team.name} — this grade applies to every member`)}
                     </p>
                   )}
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-[var(--text-muted)]">
                     {t("ส่งเมื่อ", "Submitted")}{" "}
                     {new Date(submission.submittedAt).toLocaleDateString(lang === "th" ? "th-TH" : "en-US", {
                       month: "short", day: "numeric", hour: "2-digit", minute: "2-digit",
                     })}
                   </p>
-                  <p className="text-xs text-gray-300 mt-3">
+                  <p className="text-xs text-[var(--text-muted)] mt-3">
                     {t("ไม่สามารถแสดงตัวอย่างไฟล์ในโหมดทดสอบ", "File preview not available in sandbox mode")}
                   </p>
                 </div>
@@ -558,7 +557,7 @@ export default function RecheckPage() {
 
         {floatWin ? (
           <>
-            <div data-testid="grade-floating-note" className="w-[26rem] shrink-0 flex flex-col items-center justify-center gap-3 border-l border-gray-100 bg-white px-8 text-center">
+            <div data-testid="grade-floating-note" className="w-[26rem] shrink-0 flex flex-col items-center justify-center gap-3 border-l border-[var(--border-subtle)] bg-[var(--bg-surface)] px-8 text-center">
               <p className="text-sm font-semibold text-[var(--text-primary)]">{t("ส่วนตรวจลอยอยู่ในหน้าต่างเล็ก", "The grading is in the small window")}</p>
               <p className="text-xs leading-relaxed text-[var(--text-secondary)]">{t("ให้คะแนนที่นั่นได้เลย — คะแนนที่คลิกจะอยู่ในหน้านี้ด้วย ปิดหน้าต่างเล็กหรือกดปุ่มด้านล่างเพื่อเอากลับมา", "Grade there — what you click is held in this page too. Close the small window, or press the button below, to bring it back.")}</p>
               <button type="button" data-testid="grade-float-return" onClick={closeFloat} className="h-9 rounded-xl border border-[var(--border)] px-4 text-xs font-semibold text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]">{t("เอาส่วนตรวจกลับมา", "Bring it back")}</button>

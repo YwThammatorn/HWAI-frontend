@@ -262,10 +262,18 @@ test.describe("CLO page", () => {
     await page.goto(`${C}/clo`);
     await page.waitForLoadState("networkidle");
     const clo1 = page.getByTestId("clo-links-CLO1");
-    await expect(clo1).toContainText("Assignments that mention this CLO");
+    await expect(clo1).toContainText("Assignments linked to this CLO");
+    // a dropdown that starts closed (21/10/2569): the count is on the header, the names only after opening it
+    await expect(page.getByTestId("clo-links-toggle-CLO1")).toHaveAttribute("aria-expanded", "false");
+    await expect(page.getByTestId("clo-links-toggle-CLO1")).toContainText("1");
+    await expect(page.getByRole("listitem")).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Landing page" })).toHaveCount(0);
+    await page.getByTestId("clo-links-toggle-CLO1").click();
+    await expect(page.getByTestId("clo-links-toggle-CLO1")).toHaveAttribute("aria-expanded", "true");
     await expect(clo1.getByRole("listitem")).toHaveCount(1);                    // two criteria of the same assignment carry CLO1 — still one line
     await expect(clo1.getByRole("listitem").nth(0)).toHaveText("Landing page");
     await expect(clo1.getByRole("link", { name: "Landing page" })).toHaveAttribute("href", "/teacher/courses/c-clo/assignments/as1");
+    await page.getByTestId("clo-links-toggle-CLO2").click();
     await expect(page.getByTestId("clo-links-CLO2").getByRole("listitem")).toHaveCount(1);
     await expect(page.getByText("Layout")).toHaveCount(0);                      // the criterion names are gone too
     await expect(page.getByText("Accessibility")).toHaveCount(0);
@@ -279,7 +287,11 @@ test.describe("CLO page", () => {
     await seed(page);
     await page.goto(`${C}/clo`);
     await page.waitForLoadState("networkidle");
+    await expect(page.getByTestId("clo-links-toggle-CLO3")).toContainText("0");
+    await page.getByTestId("clo-links-toggle-CLO3").click();
     await expect(page.getByTestId("clo-links-CLO3").getByTestId("clo-unmeasured")).toContainText("No assignment mentions this CLO yet");
+    await page.getByTestId("clo-links-toggle-CLO3").click();                    // and it closes again
+    await expect(page.getByTestId("clo-unmeasured")).toHaveCount(0);
   });
 
   test("the list does not depend on anything being graded", async ({ page }) => {
@@ -287,6 +299,7 @@ test.describe("CLO page", () => {
     await page.addInitScript(() => localStorage.setItem("hwai_submissions_v1", "[]"));
     await page.goto(`${C}/clo`);
     await page.waitForLoadState("networkidle");
+    await page.getByTestId("clo-links-toggle-CLO2").click();
     await expect(page.getByTestId("clo-links-CLO2").getByRole("listitem")).toHaveCount(1);
     await expect(page.getByText("Nothing graded yet")).toHaveCount(0);
   });
@@ -296,9 +309,11 @@ test.describe("CLO page", () => {
     await page.goto(`${C}/clo`);
     await page.waitForLoadState("networkidle");
     const clo1 = page.getByTestId("clo-links-CLO1");
-    await expect(clo1).toContainText("งานที่กล่าวถึง CLO นี้");
+    await expect(clo1).toContainText("งานที่เกี่ยวข้องกับ CLO นี้");
+    await page.getByTestId("clo-links-toggle-CLO1").click();
     await expect(clo1.getByRole("listitem")).toHaveCount(1);
     await expect(page.getByText("ผลลัพธ์ CLO")).toHaveCount(0);
+    await page.getByTestId("clo-links-toggle-CLO3").click();
     await expect(page.getByTestId("clo-links-CLO3")).toContainText("ยังไม่มีงานใดกล่าวถึง CLO นี้");
   });
 });

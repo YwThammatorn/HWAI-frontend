@@ -10,7 +10,11 @@ import { useCourses } from "@/lib/courses";
 import StudentSidebar from "./StudentSidebar";
 import RoleSwitcher from "./RoleSwitcher";
 import { getInitials } from "@/lib/utils";
-
+
+import Icon from "@/components/Icon";
+import BrandLogo from "@/components/BrandLogo";
+import IconButton from "@/components/IconButton";
+import Avatar from "@/components/Avatar";
 export default function StudentShell({ children }: { children: React.ReactNode }) {
   const { user, effectiveRole, logout } = useAuth();
   const router = useRouter();
@@ -55,15 +59,7 @@ export default function StudentShell({ children }: { children: React.ReactNode }
       <header className="h-14 shrink-0 flex items-center px-6 bg-[var(--navbar-bg)] text-white">
         {/* Logo */}
         <Link href="/student" className="flex items-center gap-2 mr-8">
-          <div className="w-8 h-8 rounded-lg bg-[#2DD4BF] flex items-center justify-center shrink-0">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-              <rect x="2" y="2" width="6" height="6" rx="1" fill="white" fillOpacity="0.9"/>
-              <rect x="10" y="2" width="6" height="6" rx="1" fill="white" fillOpacity="0.9"/>
-              <rect x="2" y="10" width="6" height="6" rx="1" fill="white" fillOpacity="0.9"/>
-              <rect x="10" y="10" width="6" height="6" rx="1" fill="white" fillOpacity="0.6"/>
-            </svg>
-          </div>
-          <span className="font-bold text-[15px] tracking-tight">HWAI Agent</span>
+          <BrandLogo size="sm" />
         </Link>
 
         <div className="flex-1" />
@@ -85,23 +81,9 @@ export default function StudentShell({ children }: { children: React.ReactNode }
 
           {/* Avatar + name + logout */}
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-[#2DD4BF] flex items-center justify-center shrink-0">
-              <span className="text-[#1B2A4A] text-xs font-bold leading-none">{initials}</span>
-            </div>
+            <Avatar initials={initials} tone="brand" />
             <span className="text-sm font-medium text-white/90">{user.name}</span>
-            <button
-              type="button"
-              onClick={() => { logout(); router.replace("/login"); }}
-              aria-label="Sign out"
-              title="Sign out"
-              className="ml-1 w-7 h-7 flex items-center justify-center rounded-lg text-white/50 hover:text-white hover:bg-white/10 transition-colors"
-            >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                <polyline points="16 17 21 12 16 7"/>
-                <line x1="21" y1="12" x2="9" y2="12"/>
-              </svg>
-            </button>
+            <IconButton icon="log-out" label="Sign out" tone="onDark" onClick={() => { logout(); router.replace("/login"); }} className="ml-1" />
           </div>
         </div>
       </header>

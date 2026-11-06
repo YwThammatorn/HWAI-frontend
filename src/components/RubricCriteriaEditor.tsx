@@ -9,6 +9,9 @@ import { useCourses } from "@/lib/courses";
 import Modal from "@/components/Modal";
 import { buildCriteria, pickAiTemplate, briefLanguage, blankLevels, resizeLevels, levelRatio, levelDescription, levelsUniform, rubricLevelCount } from "@/lib/rubricTemplates";
 
+import Icon from "@/components/Icon";
+import IconTile from "@/components/IconTile";
+import IconButton from "@/components/IconButton";
 // Shared by the "New Assignment" form and the standalone rubric editor page, so
 // both edit criteria exactly the same way. The parent owns the draft state and
 // decides when to persist it (see finalizeCriteria).
@@ -105,11 +108,11 @@ const MAX_LEVELS = 6;
 // Green → red ramp. A level's colour comes from its position in the scale, so
 // 3 levels still read green / amber / red and 4–6 fill in lime and orange.
 const LEVEL_TONES = [
-  { label: "text-green-600", dot: "bg-green-500" },
-  { label: "text-lime-600", dot: "bg-lime-500" },
-  { label: "text-amber-600", dot: "bg-amber-400" },
-  { label: "text-orange-600", dot: "bg-orange-500" },
-  { label: "text-[var(--s-err-text)]", dot: "bg-[var(--s-err-text)]" },
+  { label: "text-[var(--level-1)]", dot: "bg-[var(--level-1)]" },
+  { label: "text-[var(--level-2)]", dot: "bg-[var(--level-2)]" },
+  { label: "text-[var(--level-3)]", dot: "bg-[var(--level-3)]" },
+  { label: "text-[var(--level-4)]", dot: "bg-[var(--level-4)]" },
+  { label: "text-[var(--level-5)]", dot: "bg-[var(--level-5)]" },
 ];
 
 function levelTone(i: number, total: number) {
@@ -344,18 +347,13 @@ export default function RubricCriteriaEditor({
       {/* Points total + tools */}
       <div className="flex items-stretch gap-3 mb-5 flex-wrap">
         <div className={`flex-1 min-w-[280px] flex items-center justify-between px-5 py-3 rounded-xl text-sm font-medium ${
-          pointsOk ? "bg-teal-50 text-teal-700 border border-teal-100" : "bg-amber-50 text-amber-700 border border-amber-100"
+          pointsOk ? "bg-[var(--accent-subtle)] text-[var(--accent)] border border-[var(--accent-bright)]" : "bg-[var(--s-warn-bg)] text-[var(--s-warn-text)] border border-[var(--s-warn-bd)]"
         }`}>
           <div className="flex items-center gap-2">
             {pointsOk ? (
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
+              <Icon name="check" size="sm" />
             ) : (
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-                <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
-              </svg>
+              <Icon name="alert-triangle" size="sm" />
             )}
             <span>
               {pointsOk
@@ -369,11 +367,9 @@ export default function RubricCriteriaEditor({
           <button
             type="button"
             onClick={openAiAssistant}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[var(--accent)] text-xs text-[var(--accent)] hover:bg-teal-50 transition-colors font-medium"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[var(--accent)] text-xs text-[var(--accent)] hover:bg-[var(--accent-subtle)] transition-colors font-medium"
           >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-            </svg>
+            <Icon name="star" size="sm" filled />
             {t("AI ช่วยสร้างเกณฑ์", "AI Rubric Assistant")}
           </button>
           {courseId && (
@@ -381,33 +377,31 @@ export default function RubricCriteriaEditor({
               <button
                 type="button"
                 onClick={() => setPickerOpen(true)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[var(--accent)] text-xs text-[var(--accent)] hover:bg-teal-50 transition-colors font-medium"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[var(--accent)] text-xs text-[var(--accent)] hover:bg-[var(--accent-subtle)] transition-colors font-medium"
               >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><polyline points="3 3 3 9 9 9"/><path d="M12 7v5l3 2"/></svg>
+                <Icon name="history" size="sm" />
                 {t("ใช้ rubric จากงานก่อนหน้า", "Use a rubric from before")}
               </button>
               <button
                 type="button"
                 onClick={openSave}
                 disabled={!pointsOk}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-600 hover:bg-gray-50 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[var(--border)] text-xs text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                <Icon name="save" size="sm" />
                 {t("บันทึกลงคลัง", "Save to library")}
               </button>
               <span role="status" className="text-xs font-medium text-[var(--s-ok-text)]">{savedNote ? t("บันทึกลงคลังแล้ว", "Saved to the library") : ""}</span>
             </>
           )}
-          <div className="w-px h-4 bg-gray-200" />
+          <div className="w-px h-4 bg-[var(--border)]" />
           <button
             type="button"
             disabled
             title={t("ฟีเจอร์นี้จะพร้อมใช้งานเร็ว ๆ นี้", "This feature is coming soon")}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-300 cursor-not-allowed select-none"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[var(--border)] text-xs text-[var(--text-muted)] cursor-not-allowed select-none"
           >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-            </svg>
+            <Icon name="download" size="sm" />
             {t("นำเข้า Rubric", "Import Rubric")}
           </button>
         </div>
@@ -415,10 +409,10 @@ export default function RubricCriteriaEditor({
 
       {/* One level count for the whole rubric (14/10/2569) */}
       {criteria.length > 0 && (
-        <div data-testid="level-control" className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-gray-100 bg-white px-5 py-3">
+        <div data-testid="level-control" className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-5 py-3">
           <div>
             <p className="text-sm font-semibold text-[var(--text-primary)]">{t("จำนวนระดับของ rubric", "Levels in this rubric")}</p>
-            <p className="text-xs text-gray-500">{t("ทุกเกณฑ์ใช้จำนวนระดับเท่ากัน — เพิ่มหรือลดที่นี่ ทุกเกณฑ์เปลี่ยนตามกัน", "Every criterion uses the same number of levels — add or remove one here and all of them follow")}</p>
+            <p className="text-xs text-[var(--text-secondary)]">{t("ทุกเกณฑ์ใช้จำนวนระดับเท่ากัน — เพิ่มหรือลดที่นี่ ทุกเกณฑ์เปลี่ยนตามกัน", "Every criterion uses the same number of levels — add or remove one here and all of them follow")}</p>
           </div>
           <div className="ml-auto flex items-center gap-2">
             <button
@@ -426,7 +420,7 @@ export default function RubricCriteriaEditor({
               onClick={() => setLevelCount(rubricLevelCount(criteria) - 1)}
               disabled={rubricLevelCount(criteria) <= MIN_LEVELS}
               aria-label={t("ลดหนึ่งระดับในทุกเกณฑ์", "Remove a level from every criterion")}
-              className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 text-base font-semibold text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border)] text-base font-semibold text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]"
             >−</button>
             <span data-testid="level-count" className="min-w-[5.5rem] text-center text-sm font-semibold tabular-nums text-[var(--text-primary)]">{t(`${rubricLevelCount(criteria)} ระดับ`, `${rubricLevelCount(criteria)} levels`)}</span>
             <button
@@ -434,15 +428,15 @@ export default function RubricCriteriaEditor({
               onClick={() => setLevelCount(rubricLevelCount(criteria) + 1)}
               disabled={rubricLevelCount(criteria) >= MAX_LEVELS}
               aria-label={t("เพิ่มหนึ่งระดับในทุกเกณฑ์", "Add a level to every criterion")}
-              className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 text-base font-semibold text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border)] text-base font-semibold text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]"
             >+</button>
           </div>
         </div>
       )}
       {criteria.length > 0 && !levelsUniform(criteria) && (
-        <div role="alert" data-testid="levels-mixed" className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-100 bg-amber-50 px-5 py-3 text-sm text-amber-800">
+        <div role="alert" data-testid="levels-mixed" className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[var(--s-warn-bd)] bg-[var(--s-warn-bg)] px-5 py-3 text-sm text-[var(--s-warn-text)]">
           <span>{t(`เกณฑ์มีจำนวนระดับไม่เท่ากัน (${[...new Set(criteria.map((c) => c.levels.length))].sort((a, b) => a - b).join(" / ")} ระดับ) — บันทึกไม่ได้จนกว่าจะเท่ากัน`, `The criteria have different numbers of levels (${[...new Set(criteria.map((c) => c.levels.length))].sort((a, b) => a - b).join(" / ")}) — it can't be saved until they match`)}</span>
-          <button type="button" onClick={unifyLevels} className="inline-flex items-center gap-1.5 rounded-lg border border-amber-300 bg-white px-3 py-1.5 text-xs font-semibold text-amber-800 hover:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]">
+          <button type="button" onClick={unifyLevels} className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--s-warn-bd)] bg-[var(--bg-surface)] px-3 py-1.5 text-xs font-semibold text-[var(--s-warn-text)] hover:bg-[var(--s-warn-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]">
             {t(`ให้ AI ปรับให้เป็น ${rubricLevelCount(criteria)} ระดับเท่ากัน`, `Let the AI even them out to ${rubricLevelCount(criteria)} levels`)}
           </button>
         </div>
@@ -450,7 +444,7 @@ export default function RubricCriteriaEditor({
 
       {/* How a level turns into points — same for every criterion (the rubric file's "level → score" sheet) */}
       {criteria.length > 0 && levelsUniform(criteria) && (
-        <p data-testid="level-scale" className="mb-4 -mt-2 text-xs leading-relaxed text-gray-500">
+        <p data-testid="level-scale" className="mb-4 -mt-2 text-xs leading-relaxed text-[var(--text-secondary)]">
           <span className="font-semibold text-[var(--text-secondary)]">{t("คิดคะแนนตามระดับ", "Level → points")}:</span>{" "}
           {criteria[0].levels.map((_, li, all) => `${t("ระดับ", "Level")} ${all.length - 1 - li} = ${pctText(levelShare(li, all.length))}`).join(" · ")}{" "}
           {t("ของคะแนนเต็มของเกณฑ์", "of the criterion's points")}
@@ -462,9 +456,9 @@ export default function RubricCriteriaEditor({
         {criteria.map((c, idx) => {
           const pctOfTotal = totalPoints > 0 ? Math.round(((Math.round(parseFloat(c.points)) || 0) / totalPoints) * 100) : 0;
           return (
-            <div key={c.id} data-testid={`criterion-card-${c.id}`} className={`bg-white rounded-2xl border shadow-sm overflow-hidden ${flagged?.[c.id] ? "border-amber-300 ring-2 ring-amber-200" : "border-gray-100"}`}>
+            <div key={c.id} data-testid={`criterion-card-${c.id}`} className={`bg-[var(--bg-surface)] rounded-2xl border shadow-sm overflow-hidden ${flagged?.[c.id] ? "border-[var(--s-warn-bd)] ring-2 ring-[var(--s-warn-text)]" : "border-[var(--border-subtle)]"}`}>
               {flagged?.[c.id] && (
-                <div data-testid={`flag-note-${c.id}`} className="flex flex-wrap items-center justify-between gap-3 border-b border-amber-100 bg-amber-50 px-5 py-3 text-sm text-amber-800">
+                <div data-testid={`flag-note-${c.id}`} className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--s-warn-bd)] bg-[var(--s-warn-bg)] px-5 py-3 text-sm text-[var(--s-warn-text)]">
                   <span className="min-w-0 flex-1"><span className="font-semibold">{t("ข้อเสนอแนะจากการปรับเทียบ", "From the calibration")}:</span> {flagged[c.id]}</span>
                   <button
                     type="button"
@@ -472,23 +466,23 @@ export default function RubricCriteriaEditor({
                     onClick={() => generateLevels(c.id)}
                     disabled={generating[c.id]}
                     title={t("เขียนคำอธิบายของทุกระดับในเกณฑ์นี้ใหม่ให้ต่างกันชัดขึ้น", "Rewrites the wording of every level of this criterion so they are easier to tell apart")}
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-amber-300 bg-white px-3 py-1.5 text-xs font-semibold text-amber-800 hover:bg-amber-100 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]"
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--s-warn-bd)] bg-[var(--bg-surface)] px-3 py-1.5 text-xs font-semibold text-[var(--s-warn-text)] hover:bg-[var(--s-warn-bg)] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]"
                   >
                     {t("ให้ AI ปรับเกณฑ์นี้ตามข้อเสนอแนะ", "Let the AI adjust this criterion")}
                   </button>
                 </div>
               )}
-              <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-50">
-                <span className="text-xs font-mono text-gray-300 w-5 shrink-0">{String(idx + 1).padStart(2, "0")}</span>
+              <div className="flex items-center gap-3 px-5 py-4 border-b border-[var(--border-subtle)]">
+                <span className="text-xs font-mono text-[var(--text-muted)] w-5 shrink-0">{String(idx + 1).padStart(2, "0")}</span>
                 <input
                   value={c.name}
                   onChange={(e) => updateCriterion(c.id, "name", e.target.value)}
-                  className="flex-1 min-w-0 text-sm font-semibold text-[var(--text-primary)] bg-transparent border-0 outline-none focus:bg-gray-50 rounded-lg px-2 py-1 -ml-2 transition-colors placeholder:text-gray-300"
+                  className="flex-1 min-w-0 text-sm font-semibold text-[var(--text-primary)] bg-transparent border-0 outline-none focus:bg-[var(--bg-subtle)] rounded-lg px-2 py-1 -ml-2 transition-colors placeholder:text-[var(--text-muted)]"
                   placeholder="ชื่อเกณฑ์"
                   aria-label={t("ชื่อเกณฑ์", "Criterion name")}
                 />
                 <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-xs text-gray-500 uppercase tracking-wider font-medium">
+                  <span className="text-xs text-[var(--text-secondary)] uppercase tracking-wider font-medium">
                     {t("คะแนน", "Points")}
                   </span>
                   <div className="flex items-center gap-1">
@@ -501,45 +495,31 @@ export default function RubricCriteriaEditor({
                       className={`w-14 text-center text-sm font-semibold border rounded-lg px-2 py-1 outline-none focus:ring-2 transition-colors ${
                         (Math.round(parseFloat(c.points)) || 0) > 0
                           ? "border-[var(--accent)] text-[var(--accent)] focus:ring-[var(--accent)]/30"
-                          : "border-gray-200 text-gray-500 focus:ring-gray-200"
+                          : "border-[var(--border)] text-[var(--text-secondary)] focus:ring-[var(--border)]"
                       }`}
                     />
-                    <span className="text-xs text-gray-500 font-medium">{t("คะแนน", "pts")}</span>
+                    <span className="text-xs text-[var(--text-secondary)] font-medium">{t("คะแนน", "pts")}</span>
                   </div>
-                  <span className="text-xs text-gray-300 font-mono">≈ {pctOfTotal}%</span>
+                  <span className="text-xs text-[var(--text-muted)] font-mono">≈ {pctOfTotal}%</span>
                   <button
                     type="button"
                     onClick={() => generateLevels(c.id)}
                     disabled={generating[c.id]}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-teal-50 border border-teal-200 text-xs text-[var(--accent)] font-medium hover:bg-teal-100 transition-colors disabled:opacity-50"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[var(--accent-subtle)] border border-[var(--accent-bright)] text-xs text-[var(--accent)] font-medium hover:bg-[var(--accent-subtle)] transition-colors disabled:opacity-50"
                   >
                     {generating[c.id] ? (
-                      <svg className="animate-spin" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                      <Icon name="spinner" size="sm" className="animate-spin" />
                     ) : (
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
-                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                      </svg>
+                      <Icon name="star" size="sm" filled />
                     )}
                     {t("สร้าง", "Generate")}
                   </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => removeCriterion(c.id, c.name)}
-                  disabled={criteria.length <= 1}
-                  title={t("ลบเกณฑ์นี้", "Remove criterion")}
-                  aria-label={t("ลบเกณฑ์นี้", "Remove criterion")}
-                  className="p-1.5 rounded-lg text-gray-300 hover:text-[var(--s-err-text)] hover:bg-[var(--s-err-bg)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
-                >
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                    <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                    <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-                  </svg>
-                </button>
+                <IconButton icon="trash" label={t("ลบเกณฑ์นี้", "Remove criterion")} tone="danger" onClick={() => removeCriterion(c.id, c.name)} disabled={criteria.length <= 1} />
               </div>
 
-              <div className="px-5 py-4 border-b border-gray-50">
-                <label className="block text-xs text-gray-500 mb-1.5">
+              <div className="px-5 py-4 border-b border-[var(--border-subtle)]">
+                <label className="block text-xs text-[var(--text-secondary)] mb-1.5">
                   {t("คำอธิบายสำหรับนักศึกษา", "Description for Student")}
                 </label>
                 <textarea
@@ -547,15 +527,15 @@ export default function RubricCriteriaEditor({
                   onChange={(e) => updateCriterion(c.id, "description", e.target.value)}
                   rows={2}
                   placeholder="อธิบายสิ่งที่นักศึกษาต้องแสดงในเกณฑ์นี้..."
-                  className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm text-[var(--text-primary)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors placeholder:text-gray-300"
+                  className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-sm text-[var(--text-primary)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors placeholder:text-[var(--text-muted)]"
                 />
               </div>
 
               {clos && (
-                <div className="px-5 py-4 border-b border-gray-50" data-testid={`clo-row-${idx}`}>
-                  <p className="block text-xs text-gray-500 mb-1.5">{t("CLO ที่เกณฑ์นี้วัด", "CLOs this criterion measures")}</p>
+                <div className="px-5 py-4 border-b border-[var(--border-subtle)]" data-testid={`clo-row-${idx}`}>
+                  <p className="block text-xs text-[var(--text-secondary)] mb-1.5">{t("CLO ที่เกณฑ์นี้วัด", "CLOs this criterion measures")}</p>
                   {clos.length === 0 ? (
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-[var(--text-secondary)]">
                       {t("วิชานี้ยังไม่มี CLO — ", "This course has no CLOs yet — ")}
                       {cloHref && <a href={cloHref} className="font-medium text-[var(--accent)] underline underline-offset-2">{t("เพิ่มที่แท็บ CLO", "add them on the CLO tab")}</a>}
                     </p>
@@ -571,7 +551,7 @@ export default function RubricCriteriaEditor({
                               aria-pressed={on}
                               title={clo.text}
                               onClick={() => toggleClo(c.id, clo.id)}
-                              className={`inline-flex h-8 items-center rounded-lg border px-3 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] ${on ? "border-[var(--accent-solid)] bg-[var(--accent-solid)] text-[var(--accent-solid-text)]" : "border-gray-200 bg-white text-gray-600 hover:border-[var(--accent)] hover:text-[var(--accent)]"}`}
+                              className={`inline-flex h-8 items-center rounded-lg border px-3 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] ${on ? "border-[var(--accent-solid)] bg-[var(--accent-solid)] text-[var(--accent-solid-text)]" : "border-[var(--border)] bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:border-[var(--accent)] hover:text-[var(--accent)]"}`}
                             >
                               {clo.code}
                             </button>
@@ -579,7 +559,7 @@ export default function RubricCriteriaEditor({
                         })}
                       </div>
                       {c.cloIds.length > 0 && (
-                        <ul className="mt-2 space-y-0.5 text-xs text-gray-500">
+                        <ul className="mt-2 space-y-0.5 text-xs text-[var(--text-secondary)]">
                           {c.cloIds.map((id) => clos.find((x) => x.id === id)).filter(Boolean).map((clo) => (
                             <li key={clo!.id}><span className="font-semibold text-[var(--text-secondary)]">{clo!.code}</span> {clo!.text}</li>
                           ))}
@@ -591,25 +571,25 @@ export default function RubricCriteriaEditor({
               )}
 
               {/* 1px gaps over a tinted backdrop draw the dividers, so they stay clean when 4+ levels wrap */}
-              <div className="grid gap-px bg-gray-100 [grid-template-columns:repeat(auto-fit,minmax(200px,1fr))]">
+              <div className="grid gap-px bg-[var(--bg-app)] [grid-template-columns:repeat(auto-fit,minmax(200px,1fr))]">
                 {c.levels.map((lv, li) => {
                   const col = levelTone(li, c.levels.length);
                   const levelName = getDisplayLabel(lv.label, lang);
                   const levelPts = Math.round((Math.round(parseFloat(c.points)) || 0) * levelShare(li, c.levels.length));
                   return (
-                    <div key={li} className="bg-white px-5 py-4">
+                    <div key={li} className="bg-[var(--bg-surface)] px-5 py-4">
                       {/* "Level 3 · 15 pts" on top, the level's own (editable) name under it — as the rubric file's column headings */}
                       <div className="flex items-center gap-1.5 mb-0.5">
                         <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${col.dot}`} />
-                        <span className="flex-1 min-w-0 text-[11px] text-gray-400 tabular-nums">
-                          {t("ระดับ", "Level")} {c.levels.length - 1 - li} · <span data-testid="level-points" className="font-semibold text-gray-500">{levelPts} {t("คะแนน", "pts")}</span>
+                        <span className="flex-1 min-w-0 text-[11px] text-[var(--text-muted)] tabular-nums">
+                          {t("ระดับ", "Level")} {c.levels.length - 1 - li} · <span data-testid="level-points" className="font-semibold text-[var(--text-secondary)]">{levelPts} {t("คะแนน", "pts")}</span>
                         </span>
                       </div>
                       <input
                         value={levelName}
                         onChange={(e) => updateLevel(c.id, li, "label", e.target.value)}
                         aria-label={t("ชื่อระดับ", "Level name")}
-                        className={`w-full min-w-0 mb-2 text-xs font-semibold bg-transparent border-0 outline-none rounded px-1 -mx-1 focus:bg-gray-50 ${col.label}`}
+                        className={`w-full min-w-0 mb-2 text-xs font-semibold bg-transparent border-0 outline-none rounded px-1 -mx-1 focus:bg-[var(--bg-subtle)] ${col.label}`}
                       />
                       <textarea
                         value={lv.description}
@@ -617,7 +597,7 @@ export default function RubricCriteriaEditor({
                         rows={2}
                         placeholder="อธิบายลักษณะงาน..."
                         aria-label={`${c.name || t("เกณฑ์", "Criterion")} — ${levelName}`}
-                        className="w-full text-xs text-gray-600 resize-none border-0 outline-none bg-transparent placeholder:text-gray-300 leading-relaxed"
+                        className="w-full text-xs text-[var(--text-secondary)] resize-none border-0 outline-none bg-transparent placeholder:text-[var(--text-muted)] leading-relaxed"
                       />
                     </div>
                   );
@@ -632,11 +612,9 @@ export default function RubricCriteriaEditor({
       <button
         type="button"
         onClick={addCriterion}
-        className="w-full mt-4 py-3.5 rounded-2xl border-2 border-dashed border-gray-200 text-sm text-gray-500 hover:border-[var(--accent)] hover:text-[var(--accent)] hover:bg-teal-50/30 transition-all flex items-center justify-center gap-2"
+        className="w-full mt-4 py-3.5 rounded-2xl border-2 border-dashed border-[var(--border)] text-sm text-[var(--text-secondary)] hover:border-[var(--accent)] hover:text-[var(--accent)] hover:bg-[var(--accent-subtle)]/30 transition-all flex items-center justify-center gap-2"
       >
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-          <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
-        </svg>
+        <Icon name="plus" />
         {t("เพิ่มเกณฑ์ย่อยใหม่", "Add New Criterion")}
       </button>
 
@@ -734,9 +712,7 @@ export default function RubricCriteriaEditor({
                 title={assignmentBrief() ? undefined : t("ยังไม่มีชื่อ คำอธิบาย หรือไฟล์แนบให้ดึง", "There's no name, description or attachment to pull yet")}
                 className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[var(--accent)] text-xs font-medium text-[var(--accent)] hover:bg-[var(--accent-subtle)] disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
               >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-                </svg>
+                <Icon name="download" size="sm" />
                 {t("ดึงจากข้อมูลงาน", "Fill from assignment")}
               </button>
             </div>
@@ -757,11 +733,7 @@ export default function RubricCriteriaEditor({
 
         {aiStep === "loading" && (
           <div className="flex flex-col items-center py-10 gap-4">
-            <div className="w-12 h-12 rounded-full bg-[var(--accent-subtle)] flex items-center justify-center">
-              <svg className="animate-spin" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" aria-hidden="true">
-                <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
-              </svg>
-            </div>
+            <IconTile icon="spinner" spin size="lg" shape="round" tone="accent" />
             <div className="text-center" role="status">
               <p className="text-sm font-semibold text-[var(--text-primary)]">{t("กำลังวิเคราะห์ชิ้นงาน...", "Analyzing assignment...")}</p>
               <p className="text-xs text-[var(--text-muted)] mt-1">{t("AI กำลังสร้างเกณฑ์และระดับคะแนนที่เหมาะสม", "AI is generating suitable criteria and levels")}</p>

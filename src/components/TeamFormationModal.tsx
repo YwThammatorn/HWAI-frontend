@@ -6,6 +6,7 @@ import { useStudents } from "@/lib/students";
 import { useStudentGroups, StudentGroup } from "@/lib/studentGroups";
 import SearchInput from "@/components/SearchInput";
 import Modal from "@/components/Modal";
+import Avatar from "@/components/Avatar";
 
 function initialsOf(name: string) {
   const parts = name.trim().split(/\s+/);
@@ -196,9 +197,7 @@ export default function TeamFormationModal({
                       onChange={() => toggle(s.studentId)}
                       className="shrink-0"
                     />
-                    <div className="w-8 h-8 rounded-full bg-[var(--bg-subtle)] flex items-center justify-center text-[var(--text-secondary)] text-xs font-bold shrink-0">
-                      {initialsOf(`${s.firstName} ${s.lastName}`)}
-                    </div>
+                    <Avatar tone="muted" initials={initialsOf(`${s.firstName} ${s.lastName}`)} />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-[var(--text-primary)] truncate">{s.firstName} {s.lastName}</p>
                       <p className="text-[11px] text-[var(--text-muted)] tabular-nums truncate">{s.studentId}</p>

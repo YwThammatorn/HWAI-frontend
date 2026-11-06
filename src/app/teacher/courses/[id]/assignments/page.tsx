@@ -11,7 +11,10 @@ import { useLanguage } from "@/context/LanguageContext";
 import { dateLocale } from "@/lib/dateLocale";
 import SearchInput from "@/components/SearchInput";
 import AssignmentTypeBadge from "@/components/AssignmentTypeBadge";
-
+
+import Icon from "@/components/Icon";
+import IconTile from "@/components/IconTile";
+import IconButton from "@/components/IconButton";
 function fmtDate(dateStr: string, lang: string) {
   return new Date(dateStr + "T00:00:00").toLocaleDateString(dateLocale(lang), {
     month: "short", day: "numeric", year: "numeric",
@@ -67,11 +70,7 @@ export default function AssignmentsPage() {
 
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)] mb-6">
-        <Link href="/teacher/courses" className="hover:text-[var(--accent)] transition-colors" aria-label={t("รายวิชาทั้งหมด", "All courses")}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
-          </svg>
-        </Link>
+        <IconButton icon="home" label={t("รายวิชาทั้งหมด", "All courses")} href="/teacher/courses" />
         <span>/</span>
         <Link href={`/teacher/courses/${id}`} className="hover:text-[var(--accent)] transition-colors">{course.name}</Link>
         <span>/</span>
@@ -91,9 +90,7 @@ export default function AssignmentsPage() {
             href={`/teacher/courses/${id}/assignments/new`}
             className="flex items-center gap-2 px-4 py-2 bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] font-medium rounded-xl text-sm active:scale-[.97] transition-colors"
           >
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
-            </svg>
+            <Icon name="plus" />
             {t("สร้างชิ้นงาน", "Create Assignment")}
           </Link>
         </div>
@@ -130,20 +127,14 @@ export default function AssignmentsPage() {
               <p className="text-[var(--text-secondary)] text-sm">{t(`ไม่พบชิ้นงานที่ตรงกับ "${search}"`, `No results for "${search}"`)}</p>
             ) : (
               <>
-                <div className="w-14 h-14 rounded-2xl bg-[var(--bg-subtle)] flex items-center justify-center mb-3">
-                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5" aria-hidden="true">
-                    <rect x="5" y="2" width="14" height="20" rx="2"/><line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="11" x2="15" y2="11"/><line x1="9" y1="15" x2="13" y2="15"/>
-                  </svg>
-                </div>
+                <IconTile icon="document-list" size="lg" tone="accent" className="mb-3" />
                 <p className="text-sm font-medium text-[var(--text-secondary)] mb-1">{t("ยังไม่มีชิ้นงาน", "No assignments yet")}</p>
                 <p className="text-xs text-[var(--text-muted)] mb-4">{t("กด Create Assignment เพื่อเพิ่มชิ้นงานแรก", "Click Create Assignment to add your first one")}</p>
                 <Link
                   href={`/teacher/courses/${id}/assignments/new`}
                   className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-medium rounded-xl active:scale-[.97] transition-colors"
                 >
-                  <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                    <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
-                  </svg>
+                  <Icon name="plus" />
                   {t("สร้างชิ้นงาน", "Create Assignment")}
                 </Link>
               </>
@@ -177,9 +168,7 @@ export default function AssignmentsPage() {
                         <p className="text-xs text-[var(--text-secondary)] mt-0.5 line-clamp-1">{a.description}</p>
                       )}
                       <div className="flex items-center gap-1.5 mt-1">
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={isPastDue ? "var(--s-err-text)" : "var(--text-muted)"} strokeWidth="2" aria-hidden="true">
-                          <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-                        </svg>
+                        <Icon name="calendar" size="xs" className={isPastDue ? "text-[var(--s-err-text)]" : "text-[var(--text-muted)]"} />
                         <span className={`text-xs ${isPastDue ? "text-[var(--s-err-text)]" : "text-[var(--text-secondary)]"}`}>
                           {a.dueDate
                             ? <>{isPastDue ? `${t("เลยกำหนด", "Past due")} — ` : ""}{t("กำหนดส่ง", "Due")} {fmtDate(a.dueDate, lang)}</>
@@ -193,12 +182,12 @@ export default function AssignmentsPage() {
                           <span className="text-xs text-[var(--text-muted)]">≤ {a.maxGroupSize} {t("คน", "members")}</span>
                         )}
                         {(a.fileTypes ?? []).map((ft) => (
-                          <span key={ft} className="px-2 py-0.5 rounded-full bg-[var(--bg-subtle)] text-[var(--text-secondary)] text-xs font-mono">
+                          <span key={ft} className="px-2 py-0.5 rounded-full bg-[var(--bg-app)] text-[var(--text-secondary)] text-xs font-mono">
                             {ft === "figma" ? "Figma" : ft === "pdf" ? "PDF" : t("รูปภาพ", "Image")}
                           </span>
                         ))}
                         {!(a.acceptsFiles ?? true) && (
-                          <span className="px-2 py-0.5 rounded-full bg-[var(--bg-subtle)] text-[var(--text-secondary)] text-xs">{t("ไม่รับไฟล์", "No files")}</span>
+                          <span className="px-2 py-0.5 rounded-full bg-[var(--bg-app)] text-[var(--text-secondary)] text-xs">{t("ไม่รับไฟล์", "No files")}</span>
                         )}
                         {category && (
                           <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-[var(--accent-subtle)] text-[var(--accent)] text-xs font-medium tabular-nums">
@@ -224,17 +213,7 @@ export default function AssignmentsPage() {
                     <div className="flex items-center gap-3 shrink-0 ml-4" onClick={(e) => e.stopPropagation()}>
                       {/* ▼ dropdown menu */}
                       <div className="relative" ref={openMenu === a.id ? menuRef : undefined}>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); setOpenMenu(openMenu === a.id ? null : a.id); }}
-                          aria-label={t(`เมนูของ ${a.name}`, `Actions for ${a.name}`)}
-                          aria-haspopup="menu"
-                          aria-expanded={openMenu === a.id}
-                          className="p-1.5 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
-                        >
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                            <circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/>
-                          </svg>
-                        </button>
+                        <IconButton icon="more-vertical" filled label={t(`เมนูของ ${a.name}`, `Actions for ${a.name}`)} onClick={(e) => { e.stopPropagation(); setOpenMenu(openMenu === a.id ? null : a.id); }} aria-haspopup="menu" aria-expanded={openMenu === a.id} />
                         {openMenu === a.id && (
                           <div role="menu" className="absolute right-0 top-9 z-20 bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-xl shadow-lg py-1 w-36 text-sm">
                             <Link
@@ -243,10 +222,7 @@ export default function AssignmentsPage() {
                               className="flex items-center gap-2 px-3 py-2 text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)]"
                               onClick={() => setOpenMenu(null)}
                             >
-                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                              </svg>
+                              <Icon name="edit" size="xs" />
                               {t("แก้ไข", "Edit")}
                             </Link>
                             <button
@@ -259,10 +235,7 @@ export default function AssignmentsPage() {
                               }}
                               className="flex items-center gap-2 px-3 py-2 text-[var(--s-err-text)] hover:bg-[var(--s-err-bg)] w-full text-left"
                             >
-                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                                <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                                <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
-                              </svg>
+                              <Icon name="trash" size="xs" />
                               {t("ลบ", "Delete")}
                             </button>
                           </div>

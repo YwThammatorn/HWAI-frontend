@@ -10,14 +10,13 @@ import { useCourses } from "@/lib/courses";
 import PageHeader from "@/components/PageHeader";
 import StatCard from "@/components/StatCard";
 import { ADMIN_DASHBOARD_DISABLED } from "@/lib/featureFlags";
-
+
+import Icon from "@/components/Icon";
 function CheckIcon({ done }: { done: boolean }) {
   return done ? (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-      <polyline points="20 6 9 17 4 12"/>
-    </svg>
+    <Icon name="check" className="text-[var(--s-ok-text)]" />
   ) : (
-    <div className="w-4 h-4 rounded-full border-2 border-gray-300" aria-hidden="true"/>
+    <div className="w-4 h-4 rounded-full border-2 border-[var(--border)]" aria-hidden="true"/>
   );
 }
 
@@ -80,39 +79,17 @@ export default function AdminDashboard() {
           <StatCard
             label={t("อาจารย์ในระบบ", "Teachers")}
             value={teacherCount}
-            color="var(--accent)"
-            bg="var(--accent-subtle)"
-            icon={
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                <circle cx="9" cy="7" r="4"/>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
-              </svg>
-            }
+            tone="accent" icon="users"
           />
           <StatCard
             label={t("นักศึกษา", "Students")}
             value={studentCount}
-            color="var(--s-info-text)"
-            bg="var(--s-info-bg)"
-            icon={
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
-                <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
-                <path d="M6 12v5c3 3 9 3 12 0v-5"/>
-              </svg>
-            }
+            tone="info" icon="graduation-cap"
           />
           <StatCard
             label={t("รายวิชา", "Courses")}
             value={courseCount}
-            color="var(--s-warn-text)"
-            bg="var(--s-warn-bg)"
-            icon={
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
-                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-              </svg>
-            }
+            tone="warn" icon="book"
           />
         </div>
 

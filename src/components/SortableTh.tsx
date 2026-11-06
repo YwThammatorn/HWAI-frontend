@@ -1,3 +1,5 @@
+import Icon from "@/components/Icon";
+
 /** Table column header that sorts on click. `dir` undefined = not the active sort column.
  *  Shared by the admin Students tab and the teacher course roster so both read the same. */
 export default function SortableTh({ label, dir, onClick, hint, className = "", style }: {
@@ -25,12 +27,7 @@ export default function SortableTh({ label, dir, onClick, hint, className = "", 
         }`}
       >
         {label}
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
-          className={dir ? "text-[var(--accent)]" : "text-[var(--text-secondary)] opacity-60 group-hover:opacity-100"}>
-          {dir === "asc" && <><line x1="12" y1="19" x2="12" y2="5" /><polyline points="5 12 12 5 19 12" /></>}
-          {dir === "desc" && <><line x1="12" y1="5" x2="12" y2="19" /><polyline points="19 12 12 19 5 12" /></>}
-          {!dir && <><polyline points="8 9 12 5 16 9" /><polyline points="8 15 12 19 16 15" /></>}
-        </svg>
+        <Icon name={dir === "asc" ? "arrow-up" : dir === "desc" ? "arrow-down" : "chevrons-up-down"} size="sm" className={dir ? "text-[var(--accent)]" : "text-[var(--text-secondary)] opacity-60 group-hover:opacity-100"} />
       </button>
     </th>
   );

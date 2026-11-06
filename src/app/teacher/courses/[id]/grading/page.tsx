@@ -5,12 +5,10 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCourses } from "@/lib/courses";
 import { useStudents, isWithdrawn, withdrawnIds } from "@/lib/students";
-import { useAssignments, isManualGrading, isAiOnlyGraded, gradingOpen, gradingOpensAt, type Assignment, type Submission } from "@/lib/assignments";
+import { useAssignments, isManualGrading, isAiOnlyGraded, gradingOpen, gradingOpensAt, finalScoreOf, type Assignment, type Submission } from "@/lib/assignments";
 import { appNow, useNow } from "@/lib/clock";
 import { useGradingCategories } from "@/lib/gradingCategories";
-import { useStudentGroups } from "@/lib/studentGroups";
-import { groupSubmissionsByTeam } from "@/lib/groupSubmissions";
-import { aiGradingUpdate, waitingForAi } from "@/lib/aiGrading";
+import { useAiGrading } from "@/lib/useAiGrading";
 import { useLanguage } from "@/context/LanguageContext";
 import { dateLocale } from "@/lib/dateLocale";
 import SearchInput from "@/components/SearchInput";
@@ -19,7 +17,10 @@ import StatCard from "@/components/StatCard";
 import EmptyState from "@/components/EmptyState";
 import AssignmentTypeBadge from "@/components/AssignmentTypeBadge";
 import Modal from "@/components/Modal";
+import AiGradePreviewModal from "@/components/AiGradePreviewModal";
 
+import Icon from "@/components/Icon";
+import IconButton from "@/components/IconButton";
 type QueueFilter = "all" | "review" | "notgraded" | "done" | "waiting";
 
 function fmtDate(dateStr: string, lang: string) {
@@ -45,7 +46,7 @@ function progressOf(a: Assignment, subs: Submission[], today: string, enrolled: 
     ? enrolled > 0 && graded.length >= enrolled
     : subs.length > 0 && graded.length === subs.length;
   const overdue = !!a.dueDate && a.dueDate < today && subs.some((s) => s.status !== "graded");
-  const scored = graded.map((s) => (s.instructorScore ?? s.aiScore ?? 0));
+  const scored = graded.map((s) => finalScoreOf(a, s) ?? 0);
   const avgPct = scored.length > 0 && a.maxPoints > 0
     ? Math.round((scored.reduce((sum, v) => sum + v, 0) / scored.length / a.maxPoints) * 100)
     : null;
@@ -60,9 +61,9 @@ export default function CourseGradingPage() {
   const { t, lang } = useLanguage();
   const { getCourse } = useCourses();
   const { getStudentsByCourse } = useStudents();
-  const { getAssignmentsByCourse, getSubmissionsByAssignment, getRubricsByAssignment, updateAssignment, updateSubmission } = useAssignments();
+  const { getAssignmentsByCourse, getSubmissionsByAssignment, updateAssignment, updateSubmission } = useAssignments();
   const { getCategoriesByCourse } = useGradingCategories();
-  const { getGroupsByAssignment } = useStudentGroups();
+  const { waitingUnits, sendWaiting } = useAiGrading();
   // Grading opens only once the due date and the students' late window have passed (15/10/2569) — see gradingOpen in lib/assignments.ts
   const now = useNow();
 
@@ -70,6 +71,8 @@ export default function CourseGradingPage() {
   const [search, setSearch] = useState("");
   // switching an assignment to Manual that the AI already scored asks first
   const [manualFor, setManualFor] = useState<Assignment | null>(null);
+  // "Grade with AI" shows what is about to be sent (and with which rubric) before anything is written (22/10/2569)
+  const [previewFor, setPreviewFor] = useState<Assignment | null>(null);
   // the assignment whose work is being sent to the AI right now
   const [sendingId, setSendingId] = useState<string | null>(null);
 
@@ -110,12 +113,6 @@ export default function CourseGradingPage() {
   const aiOnlyOf = (a: Assignment) => getSubmissionsByAssignment(a.id).filter(isAiOnlyGraded);
   // the other half, shown in the same dialog so the "Graded" count on the assignment page afterwards is no surprise
   const handScoredOf = (a: Assignment) => getSubmissionsByAssignment(a.id).filter((s) => s.status !== "not_graded" && s.instructorScore !== null);
-  // one unit of work per submission, or per team for a group assignment (every member shares the team's score)
-  const waitingUnits = (a: Assignment) => {
-    const subs = getSubmissionsByAssignment(a.id).filter((x) => !withdrawn.has(x.studentId));
-    const units = a.submissionType === "group" ? groupSubmissionsByTeam(subs, getGroupsByAssignment(a.id), "Team") : subs.map((x) => ({ key: x.id, subs: [x] }));
-    return units.filter((u) => u.subs.some(waitingForAi));
-  };
   const gradingHref = (a: Assignment) => `/teacher/courses/${id}/assignments/${a.id}/grading`;
   async function applyAndGo(a: Assignment, mode: "ai" | "manual") {
     setManualFor(null);
@@ -126,24 +123,16 @@ export default function CourseGradingPage() {
       updateAssignment(a.id, { gradingMode: mode });
     }
     if (mode === "ai") {
-      const units = waitingUnits(a);
-      if (units.length > 0) {
-        setSendingId(a.id);
-        await new Promise((r) => setTimeout(r, 1200));       // the AI "working" (simulated)
-        // with a rubric the AI scores every criterion (through the correction Calibration saved, if any); without one, a total only
-        const rubric = getRubricsByAssignment(a.id)[0];
-        units.forEach((u) => {
-          const update = aiGradingUpdate(u.key, a.maxPoints, rubric);
-          u.subs.filter(waitingForAi).forEach((sub) => updateSubmission(sub.id, update));
-        });
-        setSendingId(null);
-      }
+      setSendingId(a.id);
+      await sendWaiting(a);
+      setSendingId(null);
     }
     router.push(gradingHref(a));
   }
   function startGrading(a: Assignment, mode: "ai" | "manual") {
     if (sendingId || !gradingOpen(a, appNow())) return;
     if (mode === "manual" && !isManualGrading(a) && aiOnlyOf(a).length > 0) { setManualFor(a); return; }
+    if (mode === "ai") { setPreviewFor(a); return; }     // look at the rubric first — also when nothing is waiting any more (continuing)
     void applyAndGo(a, mode);
   }
 
@@ -173,30 +162,15 @@ export default function CourseGradingPage() {
   const statCards = [
     {
       label: t("งานทั้งหมด", "Total Assignments"), value: totalAssignments,
-      color: "var(--s-info-text)", bg: "var(--s-info-bg)",
-      icon: (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
-          <rect x="5" y="2" width="14" height="20" rx="2"/><line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="11" x2="15" y2="11"/><line x1="9" y1="15" x2="13" y2="15"/>
-        </svg>
-      ),
+      tone: "info" as const, icon: "document-list" as const,
     },
     {
       label: t("ให้คะแนนแล้ว", "Graded"), value: gradedAssignments,
-      color: "var(--s-ok-text)", bg: "var(--s-ok-bg)",
-      icon: (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
-          <circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/>
-        </svg>
-      ),
+      tone: "ok" as const, icon: "check-circle" as const,
     },
     {
       label: t("ประกาศแล้ว", "Announced"), value: announcedAssignments,
-      color: "var(--accent)", bg: "var(--accent-subtle)",
-      icon: (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M3 11v2a1 1 0 0 0 1 1h2l5 4V6L6 10H4a1 1 0 0 0-1 1z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/>
-        </svg>
-      ),
+      tone: "accent" as const, icon: "megaphone" as const,
     },
   ];
 
@@ -204,11 +178,7 @@ export default function CourseGradingPage() {
     <main className="w-full px-8 py-8">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)] mb-6">
-        <Link href="/teacher/courses" className="hover:text-[var(--accent)] transition-colors" aria-label={t("รายวิชาทั้งหมด", "All courses")}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
-          </svg>
-        </Link>
+        <IconButton icon="home" label={t("รายวิชาทั้งหมด", "All courses")} href="/teacher/courses" />
         <span>/</span>
         <Link href={`/teacher/courses/${id}`} className="hover:text-[var(--accent)] transition-colors">{course.name}</Link>
         <span>/</span>
@@ -228,27 +198,20 @@ export default function CourseGradingPage() {
           className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)] active:scale-[.97] transition-colors shrink-0"
         >
           {t("ไปที่สมุดคะแนน", "Open Score Book")}
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-            <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
-          </svg>
+          <Icon name="arrow-right" />
         </Link>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         {statCards.map((s) => (
-          <StatCard key={s.label} label={s.label} value={s.value} color={s.color} bg={s.bg} icon={s.icon} />
+          <StatCard key={s.label} label={s.label} value={s.value} tone={s.tone} icon={s.icon} />
         ))}
       </div>
 
       {items.length === 0 ? (
         <EmptyState
-          iconColor="var(--accent-bright)"
-          icon={
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
-              <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
-            </svg>
-          }
+          icon="check-square"
           title={t("ยังไม่มีงานให้ตรวจ", "Nothing to grade yet")}
           description={t("สร้างงานก่อน แล้วงานที่นักศึกษาส่งจะมาอยู่ที่นี่", "Create an assignment first — student submissions will queue up here")}
           action={
@@ -324,7 +287,7 @@ export default function CourseGradingPage() {
                           )}
                         </div>
                         <div
-                          className="flex h-2 rounded-full overflow-hidden bg-[var(--bg-subtle)]"
+                          className="flex h-2 rounded-full overflow-hidden bg-[var(--bg-app)]"
                           role="img"
                           aria-label={t(
                             `ตรวจแล้ว ${p.gradedCount}, รอตรวจสอบ ${p.needReview}, ยังไม่ตรวจ ${p.notGraded}`,
@@ -369,7 +332,7 @@ export default function CourseGradingPage() {
                           // the due date or the late hour has not passed yet: nothing can be graded while the work can still change
                           <div data-testid="grading-locked" className="flex flex-col items-end gap-0.5 text-right">
                             <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--text-secondary)]">
-                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+                              <Icon name="lock" size="xs" />
                               {t("ยังตรวจไม่ได้", "Not open for grading yet")}
                             </span>
                             <span className="text-xs text-[var(--text-muted)]">
@@ -383,7 +346,7 @@ export default function CourseGradingPage() {
                               href={gradingHref(a)}
                               className="px-3 h-9 inline-flex items-center gap-1.5 rounded-xl bg-[var(--accent-solid)] text-sm font-semibold text-[var(--accent-solid-text)] hover:bg-[var(--accent-solid-hover)] active:scale-[.97] transition-colors"
                             >
-                              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                              <Icon name="play" filled />
                               {t("เริ่มตรวจงาน", "Start Grading")}
                             </Link>
                             {!a.isExam && (
@@ -408,19 +371,21 @@ export default function CourseGradingPage() {
                                   title={m === "ai"
                                     ? (waiting > 0
                                       ? t(`ส่งงานที่ยังไม่ตรวจ ${waiting} ชิ้นให้ AI ตรวจ แล้วเปิดให้คุณตรวจทาน`, `Sends the ${waiting} not-graded ${waiting === 1 ? "submission" : "submissions"} to the AI, then opens them for your review`)
-                                      : t("ไม่มีงานที่รอ AI — เปิดหน้าตรวจ", "Nothing is waiting for the AI — opens the grading page"))
+                                      : t("ไม่มีงานที่รอ AI — ดู rubric แล้วเปิดหน้าตรวจต่อ", "Nothing is waiting for the AI — shows the rubric, then opens the grading page"))
                                     : t("ไม่ใช้ AI — คุณให้คะแนนเองทีละงาน", "No AI — you score each submission yourself")}
                                   className={`px-3 h-9 inline-flex items-center justify-center gap-1.5 rounded-xl text-sm font-semibold active:scale-[.97] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] disabled:cursor-wait disabled:opacity-70 ${current
                                     ? "bg-[var(--accent-solid)] text-[var(--accent-solid-text)] hover:bg-[var(--accent-solid-hover)]"
                                     : "border border-[var(--border)] bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)]"}`}
                                 >
                                   {busy && (
-                                    <svg className="animate-spin" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                                    <Icon name="spinner" className="animate-spin" />
                                   )}
                                   {busy
                                     ? t(`AI กำลังตรวจ ${waiting} ชิ้น…`, `AI grading ${waiting}…`)
                                     : m === "ai"
-                                      ? (waiting > 0 ? t(`ตรวจด้วย AI (${waiting})`, `Grade with AI (${waiting})`) : t("ตรวจด้วย AI", "Grade with AI"))
+                                      ? (waiting > 0
+                                        ? (a.rubricRestartedAt ? t(`ตรวจใหม่ด้วย rubric ใหม่ (${waiting})`, `Regrade with new rubric (${waiting})`) : t(`ตรวจด้วย AI (${waiting})`, `Grade with AI (${waiting})`))
+                                        : t("ตรวจด้วย AI", "Grade with AI"))
                                       : t("ตรวจเอง", "Grade manually")}
                                 </button>
                               );
@@ -438,6 +403,15 @@ export default function CourseGradingPage() {
             {t(`แสดง ${visible.length} จาก ${items.length} ชิ้นงาน`, `Showing ${visible.length} of ${items.length} assignments`)}
           </p>
         </>
+      )}
+
+      {previewFor && (
+        <AiGradePreviewModal
+          assignment={previewFor}
+          open
+          onClose={() => setPreviewFor(null)}
+          onConfirm={() => { const a = previewFor; setPreviewFor(null); void applyAndGo(a, "ai"); }}
+        />
       )}
 
       <Modal

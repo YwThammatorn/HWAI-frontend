@@ -21,6 +21,8 @@ import PillTabBar from "@/components/PillTabBar";
 import ScoreSummaryView from "@/components/ScoreSummaryView";
 import { buildScoreSummary } from "@/lib/scoreSummary";
 
+import Icon from "@/components/Icon";
+import IconButton from "@/components/IconButton";
 type SortKey = "id" | "name" | "total";
 
 // Sticky column geometry (px) — the sticky offsets below depend on these widths.
@@ -30,10 +32,7 @@ const TOTAL_W = 132;
 const HEAD1_H = 45; // height of the category row (h-10 at the 4.5px spacing unit), where row 2 sticks
 
 const TEAM_GLYPH = (
-  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" />
-    <path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
-  </svg>
+  <Icon name="users" size="xs" />
 );
 
 export default function ScoreBookPage() {
@@ -180,20 +179,10 @@ export default function ScoreBookPage() {
             {/* Score comes from the rubric — expand to see what each criterion earned (21/9/2569).
                 Still available when locked: viewing the breakdown isn't editing. */}
             {hasRubric && (
-              <button
-                type="button"
-                onClick={() => setBreakdown({ row, assignment })}
-                title={t("ดูคะแนนรายเกณฑ์", "See rubric breakdown")}
-                aria-label={t(
+              <IconButton icon="chevron-down" dense label={t(
                   `ดูคะแนนรายเกณฑ์ของ ${row.student.firstName} ${row.student.lastName} — ${assignment.name}`,
                   `See the rubric breakdown for ${row.student.firstName} ${row.student.lastName} — ${assignment.name}`,
-                )}
-                className="w-6 h-6 shrink-0 flex items-center justify-center rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-subtle)] active:scale-[.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
-              >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <polyline points="6 9 12 15 18 9" />
-                </svg>
-              </button>
+                )} onClick={() => setBreakdown({ row, assignment })} />
             )}
           </div>
         );
@@ -229,11 +218,7 @@ export default function ScoreBookPage() {
     <main className="w-full px-8 py-8">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)] mb-6">
-        <Link href="/teacher/courses" className="hover:text-[var(--accent)] transition-colors" aria-label={t("รายวิชาทั้งหมด", "All courses")}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
-          </svg>
-        </Link>
+        <IconButton icon="home" label={t("รายวิชาทั้งหมด", "All courses")} href="/teacher/courses" />
         <span>/</span>
         <Link href={`/teacher/courses/${id}`} className="hover:text-[var(--accent)] transition-colors">{course.name}</Link>
         <span>/</span>
@@ -254,10 +239,7 @@ export default function ScoreBookPage() {
           disabled={roster.length === 0 || assignments.length === 0}
           className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)] active:scale-[.97] disabled:opacity-50 disabled:pointer-events-none transition-colors shrink-0"
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
-            <line x1="12" y1="12" x2="12" y2="18"/><polyline points="9 15 12 18 15 15"/>
-          </svg>
+          <Icon name="file-download" />
           {t("ส่งออก CSV", "Export CSV")}
         </button>
       </div>
@@ -280,12 +262,7 @@ export default function ScoreBookPage() {
 
       {assignments.length === 0 || roster.length === 0 ? (
         <EmptyState
-          iconColor="var(--accent-bright)"
-          icon={
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
-              <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
-            </svg>
-          }
+          icon="bar-chart"
           title={roster.length === 0 ? t("ยังไม่มีนักศึกษาในวิชานี้", "No students in this course yet") : t("ยังไม่มีชิ้นงาน", "No assignments yet")}
           description={roster.length === 0
             ? t("เพิ่มนักศึกษาก่อน คะแนนจะขึ้นที่นี่", "Add students first — their scores will appear here")
@@ -304,22 +281,21 @@ export default function ScoreBookPage() {
           {/* Summary — class numbers, so not shown for the withdrawn group, nor on the Class summary view (16/10/2569: the chart there gets the room instead) */}
           {tab === "active" && view !== "summary" && <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <StatCard
-              label={t("นักศึกษา", "Students")} value={roster.length} color="var(--s-info-text)" bg="var(--s-info-bg)"
-              icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>}
+              label={t("นักศึกษา", "Students")} value={roster.length}
+              tone="info" icon="users"
             />
             <StatCard
-              label={t("ตรวจแล้ว", "Graded")} value={gradedPct} suffix="%" color="var(--s-ok-text)" bg="var(--s-ok-bg)"
-              icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/></svg>}
+              label={t("ตรวจแล้ว", "Graded")} value={gradedPct} suffix="%"
+              tone="ok" icon="check-circle"
             />
             <StatCard
               label={t("เฉลี่ยทั้งห้อง", "Class average")} value={book.classAverage === null ? 0 : Math.round(book.classAverage)} suffix={book.classAverage === null ? "—" : "%"}
-              color="var(--accent)" bg="var(--accent-subtle)"
-              icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>}
+              tone="accent" icon="bar-chart"
             />
             <StatCard
-              label={t("รอตรวจ", "Awaiting grading")} value={book.pendingCells} color="var(--s-warn-text)" bg="var(--s-warn-bg)"
+              label={t("รอตรวจ", "Awaiting grading")} value={book.pendingCells}
               onClick={() => router.push(`/teacher/courses/${id}/grading`)}
-              icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="M5 3h14l-2 7H7L5 3z"/><path d="M7 10l-2 11h14L17 10"/></svg>}
+              tone="warn" icon="hourglass"
             />
           </div>}
 
@@ -347,7 +323,7 @@ export default function ScoreBookPage() {
                   value={categoryFilter}
                   onChange={setCategoryFilter}
                   ariaLabel={t("กรองตามหมวดคะแนน", "Filter by category")}
-                  icon={<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>}
+                  icon={<Icon name="align-center" size="xs" />}
                 >
                   <option value="all">{t("ทุกหมวด", "All categories")}</option>
                   {book.groups.map((g) => (

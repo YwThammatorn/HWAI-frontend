@@ -4,6 +4,8 @@ import { useEffect, useId, useRef, useState, ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { useLanguage } from "@/context/LanguageContext";
 
+import Icon from "@/components/Icon";
+import IconButton from "@/components/IconButton";
 const SIZE = { sm: "max-w-sm", md: "max-w-lg", lg: "max-w-2xl", xl: "max-w-5xl" } as const;
 
 // Popups can open popups (the rubric editor in a popup has its own picker and AI assistant, 14/10/2569). Each one is drawn on <body>, not
@@ -99,16 +101,7 @@ export default function Modal({ open, onClose, title, description, size = "md", 
             <h2 id={titleId} className="text-base font-bold text-[var(--text-primary)]">{title}</h2>
             {description && <p id={descId} className="text-xs text-[var(--text-secondary)] mt-1 leading-relaxed">{description}</p>}
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label={t("ปิด", "Close")}
-            className="w-8 h-8 shrink-0 flex items-center justify-center rounded-lg hover:bg-[var(--bg-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          </button>
+          <IconButton icon="x" label={t("ปิด", "Close")} onClick={onClose} />
         </div>
         <div className="px-6 py-5 overflow-y-auto">{children}</div>
         {footer && (

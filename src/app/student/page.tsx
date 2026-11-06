@@ -15,7 +15,9 @@ import { useAnnouncements, announcementReachesCourse } from "@/lib/announcements
 import { CourseIcon } from "@/components/CourseIcon";
 import StudentCalendar, { StudentCalendarItem } from "@/components/StudentCalendar";
 import { ANNOUNCEMENTS_DISABLED } from "@/lib/featureFlags";
-
+
+import Icon from "@/components/Icon";
+import IconTile from "@/components/IconTile";
 function fmtAnnouncementDate(iso: string, lang: string) {
   return new Date(iso).toLocaleDateString(lang === "th" ? "th-TH" : "en-US", {
     day: "numeric", month: "short", hour: "2-digit", minute: "2-digit",
@@ -254,13 +256,7 @@ export default function StudentHome() {
                         href={`/student/courses/${course.id}/classwork`}
                         className="flex items-center gap-3 p-3 rounded-xl hover:bg-[var(--bg-subtle)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]"
                       >
-                        <div
-                          className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                          style={{ background: course.coverColor }}
-                          aria-hidden="true"
-                        >
-                          <CourseIcon iconKey={course.icon} size={17} className="text-white" />
-                        </div>
+                        <IconTile course={course.icon} size="md" tone="cover" style={{ background: course.coverColor }} />
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold text-[var(--text-primary)] truncate">{course.name}</p>
                           <div className="flex items-center gap-1.5 mt-0.5 text-xs text-[var(--text-muted)] flex-wrap">
@@ -285,13 +281,11 @@ export default function StudentHome() {
                               {t("เปิดสอน", "Active")}
                             </span>
                           ) : (
-                            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[var(--bg-subtle)] text-[var(--text-muted)]">
+                            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[var(--bg-app)] text-[var(--text-muted)]">
                               {t("เก็บถาวร", "Archived")}
                             </span>
                           )}
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-[var(--text-muted)]" aria-hidden="true">
-                            <polyline points="9 18 15 12 9 6"/>
-                          </svg>
+                          <Icon name="chevron-right" className="text-[var(--text-muted)]" />
                         </div>
                       </Link>
                     );

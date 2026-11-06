@@ -8,7 +8,7 @@ import { dateLocale } from "@/lib/dateLocale";
 import { useAuth } from "@/context/AuthContext";
 import { useCourses } from "@/lib/courses";
 import CriterionName from "@/components/CriterionName";
-import { useAssignments, submissionAttachments, studentVisibleSubmission, achievedLevelIndex, AssignmentAttachment, dueAt, isLate, submissionOpen, submissionClosesAt, CLEARED_RESULT } from "@/lib/assignments";
+import { useAssignments, submissionAttachments, studentVisibleSubmission, achievedLevelIndex, AssignmentAttachment, dueAt, isLate, submissionOpen, submissionClosesAt, CLEARED_RESULT, activeLatePolicy, describeLatePolicy, daysLate, latePenaltyFor, latePenaltyOf, finalScoreOf } from "@/lib/assignments";
 import { appNow, useNow } from "@/lib/clock";
 import { computeExamStats, computeAssignmentStats } from "@/lib/examStats";
 import ExamStatsCard from "@/components/ExamStatsCard";
@@ -20,6 +20,8 @@ import { AttachmentList, SubmissionFilesPicker, normalizeLinkUrl, useAttachments
 import AssignmentStatusBadge, { STATUS_STYLE } from "@/components/AssignmentStatusBadge";
 import AssignmentTypeBadge from "@/components/AssignmentTypeBadge";
 
+import Icon from "@/components/Icon";
+import Avatar from "@/components/Avatar";
 function initialsOf(name: string) {
   const parts = name.trim().split(/\s+/);
   return ((parts[0]?.[0] ?? "") + (parts[1]?.[0] ?? "")).toUpperCase() || "?";
@@ -92,7 +94,12 @@ function ClassworkDetail() {
   const closesAt = submissionClosesAt(assignment);
   const isGraded = mySubmission?.status === "graded";
   const locked = isGraded || beingGraded;
-  const score = mySubmission?.instructorScore ?? mySubmission?.aiScore ?? null;
+  const score = mySubmission ? finalScoreOf(assignment, mySubmission) : null;
+  // The teacher's own mark before the late deduction, and what was taken (0 for on-time work or when late work costs nothing)
+  const penalty = mySubmission ? latePenaltyOf(assignment, mySubmission) : 0;
+  const latePolicy = activeLatePolicy(assignment);
+  // what handing in right now would cost, shown before the student presses Submit
+  const costIfNow = latePolicy && late ? latePenaltyFor(latePolicy, daysLate(assignment, now), assignment.maxPoints) : 0;
   // What each rubric criterion earned — only real per-criterion scores the teacher saved (a graded submission is
   // already masked to nothing until results are announced), never an estimate.
   const earnedByCriterion = isGraded ? mySubmission?.criterionScores : undefined;
@@ -203,11 +210,7 @@ function ClassworkDetail() {
 
               <div className="flex items-center gap-4 text-sm mb-4 flex-wrap">
                 <span className="flex items-center gap-1.5 text-[var(--text-muted)]">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                    <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
-                    <line x1="3" y1="10" x2="21" y2="10"/>
-                  </svg>
+                  <Icon name="calendar" size="sm" />
                   {due ? (
                     <>
                       <span className={isPast && !mySubmission ? "text-[var(--st-overdue-text)] font-semibold" : ""}>
@@ -331,9 +334,7 @@ function ClassworkDetail() {
                         const info = memberInfo(id);
                         return (
                           <div key={id} className="flex items-center gap-2.5">
-                            <div className="w-7 h-7 rounded-full bg-[var(--accent-subtle)] flex items-center justify-center text-[var(--accent)] text-[11px] font-bold shrink-0">
-                              {initialsOf(info.name)}
-                            </div>
+                            <Avatar initials={initialsOf(info.name)} />
                             <p className="text-xs text-[var(--text-primary)] truncate">
                               {info.name}{id === studentId && <span className="text-[var(--text-muted)]"> ({t("คุณ", "you")})</span>}
                             </p>
@@ -379,6 +380,11 @@ function ClassworkDetail() {
                   <p className="text-2xl font-bold tabular-nums">
                     {score}<span className="text-sm font-normal opacity-80">/{assignment.maxPoints}</span>
                   </p>
+                  {penalty > 0 && score !== null && (
+                    <p data-testid="late-deduction" className="text-xs mt-1 tabular-nums">
+                      {t(`คะแนนงาน ${score + penalty} − ส่งช้าหัก ${penalty}`, `Work scored ${score + penalty} − late deduction ${penalty}`)}
+                    </p>
+                  )}
                   {mySubmission?.instructorComment && (
                     <p className="text-xs mt-2 leading-relaxed">{mySubmission.instructorComment}</p>
                   )}
@@ -403,11 +409,7 @@ function ClassworkDetail() {
               {!isExam && (submitted || (mySubmission && !isGraded)) && (
                 <div className={`mb-4 p-3 rounded-xl border ${STATUS_STYLE.submitted.panel}`}>
                   <div className="flex items-center gap-2">
-                    <div className="w-5 h-5 rounded-full bg-[var(--st-sent-text)]/15 flex items-center justify-center shrink-0">
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" aria-hidden="true">
-                        <polyline points="20 6 9 17 4 12"/>
-                      </svg>
-                    </div>
+                    <Icon name="check-circle" />
                     <div>
                       <p className="text-xs font-semibold">{t("ส่งแล้ว รอผล", "Submitted — awaiting grade")}</p>
                       {mySubmission?.submittedAt && (
@@ -433,8 +435,20 @@ function ClassworkDetail() {
               {/* Attach a file or link — only for assignments configured to accept one */}
               {!isExam && late && !locked && closesAt && (
                 <p data-testid="late-note" role="status" className="mb-4 rounded-xl border border-[var(--s-warn-bd)] bg-[var(--s-warn-bg)] px-3 py-2 text-xs leading-relaxed text-[var(--s-warn-text)]">
-                  {t(`เลยกำหนดแล้ว — ยังส่งช้าได้ถึง ${closesAt.toLocaleString(dateLocale(lang), { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} น. หลังจากนั้นจะปิดรับ`,
-                    `Past due — you can still submit late until ${closesAt.toLocaleString(dateLocale(lang), { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}. After that submissions close.`)}
+                  {t(`เลยกำหนดแล้ว — ยังส่งช้าได้ถึง ${closesAt.toLocaleString(dateLocale(lang), { day: "numeric", month: "short" })} น. หลังจากนั้นจะปิดรับ`,
+                    `Past due — you can still submit late until ${closesAt.toLocaleString(dateLocale(lang), { day: "numeric", month: "short" })}. After that submissions close.`)}
+                  {latePolicy && latePolicy.mode !== "none" && (
+                    <span data-testid="late-cost" className="block mt-1 font-semibold">
+                      {t(`ส่งตอนนี้ (ช้า ${daysLate(assignment, now)} วัน) จะถูกหัก ${costIfNow} คะแนน — ${describeLatePolicy(latePolicy, t)}`,
+                        `Submitting now (${daysLate(assignment, now)} day${daysLate(assignment, now) === 1 ? "" : "s"} late) costs ${costIfNow} point${costIfNow === 1 ? "" : "s"} — ${describeLatePolicy(latePolicy, t)}`)}
+                    </span>
+                  )}
+                </p>
+              )}
+              {!isExam && !late && !locked && open && latePolicy && closesAt && (
+                <p data-testid="late-policy-note" className="mb-4 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-3 py-2 text-xs leading-relaxed text-[var(--text-secondary)]">
+                  {t(`ส่งช้าได้ถึง ${closesAt.toLocaleString(dateLocale(lang), { day: "numeric", month: "short" })} — ${describeLatePolicy(latePolicy, t)}`,
+                    `Late work accepted until ${closesAt.toLocaleString(dateLocale(lang), { day: "numeric", month: "short" })} — ${describeLatePolicy(latePolicy, t)}`)}
                 </p>
               )}
 
@@ -494,7 +508,7 @@ function ClassworkDetail() {
                 </button>
               )}
               {!isExam && !open && !mySubmission && (
-                <p data-testid="submission-closed" className="text-xs text-[var(--st-overdue-text)] text-center">{t("ปิดรับส่งงานแล้ว — เลยกำหนดและช่วงส่งช้าไปแล้ว", "Submission closed — the due date and the late window have passed")}</p>
+                <p data-testid="submission-closed" className="text-xs text-[var(--st-overdue-text)] text-center">{latePolicy ? t("ปิดรับส่งงานแล้ว — พ้นวันปิดรับแล้ว", "Submission closed — the closing date has passed") : t("ปิดรับส่งงานแล้ว — เลยกำหนดส่งแล้ว", "Submission closed — the due date has passed")}</p>
               )}
             </div>
           </div>

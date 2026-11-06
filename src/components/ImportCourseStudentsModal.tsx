@@ -9,6 +9,8 @@ import { useSectionProgram } from "@/lib/sectionProgram";
 import { useCourses } from "@/lib/courses";
 import { csvToGrid, excelToGrid, fileKind, parseRosterGrid, type SheetRow, type ParsedSheet } from "@/lib/rosterSheet";
 
+import Icon from "@/components/Icon";
+import IconTile from "@/components/IconTile";
 interface ParsedRow extends Omit<SheetRow, "error"> {
   error?: string;
   match?: CohortStudent;
@@ -149,9 +151,7 @@ export default function ImportCourseStudentsModal({ courseId, courseName, onClos
         {step === "upload" && (
           <>
             <div className="flex gap-2.5 rounded-xl border border-[var(--s-info-bd)] bg-[var(--s-info-bg)] px-4 py-3">
-              <svg className="shrink-0 mt-0.5 text-[var(--s-info-text)]" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
-              </svg>
+              <Icon name="info" size="xs" className="shrink-0 mt-0.5 text-[var(--s-info-text)]" />
               <p className="text-xs text-[var(--s-info-text)] leading-relaxed">
                 {t(
                   "ทุกรหัสนักศึกษาจะถูกตรวจสอบกับรายชื่อที่มีอยู่ในระบบก่อน — ถ้าพบจะดึงชื่อ/อีเมลจริงจากระบบมาลงทะเบียน ถ้าไม่พบในระบบจะข้ามแถวนั้นไป (ให้แอดมินเพิ่มเข้าระบบก่อน)",
@@ -178,11 +178,7 @@ export default function ImportCourseStudentsModal({ courseId, courseName, onClos
                 className="hidden"
                 onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
               />
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent-bright)" strokeWidth="1.5" strokeLinecap="round" className="mx-auto mb-3" aria-hidden="true">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                <polyline points="14 2 14 8 20 8"/>
-                <line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>
-              </svg>
+              <Icon name="file-plus" size="xl" className="mx-auto mb-3 text-[var(--accent-bright)]" />
               <p className="text-sm font-semibold text-[var(--text-primary)]">{t("ลากไฟล์มาวาง หรือคลิกเลือก", "Drag a file here or click to browse")}</p>
               <p className="text-xs text-[var(--text-muted)] mt-1">{t("รองรับ Excel (.xls / .xlsx — ใบคะแนนสอบจากทะเบียน) และ .csv (UTF-8)", "Supports Excel (.xls / .xlsx — the registrar's exam sheet) and .csv (UTF-8)")}</p>
             </div>
@@ -206,14 +202,7 @@ export default function ImportCourseStudentsModal({ courseId, courseName, onClos
 
             <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-app)] p-3.5 flex items-center justify-between gap-3">
               <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-8 h-8 rounded-lg bg-[var(--accent-bright)]/15 flex items-center justify-center shrink-0">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                    <line x1="12" y1="18" x2="12" y2="12"/>
-                    <polyline points="9 15 12 18 15 15"/>
-                  </svg>
-                </div>
+                <IconTile icon="file-download" size="sm" tone="accent" />
                 <div className="min-w-0">
                   <p className="text-xs font-medium text-[var(--text-primary)]">{t("ดาวน์โหลด Template", "Download Template")}</p>
                   <p className="text-[11px] text-[var(--text-muted)] truncate">students-template.csv — {t("รูปแบบที่ระบบรองรับ", "supported format")}</p>
@@ -332,11 +321,7 @@ export default function ImportCourseStudentsModal({ courseId, courseName, onClos
 
         {step === "done" && (
           <div className="flex flex-col items-center gap-3 py-8 text-center">
-            <div className="w-12 h-12 rounded-full bg-[var(--s-ok-bg)] flex items-center justify-center">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--s-ok-text)" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
-            </div>
+            <IconTile icon="check" size="lg" shape="round" tone="ok" />
             <p role="status" className="text-sm font-semibold text-[var(--text-primary)]">{t("Import สำเร็จ", "Import Complete")}</p>
             <p className="text-xs text-[var(--text-muted)]">
               {t(`เพิ่ม ${importedCount} นักศึกษา เข้า ${courseName} เรียบร้อยแล้ว`, `Added ${importedCount} students to ${courseName} successfully`)}

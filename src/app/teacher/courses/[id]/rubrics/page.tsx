@@ -18,6 +18,8 @@ import EmptyState from "@/components/EmptyState";
 import SearchInput from "@/components/SearchInput";
 import Modal from "@/components/Modal";
 
+import Icon from "@/components/Icon";
+import IconButton from "@/components/IconButton";
 // colours of a level on a bar, best → worst (same as the Grading rubric card; warn is never used for a level)
 const FILL = ["bg-[var(--s-ok-text)]", "bg-[var(--s-info-text)]", "bg-[var(--text-muted)]", "bg-[var(--s-err-text)]"];
 const toneOf = (i: number, n: number) => (n <= 1 ? 0 : Math.round((i / (n - 1)) * 3));
@@ -85,9 +87,7 @@ export default function RubricsPage() {
   return (
     <main className="w-full px-8 py-8">
       <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)] mb-6">
-        <Link href="/teacher/courses" className="hover:text-[var(--accent)] transition-colors" aria-label={t("รายวิชาทั้งหมด", "All courses")}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        </Link>
+        <IconButton icon="home" label={t("รายวิชาทั้งหมด", "All courses")} href="/teacher/courses" />
         <span>/</span>
         <Link href={`/teacher/courses/${id}`} className="hover:text-[var(--accent)] transition-colors">{course.name}</Link>
         <span>/</span>
@@ -210,8 +210,7 @@ export default function RubricsPage() {
           {options.length === 0 ? (
             <div className="border-t border-[var(--border-subtle)] p-6">
               <EmptyState
-                iconColor="var(--accent-bright)"
-                icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>}
+          icon="bar-chart"
                 title={t("ยังไม่มี rubric ให้เทียบ", "No rubric to compare yet")}
                 description={t("สร้างงานที่มี rubric ก่อน แล้วกลับมาเลือกเทียบ", "Create an assignment with a rubric first, then come back to pick it.")}
               />
@@ -247,9 +246,7 @@ export default function RubricsPage() {
                                 {c.avgPct !== null ? `${t("เฉลี่ยรวม", "overall avg")} ${Math.round(c.avgPct)}% (${c.gradedCount})` : t("ยังไม่มีงานที่ตรวจ", "nothing graded")}
                               </span>
                             </span>
-                            <button type="button" onClick={() => setChosenIds((ids) => ids.filter((x) => x !== c.assignmentId))} aria-label={t(`เอา ${c.title} ออกจากการเทียบ`, `Remove ${c.title} from the comparison`)} className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-[var(--text-muted)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]">
-                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                            </button>
+                            <IconButton icon="x" label={t(`เอา ${c.title} ออกจากการเทียบ`, `Remove ${c.title} from the comparison`)} onClick={() => setChosenIds((ids) => ids.filter((x) => x !== c.assignmentId))} className="mt-0.5" />
                           </span>
                         </th>
                       ))}

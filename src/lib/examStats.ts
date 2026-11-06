@@ -1,4 +1,4 @@
-import type { Assignment, Submission } from "./assignments";
+import { finalScoreOf, type Assignment, type Submission } from "./assignments";
 
 export interface ExamStats {
   count: number;
@@ -33,7 +33,7 @@ export function computeAssignmentStats(assignment: Assignment | undefined, submi
   return statsFromScores(
     submissions
       .filter((s) => s.assignmentId === assignment.id && s.status === "graded")
-      .map((s) => s.instructorScore ?? s.aiScore ?? 0),
+      .map((s) => finalScoreOf(assignment, s) ?? 0),
   );
 }
 

@@ -683,7 +683,7 @@ test.describe("Navbar UI", () => {
   test("avatar shows user initials", async ({ page }) => {
     await waitReady(page, "/teacher/dashboard");
     // MOCK_USER.name = "Test Teacher" → initials "T"
-    const avatar = page.locator('[class*="2DD4BF"].rounded-full span');
+    const avatar = page.locator('.rounded-full[class*="brand-bright"]');
     await expect(avatar).toBeVisible();
     await expect(avatar).toHaveText("T");
   });

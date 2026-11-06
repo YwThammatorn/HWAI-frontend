@@ -14,7 +14,10 @@ import FilterSelect from "@/components/FilterSelect";
 import StatCard from "@/components/StatCard";
 import PillTabBar from "@/components/PillTabBar";
 import Pagination from "@/components/Pagination";
-
+
+import Icon from "@/components/Icon";
+import IconTile from "@/components/IconTile";
+import IconButton from "@/components/IconButton";
 // ═══════════════════════════════════════════════════════════════
 // TEACHERS — CSV parsing
 // ═══════════════════════════════════════════════════════════════
@@ -146,10 +149,7 @@ function ImportTeacherModal({ open, onClose }: { open: boolean; onClose: () => v
             className={`border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition-colors ${dragOver ? "border-[var(--accent-bright)] bg-[var(--accent-bright)]/5" : "border-[var(--border-subtle)] hover:border-[var(--accent-bright)]/50"}`}
           >
             <input ref={fileRef} type="file" accept=".csv" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent-bright)" strokeWidth="1.5" strokeLinecap="round" className="mx-auto mb-3" aria-hidden="true">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-              <polyline points="14 2 14 8 20 8"/>
-            </svg>
+            <Icon name="file" size="xl" className="mx-auto mb-3 text-[var(--accent-bright)]" />
             <p className="text-sm font-semibold text-[var(--text-primary)]">{t("ลากไฟล์ CSV มาวาง หรือคลิกเลือก", "Drag CSV here or click to browse")}</p>
             <p className="text-xs text-[var(--text-muted)] mt-1">{t("คอลัมน์: name, email (title ไม่บังคับ)", "Columns: name, email (title optional)")}</p>
           </div>
@@ -157,14 +157,7 @@ function ImportTeacherModal({ open, onClose }: { open: boolean; onClose: () => v
         {!parseResult && !done && (
           <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-app)] p-3.5 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-8 h-8 rounded-lg bg-[var(--accent-bright)]/15 flex items-center justify-center shrink-0">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                  <polyline points="14 2 14 8 20 8"/>
-                  <line x1="12" y1="18" x2="12" y2="12"/>
-                  <polyline points="9 15 12 18 15 15"/>
-                </svg>
-              </div>
+              <IconTile icon="file-download" size="sm" tone="accent" />
               <div className="min-w-0">
                 <p className="text-xs font-medium text-[var(--text-primary)]">{t("ดาวน์โหลด Template", "Download Template")}</p>
                 <p className="text-[11px] text-[var(--text-muted)] truncate">teachers-template.csv</p>
@@ -228,11 +221,7 @@ function ImportTeacherModal({ open, onClose }: { open: boolean; onClose: () => v
         )}
         {done && (
           <div className="flex flex-col items-center gap-3 py-8">
-            <div className="w-12 h-12 rounded-full bg-[var(--s-ok-bg)] flex items-center justify-center">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--s-ok-text)" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
-            </div>
+            <IconTile icon="check" size="lg" shape="round" tone="ok" />
             <p className="text-sm font-semibold text-[var(--text-primary)]">{t("นำเข้าสำเร็จ", "Import complete")}</p>
             <p className="text-xs text-[var(--text-muted)]">
               {t(`เพิ่ม ${result.added} คน (ข้าม ${result.skipped} รายการ)`,
@@ -383,12 +372,7 @@ function ConfirmDeactivateTeacherDialog({ teacher, onConfirm, onCancel }: {
         className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-40 w-full max-w-sm bg-[var(--bg-surface)] rounded-2xl shadow-2xl border border-[var(--border-subtle)] p-6 flex flex-col gap-4"
         onKeyDown={handleFocusTrap}>
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center shrink-0">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
-            </svg>
-          </div>
+          <IconTile icon="ban" size="md" shape="round" tone="warn" />
           <div>
             <h3 id="delete-teacher-dialog-title" className="text-sm font-bold text-[var(--text-primary)]">{t("ยืนยันการปิดใช้งาน", "Confirm Deactivate")}</h3>
             <p className="text-xs text-[var(--text-muted)] mt-0.5">
@@ -398,7 +382,7 @@ function ConfirmDeactivateTeacherDialog({ teacher, onConfirm, onCancel }: {
               {t("สามารถเปิดใช้งานคืนได้ภายหลัง", "You can activate them again later.")}
             </p>
             {teacher.courseIds.length > 0 && (
-              <p className="text-xs text-amber-700 mt-0.5">
+              <p className="text-xs text-[var(--s-warn-text)] mt-0.5">
                 {t(`อาจารย์นี้ถูก assign ใน ${teacher.courseIds.length} รายวิชา`,
                    `This teacher is assigned to ${teacher.courseIds.length} course(s)`)}
               </p>
@@ -411,7 +395,7 @@ function ConfirmDeactivateTeacherDialog({ teacher, onConfirm, onCancel }: {
             {t("ยกเลิก", "Cancel")}
           </button>
           <button onClick={onConfirm}
-            className="flex-1 h-9 rounded-xl bg-amber-700 text-white text-sm font-semibold hover:bg-amber-800 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 transition-colors">
+            className="flex-1 h-9 rounded-xl bg-[var(--warn-solid)] text-white text-sm font-semibold hover:bg-[var(--warn-solid-hover)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--s-warn-text)] transition-colors">
             {t("ปิดใช้งาน", "Deactivate")}
           </button>
         </div>
@@ -451,12 +435,7 @@ function ConfirmDeleteTeacherDialog({ teacher, onConfirm, onCancel }: {
         className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-40 w-full max-w-sm bg-[var(--bg-surface)] rounded-2xl shadow-2xl border border-[var(--border-subtle)] p-6 flex flex-col gap-4"
         onKeyDown={handleFocusTrap}>
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-[var(--s-err-bg)] flex items-center justify-center shrink-0">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--s-err-text)" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-              <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>
-              <path d="M10 11v6m4-6v6"/><path d="M9 6V4h6v2"/>
-            </svg>
-          </div>
+          <IconTile icon="trash" size="md" shape="round" tone="err" />
           <div>
             <h3 id="delete-teacher-dialog-title2" className="text-sm font-bold text-[var(--text-primary)]">{t("ยืนยันการลบ", "Confirm Delete")}</h3>
             <p className="text-xs text-[var(--text-muted)] mt-0.5">
@@ -614,11 +593,7 @@ function ImportStudentModal({ open, onClose }: { open: boolean; onClose: () => v
             onClick={() => fileRef.current?.click()}
             className={`border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition-colors ${dragOver ? "border-[var(--accent-bright)] bg-[var(--accent-bright)]/5" : "border-[var(--border-subtle)] hover:border-[var(--accent-bright)]/50"}`}>
             <input ref={fileRef} type="file" accept=".csv" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent-bright)" strokeWidth="1.5" strokeLinecap="round" className="mx-auto mb-3" aria-hidden="true">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-              <polyline points="14 2 14 8 20 8"/>
-              <line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>
-            </svg>
+            <Icon name="file-plus" size="xl" className="mx-auto mb-3 text-[var(--accent-bright)]" />
             <p className="text-sm font-semibold text-[var(--text-primary)]">{t("ลากไฟล์ CSV มาวาง หรือคลิกเลือก", "Drag CSV here or click to browse")}</p>
             <p className="text-xs text-[var(--text-muted)] mt-1">{t("คอลัมน์: studentId, title, firstName, lastName, email, program (title ไม่บังคับ)", "Columns: studentId, title, firstName, lastName, email, program (title is optional)")}</p>
           </div>
@@ -626,14 +601,7 @@ function ImportStudentModal({ open, onClose }: { open: boolean; onClose: () => v
         {!parseResult && !done && (
           <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-app)] p-3.5 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-8 h-8 rounded-lg bg-[var(--accent-bright)]/15 flex items-center justify-center shrink-0">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                  <polyline points="14 2 14 8 20 8"/>
-                  <line x1="12" y1="18" x2="12" y2="12"/>
-                  <polyline points="9 15 12 18 15 15"/>
-                </svg>
-              </div>
+              <IconTile icon="file-download" size="sm" tone="accent" />
               <div className="min-w-0">
                 <p className="text-xs font-medium text-[var(--text-primary)]">{t("ดาวน์โหลด Template", "Download Template")}</p>
                 <p className="text-[11px] text-[var(--text-muted)] truncate">cohort-students-template.csv</p>
@@ -698,11 +666,7 @@ function ImportStudentModal({ open, onClose }: { open: boolean; onClose: () => v
         )}
         {done && (
           <div className="flex flex-col items-center gap-3 py-8">
-            <div className="w-12 h-12 rounded-full bg-[var(--s-ok-bg)] flex items-center justify-center">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--s-ok-text)" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
-            </div>
+            <IconTile icon="check" size="lg" shape="round" tone="ok" />
             <p className="text-sm font-semibold text-[var(--text-primary)]">{t("นำเข้าสำเร็จ", "Import complete")}</p>
             <p className="text-xs text-[var(--text-muted)]">
               {t(`เพิ่ม ${validRows.length} คน`, `Added ${validRows.length} student(s)`)}
@@ -802,18 +766,12 @@ function TeachersTab() {
         <div className="flex items-center gap-2 shrink-0">
           <button onClick={() => setImportOpen(true)}
             className="flex items-center gap-2 h-9 px-4 rounded-full border border-[var(--border)] bg-[var(--bg-surface)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:border-[var(--accent-bright)] hover:text-[var(--text-primary)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors shrink-0">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-              <polyline points="14 2 14 8 20 8"/>
-              <line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>
-            </svg>
+            <Icon name="file-plus" />
             {t("นำเข้า CSV", "Import CSV")}
           </button>
           <button onClick={() => setAddOpen(true)}
             className="flex items-center gap-2 h-9 px-4 rounded-full bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors shrink-0">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>
+            <Icon name="plus" />
             {t("เพิ่มอาจารย์", "Add Teacher")}
           </button>
         </div>
@@ -821,14 +779,7 @@ function TeachersTab() {
 
       {teachers.length === 0 ? (
         <EmptyState
-          iconColor="var(--accent-bright)"
-          icon={
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-              <circle cx="9" cy="7" r="4"/>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
-            </svg>
-          }
+          icon="users"
           title={t("ยังไม่มีอาจารย์ในระบบ", "No teachers yet")}
           description={t("เพิ่มอาจารย์คนแรกเพื่อเริ่มต้น", "Add the first teacher to get started")}
           action={
@@ -894,7 +845,7 @@ function TeachersTab() {
                     ) : teacher.email}
                   </td>
                   <td className="px-4 py-1">
-                    <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap ${teacherInactive ? "bg-[var(--bg-subtle)] text-[var(--text-muted)]" : "bg-[var(--s-ok-bg)] text-[var(--s-ok-text)]"}`}>
+                    <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap ${teacherInactive ? "bg-[var(--bg-app)] text-[var(--text-muted)]" : "bg-[var(--s-ok-bg)] text-[var(--s-ok-text)]"}`}>
                       <span className={`w-1.5 h-1.5 rounded-full ${teacherInactive ? "bg-[var(--text-muted)]" : "bg-[var(--s-ok-text)]"}`} />
                       {teacherInactive ? t("ปิดใช้งาน", "Inactive") : t("ใช้งานอยู่", "Active")}
                     </span>
@@ -903,56 +854,17 @@ function TeachersTab() {
                     <div className="flex items-center gap-1">
                       {isEditing ? (
                         <>
-                          <button onClick={saveEdit}
-                            aria-label={t("บันทึก", "Save")}
-                            className="min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg text-[var(--text-secondary)] hover:text-green-700 hover:bg-green-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-400 transition-colors">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-                              <polyline points="20 6 9 17 4 12"/>
-                            </svg>
-                          </button>
-                          <button onClick={cancelEdit}
-                            aria-label={t("ยกเลิก", "Cancel")}
-                            className="min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg text-[var(--text-secondary)] hover:text-[var(--s-err-text)] hover:bg-[var(--s-err-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--s-err-bd)] transition-colors">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                            </svg>
-                          </button>
+                          <IconButton icon="check" label={t("บันทึก", "Save")} onClick={saveEdit} />
+                          <IconButton icon="x" label={t("ยกเลิก", "Cancel")} tone="danger" onClick={cancelEdit} />
                         </>
                       ) : (
                         <>
-                          <button onClick={() => startEdit(teacher)}
-                            aria-label={t(`แก้ไข ${teacher.name}`, `Edit ${teacher.name}`)}
-                            className="min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg text-[var(--text-secondary)] hover:text-[var(--accent)] hover:bg-[var(--accent-bright)]/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                            </svg>
-                          </button>
-                          <button onClick={() => setDeletingId(teacher.id)}
-                            aria-label={t(`ลบ ${teacher.name}`, `Delete ${teacher.name}`)}
-                            className="min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg text-[var(--text-secondary)] hover:text-[var(--s-err-text)] hover:bg-[var(--s-err-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--s-err-bd)] transition-colors">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                              <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>
-                              <path d="M10 11v6m4-6v6"/><path d="M9 6V4h6v2"/>
-                            </svg>
-                          </button>
+                          <IconButton icon="edit" label={t(`แก้ไข ${teacher.name}`, `Edit ${teacher.name}`)} onClick={() => startEdit(teacher)} />
+                          <IconButton icon="trash" label={t(`ลบ ${teacher.name}`, `Delete ${teacher.name}`)} tone="danger" onClick={() => setDeletingId(teacher.id)} />
                           {teacher.status === "inactive" ? (
-                            <button onClick={() => activateTeacher(teacher.id)}
-                              aria-label={t(`เปิดใช้งาน ${teacher.name}`, `Activate ${teacher.name}`)}
-                              className="min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg text-[var(--text-secondary)] hover:text-green-700 hover:bg-green-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-400 transition-colors">
-                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-                                <polyline points="20 6 9 17 4 12"/>
-                              </svg>
-                            </button>
+                            <IconButton icon="check" label={t(`เปิดใช้งาน ${teacher.name}`, `Activate ${teacher.name}`)} onClick={() => activateTeacher(teacher.id)} />
                           ) : (
-                            <button onClick={() => setDeactivatingId(teacher.id)}
-                              aria-label={t(`ปิดใช้งาน ${teacher.name}`, `Deactivate ${teacher.name}`)}
-                              className="min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg text-[var(--text-secondary)] hover:text-amber-700 hover:bg-amber-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 transition-colors">
-                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                                <circle cx="12" cy="12" r="10"/>
-                                <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
-                              </svg>
-                            </button>
+                            <IconButton icon="ban" label={t(`ปิดใช้งาน ${teacher.name}`, `Deactivate ${teacher.name}`)} tone="warn" onClick={() => setDeactivatingId(teacher.id)} />
                           )}
                         </>
                       )}
@@ -1203,7 +1115,7 @@ function DeactivateBatchModal({ open, onClose, students, onConfirm }: {
             {t("ยกเลิก", "Cancel")}
           </button>
           <button onClick={() => onConfirm(batch, finalIds, program === "all" ? undefined : programName(program))} disabled={finalIds.length === 0}
-            className="h-10 px-5 rounded-xl bg-amber-700 text-white text-sm font-semibold hover:bg-amber-800 active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors">
+            className="h-10 px-5 rounded-xl bg-[var(--warn-solid)] text-white text-sm font-semibold hover:bg-[var(--warn-solid-hover)] active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors">
             {t(`ปิดใช้งาน ${finalIds.length} คน`, `Deactivate ${finalIds.length} student${finalIds.length === 1 ? "" : "s"}`)}
           </button>
         </>
@@ -1547,9 +1459,7 @@ function StudentsTab({ statusTabsSlot }: { statusTabsSlot: HTMLDivElement | null
               onChange={setProgramFilter}
               ariaLabel={t("กรองตามหลักสูตร", "Filter by program")}
               icon={
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
-                </svg>
+                <Icon name="graduation-cap" size="xs" />
               }
             >
               {programs.map((p) => <option key={p} value={p}>{PROGRAM_LABEL[p] ?? p}</option>)}
@@ -1561,27 +1471,19 @@ function StudentsTab({ statusTabsSlot }: { statusTabsSlot: HTMLDivElement | null
             disabled={!cohortStudents.some((s) => s.status !== "inactive")}
             className="flex items-center gap-2 h-9 px-3 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-sm font-medium text-[var(--text-secondary)] hover:border-[var(--accent-bright)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] disabled:opacity-50 disabled:pointer-events-none transition-colors whitespace-nowrap"
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
-            </svg>
+            <Icon name="graduation-cap" />
             {t("ปิดใช้งานทั้งรุ่น", "Deactivate batch")}
           </button>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <button onClick={() => setImportOpen(true)}
             className="flex items-center gap-2 h-9 px-4 rounded-full border border-[var(--border)] bg-[var(--bg-surface)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:border-[var(--accent-bright)] hover:text-[var(--text-primary)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors shrink-0">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-              <polyline points="14 2 14 8 20 8"/>
-              <line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>
-            </svg>
+            <Icon name="file-plus" />
             {t("นำเข้า CSV", "Import CSV")}
           </button>
           <button onClick={() => setAddOpen(true)}
             className="flex items-center gap-2 h-9 px-4 rounded-full bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors shrink-0">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>
+            <Icon name="plus" />
             {t("เพิ่มนักศึกษา", "Add Student")}
           </button>
         </div>
@@ -1599,23 +1501,13 @@ function StudentsTab({ statusTabsSlot }: { statusTabsSlot: HTMLDivElement | null
           >
             {t("เลิกทำ", "Undo")}
           </button>
-          <button onClick={() => setBatchNotice(null)} aria-label={t("ปิด", "Dismiss")}
-            className="w-6 h-6 flex items-center justify-center rounded hover:bg-black/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          </button>
+          <IconButton icon="x" label={t("ปิด", "Dismiss")} onClick={() => setBatchNotice(null)} />
         </div>
       )}
 
       {cohortStudents.length === 0 ? (
         <EmptyState
-          iconColor="var(--accent-bright)"
-          icon={
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-              <circle cx="9" cy="7" r="4"/>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-            </svg>
-          }
+          icon="users"
           title={t("ยังไม่มีนักศึกษาในระบบ", "No students yet")}
           description={t("นำเข้าจากไฟล์ CSV เพื่อเพิ่มนักศึกษาทั้งรุ่น", "Import a CSV file to add cohort students")}
           action={
@@ -1723,7 +1615,7 @@ function StudentsTab({ statusTabsSlot }: { statusTabsSlot: HTMLDivElement | null
                           )}
                         </td>
                         <td className="px-4 py-1">
-                          <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap ${isInactive ? "bg-[var(--bg-subtle)] text-[var(--text-muted)]" : "bg-[var(--s-ok-bg)] text-[var(--s-ok-text)]"}`}>
+                          <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap ${isInactive ? "bg-[var(--bg-app)] text-[var(--text-muted)]" : "bg-[var(--s-ok-bg)] text-[var(--s-ok-text)]"}`}>
                             <span className={`w-1.5 h-1.5 rounded-full ${isInactive ? "bg-[var(--text-muted)]" : "bg-[var(--s-ok-text)]"}`} />
                             {isInactive ? t("พ้นสภาพ", "Inactive") : t("ปกติ", "Active")}
                           </span>
@@ -1732,68 +1624,17 @@ function StudentsTab({ statusTabsSlot }: { statusTabsSlot: HTMLDivElement | null
                           <div className="flex items-center gap-1">
                             {isEditing ? (
                               <>
-                                <button
-                                  onClick={saveEdit}
-                                  aria-label={t("บันทึก", "Save")}
-                                  className="min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg text-[var(--text-secondary)] hover:text-green-700 hover:bg-green-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-400 transition-colors"
-                                >
-                                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-                                    <polyline points="20 6 9 17 4 12"/>
-                                  </svg>
-                                </button>
-                                <button
-                                  onClick={cancelEdit}
-                                  aria-label={t("ยกเลิก", "Cancel")}
-                                  className="min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg text-[var(--text-secondary)] hover:text-[var(--s-err-text)] hover:bg-[var(--s-err-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--s-err-bd)] transition-colors"
-                                >
-                                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                                  </svg>
-                                </button>
+                                <IconButton icon="check" label={t("บันทึก", "Save")} onClick={saveEdit} />
+                                <IconButton icon="x" label={t("ยกเลิก", "Cancel")} tone="danger" onClick={cancelEdit} />
                               </>
                             ) : (
                               <>
-                            <button
-                              onClick={() => startEdit(student)}
-                              aria-label={t(`แก้ไข ${student.firstName} ${student.lastName}`, `Edit ${student.firstName} ${student.lastName}`)}
-                              className="min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg text-[var(--text-secondary)] hover:text-[var(--accent)] hover:bg-[var(--accent-bright)]/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
-                            >
-                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                              </svg>
-                            </button>
-                            <button
-                              onClick={() => setDeletingId(student.id)}
-                              aria-label={t(`ลบ ${student.firstName} ${student.lastName}`, `Delete ${student.firstName} ${student.lastName}`)}
-                              className="min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg text-[var(--text-secondary)] hover:text-[var(--s-err-text)] hover:bg-[var(--s-err-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--s-err-bd)] transition-colors"
-                            >
-                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                                <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>
-                                <path d="M10 11v6m4-6v6"/><path d="M9 6V4h6v2"/>
-                              </svg>
-                            </button>
+                            <IconButton icon="edit" label={t(`แก้ไข ${student.firstName} ${student.lastName}`, `Edit ${student.firstName} ${student.lastName}`)} onClick={() => startEdit(student)} />
+                            <IconButton icon="trash" label={t(`ลบ ${student.firstName} ${student.lastName}`, `Delete ${student.firstName} ${student.lastName}`)} tone="danger" onClick={() => setDeletingId(student.id)} />
                             {isInactive ? (
-                              <button
-                                onClick={() => activateStudent(student.id)}
-                                aria-label={t(`เปิดใช้งาน ${student.firstName} ${student.lastName}`, `Activate ${student.firstName} ${student.lastName}`)}
-                                className="min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg text-[var(--text-secondary)] hover:text-green-700 hover:bg-green-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-400 transition-colors"
-                              >
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-                                  <polyline points="20 6 9 17 4 12"/>
-                                </svg>
-                              </button>
+                              <IconButton icon="check" label={t(`เปิดใช้งาน ${student.firstName} ${student.lastName}`, `Activate ${student.firstName} ${student.lastName}`)} onClick={() => activateStudent(student.id)} />
                             ) : (
-                              <button
-                                onClick={() => setDeactivatingId(student.id)}
-                                aria-label={t(`ปิดใช้งาน ${student.firstName} ${student.lastName}`, `Deactivate ${student.firstName} ${student.lastName}`)}
-                                className="min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg text-[var(--text-secondary)] hover:text-amber-700 hover:bg-amber-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 transition-colors"
-                              >
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                                  <circle cx="12" cy="12" r="10"/>
-                                  <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
-                                </svg>
-                              </button>
+                              <IconButton icon="ban" label={t(`ปิดใช้งาน ${student.firstName} ${student.lastName}`, `Deactivate ${student.firstName} ${student.lastName}`)} tone="warn" onClick={() => setDeactivatingId(student.id)} />
                             )}
                               </>
                             )}
@@ -1859,12 +1700,7 @@ function StudentsTab({ statusTabsSlot }: { statusTabsSlot: HTMLDivElement | null
           <div role="alertdialog" aria-modal="true" aria-labelledby="deactivate-student-title"
             className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-40 w-full max-w-sm bg-[var(--bg-surface)] rounded-2xl shadow-2xl border border-[var(--border-subtle)] p-6 flex flex-col gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center shrink-0">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                  <circle cx="12" cy="12" r="10"/>
-                  <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
-                </svg>
-              </div>
+              <IconTile icon="ban" size="md" shape="round" tone="warn" />
               <div>
                 <h3 id="deactivate-student-title" className="text-sm font-bold text-[var(--text-primary)]">{t("ยืนยันการปิดใช้งาน", "Confirm Deactivate")}</h3>
                 <p className="text-xs text-[var(--text-muted)] mt-0.5">
@@ -1882,7 +1718,7 @@ function StudentsTab({ statusTabsSlot }: { statusTabsSlot: HTMLDivElement | null
                 {t("ยกเลิก", "Cancel")}
               </button>
               <button onClick={() => deactivateStudent(deactivatingId!)}
-                className="flex-1 h-9 rounded-xl bg-amber-700 text-white text-sm font-semibold hover:bg-amber-800 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 transition-colors">
+                className="flex-1 h-9 rounded-xl bg-[var(--warn-solid)] text-white text-sm font-semibold hover:bg-[var(--warn-solid-hover)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--s-warn-text)] transition-colors">
                 {t("ปิดใช้งาน", "Deactivate")}
               </button>
             </div>
@@ -1935,27 +1771,12 @@ export default function AdminUsersPage() {
         <StatCard
           label={t("อาจารย์", "Teachers")}
           value={teachers.length}
-          color="var(--accent)"
-          bg="var(--accent-subtle)"
-          icon={
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-              <circle cx="9" cy="7" r="4"/>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
-            </svg>
-          }
+          tone="accent" icon="users"
         />
         <StatCard
           label={t("นักศึกษา", "Students")}
           value={cohortStudents.length}
-          color="var(--s-info-text)"
-          bg="var(--s-info-bg)"
-          icon={
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
-              <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
-              <path d="M6 12v5c3 3 9 3 12 0v-5"/>
-            </svg>
-          }
+          tone="info" icon="graduation-cap"
         />
       </div>
 

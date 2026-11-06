@@ -94,6 +94,7 @@ test.describe("Grading method — the button that starts grading is the choice",
   test("Grade with AI on work that is already scored just opens it, in AI-assisted mode", async ({ page }) => {
     await open(page);
     await choose(page, "Mixed work", "Grade with AI").click();
+    await page.getByTestId("ai-preview-confirm").click();
     await onAssignmentPage(page, "a-mix");
     await expect(page.getByTestId("grading-mode-note")).toContainText("AI-assisted");
     await expect(page.getByRole("tab", { name: /Needs review/ })).toBeVisible();
@@ -151,7 +152,7 @@ test.describe("Grading method — the button that starts grading is the choice",
     await expect(page.getByText("Feedback to AI")).toHaveCount(0);
   });
 
-  test("once manual, the filled button follows; Grade with AI switches back with no popup and the AI figures return", async ({ page }) => {
+  test("once manual, the filled button follows; Grade with AI switches back (no switch popup, just the preview) and the AI figures return", async ({ page }) => {
     await open(page);
     await choose(page, "Mixed work", "Grade manually").click();
     await page.getByRole("dialog").getByRole("button", { name: "Switch and grade" }).click();
@@ -159,7 +160,8 @@ test.describe("Grading method — the button that starts grading is the choice",
     await page.getByTestId("grading-mode-note").getByRole("link", { name: "change it on the Grading list" }).click();
     await expect(choose(page, "Mixed work", "Grade manually")).toHaveClass(/accent-solid/);        // the method in use is the filled one
     await choose(page, "Mixed work", "Grade with AI").click();
-    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await expect(page.getByRole("dialog").getByRole("button", { name: "Switch and grade" })).toHaveCount(0);   // no "switch to manual" popup: the AI preview is what opens
+    await page.getByTestId("ai-preview-confirm").click();
     await onAssignmentPage(page, "a-mix");
     await expect(page.getByTestId("grading-mode-note")).toContainText("AI-assisted");
     await expect(page.getByRole("button", { name: /Re-grade/ })).toHaveCount(4);
@@ -188,6 +190,7 @@ test.describe("Grading method — the button that starts grading is the choice",
     const btn = choose(page, "Mixed work", "Grade with AI");
     await expect(btn).toHaveAttribute("title", /Sends the 1 not-graded submission to the AI/);
     await btn.click();
+    await page.getByTestId("ai-preview-confirm").click();
     await expect(row(page, "Mixed work").getByRole("button").first()).toContainText("AI grading 1");   // busy while the AI works
     await expect(row(page, "Mixed work").getByRole("button", { name: "Grade manually" })).toBeDisabled();
     await onAssignmentPage(page, "a-mix");
@@ -210,6 +213,7 @@ test.describe("Grading method — the button that starts grading is the choice",
   test("the AI's answer is the same every time for the same submission", async ({ page }) => {
     await open(page);
     await choose(page, "Mixed work", "Grade with AI").click();
+    await page.getByTestId("ai-preview-confirm").click();
     await onAssignmentPage(page, "a-mix");
     const first = (await stored(page)).subs.find((x) => x.id === "m4")!.aiScore;
     // reset it and send again: same score
@@ -221,6 +225,7 @@ test.describe("Grading method — the button that starts grading is the choice",
     await page.reload();
     await page.getByTestId("grading-mode-note").getByRole("link", { name: "change it on the Grading list" }).click();
     await choose(page, "Mixed work", "Grade with AI").click();
+    await page.getByTestId("ai-preview-confirm").click();
     await onAssignmentPage(page, "a-mix");
     expect((await stored(page)).subs.find((x) => x.id === "m4")!.aiScore).toBe(first);
   });
@@ -229,6 +234,7 @@ test.describe("Grading method — the button that starts grading is the choice",
     await open(page);
     await expect(choose(page, "Team project", "Grade with AI")).toContainText("Grade with AI (1)");    // one team, not two students
     await choose(page, "Team project", "Grade with AI").click();
+    await page.getByTestId("ai-preview-confirm").click();
     await onAssignmentPage(page, "a-team");
     const after = await stored(page);
     const [t1, t2] = [after.subs.find((x) => x.id === "t1")!, after.subs.find((x) => x.id === "t2")!];

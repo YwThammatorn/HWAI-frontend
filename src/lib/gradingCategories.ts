@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext } from "react";
-import type { Assignment, Submission } from "./assignments";
+import { finalScoreOf, type Assignment, type Submission } from "./assignments";
 
 export interface GradingCategory {
   id: string;
@@ -23,10 +23,11 @@ export interface CategoryGradeRow {
 }
 
 // A student's graded score for one assignment, or null if not yet graded.
-export function scoreForAssignment(submissions: Submission[], assignmentId: string, studentId: string): number | null {
+// Pass the assignment so the late deduction (Assignment.latePolicy) comes off; without it the raw score is returned.
+export function scoreForAssignment(submissions: Submission[], assignmentId: string, studentId: string, assignment?: Assignment): number | null {
   const sub = submissions.find((s) => s.assignmentId === assignmentId && s.studentId === studentId);
   if (!sub || sub.status !== "graded") return null;
-  return sub.instructorScore ?? sub.aiScore ?? 0;
+  return assignment ? finalScoreOf(assignment, sub) ?? 0 : sub.instructorScore ?? sub.aiScore ?? 0;
 }
 
 // Per-category grade breakdown for one student — shared by the Evaluation
@@ -42,7 +43,7 @@ export function computeCategoryGradeRows(
     const catAssignments = assignments.filter((a) => a.categoryId === category.id);
     let earnedPoints = 0, possiblePoints = 0, gradedCount = 0;
     catAssignments.forEach((a) => {
-      const score = scoreForAssignment(submissions, a.id, studentId);
+      const score = scoreForAssignment(submissions, a.id, studentId, a);
       if (score !== null) {
         earnedPoints += score;
         possiblePoints += a.maxPoints;

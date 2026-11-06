@@ -15,7 +15,9 @@ import EmptyState from "@/components/EmptyState";
 import PageHeader from "@/components/PageHeader";
 import CourseBanner from "@/components/CourseBanner";
 import { useManagedTeachers } from "@/lib/managed-teachers";
-
+
+import Icon from "@/components/Icon";
+import IconTile from "@/components/IconTile";
 export default function StudentCoursesPage() {
   const { t } = useLanguage();
   const { user } = useAuth();
@@ -78,13 +80,7 @@ export default function StudentCoursesPage() {
 
         {enrolledCourses.length === 0 ? (
           <EmptyState
-            iconColor="var(--accent-bright)"
-            icon={
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent-bright)" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
-                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-              </svg>
-            }
+          icon="book"
             title={t("ยังไม่มีรายวิชา", "No courses yet")}
             description={t("อาจารย์จะเพิ่มคุณเข้าในรายวิชาเมื่อลงทะเบียนแล้ว", "Your instructor will enroll you in courses")}
           />
@@ -161,20 +157,12 @@ export default function StudentCoursesPage() {
 
                     <div className="flex items-center justify-between text-xs text-[var(--text-muted)] border-t border-[var(--border-subtle)] pt-3 mt-3">
                       <span className="flex items-center gap-1">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                          <polyline points="14 2 14 8 20 8"/>
-                        </svg>
+                        <Icon name="file" size="xs" />
                         {assignments.length} {t("งาน", "assignment(s)")}
                       </span>
                       {course.status === "active" ? (
                         <span className="flex items-center gap-1 text-[var(--accent)]">
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                            <line x1="16" y1="2" x2="16" y2="6"/>
-                            <line x1="8" y1="2" x2="8" y2="6"/>
-                            <line x1="3" y1="10" x2="21" y2="10"/>
-                          </svg>
+                          <Icon name="calendar" size="xs" />
                           {t("เปิดสอน", "Active")}
                         </span>
                       ) : (
@@ -234,9 +222,7 @@ function PastCourseRow({ course, withdrawn, result }: { course: Course; withdraw
       href={`/student/courses/${course.id}/classwork`}
       className="flex items-center gap-3 px-4 py-3 hover:bg-[var(--bg-subtle)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--accent-bright)]"
     >
-      <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: course.coverColor }} aria-hidden="true">
-        <CourseIcon iconKey={course.icon} size={17} className="text-white" />
-      </div>
+      <IconTile course={course.icon} size="md" tone="cover" style={{ background: course.coverColor }} />
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold text-[var(--text-primary)] truncate">{course.name}</p>
         {meta && <p className="text-xs text-[var(--text-muted)] truncate mt-0.5">{meta}</p>}
