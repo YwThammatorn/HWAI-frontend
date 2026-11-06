@@ -39,7 +39,7 @@ export default function SectionRoleProvider({ children }: { children: React.Reac
     if (API_ENABLED) enqueueWrite(task, resync);
   }, [resync]);
 
-  const addSectionRole = useCallback((data: Omit<SectionRole, "id" | "permissions">): SectionRole => {
+  const addSectionRole = useCallback((data: Omit<SectionRole, "id">): SectionRole => {
     const r: SectionRole = { ...data, id: crypto.randomUUID() };
     persist([...sectionRoles, r]);
     sync(() => api.addSectionRole({ ...data, id: r.id }));
@@ -66,7 +66,7 @@ export default function SectionRoleProvider({ children }: { children: React.Reac
   const hasPermission = useCallback((accountId: string, courseId: string, permission: keyof SectionRolePermissions) => {
     const role = sectionRoles.find(r => r.accountId === accountId && r.courseId === courseId);
     if (!role) return false;
-    const perms = role.permissions ?? defaultPermissionsFor(role.role);
+    const perms = defaultPermissionsFor(role.role);
     return perms[permission];
   }, [sectionRoles]);
 

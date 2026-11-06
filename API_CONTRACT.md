@@ -190,6 +190,11 @@ the courses where the account is `teacher`, assigned through the managed-teacher
 API still handles only `ta` / `co-teacher` and does not list the primary teachers. `/api/auth/me`'s `teacher` is
 `{ id, name }`.
 
+**A course's code is its subject's (7/11/2569).** The server no longer stores `Course.code`: it returns the code of the
+course template the course is linked to (none when it isn't linked), so renaming a subject's code reaches every section
+of it. The frontend still sends `code` when it creates a section (the localStorage mock has no server to look it up);
+the server ignores it.
+
 **New rows get the next free `sequenceNumber`:** highest on the roster + 1, never roster size + 1 (after a removal
 that would hand out a number someone still holds). `(courseId, sequenceNumber)` is unique.
 
@@ -244,11 +249,11 @@ There is no separate "Collaborator" resource — a collaborator on a course *is*
 `ManagedTeacher.id`. The primary teacher is separate (admin's `ManagedTeacher.courseIds`) and the
 Collaborators page doesn't touch it. The backend rejects a role that doesn't fit the account (400) or a
 second role for the same person in a course (409), and drops a person's roles when their account is
-deleted. `hasPermission()` is a pure client-side check over already-fetched roles — no endpoint for it.
+deleted. `hasPermission()` is a pure client-side check over already-fetched roles — no endpoint for it. What a role may do follows from the role alone (7/11/2569: the per-role `permissions` override is gone — nothing ever set it): `teacher` and `co-teacher` may do everything, a `ta` may not manage the roster, edit settings or publish scores (`defaultPermissionsFor`).
 | Function | Verb + path | Request | Response |
 |---|---|---|---|
 | `getSectionRoles` | `GET /api/courses/:courseId/roles` | — | `SectionRole[]` |
-| `addSectionRole` | `POST /api/courses/:courseId/roles` | `Omit<SectionRole, "id"\|"permissions">` | `SectionRole` |
+| `addSectionRole` | `POST /api/courses/:courseId/roles` | `Omit<SectionRole, "id">` | `SectionRole` |
 | `removeSectionRole` | `DELETE /api/section-roles/:id` | — | `void` |
 
 ### Student groups — `lib/api/student-groups.ts`

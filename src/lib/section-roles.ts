@@ -26,13 +26,12 @@ export interface SectionRole {
   id: string;
   accountId: string; // FK → CohortStudent.id or ManagedTeacher.id (whichever the person is)
   courseId: string;  // FK → Course.id (section-shaped, see lib/courses.ts)
-  role: SectionRoleType;
-  permissions?: SectionRolePermissions; // overrides defaultPermissionsFor(role) when present
+  role: SectionRoleType; // what the person may do follows from this alone: defaultPermissionsFor(role)
 }
 
 export interface SectionRoleContextValue {
   sectionRoles: SectionRole[];
-  addSectionRole: (data: Omit<SectionRole, "id" | "permissions">) => SectionRole;
+  addSectionRole: (data: Omit<SectionRole, "id">) => SectionRole;
   removeSectionRole: (id: string) => void;
   removeRolesByAccount: (accountId: string) => void;
   getRolesBySection: (courseId: string) => SectionRole[];

@@ -272,7 +272,7 @@ export default function CollaboratorsPage() {
     const roleRows = sectionRoles
       .filter((r) => r.courseId === course.id)
       .map((r): TeamRow | null => {
-        const perms = r.permissions ?? defaultPermissionsFor(r.role);
+        const perms = defaultPermissionsFor(r.role);
         const permissionSummary = perms.canManageRoster && perms.canEditSettings
           ? t("สิทธิ์เต็ม", "Full access")
           : t("ตรวจงานได้ · จัดการรายชื่อ/ตั้งค่าไม่ได้", "Can grade only — no roster/settings access");

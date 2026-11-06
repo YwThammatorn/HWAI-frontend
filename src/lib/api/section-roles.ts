@@ -12,7 +12,7 @@ export async function getSectionRoles(courseId?: string): Promise<SectionRole[]>
   return client.get<SectionRole[]>(courseId ? `/api/courses/${courseId}/roles` : "/api/section-roles");
 }
 
-export async function addSectionRole(data: Omit<SectionRole, "id" | "permissions"> & { id?: string }): Promise<SectionRole> {
+export async function addSectionRole(data: Omit<SectionRole, "id"> & { id?: string }): Promise<SectionRole> {
   return client.post<SectionRole>(`/api/courses/${data.courseId}/roles`, data);
 }
 
