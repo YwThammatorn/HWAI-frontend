@@ -22,11 +22,11 @@ const OTHER_COURSE = {
 };
 
 const ROSTER = [
-  { id: "s-p6-1", courseId: "c-p6", studentId: "64070601", firstName: "Fah", lastName: "Test", email: "64070601@kmitl.ac.th", cohort: "CE69" },
-  { id: "s-p6-2", courseId: "c-p6", studentId: "64070602", firstName: "Beam", lastName: "Suk", email: "64070602@kmitl.ac.th", cohort: "CE69" },
-  { id: "s-p6-3", courseId: "c-p6", studentId: "64070603", firstName: "Ploy", lastName: "Wong", email: "64070603@kmitl.ac.th", cohort: "CE69" },
+  { id: "s-p6-1", courseId: "c-p6", studentId: "64070601", name: "Fah Test", email: "64070601@kmitl.ac.th", cohort: "CE69" },
+  { id: "s-p6-2", courseId: "c-p6", studentId: "64070602", name: "Beam Suk", email: "64070602@kmitl.ac.th", cohort: "CE69" },
+  { id: "s-p6-3", courseId: "c-p6", studentId: "64070603", name: "Ploy Wong", email: "64070603@kmitl.ac.th", cohort: "CE69" },
   // Enrolled in the OTHER course only — must never appear in the c-p6 picker.
-  { id: "s-p6-4", courseId: "c-p6-other", studentId: "64070699", firstName: "Outsider", lastName: "Person", email: "64070699@kmitl.ac.th", cohort: "CE69" },
+  { id: "s-p6-4", courseId: "c-p6-other", studentId: "64070699", name: "Outsider Person", email: "64070699@kmitl.ac.th", cohort: "CE69" },
 ];
 
 const GROUP_ASSIGNMENT = {
@@ -49,7 +49,7 @@ async function seed(page: Page, opts: {
     courses = [COURSE, OTHER_COURSE], roster = ROSTER,
   } = opts;
   const me = roster.find((s) => (s as { studentId: string }).studentId === asStudentId) as
-    { firstName: string; lastName: string; email: string } | undefined;
+    { name: string; email: string } | undefined;
   await page.addInitScript((data) => {
     localStorage.setItem("hwai_lang", "en");
     localStorage.setItem("hwai_user", JSON.stringify({
@@ -61,7 +61,7 @@ async function seed(page: Page, opts: {
     localStorage.setItem("hwai_submissions_v1", JSON.stringify([]));
     localStorage.setItem("hwai_student_groups_v1", JSON.stringify(data.groups));
   }, {
-    name: me ? `${me.firstName} ${me.lastName}` : "Fah Test",
+    name: me ? `${me.name}` : "Fah Test",
     email: me?.email ?? "64070601@kmitl.ac.th",
     studentId: asStudentId, courses, roster, assignments, groups,
   });

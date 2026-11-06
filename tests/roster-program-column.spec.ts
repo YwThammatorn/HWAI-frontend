@@ -12,10 +12,10 @@ async function seed(page: Page, lang: "th" | "en") {
     localStorage.setItem("hwai_lang", lang);
     localStorage.setItem("hwai_user", JSON.stringify({ name: "Somsak", email: "somsak@kmitl.ac.th", role: "teacher" }));
     localStorage.setItem("hwai_courses_v2", JSON.stringify([{ id: "c-rp", name: "Cyber Basics", code: "01077421", description: "", status: "active", coverColor: "#0F766E", academicYear: 2569, term: 1, sectionNumber: "1", createdAt: NOW, updatedAt: NOW }]));
-    localStorage.setItem("hwai_managed_teachers_v1", JSON.stringify([{ id: "t1", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", role: "teacher", status: "active", courseIds: ["c-rp"] }]));
+    localStorage.setItem("hwai_managed_teachers_v1", JSON.stringify([{ id: "t1", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", status: "active", courseIds: ["c-rp"] }]));
     const ppl = [["69070301", "นาย", "สมชาย", "ใจดี", "CECS"], ["69070302", "นางสาว", "สุดา", "วงษ์สา", "CECS"], ["69070303", "นาย", "Anna", "Smith", "CEI"]];
-    localStorage.setItem("hwai_cohort_students_v1", JSON.stringify(ppl.map(([id, title, f, l, program], i) => ({ id: `cs-${i}`, studentId: id, title, firstName: f, lastName: l, email: `${id}@kmitl.ac.th`, program, status: "active" }))));
-    localStorage.setItem("hwai_students_v1", JSON.stringify(ppl.map(([id, , f, l], i) => ({ id: `r-${i}`, courseId: "c-rp", studentId: id, firstName: f, lastName: l, email: `${id}@kmitl.ac.th`, sequenceNumber: i + 1, enrollmentStatus: "enrolled" }))));
+    localStorage.setItem("hwai_cohort_students_v1", JSON.stringify(ppl.map(([id, title, f, l, program], i) => ({ id: `cs-${i}`, studentId: id, title, name: `${f} ${l}`, email: `${id}@kmitl.ac.th`, program, status: "active" }))));
+    localStorage.setItem("hwai_students_v1", JSON.stringify(ppl.map(([id, , f, l], i) => ({ id: `r-${i}`, courseId: "c-rp", studentId: id, name: `${f} ${l}`, email: `${id}@kmitl.ac.th`, sequenceNumber: i + 1, enrollmentStatus: "enrolled" }))));
     for (const k of ["hwai_grading_categories_v1", "hwai_assignments_v1", "hwai_rubrics_v1", "hwai_submissions_v1"]) localStorage.setItem(k, "[]");
   }, lang);
   await page.goto(`${BASE}/teacher/courses/c-rp/students`);

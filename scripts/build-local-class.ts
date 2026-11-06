@@ -15,10 +15,10 @@
 
 import fs from "node:fs";
 
-export interface RealStudent { studentId: string; title: string; firstName: string; lastName: string; group: number }
+export interface RealStudent { studentId: string; title: string; name: string; group: number }
 export interface Roster { code: string; students: RealStudent[] }
 
-interface FlowStudent { id: string; courseId: string; studentId: string; firstName: string; lastName: string; email: string; sequenceNumber: number; enrollmentStatus: string }
+interface FlowStudent { id: string; courseId: string; studentId: string; name: string; email: string; sequenceNumber: number; enrollmentStatus: string }
 interface FlowSubmission { id: string; assignmentId: string; studentId: string; studentName: string; email: string; [k: string]: unknown }
 export interface Flow { courseStudents: FlowStudent[]; submissions: FlowSubmission[]; assignments: { id: string }[] }
 
@@ -40,8 +40,7 @@ export function parseRoster(csv: string): Roster {
     const full = (r[2] ?? "").trim();
     const title = TITLES.find((t) => full.startsWith(t)) ?? "";
     const rest = full.slice(title.length).trim();
-    const [firstName, ...others] = rest.split(/\s+/);
-    students.push({ studentId: r[1].trim(), title, firstName, lastName: others.join(" "), group });
+    students.push({ studentId: r[1].trim(), title, name: rest.split(/\s+/).join(" "), group });
   }
   return { code, students };
 }
@@ -81,9 +80,9 @@ export function buildClass(roster: Roster, flow: Flow, o: BuildOptions) {
   order.forEach((id, i) => lender.set(id, lenders[i % lenders.length]));
 
   const email = (id: string) => `${id}@kmitl.ac.th`;
-  const nameOf = (s: RealStudent) => `${s.firstName} ${s.lastName}`.trim();
-  const cohortStudents = roster.students.map((s) => ({ id: `cs-real-${s.studentId}`, studentId: s.studentId, title: s.title, firstName: s.firstName, lastName: s.lastName, email: email(s.studentId), program: "CE", status: "active" }));
-  const roll = (list: RealStudent[], courseId: string) => list.map((s, i) => ({ id: `s-real-${courseId}-${s.studentId}`, courseId, studentId: s.studentId, firstName: s.firstName, lastName: s.lastName, email: email(s.studentId), sequenceNumber: i + 1, enrollmentStatus: "enrolled" }));
+  const nameOf = (s: RealStudent) => s.name;
+  const cohortStudents = roster.students.map((s) => ({ id: `cs-real-${s.studentId}`, studentId: s.studentId, title: s.title, name: s.name, email: email(s.studentId), program: "CE", status: "active" }));
+  const roll = (list: RealStudent[], courseId: string) => list.map((s, i) => ({ id: `s-real-${courseId}-${s.studentId}`, courseId, studentId: s.studentId, name: s.name, email: email(s.studentId), sequenceNumber: i + 1, enrollmentStatus: "enrolled" }));
   const courseStudents = [...roll(sectionOne, primary), ...roll(others, second)];
 
   const byStudent = new Map<string, FlowSubmission[]>();

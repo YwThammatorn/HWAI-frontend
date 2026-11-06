@@ -14,7 +14,7 @@ const homework = { id: "a-hw", courseId: "c-es", name: "Homework", description: 
 
 const sub = (assignmentId: string, studentId: string, score: number) => ({
   id: `s-${assignmentId}-${studentId}`, assignmentId, studentId, studentName: studentId, email: `${studentId}@kmitl.ac.th`,
-  submittedAt: NOW, fileUrl: null, aiScore: null, instructorScore: score, instructorComment: "", externalUseConsent: false, status: "graded", updatedAt: NOW,
+  submittedAt: NOW, aiScore: null, instructorScore: score, instructorComment: "", externalUseConsent: false, status: "graded", updatedAt: NOW,
 });
 // me = 69070401. Scores 37.5, 27, 40, 38, 36 → min 27, mean 35.7, max 40, SD 5.1
 const midtermScores: [string, number][] = [["69070401", 37.5], ["69070402", 27], ["69070403", 40], ["69070404", 38], ["69070405", 36]];
@@ -24,7 +24,7 @@ async function open(page: Page, path: string, opts: { assignments: unknown[]; su
     localStorage.setItem("hwai_lang", lang as string);
     localStorage.setItem("hwai_user", JSON.stringify({ name: "Ann", email: "69070401@kmitl.ac.th", role: "student", studentId: "69070401" }));
     localStorage.setItem("hwai_courses_v2", JSON.stringify([{ id: "c-es", name: "Python", description: "", status: "active", coverColor: "#0F766E", createdAt: "2026-01-01T00:00:00.000Z", updatedAt: "2026-01-01T00:00:00.000Z" }]));
-    localStorage.setItem("hwai_students_v1", JSON.stringify([{ id: "r1", courseId: "c-es", studentId: "69070401", firstName: "Ann", lastName: "S", email: "69070401@kmitl.ac.th", sequenceNumber: 1, enrollmentStatus: "enrolled" }]));
+    localStorage.setItem("hwai_students_v1", JSON.stringify([{ id: "r1", courseId: "c-es", studentId: "69070401", name: "Ann S", email: "69070401@kmitl.ac.th", sequenceNumber: 1, enrollmentStatus: "enrolled" }]));
     localStorage.setItem("hwai_assignments_v1", JSON.stringify(a));
     localStorage.setItem("hwai_submissions_v1", JSON.stringify(s));
   }, [opts.lang ?? "en", opts.assignments, opts.submissions] as const);

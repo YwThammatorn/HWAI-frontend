@@ -129,7 +129,7 @@ for (const [i, label] of ["Thai", "English"].entries()) {
     const history = rd(i ? "student-history-mockup-en.json" : "student-history-mockup.json");
     const flow = rd(i ? "student-flow-mockup-en.json" : "student-flow-mockup.json");
     const before = {
-      cohort: [...(rd("students-mockup.json") as Cohort[]).slice(0, 57), { id: "cs-custom", studentId: "99990001", title: "นาย", firstName: "เพิ่ม", lastName: "เอง", email: "99990001@kmitl.ac.th", program: "CE", status: "active" }],
+      cohort: [...(rd("students-mockup.json") as Cohort[]).slice(0, 57), { id: "cs-custom", studentId: "99990001", title: "นาย", name: "เพิ่ม เอง", email: "99990001@kmitl.ac.th", program: "CE", status: "active" }],
       roster: [...flow.courseStudents.slice(0, 3), ...history.courseStudents],
       subs: [...flow.submissions.slice(0, 13), ...history.submissions],
     };

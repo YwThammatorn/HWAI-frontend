@@ -7,8 +7,8 @@ import { BASE } from "./base";
 // teacher is shared by default ("same teacher for all"), or set per section.
 
 const TEACHERS = [
-  { id: "t-john", name: "John Smith", email: "john@kmitl.ac.th", role: "teacher", status: "active", courseIds: [] },
-  { id: "t-jane", name: "Jane Doe", email: "jane@kmitl.ac.th", role: "teacher", status: "active", courseIds: [] },
+  { id: "t-john", name: "John Smith", email: "john@kmitl.ac.th", status: "active", courseIds: [] },
+  { id: "t-jane", name: "Jane Doe", email: "jane@kmitl.ac.th", status: "active", courseIds: [] },
 ];
 const EXISTING = {
   id: "c-old", name: "Web Design", description: "", status: "active", coverColor: "#0F766E",

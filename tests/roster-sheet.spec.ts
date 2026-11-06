@@ -2,7 +2,7 @@ import { test, expect, Page } from "@playwright/test";
 import fs from "fs";
 import { readXls, XlsError } from "../src/lib/xls";
 import { readXlsx, XlsxError } from "../src/lib/xlsx";
-import { parseRosterGrid, csvToGrid, xlsToGrid, excelToGrid, splitThaiName, fileKind } from "../src/lib/rosterSheet";
+import { parseRosterGrid, csvToGrid, xlsToGrid, excelToGrid, nameWithoutTitle, fileKind } from "../src/lib/rosterSheet";
 
 import { BASE } from "./base";
 
@@ -66,7 +66,7 @@ test.describe("the .xls reader", () => {
     expect(parsed.rows).toHaveLength(107);
     expect(parsed.rows.filter((r) => r.group === 2)).toHaveLength(1);
     const fromCsv = parseRosterGrid(csvToGrid(fs.readFileSync(csv, "utf8")));
-    expect(parsed.rows.map((r) => [r.studentId, r.firstName, r.lastName, r.group])).toEqual(fromCsv.rows.map((r) => [r.studentId, r.firstName, r.lastName, r.group]));
+    expect(parsed.rows.map((r) => [r.studentId, r.name, r.group])).toEqual(fromCsv.rows.map((r) => [r.studentId, r.name, r.group]));
   });
 });
 
@@ -88,14 +88,14 @@ test.describe("reading the registrar's layout", () => {
     expect(p.rows[5].line).toBeGreaterThan(p.rows[4].line + 8);   // the second page's rows come after its header block
   });
 
-  test("the title is cut off the name and the double space splits first and last name", () => {
+  test("the title is cut off the name, which is kept whole (one field since 6/11/2569)", () => {
     const p = parsed();
-    expect(p.rows[0]).toMatchObject({ studentId: "99010001", firstName: "สมชาย", lastName: "ตัวอย่างหนึ่ง" });
-    expect(p.rows[1]).toMatchObject({ firstName: "สมหญิง", lastName: "ตัวอย่างสอง" });      // นางสาว
-    expect(splitThaiName(" นายกรวิชญ์  สวัสดี")).toEqual({ firstName: "กรวิชญ์", lastName: "สวัสดี" });
-    expect(splitThaiName("นางสาวนางรำ  ใจดี")).toEqual({ firstName: "นางรำ", lastName: "ใจดี" });   // "นางสาว" wins over "นาง"
-    expect(splitThaiName("สมชาย ใจดี")).toEqual({ firstName: "สมชาย", lastName: "ใจดี" });         // no title
-    expect(splitThaiName("นายสมชาย")).toEqual({ firstName: "สมชาย", lastName: "" });
+    expect(p.rows[0]).toMatchObject({ studentId: "99010001", name: "สมชาย ตัวอย่างหนึ่ง" });
+    expect(p.rows[1]).toMatchObject({ name: "สมหญิง ตัวอย่างสอง" });      // นางสาว
+    expect(nameWithoutTitle(" นายกรวิชญ์  สวัสดี")).toBe("กรวิชญ์ สวัสดี");
+    expect(nameWithoutTitle("นางสาวนางรำ  ใจดี")).toBe("นางรำ ใจดี");   // "นางสาว" wins over "นาง"
+    expect(nameWithoutTitle("สมชาย ใจดี")).toBe("สมชาย ใจดี");         // no title
+    expect(nameWithoutTitle("นายสมชาย")).toBe("สมชาย");
   });
 
   test("the same sheet saved as CSV reads the same", () => {
@@ -104,15 +104,26 @@ test.describe("reading the registrar's layout", () => {
     expect(parseRosterGrid(csvToGrid(csv)).rows).toEqual(parsed().rows);
   });
 
-  test("our own template (with or without its header row) still reads as before", () => {
+  test("our own template: one name column, header optional", () => {
+    const t = parseRosterGrid(csvToGrid("student_id,name,email\n66070500401,สมชาย ใจดี,a@kmitl.ac.th\n66070500402,,\n,x y,\n"));
+    expect(t.kind).toBe("template");
+    expect(t.rows.map((r) => [r.line, r.studentId, r.name, r.email, r.error])).toEqual([
+      [2, "66070500401", "สมชาย ใจดี", "a@kmitl.ac.th", undefined],
+      [3, "66070500402", "", "", "missing_name"],
+      [4, "", "x y", "", "missing_id"],
+    ]);
+    expect(parseRosterGrid(csvToGrid("66070500401,สมชาย ใจดี,a@kmitl.ac.th\n")).rows[0]).toMatchObject({ line: 1, name: "สมชาย ใจดี", email: "a@kmitl.ac.th" });
+  });
+
+  test("the older four-column template (first_name, last_name) still reads, its two name cells joined", () => {
     const withHeader = parseRosterGrid(csvToGrid("student_id,first_name,last_name,email\n66070500401,สมชาย,ใจดี,a@kmitl.ac.th\n66070500402,สมหญิง,,\n,x,y,\n"));
     expect(withHeader.kind).toBe("template");
-    expect(withHeader.rows.map((r) => [r.line, r.studentId, r.firstName, r.lastName, r.email, r.error])).toEqual([
-      [2, "66070500401", "สมชาย", "ใจดี", "a@kmitl.ac.th", undefined],
-      [3, "66070500402", "สมหญิง", "", "", "missing_last"],
-      [4, "", "x", "y", "", "missing_id"],
+    expect(withHeader.rows.map((r) => [r.line, r.studentId, r.name, r.email, r.error])).toEqual([
+      [2, "66070500401", "สมชาย ใจดี", "a@kmitl.ac.th", undefined],
+      [3, "66070500402", "สมหญิง", "", undefined],
+      [4, "", "x y", "", "missing_id"],
     ]);
-    expect(parseRosterGrid(csvToGrid("66070500401,สมชาย,ใจดี\n")).rows[0]).toMatchObject({ line: 1, studentId: "66070500401" });
+    expect(parseRosterGrid(csvToGrid("66070500401,สมชาย,ใจดี\n")).rows[0]).toMatchObject({ line: 1, studentId: "66070500401", name: "สมชาย ใจดี" });
   });
 
   test("file kinds", () => {
@@ -130,9 +141,9 @@ async function seed(page: Page, o: { code?: string; section?: string; lang?: "en
     localStorage.setItem("hwai_lang", lang as string);
     localStorage.setItem("hwai_user", JSON.stringify({ name: "Somsak", email: "somsak@kmitl.ac.th", role: "teacher" }));
     localStorage.setItem("hwai_courses_v2", JSON.stringify([{ id: "c-rs", name: "Project 1", code, description: "", status: "active", coverColor: "#0F766E", academicYear: 2569, term: 1, sectionNumber: section, createdAt: NOW, updatedAt: NOW }]));
-    localStorage.setItem("hwai_managed_teachers_v1", JSON.stringify([{ id: "t1", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", role: "teacher", status: "active", courseIds: ["c-rs"] }]));
-    localStorage.setItem("hwai_cohort_students_v1", JSON.stringify((cohort as string[]).map((id, i) => ({ id: `cs-${i}`, studentId: id, firstName: `First${id.slice(-3)}`, lastName: `Last${id.slice(-3)}`, email: `${id}@kmitl.ac.th`, program: "CE", status: "active" }))));
-    localStorage.setItem("hwai_students_v1", JSON.stringify((enrolled as string[]).map((id, i) => ({ id: `r-${i}`, courseId: "c-rs", studentId: id, firstName: "x", lastName: "y", email: `${id}@kmitl.ac.th`, sequenceNumber: i + 1, enrollmentStatus: "enrolled" }))));
+    localStorage.setItem("hwai_managed_teachers_v1", JSON.stringify([{ id: "t1", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", status: "active", courseIds: ["c-rs"] }]));
+    localStorage.setItem("hwai_cohort_students_v1", JSON.stringify((cohort as string[]).map((id, i) => ({ id: `cs-${i}`, studentId: id, name: `First${id.slice(-3)} Last${id.slice(-3)}`, email: `${id}@kmitl.ac.th`, program: "CE", status: "active" }))));
+    localStorage.setItem("hwai_students_v1", JSON.stringify((enrolled as string[]).map((id, i) => ({ id: `r-${i}`, courseId: "c-rs", studentId: id, name: "x y", email: `${id}@kmitl.ac.th`, sequenceNumber: i + 1, enrollmentStatus: "enrolled" }))));
     for (const k of ["hwai_grading_categories_v1", "hwai_assignments_v1", "hwai_rubrics_v1", "hwai_submissions_v1"]) localStorage.setItem(k, "[]");
   }, [o.code ?? "01076311", o.section ?? "1", o.lang ?? "en", o.cohort ?? [...G1, "99020001", "99020002"], o.enrolled ?? []] as const);
 }

@@ -64,7 +64,7 @@ export default function TeamFormationModal({
   const q = search.trim().toLowerCase();
   const candidates = roster.filter((s) => {
     if (!q) return true;
-    return `${s.firstName} ${s.lastName}`.toLowerCase().includes(q) || s.studentId.toLowerCase().includes(q);
+    return s.name.toLowerCase().includes(q) || s.studentId.toLowerCase().includes(q);
   });
 
   function toggle(studentId: string) {
@@ -151,7 +151,7 @@ export default function TeamFormationModal({
                     <span className="font-medium text-[var(--text-primary)]">{g.name}</span>
                     <span className="block text-xs text-[var(--text-muted)] mt-0.5 truncate">
                       {others
-                        .map((id) => { const s = roster.find((r) => r.studentId === id); return s ? `${s.firstName} ${s.lastName}` : id; })
+                        .map((id) => { const s = roster.find((r) => r.studentId === id); return s ? s.name : id; })
                         .join(", ") || t("(คนเดียว)", "(solo)")}
                     </span>
                   </button>
@@ -170,7 +170,7 @@ export default function TeamFormationModal({
               value={search}
               onChange={setSearch}
               placeholder={t("ค้นหาชื่อ/รหัสนักศึกษา", "Search name / student ID")}
-              suggestions={roster.map((s) => `${s.firstName} ${s.lastName}`)}
+              suggestions={roster.map((s) => s.name)}
               className="w-full"
             />
           </div>
@@ -197,10 +197,10 @@ export default function TeamFormationModal({
                       className="shrink-0"
                     />
                     <div className="w-8 h-8 rounded-full bg-[var(--bg-subtle)] flex items-center justify-center text-[var(--text-secondary)] text-xs font-bold shrink-0">
-                      {initialsOf(`${s.firstName} ${s.lastName}`)}
+                      {initialsOf(s.name)}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-[var(--text-primary)] truncate">{s.firstName} {s.lastName}</p>
+                      <p className="text-sm font-medium text-[var(--text-primary)] truncate">{s.name}</p>
                       <p className="text-[11px] text-[var(--text-muted)] tabular-nums truncate">{s.studentId}</p>
                     </div>
                     {isTaken && (

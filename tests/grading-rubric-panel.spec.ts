@@ -38,9 +38,9 @@ async function seed(page: Page, o: { rubric?: boolean; group?: boolean; exam?: b
     localStorage.setItem("hwai_lang", lang as string);
     localStorage.setItem("hwai_user", JSON.stringify({ name: "Somsak", email: "somsak@kmitl.ac.th", role: "teacher" }));
     localStorage.setItem("hwai_courses_v2", JSON.stringify([{ id: "c-gr", name: "Grading Rubric Course", description: "", status: "active", coverColor: "#0F766E", sectionNumber: "1", code: "01076444", academicYear: 2569, term: 1, createdAt: NOW, updatedAt: NOW }]));
-    localStorage.setItem("hwai_managed_teachers_v1", JSON.stringify([{ id: "t1", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", role: "teacher", status: "active", courseIds: ["c-gr"] }]));
-    localStorage.setItem("hwai_cohort_students_v1", JSON.stringify(ppl.map(([id, f], i) => ({ id: `cs-${i}`, studentId: id, firstName: f, lastName: "Test", email: `${id}@kmitl.ac.th`, program: "CE", status: "active" }))));
-    localStorage.setItem("hwai_students_v1", JSON.stringify(ppl.map(([id, f], i) => ({ id: `r-${i}`, courseId: "c-gr", studentId: id, firstName: f, lastName: "Test", email: `${id}@kmitl.ac.th`, sequenceNumber: i + 1, enrollmentStatus: "enrolled" }))));
+    localStorage.setItem("hwai_managed_teachers_v1", JSON.stringify([{ id: "t1", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", status: "active", courseIds: ["c-gr"] }]));
+    localStorage.setItem("hwai_cohort_students_v1", JSON.stringify(ppl.map(([id, f], i) => ({ id: `cs-${i}`, studentId: id, name: `${f} Test`, email: `${id}@kmitl.ac.th`, program: "CE", status: "active" }))));
+    localStorage.setItem("hwai_students_v1", JSON.stringify(ppl.map(([id, f], i) => ({ id: `r-${i}`, courseId: "c-gr", studentId: id, name: `${f} Test`, email: `${id}@kmitl.ac.th`, sequenceNumber: i + 1, enrollmentStatus: "enrolled" }))));
     localStorage.setItem("hwai_grading_categories_v1", "[]");
     localStorage.setItem("hwai_assignments_v1", JSON.stringify([{
       id: "as1", courseId: "c-gr", name: "Rubric Assignment", description: "", dueDate: exam ? undefined : "2026-01-10", maxPoints: 40, acceptsFiles: !exam, fileTypes: [],
@@ -51,7 +51,7 @@ async function seed(page: Page, o: { rubric?: boolean; group?: boolean; exam?: b
     const grp = (id: string) => (group ? (["69071101", "69071102"].includes(id) ? "g1" : "g2") : undefined);
     localStorage.setItem("hwai_submissions_v1", JSON.stringify(ppl.map(([id, f]) => {
       const s = sc[id];
-      const base = { id: `sub-${id}`, assignmentId: "as1", studentId: id, studentName: `${f} Test`, email: `${id}@kmitl.ac.th`, submittedAt: "2026-01-05T10:00:00.000Z", fileUrl: null, externalUseConsent: false, instructorComment: "", updatedAt: NOW, groupId: grp(id) };
+      const base = { id: `sub-${id}`, assignmentId: "as1", studentId: id, studentName: `${f} Test`, email: `${id}@kmitl.ac.th`, submittedAt: "2026-01-05T10:00:00.000Z", externalUseConsent: false, instructorComment: "", updatedAt: NOW, groupId: grp(id) };
       return s
         ? { ...base, aiScore: s[0] + s[1] + s[2], instructorScore: s[0] + s[1] + s[2], status: "graded", criterionScores: { k1: s[0], k2: s[1], k3: s[2] } }
         : { ...base, aiScore: null, instructorScore: null, status: "not_graded" };

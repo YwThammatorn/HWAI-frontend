@@ -15,8 +15,8 @@ const ASSIGNMENT = {
   dueDate: "2099-12-31", maxPoints: 100, submissionType: "individual", maxGroupSize: null,
   acceptsFiles: true, fileTypes: ["pdf"], rubricIds: [], createdAt: NOW, updatedAt: NOW,
 };
-const ROSTER = { id: "sr-sf", courseId: "c-sf", studentId: "64070501", firstName: "Fah", lastName: "Test", email: "s@kmitl.ac.th", cohort: "CE69" };
-const COHORT = { id: "cs-sf", studentId: "64070501", firstName: "Fah", lastName: "Test", email: "s@kmitl.ac.th", cohort: "CE69", program: "CE" };
+const ROSTER = { id: "sr-sf", courseId: "c-sf", studentId: "64070501", name: "Fah Test", email: "s@kmitl.ac.th", cohort: "CE69" };
+const COHORT = { id: "cs-sf", studentId: "64070501", name: "Fah Test", email: "s@kmitl.ac.th", cohort: "CE69", program: "CE" };
 
 async function seed(page: Page, submissions: unknown[] = [], stored: Record<string, string> = {}) {
   await page.addInitScript((data) => {
@@ -113,7 +113,7 @@ test.describe("Student submission — attach several files, remove any of them",
     const [sub] = await savedSubmissions(page);
     expect(sub.attachments.map((a: { kind: string; name: string }) => [a.kind, a.name]))
       .toEqual([["file", "report.pdf"], ["file", "appendix.pdf"], ["link", "https://github.com/fah/hardware-lab"]]);
-    expect(sub.fileUrl).toBe("https://github.com/fah/hardware-lab");
+    expect(sub.fileUrl).toBeUndefined(); // the link lives in attachments only (the old fileUrl field was dropped 7/11/2569)
     expect(await storedFiles(page)).toBe(2); // kept — they belong to the submission now
   });
 
@@ -149,7 +149,7 @@ test.describe("Student submission — attach several files, remove any of them",
   test("opening a page with an existing submission prefills its files and link", async ({ page }) => {
     await open(page, [{
       id: "sub-1", assignmentId: "a-sf", studentId: "64070501", studentName: "Fah Test", email: "s@kmitl.ac.th",
-      submittedAt: NOW, fileUrl: "https://github.com/fah/x",
+      submittedAt: NOW,
       attachments: [
         { id: "att-1", kind: "file", name: "saved-report.pdf", source: "upload", ref: "hwai_file_seed1" },
         { id: "att-2", kind: "link", name: "https://github.com/fah/x", source: "url", ref: "https://github.com/fah/x" },
@@ -165,7 +165,7 @@ test.describe("Student submission — attach several files, remove any of them",
   test("leaving keeps the submitted files but frees a file that was only added while editing", async ({ page }) => {
     await open(page, [{
       id: "sub-1", assignmentId: "a-sf", studentId: "64070501", studentName: "Fah Test", email: "s@kmitl.ac.th",
-      submittedAt: NOW, fileUrl: null,
+      submittedAt: NOW, 
       attachments: [{ id: "att-1", kind: "file", name: "saved-report.pdf", source: "upload", ref: "hwai_file_seed1" }],
       aiScore: null, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "not_graded", updatedAt: NOW,
     }], { hwai_file_seed1: "data:application/pdf;base64,JVBERi0xLjQ=" });
@@ -179,7 +179,7 @@ test.describe("Student submission — attach several files, remove any of them",
   test("removing every file and the link disables Resubmit", async ({ page }) => {
     await open(page, [{
       id: "sub-1", assignmentId: "a-sf", studentId: "64070501", studentName: "Fah Test", email: "s@kmitl.ac.th",
-      submittedAt: NOW, fileUrl: null,
+      submittedAt: NOW, 
       attachments: [{ id: "att-1", kind: "file", name: "saved-report.pdf", source: "upload", ref: "hwai_file_seed1" }],
       aiScore: null, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "not_graded", updatedAt: NOW,
     }], { hwai_file_seed1: "data:application/pdf;base64,JVBERi0xLjQ=" });

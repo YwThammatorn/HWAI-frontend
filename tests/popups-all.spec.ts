@@ -11,10 +11,10 @@ const COURSE = {
   id: "c-po", name: "Capstone Studio", description: "", status: "active",
   coverColor: "#0F766E", createdAt: NOW, updatedAt: NOW,
 };
-const TEACHER = { id: "t-po", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", role: "teacher", status: "active", courseIds: ["c-po"] };
+const TEACHER = { id: "t-po", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", status: "active", courseIds: ["c-po"] };
 const ROSTER = [
-  { id: "s-po-1", courseId: "c-po", studentId: "64070601", firstName: "Fah", lastName: "Test", email: "64070601@kmitl.ac.th", cohort: "CE69" },
-  { id: "s-po-2", courseId: "c-po", studentId: "64070602", firstName: "Beam", lastName: "Suk", email: "64070602@kmitl.ac.th", cohort: "CE69" },
+  { id: "s-po-1", courseId: "c-po", studentId: "64070601", name: "Fah Test", email: "64070601@kmitl.ac.th", cohort: "CE69" },
+  { id: "s-po-2", courseId: "c-po", studentId: "64070602", name: "Beam Suk", email: "64070602@kmitl.ac.th", cohort: "CE69" },
 ];
 const GROUP_ASSIGNMENT = {
   id: "a-po", courseId: "c-po", name: "Team Prototype", description: "", dueDate: "2099-12-31",

@@ -15,14 +15,14 @@ const TEACHER = {
   // Teacher names are always Thai regardless of the language toggle (30/9/2569) — matches the
   // hardcoded name in src/lib/accounts.ts for this same kiatnarong.to account.
   id: "t-mr", title: "ผศ.", name: "เกียรติณรงค์ ทองประเสริฐ", email: "kiatnarong.to@kmitl.ac.th",
-  role: "teacher", status: "active", courseIds: ["c-mr"],
+  status: "active", courseIds: ["c-mr"],
 };
 const COHORT = [{
-  id: "cs-mr", studentId: "69070101", title: "Mr.", firstName: "Somchai", lastName: "Jaidee",
+  id: "cs-mr", studentId: "69070101", title: "Mr.", name: "Somchai Jaidee",
   email: "69070101@kmitl.ac.th", cohort: "CE69", program: "CE", status: "active",
 }];
 const ROSTER = [{
-  id: "s-mr", courseId: "c-mr", studentId: "69070101", firstName: "Somchai", lastName: "Jaidee",
+  id: "s-mr", courseId: "c-mr", studentId: "69070101", name: "Somchai Jaidee",
   email: "69070101@kmitl.ac.th", cohort: "CE69", sequenceNumber: 1, enrollmentStatus: "enrolled",
 }];
 

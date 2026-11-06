@@ -203,7 +203,7 @@ test.describe("Rubrics page", () => {
       localStorage.setItem("hwai_lang", "en");
       localStorage.setItem("hwai_user", JSON.stringify({ name: "S", email: "somsak@kmitl.ac.th", role: "teacher" }));
       localStorage.setItem("hwai_courses_v2", JSON.stringify([{ id: "c-x", name: "Empty course", status: "active", coverColor: "#0F766E", description: "", createdAt: "x", updatedAt: "x" }]));
-      localStorage.setItem("hwai_managed_teachers_v1", JSON.stringify([{ id: "t-x", name: "S", email: "somsak@kmitl.ac.th", role: "teacher", status: "active", courseIds: ["c-x"] }]));
+      localStorage.setItem("hwai_managed_teachers_v1", JSON.stringify([{ id: "t-x", name: "S", email: "somsak@kmitl.ac.th", status: "active", courseIds: ["c-x"] }]));
     });
     await page.goto(`${BASE}/teacher/courses/c-x/rubrics`);
     await compareTab(page).click();

@@ -47,8 +47,7 @@ export default function ImportCourseStudentsModal({ courseId, courseName, onClos
   function translateError(code?: string) {
     if (!code) return "";
     if (code === "missing_id") return t("ไม่มีรหัสนักศึกษา", "Missing student ID");
-    if (code === "missing_first") return t("ไม่มีชื่อ", "Missing first name");
-    if (code === "missing_last") return t("ไม่มีนามสกุล", "Missing last name");
+    if (code === "missing_name") return t("ไม่มีชื่อ", "Missing name");
     if (code === "not_in_system") return t("ไม่พบในระบบ", "Not found in system");
     if (code === "already_enrolled") return t("ลงทะเบียนแล้ว", "Already enrolled");
     if (code.startsWith("other_group:")) {
@@ -88,7 +87,7 @@ export default function ImportCourseStudentsModal({ courseId, courseName, onClos
       if (enrolledIds.has(row.studentId)) return { ...row, error: "already_enrolled" };
       const match = findByStudentId(row.studentId);
       if (!match) return { ...row, error: "not_in_system" };
-      const named = { ...row, firstName: match.firstName, lastName: match.lastName, email: match.email, match };
+      const named = { ...row, name: match.name, email: match.email, match };
       if (pinned && match.program && match.program !== pinned) return { ...named, error: `wrong_program:${match.program}` };
       if (!pinned && match.program) pinned = match.program;
       return named;
@@ -109,8 +108,8 @@ export default function ImportCourseStudentsModal({ courseId, courseName, onClos
 
   function handleImport() {
     if (validRows.length === 0) return;
-    addStudents(courseId, validRows.map(({ studentId, firstName, lastName, email }) => ({
-      studentId, firstName, lastName, email,
+    addStudents(courseId, validRows.map(({ studentId, name, email }) => ({
+      studentId, name, email,
       enrollmentStatus: "enrolled" as const,
     })));
     setImportedCount(validRows.length);
@@ -234,7 +233,7 @@ export default function ImportCourseStudentsModal({ courseId, courseName, onClos
                 <table className="text-xs w-full">
                   <thead>
                     <tr className="text-left text-[var(--text-muted)]">
-                      {["student_id", "first_name", "last_name", "email"].map((h) => (
+                      {["student_id", "name", "email"].map((h) => (
                         <th key={h} className="pb-1.5 pr-6 font-mono font-medium">{h}</th>
                       ))}
                     </tr>
@@ -242,14 +241,13 @@ export default function ImportCourseStudentsModal({ courseId, courseName, onClos
                   <tbody className="text-[var(--text-secondary)]">
                     <tr>
                       <td className="py-1 pr-6 tabular-nums">66070500401</td>
-                      <td className="py-1 pr-6">สมชาย</td>
-                      <td className="py-1 pr-6">ใจดี</td>
+                      <td className="py-1 pr-6">สมชาย ใจดี</td>
                       <td className="py-1 pr-6">somchai@kmitl.ac.th</td>
                     </tr>
                   </tbody>
                 </table>
               </div>
-              <p className="text-xs text-[var(--text-muted)] mt-2">{t("* email ไม่บังคับ — student_id, first_name, last_name จำเป็น", "* email is optional — student_id, first_name, last_name are required")}</p>
+              <p className="text-xs text-[var(--text-muted)] mt-2">{t("* email ไม่บังคับ — student_id, name จำเป็น", "* email is optional — student_id, name are required")}</p>
             </div>
           </>
         )}
@@ -287,7 +285,7 @@ export default function ImportCourseStudentsModal({ courseId, courseName, onClos
                   {/* --bg-subtle is reserved for row hover, never a static header fill (DESIGN.md §9b). */}
                   <thead className="bg-[var(--bg-surface)] sticky top-0 border-b border-[var(--border-subtle)]">
                     <tr>
-                      {["#", t("รหัสนักศึกษา", "Student ID"), t("ชื่อ", "First Name"), t("นามสกุล", "Last Name"), "Email", t("สถานะ", "Status")].map((h) => (
+                      {["#", t("รหัสนักศึกษา", "Student ID"), t("ชื่อ-นามสกุล", "Name"), "Email", t("สถานะ", "Status")].map((h) => (
                         <th key={h} className="px-3 py-2 text-left font-semibold text-[var(--text-muted)]">{h}</th>
                       ))}
                     </tr>
@@ -297,8 +295,7 @@ export default function ImportCourseStudentsModal({ courseId, courseName, onClos
                       <tr key={row.line} className={`border-t border-[var(--border-subtle)] ${row.error ? "bg-[var(--s-err-bg)]" : ""}`}>
                         <td className="px-3 py-1.5 text-[var(--text-muted)] tabular-nums">{row.line}</td>
                         <td className="px-3 py-1.5 text-[var(--text-primary)] tabular-nums">{row.studentId || "—"}</td>
-                        <td className="px-3 py-1.5 text-[var(--text-primary)]">{row.firstName || "—"}</td>
-                        <td className="px-3 py-1.5 text-[var(--text-primary)]">{row.lastName || "—"}</td>
+                        <td className="px-3 py-1.5 text-[var(--text-primary)]">{row.name || "—"}</td>
                         <td className="px-3 py-1.5 text-[var(--text-secondary)]">{row.email || "—"}</td>
                         <td className="px-3 py-1.5">
                           {row.error ? (

@@ -11,7 +11,7 @@ const COURSE = {
   id: "c-sv", name: "Hardware Lab", description: "", status: "active",
   coverColor: "#2DD4BF", createdAt: NOW, updatedAt: NOW,
 };
-const TEACHER = { id: "t-sv", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", role: "teacher", status: "active", courseIds: ["c-sv"] };
+const TEACHER = { id: "t-sv", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", status: "active", courseIds: ["c-sv"] };
 const ASSIGNMENT = {
   id: "a-sv", courseId: "c-sv", name: "Lab report", description: "", dueDate: "2026-01-05", maxPoints: 100,
   submissionType: "individual", maxGroupSize: null, acceptsFiles: true, fileTypes: ["pdf", "image"],
@@ -29,7 +29,7 @@ const DOCX_DATA = "data:application/vnd.openxmlformats-officedocument.wordproces
 function submission(over: Record<string, unknown> = {}) {
   return {
     id: "sub-sv", assignmentId: "a-sv", studentId: "64070701", studentName: "Fah Test", email: "64070701@kmitl.ac.th",
-    submittedAt: "2026-01-05T10:00:00.000Z", fileUrl: null, aiScore: 80, instructorScore: null, instructorComment: "",
+    submittedAt: "2026-01-05T10:00:00.000Z", aiScore: 80, instructorScore: null, instructorComment: "",
     externalUseConsent: false, status: "need_review", updatedAt: NOW, ...over,
   };
 }

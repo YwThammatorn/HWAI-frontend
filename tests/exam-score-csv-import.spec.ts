@@ -20,13 +20,13 @@ async function seed(page: Page, o: { finalized?: boolean; lang?: "en" | "th" } =
     localStorage.setItem("hwai_lang", lang as string);
     localStorage.setItem("hwai_user", JSON.stringify({ name: "Somsak", email: "somsak@kmitl.ac.th", role: "teacher" }));
     localStorage.setItem("hwai_courses_v2", JSON.stringify([{ id: "c-ci", name: "CSV Import Course", description: "", status: "active", coverColor: "#0F766E", sectionNumber: "1", code: "01076333", academicYear: 2569, term: 1, createdAt: NOW, updatedAt: NOW }]));
-    localStorage.setItem("hwai_managed_teachers_v1", JSON.stringify([{ id: "t1", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", role: "teacher", status: "active", courseIds: ["c-ci"] }]));
-    localStorage.setItem("hwai_cohort_students_v1", JSON.stringify(ppl.map(([id, f], i) => ({ id: `cs-${i}`, studentId: id, firstName: f, lastName: "Test", email: `${id}@kmitl.ac.th`, program: "CE", status: "active" }))));
-    localStorage.setItem("hwai_students_v1", JSON.stringify(ppl.map(([id, f], i) => ({ id: `r-${i}`, courseId: "c-ci", studentId: id, firstName: f, lastName: "Test", email: `${id}@kmitl.ac.th`, sequenceNumber: i + 1, enrollmentStatus: id === "69072005" ? "withdrawn" : "enrolled" }))));
+    localStorage.setItem("hwai_managed_teachers_v1", JSON.stringify([{ id: "t1", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", status: "active", courseIds: ["c-ci"] }]));
+    localStorage.setItem("hwai_cohort_students_v1", JSON.stringify(ppl.map(([id, f], i) => ({ id: `cs-${i}`, studentId: id, name: `${f} Test`, email: `${id}@kmitl.ac.th`, program: "CE", status: "active" }))));
+    localStorage.setItem("hwai_students_v1", JSON.stringify(ppl.map(([id, f], i) => ({ id: `r-${i}`, courseId: "c-ci", studentId: id, name: `${f} Test`, email: `${id}@kmitl.ac.th`, sequenceNumber: i + 1, enrollmentStatus: id === "69072005" ? "withdrawn" : "enrolled" }))));
     localStorage.setItem("hwai_grading_categories_v1", "[]");
     localStorage.setItem("hwai_rubrics_v1", "[]");
     localStorage.setItem("hwai_assignments_v1", JSON.stringify([{ id: "ex1", courseId: "c-ci", name: "Midterm", description: "", maxPoints: 50, acceptsFiles: false, fileTypes: [], submissionType: "individual", maxGroupSize: null, rubricIds: [], isExam: true, gradingFinalized: finalized || undefined, createdAt: NOW, updatedAt: NOW }]));
-    localStorage.setItem("hwai_submissions_v1", JSON.stringify([{ id: "s-ann", assignmentId: "ex1", studentId: "69072001", studentName: "Ann Test", email: "69072001@kmitl.ac.th", submittedAt: NOW, fileUrl: null, aiScore: null, instructorScore: 30, instructorComment: "", externalUseConsent: false, status: "graded", updatedAt: NOW }]));
+    localStorage.setItem("hwai_submissions_v1", JSON.stringify([{ id: "s-ann", assignmentId: "ex1", studentId: "69072001", studentName: "Ann Test", email: "69072001@kmitl.ac.th", submittedAt: NOW, aiScore: null, instructorScore: 30, instructorComment: "", externalUseConsent: false, status: "graded", updatedAt: NOW }]));
   }, [PEOPLE, !!o.finalized, o.lang ?? "en"] as const);
   await page.goto(`${BASE}/teacher/courses/c-ci/assignments/ex1/grading`);
   await page.waitForLoadState("networkidle");
@@ -184,7 +184,7 @@ test.describe("examScoreCsv lib", () => {
     expect(parseExamScoreCsv("", ctx()).rows).toEqual([]);
   });
   test("the roster template is UTF-8 with a BOM and quotes names that need it", () => {
-    const csv = scoreCsvTemplate([{ studentId: "1", firstName: "Ann", lastName: "Lee" }, { studentId: "2", firstName: 'A"B', lastName: "C,D" }], { id: "student_id", name: "name", score: "score" });
+    const csv = scoreCsvTemplate([{ studentId: "1", name: "Ann Lee" }, { studentId: "2", name: 'A"B C,D' }], { id: "student_id", name: "name", score: "score" });
     expect(csv).toBe('﻿student_id,name,score\r\n1,Ann Lee,\r\n2,"A""B C,D",\r\n');
   });
 });
@@ -193,7 +193,7 @@ test.describe("examScoreCsv lib", () => {
 test.describe("sample files for c-mock-1's final exam", () => {
   const rd = (f: string) => JSON.parse(fs.readFileSync(`public/mock-data/${f}`, "utf8"));
   const flow = rd("student-flow-mockup.json");
-  const enrolled = new Map<string, string>(flow.courseStudents.map((r: { studentId: string; firstName: string; lastName: string }) => [r.studentId, `${r.firstName} ${r.lastName}`]));
+  const enrolled = new Map<string, string>(flow.courseStudents.map((r: { studentId: string; name: string }) => [r.studentId, r.name]));
   const parse = (file: string) => parseExamScoreCsv(fs.readFileSync(`test-data/${file}`, "utf8"), { maxPoints: 35, enrolled, withdrawn: new Set(), current: () => "" });
   const count = (rows: { status: string }[]) => rows.reduce<Record<string, number>>((m, r) => ({ ...m, [r.status]: (m[r.status] ?? 0) + 1 }), {});
 

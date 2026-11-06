@@ -78,11 +78,11 @@ async function seed(page: Page, o: { roster?: string[]; lang?: "en" | "th" } = {
     localStorage.setItem("hwai_courses_v2", JSON.stringify([course("c-ce", "CE Section", { courseTemplateId: "t-ce" }), course("c-free", "Unlinked Section", {})]));
     localStorage.setItem("hwai_curriculum_versions_v1", JSON.stringify([{ id: "v-ce", program: "CE", label: "CE 2569", effectiveFrom: 2569 }]));
     localStorage.setItem("hwai_course_templates_v1", JSON.stringify([{ id: "t-ce", curriculumVersionId: "v-ce", code: "01", name: "CE Subject" }]));
-    localStorage.setItem("hwai_managed_teachers_v1", JSON.stringify([{ id: "t1", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", role: "teacher", status: "active", courseIds: ["c-ce", "c-free"] }]));
-    localStorage.setItem("hwai_cohort_students_v1", JSON.stringify(ppl.map(([id, f, program], i) => ({ id: `cs-${i}`, studentId: id, firstName: f, lastName: "Test", email: `${id}@kmitl.ac.th`, program, status: "active" }))));
+    localStorage.setItem("hwai_managed_teachers_v1", JSON.stringify([{ id: "t1", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", status: "active", courseIds: ["c-ce", "c-free"] }]));
+    localStorage.setItem("hwai_cohort_students_v1", JSON.stringify(ppl.map(([id, f, program], i) => ({ id: `cs-${i}`, studentId: id, name: `${f} Test`, email: `${id}@kmitl.ac.th`, program, status: "active" }))));
     localStorage.setItem("hwai_students_v1", JSON.stringify((roster as string[]).map((id, i) => {
       const [, f] = ppl.find((p) => p[0] === id)!;
-      return { id: `r-${i}`, courseId: "c-ce", studentId: id, firstName: f, lastName: "Test", email: `${id}@kmitl.ac.th`, sequenceNumber: i + 1, enrollmentStatus: "enrolled" };
+      return { id: `r-${i}`, courseId: "c-ce", studentId: id, name: `${f} Test`, email: `${id}@kmitl.ac.th`, sequenceNumber: i + 1, enrollmentStatus: "enrolled" };
     })));
     localStorage.setItem("hwai_grading_categories_v1", "[]");
     localStorage.setItem("hwai_assignments_v1", "[]");

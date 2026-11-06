@@ -9,7 +9,6 @@ export interface ManagedTeacher {
   title?: string;
   name: string;
   email: string;
-  role: "teacher" | "ta";
   /** Account-level status — same active/inactive concept as CohortStudent.status
    *  (meeting decision 4/9/2569 #1). Was "active"|"suspended"; renamed 9/9/2569
    *  so the teacher and student status models use one shared vocabulary. The

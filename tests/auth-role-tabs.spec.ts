@@ -6,8 +6,7 @@ import { BASE } from "./base";
 const MOCK_COHORT_STUDENT = {
   id: "test-student-uuid",
   studentId: "64070501",
-  firstName: "สมชาย",
-  lastName: "ใจดี",
+  name: "สมชาย ใจดี",
   email: "student@school.edu",
   cohort: "CE69",
   program: "CE",

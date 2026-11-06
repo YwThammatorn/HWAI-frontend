@@ -21,7 +21,7 @@ for (const lang of ["th", "en"] as const) {
     // the user's old browser: ประเสริฐ still teaches c-mock-7, the c-mock-1 rubric has no tags, another course's data sits next to it
     await page.evaluate(() => {
       localStorage.setItem("hwai_courses_v2", JSON.stringify([{ id: "c-mock-15", name: "old ML course nobody teaches" }, { id: "c-mock-1", name: "old" }]));
-      localStorage.setItem("hwai_managed_teachers_v1", JSON.stringify([{ id: "t-mock-2", name: "old", email: "prasert.d@kmitl.ac.th", role: "teacher", status: "active", courseIds: ["c-mock-7"] }]));
+      localStorage.setItem("hwai_managed_teachers_v1", JSON.stringify([{ id: "t-mock-2", name: "old", email: "prasert.d@kmitl.ac.th", status: "active", courseIds: ["c-mock-7"] }]));
       localStorage.setItem("hwai_rubrics_v1", JSON.stringify([
         { id: "r-mock-1", assignmentId: "a-mock-1", name: "old", criteria: [{ id: "rc-1", name: "old", description: "", maxPoints: 9, weight: 60, levels: [] }], createdAt: "x", updatedAt: "x" },
         { id: "r-keep", assignmentId: "a-other", name: "someone else's rubric", criteria: [], createdAt: "x", updatedAt: "x" },

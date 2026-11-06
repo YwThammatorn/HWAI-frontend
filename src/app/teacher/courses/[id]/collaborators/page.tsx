@@ -74,18 +74,13 @@ function AddCollaboratorModal({
     if (s.status === "inactive") return false;
     if (!q) return true;
     return (
-      `${s.firstName} ${s.lastName}`.toLowerCase().includes(q) ||
+      s.name.toLowerCase().includes(q) ||
       s.studentId.toLowerCase().includes(q) ||
       s.email.toLowerCase().includes(q)
     );
   });
 
   const coTeacherCandidates = teachers.filter((tc) => {
-    // Only teacher-role ManagedTeacher accounts can become a full-access
-    // Co-Teacher here — a TA-role account should be added via the TA tab
-    // (which carries restricted permissions), not granted full access by
-    // picking it under the wrong tab.
-    if (tc.role !== "teacher") return false;
     if (primaryTeacherIds.has(tc.id)) return false;
     if (existingCoTeacherIds.has(tc.id)) return false;
     if (tc.status === "inactive") return false;
@@ -101,7 +96,7 @@ function AddCollaboratorModal({
   }
 
   const alreadyAddedTa = cohortStudents.filter((s) => existingTaIds.has(s.id) && (!q ||
-    `${s.firstName} ${s.lastName}`.toLowerCase().includes(q) || s.studentId.toLowerCase().includes(q) || s.email.toLowerCase().includes(q)));
+    s.name.toLowerCase().includes(q) || s.studentId.toLowerCase().includes(q) || s.email.toLowerCase().includes(q)));
   const alreadyAddedCoTeacher = teachers.filter((tc) => existingCoTeacherIds.has(tc.id) && (!q ||
     tc.name.toLowerCase().includes(q) || tc.email.toLowerCase().includes(q)));
 
@@ -151,8 +146,8 @@ function AddCollaboratorModal({
           onChange={setSearch}
           placeholder={roleTab === "ta" ? t("ค้นหาชื่อ/รหัสนักศึกษา/อีเมล", "Search name / student ID / email") : t("ค้นหาชื่อ/อีเมล", "Search name / email")}
           suggestions={roleTab === "ta"
-            ? cohortStudents.filter((s) => s.status !== "inactive").map((s) => `${s.firstName} ${s.lastName}`)
-            : teachers.filter((tc) => tc.role === "teacher" && tc.status !== "inactive").map((tc) => tc.name)}
+            ? cohortStudents.filter((s) => s.status !== "inactive").map((s) => s.name)
+            : teachers.filter((tc) => tc.status !== "inactive").map((tc) => tc.name)}
           autoFocus
           className="w-full"
         />
@@ -163,9 +158,9 @@ function AddCollaboratorModal({
           <>
             {alreadyAddedTa.map((s) => (
               <div key={s.id} className="flex items-center gap-3 px-3 py-2 rounded-xl bg-[var(--role-ta-bg)]">
-                <Avatar initials={initialsOf(`${s.firstName} ${s.lastName}`)} bg="#7C3AED" />
+                <Avatar initials={initialsOf(s.name)} bg="#7C3AED" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-[var(--text-primary)] truncate">{s.firstName} {s.lastName}</p>
+                  <p className="text-sm font-medium text-[var(--text-primary)] truncate">{s.name}</p>
                   <p className="text-[11px] text-[var(--text-muted)] tabular-nums truncate">{s.studentId}</p>
                 </div>
                 <span className="text-[11px] font-semibold text-[var(--role-ta-text)] shrink-0">{t("เพิ่มแล้ว", "Added")}</span>
@@ -180,9 +175,9 @@ function AddCollaboratorModal({
                   onClick={() => addTa(s.id)}
                   className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-[var(--bg-subtle)] text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]"
                 >
-                  <Avatar initials={initialsOf(`${s.firstName} ${s.lastName}`)} bg="#9CA3AF" />
+                  <Avatar initials={initialsOf(s.name)} bg="#9CA3AF" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-[var(--text-primary)] truncate">{s.firstName} {s.lastName}</p>
+                    <p className="text-sm font-medium text-[var(--text-primary)] truncate">{s.name}</p>
                     <p className="text-[11px] text-[var(--text-muted)] tabular-nums truncate">{s.studentId} · {s.email}</p>
                   </div>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-[var(--text-muted)] shrink-0">
@@ -261,27 +256,18 @@ export default function CollaboratorsPage() {
 
   const rows: TeamRow[] = useMemo(() => {
     if (!course) return [];
-    // getTeachersByCourse only reflects admin's course assignment (ManagedTeacher.courseIds)
-    // and doesn't filter by ManagedTeacher.role — admin/courses.tsx lets a TA-role account
-    // be assigned the same way as a teacher-role one. Reflect that honestly here rather than
-    // blanket-labeling every admin-assigned account "Primary Teacher / Full access": a TA-role
-    // account keeps its real TA label even when admin-assigned this way.
-    const primary = getTeachersByCourse(course.id).map((tc): TeamRow => {
-      const isTaRole = tc.role === "ta";
-      return {
-        key: `teacher-${tc.id}`,
-        name: tc.name,
-        email: tc.email,
-        initials: initialsOf(tc.name),
-        avatarBg: isTaRole ? "#7C3AED" : "#1B2A4A",
-        roleLabel: isTaRole ? t("ผู้ช่วยสอน (Admin กำหนด)", "TA (Admin-assigned)") : t("อาจารย์ผู้สอน", "Primary Teacher"),
-        roleBadgeColor: isTaRole ? "var(--role-ta-text)" : "var(--accent)",
-        permissionSummary: isTaRole
-          ? t("กำหนดโดยผู้ดูแลระบบ — จัดการที่นี่ไม่ได้", "Assigned by admin — not manageable here")
-          : t("สิทธิ์เต็ม — กำหนดโดยผู้ดูแลระบบ", "Full access — assigned by admin"),
-        removable: false,
-      };
-    });
+    // The teachers admin assigned to this course (ManagedTeacher.courseIds) — a teacher account is always a teacher.
+    const primary = getTeachersByCourse(course.id).map((tc): TeamRow => ({
+      key: `teacher-${tc.id}`,
+      name: tc.name,
+      email: tc.email,
+      initials: initialsOf(tc.name),
+      avatarBg: "#1B2A4A",
+      roleLabel: t("อาจารย์ผู้สอน", "Primary Teacher"),
+      roleBadgeColor: "var(--accent)",
+      permissionSummary: t("สิทธิ์เต็ม — กำหนดโดยผู้ดูแลระบบ", "Full access — assigned by admin"),
+      removable: false,
+    }));
 
     const roleRows = sectionRoles
       .filter((r) => r.courseId === course.id)
@@ -296,9 +282,9 @@ export default function CollaboratorsPage() {
           if (!student) return null;
           return {
             key: `role-${r.id}`,
-            name: `${student.firstName} ${student.lastName}`,
+            name: student.name,
             email: student.email,
-            initials: initialsOf(`${student.firstName} ${student.lastName}`),
+            initials: initialsOf(student.name),
             avatarBg: "#7C3AED",
             roleLabel: t("ผู้ช่วยสอน", "Teaching Assistant"),
             roleBadgeColor: "var(--role-ta-text)",

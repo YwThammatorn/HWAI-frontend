@@ -16,13 +16,13 @@ const COURSE = {
 
 const TEACHER = {
   id: "t-tp5", title: "ผศ.ดร.", name: "Verify Teacher", email: "verify-tp5@kmitl.ac.th",
-  role: "teacher", status: "active", courseIds: ["c-tp5"],
+  status: "active", courseIds: ["c-tp5"],
 };
 
 const ROSTER = [
-  { id: "s-tp5-1", courseId: "c-tp5", studentId: "64070701", firstName: "Fah", lastName: "Test", email: "64070701@kmitl.ac.th", cohort: "CE69" },
-  { id: "s-tp5-2", courseId: "c-tp5", studentId: "64070702", firstName: "Beam", lastName: "Suk", email: "64070702@kmitl.ac.th", cohort: "CE69" },
-  { id: "s-tp5-3", courseId: "c-tp5", studentId: "64070703", firstName: "Solo", lastName: "Student", email: "64070703@kmitl.ac.th", cohort: "CE69" },
+  { id: "s-tp5-1", courseId: "c-tp5", studentId: "64070701", name: "Fah Test", email: "64070701@kmitl.ac.th", cohort: "CE69" },
+  { id: "s-tp5-2", courseId: "c-tp5", studentId: "64070702", name: "Beam Suk", email: "64070702@kmitl.ac.th", cohort: "CE69" },
+  { id: "s-tp5-3", courseId: "c-tp5", studentId: "64070703", name: "Solo Student", email: "64070703@kmitl.ac.th", cohort: "CE69" },
 ];
 
 const GROUP_ASSIGNMENT = {
@@ -46,7 +46,7 @@ const TEAM = {
 function teamSubmission(studentId: string, name: string, email: string, status: string) {
   return {
     id: `sub-tp5-${studentId}`, assignmentId: "a-tp5-1", studentId, studentName: name, email,
-    submittedAt: "2026-01-05T10:00:00.000Z", fileUrl: null,
+    submittedAt: "2026-01-05T10:00:00.000Z", 
     aiScore: 88, instructorScore: null, instructorComment: "",
     externalUseConsent: false, status, groupId: "sg-tp5-1",
     updatedAt: "2026-01-05T10:00:00.000Z",
@@ -55,7 +55,7 @@ function teamSubmission(studentId: string, name: string, email: string, status: 
 
 const SOLO_SUBMISSION = {
   id: "sub-tp5-solo", assignmentId: "a-tp5-1", studentId: "64070703", studentName: "Solo Student", email: "64070703@kmitl.ac.th",
-  submittedAt: "2026-01-06T10:00:00.000Z", fileUrl: null,
+  submittedAt: "2026-01-06T10:00:00.000Z", 
   aiScore: null, instructorScore: null, instructorComment: "",
   externalUseConsent: false, status: "not_graded",
   updatedAt: "2026-01-06T10:00:00.000Z",
@@ -63,7 +63,7 @@ const SOLO_SUBMISSION = {
 
 const INDIVIDUAL_SUBMISSION = {
   id: "sub-tp5-ind", assignmentId: "a-tp5-2", studentId: "64070701", studentName: "Fah Test", email: "64070701@kmitl.ac.th",
-  submittedAt: "2026-01-06T10:00:00.000Z", fileUrl: null,
+  submittedAt: "2026-01-06T10:00:00.000Z", 
   aiScore: 90, instructorScore: null, instructorComment: "",
   externalUseConsent: false, status: "need_review",
   updatedAt: "2026-01-06T10:00:00.000Z",
@@ -144,7 +144,7 @@ test.describe("P5 — Grading a team row grades every member", () => {
 function gradedTeamSubmission(studentId: string, name: string, email: string, score: number) {
   return {
     id: `sub-tp5-${studentId}`, assignmentId: "a-tp5-1", studentId, studentName: name, email,
-    submittedAt: "2026-01-05T10:00:00.000Z", fileUrl: null,
+    submittedAt: "2026-01-05T10:00:00.000Z", 
     aiScore: score, instructorScore: score, instructorComment: "",
     externalUseConsent: false, status: "graded", groupId: "sg-tp5-1",
     updatedAt: "2026-01-05T10:00:00.000Z",

@@ -42,9 +42,9 @@ async function seed(page: Page, o: { clos?: boolean; lang?: "en" | "th"; finaliz
     localStorage.setItem("hwai_lang", lang as string);
     localStorage.setItem("hwai_user", JSON.stringify({ name: "Somsak", email: "somsak@kmitl.ac.th", role: "teacher" }));
     localStorage.setItem("hwai_courses_v2", JSON.stringify([{ id: "c-clo", name: "CLO Course", description: "", status: "active", coverColor: "#2DD4BF", courseTemplateId: "ct-clo", term: 1, academicYear: 2569, sectionNumber: "1", code: "01076777", schedule: "-", room: "-", createdAt: NOW, updatedAt: NOW }]));
-    localStorage.setItem("hwai_managed_teachers_v1", JSON.stringify([{ id: "t1", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", role: "teacher", status: "active", courseIds: ["c-clo"] }]));
-    localStorage.setItem("hwai_cohort_students_v1", JSON.stringify(ppl.map(([id, f], i) => ({ id: `cs-${i}`, studentId: id, firstName: f, lastName: "Test", email: `${id}@kmitl.ac.th`, program: "CE", status: "active" }))));
-    localStorage.setItem("hwai_students_v1", JSON.stringify(ppl.map(([id, f, st], i) => ({ id: `r-${i}`, courseId: "c-clo", studentId: id, firstName: f, lastName: "Test", email: `${id}@kmitl.ac.th`, sequenceNumber: i + 1, enrollmentStatus: st }))));
+    localStorage.setItem("hwai_managed_teachers_v1", JSON.stringify([{ id: "t1", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", status: "active", courseIds: ["c-clo"] }]));
+    localStorage.setItem("hwai_cohort_students_v1", JSON.stringify(ppl.map(([id, f], i) => ({ id: `cs-${i}`, studentId: id, name: `${f} Test`, email: `${id}@kmitl.ac.th`, program: "CE", status: "active" }))));
+    localStorage.setItem("hwai_students_v1", JSON.stringify(ppl.map(([id, f, st], i) => ({ id: `r-${i}`, courseId: "c-clo", studentId: id, name: `${f} Test`, email: `${id}@kmitl.ac.th`, sequenceNumber: i + 1, enrollmentStatus: st }))));
     localStorage.setItem("hwai_grading_categories_v1", "[]");
     localStorage.setItem("hwai_clos_v1", JSON.stringify(clos ? clos : []));
     localStorage.setItem("hwai_assignments_v1", JSON.stringify([
@@ -55,13 +55,13 @@ async function seed(page: Page, o: { clos?: boolean; lang?: "en" | "th"; finaliz
     const sc = scores as Record<string, number[]>;
     const subs = ppl.map(([id, f]) => {
       const s = sc[id];
-      const base = { id: `sub-${id}`, assignmentId: "as1", studentId: id, studentName: `${f} Test`, email: `${id}@kmitl.ac.th`, submittedAt: "2026-01-05T10:00:00.000Z", fileUrl: null, externalUseConsent: false, instructorComment: "", updatedAt: NOW };
+      const base = { id: `sub-${id}`, assignmentId: "as1", studentId: id, studentName: `${f} Test`, email: `${id}@kmitl.ac.th`, submittedAt: "2026-01-05T10:00:00.000Z", externalUseConsent: false, instructorComment: "", updatedAt: NOW };
       return s
         ? { ...base, aiScore: s[0] + s[1], instructorScore: s[0] + s[1], status: "graded", criterionScores: { k1: s[0], k2: s[1] } }
         : { ...base, aiScore: null, instructorScore: null, status: "not_graded" };
     });
     // an exam score has no per-criterion breakdown — it must add nothing to any CLO
-    subs.push({ id: "sub-exam", assignmentId: "as2", studentId: "69071101", studentName: "Ann Test", email: "x", submittedAt: NOW, fileUrl: null, externalUseConsent: false, instructorComment: "", updatedAt: NOW, aiScore: null, instructorScore: 45, status: "graded" } as never);
+    subs.push({ id: "sub-exam", assignmentId: "as2", studentId: "69071101", studentName: "Ann Test", email: "x", submittedAt: NOW, externalUseConsent: false, instructorComment: "", updatedAt: NOW, aiScore: null, instructorScore: 45, status: "graded" } as never);
     localStorage.setItem("hwai_submissions_v1", JSON.stringify(subs));
   }, [PEOPLE, SCORES, RUBRIC, o.clos === false ? null : CLOS, o.lang ?? "en", !!o.finalized] as const);
 }

@@ -12,14 +12,14 @@ const COURSE = {
   coverColor: "#0F766E", courseTemplateId: "ct-rt", term: 1, academicYear: 2569,
   sectionNumber: "1", code: "01076112", schedule: "Mon 9:00-12:00", room: "811", createdAt: NOW, updatedAt: NOW,
 };
-const TEACHER = { id: "t-rt", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", role: "teacher", status: "active", courseIds: ["c-rt"] };
+const TEACHER = { id: "t-rt", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", status: "active", courseIds: ["c-rt"] };
 const COHORT = [
-  { id: "cs-1", studentId: "69070101", title: "Mr.", firstName: "Somchai", lastName: "Jaidee", email: "69070101@kmitl.ac.th", cohort: "CE69", program: "CE", status: "active" },
-  { id: "cs-2", studentId: "69070102", title: "Miss", firstName: "Malee", lastName: "Suksan", email: "69070102@kmitl.ac.th", cohort: "CE69", program: "CE", status: "active" },
-  { id: "cs-3", studentId: "69070103", firstName: "Chai", lastName: "Notitle", email: "69070103@kmitl.ac.th", cohort: "CE69", program: "CE", status: "active" },
+  { id: "cs-1", studentId: "69070101", title: "Mr.", name: "Somchai Jaidee", email: "69070101@kmitl.ac.th", cohort: "CE69", program: "CE", status: "active" },
+  { id: "cs-2", studentId: "69070102", title: "Miss", name: "Malee Suksan", email: "69070102@kmitl.ac.th", cohort: "CE69", program: "CE", status: "active" },
+  { id: "cs-3", studentId: "69070103", name: "Chai Notitle", email: "69070103@kmitl.ac.th", cohort: "CE69", program: "CE", status: "active" },
 ];
 const roster = (id: string, studentId: string, firstName: string, lastName: string, seq: number, email = `${studentId}@kmitl.ac.th`) => ({
-  id, courseId: "c-rt", studentId, firstName, lastName, email, cohort: "CE69", sequenceNumber: seq, enrollmentStatus: "enrolled",
+  id, courseId: "c-rt", studentId, name: `${firstName} ${lastName}`, email, cohort: "CE69", sequenceNumber: seq, enrollmentStatus: "enrolled",
 });
 // Deliberately NOT in ID or name order, so "roster order" differs from both sorts.
 const ROSTER = [

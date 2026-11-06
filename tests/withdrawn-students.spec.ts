@@ -15,15 +15,15 @@ const COURSE = {
   coverColor: "#0F766E", courseTemplateId: "ct-wd", term: 1, academicYear: 2569,
   sectionNumber: "1", code: "01076999", schedule: "Mon", room: "811", createdAt: NOW, updatedAt: NOW,
 };
-const TEACHER = { id: "t-wd", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", role: "teacher", status: "active", courseIds: ["c-wd"] };
+const TEACHER = { id: "t-wd", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", status: "active", courseIds: ["c-wd"] };
 const PEOPLE = [
   ["69070201", "Amy", "Active"], ["69070202", "Bo", "Active"], ["69070203", "Cat", "Leaver"],
 ] as const;
 const cohort = PEOPLE.map(([studentId, firstName, lastName], i) => ({
-  id: `cs-${i}`, studentId, firstName, lastName, email: `${studentId}@kmitl.ac.th`, program: "CE", status: "active",
+  id: `cs-${i}`, studentId, name: `${firstName} ${lastName}`, email: `${studentId}@kmitl.ac.th`, program: "CE", status: "active",
 }));
 const roster = (withdrawn: boolean) => PEOPLE.map(([studentId, firstName, lastName], i) => ({
-  id: `r-${i}`, courseId: "c-wd", studentId, firstName, lastName, email: `${studentId}@kmitl.ac.th`,
+  id: `r-${i}`, courseId: "c-wd", studentId, name: `${firstName} ${lastName}`, email: `${studentId}@kmitl.ac.th`,
   sequenceNumber: i + 1, enrollmentStatus: withdrawn && i === 2 ? "withdrawn" : "enrolled",
 }));
 const ASSIGNMENT = {
@@ -32,7 +32,7 @@ const ASSIGNMENT = {
 };
 const sub = (id: string, studentId: string, status: "graded" | "need_review", score: number) => ({
   id, assignmentId: "hw1", studentId, studentName: `Student ${studentId}`, email: `${studentId}@kmitl.ac.th`,
-  submittedAt: "2026-01-05T10:00:00.000Z", fileUrl: null, aiScore: score, instructorScore: status === "graded" ? score : null,
+  submittedAt: "2026-01-05T10:00:00.000Z", aiScore: score, instructorScore: status === "graded" ? score : null,
   instructorComment: "", externalUseConsent: false, status, updatedAt: "2026-01-05T10:00:00.000Z",
 });
 const SUBMISSIONS = [sub("s1", "69070201", "graded", 80), sub("s2", "69070202", "graded", 60), sub("s3", "69070203", "need_review", 20)];

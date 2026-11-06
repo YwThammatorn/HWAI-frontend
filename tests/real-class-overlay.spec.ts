@@ -20,7 +20,7 @@ test.describe("the sheet reader", () => {
     const r = parseRoster(SHEET);
     expect(r.code).toBe("01076311");
     expect(r.students).toHaveLength(6);
-    expect(r.students[0]).toEqual({ studentId: "99000001", title: "นาย", firstName: "ทดสอบ", lastName: "หนึ่ง", group: 1 });
+    expect(r.students[0]).toEqual({ studentId: "99000001", title: "นาย", name: "ทดสอบ หนึ่ง", group: 1 });
     expect(r.students[1].title).toBe("นางสาว");
     expect(r.students.filter((s) => s.group === 1)).toHaveLength(5);
     expect(r.students[5]).toMatchObject({ studentId: "99000006", group: 2 });
@@ -60,7 +60,7 @@ test.describe("the class built from it", () => {
       const subs = c.submissions.filter((x) => x.studentId === s.studentId);
       expect(subs.length).toBeGreaterThan(0);
       for (const sub of subs) {
-        expect(sub.studentName).toBe(`${s.firstName} ${s.lastName}`);
+        expect(sub.studentName).toBe(s.name);
         const cs = sub.criterionScores as Record<string, number> | undefined;
         if (cs && sub.status === "graded" && typeof sub.instructorScore === "number") expect(Object.values(cs).reduce((a, b) => a + b, 0)).toBe(sub.instructorScore);
       }

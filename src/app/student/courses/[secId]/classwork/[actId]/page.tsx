@@ -8,7 +8,7 @@ import { dateLocale } from "@/lib/dateLocale";
 import { useAuth } from "@/context/AuthContext";
 import { useCourses } from "@/lib/courses";
 import CriterionName from "@/components/CriterionName";
-import { useAssignments, submissionAttachments, studentVisibleSubmission, achievedLevelIndex, AssignmentAttachment, dueAt, isLate, submissionOpen, submissionClosesAt, CLEARED_RESULT } from "@/lib/assignments";
+import { useAssignments, submissionAttachments, studentVisibleSubmission, achievedLevelIndex, AssignmentAttachment, dueAt, isLate, submissionOpen, submissionClosesAt } from "@/lib/assignments";
 import { appNow, useNow } from "@/lib/clock";
 import { computeExamStats, computeAssignmentStats } from "@/lib/examStats";
 import ExamStatsCard from "@/components/ExamStatsCard";
@@ -41,7 +41,7 @@ function ClassworkDetail() {
   const { t, lang } = useLanguage();
   const { user } = useAuth();
   const { getCourse } = useCourses();
-  const { getAssignment, getSubmissionsByAssignment, addSubmission, updateSubmission, getRubricsByAssignment } = useAssignments();
+  const { getAssignment, getSubmissionsByAssignment, addSubmission, resubmitSubmission, getRubricsByAssignment } = useAssignments();
   const { getStudentsByCourse } = useStudents();
   const { getGroupForStudent, updateGroup, removeGroup } = useStudentGroups();
 
@@ -75,7 +75,7 @@ function ClassworkDetail() {
   function memberInfo(id: string) {
     if (id === studentId) return { name: user?.name ?? "Unknown Student", email: user?.email ?? "" };
     const s = roster.find((r) => r.studentId === id);
-    return s ? { name: `${s.firstName} ${s.lastName}`, email: s.email } : { name: id, email: "" };
+    return s ? { name: s.name, email: s.email } : { name: id, email: "" };
   }
 
   if (!course || !assignment) {
@@ -128,7 +128,6 @@ function ClassworkDetail() {
       ...files.items,
       ...(linkUrl ? [{ id: crypto.randomUUID(), kind: "link" as const, name: linkUrl, source: "url" as const, ref: linkUrl }] : []),
     ];
-    const fileUrl = linkUrl; // legacy single-link field
     const memberIds = isGroup && myGroup ? myGroup.memberStudentIds : [studentId];
     // A resubmission replaces the earlier one, so its uploads are no longer referenced
     const replacedRefs = new Set<string>();
@@ -137,7 +136,7 @@ function ClassworkDetail() {
       if (existing) {
         submissionAttachments(existing).forEach((a) => { if (a.source === "upload") replacedRefs.add(a.ref); });
         // a resubmission is a new piece of work: the earlier file's result (AI marks, teacher marks, comments) does not stay on it
-        updateSubmission(existing.id, { ...CLEARED_RESULT, status: "not_graded", fileUrl, attachments, submittedAt, late: lateNow });
+        resubmitSubmission(existing.id, { attachments, submittedAt, late: lateNow });
         return;
       }
       const info = memberInfo(id);
@@ -148,7 +147,6 @@ function ClassworkDetail() {
         email: info.email,
         submittedAt,
         late: lateNow,
-        fileUrl,
         attachments,
         aiScore: null,
         instructorScore: null,

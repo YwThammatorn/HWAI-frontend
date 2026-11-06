@@ -16,7 +16,7 @@ async function open(page: Page, role: "student" | "teacher", lang: "en" | "th", 
       ? { name: "Somchai Jaidee", email: "s1@kmitl.ac.th", role: "student", studentId: "64070501" }
       : { name: "Teacher One", email: "t1@kmitl.ac.th", role: "teacher" }));
     localStorage.setItem("hwai_courses_v2", JSON.stringify([cr]));
-    localStorage.setItem("hwai_students_v1", JSON.stringify([{ id: "sr-cb", courseId: "c-cb", studentId: "64070501", firstName: "Somchai", lastName: "Jaidee", email: "s1@kmitl.ac.th" }]));
+    localStorage.setItem("hwai_students_v1", JSON.stringify([{ id: "sr-cb", courseId: "c-cb", studentId: "64070501", name: "Somchai Jaidee", email: "s1@kmitl.ac.th" }]));
   }, [role, lang, c] as const);
   await page.goto(role === "student" ? `${BASE}/student/courses/c-cb/classwork` : `${BASE}/teacher/courses/c-cb`);
 }

@@ -126,7 +126,7 @@ freely, these are starting points, not a spec the frontend enforces.
 | `updateAssignment` | `PATCH /api/assignments/:id` | `Partial<Omit<Assignment, "id"\|"courseId"\|"createdAt">>` | `Assignment` |
 | `deleteAssignment` | `DELETE /api/assignments/:id` | — | `void` |
 | `getSubmissions` | `GET /api/assignments/:assignmentId/submissions` | — | `Submission[]` |
-| `updateSubmission` | `PATCH /api/submissions/:id` | `Partial<Pick<Submission, "aiScore"\|"instructorScore"\|"instructorComment"\|"criterionComments"\|"criterionScores"\|"status"\|"fileUrl"\|"attachments">>` | `Submission` |
+| `updateSubmission` | `PATCH /api/submissions/:id` | `Partial<Pick<Submission, "aiScore"\|"instructorScore"\|"instructorComment"\|"criterionComments"\|"criterionScores"\|"status"\|"attachments">>` | `Submission` |
 | `getRubrics` | `GET /api/assignments/:assignmentId/rubrics` | — | `Rubric[]` |
 | `createRubric` | `POST /api/assignments/:assignmentId/rubrics` | `Omit<Rubric, "id"\|"createdAt"\|"updatedAt">` | `Rubric` |
 | `updateRubric` | `PATCH /api/rubrics/:id` | `Partial<Omit<Rubric, "id"\|"assignmentId"\|"createdAt">>` | `Rubric` |
@@ -169,8 +169,26 @@ alerts and reloads the rosters instead of showing a student the server didn't en
 **A roster row needs a student account (5/11/2569).** Only a `CohortStudent` can sign in, so the server refuses a
 `studentId` with no account (`not_in_system`): `enrollments.student_id` is a foreign key to `students.student_id`
 (`ON UPDATE CASCADE ON DELETE CASCADE`). The UI already only enrols matched ids (`EnrollStudentModal`,
-`ImportCourseStudentsModal`). The roster's `firstName` / `lastName` / `email` come from that account; the request may
-still send them, but the account wins.
+`ImportCourseStudentsModal`). The roster's `name` / `email` come from that account; the request may still send
+them, but the account wins.
+
+**A student's name is one field (6/11/2569).** `CohortStudent` and the roster's `Student` carry `name` (the whole
+name, no title — `title` stays its own field, as for teachers), not `firstName` / `lastName`; `Submission.studentName`
+is that same `name`. The student CSVs have one `name` column (`studentId,title,name,email,program` and
+`student_id,name,email`); files from the older templates with `firstName` + `lastName` columns still import, joined.
+localStorage records saved before the change are upgraded on load (`withName`, `lib/students.ts`).
+
+**Columns removed as unused (7/11/2569).** `Submission.fileUrl` is gone: what a student handed in — files and the
+link — is `attachments` only (old server rows had their link moved there by the migration, old localStorage rows on
+load by `withoutFileUrl`, `lib/assignments.ts`). `CohortStudent.curriculumVersionId` is gone too (nothing set or read
+it; a section's program comes from its course's curriculum).
+
+**A teacher account is a teacher (7/11/2569).** `ManagedTeacher` has no `role` any more (the old "ta" value came from an
+earlier screen; a TA is always a student, added per course as a section role). On the server the primary teachers and
+the section roles are one table (`section_roles`, role `teacher` / `co-teacher` / `ta`): `ManagedTeacher.courseIds` are
+the courses where the account is `teacher`, assigned through the managed-teachers endpoints as before; the section-roles
+API still handles only `ta` / `co-teacher` and does not list the primary teachers. `/api/auth/me`'s `teacher` is
+`{ id, name }`.
 
 **New rows get the next free `sequenceNumber`:** highest on the roster + 1, never roster size + 1 (after a removal
 that would hand out a number someone still holds). `(courseId, sequenceNumber)` is unique.
@@ -308,7 +326,7 @@ fan-out server-side — either way `getAnnouncements`'s signature doesn't need t
 - `Submission.aiCriterionScores?: Record<criterionId, number>` — what the AI gave each criterion, set when the work is sent through the rubric; never visible to students.
 - `Rubric.aiOffsets?: Record<criterionId, number>` — correction of the AI in levels (+ stricter, − more generous), set by "Use these values" on Calibration; applied to later AI grading of that assignment.
 - `Submission.aiOffsetsUsed?: Record<criterionId, number>` (14/10/2569) — the `aiOffsets` that were in effect when the AI produced this work's marks. Written wherever the AI writes marks (Grade with AI, per-row Re-grade, Calibration's re-grade — all through `aiGradingUpdate`); Calibration suggests `usedOffset + bias`, so a correction is never counted twice.
-- **Submit / grading window (15/10/2569)** — `dueDate` stays a date; the deadline is the end of that day (23:59:59). Students may submit or resubmit until the deadline **plus a 1-hour late window** (`LATE_WINDOW_MS`, one value for the whole system); the teacher may start grading only after that (`gradingOpen`, `lib/assignments.ts`). Exams (`isExam`) and assignments without a `dueDate` are never locked. The backend must enforce both sides (reject a submission after `dueDate 23:59:59 + 1 h`, reject any grading write, AI run, re-grade or announce before it) — the front end only disables the controls (course Grading list, per-assignment Grading page, Grade page, Calibration). `Submission.late?: boolean` is set by the server when `submittedAt` falls inside the late window (set again on every resubmission). A resubmission replaces the earlier file and **clears its result**: `aiScore`, `instructorScore`, `instructorComment`, `criterionScores`, `aiCriterionScores`, `aiOffsetsUsed`, `criterionComments`, `status → not_graded`, new `submittedAt`.
+- **Submit / grading window (15/10/2569)** — `dueDate` stays a date; the deadline is the end of that day (23:59:59). Students may submit or resubmit until the deadline **plus a 1-hour late window** (`LATE_WINDOW_MS`, one value for the whole system); the teacher may start grading only after that (`gradingOpen`, `lib/assignments.ts`). Exams (`isExam`) and assignments without a `dueDate` are never locked. The backend must enforce both sides (reject a submission after `dueDate 23:59:59 + 1 h`, reject any grading write, AI run, re-grade or announce before it) — the front end only disables the controls (course Grading list, per-assignment Grading page, Grade page, Calibration). `Submission.late?: boolean` is set by the server when `submittedAt` falls inside the late window (set again on every resubmission). A resubmission replaces the earlier file and **clears its result**: `aiScore`, `instructorScore`, `instructorComment`, `criterionScores`, `aiCriterionScores`, `aiOffsetsUsed`, `criterionComments`, `status → not_graded`, new `submittedAt`. **What a student sends (7/11/2569):** `PATCH /api/submissions/:id { attachments, status: "not_graded" }` only — a student may change nothing else (any other field is `403`), so the server clears the result and sets `submittedAt` itself; the screen shows the cleared result at once (`resubmitSubmission`, `AssignmentProvider`).
 - `Rubric.sourceRubricId?: string` (14/10/2569) — the rubric this one was copied from by "Use a rubric from before" (the copy is not linked in any other way). Calibration follows these links, both ways, to find the other assignments that share a rubric when it offers to re-grade.
 - Every criterion of a rubric has the same number of levels (2–6) — the editor won't save otherwise; older data that mixes counts is evened out by the editor's "let the AI even them out" (`resizeLevels`).
 - `CalibrationRun { id, assignmentId, createdAt, sampleIds, teacherLevels: Record<sampleId, Record<criterionId, number>>, completedAt?, appliedAt?, appliedOffsets?, blind?, sawAi? }` — levels are positions on the criterion's scale, 0 = best; `blind` is the Blind-test switch (ON by default since 14/10/2569, and it also hides the students' names and what files / links are called; a run saved without the field was not blind), `sawAi` = something was scored while the AI's level was on screen (the comparison is then not blind).

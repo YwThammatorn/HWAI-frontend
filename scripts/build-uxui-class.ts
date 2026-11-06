@@ -17,7 +17,7 @@ export const COURSE_ID = "c-mock-4";
 export const TEAM_SIZE = 5;
 const T0 = "2026-08-12T09:00:00.000Z";
 
-interface Student { id: string; courseId: string; studentId: string; firstName: string; lastName: string; email: string; sequenceNumber: number; enrollmentStatus: string }
+interface Student { id: string; courseId: string; studentId: string; name: string; email: string; sequenceNumber: number; enrollmentStatus: string }
 export interface ExistingClass { courseStudents: Student[]; submissions: { assignmentId: string; studentId: string }[] }
 
 // ── seeded randomness ───────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -64,7 +64,7 @@ export function buildUxuiClass(existing: ExistingClass) {
   const byId = new Map(students.map((s) => [s.studentId, s]));
   const ability = new Map(students.map((s) => [s.studentId, randn(mulberry32(hash("ability:" + s.studentId)))]));
   ability.set("69070101", 0.8);   // the main demo login does well, as before (87/100 on the Final project)
-  const nameOf = (id: string) => { const s = byId.get(id)!; return `${s.firstName} ${s.lastName}`; };
+  const nameOf = (id: string) => { const s = byId.get(id)!; return s.name; };
 
   // teams: the same six for the group work, re-mixed for the two ideation workshops
   const mix = (seed: number) => {
@@ -113,7 +113,6 @@ export function buildUxuiClass(existing: ExistingClass) {
     const graded = o.status === "graded", reviewed = o.status !== "not_graded";
     return {
       id: o.id, assignmentId: a.id, studentId, studentName: nameOf(studentId), email: byId.get(studentId)!.email, submittedAt: o.submittedAt,
-      fileUrl: o.link ?? null,
       ...(o.link ? { attachments: [{ id: `att-${o.id}`, kind: "link", name: "Figma", source: "url", ref: o.link }] } : {}),
       aiScore: reviewed ? sum(o.ai) : null, instructorScore: graded ? sum(o.lv) : null, instructorComment: o.comment ?? "", externalUseConsent: true,
       status: o.status, updatedAt: new Date(Date.parse(o.submittedAt) + (1 + Math.floor(hash(o.id) % 3)) * 86_400_000).toISOString(),

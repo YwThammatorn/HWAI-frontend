@@ -30,13 +30,13 @@ interface TaCandidate { id: string; name: string; subtitle: string; }
  *  — resolve against both, never just one. */
 function resolveTaCandidates(
   taRoles: { accountId: string }[],
-  cohortStudents: { id: string; firstName: string; lastName: string; studentId: string }[],
+  cohortStudents: { id: string; name: string; studentId: string }[],
   teachers: { id: string; name: string; email: string }[]
 ): TaCandidate[] {
   return taRoles
     .map((r): TaCandidate | null => {
       const student = cohortStudents.find((s) => s.id === r.accountId);
-      if (student) return { id: student.id, name: `${student.firstName} ${student.lastName}`, subtitle: student.studentId };
+      if (student) return { id: student.id, name: student.name, subtitle: student.studentId };
       const teacher = teachers.find((tc) => tc.id === r.accountId);
       if (teacher) return { id: teacher.id, name: teacher.name, subtitle: teacher.email };
       return null;
@@ -46,11 +46,11 @@ function resolveTaCandidates(
 
 function resolveTaName(
   accountId: string,
-  cohortStudents: { id: string; firstName: string; lastName: string }[],
+  cohortStudents: { id: string; name: string }[],
   teachers: { id: string; name: string }[]
 ): string {
   const student = cohortStudents.find((s) => s.id === accountId);
-  if (student) return `${student.firstName} ${student.lastName}`;
+  if (student) return student.name;
   const teacher = teachers.find((tc) => tc.id === accountId);
   if (teacher) return teacher.name;
   return accountId;

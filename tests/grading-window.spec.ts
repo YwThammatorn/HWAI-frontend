@@ -16,7 +16,7 @@ const COURSE = {
   id: "c-gw", name: "Programming", description: "", status: "active", coverColor: "#2DD4BF",
   courseTemplateId: "ct-gw", term: 1, academicYear: 2569, sectionNumber: "1", code: "01076112", schedule: "Mon", room: "811", createdAt: NOW, updatedAt: NOW,
 };
-const TEACHER = { id: "t-gw", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", role: "teacher", status: "active", courseIds: ["c-gw"] };
+const TEACHER = { id: "t-gw", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", status: "active", courseIds: ["c-gw"] };
 const lv = (label: string) => ({ label, description: `${label} wording` });
 const LEVELS = [lv("Excellent"), lv("Fair"), lv("Needs work"), lv("Fail")];
 const asg = (id: string, name: string, extra: Record<string, unknown> = {}) => ({
@@ -28,7 +28,7 @@ const rubric = (id: string) => ({
   criteria: [{ id: "c1", name: "C1 · Design / การออกแบบ", description: "", maxPoints: 9, weight: 100, levels: LEVELS }],
 });
 const sub = (aid: string, n: number, extra: Record<string, unknown> = {}) => ({
-  id: `${aid}-s${n}`, assignmentId: aid, studentId: `640705${n}`, studentName: `Student ${n}`, email: `s${n}@kmitl.ac.th`, submittedAt: "2026-03-09T10:00:00.000Z", fileUrl: null,
+  id: `${aid}-s${n}`, assignmentId: aid, studentId: `640705${n}`, studentName: `Student ${n}`, email: `s${n}@kmitl.ac.th`, submittedAt: "2026-03-09T10:00:00.000Z", 
   aiScore: null, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "not_graded", updatedAt: NOW, ...extra,
 });
 
@@ -47,8 +47,8 @@ async function seed(page: Page, at: Date, s: Seed) {
     localStorage.setItem("hwai_assignments_v1", JSON.stringify(d.assignments));
     localStorage.setItem("hwai_rubrics_v1", JSON.stringify(d.rubrics));
     localStorage.setItem("hwai_submissions_v1", JSON.stringify(d.subs));
-    localStorage.setItem("hwai_students_v1", JSON.stringify([{ id: "sr-1", courseId: "c-gw", studentId: "6407051", firstName: "Student", lastName: "1", email: "s1@kmitl.ac.th", cohort: "CE69" }]));
-    localStorage.setItem("hwai_cohort_students_v1", JSON.stringify([{ id: "cs-1", studentId: "6407051", firstName: "Student", lastName: "1", email: "s1@kmitl.ac.th", cohort: "CE69", program: "CE" }]));
+    localStorage.setItem("hwai_students_v1", JSON.stringify([{ id: "sr-1", courseId: "c-gw", studentId: "6407051", name: "Student 1", email: "s1@kmitl.ac.th", cohort: "CE69" }]));
+    localStorage.setItem("hwai_cohort_students_v1", JSON.stringify([{ id: "cs-1", studentId: "6407051", name: "Student 1", email: "s1@kmitl.ac.th", cohort: "CE69", program: "CE" }]));
   }, {
     role: s.role ?? "teacher", course: COURSE, teacher: TEACHER, assignments: s.assignments, subs: s.subs,
     rubrics: (s.assignments as { id: string; isExam?: boolean }[]).filter((a) => !a.isExam).map((a) => rubric(a.id)),
@@ -234,7 +234,7 @@ test.describe("student — submitting around the deadline", () => {
   });
 
   test("a resubmission clears everything the earlier file had earned — the new file starts with no marks", async ({ page }) => {
-    const old = sub("a-due", 1, { studentId: "6407051", status: "need_review", aiScore: 62, instructorScore: 70, instructorComment: "Fix the layout", criterionScores: { c1: 6 }, aiCriterionScores: { c1: 6 }, attachments: [], fileUrl: "https://example.com/old" });
+    const old = sub("a-due", 1, { studentId: "6407051", status: "need_review", aiScore: 62, instructorScore: 70, instructorComment: "Fix the layout", criterionScores: { c1: 6 }, aiCriterionScores: { c1: 6 }, attachments: [] });
     await open(page, LATE_HOUR, [old]);
     await send(page);
     await expect.poll(async () => (await stored(page))[0].status).toBe("not_graded");

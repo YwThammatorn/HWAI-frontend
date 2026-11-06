@@ -64,14 +64,14 @@ export default function StudentsRosterPage() {
     return { text: "text-[var(--s-ok-text)]", dot: "bg-[var(--s-ok-text)]" };
   }
   function handleWithdraw(s: Student) {
-    if (!window.confirm(t(`ถอน ${s.firstName} ${s.lastName} ออกจากวิชานี้?`, `Withdraw ${s.firstName} ${s.lastName} from this course?`))) return;
+    if (!window.confirm(t(`ถอน ${s.name} ออกจากวิชานี้?`, `Withdraw ${s.name} from this course?`))) return;
     updateStudent(s.id, { enrollmentStatus: "withdrawn" });
   }
   function handleReEnroll(s: Student) {
     updateStudent(s.id, { enrollmentStatus: "enrolled" });
   }
   function handleDelete(s: Student) {
-    if (!window.confirm(t(`ลบ ${s.firstName} ${s.lastName} ออกจากรายชื่อนักศึกษาถาวร?`, `Permanently remove ${s.firstName} ${s.lastName} from this course's roster?`))) return;
+    if (!window.confirm(t(`ลบ ${s.name} ออกจากรายชื่อนักศึกษาถาวร?`, `Permanently remove ${s.name} from this course's roster?`))) return;
     removeStudent(s.id);
   }
 
@@ -79,13 +79,13 @@ export default function StudentsRosterPage() {
   const visible = students.filter((s) => {
     if (!q) return true;
     const title = findByStudentId(s.studentId)?.title ?? "";
-    return [s.studentId, title, s.firstName, s.lastName, `${s.firstName} ${s.lastName}`, s.email ?? ""]
+    return [s.studentId, title, s.name, s.email ?? ""]
       .some((f) => f.toLowerCase().includes(q));
   });
   if (sort) {
     visible.sort((a, b) => {
       const cmp = sort.key === "name"
-        ? `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`, "th")
+        ? a.name.localeCompare(b.name, "th")
         : a.studentId.localeCompare(b.studentId, undefined, { numeric: true });
       return sort.dir === "asc" ? cmp : -cmp;
     });
@@ -173,7 +173,7 @@ export default function StudentsRosterPage() {
               placeholder={t("ค้นหานักศึกษา...", "Search students...")}
               ariaLabel={t("ค้นหานักศึกษา", "Search students")}
               className="w-64 shrink-0"
-              suggestions={students.flatMap((s) => [`${s.firstName} ${s.lastName}`, s.studentId])}
+              suggestions={students.flatMap((s) => [s.name, s.studentId])}
             />
             <p aria-live="polite" className="text-sm text-[var(--text-muted)]">
               {q
@@ -249,7 +249,7 @@ export default function StudentsRosterPage() {
                           <td className="px-4 py-2 text-xs text-[var(--text-muted)] tabular-nums">{rosterNo.get(s.id)}</td>
                           <td className="px-4 py-2 text-[var(--text-secondary)] tabular-nums">{s.studentId}</td>
                           <td className="px-4 py-2 whitespace-nowrap text-[var(--text-secondary)]">{findByStudentId(s.studentId)?.title || "-"}</td>
-                          <td className="px-4 py-2 whitespace-nowrap font-medium text-[var(--text-primary)]">{s.firstName} {s.lastName}</td>
+                          <td className="px-4 py-2 whitespace-nowrap font-medium text-[var(--text-primary)]">{s.name}</td>
                           <td className="px-4 py-2 text-[var(--text-secondary)]">{s.email || "—"}</td>
                           <td className="px-4 py-2 text-[var(--text-secondary)]">
                             {/* One line whatever the program's name (15/10/2569): the full name is cut with "…" and shown whole on hover; the "Not CE" tag never wraps. */}
@@ -281,7 +281,7 @@ export default function StudentsRosterPage() {
                                 <button
                                   type="button"
                                   onClick={() => handleReEnroll(s)}
-                                  aria-label={t(`ลงทะเบียนกลับ ${s.firstName} ${s.lastName}`, `Re-enroll ${s.firstName} ${s.lastName}`)}
+                                  aria-label={t(`ลงทะเบียนกลับ ${s.name}`, `Re-enroll ${s.name}`)}
                                   title={t("ลงทะเบียนกลับ", "Re-enroll")}
                                   className="min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg text-[var(--text-secondary)] hover:text-[var(--s-ok-text)] hover:bg-[var(--s-ok-bg)] transition-colors"
                                 >
@@ -293,7 +293,7 @@ export default function StudentsRosterPage() {
                                 <button
                                   type="button"
                                   onClick={() => handleWithdraw(s)}
-                                  aria-label={t(`ถอน ${s.firstName} ${s.lastName}`, `Withdraw ${s.firstName} ${s.lastName}`)}
+                                  aria-label={t(`ถอน ${s.name}`, `Withdraw ${s.name}`)}
                                   title={t("ถอนออกจากวิชา", "Withdraw")}
                                   className="min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg text-[var(--text-secondary)] hover:text-[var(--s-warn-text)] hover:bg-[var(--s-warn-bg)] transition-colors"
                                 >
@@ -305,7 +305,7 @@ export default function StudentsRosterPage() {
                               <button
                                 type="button"
                                 onClick={() => handleDelete(s)}
-                                aria-label={t(`ลบ ${s.firstName} ${s.lastName} ออกจากวิชา`, `Remove ${s.firstName} ${s.lastName} from the course`)}
+                                aria-label={t(`ลบ ${s.name} ออกจากวิชา`, `Remove ${s.name} from the course`)}
                                 title={t("ลบออกจากวิชา", "Remove")}
                                 className="min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg text-[var(--text-secondary)] hover:text-[var(--s-err-text)] hover:bg-[var(--s-err-bg)] transition-colors"
                               >

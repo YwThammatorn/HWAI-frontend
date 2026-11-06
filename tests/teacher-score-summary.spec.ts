@@ -26,10 +26,10 @@ async function open(page: Page, lang: "en" | "th" = "en") {
     localStorage.setItem("hwai_lang", lang as string);
     localStorage.setItem("hwai_user", JSON.stringify({ name: "Somsak", email: "somsak@kmitl.ac.th", role: "teacher" }));
     localStorage.setItem("hwai_courses_v2", JSON.stringify([{ id: "c-ss", name: "Summary Course", description: "", status: "active", coverColor: "#0F766E", sectionNumber: "1", code: "01076888", academicYear: 2569, term: 1, createdAt: NOW, updatedAt: NOW }]));
-    localStorage.setItem("hwai_managed_teachers_v1", JSON.stringify([{ id: "t-ss", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", role: "teacher", status: "active", courseIds: ["c-ss"] }]));
+    localStorage.setItem("hwai_managed_teachers_v1", JSON.stringify([{ id: "t-ss", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", status: "active", courseIds: ["c-ss"] }]));
     const ppl = people as string[][];
-    localStorage.setItem("hwai_cohort_students_v1", JSON.stringify(ppl.map(([id, f], i) => ({ id: `cs-${i}`, studentId: id, firstName: f, lastName: "Test", email: `${id}@kmitl.ac.th`, program: "CE", status: "active" }))));
-    localStorage.setItem("hwai_students_v1", JSON.stringify(ppl.map(([id, f], i) => ({ id: `r-${i}`, courseId: "c-ss", studentId: id, firstName: f, lastName: "Test", email: `${id}@kmitl.ac.th`, sequenceNumber: i + 1, enrollmentStatus: "enrolled" }))));
+    localStorage.setItem("hwai_cohort_students_v1", JSON.stringify(ppl.map(([id, f], i) => ({ id: `cs-${i}`, studentId: id, name: `${f} Test`, email: `${id}@kmitl.ac.th`, program: "CE", status: "active" }))));
+    localStorage.setItem("hwai_students_v1", JSON.stringify(ppl.map(([id, f], i) => ({ id: `r-${i}`, courseId: "c-ss", studentId: id, name: `${f} Test`, email: `${id}@kmitl.ac.th`, sequenceNumber: i + 1, enrollmentStatus: "enrolled" }))));
     localStorage.setItem("hwai_grading_categories_v1", JSON.stringify([
       { id: "cat-hw", courseId: "c-ss", name: "Homework", weight: 40, createdAt: NOW, updatedAt: NOW },
       { id: "cat-ex", courseId: "c-ss", name: "Exams", weight: 60, createdAt: NOW, updatedAt: NOW },
@@ -40,7 +40,7 @@ async function open(page: Page, lang: "en" | "th" = "en") {
       asg("hw1", "HW 1", "2026-01-10", 10, { categoryId: "cat-hw" }),
       asg("mid", "Midterm", undefined, 50, { categoryId: "cat-ex", isExam: true, gradingFinalized: true }),
     ]));
-    const sub = (id: string, a: string, i: number, status: string, score: number | null) => ({ id, assignmentId: a, studentId: ppl[i][0], studentName: `${ppl[i][1]} Test`, email: `${ppl[i][0]}@kmitl.ac.th`, submittedAt: "2026-01-05T10:00:00.000Z", fileUrl: null, aiScore: score, instructorScore: status === "graded" ? score : null, instructorComment: "", externalUseConsent: true, status, updatedAt: NOW });
+    const sub = (id: string, a: string, i: number, status: string, score: number | null) => ({ id, assignmentId: a, studentId: ppl[i][0], studentName: `${ppl[i][1]} Test`, email: `${ppl[i][0]}@kmitl.ac.th`, submittedAt: "2026-01-05T10:00:00.000Z", aiScore: score, instructorScore: status === "graded" ? score : null, instructorComment: "", externalUseConsent: true, status, updatedAt: NOW });
     localStorage.setItem("hwai_submissions_v1", JSON.stringify([
       sub("h1", "hw1", 0, "graded", 9), sub("h2", "hw1", 1, "graded", 5), sub("h3", "hw1", 2, "need_review", 6),
       sub("m1", "mid", 0, "graded", 45), sub("m2", "mid", 1, "graded", 20), sub("m3", "mid", 2, "graded", 35), sub("m4", "mid", 3, "graded", 30),
@@ -179,7 +179,7 @@ test.describe("scoreSummary lib", () => {
   test("a fully graded assignment that is not announced is 'ready'; announced wins over everything", () => {
     const a = (id: string, extra = {}) => ({ id, courseId: "c", name: id, description: "", dueDate: "2026-01-01", maxPoints: 10, acceptsFiles: true, fileTypes: [], submissionType: "individual", maxGroupSize: null, rubricIds: [], createdAt: NOW, updatedAt: NOW, ...extra }) as never;
     const sub = (assignmentId: string, studentId: string, status: string, v: number | null) => ({ id: `${assignmentId}${studentId}`, assignmentId, studentId, status, aiScore: v, instructorScore: status === "graded" ? v : null }) as never;
-    const students = [{ studentId: "1", firstName: "A", lastName: "A" }, { studentId: "2", firstName: "B", lastName: "B" }];
+    const students = [{ studentId: "1", name: "A A" }, { studentId: "2", name: "B B" }];
     const book = buildScoreBook({
       students, categories: [], today: "2026-02-01",
       assignments: [a("done"), a("half"), a("shown", { gradingFinalized: true })],

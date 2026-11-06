@@ -31,7 +31,7 @@ const SIBLING_COURSE = {
 
 const TEACHER = {
   id: "t-p4", title: "ผศ.ดร.", name: "Chompoonuch Sanguan", email: "chompoonuch@kmitl.ac.th",
-  role: "teacher", status: "active", courseIds: ["c-p4", "c-p4-sec2"],
+  status: "active", courseIds: ["c-p4", "c-p4-sec2"],
 };
 
 // "Coursework" (not "Assignments") — the literal word "Assignments" already
@@ -55,15 +55,15 @@ const ANNOUNCEMENTS = [
 ];
 
 const STUDENT_RECORD = {
-  id: "sr-p4-1", courseId: "c-p4", studentId: "64070777", firstName: "Somsak", lastName: "Ruk", email: "s@kmitl.ac.th", cohort: "CE69",
+  id: "sr-p4-1", courseId: "c-p4", studentId: "64070777", name: "Somsak Ruk", email: "s@kmitl.ac.th", cohort: "CE69",
 };
 
 // One student already enrolled (matches STUDENT_RECORD), one not yet enrolled
 // anywhere — the import CSV below targets both, plus an ID that doesn't
 // exist in the cohort at all.
 const COHORT_STUDENTS = [
-  { id: "cs-p4-1", studentId: "64070778", firstName: "Katherine", lastName: "Nguyen", email: "64070778@kmitl.ac.th", cohort: "CE69", program: "CE", status: "active" },
-  { id: "cs-p4-2", studentId: "64070777", firstName: "Somsak", lastName: "Ruk", email: "s@kmitl.ac.th", cohort: "CE69", program: "CE", status: "active" },
+  { id: "cs-p4-1", studentId: "64070778", name: "Katherine Nguyen", email: "64070778@kmitl.ac.th", cohort: "CE69", program: "CE", status: "active" },
+  { id: "cs-p4-2", studentId: "64070777", name: "Somsak Ruk", email: "s@kmitl.ac.th", cohort: "CE69", program: "CE", status: "active" },
 ];
 
 async function seedTeacher(page: Page, opts: {
@@ -304,7 +304,6 @@ test.describe("P4 — Students Roster + CSV Import Cross-Check", () => {
     expect(stored).toHaveLength(2);
     const imported = stored.find((s: { studentId: string }) => s.studentId === "64070778");
     expect(imported).toBeTruthy();
-    expect(imported.firstName).toBe("Katherine");
-    expect(imported.lastName).toBe("Nguyen");
+    expect(imported.name).toBe("Katherine Nguyen");
   });
 });

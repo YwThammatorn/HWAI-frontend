@@ -98,7 +98,7 @@ function ImportTeacherModal({ open, onClose }: { open: boolean; onClose: () => v
     if (!newRows.length) return;
     setImporting(true);
     setResult({ added: newRows.length, skipped: dupRows.length + errorRows.length });
-    importTeachers(newRows.map((row) => ({ title: row.title, name: row.name, email: row.email.toLowerCase(), role: "teacher" })));
+    importTeachers(newRows.map((row) => ({ title: row.title, name: row.name, email: row.email.toLowerCase() })));
     setImporting(false);
     setDone(true);
   }
@@ -292,7 +292,7 @@ function TeacherModal({ open, onClose }: {
     setLoading(true);
     // TAs are assigned per-course via Collaborators now, not at account-creation time here
     // (23/9/2569) — every teacher added through this modal starts as a plain "teacher".
-    addTeacher({ title: title.trim() || undefined, name: name.trim(), email: email.trim().toLowerCase(), role: "teacher" });
+    addTeacher({ title: title.trim() || undefined, name: name.trim(), email: email.trim().toLowerCase() });
     setLoading(false);
     onClose();
   }
@@ -507,14 +507,14 @@ function expectedStudentEmail(studentId: string) {
 }
 
 interface ParsedStudentRow {
-  studentId: string; title: string; firstName: string; lastName: string;
+  studentId: string; title: string; name: string;
   email: string; program: string;
   error?: StudentRowError;
 }
 
 interface StudentParseResult { rows: ParsedStudentRow[]; totalErrors: number; }
 
-const REQUIRED_STUDENT_COLS = ["studentId", "firstName", "lastName", "email", "program"] as const;
+const REQUIRED_STUDENT_COLS = ["studentId", "name", "email", "program"] as const;
 
 function parseStudentCsv(raw: string): StudentParseResult {
   const text = raw.charCodeAt(0) === 0xfeff ? raw.slice(1) : raw;
@@ -527,8 +527,10 @@ function parseStudentCsv(raw: string): StudentParseResult {
     const row: ParsedStudentRow = {
       studentId: cells[colIndex.studentId] ?? "",
       title: colIndex.title !== undefined ? cells[colIndex.title] ?? "" : "",
-      firstName: cells[colIndex.firstName] ?? "",
-      lastName: cells[colIndex.lastName] ?? "",
+      // One name column; a file from the older template (firstName + lastName columns) still reads, joined.
+      name: (colIndex.name !== undefined
+        ? cells[colIndex.name] ?? ""
+        : `${cells[colIndex.firstName] ?? ""} ${cells[colIndex.lastName] ?? ""}`).replace(/\s+/g, " ").trim(),
       email: (cells[colIndex.email] ?? "").trim().toLowerCase(),
       // The database keeps program as an enum (CE / CECS / CEI): "ce " is read as "CE", anything else is a row error.
       program: (cells[colIndex.program] ?? "").trim().toUpperCase(),
@@ -572,7 +574,7 @@ function ImportStudentModal({ open, onClose }: { open: boolean; onClose: () => v
   function handleImport() {
     if (!validRows.length) return;
     setImporting(true);
-    addCohortStudents(validRows.map((r) => ({ studentId: r.studentId, title: r.title || undefined, firstName: r.firstName, lastName: r.lastName, email: r.email, program: r.program })));
+    addCohortStudents(validRows.map((r) => ({ studentId: r.studentId, title: r.title || undefined, name: r.name, email: r.email, program: r.program })));
     setImporting(false);
     setDone(true);
   }
@@ -625,7 +627,7 @@ function ImportStudentModal({ open, onClose }: { open: boolean; onClose: () => v
               <line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>
             </svg>
             <p className="text-sm font-semibold text-[var(--text-primary)]">{t("ลากไฟล์ CSV มาวาง หรือคลิกเลือก", "Drag CSV here or click to browse")}</p>
-            <p className="text-xs text-[var(--text-muted)] mt-1">{t("คอลัมน์: studentId, title, firstName, lastName, email, program (title ไม่บังคับ)", "Columns: studentId, title, firstName, lastName, email, program (title is optional)")}</p>
+            <p className="text-xs text-[var(--text-muted)] mt-1">{t("คอลัมน์: studentId, title, name, email, program (title ไม่บังคับ)", "Columns: studentId, title, name, email, program (title is optional)")}</p>
           </div>
         )}
         {!parseResult && !done && (
@@ -664,8 +666,7 @@ function ImportStudentModal({ open, onClose }: { open: boolean; onClose: () => v
                   <thead className="bg-[var(--bg-surface)] sticky top-0 border-b border-[var(--border-subtle)]">
                     <tr>
                       <th className="px-3 py-2 text-left font-semibold text-[var(--text-muted)]">{t("รหัส", "ID")}</th>
-                      <th className="px-3 py-2 text-left font-semibold text-[var(--text-muted)]">{t("ชื่อ", "First")}</th>
-                      <th className="px-3 py-2 text-left font-semibold text-[var(--text-muted)]">{t("นามสกุล", "Last")}</th>
+                      <th className="px-3 py-2 text-left font-semibold text-[var(--text-muted)]">{t("ชื่อ-นามสกุล", "Name")}</th>
                       <th className="px-3 py-2 text-left font-semibold text-[var(--text-muted)]">{t("สาขา", "Program")}</th>
                       <th className="px-3 py-2 text-left font-semibold text-[var(--text-muted)]">{t("สถานะ", "Status")}</th>
                     </tr>
@@ -674,8 +675,7 @@ function ImportStudentModal({ open, onClose }: { open: boolean; onClose: () => v
                     {parseResult.rows.slice(0, 30).map((row, idx) => (
                       <tr key={idx} className={`border-t border-[var(--border-subtle)] ${row.error ? "bg-[var(--s-err-bg)]" : ""}`}>
                         <td className="px-3 py-1.5 text-[var(--text-primary)] tabular-nums">{row.studentId || "—"}</td>
-                        <td className="px-3 py-1.5 text-[var(--text-primary)]">{row.firstName || "—"}</td>
-                        <td className="px-3 py-1.5 text-[var(--text-primary)]">{row.lastName || "—"}</td>
+                        <td className="px-3 py-1.5 text-[var(--text-primary)]">{row.name || "—"}</td>
                         <td className="px-3 py-1.5 text-[var(--text-muted)]">{row.program || "—"}</td>
                         <td className="px-3 py-1.5">
                           {row.error ? (
@@ -1010,8 +1010,7 @@ function AddStudentModal({ open, onClose }: {
   };
   const [studentId, setStudentId] = useState("");
   const [title, setTitle] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [program, setProgram] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -1019,7 +1018,7 @@ function AddStudentModal({ open, onClose }: {
 
   useEffect(() => {
     if (open) {
-      setStudentId(""); setTitle(""); setFirstName(""); setLastName("");
+      setStudentId(""); setTitle(""); setName("");
       setEmail(""); setProgram(""); setErrors({});
     }
   }, [open]);
@@ -1029,8 +1028,7 @@ function AddStudentModal({ open, onClose }: {
     if (!studentId.trim()) e.studentId = t("กรุณากรอกรหัสนักศึกษา", "Student ID is required");
     else if (!STUDENT_ID_RE.test(studentId.trim())) e.studentId = t("รหัสนักศึกษาต้องเป็นตัวเลข 8 หลัก", "Student ID must be 8 digits");
     else if (findByStudentId(studentId.trim())) e.studentId = t("รหัสนี้มีในระบบแล้ว", "Student ID already exists");
-    if (!firstName.trim()) e.firstName = t("กรุณากรอกชื่อ", "First name is required");
-    if (!lastName.trim()) e.lastName = t("กรุณากรอกนามสกุล", "Last name is required");
+    if (!name.trim()) e.name = t("กรุณากรอกชื่อ-นามสกุล", "Name is required");
     if (!email.trim()) e.email = t("กรุณากรอกอีเมล", "Email is required");
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) e.email = t("รูปแบบอีเมลไม่ถูกต้อง", "Invalid email format");
     else if (STUDENT_ID_RE.test(studentId.trim()) && email.trim().toLowerCase() !== expectedStudentEmail(studentId.trim()))
@@ -1045,7 +1043,7 @@ function AddStudentModal({ open, onClose }: {
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
     setLoading(true);
     addCohortStudents([{
-      studentId: studentId.trim(), title: title.trim() || undefined, firstName: firstName.trim(), lastName: lastName.trim(),
+      studentId: studentId.trim(), title: title.trim() || undefined, name: name.replace(/\s+/g, " ").trim(),
       email: email.trim().toLowerCase(), program: program.trim(),
     }]);
     setLoading(false);
@@ -1077,21 +1075,12 @@ function AddStudentModal({ open, onClose }: {
             </select>
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="sfn" className={labelClass}>{t("ชื่อ", "First Name")} <span aria-hidden="true" className="text-[var(--s-err-text)]">*</span></label>
-              <input id="sfn" type="text" value={firstName}
-                onChange={(e) => { setFirstName(e.target.value); setErrors((p) => ({ ...p, firstName: "" })); }}
-                placeholder="สมชาย" aria-invalid={!!errors.firstName} className={fieldClass} />
-              {errors.firstName && <p role="alert" className="text-xs text-[var(--s-err-text)]">{errors.firstName}</p>}
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="sln" className={labelClass}>{t("นามสกุล", "Last Name")} <span aria-hidden="true" className="text-[var(--s-err-text)]">*</span></label>
-              <input id="sln" type="text" value={lastName}
-                onChange={(e) => { setLastName(e.target.value); setErrors((p) => ({ ...p, lastName: "" })); }}
-                placeholder="ใจดี" aria-invalid={!!errors.lastName} className={fieldClass} />
-              {errors.lastName && <p role="alert" className="text-xs text-[var(--s-err-text)]">{errors.lastName}</p>}
-            </div>
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="sname" className={labelClass}>{t("ชื่อ-นามสกุล", "Name")} <span aria-hidden="true" className="text-[var(--s-err-text)]">*</span></label>
+          <input id="sname" type="text" value={name}
+            onChange={(e) => { setName(e.target.value); setErrors((p) => ({ ...p, name: "" })); }}
+            placeholder="สมชาย ใจดี" aria-invalid={!!errors.name} className={fieldClass} />
+          {errors.name && <p role="alert" className="text-xs text-[var(--s-err-text)]">{errors.name}</p>}
         </div>
         <div className="flex flex-col gap-1.5">
           <label htmlFor="semail" className={labelClass}>{t("อีเมล", "Email")} <span aria-hidden="true" className="text-[var(--s-err-text)]">*</span></label>
@@ -1141,7 +1130,7 @@ const batchOf = (studentId: string) => studentId.slice(0, 2);
 function DeactivateBatchModal({ open, onClose, students, onConfirm }: {
   open: boolean;
   onClose: () => void;
-  students: { id: string; studentId: string; firstName: string; lastName: string; program: string; status?: string }[];
+  students: { id: string; studentId: string; name: string; program: string; status?: string }[];
   onConfirm: (batch: string, ids: string[], programLabel?: string) => void;
 }) {
   const { t } = useLanguage();
@@ -1182,7 +1171,7 @@ function DeactivateBatchModal({ open, onClose, students, onConfirm }: {
   const leftOut = active.filter((s) => !inBatchIds.has(s.id)).sort((a, b) => a.studentId.localeCompare(b.studentId));
   const aq = addQuery.trim().toLowerCase();
   const shownLeftOut = aq
-    ? leftOut.filter((s) => `${s.firstName} ${s.lastName} ${s.studentId} ${s.program} ${programName(s.program)}`.toLowerCase().includes(aq))
+    ? leftOut.filter((s) => `${s.name} ${s.studentId} ${s.program} ${programName(s.program)}`.toLowerCase().includes(aq))
     : leftOut;
   const pickedLeftOut = leftOut.filter((s) => extraIds.includes(s.id)).length;
   function toggleExtra(id: string) {
@@ -1190,7 +1179,7 @@ function DeactivateBatchModal({ open, onClose, students, onConfirm }: {
   }
   const lq = listQuery.trim().toLowerCase();
   const shownInBatch = lq
-    ? inBatch.filter((s) => `${s.firstName} ${s.lastName} ${s.studentId} ${s.program} ${programName(s.program)}`.toLowerCase().includes(lq))
+    ? inBatch.filter((s) => `${s.name} ${s.studentId} ${s.program} ${programName(s.program)}`.toLowerCase().includes(lq))
     : inBatch;
   function toggleKeep(id: string) {
     setKeepIds((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]));
@@ -1276,7 +1265,7 @@ function DeactivateBatchModal({ open, onClose, students, onConfirm }: {
                       />
                       <span className="min-w-0 flex-1">
                         <span className="block">
-                          <span className="font-medium text-[var(--text-primary)]">{s.firstName} {s.lastName}</span>{" "}
+                          <span className="font-medium text-[var(--text-primary)]">{s.name}</span>{" "}
                           <span className="ml-2 tabular-nums text-xs text-[var(--text-muted)]">{s.studentId}</span>
                         </span>
                         <span className="block text-xs text-[var(--text-muted)]">{programName(s.program)}</span>
@@ -1325,7 +1314,7 @@ function DeactivateBatchModal({ open, onClose, students, onConfirm }: {
                       />
                       <span className="min-w-0 flex-1">
                         <span className="block">
-                          <span className="font-medium text-[var(--text-primary)]">{s.firstName} {s.lastName}</span>{" "}
+                          <span className="font-medium text-[var(--text-primary)]">{s.name}</span>{" "}
                           <span className="ml-2 tabular-nums text-xs text-[var(--text-muted)]">{s.studentId}</span>
                         </span>
                         <span className="block text-xs text-[var(--text-muted)]">{programName(s.program)}</span>
@@ -1387,8 +1376,7 @@ function StudentsTab({ statusTabsSlot }: { statusTabsSlot: HTMLDivElement | null
   const [editingRowId, setEditingRowId] = useState<string | null>(null);
   const [draftStudentId, setDraftStudentId] = useState("");
   const [draftTitle, setDraftTitle] = useState("");
-  const [draftFirstName, setDraftFirstName] = useState("");
-  const [draftLastName, setDraftLastName] = useState("");
+  const [draftName, setDraftName] = useState("");
   const [draftEmail, setDraftEmail] = useState("");
   const [draftProgram, setDraftProgram] = useState("");
   const [draftErrors, setDraftErrors] = useState<Record<string, string>>({});
@@ -1397,8 +1385,7 @@ function StudentsTab({ statusTabsSlot }: { statusTabsSlot: HTMLDivElement | null
     setEditingRowId(student.id);
     setDraftStudentId(student.studentId);
     setDraftTitle(student.title ?? "");
-    setDraftFirstName(student.firstName);
-    setDraftLastName(student.lastName);
+    setDraftName(student.name);
     setDraftEmail(student.email);
     setDraftProgram(student.program);
     setDraftErrors({});
@@ -1417,8 +1404,7 @@ function StudentsTab({ statusTabsSlot }: { statusTabsSlot: HTMLDivElement | null
       const dup = findByStudentId(draftStudentId.trim());
       if (dup && dup.id !== editingRowId) e.studentId = t("รหัสนี้มีในระบบแล้ว", "Student ID already exists");
     }
-    if (!draftFirstName.trim()) e.firstName = t("กรุณากรอกชื่อ", "First name is required");
-    if (!draftLastName.trim()) e.lastName = t("กรุณากรอกนามสกุล", "Last name is required");
+    if (!draftName.trim()) e.name = t("กรุณากรอกชื่อ-นามสกุล", "Name is required");
     if (!draftEmail.trim()) e.email = t("กรุณากรอกอีเมล", "Email is required");
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(draftEmail.trim())) e.email = t("รูปแบบอีเมลไม่ถูกต้อง", "Invalid email format");
     else if (STUDENT_ID_RE.test(draftStudentId.trim()) && draftEmail.trim().toLowerCase() !== expectedStudentEmail(draftStudentId.trim()))
@@ -1431,7 +1417,7 @@ function StudentsTab({ statusTabsSlot }: { statusTabsSlot: HTMLDivElement | null
     const errs = validateEdit();
     if (Object.keys(errs).length > 0) { setDraftErrors(errs); return; }
     updateCohortStudent(editingRowId!, {
-      studentId: draftStudentId.trim(), title: draftTitle.trim() || undefined, firstName: draftFirstName.trim(), lastName: draftLastName.trim(),
+      studentId: draftStudentId.trim(), title: draftTitle.trim() || undefined, name: draftName.replace(/\s+/g, " ").trim(),
       email: draftEmail.trim().toLowerCase(), program: draftProgram.trim(),
     });
     setEditingRowId(null);
@@ -1456,8 +1442,7 @@ function StudentsTab({ statusTabsSlot }: { statusTabsSlot: HTMLDivElement | null
   const hasInactiveInProgram = inProgram.some(isInactiveStudent);
   const inProgramAndSearch = inProgram.filter((s) => {
     const q = search.toLowerCase();
-    return !q || s.studentId.includes(q) || s.firstName.toLowerCase().includes(q) ||
-      s.lastName.toLowerCase().includes(q) || `${s.firstName} ${s.lastName}`.toLowerCase().includes(q) ||
+    return !q || s.studentId.includes(q) || s.name.toLowerCase().includes(q) ||
       s.email.toLowerCase().includes(q);
   });
   const activeMatches = inProgramAndSearch.filter((s) => !isInactiveStudent(s));
@@ -1483,7 +1468,7 @@ function StudentsTab({ statusTabsSlot }: { statusTabsSlot: HTMLDivElement | null
   const filtered = statusTab === "inactive" ? inactiveMatches : activeMatches;
   filtered.sort((a, b) => {
     const cmp = sort.key === "name"
-      ? `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`, "th")
+      ? a.name.localeCompare(b.name, "th")
       : a.studentId.localeCompare(b.studentId, undefined, { numeric: true });
     return sort.dir === "asc" ? cmp : -cmp;
   });
@@ -1540,9 +1525,9 @@ function StudentsTab({ statusTabsSlot }: { statusTabsSlot: HTMLDivElement | null
             placeholder={t("ค้นหานักศึกษา...", "Search students...")}
             className="w-48 shrink-0"
             rounded="full"
-            suggestions={cohortStudents.map((s) => `${s.firstName} ${s.lastName}`)}
+            suggestions={cohortStudents.map((s) => s.name)}
             suggestionMeta={(s) => {
-              const match = cohortStudents.find((c) => `${c.firstName} ${c.lastName}` === s);
+              const match = cohortStudents.find((c) => c.name === s);
               return match && isInactiveStudent(match) ? t("พ้นสภาพ", "Inactive") : undefined;
             }}
           />
@@ -1694,13 +1679,11 @@ function StudentsTab({ statusTabsSlot }: { statusTabsSlot: HTMLDivElement | null
                         <td className="px-4 py-1 font-medium text-[var(--text-primary)] truncate">
                           {isEditing ? (
                             <div className="flex flex-col gap-1">
-                              <input value={draftFirstName} onChange={(e) => { setDraftFirstName(e.target.value); setDraftErrors((p) => ({ ...p, firstName: "" })); }}
-                                aria-label={t("ชื่อ", "First name")} className={inputClass} />
-                              <input value={draftLastName} onChange={(e) => { setDraftLastName(e.target.value); setDraftErrors((p) => ({ ...p, lastName: "" })); }}
-                                aria-label={t("นามสกุล", "Last name")} className={inputClass} />
-                              {(draftErrors.firstName || draftErrors.lastName) && <p role="alert" className="text-[10px] text-[var(--s-err-text)]">{draftErrors.firstName || draftErrors.lastName}</p>}
+                              <input value={draftName} onChange={(e) => { setDraftName(e.target.value); setDraftErrors((p) => ({ ...p, name: "" })); }}
+                                aria-label={t("ชื่อ-นามสกุล", "Name")} className={inputClass} />
+                              {draftErrors.name && <p role="alert" className="text-[10px] text-[var(--s-err-text)]">{draftErrors.name}</p>}
                             </div>
-                          ) : `${student.firstName} ${student.lastName}`}
+                          ) : student.name}
                         </td>
                         <td className="px-4 py-1 text-[var(--text-secondary)] truncate">
                           {isEditing ? (
@@ -1760,7 +1743,7 @@ function StudentsTab({ statusTabsSlot }: { statusTabsSlot: HTMLDivElement | null
                               <>
                             <button
                               onClick={() => startEdit(student)}
-                              aria-label={t(`แก้ไข ${student.firstName} ${student.lastName}`, `Edit ${student.firstName} ${student.lastName}`)}
+                              aria-label={t(`แก้ไข ${student.name}`, `Edit ${student.name}`)}
                               className="min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg text-[var(--text-secondary)] hover:text-[var(--accent)] hover:bg-[var(--accent-bright)]/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
                             >
                               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
@@ -1770,7 +1753,7 @@ function StudentsTab({ statusTabsSlot }: { statusTabsSlot: HTMLDivElement | null
                             </button>
                             <button
                               onClick={() => setDeletingId(student.id)}
-                              aria-label={t(`ลบ ${student.firstName} ${student.lastName}`, `Delete ${student.firstName} ${student.lastName}`)}
+                              aria-label={t(`ลบ ${student.name}`, `Delete ${student.name}`)}
                               className="min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg text-[var(--text-secondary)] hover:text-[var(--s-err-text)] hover:bg-[var(--s-err-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--s-err-bd)] transition-colors"
                             >
                               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
@@ -1781,7 +1764,7 @@ function StudentsTab({ statusTabsSlot }: { statusTabsSlot: HTMLDivElement | null
                             {isInactive ? (
                               <button
                                 onClick={() => activateStudent(student.id)}
-                                aria-label={t(`เปิดใช้งาน ${student.firstName} ${student.lastName}`, `Activate ${student.firstName} ${student.lastName}`)}
+                                aria-label={t(`เปิดใช้งาน ${student.name}`, `Activate ${student.name}`)}
                                 className="min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg text-[var(--text-secondary)] hover:text-green-700 hover:bg-green-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-400 transition-colors"
                               >
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
@@ -1791,7 +1774,7 @@ function StudentsTab({ statusTabsSlot }: { statusTabsSlot: HTMLDivElement | null
                             ) : (
                               <button
                                 onClick={() => setDeactivatingId(student.id)}
-                                aria-label={t(`ปิดใช้งาน ${student.firstName} ${student.lastName}`, `Deactivate ${student.firstName} ${student.lastName}`)}
+                                aria-label={t(`ปิดใช้งาน ${student.name}`, `Deactivate ${student.name}`)}
                                 className="min-h-[32px] min-w-[32px] flex items-center justify-center rounded-lg text-[var(--text-secondary)] hover:text-amber-700 hover:bg-amber-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 transition-colors"
                               >
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
@@ -1839,8 +1822,8 @@ function StudentsTab({ statusTabsSlot }: { statusTabsSlot: HTMLDivElement | null
               <h3 id="del-student-title" className="text-sm font-bold text-[var(--text-primary)]">{t("ยืนยันการลบ", "Confirm Delete")}</h3>
               <p className="text-xs text-[var(--text-muted)] mt-1">
                 {t(
-                  `ลบ "${deletingStudent.firstName} ${deletingStudent.lastName}" (${deletingStudent.studentId}) ออกจาก cohort?`,
-                  `Remove "${deletingStudent.firstName} ${deletingStudent.lastName}" (${deletingStudent.studentId}) from cohort?`
+                  `ลบ "${deletingStudent.name}" (${deletingStudent.studentId}) ออกจาก cohort?`,
+                  `Remove "${deletingStudent.name}" (${deletingStudent.studentId}) from cohort?`
                 )}
               </p>
               {/* The database cascades: roster rows, hand-ins and scores go with the account (5/11/2569). */}
@@ -1880,8 +1863,8 @@ function StudentsTab({ statusTabsSlot }: { statusTabsSlot: HTMLDivElement | null
               <div>
                 <h3 id="deactivate-student-title" className="text-sm font-bold text-[var(--text-primary)]">{t("ยืนยันการปิดใช้งาน", "Confirm Deactivate")}</h3>
                 <p className="text-xs text-[var(--text-muted)] mt-0.5">
-                  {t(`ปิดใช้งาน "${deactivatingStudent.firstName} ${deactivatingStudent.lastName}" (${deactivatingStudent.studentId})?`,
-                     `Deactivate "${deactivatingStudent.firstName} ${deactivatingStudent.lastName}" (${deactivatingStudent.studentId})?`)}
+                  {t(`ปิดใช้งาน "${deactivatingStudent.name}" (${deactivatingStudent.studentId})?`,
+                     `Deactivate "${deactivatingStudent.name}" (${deactivatingStudent.studentId})?`)}
                 </p>
                 <p className="text-xs text-[var(--text-muted)] mt-0.5">
                   {t("สามารถเปิดใช้งานคืนได้ภายหลัง", "You can activate them again later.")}

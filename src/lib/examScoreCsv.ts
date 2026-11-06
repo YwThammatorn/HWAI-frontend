@@ -97,7 +97,7 @@ export function parseExamScoreCsv(text: string, ctx: ScoreCsvContext): { rows: S
 }
 
 /** A CSV of the course's roster with an empty score column, ready to fill in a spreadsheet (UTF-8 with BOM so Thai opens right in Excel). */
-export function scoreCsvTemplate(students: { studentId: string; firstName: string; lastName: string }[], labels: { id: string; name: string; score: string }): string {
+export function scoreCsvTemplate(students: { studentId: string; name: string }[], labels: { id: string; name: string; score: string }): string {
   const q = (v: string) => (/[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v);
-  return "﻿" + [[labels.id, labels.name, labels.score], ...students.map((s) => [s.studentId, `${s.firstName} ${s.lastName}`, ""])].map((r) => r.map(q).join(",")).join("\r\n") + "\r\n";
+  return "﻿" + [[labels.id, labels.name, labels.score], ...students.map((s) => [s.studentId, s.name, ""])].map((r) => r.map(q).join(",")).join("\r\n") + "\r\n";
 }

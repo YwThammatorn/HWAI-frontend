@@ -22,7 +22,7 @@ interface AssignmentSeed {
 interface SubmissionSeed {
   id: string; assignmentId: string; studentId: string;
   studentName: string; email: string; submittedAt: string;
-  fileUrl: null; aiScore: number | null;
+  aiScore: number | null;
   instructorScore: number | null; instructorComment: string;
   externalUseConsent: boolean;
   status: "not_graded" | "need_review" | "graded";
@@ -44,7 +44,7 @@ const ASSIGNMENT: AssignmentSeed = {
 const SUBMISSION_A: SubmissionSeed = {
   id: "sub-1", assignmentId: "a-p2", studentId: "64070501",
   studentName: "สมชาย ใจดี", email: "s1@kmitl.ac.th",
-  submittedAt: "2026-08-20T10:00:00.000Z", fileUrl: null,
+  submittedAt: "2026-08-20T10:00:00.000Z", 
   aiScore: 72, instructorScore: null, instructorComment: "",
   externalUseConsent: false, status: "not_graded",
 };
@@ -52,7 +52,7 @@ const SUBMISSION_A: SubmissionSeed = {
 const SUBMISSION_B: SubmissionSeed = {
   id: "sub-2", assignmentId: "a-p2", studentId: "64070502",
   studentName: "สมหญิง ดีมาก", email: "s2@kmitl.ac.th",
-  submittedAt: "2026-08-20T11:00:00.000Z", fileUrl: null,
+  submittedAt: "2026-08-20T11:00:00.000Z", 
   aiScore: 55, instructorScore: null, instructorComment: "",
   externalUseConsent: false, status: "not_graded",
 };

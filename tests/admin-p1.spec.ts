@@ -8,15 +8,13 @@ interface TeacherSeed {
   id: string;
   name: string;
   email: string;
-  role: "teacher" | "ta";
   courseIds: string[];
 }
 
 interface StudentSeed {
   id: string;
   studentId: string;
-  firstName: string;
-  lastName: string;
+  name: string;
   email: string;
   program: string;
 }
@@ -87,23 +85,13 @@ const TEACHER_1: TeacherSeed = {
   // plain to avoid coupling the two.
   name: "John Smith",
   email: "smith@kmitl.ac.th",
-  role: "teacher",
-  courseIds: [],
-};
-
-const TA_1: TeacherSeed = {
-  id: "t-2",
-  name: "Alice Johnson",
-  email: "alice@kmitl.ac.th",
-  role: "ta",
   courseIds: [],
 };
 
 const STUDENT_1: StudentSeed = {
   id: "s-1",
   studentId: "64070501",
-  firstName: "สมชาย",
-  lastName: "ใจดี",
+  name: "สมชาย ใจดี",
   email: "s64070501@email.kmitl.ac.th",
   program: "CE",
 };
@@ -111,8 +99,7 @@ const STUDENT_1: StudentSeed = {
 const STUDENT_2: StudentSeed = {
   id: "s-2",
   studentId: "64070502",
-  firstName: "สมหญิง",
-  lastName: "ดีมาก",
+  name: "สมหญิง ดีมาก",
   email: "s64070502@email.kmitl.ac.th",
   program: "CE",
 };
@@ -255,7 +242,7 @@ test.describe("P1b — Admin Students (/admin/students)", () => {
     await openStudentsTab(page);
     // exact: true avoids matching the email cell (s64070501@email.kmitl.ac.th)
     await expect(page.getByText("64070501", { exact: true })).toBeVisible();
-    // Table renders firstName + " " + lastName in one cell
+    // Table renders the student's name in one cell
     await expect(page.getByText("สมชาย ใจดี")).toBeVisible();
   });
 

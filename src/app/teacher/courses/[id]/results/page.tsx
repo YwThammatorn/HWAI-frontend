@@ -93,7 +93,7 @@ export default function ScoreBookPage() {
 
   const book = buildScoreBook({
     students: roster.map((s) => ({
-      studentId: s.studentId, firstName: s.firstName, lastName: s.lastName, email: s.email,
+      studentId: s.studentId, name: s.name, email: s.email,
       title: findByStudentId(s.studentId)?.title,
     })),
     assignments,
@@ -107,8 +107,7 @@ export default function ScoreBookPage() {
 
   const q = search.trim().toLowerCase();
   const rows = book.rows.filter((r) => !q || [
-    r.student.studentId, r.student.title ?? "", r.student.firstName, r.student.lastName,
-    `${r.student.firstName} ${r.student.lastName}`, r.student.email ?? "",
+    r.student.studentId, r.student.title ?? "", r.student.name, r.student.email ?? "",
   ].some((f) => f.toLowerCase().includes(q)));
   if (sort) {
     rows.sort((a, b) => {
@@ -118,7 +117,7 @@ export default function ScoreBookPage() {
         if (a.total === null || b.total === null) return a.total === b.total ? 0 : a.total === null ? 1 : -1;
         cmp = a.total - b.total;
       } else if (sort.key === "name") {
-        cmp = `${a.student.firstName} ${a.student.lastName}`.localeCompare(`${b.student.firstName} ${b.student.lastName}`, "th");
+        cmp = a.student.name.localeCompare(b.student.name, "th");
       } else {
         cmp = a.student.studentId.localeCompare(b.student.studentId, undefined, { numeric: true });
       }
@@ -131,7 +130,7 @@ export default function ScoreBookPage() {
 
   function exportCsv() {
     const csv = scoreBookToCsv(book, {
-      id: t("รหัสนักศึกษา", "Student ID"), title: t("คำนำหน้า", "Title"), first: t("ชื่อ", "First name"), last: t("นามสกุล", "Last name"),
+      id: t("รหัสนักศึกษา", "Student ID"), title: t("คำนำหน้า", "Title"), name: t("ชื่อ-นามสกุล", "Name"),
       total: t("คะแนนรวมเท่าที่ตรวจแล้ว", "Total so far"),
       pending: t("รอตรวจ", "pending"), missing: t("ไม่ส่ง", "missing"),
       categoryPct: (name) => `${name} (%)`,
@@ -185,8 +184,8 @@ export default function ScoreBookPage() {
                 onClick={() => setBreakdown({ row, assignment })}
                 title={t("ดูคะแนนรายเกณฑ์", "See rubric breakdown")}
                 aria-label={t(
-                  `ดูคะแนนรายเกณฑ์ของ ${row.student.firstName} ${row.student.lastName} — ${assignment.name}`,
-                  `See the rubric breakdown for ${row.student.firstName} ${row.student.lastName} — ${assignment.name}`,
+                  `ดูคะแนนรายเกณฑ์ของ ${row.student.name} — ${assignment.name}`,
+                  `See the rubric breakdown for ${row.student.name} — ${assignment.name}`,
                 )}
                 className="w-6 h-6 shrink-0 flex items-center justify-center rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-subtle)] active:scale-[.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
               >
@@ -339,7 +338,7 @@ export default function ScoreBookPage() {
                 onChange={setSearch}
                 placeholder={t("ค้นหานักศึกษา...", "Search students...")}
                 ariaLabel={t("ค้นหานักศึกษา", "Search students")}
-                suggestions={roster.flatMap((s) => [`${s.firstName} ${s.lastName}`, s.studentId])}
+                suggestions={roster.flatMap((s) => [s.name, s.studentId])}
                 className="w-56 shrink-0"
               />
               {book.groups.length > 1 && (
@@ -456,7 +455,7 @@ export default function ScoreBookPage() {
                       >
                         <span className="block truncate font-medium text-[var(--text-primary)]" style={{ maxWidth: NAME_W - 32 }}>
                           {r.student.title && <span className="font-normal text-[var(--text-secondary)]">{r.student.title} </span>}
-                          {r.student.firstName} {r.student.lastName}
+                          {r.student.name}
                         </span>
                       </td>
                       {columns.map((a) => (
@@ -519,7 +518,7 @@ export default function ScoreBookPage() {
         const submission = submissionsById.get(cell.submissionId);
         const stored = submission?.criterionScores;
         const student = breakdown.row.student;
-        const studentLine = `${student.title ? `${student.title} ` : ""}${student.firstName} ${student.lastName}`;
+        const studentLine = `${student.title ? `${student.title} ` : ""}${student.name}`;
         return (
           <RubricBreakdownModal
             open

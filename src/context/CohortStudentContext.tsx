@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { CohortStudentContext, CohortStudent } from "@/lib/cohort-students";
+import { withName } from "@/lib/students";
 import { useSectionRoles } from "@/lib/section-roles";
 import { useGradingAssignments } from "@/lib/grading-assignments";
 import { API_ENABLED } from "@/lib/api/client";
@@ -31,7 +32,7 @@ export default function CohortStudentProvider({ children }: { children: React.Re
     }
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) setCohortStudents(JSON.parse(stored));
+      if (stored) setCohortStudents((JSON.parse(stored) as CohortStudent[]).map(withName));
     } catch {
       // ignore corrupt storage
     }

@@ -4,8 +4,7 @@
       "id": "s-uxui-1",
       "courseId": "c-mock-4",
       "studentId": "66010102",
-      "firstName": "กมลชนก",
-      "lastName": "ศรีวิไล",
+      "name": "กมลชนก ศรีวิไล",
       "email": "66010102@kmitl.ac.th",
       "sequenceNumber": 1,
       "enrollmentStatus": "enrolled"
@@ -14,8 +13,7 @@
       "id": "s-uxui-2",
       "courseId": "c-mock-4",
       "studentId": "66010103",
-      "firstName": "ปกรณ์",
-      "lastName": "วงศ์ทอง",
+      "name": "ปกรณ์ วงศ์ทอง",
       "email": "66010103@kmitl.ac.th",
       "sequenceNumber": 2,
       "enrollmentStatus": "enrolled"
@@ -24,8 +22,7 @@
       "id": "s-uxui-3",
       "courseId": "c-mock-4",
       "studentId": "66010104",
-      "firstName": "พิมพ์ชนก",
-      "lastName": "ทองใบ",
+      "name": "พิมพ์ชนก ทองใบ",
       "email": "66010104@kmitl.ac.th",
       "sequenceNumber": 3,
       "enrollmentStatus": "enrolled"
@@ -34,8 +31,7 @@
       "id": "s-uxui-4",
       "courseId": "c-mock-4",
       "studentId": "66010106",
-      "firstName": "ชลธิชา",
-      "lastName": "วัฒนชัย",
+      "name": "ชลธิชา วัฒนชัย",
       "email": "66010106@kmitl.ac.th",
       "sequenceNumber": 4,
       "enrollmentStatus": "enrolled"
@@ -44,8 +40,7 @@
       "id": "s-uxui-5",
       "courseId": "c-mock-4",
       "studentId": "67010201",
-      "firstName": "พงศกร",
-      "lastName": "เพชรรัตน์",
+      "name": "พงศกร เพชรรัตน์",
       "email": "67010201@kmitl.ac.th",
       "sequenceNumber": 5,
       "enrollmentStatus": "enrolled"
@@ -54,8 +49,7 @@
       "id": "s-uxui-6",
       "courseId": "c-mock-4",
       "studentId": "67010202",
-      "firstName": "ปาริชาต",
-      "lastName": "ดอกไม้",
+      "name": "ปาริชาต ดอกไม้",
       "email": "67010202@kmitl.ac.th",
       "sequenceNumber": 6,
       "enrollmentStatus": "enrolled"
@@ -64,8 +58,7 @@
       "id": "s-uxui-7",
       "courseId": "c-mock-4",
       "studentId": "67010203",
-      "firstName": "อภิสิทธิ์",
-      "lastName": "ทองคำ",
+      "name": "อภิสิทธิ์ ทองคำ",
       "email": "67010203@kmitl.ac.th",
       "sequenceNumber": 7,
       "enrollmentStatus": "enrolled"
@@ -74,8 +67,7 @@
       "id": "s-uxui-8",
       "courseId": "c-mock-4",
       "studentId": "67010205",
-      "firstName": "สุรชัย",
-      "lastName": "มีสุข",
+      "name": "สุรชัย มีสุข",
       "email": "67010205@kmitl.ac.th",
       "sequenceNumber": 8,
       "enrollmentStatus": "enrolled"
@@ -84,8 +76,7 @@
       "id": "s-uxui-9",
       "courseId": "c-mock-4",
       "studentId": "68020201",
-      "firstName": "นภัสสร",
-      "lastName": "เพ็ชรสุวรรณ",
+      "name": "นภัสสร เพ็ชรสุวรรณ",
       "email": "68020201@kmitl.ac.th",
       "sequenceNumber": 9,
       "enrollmentStatus": "enrolled"
@@ -94,8 +85,7 @@
       "id": "s-uxui-10",
       "courseId": "c-mock-4",
       "studentId": "68020202",
-      "firstName": "เมธัส",
-      "lastName": "ประเสริฐสุข",
+      "name": "เมธัส ประเสริฐสุข",
       "email": "68020202@kmitl.ac.th",
       "sequenceNumber": 10,
       "enrollmentStatus": "enrolled"
@@ -104,8 +94,7 @@
       "id": "s-uxui-11",
       "courseId": "c-mock-4",
       "studentId": "68020203",
-      "firstName": "ฐิติมา",
-      "lastName": "ปัญญาดี",
+      "name": "ฐิติมา ปัญญาดี",
       "email": "68020203@kmitl.ac.th",
       "sequenceNumber": 11,
       "enrollmentStatus": "enrolled"
@@ -114,8 +103,7 @@
       "id": "s-uxui-12",
       "courseId": "c-mock-4",
       "studentId": "68020204",
-      "firstName": "จักรพันธ์",
-      "lastName": "คำแสน",
+      "name": "จักรพันธ์ คำแสน",
       "email": "68020204@kmitl.ac.th",
       "sequenceNumber": 12,
       "enrollmentStatus": "enrolled"
@@ -124,8 +112,7 @@
       "id": "s-uxui-13",
       "courseId": "c-mock-4",
       "studentId": "69070101",
-      "firstName": "สมชาย",
-      "lastName": "ใจดี",
+      "name": "สมชาย ใจดี",
       "email": "69070101@kmitl.ac.th",
       "sequenceNumber": 13,
       "enrollmentStatus": "enrolled"
@@ -134,8 +121,7 @@
       "id": "s-uxui-14",
       "courseId": "c-mock-4",
       "studentId": "69070102",
-      "firstName": "สุดา",
-      "lastName": "วงษ์สา",
+      "name": "สุดา วงษ์สา",
       "email": "69070102@kmitl.ac.th",
       "sequenceNumber": 14,
       "enrollmentStatus": "enrolled"
@@ -144,8 +130,7 @@
       "id": "s-uxui-15",
       "courseId": "c-mock-4",
       "studentId": "69070201",
-      "firstName": "ศุภชัย",
-      "lastName": "บัวทอง",
+      "name": "ศุภชัย บัวทอง",
       "email": "69070201@kmitl.ac.th",
       "sequenceNumber": 15,
       "enrollmentStatus": "enrolled"
@@ -154,8 +139,7 @@
       "id": "s-uxui-16",
       "courseId": "c-mock-4",
       "studentId": "69070203",
-      "firstName": "คณิน",
-      "lastName": "พึ่งบุญ",
+      "name": "คณิน พึ่งบุญ",
       "email": "69070203@kmitl.ac.th",
       "sequenceNumber": 16,
       "enrollmentStatus": "enrolled"
@@ -164,8 +148,7 @@
       "id": "s-uxui-17",
       "courseId": "c-mock-4",
       "studentId": "69070206",
-      "firstName": "สุพัตรา",
-      "lastName": "บุญมา",
+      "name": "สุพัตรา บุญมา",
       "email": "69070206@kmitl.ac.th",
       "sequenceNumber": 17,
       "enrollmentStatus": "enrolled"
@@ -174,8 +157,7 @@
       "id": "s-uxui-18",
       "courseId": "c-mock-4",
       "studentId": "69070208",
-      "firstName": "วิภาวี",
-      "lastName": "ศรีทอง",
+      "name": "วิภาวี ศรีทอง",
       "email": "69070208@kmitl.ac.th",
       "sequenceNumber": 18,
       "enrollmentStatus": "enrolled"
@@ -184,8 +166,7 @@
       "id": "s-uxui-19",
       "courseId": "c-mock-4",
       "studentId": "69070212",
-      "firstName": "ญาดา",
-      "lastName": "พิมสอน",
+      "name": "ญาดา พิมสอน",
       "email": "69070212@kmitl.ac.th",
       "sequenceNumber": 19,
       "enrollmentStatus": "enrolled"
@@ -194,8 +175,7 @@
       "id": "s-uxui-20",
       "courseId": "c-mock-4",
       "studentId": "69070214",
-      "firstName": "ธีรภัทร",
-      "lastName": "จันทร์เพ็ญ",
+      "name": "ธีรภัทร จันทร์เพ็ญ",
       "email": "69070214@kmitl.ac.th",
       "sequenceNumber": 20,
       "enrollmentStatus": "enrolled"
@@ -204,8 +184,7 @@
       "id": "s-uxui-21",
       "courseId": "c-mock-4",
       "studentId": "69070216",
-      "firstName": "ปุณณวิช",
-      "lastName": "ศรีวงศ์",
+      "name": "ปุณณวิช ศรีวงศ์",
       "email": "69070216@kmitl.ac.th",
       "sequenceNumber": 21,
       "enrollmentStatus": "enrolled"
@@ -214,8 +193,7 @@
       "id": "s-uxui-22",
       "courseId": "c-mock-4",
       "studentId": "69070219",
-      "firstName": "ศิริพร",
-      "lastName": "ใจเย็น",
+      "name": "ศิริพร ใจเย็น",
       "email": "69070219@kmitl.ac.th",
       "sequenceNumber": 22,
       "enrollmentStatus": "enrolled"
@@ -224,8 +202,7 @@
       "id": "s-uxui-23",
       "courseId": "c-mock-4",
       "studentId": "69070221",
-      "firstName": "พิมพ์ชนก",
-      "lastName": "แซ่ลิ้ม",
+      "name": "พิมพ์ชนก แซ่ลิ้ม",
       "email": "69070221@kmitl.ac.th",
       "sequenceNumber": 23,
       "enrollmentStatus": "enrolled"
@@ -234,8 +211,7 @@
       "id": "s-uxui-24",
       "courseId": "c-mock-4",
       "studentId": "69070224",
-      "firstName": "ปิยธิดา",
-      "lastName": "ทองคำ",
+      "name": "ปิยธิดา ทองคำ",
       "email": "69070224@kmitl.ac.th",
       "sequenceNumber": 24,
       "enrollmentStatus": "enrolled"
@@ -244,8 +220,7 @@
       "id": "s-uxui-25",
       "courseId": "c-mock-4",
       "studentId": "69070226",
-      "firstName": "กัญญาวีร์",
-      "lastName": "อัครพงษ์",
+      "name": "กัญญาวีร์ อัครพงษ์",
       "email": "69070226@kmitl.ac.th",
       "sequenceNumber": 25,
       "enrollmentStatus": "enrolled"
@@ -254,8 +229,7 @@
       "id": "s-uxui-26",
       "courseId": "c-mock-4",
       "studentId": "69070228",
-      "firstName": "นลินี",
-      "lastName": "บุญเลิศ",
+      "name": "นลินี บุญเลิศ",
       "email": "69070228@kmitl.ac.th",
       "sequenceNumber": 26,
       "enrollmentStatus": "enrolled"
@@ -264,8 +238,7 @@
       "id": "s-uxui-27",
       "courseId": "c-mock-4",
       "studentId": "69070231",
-      "firstName": "สุภาพร",
-      "lastName": "ดวงจันทร์",
+      "name": "สุภาพร ดวงจันทร์",
       "email": "69070231@kmitl.ac.th",
       "sequenceNumber": 27,
       "enrollmentStatus": "enrolled"
@@ -274,8 +247,7 @@
       "id": "s-uxui-28",
       "courseId": "c-mock-4",
       "studentId": "69070233",
-      "firstName": "อรอุมา",
-      "lastName": "ชัยมงคล",
+      "name": "อรอุมา ชัยมงคล",
       "email": "69070233@kmitl.ac.th",
       "sequenceNumber": 28,
       "enrollmentStatus": "enrolled"
@@ -284,8 +256,7 @@
       "id": "s-uxui-29",
       "courseId": "c-mock-4",
       "studentId": "69070236",
-      "firstName": "วารุณี",
-      "lastName": "บุญมี",
+      "name": "วารุณี บุญมี",
       "email": "69070236@kmitl.ac.th",
       "sequenceNumber": 29,
       "enrollmentStatus": "enrolled"
@@ -294,8 +265,7 @@
       "id": "s-uxui-30",
       "courseId": "c-mock-4",
       "studentId": "69070238",
-      "firstName": "ณัฐริกา",
-      "lastName": "เพชรรัตน์",
+      "name": "ณัฐริกา เพชรรัตน์",
       "email": "69070238@kmitl.ac.th",
       "sequenceNumber": 30,
       "enrollmentStatus": "enrolled"
@@ -2379,7 +2349,6 @@
       "studentName": "กมลชนก ศรีวิไล",
       "email": "66010102@kmitl.ac.th",
       "submittedAt": "2026-08-24T01:05:00.000Z",
-      "fileUrl": null,
       "aiScore": 5,
       "instructorScore": 5,
       "instructorComment": "",
@@ -2400,7 +2369,6 @@
       "studentName": "ปกรณ์ วงศ์ทอง",
       "email": "66010103@kmitl.ac.th",
       "submittedAt": "2026-08-24T01:58:00.000Z",
-      "fileUrl": null,
       "aiScore": 5,
       "instructorScore": 5,
       "instructorComment": "",
@@ -2421,7 +2389,6 @@
       "studentName": "พิมพ์ชนก ทองใบ",
       "email": "66010104@kmitl.ac.th",
       "submittedAt": "2026-08-23T19:04:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 3,
       "instructorComment": "",
@@ -2442,7 +2409,6 @@
       "studentName": "ชลธิชา วัฒนชัย",
       "email": "66010106@kmitl.ac.th",
       "submittedAt": "2026-08-22T13:35:00.000Z",
-      "fileUrl": null,
       "aiScore": 5,
       "instructorScore": 5,
       "instructorComment": "",
@@ -2463,7 +2429,6 @@
       "studentName": "พงศกร เพชรรัตน์",
       "email": "67010201@kmitl.ac.th",
       "submittedAt": "2026-08-22T17:40:00.000Z",
-      "fileUrl": null,
       "aiScore": 5,
       "instructorScore": 3,
       "instructorComment": "",
@@ -2484,7 +2449,6 @@
       "studentName": "ปาริชาต ดอกไม้",
       "email": "67010202@kmitl.ac.th",
       "submittedAt": "2026-08-21T08:48:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 3,
       "instructorComment": "",
@@ -2505,7 +2469,6 @@
       "studentName": "อภิสิทธิ์ ทองคำ",
       "email": "67010203@kmitl.ac.th",
       "submittedAt": "2026-08-21T14:11:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 3,
       "instructorComment": "ทำได้ดี เหตุผลชัดเจน",
@@ -2526,7 +2489,6 @@
       "studentName": "สุรชัย มีสุข",
       "email": "67010205@kmitl.ac.th",
       "submittedAt": "2026-08-22T21:55:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 5,
       "instructorComment": "แนวคิดดี แต่ยังขาดการเชื่อมโยงกับข้อมูลผู้ใช้",
@@ -2547,7 +2509,6 @@
       "studentName": "นภัสสร เพ็ชรสุวรรณ",
       "email": "68020201@kmitl.ac.th",
       "submittedAt": "2026-08-22T05:37:00.000Z",
-      "fileUrl": null,
       "aiScore": 5,
       "instructorScore": 5,
       "instructorComment": "",
@@ -2568,7 +2529,6 @@
       "studentName": "เมธัส ประเสริฐสุข",
       "email": "68020202@kmitl.ac.th",
       "submittedAt": "2026-08-22T04:35:00.000Z",
-      "fileUrl": null,
       "aiScore": 2,
       "instructorScore": 3,
       "instructorComment": "",
@@ -2589,7 +2549,6 @@
       "studentName": "ฐิติมา ปัญญาดี",
       "email": "68020203@kmitl.ac.th",
       "submittedAt": "2026-08-21T21:05:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 3,
       "instructorComment": "",
@@ -2610,7 +2569,6 @@
       "studentName": "จักรพันธ์ คำแสน",
       "email": "68020204@kmitl.ac.th",
       "submittedAt": "2026-08-22T13:18:00.000Z",
-      "fileUrl": null,
       "aiScore": 5,
       "instructorScore": 5,
       "instructorComment": "",
@@ -2631,7 +2589,6 @@
       "studentName": "สมชาย ใจดี",
       "email": "69070101@kmitl.ac.th",
       "submittedAt": "2026-08-24T03:55:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 5,
       "instructorComment": "",
@@ -2652,7 +2609,6 @@
       "studentName": "สุดา วงษ์สา",
       "email": "69070102@kmitl.ac.th",
       "submittedAt": "2026-08-23T04:14:00.000Z",
-      "fileUrl": null,
       "aiScore": 5,
       "instructorScore": 5,
       "instructorComment": "",
@@ -2673,7 +2629,6 @@
       "studentName": "ศุภชัย บัวทอง",
       "email": "69070201@kmitl.ac.th",
       "submittedAt": "2026-08-22T23:45:00.000Z",
-      "fileUrl": null,
       "aiScore": 5,
       "instructorScore": 5,
       "instructorComment": "",
@@ -2694,7 +2649,6 @@
       "studentName": "คณิน พึ่งบุญ",
       "email": "69070203@kmitl.ac.th",
       "submittedAt": "2026-08-23T13:43:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 3,
       "instructorComment": "",
@@ -2715,7 +2669,6 @@
       "studentName": "สุพัตรา บุญมา",
       "email": "69070206@kmitl.ac.th",
       "submittedAt": "2026-08-21T11:39:00.000Z",
-      "fileUrl": null,
       "aiScore": 5,
       "instructorScore": 5,
       "instructorComment": "",
@@ -2736,7 +2689,6 @@
       "studentName": "วิภาวี ศรีทอง",
       "email": "69070208@kmitl.ac.th",
       "submittedAt": "2026-08-21T23:10:00.000Z",
-      "fileUrl": null,
       "aiScore": 5,
       "instructorScore": 5,
       "instructorComment": "",
@@ -2757,7 +2709,6 @@
       "studentName": "ญาดา พิมสอน",
       "email": "69070212@kmitl.ac.th",
       "submittedAt": "2026-08-23T06:12:00.000Z",
-      "fileUrl": null,
       "aiScore": 5,
       "instructorScore": 3,
       "instructorComment": "",
@@ -2778,7 +2729,6 @@
       "studentName": "ธีรภัทร จันทร์เพ็ญ",
       "email": "69070214@kmitl.ac.th",
       "submittedAt": "2026-08-22T22:50:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 3,
       "instructorComment": "",
@@ -2799,7 +2749,6 @@
       "studentName": "ปุณณวิช ศรีวงศ์",
       "email": "69070216@kmitl.ac.th",
       "submittedAt": "2026-08-21T22:32:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 3,
       "instructorComment": "",
@@ -2820,7 +2769,6 @@
       "studentName": "ศิริพร ใจเย็น",
       "email": "69070219@kmitl.ac.th",
       "submittedAt": "2026-08-23T01:38:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 3,
       "instructorComment": "",
@@ -2841,7 +2789,6 @@
       "studentName": "พิมพ์ชนก แซ่ลิ้ม",
       "email": "69070221@kmitl.ac.th",
       "submittedAt": "2026-08-24T04:59:00.000Z",
-      "fileUrl": null,
       "aiScore": 5,
       "instructorScore": 5,
       "instructorComment": "",
@@ -2862,7 +2809,6 @@
       "studentName": "ปิยธิดา ทองคำ",
       "email": "69070224@kmitl.ac.th",
       "submittedAt": "2026-08-22T15:30:00.000Z",
-      "fileUrl": null,
       "aiScore": 2,
       "instructorScore": 3,
       "instructorComment": "",
@@ -2883,7 +2829,6 @@
       "studentName": "กัญญาวีร์ อัครพงษ์",
       "email": "69070226@kmitl.ac.th",
       "submittedAt": "2026-08-21T12:34:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 3,
       "instructorComment": "",
@@ -2904,7 +2849,6 @@
       "studentName": "นลินี บุญเลิศ",
       "email": "69070228@kmitl.ac.th",
       "submittedAt": "2026-08-23T09:44:00.000Z",
-      "fileUrl": null,
       "aiScore": 5,
       "instructorScore": 3,
       "instructorComment": "แนวคิดดี แต่ยังขาดการเชื่อมโยงกับข้อมูลผู้ใช้",
@@ -2925,7 +2869,6 @@
       "studentName": "สุภาพร ดวงจันทร์",
       "email": "69070231@kmitl.ac.th",
       "submittedAt": "2026-08-24T10:00:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 3,
       "instructorComment": "",
@@ -2946,7 +2889,6 @@
       "studentName": "อรอุมา ชัยมงคล",
       "email": "69070233@kmitl.ac.th",
       "submittedAt": "2026-08-24T08:08:00.000Z",
-      "fileUrl": null,
       "aiScore": 5,
       "instructorScore": 5,
       "instructorComment": "",
@@ -2967,7 +2909,6 @@
       "studentName": "วารุณี บุญมี",
       "email": "69070236@kmitl.ac.th",
       "submittedAt": "2026-08-23T15:07:00.000Z",
-      "fileUrl": null,
       "aiScore": 5,
       "instructorScore": 3,
       "instructorComment": "",
@@ -2988,7 +2929,6 @@
       "studentName": "ณัฐริกา เพชรรัตน์",
       "email": "69070238@kmitl.ac.th",
       "submittedAt": "2026-08-22T11:49:00.000Z",
-      "fileUrl": null,
       "aiScore": 2,
       "instructorScore": 2,
       "instructorComment": "ควรอธิบายเหตุผลของการตัดสินใจให้มากขึ้น",
@@ -3009,7 +2949,6 @@
       "studentName": "กมลชนก ศรีวิไล",
       "email": "66010102@kmitl.ac.th",
       "submittedAt": "2026-08-24T09:51:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 3,
       "instructorComment": "",
@@ -3030,7 +2969,6 @@
       "studentName": "ปกรณ์ วงศ์ทอง",
       "email": "66010103@kmitl.ac.th",
       "submittedAt": "2026-08-23T10:59:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 2,
       "instructorComment": "",
@@ -3051,7 +2989,6 @@
       "studentName": "พิมพ์ชนก ทองใบ",
       "email": "66010104@kmitl.ac.th",
       "submittedAt": "2026-08-23T01:29:00.000Z",
-      "fileUrl": null,
       "aiScore": 2,
       "instructorScore": 2,
       "instructorComment": "",
@@ -3072,7 +3009,6 @@
       "studentName": "ชลธิชา วัฒนชัย",
       "email": "66010106@kmitl.ac.th",
       "submittedAt": "2026-08-23T13:15:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 3,
       "instructorComment": "",
@@ -3093,7 +3029,6 @@
       "studentName": "พงศกร เพชรรัตน์",
       "email": "67010201@kmitl.ac.th",
       "submittedAt": "2026-08-21T23:47:00.000Z",
-      "fileUrl": null,
       "aiScore": 0,
       "instructorScore": 1,
       "instructorComment": "ควรอธิบายเหตุผลของการตัดสินใจให้มากขึ้น",
@@ -3114,7 +3049,6 @@
       "studentName": "อภิสิทธิ์ ทองคำ",
       "email": "67010203@kmitl.ac.th",
       "submittedAt": "2026-08-23T13:32:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 2,
       "instructorComment": "",
@@ -3135,7 +3069,6 @@
       "studentName": "สุรชัย มีสุข",
       "email": "67010205@kmitl.ac.th",
       "submittedAt": "2026-08-24T03:02:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 3,
       "instructorComment": "",
@@ -3156,7 +3089,6 @@
       "studentName": "นภัสสร เพ็ชรสุวรรณ",
       "email": "68020201@kmitl.ac.th",
       "submittedAt": "2026-08-21T17:16:00.000Z",
-      "fileUrl": null,
       "aiScore": 2,
       "instructorScore": 2,
       "instructorComment": "",
@@ -3177,7 +3109,6 @@
       "studentName": "เมธัส ประเสริฐสุข",
       "email": "68020202@kmitl.ac.th",
       "submittedAt": "2026-08-23T12:14:00.000Z",
-      "fileUrl": null,
       "aiScore": 2,
       "instructorScore": 2,
       "instructorComment": "",
@@ -3198,7 +3129,6 @@
       "studentName": "ฐิติมา ปัญญาดี",
       "email": "68020203@kmitl.ac.th",
       "submittedAt": "2026-08-24T07:21:00.000Z",
-      "fileUrl": null,
       "aiScore": 1,
       "instructorScore": 2,
       "instructorComment": "",
@@ -3219,7 +3149,6 @@
       "studentName": "สมชาย ใจดี",
       "email": "69070101@kmitl.ac.th",
       "submittedAt": "2026-08-22T03:24:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 2,
       "instructorComment": "",
@@ -3240,7 +3169,6 @@
       "studentName": "สุดา วงษ์สา",
       "email": "69070102@kmitl.ac.th",
       "submittedAt": "2026-08-22T08:02:00.000Z",
-      "fileUrl": null,
       "aiScore": 2,
       "instructorScore": 2,
       "instructorComment": "",
@@ -3261,7 +3189,6 @@
       "studentName": "ศุภชัย บัวทอง",
       "email": "69070201@kmitl.ac.th",
       "submittedAt": "2026-08-22T00:15:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 3,
       "instructorComment": "",
@@ -3282,7 +3209,6 @@
       "studentName": "คณิน พึ่งบุญ",
       "email": "69070203@kmitl.ac.th",
       "submittedAt": "2026-08-21T15:37:00.000Z",
-      "fileUrl": null,
       "aiScore": 2,
       "instructorScore": 2,
       "instructorComment": "",
@@ -3303,7 +3229,6 @@
       "studentName": "สุพัตรา บุญมา",
       "email": "69070206@kmitl.ac.th",
       "submittedAt": "2026-08-21T19:14:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 3,
       "instructorComment": "",
@@ -3324,7 +3249,6 @@
       "studentName": "วิภาวี ศรีทอง",
       "email": "69070208@kmitl.ac.th",
       "submittedAt": "2026-08-21T07:03:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 3,
       "instructorComment": "",
@@ -3345,7 +3269,6 @@
       "studentName": "ญาดา พิมสอน",
       "email": "69070212@kmitl.ac.th",
       "submittedAt": "2026-08-23T23:24:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 3,
       "instructorComment": "",
@@ -3366,7 +3289,6 @@
       "studentName": "ธีรภัทร จันทร์เพ็ญ",
       "email": "69070214@kmitl.ac.th",
       "submittedAt": "2026-08-23T16:51:00.000Z",
-      "fileUrl": null,
       "aiScore": 1,
       "instructorScore": 2,
       "instructorComment": "",
@@ -3387,7 +3309,6 @@
       "studentName": "ปุณณวิช ศรีวงศ์",
       "email": "69070216@kmitl.ac.th",
       "submittedAt": "2026-08-22T04:05:00.000Z",
-      "fileUrl": null,
       "aiScore": 2,
       "instructorScore": 2,
       "instructorComment": "ลองเพิ่มหลักฐานหรือภาพประกอบอีกนิด",
@@ -3408,7 +3329,6 @@
       "studentName": "ศิริพร ใจเย็น",
       "email": "69070219@kmitl.ac.th",
       "submittedAt": "2026-08-23T07:02:00.000Z",
-      "fileUrl": null,
       "aiScore": 2,
       "instructorScore": 2,
       "instructorComment": "",
@@ -3429,7 +3349,6 @@
       "studentName": "พิมพ์ชนก แซ่ลิ้ม",
       "email": "69070221@kmitl.ac.th",
       "submittedAt": "2026-08-23T05:33:00.000Z",
-      "fileUrl": null,
       "aiScore": 2,
       "instructorScore": 3,
       "instructorComment": "",
@@ -3450,7 +3369,6 @@
       "studentName": "ปิยธิดา ทองคำ",
       "email": "69070224@kmitl.ac.th",
       "submittedAt": "2026-08-22T00:18:00.000Z",
-      "fileUrl": null,
       "aiScore": 2,
       "instructorScore": 2,
       "instructorComment": "",
@@ -3471,7 +3389,6 @@
       "studentName": "กัญญาวีร์ อัครพงษ์",
       "email": "69070226@kmitl.ac.th",
       "submittedAt": "2026-08-23T18:44:00.000Z",
-      "fileUrl": null,
       "aiScore": 1,
       "instructorScore": 1,
       "instructorComment": "",
@@ -3492,7 +3409,6 @@
       "studentName": "นลินี บุญเลิศ",
       "email": "69070228@kmitl.ac.th",
       "submittedAt": "2026-08-22T19:18:00.000Z",
-      "fileUrl": null,
       "aiScore": 2,
       "instructorScore": 2,
       "instructorComment": "แนวคิดดี แต่ยังขาดการเชื่อมโยงกับข้อมูลผู้ใช้",
@@ -3513,7 +3429,6 @@
       "studentName": "สุภาพร ดวงจันทร์",
       "email": "69070231@kmitl.ac.th",
       "submittedAt": "2026-08-21T23:20:00.000Z",
-      "fileUrl": null,
       "aiScore": 2,
       "instructorScore": 2,
       "instructorComment": "",
@@ -3534,7 +3449,6 @@
       "studentName": "อรอุมา ชัยมงคล",
       "email": "69070233@kmitl.ac.th",
       "submittedAt": "2026-08-22T01:34:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 2,
       "instructorComment": "",
@@ -3555,7 +3469,6 @@
       "studentName": "วารุณี บุญมี",
       "email": "69070236@kmitl.ac.th",
       "submittedAt": "2026-08-22T06:10:00.000Z",
-      "fileUrl": null,
       "aiScore": 2,
       "instructorScore": 2,
       "instructorComment": "",
@@ -3576,7 +3489,6 @@
       "studentName": "ณัฐริกา เพชรรัตน์",
       "email": "69070238@kmitl.ac.th",
       "submittedAt": "2026-08-24T00:06:00.000Z",
-      "fileUrl": null,
       "aiScore": 2,
       "instructorScore": 2,
       "instructorComment": "",
@@ -3597,7 +3509,6 @@
       "studentName": "กมลชนก ศรีวิไล",
       "email": "66010102@kmitl.ac.th",
       "submittedAt": "2026-08-30T01:20:00.000Z",
-      "fileUrl": null,
       "aiScore": 5,
       "instructorScore": 5,
       "instructorComment": "จัดวางเป็นระเบียบ ปรับระยะห่างอีกเล็กน้อยจะดีขึ้น",
@@ -3618,7 +3529,6 @@
       "studentName": "ปกรณ์ วงศ์ทอง",
       "email": "66010103@kmitl.ac.th",
       "submittedAt": "2026-08-30T19:08:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 3,
       "instructorComment": "",
@@ -3639,7 +3549,6 @@
       "studentName": "พิมพ์ชนก ทองใบ",
       "email": "66010104@kmitl.ac.th",
       "submittedAt": "2026-08-30T21:41:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 3,
       "instructorComment": "",
@@ -3660,7 +3569,6 @@
       "studentName": "ชลธิชา วัฒนชัย",
       "email": "66010106@kmitl.ac.th",
       "submittedAt": "2026-08-28T14:31:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 5,
       "instructorComment": "จัดวางเป็นระเบียบ ปรับระยะห่างอีกเล็กน้อยจะดีขึ้น",
@@ -3681,7 +3589,6 @@
       "studentName": "พงศกร เพชรรัตน์",
       "email": "67010201@kmitl.ac.th",
       "submittedAt": "2026-08-29T08:53:00.000Z",
-      "fileUrl": null,
       "aiScore": 2,
       "instructorScore": 2,
       "instructorComment": "",
@@ -3702,7 +3609,6 @@
       "studentName": "ปาริชาต ดอกไม้",
       "email": "67010202@kmitl.ac.th",
       "submittedAt": "2026-08-29T22:18:00.000Z",
-      "fileUrl": null,
       "aiScore": 5,
       "instructorScore": 3,
       "instructorComment": "",
@@ -3723,7 +3629,6 @@
       "studentName": "อภิสิทธิ์ ทองคำ",
       "email": "67010203@kmitl.ac.th",
       "submittedAt": "2026-08-29T11:15:00.000Z",
-      "fileUrl": null,
       "aiScore": 5,
       "instructorScore": 5,
       "instructorComment": "",
@@ -3744,7 +3649,6 @@
       "studentName": "สุรชัย มีสุข",
       "email": "67010205@kmitl.ac.th",
       "submittedAt": "2026-08-29T07:25:00.000Z",
-      "fileUrl": null,
       "aiScore": 5,
       "instructorScore": 5,
       "instructorComment": "",
@@ -3765,7 +3669,6 @@
       "studentName": "เมธัส ประเสริฐสุข",
       "email": "68020202@kmitl.ac.th",
       "submittedAt": "2026-08-29T00:29:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 3,
       "instructorComment": "",
@@ -3786,7 +3689,6 @@
       "studentName": "ฐิติมา ปัญญาดี",
       "email": "68020203@kmitl.ac.th",
       "submittedAt": "2026-08-29T15:30:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 3,
       "instructorComment": "",
@@ -3807,7 +3709,6 @@
       "studentName": "จักรพันธ์ คำแสน",
       "email": "68020204@kmitl.ac.th",
       "submittedAt": "2026-08-29T05:40:00.000Z",
-      "fileUrl": null,
       "aiScore": 5,
       "instructorScore": 3,
       "instructorComment": "ลองเพิ่มหลักฐานหรือภาพประกอบอีกนิด",
@@ -3828,7 +3729,6 @@
       "studentName": "สุดา วงษ์สา",
       "email": "69070102@kmitl.ac.th",
       "submittedAt": "2026-08-28T18:58:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 3,
       "instructorComment": "",
@@ -3849,7 +3749,6 @@
       "studentName": "ศุภชัย บัวทอง",
       "email": "69070201@kmitl.ac.th",
       "submittedAt": "2026-08-28T23:48:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 5,
       "instructorComment": "",
@@ -3870,7 +3769,6 @@
       "studentName": "คณิน พึ่งบุญ",
       "email": "69070203@kmitl.ac.th",
       "submittedAt": "2026-08-29T02:16:00.000Z",
-      "fileUrl": null,
       "aiScore": 2,
       "instructorScore": 3,
       "instructorComment": "",
@@ -3891,7 +3789,6 @@
       "studentName": "สุพัตรา บุญมา",
       "email": "69070206@kmitl.ac.th",
       "submittedAt": "2026-08-29T10:43:00.000Z",
-      "fileUrl": null,
       "aiScore": 5,
       "instructorScore": 3,
       "instructorComment": "",
@@ -3912,7 +3809,6 @@
       "studentName": "วิภาวี ศรีทอง",
       "email": "69070208@kmitl.ac.th",
       "submittedAt": "2026-08-28T22:19:00.000Z",
-      "fileUrl": null,
       "aiScore": 5,
       "instructorScore": 5,
       "instructorComment": "ส่งตรงเวลาและครบถ้วน",
@@ -3933,7 +3829,6 @@
       "studentName": "ญาดา พิมสอน",
       "email": "69070212@kmitl.ac.th",
       "submittedAt": "2026-08-30T12:11:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 3,
       "instructorComment": "",
@@ -3954,7 +3849,6 @@
       "studentName": "ธีรภัทร จันทร์เพ็ญ",
       "email": "69070214@kmitl.ac.th",
       "submittedAt": "2026-08-28T10:24:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 3,
       "instructorComment": "",
@@ -3975,7 +3869,6 @@
       "studentName": "ปุณณวิช ศรีวงศ์",
       "email": "69070216@kmitl.ac.th",
       "submittedAt": "2026-08-30T15:29:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 3,
       "instructorComment": "",
@@ -3996,7 +3889,6 @@
       "studentName": "ศิริพร ใจเย็น",
       "email": "69070219@kmitl.ac.th",
       "submittedAt": "2026-08-29T02:24:00.000Z",
-      "fileUrl": null,
       "aiScore": 2,
       "instructorScore": 2,
       "instructorComment": "",
@@ -4017,7 +3909,6 @@
       "studentName": "พิมพ์ชนก แซ่ลิ้ม",
       "email": "69070221@kmitl.ac.th",
       "submittedAt": "2026-08-29T15:16:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 3,
       "instructorComment": "ลองเพิ่มหลักฐานหรือภาพประกอบอีกนิด",
@@ -4038,7 +3929,6 @@
       "studentName": "ปิยธิดา ทองคำ",
       "email": "69070224@kmitl.ac.th",
       "submittedAt": "2026-08-31T14:40:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 3,
       "instructorComment": "",
@@ -4059,7 +3949,6 @@
       "studentName": "กัญญาวีร์ อัครพงษ์",
       "email": "69070226@kmitl.ac.th",
       "submittedAt": "2026-08-30T16:07:00.000Z",
-      "fileUrl": null,
       "aiScore": 5,
       "instructorScore": 3,
       "instructorComment": "",
@@ -4080,7 +3969,6 @@
       "studentName": "นลินี บุญเลิศ",
       "email": "69070228@kmitl.ac.th",
       "submittedAt": "2026-08-28T16:42:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 3,
       "instructorComment": "",
@@ -4101,7 +3989,6 @@
       "studentName": "สุภาพร ดวงจันทร์",
       "email": "69070231@kmitl.ac.th",
       "submittedAt": "2026-08-29T20:21:00.000Z",
-      "fileUrl": null,
       "aiScore": 5,
       "instructorScore": 5,
       "instructorComment": "จัดวางเป็นระเบียบ ปรับระยะห่างอีกเล็กน้อยจะดีขึ้น",
@@ -4122,7 +4009,6 @@
       "studentName": "อรอุมา ชัยมงคล",
       "email": "69070233@kmitl.ac.th",
       "submittedAt": "2026-08-30T12:36:00.000Z",
-      "fileUrl": null,
       "aiScore": 5,
       "instructorScore": 5,
       "instructorComment": "",
@@ -4143,7 +4029,6 @@
       "studentName": "วารุณี บุญมี",
       "email": "69070236@kmitl.ac.th",
       "submittedAt": "2026-08-28T18:13:00.000Z",
-      "fileUrl": null,
       "aiScore": 2,
       "instructorScore": 3,
       "instructorComment": "",
@@ -4164,7 +4049,6 @@
       "studentName": "ณัฐริกา เพชรรัตน์",
       "email": "69070238@kmitl.ac.th",
       "submittedAt": "2026-08-30T07:47:00.000Z",
-      "fileUrl": null,
       "aiScore": 2,
       "instructorScore": 3,
       "instructorComment": "",
@@ -4185,7 +4069,6 @@
       "studentName": "กมลชนก ศรีวิไล",
       "email": "66010102@kmitl.ac.th",
       "submittedAt": "2026-08-29T07:36:00.000Z",
-      "fileUrl": "https://www.figma.com/design/1TJyPywnB8VvokojQfXYb0/UXUI-Persona",
       "attachments": [
         {
           "id": "att-sub-a-uxui-4-66010102",
@@ -4215,7 +4098,6 @@
       "studentName": "ปกรณ์ วงศ์ทอง",
       "email": "66010103@kmitl.ac.th",
       "submittedAt": "2026-08-30T23:53:00.000Z",
-      "fileUrl": "https://www.figma.com/design/2bRO6ltasMHEzMmREm8BWs/UXUI-Persona",
       "attachments": [
         {
           "id": "att-sub-a-uxui-4-66010103",
@@ -4245,7 +4127,6 @@
       "studentName": "พิมพ์ชนก ทองใบ",
       "email": "66010104@kmitl.ac.th",
       "submittedAt": "2026-08-28T14:43:00.000Z",
-      "fileUrl": "https://www.figma.com/design/igIyBmKm10BBBUczDeld7y/UXUI-Persona",
       "attachments": [
         {
           "id": "att-sub-a-uxui-4-66010104",
@@ -4275,7 +4156,6 @@
       "studentName": "ชลธิชา วัฒนชัย",
       "email": "66010106@kmitl.ac.th",
       "submittedAt": "2026-08-30T01:04:00.000Z",
-      "fileUrl": "https://www.figma.com/design/1I91YeV5ueSefu8kA5JVeg/UXUI-Persona",
       "attachments": [
         {
           "id": "att-sub-a-uxui-4-66010106",
@@ -4305,7 +4185,6 @@
       "studentName": "พงศกร เพชรรัตน์",
       "email": "67010201@kmitl.ac.th",
       "submittedAt": "2026-08-30T17:32:00.000Z",
-      "fileUrl": "https://www.figma.com/design/q8Jcdf8a1MUrM7C8ZU5WC7/UXUI-Persona",
       "attachments": [
         {
           "id": "att-sub-a-uxui-4-67010201",
@@ -4335,7 +4214,6 @@
       "studentName": "ปาริชาต ดอกไม้",
       "email": "67010202@kmitl.ac.th",
       "submittedAt": "2026-08-29T07:31:00.000Z",
-      "fileUrl": "https://www.figma.com/design/tlsFUePvvBPFVPiHCIDHBS/UXUI-Persona",
       "attachments": [
         {
           "id": "att-sub-a-uxui-4-67010202",
@@ -4365,7 +4243,6 @@
       "studentName": "อภิสิทธิ์ ทองคำ",
       "email": "67010203@kmitl.ac.th",
       "submittedAt": "2026-08-29T13:23:00.000Z",
-      "fileUrl": "https://www.figma.com/design/2tTt3ZKMLf061L2Ucg1fsx/UXUI-Persona",
       "attachments": [
         {
           "id": "att-sub-a-uxui-4-67010203",
@@ -4395,7 +4272,6 @@
       "studentName": "สุรชัย มีสุข",
       "email": "67010205@kmitl.ac.th",
       "submittedAt": "2026-08-30T21:43:00.000Z",
-      "fileUrl": "https://www.figma.com/design/AuP61DSBfRXgblFfryyrJr/UXUI-Persona",
       "attachments": [
         {
           "id": "att-sub-a-uxui-4-67010205",
@@ -4425,7 +4301,6 @@
       "studentName": "นภัสสร เพ็ชรสุวรรณ",
       "email": "68020201@kmitl.ac.th",
       "submittedAt": "2026-08-28T09:39:00.000Z",
-      "fileUrl": "https://www.figma.com/design/bCvsOOIDYxAKiDpIp33dRC/UXUI-Persona",
       "attachments": [
         {
           "id": "att-sub-a-uxui-4-68020201",
@@ -4455,7 +4330,6 @@
       "studentName": "เมธัส ประเสริฐสุข",
       "email": "68020202@kmitl.ac.th",
       "submittedAt": "2026-08-29T18:46:00.000Z",
-      "fileUrl": "https://www.figma.com/design/Npw5SrsWXS5X7YBYWLVzBr/UXUI-Persona",
       "attachments": [
         {
           "id": "att-sub-a-uxui-4-68020202",
@@ -4485,7 +4359,6 @@
       "studentName": "ฐิติมา ปัญญาดี",
       "email": "68020203@kmitl.ac.th",
       "submittedAt": "2026-08-28T08:02:00.000Z",
-      "fileUrl": "https://www.figma.com/design/yqPGugeim18thl8Hsv4EQh/UXUI-Persona",
       "attachments": [
         {
           "id": "att-sub-a-uxui-4-68020203",
@@ -4515,7 +4388,6 @@
       "studentName": "จักรพันธ์ คำแสน",
       "email": "68020204@kmitl.ac.th",
       "submittedAt": "2026-08-28T16:04:00.000Z",
-      "fileUrl": "https://www.figma.com/design/LjasaSSBkhfkSvtHnveAyG/UXUI-Persona",
       "attachments": [
         {
           "id": "att-sub-a-uxui-4-68020204",
@@ -4545,7 +4417,6 @@
       "studentName": "สมชาย ใจดี",
       "email": "69070101@kmitl.ac.th",
       "submittedAt": "2026-08-31T13:28:00.000Z",
-      "fileUrl": "https://www.figma.com/design/xLdNRhxWRI7HPdZuNbWy5k/UXUI-Persona",
       "attachments": [
         {
           "id": "att-sub-a-uxui-4-69070101",
@@ -4575,7 +4446,6 @@
       "studentName": "สุดา วงษ์สา",
       "email": "69070102@kmitl.ac.th",
       "submittedAt": "2026-08-30T06:54:00.000Z",
-      "fileUrl": "https://www.figma.com/design/eJqDuX9KSYrNWSFfhNsQJw/UXUI-Persona",
       "attachments": [
         {
           "id": "att-sub-a-uxui-4-69070102",
@@ -4605,7 +4475,6 @@
       "studentName": "ศุภชัย บัวทอง",
       "email": "69070201@kmitl.ac.th",
       "submittedAt": "2026-08-29T19:02:00.000Z",
-      "fileUrl": "https://www.figma.com/design/dKUg2a3IvSfxqsHTYUtdl8/UXUI-Persona",
       "attachments": [
         {
           "id": "att-sub-a-uxui-4-69070201",
@@ -4635,7 +4504,6 @@
       "studentName": "คณิน พึ่งบุญ",
       "email": "69070203@kmitl.ac.th",
       "submittedAt": "2026-08-31T08:38:00.000Z",
-      "fileUrl": "https://www.figma.com/design/1mOaJJsRBTTV9izCQSSt20/UXUI-Persona",
       "attachments": [
         {
           "id": "att-sub-a-uxui-4-69070203",
@@ -4665,7 +4533,6 @@
       "studentName": "สุพัตรา บุญมา",
       "email": "69070206@kmitl.ac.th",
       "submittedAt": "2026-08-29T08:02:00.000Z",
-      "fileUrl": "https://www.figma.com/design/A0jzh9hryGbqJnEizbW1fn/UXUI-Persona",
       "attachments": [
         {
           "id": "att-sub-a-uxui-4-69070206",
@@ -4695,7 +4562,6 @@
       "studentName": "ญาดา พิมสอน",
       "email": "69070212@kmitl.ac.th",
       "submittedAt": "2026-08-29T18:42:00.000Z",
-      "fileUrl": "https://www.figma.com/design/fwmIs0wijK8cKNhsxOlhjS/UXUI-Persona",
       "attachments": [
         {
           "id": "att-sub-a-uxui-4-69070212",
@@ -4725,7 +4591,6 @@
       "studentName": "ธีรภัทร จันทร์เพ็ญ",
       "email": "69070214@kmitl.ac.th",
       "submittedAt": "2026-08-30T06:15:00.000Z",
-      "fileUrl": "https://www.figma.com/design/IdyZCGSQcNaRWLQnYONJrN/UXUI-Persona",
       "attachments": [
         {
           "id": "att-sub-a-uxui-4-69070214",
@@ -4755,7 +4620,6 @@
       "studentName": "ปุณณวิช ศรีวงศ์",
       "email": "69070216@kmitl.ac.th",
       "submittedAt": "2026-08-31T14:53:00.000Z",
-      "fileUrl": "https://www.figma.com/design/5vuQ6Rovz5PTV7EYzpG7O1/UXUI-Persona",
       "attachments": [
         {
           "id": "att-sub-a-uxui-4-69070216",
@@ -4785,7 +4649,6 @@
       "studentName": "พิมพ์ชนก แซ่ลิ้ม",
       "email": "69070221@kmitl.ac.th",
       "submittedAt": "2026-08-30T12:25:00.000Z",
-      "fileUrl": "https://www.figma.com/design/ZCHw8mbTos0z37wOSiIosV/UXUI-Persona",
       "attachments": [
         {
           "id": "att-sub-a-uxui-4-69070221",
@@ -4815,7 +4678,6 @@
       "studentName": "ปิยธิดา ทองคำ",
       "email": "69070224@kmitl.ac.th",
       "submittedAt": "2026-08-30T09:33:00.000Z",
-      "fileUrl": "https://www.figma.com/design/Xnoh1YyOiPQfCDQKyW7YvW/UXUI-Persona",
       "attachments": [
         {
           "id": "att-sub-a-uxui-4-69070224",
@@ -4845,7 +4707,6 @@
       "studentName": "กัญญาวีร์ อัครพงษ์",
       "email": "69070226@kmitl.ac.th",
       "submittedAt": "2026-08-29T15:29:00.000Z",
-      "fileUrl": "https://www.figma.com/design/meuYwPa3si98M9uaEiojsB/UXUI-Persona",
       "attachments": [
         {
           "id": "att-sub-a-uxui-4-69070226",
@@ -4875,7 +4736,6 @@
       "studentName": "นลินี บุญเลิศ",
       "email": "69070228@kmitl.ac.th",
       "submittedAt": "2026-08-29T15:48:00.000Z",
-      "fileUrl": "https://www.figma.com/design/Xaqb1HzcLbq05g5US9O4YR/UXUI-Persona",
       "attachments": [
         {
           "id": "att-sub-a-uxui-4-69070228",
@@ -4905,7 +4765,6 @@
       "studentName": "สุภาพร ดวงจันทร์",
       "email": "69070231@kmitl.ac.th",
       "submittedAt": "2026-08-28T09:14:00.000Z",
-      "fileUrl": "https://www.figma.com/design/a9yD2VflnEr5M5kthTmixx/UXUI-Persona",
       "attachments": [
         {
           "id": "att-sub-a-uxui-4-69070231",
@@ -4935,7 +4794,6 @@
       "studentName": "อรอุมา ชัยมงคล",
       "email": "69070233@kmitl.ac.th",
       "submittedAt": "2026-08-31T09:04:00.000Z",
-      "fileUrl": "https://www.figma.com/design/NxYQZh4nR4eUFOrKQJB5KM/UXUI-Persona",
       "attachments": [
         {
           "id": "att-sub-a-uxui-4-69070233",
@@ -4965,7 +4823,6 @@
       "studentName": "วารุณี บุญมี",
       "email": "69070236@kmitl.ac.th",
       "submittedAt": "2026-08-28T15:26:00.000Z",
-      "fileUrl": "https://www.figma.com/design/t6g2XdI1TPxl2WKcK9A9Ev/UXUI-Persona",
       "attachments": [
         {
           "id": "att-sub-a-uxui-4-69070236",
@@ -4995,7 +4852,6 @@
       "studentName": "ณัฐริกา เพชรรัตน์",
       "email": "69070238@kmitl.ac.th",
       "submittedAt": "2026-08-31T03:57:00.000Z",
-      "fileUrl": "https://www.figma.com/design/YQ95RJpyR76sSqpdvwNbFC/UXUI-Persona",
       "attachments": [
         {
           "id": "att-sub-a-uxui-4-69070238",
@@ -5025,7 +4881,6 @@
       "studentName": "กัญญาวีร์ อัครพงษ์",
       "email": "69070226@kmitl.ac.th",
       "submittedAt": "2026-09-04T10:47:00.000Z",
-      "fileUrl": "https://www.figma.com/design/IQuZ2uwS5M0ZURxemdJs4s/UXUI-Empathy-Map",
       "attachments": [
         {
           "id": "att-sub-a-uxui-5-69070226",
@@ -5058,7 +4913,6 @@
       "studentName": "พิมพ์ชนก ทองใบ",
       "email": "66010104@kmitl.ac.th",
       "submittedAt": "2026-09-04T10:47:00.000Z",
-      "fileUrl": "https://www.figma.com/design/IQuZ2uwS5M0ZURxemdJs4s/UXUI-Empathy-Map",
       "attachments": [
         {
           "id": "att-sub-a-uxui-5-66010104",
@@ -5091,7 +4945,6 @@
       "studentName": "อรอุมา ชัยมงคล",
       "email": "69070233@kmitl.ac.th",
       "submittedAt": "2026-09-04T10:47:00.000Z",
-      "fileUrl": "https://www.figma.com/design/IQuZ2uwS5M0ZURxemdJs4s/UXUI-Empathy-Map",
       "attachments": [
         {
           "id": "att-sub-a-uxui-5-69070233",
@@ -5124,7 +4977,6 @@
       "studentName": "ณัฐริกา เพชรรัตน์",
       "email": "69070238@kmitl.ac.th",
       "submittedAt": "2026-09-04T10:47:00.000Z",
-      "fileUrl": "https://www.figma.com/design/IQuZ2uwS5M0ZURxemdJs4s/UXUI-Empathy-Map",
       "attachments": [
         {
           "id": "att-sub-a-uxui-5-69070238",
@@ -5157,7 +5009,6 @@
       "studentName": "สุพัตรา บุญมา",
       "email": "69070206@kmitl.ac.th",
       "submittedAt": "2026-09-04T10:47:00.000Z",
-      "fileUrl": "https://www.figma.com/design/IQuZ2uwS5M0ZURxemdJs4s/UXUI-Empathy-Map",
       "attachments": [
         {
           "id": "att-sub-a-uxui-5-69070206",
@@ -5190,7 +5041,6 @@
       "studentName": "นภัสสร เพ็ชรสุวรรณ",
       "email": "68020201@kmitl.ac.th",
       "submittedAt": "2026-09-04T17:20:00.000Z",
-      "fileUrl": "https://www.figma.com/design/LfNStgcRCwfBcX0fNayrg3/UXUI-Empathy-Map",
       "attachments": [
         {
           "id": "att-sub-a-uxui-5-68020201",
@@ -5223,7 +5073,6 @@
       "studentName": "ปกรณ์ วงศ์ทอง",
       "email": "66010103@kmitl.ac.th",
       "submittedAt": "2026-09-04T17:20:00.000Z",
-      "fileUrl": "https://www.figma.com/design/LfNStgcRCwfBcX0fNayrg3/UXUI-Empathy-Map",
       "attachments": [
         {
           "id": "att-sub-a-uxui-5-66010103",
@@ -5256,7 +5105,6 @@
       "studentName": "เมธัส ประเสริฐสุข",
       "email": "68020202@kmitl.ac.th",
       "submittedAt": "2026-09-04T17:20:00.000Z",
-      "fileUrl": "https://www.figma.com/design/LfNStgcRCwfBcX0fNayrg3/UXUI-Empathy-Map",
       "attachments": [
         {
           "id": "att-sub-a-uxui-5-68020202",
@@ -5289,7 +5137,6 @@
       "studentName": "จักรพันธ์ คำแสน",
       "email": "68020204@kmitl.ac.th",
       "submittedAt": "2026-09-04T17:20:00.000Z",
-      "fileUrl": "https://www.figma.com/design/LfNStgcRCwfBcX0fNayrg3/UXUI-Empathy-Map",
       "attachments": [
         {
           "id": "att-sub-a-uxui-5-68020204",
@@ -5322,7 +5169,6 @@
       "studentName": "พงศกร เพชรรัตน์",
       "email": "67010201@kmitl.ac.th",
       "submittedAt": "2026-09-04T17:20:00.000Z",
-      "fileUrl": "https://www.figma.com/design/LfNStgcRCwfBcX0fNayrg3/UXUI-Empathy-Map",
       "attachments": [
         {
           "id": "att-sub-a-uxui-5-67010201",
@@ -5355,7 +5201,6 @@
       "studentName": "วารุณี บุญมี",
       "email": "69070236@kmitl.ac.th",
       "submittedAt": "2026-09-06T12:46:00.000Z",
-      "fileUrl": "https://www.figma.com/design/AH7EiWf04JeBXWjYEtStpz/UXUI-Empathy-Map",
       "attachments": [
         {
           "id": "att-sub-a-uxui-5-69070236",
@@ -5388,7 +5233,6 @@
       "studentName": "นลินี บุญเลิศ",
       "email": "69070228@kmitl.ac.th",
       "submittedAt": "2026-09-06T12:46:00.000Z",
-      "fileUrl": "https://www.figma.com/design/AH7EiWf04JeBXWjYEtStpz/UXUI-Empathy-Map",
       "attachments": [
         {
           "id": "att-sub-a-uxui-5-69070228",
@@ -5421,7 +5265,6 @@
       "studentName": "ชลธิชา วัฒนชัย",
       "email": "66010106@kmitl.ac.th",
       "submittedAt": "2026-09-06T12:46:00.000Z",
-      "fileUrl": "https://www.figma.com/design/AH7EiWf04JeBXWjYEtStpz/UXUI-Empathy-Map",
       "attachments": [
         {
           "id": "att-sub-a-uxui-5-66010106",
@@ -5454,7 +5297,6 @@
       "studentName": "ศิริพร ใจเย็น",
       "email": "69070219@kmitl.ac.th",
       "submittedAt": "2026-09-06T12:46:00.000Z",
-      "fileUrl": "https://www.figma.com/design/AH7EiWf04JeBXWjYEtStpz/UXUI-Empathy-Map",
       "attachments": [
         {
           "id": "att-sub-a-uxui-5-69070219",
@@ -5487,7 +5329,6 @@
       "studentName": "ปิยธิดา ทองคำ",
       "email": "69070224@kmitl.ac.th",
       "submittedAt": "2026-09-06T12:46:00.000Z",
-      "fileUrl": "https://www.figma.com/design/AH7EiWf04JeBXWjYEtStpz/UXUI-Empathy-Map",
       "attachments": [
         {
           "id": "att-sub-a-uxui-5-69070224",
@@ -5520,7 +5361,6 @@
       "studentName": "ธีรภัทร จันทร์เพ็ญ",
       "email": "69070214@kmitl.ac.th",
       "submittedAt": "2026-09-05T05:40:00.000Z",
-      "fileUrl": "https://www.figma.com/design/F5EuxPE5I3BCIRMN2SYw4K/UXUI-Empathy-Map",
       "attachments": [
         {
           "id": "att-sub-a-uxui-5-69070214",
@@ -5553,7 +5393,6 @@
       "studentName": "ฐิติมา ปัญญาดี",
       "email": "68020203@kmitl.ac.th",
       "submittedAt": "2026-09-05T05:40:00.000Z",
-      "fileUrl": "https://www.figma.com/design/F5EuxPE5I3BCIRMN2SYw4K/UXUI-Empathy-Map",
       "attachments": [
         {
           "id": "att-sub-a-uxui-5-68020203",
@@ -5586,7 +5425,6 @@
       "studentName": "วิภาวี ศรีทอง",
       "email": "69070208@kmitl.ac.th",
       "submittedAt": "2026-09-05T05:40:00.000Z",
-      "fileUrl": "https://www.figma.com/design/F5EuxPE5I3BCIRMN2SYw4K/UXUI-Empathy-Map",
       "attachments": [
         {
           "id": "att-sub-a-uxui-5-69070208",
@@ -5619,7 +5457,6 @@
       "studentName": "ปาริชาต ดอกไม้",
       "email": "67010202@kmitl.ac.th",
       "submittedAt": "2026-09-05T05:40:00.000Z",
-      "fileUrl": "https://www.figma.com/design/F5EuxPE5I3BCIRMN2SYw4K/UXUI-Empathy-Map",
       "attachments": [
         {
           "id": "att-sub-a-uxui-5-67010202",
@@ -5652,7 +5489,6 @@
       "studentName": "สุภาพร ดวงจันทร์",
       "email": "69070231@kmitl.ac.th",
       "submittedAt": "2026-09-05T05:40:00.000Z",
-      "fileUrl": "https://www.figma.com/design/F5EuxPE5I3BCIRMN2SYw4K/UXUI-Empathy-Map",
       "attachments": [
         {
           "id": "att-sub-a-uxui-5-69070231",
@@ -5685,7 +5521,6 @@
       "studentName": "ญาดา พิมสอน",
       "email": "69070212@kmitl.ac.th",
       "submittedAt": "2026-09-05T13:41:00.000Z",
-      "fileUrl": "https://www.figma.com/design/8q2VE1IdEgmC4hGnO3SMAY/UXUI-Empathy-Map",
       "attachments": [
         {
           "id": "att-sub-a-uxui-5-69070212",
@@ -5718,7 +5553,6 @@
       "studentName": "ปุณณวิช ศรีวงศ์",
       "email": "69070216@kmitl.ac.th",
       "submittedAt": "2026-09-05T13:41:00.000Z",
-      "fileUrl": "https://www.figma.com/design/8q2VE1IdEgmC4hGnO3SMAY/UXUI-Empathy-Map",
       "attachments": [
         {
           "id": "att-sub-a-uxui-5-69070216",
@@ -5751,7 +5585,6 @@
       "studentName": "อภิสิทธิ์ ทองคำ",
       "email": "67010203@kmitl.ac.th",
       "submittedAt": "2026-09-05T13:41:00.000Z",
-      "fileUrl": "https://www.figma.com/design/8q2VE1IdEgmC4hGnO3SMAY/UXUI-Empathy-Map",
       "attachments": [
         {
           "id": "att-sub-a-uxui-5-67010203",
@@ -5784,7 +5617,6 @@
       "studentName": "กมลชนก ศรีวิไล",
       "email": "66010102@kmitl.ac.th",
       "submittedAt": "2026-09-05T13:41:00.000Z",
-      "fileUrl": "https://www.figma.com/design/8q2VE1IdEgmC4hGnO3SMAY/UXUI-Empathy-Map",
       "attachments": [
         {
           "id": "att-sub-a-uxui-5-66010102",
@@ -5817,7 +5649,6 @@
       "studentName": "สุรชัย มีสุข",
       "email": "67010205@kmitl.ac.th",
       "submittedAt": "2026-09-05T13:41:00.000Z",
-      "fileUrl": "https://www.figma.com/design/8q2VE1IdEgmC4hGnO3SMAY/UXUI-Empathy-Map",
       "attachments": [
         {
           "id": "att-sub-a-uxui-5-67010205",
@@ -5850,7 +5681,6 @@
       "studentName": "พิมพ์ชนก แซ่ลิ้ม",
       "email": "69070221@kmitl.ac.th",
       "submittedAt": "2026-09-07T02:46:00.000Z",
-      "fileUrl": "https://www.figma.com/design/rtg7Zri33B7w6aPas3CvNX/UXUI-Empathy-Map",
       "attachments": [
         {
           "id": "att-sub-a-uxui-5-69070221",
@@ -5883,7 +5713,6 @@
       "studentName": "สุดา วงษ์สา",
       "email": "69070102@kmitl.ac.th",
       "submittedAt": "2026-09-07T02:46:00.000Z",
-      "fileUrl": "https://www.figma.com/design/rtg7Zri33B7w6aPas3CvNX/UXUI-Empathy-Map",
       "attachments": [
         {
           "id": "att-sub-a-uxui-5-69070102",
@@ -5916,7 +5745,6 @@
       "studentName": "คณิน พึ่งบุญ",
       "email": "69070203@kmitl.ac.th",
       "submittedAt": "2026-09-07T02:46:00.000Z",
-      "fileUrl": "https://www.figma.com/design/rtg7Zri33B7w6aPas3CvNX/UXUI-Empathy-Map",
       "attachments": [
         {
           "id": "att-sub-a-uxui-5-69070203",
@@ -5949,7 +5777,6 @@
       "studentName": "ศุภชัย บัวทอง",
       "email": "69070201@kmitl.ac.th",
       "submittedAt": "2026-09-07T02:46:00.000Z",
-      "fileUrl": "https://www.figma.com/design/rtg7Zri33B7w6aPas3CvNX/UXUI-Empathy-Map",
       "attachments": [
         {
           "id": "att-sub-a-uxui-5-69070201",
@@ -5982,7 +5809,6 @@
       "studentName": "สมชาย ใจดี",
       "email": "69070101@kmitl.ac.th",
       "submittedAt": "2026-09-07T02:46:00.000Z",
-      "fileUrl": "https://www.figma.com/design/rtg7Zri33B7w6aPas3CvNX/UXUI-Empathy-Map",
       "attachments": [
         {
           "id": "att-sub-a-uxui-5-69070101",
@@ -6015,7 +5841,6 @@
       "studentName": "กัญญาวีร์ อัครพงษ์",
       "email": "69070226@kmitl.ac.th",
       "submittedAt": "2026-09-07T03:02:00.000Z",
-      "fileUrl": null,
       "aiScore": 7,
       "instructorScore": 8,
       "instructorComment": "",
@@ -6041,7 +5866,6 @@
       "studentName": "พิมพ์ชนก ทองใบ",
       "email": "66010104@kmitl.ac.th",
       "submittedAt": "2026-09-07T03:02:00.000Z",
-      "fileUrl": null,
       "aiScore": 7,
       "instructorScore": 8,
       "instructorComment": "",
@@ -6067,7 +5891,6 @@
       "studentName": "อรอุมา ชัยมงคล",
       "email": "69070233@kmitl.ac.th",
       "submittedAt": "2026-09-07T03:02:00.000Z",
-      "fileUrl": null,
       "aiScore": 7,
       "instructorScore": 8,
       "instructorComment": "",
@@ -6093,7 +5916,6 @@
       "studentName": "ณัฐริกา เพชรรัตน์",
       "email": "69070238@kmitl.ac.th",
       "submittedAt": "2026-09-07T03:02:00.000Z",
-      "fileUrl": null,
       "aiScore": 7,
       "instructorScore": 8,
       "instructorComment": "",
@@ -6119,7 +5941,6 @@
       "studentName": "สุพัตรา บุญมา",
       "email": "69070206@kmitl.ac.th",
       "submittedAt": "2026-09-07T03:02:00.000Z",
-      "fileUrl": null,
       "aiScore": 7,
       "instructorScore": 8,
       "instructorComment": "",
@@ -6145,7 +5966,6 @@
       "studentName": "นภัสสร เพ็ชรสุวรรณ",
       "email": "68020201@kmitl.ac.th",
       "submittedAt": "2026-09-05T03:50:00.000Z",
-      "fileUrl": null,
       "aiScore": 7,
       "instructorScore": 7,
       "instructorComment": "",
@@ -6171,7 +5991,6 @@
       "studentName": "ปกรณ์ วงศ์ทอง",
       "email": "66010103@kmitl.ac.th",
       "submittedAt": "2026-09-05T03:50:00.000Z",
-      "fileUrl": null,
       "aiScore": 7,
       "instructorScore": 7,
       "instructorComment": "",
@@ -6197,7 +6016,6 @@
       "studentName": "เมธัส ประเสริฐสุข",
       "email": "68020202@kmitl.ac.th",
       "submittedAt": "2026-09-05T03:50:00.000Z",
-      "fileUrl": null,
       "aiScore": 7,
       "instructorScore": 7,
       "instructorComment": "",
@@ -6223,7 +6041,6 @@
       "studentName": "จักรพันธ์ คำแสน",
       "email": "68020204@kmitl.ac.th",
       "submittedAt": "2026-09-05T03:50:00.000Z",
-      "fileUrl": null,
       "aiScore": 7,
       "instructorScore": 7,
       "instructorComment": "",
@@ -6249,7 +6066,6 @@
       "studentName": "พงศกร เพชรรัตน์",
       "email": "67010201@kmitl.ac.th",
       "submittedAt": "2026-09-05T03:50:00.000Z",
-      "fileUrl": null,
       "aiScore": 7,
       "instructorScore": 7,
       "instructorComment": "",
@@ -6275,7 +6091,6 @@
       "studentName": "วารุณี บุญมี",
       "email": "69070236@kmitl.ac.th",
       "submittedAt": "2026-09-06T00:04:00.000Z",
-      "fileUrl": null,
       "aiScore": 7,
       "instructorScore": 6,
       "instructorComment": "",
@@ -6301,7 +6116,6 @@
       "studentName": "นลินี บุญเลิศ",
       "email": "69070228@kmitl.ac.th",
       "submittedAt": "2026-09-06T00:04:00.000Z",
-      "fileUrl": null,
       "aiScore": 7,
       "instructorScore": 6,
       "instructorComment": "",
@@ -6327,7 +6141,6 @@
       "studentName": "ชลธิชา วัฒนชัย",
       "email": "66010106@kmitl.ac.th",
       "submittedAt": "2026-09-06T00:04:00.000Z",
-      "fileUrl": null,
       "aiScore": 7,
       "instructorScore": 6,
       "instructorComment": "",
@@ -6353,7 +6166,6 @@
       "studentName": "ศิริพร ใจเย็น",
       "email": "69070219@kmitl.ac.th",
       "submittedAt": "2026-09-06T00:04:00.000Z",
-      "fileUrl": null,
       "aiScore": 7,
       "instructorScore": 6,
       "instructorComment": "",
@@ -6379,7 +6191,6 @@
       "studentName": "ปิยธิดา ทองคำ",
       "email": "69070224@kmitl.ac.th",
       "submittedAt": "2026-09-06T00:04:00.000Z",
-      "fileUrl": null,
       "aiScore": 7,
       "instructorScore": 6,
       "instructorComment": "",
@@ -6405,7 +6216,6 @@
       "studentName": "ธีรภัทร จันทร์เพ็ญ",
       "email": "69070214@kmitl.ac.th",
       "submittedAt": "2026-09-07T14:54:00.000Z",
-      "fileUrl": null,
       "aiScore": 9,
       "instructorScore": 8,
       "instructorComment": "",
@@ -6431,7 +6241,6 @@
       "studentName": "ฐิติมา ปัญญาดี",
       "email": "68020203@kmitl.ac.th",
       "submittedAt": "2026-09-07T14:54:00.000Z",
-      "fileUrl": null,
       "aiScore": 9,
       "instructorScore": 8,
       "instructorComment": "",
@@ -6457,7 +6266,6 @@
       "studentName": "วิภาวี ศรีทอง",
       "email": "69070208@kmitl.ac.th",
       "submittedAt": "2026-09-07T14:54:00.000Z",
-      "fileUrl": null,
       "aiScore": 9,
       "instructorScore": 8,
       "instructorComment": "",
@@ -6483,7 +6291,6 @@
       "studentName": "ปาริชาต ดอกไม้",
       "email": "67010202@kmitl.ac.th",
       "submittedAt": "2026-09-07T14:54:00.000Z",
-      "fileUrl": null,
       "aiScore": 9,
       "instructorScore": 8,
       "instructorComment": "",
@@ -6509,7 +6316,6 @@
       "studentName": "สุภาพร ดวงจันทร์",
       "email": "69070231@kmitl.ac.th",
       "submittedAt": "2026-09-07T14:54:00.000Z",
-      "fileUrl": null,
       "aiScore": 9,
       "instructorScore": 8,
       "instructorComment": "",
@@ -6535,7 +6341,6 @@
       "studentName": "ญาดา พิมสอน",
       "email": "69070212@kmitl.ac.th",
       "submittedAt": "2026-09-06T18:34:00.000Z",
-      "fileUrl": null,
       "aiScore": 9,
       "instructorScore": 8,
       "instructorComment": "",
@@ -6561,7 +6366,6 @@
       "studentName": "ปุณณวิช ศรีวงศ์",
       "email": "69070216@kmitl.ac.th",
       "submittedAt": "2026-09-06T18:34:00.000Z",
-      "fileUrl": null,
       "aiScore": 9,
       "instructorScore": 8,
       "instructorComment": "",
@@ -6587,7 +6391,6 @@
       "studentName": "อภิสิทธิ์ ทองคำ",
       "email": "67010203@kmitl.ac.th",
       "submittedAt": "2026-09-06T18:34:00.000Z",
-      "fileUrl": null,
       "aiScore": 9,
       "instructorScore": 8,
       "instructorComment": "",
@@ -6613,7 +6416,6 @@
       "studentName": "กมลชนก ศรีวิไล",
       "email": "66010102@kmitl.ac.th",
       "submittedAt": "2026-09-06T18:34:00.000Z",
-      "fileUrl": null,
       "aiScore": 9,
       "instructorScore": 8,
       "instructorComment": "",
@@ -6639,7 +6441,6 @@
       "studentName": "สุรชัย มีสุข",
       "email": "67010205@kmitl.ac.th",
       "submittedAt": "2026-09-06T18:34:00.000Z",
-      "fileUrl": null,
       "aiScore": 9,
       "instructorScore": 8,
       "instructorComment": "",
@@ -6665,7 +6466,6 @@
       "studentName": "พิมพ์ชนก แซ่ลิ้ม",
       "email": "69070221@kmitl.ac.th",
       "submittedAt": "2026-09-05T06:55:00.000Z",
-      "fileUrl": null,
       "aiScore": 9,
       "instructorScore": 9,
       "instructorComment": "ทำได้ดี เหตุผลชัดเจน",
@@ -6691,7 +6491,6 @@
       "studentName": "สุดา วงษ์สา",
       "email": "69070102@kmitl.ac.th",
       "submittedAt": "2026-09-05T06:55:00.000Z",
-      "fileUrl": null,
       "aiScore": 9,
       "instructorScore": 9,
       "instructorComment": "ทำได้ดี เหตุผลชัดเจน",
@@ -6717,7 +6516,6 @@
       "studentName": "คณิน พึ่งบุญ",
       "email": "69070203@kmitl.ac.th",
       "submittedAt": "2026-09-05T06:55:00.000Z",
-      "fileUrl": null,
       "aiScore": 9,
       "instructorScore": 9,
       "instructorComment": "ทำได้ดี เหตุผลชัดเจน",
@@ -6743,7 +6541,6 @@
       "studentName": "ศุภชัย บัวทอง",
       "email": "69070201@kmitl.ac.th",
       "submittedAt": "2026-09-05T06:55:00.000Z",
-      "fileUrl": null,
       "aiScore": 9,
       "instructorScore": 9,
       "instructorComment": "ทำได้ดี เหตุผลชัดเจน",
@@ -6769,7 +6566,6 @@
       "studentName": "สมชาย ใจดี",
       "email": "69070101@kmitl.ac.th",
       "submittedAt": "2026-09-05T06:55:00.000Z",
-      "fileUrl": null,
       "aiScore": 9,
       "instructorScore": 9,
       "instructorComment": "ทำได้ดี เหตุผลชัดเจน",
@@ -6795,7 +6591,6 @@
       "studentName": "กัญญาวีร์ อัครพงษ์",
       "email": "69070226@kmitl.ac.th",
       "submittedAt": "2026-09-07T04:10:00.000Z",
-      "fileUrl": null,
       "aiScore": 7,
       "instructorScore": 7,
       "instructorComment": "",
@@ -6821,7 +6616,6 @@
       "studentName": "พิมพ์ชนก ทองใบ",
       "email": "66010104@kmitl.ac.th",
       "submittedAt": "2026-09-07T04:10:00.000Z",
-      "fileUrl": null,
       "aiScore": 7,
       "instructorScore": 7,
       "instructorComment": "",
@@ -6847,7 +6641,6 @@
       "studentName": "อรอุมา ชัยมงคล",
       "email": "69070233@kmitl.ac.th",
       "submittedAt": "2026-09-07T04:10:00.000Z",
-      "fileUrl": null,
       "aiScore": 7,
       "instructorScore": 7,
       "instructorComment": "",
@@ -6873,7 +6666,6 @@
       "studentName": "ณัฐริกา เพชรรัตน์",
       "email": "69070238@kmitl.ac.th",
       "submittedAt": "2026-09-07T04:10:00.000Z",
-      "fileUrl": null,
       "aiScore": 7,
       "instructorScore": 7,
       "instructorComment": "",
@@ -6899,7 +6691,6 @@
       "studentName": "สุพัตรา บุญมา",
       "email": "69070206@kmitl.ac.th",
       "submittedAt": "2026-09-07T04:10:00.000Z",
-      "fileUrl": null,
       "aiScore": 7,
       "instructorScore": 7,
       "instructorComment": "",
@@ -6925,7 +6716,6 @@
       "studentName": "นภัสสร เพ็ชรสุวรรณ",
       "email": "68020201@kmitl.ac.th",
       "submittedAt": "2026-09-04T12:46:00.000Z",
-      "fileUrl": null,
       "aiScore": 6,
       "instructorScore": 7,
       "instructorComment": "ลองเพิ่มหลักฐานหรือภาพประกอบอีกนิด",
@@ -6951,7 +6741,6 @@
       "studentName": "ปกรณ์ วงศ์ทอง",
       "email": "66010103@kmitl.ac.th",
       "submittedAt": "2026-09-04T12:46:00.000Z",
-      "fileUrl": null,
       "aiScore": 6,
       "instructorScore": 7,
       "instructorComment": "ลองเพิ่มหลักฐานหรือภาพประกอบอีกนิด",
@@ -6977,7 +6766,6 @@
       "studentName": "เมธัส ประเสริฐสุข",
       "email": "68020202@kmitl.ac.th",
       "submittedAt": "2026-09-04T12:46:00.000Z",
-      "fileUrl": null,
       "aiScore": 6,
       "instructorScore": 7,
       "instructorComment": "ลองเพิ่มหลักฐานหรือภาพประกอบอีกนิด",
@@ -7003,7 +6791,6 @@
       "studentName": "จักรพันธ์ คำแสน",
       "email": "68020204@kmitl.ac.th",
       "submittedAt": "2026-09-04T12:46:00.000Z",
-      "fileUrl": null,
       "aiScore": 6,
       "instructorScore": 7,
       "instructorComment": "ลองเพิ่มหลักฐานหรือภาพประกอบอีกนิด",
@@ -7029,7 +6816,6 @@
       "studentName": "พงศกร เพชรรัตน์",
       "email": "67010201@kmitl.ac.th",
       "submittedAt": "2026-09-04T12:46:00.000Z",
-      "fileUrl": null,
       "aiScore": 6,
       "instructorScore": 7,
       "instructorComment": "ลองเพิ่มหลักฐานหรือภาพประกอบอีกนิด",
@@ -7055,7 +6841,6 @@
       "studentName": "วารุณี บุญมี",
       "email": "69070236@kmitl.ac.th",
       "submittedAt": "2026-09-06T04:23:00.000Z",
-      "fileUrl": null,
       "aiScore": 9,
       "instructorScore": 7,
       "instructorComment": "",
@@ -7081,7 +6866,6 @@
       "studentName": "นลินี บุญเลิศ",
       "email": "69070228@kmitl.ac.th",
       "submittedAt": "2026-09-06T04:23:00.000Z",
-      "fileUrl": null,
       "aiScore": 9,
       "instructorScore": 7,
       "instructorComment": "",
@@ -7107,7 +6891,6 @@
       "studentName": "ชลธิชา วัฒนชัย",
       "email": "66010106@kmitl.ac.th",
       "submittedAt": "2026-09-06T04:23:00.000Z",
-      "fileUrl": null,
       "aiScore": 9,
       "instructorScore": 7,
       "instructorComment": "",
@@ -7133,7 +6916,6 @@
       "studentName": "ศิริพร ใจเย็น",
       "email": "69070219@kmitl.ac.th",
       "submittedAt": "2026-09-06T04:23:00.000Z",
-      "fileUrl": null,
       "aiScore": 9,
       "instructorScore": 7,
       "instructorComment": "",
@@ -7159,7 +6941,6 @@
       "studentName": "ปิยธิดา ทองคำ",
       "email": "69070224@kmitl.ac.th",
       "submittedAt": "2026-09-06T04:23:00.000Z",
-      "fileUrl": null,
       "aiScore": 9,
       "instructorScore": 7,
       "instructorComment": "",
@@ -7185,7 +6966,6 @@
       "studentName": "ธีรภัทร จันทร์เพ็ญ",
       "email": "69070214@kmitl.ac.th",
       "submittedAt": "2026-09-05T15:18:00.000Z",
-      "fileUrl": null,
       "aiScore": 6,
       "instructorScore": 7,
       "instructorComment": "",
@@ -7211,7 +6991,6 @@
       "studentName": "ฐิติมา ปัญญาดี",
       "email": "68020203@kmitl.ac.th",
       "submittedAt": "2026-09-05T15:18:00.000Z",
-      "fileUrl": null,
       "aiScore": 6,
       "instructorScore": 7,
       "instructorComment": "",
@@ -7237,7 +7016,6 @@
       "studentName": "วิภาวี ศรีทอง",
       "email": "69070208@kmitl.ac.th",
       "submittedAt": "2026-09-05T15:18:00.000Z",
-      "fileUrl": null,
       "aiScore": 6,
       "instructorScore": 7,
       "instructorComment": "",
@@ -7263,7 +7041,6 @@
       "studentName": "ปาริชาต ดอกไม้",
       "email": "67010202@kmitl.ac.th",
       "submittedAt": "2026-09-05T15:18:00.000Z",
-      "fileUrl": null,
       "aiScore": 6,
       "instructorScore": 7,
       "instructorComment": "",
@@ -7289,7 +7066,6 @@
       "studentName": "สุภาพร ดวงจันทร์",
       "email": "69070231@kmitl.ac.th",
       "submittedAt": "2026-09-05T15:18:00.000Z",
-      "fileUrl": null,
       "aiScore": 6,
       "instructorScore": 7,
       "instructorComment": "",
@@ -7315,7 +7091,6 @@
       "studentName": "ญาดา พิมสอน",
       "email": "69070212@kmitl.ac.th",
       "submittedAt": "2026-09-05T15:51:00.000Z",
-      "fileUrl": null,
       "aiScore": 9,
       "instructorScore": 9,
       "instructorComment": "",
@@ -7341,7 +7116,6 @@
       "studentName": "ปุณณวิช ศรีวงศ์",
       "email": "69070216@kmitl.ac.th",
       "submittedAt": "2026-09-05T15:51:00.000Z",
-      "fileUrl": null,
       "aiScore": 9,
       "instructorScore": 9,
       "instructorComment": "",
@@ -7367,7 +7141,6 @@
       "studentName": "อภิสิทธิ์ ทองคำ",
       "email": "67010203@kmitl.ac.th",
       "submittedAt": "2026-09-05T15:51:00.000Z",
-      "fileUrl": null,
       "aiScore": 9,
       "instructorScore": 9,
       "instructorComment": "",
@@ -7393,7 +7166,6 @@
       "studentName": "กมลชนก ศรีวิไล",
       "email": "66010102@kmitl.ac.th",
       "submittedAt": "2026-09-05T15:51:00.000Z",
-      "fileUrl": null,
       "aiScore": 9,
       "instructorScore": 9,
       "instructorComment": "",
@@ -7419,7 +7191,6 @@
       "studentName": "สุรชัย มีสุข",
       "email": "67010205@kmitl.ac.th",
       "submittedAt": "2026-09-05T15:51:00.000Z",
-      "fileUrl": null,
       "aiScore": 9,
       "instructorScore": 9,
       "instructorComment": "",
@@ -7445,7 +7216,6 @@
       "studentName": "พิมพ์ชนก แซ่ลิ้ม",
       "email": "69070221@kmitl.ac.th",
       "submittedAt": "2026-09-05T14:35:00.000Z",
-      "fileUrl": null,
       "aiScore": 9,
       "instructorScore": 9,
       "instructorComment": "",
@@ -7471,7 +7241,6 @@
       "studentName": "สุดา วงษ์สา",
       "email": "69070102@kmitl.ac.th",
       "submittedAt": "2026-09-05T14:35:00.000Z",
-      "fileUrl": null,
       "aiScore": 9,
       "instructorScore": 9,
       "instructorComment": "",
@@ -7497,7 +7266,6 @@
       "studentName": "คณิน พึ่งบุญ",
       "email": "69070203@kmitl.ac.th",
       "submittedAt": "2026-09-05T14:35:00.000Z",
-      "fileUrl": null,
       "aiScore": 9,
       "instructorScore": 9,
       "instructorComment": "",
@@ -7523,7 +7291,6 @@
       "studentName": "ศุภชัย บัวทอง",
       "email": "69070201@kmitl.ac.th",
       "submittedAt": "2026-09-05T14:35:00.000Z",
-      "fileUrl": null,
       "aiScore": 9,
       "instructorScore": 9,
       "instructorComment": "",
@@ -7549,7 +7316,6 @@
       "studentName": "สมชาย ใจดี",
       "email": "69070101@kmitl.ac.th",
       "submittedAt": "2026-09-05T14:35:00.000Z",
-      "fileUrl": null,
       "aiScore": 9,
       "instructorScore": 9,
       "instructorComment": "",
@@ -7575,7 +7341,6 @@
       "studentName": "พิมพ์ชนก แซ่ลิ้ม",
       "email": "69070221@kmitl.ac.th",
       "submittedAt": "2026-09-12T10:18:00.000Z",
-      "fileUrl": "https://www.figma.com/design/b8CPJ4n3AC4Q5C6kvxibGY/UXUI-How-Might-We",
       "attachments": [
         {
           "id": "att-sub-a-uxui-8-69070221",
@@ -7610,7 +7375,6 @@
       "studentName": "พงศกร เพชรรัตน์",
       "email": "67010201@kmitl.ac.th",
       "submittedAt": "2026-09-12T10:18:00.000Z",
-      "fileUrl": "https://www.figma.com/design/b8CPJ4n3AC4Q5C6kvxibGY/UXUI-How-Might-We",
       "attachments": [
         {
           "id": "att-sub-a-uxui-8-67010201",
@@ -7645,7 +7409,6 @@
       "studentName": "สุภาพร ดวงจันทร์",
       "email": "69070231@kmitl.ac.th",
       "submittedAt": "2026-09-12T10:18:00.000Z",
-      "fileUrl": "https://www.figma.com/design/b8CPJ4n3AC4Q5C6kvxibGY/UXUI-How-Might-We",
       "attachments": [
         {
           "id": "att-sub-a-uxui-8-69070231",
@@ -7680,7 +7443,6 @@
       "studentName": "ชลธิชา วัฒนชัย",
       "email": "66010106@kmitl.ac.th",
       "submittedAt": "2026-09-12T10:18:00.000Z",
-      "fileUrl": "https://www.figma.com/design/b8CPJ4n3AC4Q5C6kvxibGY/UXUI-How-Might-We",
       "attachments": [
         {
           "id": "att-sub-a-uxui-8-66010106",
@@ -7715,7 +7477,6 @@
       "studentName": "ปิยธิดา ทองคำ",
       "email": "69070224@kmitl.ac.th",
       "submittedAt": "2026-09-12T10:18:00.000Z",
-      "fileUrl": "https://www.figma.com/design/b8CPJ4n3AC4Q5C6kvxibGY/UXUI-How-Might-We",
       "attachments": [
         {
           "id": "att-sub-a-uxui-8-69070224",
@@ -7750,7 +7511,6 @@
       "studentName": "กมลชนก ศรีวิไล",
       "email": "66010102@kmitl.ac.th",
       "submittedAt": "2026-09-13T20:48:00.000Z",
-      "fileUrl": "https://www.figma.com/design/PWZG89slNJ4uaiByQKA8nA/UXUI-How-Might-We",
       "attachments": [
         {
           "id": "att-sub-a-uxui-8-66010102",
@@ -7785,7 +7545,6 @@
       "studentName": "นลินี บุญเลิศ",
       "email": "69070228@kmitl.ac.th",
       "submittedAt": "2026-09-13T20:48:00.000Z",
-      "fileUrl": "https://www.figma.com/design/PWZG89slNJ4uaiByQKA8nA/UXUI-How-Might-We",
       "attachments": [
         {
           "id": "att-sub-a-uxui-8-69070228",
@@ -7820,7 +7579,6 @@
       "studentName": "กัญญาวีร์ อัครพงษ์",
       "email": "69070226@kmitl.ac.th",
       "submittedAt": "2026-09-13T20:48:00.000Z",
-      "fileUrl": "https://www.figma.com/design/PWZG89slNJ4uaiByQKA8nA/UXUI-How-Might-We",
       "attachments": [
         {
           "id": "att-sub-a-uxui-8-69070226",
@@ -7855,7 +7613,6 @@
       "studentName": "ศุภชัย บัวทอง",
       "email": "69070201@kmitl.ac.th",
       "submittedAt": "2026-09-13T20:48:00.000Z",
-      "fileUrl": "https://www.figma.com/design/PWZG89slNJ4uaiByQKA8nA/UXUI-How-Might-We",
       "attachments": [
         {
           "id": "att-sub-a-uxui-8-69070201",
@@ -7890,7 +7647,6 @@
       "studentName": "ญาดา พิมสอน",
       "email": "69070212@kmitl.ac.th",
       "submittedAt": "2026-09-13T20:48:00.000Z",
-      "fileUrl": "https://www.figma.com/design/PWZG89slNJ4uaiByQKA8nA/UXUI-How-Might-We",
       "attachments": [
         {
           "id": "att-sub-a-uxui-8-69070212",
@@ -7925,7 +7681,6 @@
       "studentName": "สุพัตรา บุญมา",
       "email": "69070206@kmitl.ac.th",
       "submittedAt": "2026-09-11T07:53:00.000Z",
-      "fileUrl": "https://www.figma.com/design/IDKX6p3iMn0YnmbViDTxLW/UXUI-How-Might-We",
       "attachments": [
         {
           "id": "att-sub-a-uxui-8-69070206",
@@ -7960,7 +7715,6 @@
       "studentName": "จักรพันธ์ คำแสน",
       "email": "68020204@kmitl.ac.th",
       "submittedAt": "2026-09-11T07:53:00.000Z",
-      "fileUrl": "https://www.figma.com/design/IDKX6p3iMn0YnmbViDTxLW/UXUI-How-Might-We",
       "attachments": [
         {
           "id": "att-sub-a-uxui-8-68020204",
@@ -7995,7 +7749,6 @@
       "studentName": "ธีรภัทร จันทร์เพ็ญ",
       "email": "69070214@kmitl.ac.th",
       "submittedAt": "2026-09-11T07:53:00.000Z",
-      "fileUrl": "https://www.figma.com/design/IDKX6p3iMn0YnmbViDTxLW/UXUI-How-Might-We",
       "attachments": [
         {
           "id": "att-sub-a-uxui-8-69070214",
@@ -8030,7 +7783,6 @@
       "studentName": "พิมพ์ชนก ทองใบ",
       "email": "66010104@kmitl.ac.th",
       "submittedAt": "2026-09-11T07:53:00.000Z",
-      "fileUrl": "https://www.figma.com/design/IDKX6p3iMn0YnmbViDTxLW/UXUI-How-Might-We",
       "attachments": [
         {
           "id": "att-sub-a-uxui-8-66010104",
@@ -8065,7 +7817,6 @@
       "studentName": "อภิสิทธิ์ ทองคำ",
       "email": "67010203@kmitl.ac.th",
       "submittedAt": "2026-09-11T07:53:00.000Z",
-      "fileUrl": "https://www.figma.com/design/IDKX6p3iMn0YnmbViDTxLW/UXUI-How-Might-We",
       "attachments": [
         {
           "id": "att-sub-a-uxui-8-67010203",
@@ -8100,7 +7851,6 @@
       "studentName": "ปุณณวิช ศรีวงศ์",
       "email": "69070216@kmitl.ac.th",
       "submittedAt": "2026-09-12T10:41:00.000Z",
-      "fileUrl": "https://www.figma.com/design/MEbBraYU93IY6dCeOArGHh/UXUI-How-Might-We",
       "attachments": [
         {
           "id": "att-sub-a-uxui-8-69070216",
@@ -8135,7 +7885,6 @@
       "studentName": "ศิริพร ใจเย็น",
       "email": "69070219@kmitl.ac.th",
       "submittedAt": "2026-09-12T10:41:00.000Z",
-      "fileUrl": "https://www.figma.com/design/MEbBraYU93IY6dCeOArGHh/UXUI-How-Might-We",
       "attachments": [
         {
           "id": "att-sub-a-uxui-8-69070219",
@@ -8170,7 +7919,6 @@
       "studentName": "ฐิติมา ปัญญาดี",
       "email": "68020203@kmitl.ac.th",
       "submittedAt": "2026-09-12T10:41:00.000Z",
-      "fileUrl": "https://www.figma.com/design/MEbBraYU93IY6dCeOArGHh/UXUI-How-Might-We",
       "attachments": [
         {
           "id": "att-sub-a-uxui-8-68020203",
@@ -8205,7 +7953,6 @@
       "studentName": "อรอุมา ชัยมงคล",
       "email": "69070233@kmitl.ac.th",
       "submittedAt": "2026-09-12T10:41:00.000Z",
-      "fileUrl": "https://www.figma.com/design/MEbBraYU93IY6dCeOArGHh/UXUI-How-Might-We",
       "attachments": [
         {
           "id": "att-sub-a-uxui-8-69070233",
@@ -8240,7 +7987,6 @@
       "studentName": "วารุณี บุญมี",
       "email": "69070236@kmitl.ac.th",
       "submittedAt": "2026-09-12T10:41:00.000Z",
-      "fileUrl": "https://www.figma.com/design/MEbBraYU93IY6dCeOArGHh/UXUI-How-Might-We",
       "attachments": [
         {
           "id": "att-sub-a-uxui-8-69070236",
@@ -8275,7 +8021,6 @@
       "studentName": "สุดา วงษ์สา",
       "email": "69070102@kmitl.ac.th",
       "submittedAt": "2026-09-13T20:44:00.000Z",
-      "fileUrl": "https://www.figma.com/design/Omm1Y2iyrpRD2uaTo6A9Ce/UXUI-How-Might-We",
       "attachments": [
         {
           "id": "att-sub-a-uxui-8-69070102",
@@ -8310,7 +8055,6 @@
       "studentName": "นภัสสร เพ็ชรสุวรรณ",
       "email": "68020201@kmitl.ac.th",
       "submittedAt": "2026-09-13T20:44:00.000Z",
-      "fileUrl": "https://www.figma.com/design/Omm1Y2iyrpRD2uaTo6A9Ce/UXUI-How-Might-We",
       "attachments": [
         {
           "id": "att-sub-a-uxui-8-68020201",
@@ -8345,7 +8089,6 @@
       "studentName": "วิภาวี ศรีทอง",
       "email": "69070208@kmitl.ac.th",
       "submittedAt": "2026-09-13T20:44:00.000Z",
-      "fileUrl": "https://www.figma.com/design/Omm1Y2iyrpRD2uaTo6A9Ce/UXUI-How-Might-We",
       "attachments": [
         {
           "id": "att-sub-a-uxui-8-69070208",
@@ -8380,7 +8123,6 @@
       "studentName": "สมชาย ใจดี",
       "email": "69070101@kmitl.ac.th",
       "submittedAt": "2026-09-13T20:44:00.000Z",
-      "fileUrl": "https://www.figma.com/design/Omm1Y2iyrpRD2uaTo6A9Ce/UXUI-How-Might-We",
       "attachments": [
         {
           "id": "att-sub-a-uxui-8-69070101",
@@ -8415,7 +8157,6 @@
       "studentName": "เมธัส ประเสริฐสุข",
       "email": "68020202@kmitl.ac.th",
       "submittedAt": "2026-09-13T20:44:00.000Z",
-      "fileUrl": "https://www.figma.com/design/Omm1Y2iyrpRD2uaTo6A9Ce/UXUI-How-Might-We",
       "attachments": [
         {
           "id": "att-sub-a-uxui-8-68020202",
@@ -8450,7 +8191,6 @@
       "studentName": "สุรชัย มีสุข",
       "email": "67010205@kmitl.ac.th",
       "submittedAt": "2026-09-14T00:37:00.000Z",
-      "fileUrl": "https://www.figma.com/design/hbkiCcquEvUtvrqvfDYoxb/UXUI-How-Might-We",
       "attachments": [
         {
           "id": "att-sub-a-uxui-8-67010205",
@@ -8485,7 +8225,6 @@
       "studentName": "ณัฐริกา เพชรรัตน์",
       "email": "69070238@kmitl.ac.th",
       "submittedAt": "2026-09-14T00:37:00.000Z",
-      "fileUrl": "https://www.figma.com/design/hbkiCcquEvUtvrqvfDYoxb/UXUI-How-Might-We",
       "attachments": [
         {
           "id": "att-sub-a-uxui-8-69070238",
@@ -8520,7 +8259,6 @@
       "studentName": "ปกรณ์ วงศ์ทอง",
       "email": "66010103@kmitl.ac.th",
       "submittedAt": "2026-09-14T00:37:00.000Z",
-      "fileUrl": "https://www.figma.com/design/hbkiCcquEvUtvrqvfDYoxb/UXUI-How-Might-We",
       "attachments": [
         {
           "id": "att-sub-a-uxui-8-66010103",
@@ -8555,7 +8293,6 @@
       "studentName": "คณิน พึ่งบุญ",
       "email": "69070203@kmitl.ac.th",
       "submittedAt": "2026-09-14T00:37:00.000Z",
-      "fileUrl": "https://www.figma.com/design/hbkiCcquEvUtvrqvfDYoxb/UXUI-How-Might-We",
       "attachments": [
         {
           "id": "att-sub-a-uxui-8-69070203",
@@ -8590,7 +8327,6 @@
       "studentName": "ปาริชาต ดอกไม้",
       "email": "67010202@kmitl.ac.th",
       "submittedAt": "2026-09-14T00:37:00.000Z",
-      "fileUrl": "https://www.figma.com/design/hbkiCcquEvUtvrqvfDYoxb/UXUI-How-Might-We",
       "attachments": [
         {
           "id": "att-sub-a-uxui-8-67010202",
@@ -8625,7 +8361,6 @@
       "studentName": "พิมพ์ชนก แซ่ลิ้ม",
       "email": "69070221@kmitl.ac.th",
       "submittedAt": "2026-09-14T02:34:00.000Z",
-      "fileUrl": null,
       "aiScore": 10,
       "instructorScore": 8,
       "instructorComment": "",
@@ -8649,7 +8384,6 @@
       "studentName": "พงศกร เพชรรัตน์",
       "email": "67010201@kmitl.ac.th",
       "submittedAt": "2026-09-14T02:34:00.000Z",
-      "fileUrl": null,
       "aiScore": 10,
       "instructorScore": 8,
       "instructorComment": "",
@@ -8673,7 +8407,6 @@
       "studentName": "สุภาพร ดวงจันทร์",
       "email": "69070231@kmitl.ac.th",
       "submittedAt": "2026-09-14T02:34:00.000Z",
-      "fileUrl": null,
       "aiScore": 10,
       "instructorScore": 8,
       "instructorComment": "",
@@ -8697,7 +8430,6 @@
       "studentName": "ชลธิชา วัฒนชัย",
       "email": "66010106@kmitl.ac.th",
       "submittedAt": "2026-09-14T02:34:00.000Z",
-      "fileUrl": null,
       "aiScore": 10,
       "instructorScore": 8,
       "instructorComment": "",
@@ -8721,7 +8453,6 @@
       "studentName": "ปิยธิดา ทองคำ",
       "email": "69070224@kmitl.ac.th",
       "submittedAt": "2026-09-14T02:34:00.000Z",
-      "fileUrl": null,
       "aiScore": 10,
       "instructorScore": 8,
       "instructorComment": "",
@@ -8745,7 +8476,6 @@
       "studentName": "กมลชนก ศรีวิไล",
       "email": "66010102@kmitl.ac.th",
       "submittedAt": "2026-09-14T07:40:00.000Z",
-      "fileUrl": null,
       "aiScore": 5,
       "instructorScore": 6,
       "instructorComment": "",
@@ -8769,7 +8499,6 @@
       "studentName": "นลินี บุญเลิศ",
       "email": "69070228@kmitl.ac.th",
       "submittedAt": "2026-09-14T07:40:00.000Z",
-      "fileUrl": null,
       "aiScore": 5,
       "instructorScore": 6,
       "instructorComment": "",
@@ -8793,7 +8522,6 @@
       "studentName": "กัญญาวีร์ อัครพงษ์",
       "email": "69070226@kmitl.ac.th",
       "submittedAt": "2026-09-14T07:40:00.000Z",
-      "fileUrl": null,
       "aiScore": 5,
       "instructorScore": 6,
       "instructorComment": "",
@@ -8817,7 +8545,6 @@
       "studentName": "ศุภชัย บัวทอง",
       "email": "69070201@kmitl.ac.th",
       "submittedAt": "2026-09-14T07:40:00.000Z",
-      "fileUrl": null,
       "aiScore": 5,
       "instructorScore": 6,
       "instructorComment": "",
@@ -8841,7 +8568,6 @@
       "studentName": "ญาดา พิมสอน",
       "email": "69070212@kmitl.ac.th",
       "submittedAt": "2026-09-14T07:40:00.000Z",
-      "fileUrl": null,
       "aiScore": 5,
       "instructorScore": 6,
       "instructorComment": "",
@@ -8865,7 +8591,6 @@
       "studentName": "สุพัตรา บุญมา",
       "email": "69070206@kmitl.ac.th",
       "submittedAt": "2026-09-12T00:58:00.000Z",
-      "fileUrl": null,
       "aiScore": 6,
       "instructorScore": 6,
       "instructorComment": "",
@@ -8889,7 +8614,6 @@
       "studentName": "จักรพันธ์ คำแสน",
       "email": "68020204@kmitl.ac.th",
       "submittedAt": "2026-09-12T00:58:00.000Z",
-      "fileUrl": null,
       "aiScore": 6,
       "instructorScore": 6,
       "instructorComment": "",
@@ -8913,7 +8637,6 @@
       "studentName": "ธีรภัทร จันทร์เพ็ญ",
       "email": "69070214@kmitl.ac.th",
       "submittedAt": "2026-09-12T00:58:00.000Z",
-      "fileUrl": null,
       "aiScore": 6,
       "instructorScore": 6,
       "instructorComment": "",
@@ -8937,7 +8660,6 @@
       "studentName": "พิมพ์ชนก ทองใบ",
       "email": "66010104@kmitl.ac.th",
       "submittedAt": "2026-09-12T00:58:00.000Z",
-      "fileUrl": null,
       "aiScore": 6,
       "instructorScore": 6,
       "instructorComment": "",
@@ -8961,7 +8683,6 @@
       "studentName": "อภิสิทธิ์ ทองคำ",
       "email": "67010203@kmitl.ac.th",
       "submittedAt": "2026-09-12T00:58:00.000Z",
-      "fileUrl": null,
       "aiScore": 6,
       "instructorScore": 6,
       "instructorComment": "",
@@ -8985,7 +8706,6 @@
       "studentName": "ปุณณวิช ศรีวงศ์",
       "email": "69070216@kmitl.ac.th",
       "submittedAt": "2026-09-14T01:20:00.000Z",
-      "fileUrl": null,
       "aiScore": 8,
       "instructorScore": 8,
       "instructorComment": "",
@@ -9009,7 +8729,6 @@
       "studentName": "ศิริพร ใจเย็น",
       "email": "69070219@kmitl.ac.th",
       "submittedAt": "2026-09-14T01:20:00.000Z",
-      "fileUrl": null,
       "aiScore": 8,
       "instructorScore": 8,
       "instructorComment": "",
@@ -9033,7 +8752,6 @@
       "studentName": "ฐิติมา ปัญญาดี",
       "email": "68020203@kmitl.ac.th",
       "submittedAt": "2026-09-14T01:20:00.000Z",
-      "fileUrl": null,
       "aiScore": 8,
       "instructorScore": 8,
       "instructorComment": "",
@@ -9057,7 +8775,6 @@
       "studentName": "อรอุมา ชัยมงคล",
       "email": "69070233@kmitl.ac.th",
       "submittedAt": "2026-09-14T01:20:00.000Z",
-      "fileUrl": null,
       "aiScore": 8,
       "instructorScore": 8,
       "instructorComment": "",
@@ -9081,7 +8798,6 @@
       "studentName": "วารุณี บุญมี",
       "email": "69070236@kmitl.ac.th",
       "submittedAt": "2026-09-14T01:20:00.000Z",
-      "fileUrl": null,
       "aiScore": 8,
       "instructorScore": 8,
       "instructorComment": "",
@@ -9105,7 +8821,6 @@
       "studentName": "สุดา วงษ์สา",
       "email": "69070102@kmitl.ac.th",
       "submittedAt": "2026-09-11T22:55:00.000Z",
-      "fileUrl": null,
       "aiScore": 7,
       "instructorScore": 8,
       "instructorComment": "",
@@ -9129,7 +8844,6 @@
       "studentName": "นภัสสร เพ็ชรสุวรรณ",
       "email": "68020201@kmitl.ac.th",
       "submittedAt": "2026-09-11T22:55:00.000Z",
-      "fileUrl": null,
       "aiScore": 7,
       "instructorScore": 8,
       "instructorComment": "",
@@ -9153,7 +8867,6 @@
       "studentName": "วิภาวี ศรีทอง",
       "email": "69070208@kmitl.ac.th",
       "submittedAt": "2026-09-11T22:55:00.000Z",
-      "fileUrl": null,
       "aiScore": 7,
       "instructorScore": 8,
       "instructorComment": "",
@@ -9177,7 +8890,6 @@
       "studentName": "สมชาย ใจดี",
       "email": "69070101@kmitl.ac.th",
       "submittedAt": "2026-09-11T22:55:00.000Z",
-      "fileUrl": null,
       "aiScore": 7,
       "instructorScore": 8,
       "instructorComment": "",
@@ -9201,7 +8913,6 @@
       "studentName": "เมธัส ประเสริฐสุข",
       "email": "68020202@kmitl.ac.th",
       "submittedAt": "2026-09-11T22:55:00.000Z",
-      "fileUrl": null,
       "aiScore": 7,
       "instructorScore": 8,
       "instructorComment": "",
@@ -9225,7 +8936,6 @@
       "studentName": "สุรชัย มีสุข",
       "email": "67010205@kmitl.ac.th",
       "submittedAt": "2026-09-13T07:55:00.000Z",
-      "fileUrl": null,
       "aiScore": 8,
       "instructorScore": 8,
       "instructorComment": "",
@@ -9249,7 +8959,6 @@
       "studentName": "ณัฐริกา เพชรรัตน์",
       "email": "69070238@kmitl.ac.th",
       "submittedAt": "2026-09-13T07:55:00.000Z",
-      "fileUrl": null,
       "aiScore": 8,
       "instructorScore": 8,
       "instructorComment": "",
@@ -9273,7 +8982,6 @@
       "studentName": "ปกรณ์ วงศ์ทอง",
       "email": "66010103@kmitl.ac.th",
       "submittedAt": "2026-09-13T07:55:00.000Z",
-      "fileUrl": null,
       "aiScore": 8,
       "instructorScore": 8,
       "instructorComment": "",
@@ -9297,7 +9005,6 @@
       "studentName": "คณิน พึ่งบุญ",
       "email": "69070203@kmitl.ac.th",
       "submittedAt": "2026-09-13T07:55:00.000Z",
-      "fileUrl": null,
       "aiScore": 8,
       "instructorScore": 8,
       "instructorComment": "",
@@ -9321,7 +9028,6 @@
       "studentName": "ปาริชาต ดอกไม้",
       "email": "67010202@kmitl.ac.th",
       "submittedAt": "2026-09-13T07:55:00.000Z",
-      "fileUrl": null,
       "aiScore": 8,
       "instructorScore": 8,
       "instructorComment": "",
@@ -9345,7 +9051,6 @@
       "studentName": "กัญญาวีร์ อัครพงษ์",
       "email": "69070226@kmitl.ac.th",
       "submittedAt": "2026-09-13T23:06:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 3,
       "instructorComment": "",
@@ -9367,7 +9072,6 @@
       "studentName": "พิมพ์ชนก ทองใบ",
       "email": "66010104@kmitl.ac.th",
       "submittedAt": "2026-09-13T23:06:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 3,
       "instructorComment": "",
@@ -9389,7 +9093,6 @@
       "studentName": "อรอุมา ชัยมงคล",
       "email": "69070233@kmitl.ac.th",
       "submittedAt": "2026-09-13T23:06:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 3,
       "instructorComment": "",
@@ -9411,7 +9114,6 @@
       "studentName": "ณัฐริกา เพชรรัตน์",
       "email": "69070238@kmitl.ac.th",
       "submittedAt": "2026-09-13T23:06:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 3,
       "instructorComment": "",
@@ -9433,7 +9135,6 @@
       "studentName": "สุพัตรา บุญมา",
       "email": "69070206@kmitl.ac.th",
       "submittedAt": "2026-09-13T23:06:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 3,
       "instructorComment": "",
@@ -9455,7 +9156,6 @@
       "studentName": "นภัสสร เพ็ชรสุวรรณ",
       "email": "68020201@kmitl.ac.th",
       "submittedAt": "2026-09-13T04:13:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 3,
       "instructorComment": "",
@@ -9477,7 +9177,6 @@
       "studentName": "ปกรณ์ วงศ์ทอง",
       "email": "66010103@kmitl.ac.th",
       "submittedAt": "2026-09-13T04:13:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 3,
       "instructorComment": "",
@@ -9499,7 +9198,6 @@
       "studentName": "เมธัส ประเสริฐสุข",
       "email": "68020202@kmitl.ac.th",
       "submittedAt": "2026-09-13T04:13:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 3,
       "instructorComment": "",
@@ -9521,7 +9219,6 @@
       "studentName": "จักรพันธ์ คำแสน",
       "email": "68020204@kmitl.ac.th",
       "submittedAt": "2026-09-13T04:13:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 3,
       "instructorComment": "",
@@ -9543,7 +9240,6 @@
       "studentName": "พงศกร เพชรรัตน์",
       "email": "67010201@kmitl.ac.th",
       "submittedAt": "2026-09-13T04:13:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 3,
       "instructorComment": "",
@@ -9565,7 +9261,6 @@
       "studentName": "วารุณี บุญมี",
       "email": "69070236@kmitl.ac.th",
       "submittedAt": "2026-09-13T22:19:00.000Z",
-      "fileUrl": null,
       "aiScore": 2,
       "instructorScore": 3,
       "instructorComment": "",
@@ -9587,7 +9282,6 @@
       "studentName": "นลินี บุญเลิศ",
       "email": "69070228@kmitl.ac.th",
       "submittedAt": "2026-09-13T22:19:00.000Z",
-      "fileUrl": null,
       "aiScore": 2,
       "instructorScore": 3,
       "instructorComment": "",
@@ -9609,7 +9303,6 @@
       "studentName": "ชลธิชา วัฒนชัย",
       "email": "66010106@kmitl.ac.th",
       "submittedAt": "2026-09-13T22:19:00.000Z",
-      "fileUrl": null,
       "aiScore": 2,
       "instructorScore": 3,
       "instructorComment": "",
@@ -9631,7 +9324,6 @@
       "studentName": "ศิริพร ใจเย็น",
       "email": "69070219@kmitl.ac.th",
       "submittedAt": "2026-09-13T22:19:00.000Z",
-      "fileUrl": null,
       "aiScore": 2,
       "instructorScore": 3,
       "instructorComment": "",
@@ -9653,7 +9345,6 @@
       "studentName": "ปิยธิดา ทองคำ",
       "email": "69070224@kmitl.ac.th",
       "submittedAt": "2026-09-13T22:19:00.000Z",
-      "fileUrl": null,
       "aiScore": 2,
       "instructorScore": 3,
       "instructorComment": "",
@@ -9675,7 +9366,6 @@
       "studentName": "ธีรภัทร จันทร์เพ็ญ",
       "email": "69070214@kmitl.ac.th",
       "submittedAt": "2026-09-14T02:13:00.000Z",
-      "fileUrl": null,
       "aiScore": 5,
       "instructorScore": 3,
       "instructorComment": "ทำได้ดี เหตุผลชัดเจน",
@@ -9697,7 +9387,6 @@
       "studentName": "ฐิติมา ปัญญาดี",
       "email": "68020203@kmitl.ac.th",
       "submittedAt": "2026-09-14T02:13:00.000Z",
-      "fileUrl": null,
       "aiScore": 5,
       "instructorScore": 3,
       "instructorComment": "ทำได้ดี เหตุผลชัดเจน",
@@ -9719,7 +9408,6 @@
       "studentName": "วิภาวี ศรีทอง",
       "email": "69070208@kmitl.ac.th",
       "submittedAt": "2026-09-14T02:13:00.000Z",
-      "fileUrl": null,
       "aiScore": 5,
       "instructorScore": 3,
       "instructorComment": "ทำได้ดี เหตุผลชัดเจน",
@@ -9741,7 +9429,6 @@
       "studentName": "ปาริชาต ดอกไม้",
       "email": "67010202@kmitl.ac.th",
       "submittedAt": "2026-09-14T02:13:00.000Z",
-      "fileUrl": null,
       "aiScore": 5,
       "instructorScore": 3,
       "instructorComment": "ทำได้ดี เหตุผลชัดเจน",
@@ -9763,7 +9450,6 @@
       "studentName": "สุภาพร ดวงจันทร์",
       "email": "69070231@kmitl.ac.th",
       "submittedAt": "2026-09-14T02:13:00.000Z",
-      "fileUrl": null,
       "aiScore": 5,
       "instructorScore": 3,
       "instructorComment": "ทำได้ดี เหตุผลชัดเจน",
@@ -9785,7 +9471,6 @@
       "studentName": "ญาดา พิมสอน",
       "email": "69070212@kmitl.ac.th",
       "submittedAt": "2026-09-12T01:01:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 5,
       "instructorComment": "",
@@ -9807,7 +9492,6 @@
       "studentName": "ปุณณวิช ศรีวงศ์",
       "email": "69070216@kmitl.ac.th",
       "submittedAt": "2026-09-12T01:01:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 5,
       "instructorComment": "",
@@ -9829,7 +9513,6 @@
       "studentName": "อภิสิทธิ์ ทองคำ",
       "email": "67010203@kmitl.ac.th",
       "submittedAt": "2026-09-12T01:01:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 5,
       "instructorComment": "",
@@ -9851,7 +9534,6 @@
       "studentName": "กมลชนก ศรีวิไล",
       "email": "66010102@kmitl.ac.th",
       "submittedAt": "2026-09-12T01:01:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 5,
       "instructorComment": "",
@@ -9873,7 +9555,6 @@
       "studentName": "สุรชัย มีสุข",
       "email": "67010205@kmitl.ac.th",
       "submittedAt": "2026-09-12T01:01:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 5,
       "instructorComment": "",
@@ -9895,7 +9576,6 @@
       "studentName": "พิมพ์ชนก แซ่ลิ้ม",
       "email": "69070221@kmitl.ac.th",
       "submittedAt": "2026-09-14T00:01:00.000Z",
-      "fileUrl": null,
       "aiScore": 2,
       "instructorScore": 3,
       "instructorComment": "",
@@ -9917,7 +9597,6 @@
       "studentName": "สุดา วงษ์สา",
       "email": "69070102@kmitl.ac.th",
       "submittedAt": "2026-09-14T00:01:00.000Z",
-      "fileUrl": null,
       "aiScore": 2,
       "instructorScore": 3,
       "instructorComment": "",
@@ -9939,7 +9618,6 @@
       "studentName": "คณิน พึ่งบุญ",
       "email": "69070203@kmitl.ac.th",
       "submittedAt": "2026-09-14T00:01:00.000Z",
-      "fileUrl": null,
       "aiScore": 2,
       "instructorScore": 3,
       "instructorComment": "",
@@ -9961,7 +9639,6 @@
       "studentName": "ศุภชัย บัวทอง",
       "email": "69070201@kmitl.ac.th",
       "submittedAt": "2026-09-14T00:01:00.000Z",
-      "fileUrl": null,
       "aiScore": 2,
       "instructorScore": 3,
       "instructorComment": "",
@@ -9983,7 +9660,6 @@
       "studentName": "สมชาย ใจดี",
       "email": "69070101@kmitl.ac.th",
       "submittedAt": "2026-09-14T00:01:00.000Z",
-      "fileUrl": null,
       "aiScore": 2,
       "instructorScore": 3,
       "instructorComment": "",
@@ -10005,7 +9681,6 @@
       "studentName": "กัญญาวีร์ อัครพงษ์",
       "email": "69070226@kmitl.ac.th",
       "submittedAt": "2026-09-13T20:31:00.000Z",
-      "fileUrl": "https://www.figma.com/design/ZAaiMduG7l9fk4HA41fct3/UXUI-Sitemap",
       "attachments": [
         {
           "id": "att-sub-a-uxui-11-69070226",
@@ -10036,7 +9711,6 @@
       "studentName": "พิมพ์ชนก ทองใบ",
       "email": "66010104@kmitl.ac.th",
       "submittedAt": "2026-09-13T20:31:00.000Z",
-      "fileUrl": "https://www.figma.com/design/ZAaiMduG7l9fk4HA41fct3/UXUI-Sitemap",
       "attachments": [
         {
           "id": "att-sub-a-uxui-11-66010104",
@@ -10067,7 +9741,6 @@
       "studentName": "อรอุมา ชัยมงคล",
       "email": "69070233@kmitl.ac.th",
       "submittedAt": "2026-09-13T20:31:00.000Z",
-      "fileUrl": "https://www.figma.com/design/ZAaiMduG7l9fk4HA41fct3/UXUI-Sitemap",
       "attachments": [
         {
           "id": "att-sub-a-uxui-11-69070233",
@@ -10098,7 +9771,6 @@
       "studentName": "ณัฐริกา เพชรรัตน์",
       "email": "69070238@kmitl.ac.th",
       "submittedAt": "2026-09-13T20:31:00.000Z",
-      "fileUrl": "https://www.figma.com/design/ZAaiMduG7l9fk4HA41fct3/UXUI-Sitemap",
       "attachments": [
         {
           "id": "att-sub-a-uxui-11-69070238",
@@ -10129,7 +9801,6 @@
       "studentName": "สุพัตรา บุญมา",
       "email": "69070206@kmitl.ac.th",
       "submittedAt": "2026-09-13T20:31:00.000Z",
-      "fileUrl": "https://www.figma.com/design/ZAaiMduG7l9fk4HA41fct3/UXUI-Sitemap",
       "attachments": [
         {
           "id": "att-sub-a-uxui-11-69070206",
@@ -10160,7 +9831,6 @@
       "studentName": "นภัสสร เพ็ชรสุวรรณ",
       "email": "68020201@kmitl.ac.th",
       "submittedAt": "2026-09-13T13:29:00.000Z",
-      "fileUrl": "https://www.figma.com/design/r0nxuizUzOGpby1zH3LEDV/UXUI-Sitemap",
       "attachments": [
         {
           "id": "att-sub-a-uxui-11-68020201",
@@ -10191,7 +9861,6 @@
       "studentName": "ปกรณ์ วงศ์ทอง",
       "email": "66010103@kmitl.ac.th",
       "submittedAt": "2026-09-13T13:29:00.000Z",
-      "fileUrl": "https://www.figma.com/design/r0nxuizUzOGpby1zH3LEDV/UXUI-Sitemap",
       "attachments": [
         {
           "id": "att-sub-a-uxui-11-66010103",
@@ -10222,7 +9891,6 @@
       "studentName": "เมธัส ประเสริฐสุข",
       "email": "68020202@kmitl.ac.th",
       "submittedAt": "2026-09-13T13:29:00.000Z",
-      "fileUrl": "https://www.figma.com/design/r0nxuizUzOGpby1zH3LEDV/UXUI-Sitemap",
       "attachments": [
         {
           "id": "att-sub-a-uxui-11-68020202",
@@ -10253,7 +9921,6 @@
       "studentName": "จักรพันธ์ คำแสน",
       "email": "68020204@kmitl.ac.th",
       "submittedAt": "2026-09-13T13:29:00.000Z",
-      "fileUrl": "https://www.figma.com/design/r0nxuizUzOGpby1zH3LEDV/UXUI-Sitemap",
       "attachments": [
         {
           "id": "att-sub-a-uxui-11-68020204",
@@ -10284,7 +9951,6 @@
       "studentName": "พงศกร เพชรรัตน์",
       "email": "67010201@kmitl.ac.th",
       "submittedAt": "2026-09-13T13:29:00.000Z",
-      "fileUrl": "https://www.figma.com/design/r0nxuizUzOGpby1zH3LEDV/UXUI-Sitemap",
       "attachments": [
         {
           "id": "att-sub-a-uxui-11-67010201",
@@ -10315,7 +9981,6 @@
       "studentName": "วารุณี บุญมี",
       "email": "69070236@kmitl.ac.th",
       "submittedAt": "2026-09-13T20:07:00.000Z",
-      "fileUrl": "https://www.figma.com/design/5lXpIoccYl08ugJ1z2MV6U/UXUI-Sitemap",
       "attachments": [
         {
           "id": "att-sub-a-uxui-11-69070236",
@@ -10346,7 +10011,6 @@
       "studentName": "นลินี บุญเลิศ",
       "email": "69070228@kmitl.ac.th",
       "submittedAt": "2026-09-13T20:07:00.000Z",
-      "fileUrl": "https://www.figma.com/design/5lXpIoccYl08ugJ1z2MV6U/UXUI-Sitemap",
       "attachments": [
         {
           "id": "att-sub-a-uxui-11-69070228",
@@ -10377,7 +10041,6 @@
       "studentName": "ชลธิชา วัฒนชัย",
       "email": "66010106@kmitl.ac.th",
       "submittedAt": "2026-09-13T20:07:00.000Z",
-      "fileUrl": "https://www.figma.com/design/5lXpIoccYl08ugJ1z2MV6U/UXUI-Sitemap",
       "attachments": [
         {
           "id": "att-sub-a-uxui-11-66010106",
@@ -10408,7 +10071,6 @@
       "studentName": "ศิริพร ใจเย็น",
       "email": "69070219@kmitl.ac.th",
       "submittedAt": "2026-09-13T20:07:00.000Z",
-      "fileUrl": "https://www.figma.com/design/5lXpIoccYl08ugJ1z2MV6U/UXUI-Sitemap",
       "attachments": [
         {
           "id": "att-sub-a-uxui-11-69070219",
@@ -10439,7 +10101,6 @@
       "studentName": "ปิยธิดา ทองคำ",
       "email": "69070224@kmitl.ac.th",
       "submittedAt": "2026-09-13T20:07:00.000Z",
-      "fileUrl": "https://www.figma.com/design/5lXpIoccYl08ugJ1z2MV6U/UXUI-Sitemap",
       "attachments": [
         {
           "id": "att-sub-a-uxui-11-69070224",
@@ -10470,7 +10131,6 @@
       "studentName": "ธีรภัทร จันทร์เพ็ญ",
       "email": "69070214@kmitl.ac.th",
       "submittedAt": "2026-09-14T00:56:00.000Z",
-      "fileUrl": "https://www.figma.com/design/FVvb1yHzyazrnL5t8jTb1A/UXUI-Sitemap",
       "attachments": [
         {
           "id": "att-sub-a-uxui-11-69070214",
@@ -10501,7 +10161,6 @@
       "studentName": "ฐิติมา ปัญญาดี",
       "email": "68020203@kmitl.ac.th",
       "submittedAt": "2026-09-14T00:56:00.000Z",
-      "fileUrl": "https://www.figma.com/design/FVvb1yHzyazrnL5t8jTb1A/UXUI-Sitemap",
       "attachments": [
         {
           "id": "att-sub-a-uxui-11-68020203",
@@ -10532,7 +10191,6 @@
       "studentName": "วิภาวี ศรีทอง",
       "email": "69070208@kmitl.ac.th",
       "submittedAt": "2026-09-14T00:56:00.000Z",
-      "fileUrl": "https://www.figma.com/design/FVvb1yHzyazrnL5t8jTb1A/UXUI-Sitemap",
       "attachments": [
         {
           "id": "att-sub-a-uxui-11-69070208",
@@ -10563,7 +10221,6 @@
       "studentName": "ปาริชาต ดอกไม้",
       "email": "67010202@kmitl.ac.th",
       "submittedAt": "2026-09-14T00:56:00.000Z",
-      "fileUrl": "https://www.figma.com/design/FVvb1yHzyazrnL5t8jTb1A/UXUI-Sitemap",
       "attachments": [
         {
           "id": "att-sub-a-uxui-11-67010202",
@@ -10594,7 +10251,6 @@
       "studentName": "สุภาพร ดวงจันทร์",
       "email": "69070231@kmitl.ac.th",
       "submittedAt": "2026-09-14T00:56:00.000Z",
-      "fileUrl": "https://www.figma.com/design/FVvb1yHzyazrnL5t8jTb1A/UXUI-Sitemap",
       "attachments": [
         {
           "id": "att-sub-a-uxui-11-69070231",
@@ -10625,7 +10281,6 @@
       "studentName": "ญาดา พิมสอน",
       "email": "69070212@kmitl.ac.th",
       "submittedAt": "2026-09-14T07:49:00.000Z",
-      "fileUrl": "https://www.figma.com/design/CauFaqwznCQDov0Pl5d8sI/UXUI-Sitemap",
       "attachments": [
         {
           "id": "att-sub-a-uxui-11-69070212",
@@ -10656,7 +10311,6 @@
       "studentName": "ปุณณวิช ศรีวงศ์",
       "email": "69070216@kmitl.ac.th",
       "submittedAt": "2026-09-14T07:49:00.000Z",
-      "fileUrl": "https://www.figma.com/design/CauFaqwznCQDov0Pl5d8sI/UXUI-Sitemap",
       "attachments": [
         {
           "id": "att-sub-a-uxui-11-69070216",
@@ -10687,7 +10341,6 @@
       "studentName": "อภิสิทธิ์ ทองคำ",
       "email": "67010203@kmitl.ac.th",
       "submittedAt": "2026-09-14T07:49:00.000Z",
-      "fileUrl": "https://www.figma.com/design/CauFaqwznCQDov0Pl5d8sI/UXUI-Sitemap",
       "attachments": [
         {
           "id": "att-sub-a-uxui-11-67010203",
@@ -10718,7 +10371,6 @@
       "studentName": "กมลชนก ศรีวิไล",
       "email": "66010102@kmitl.ac.th",
       "submittedAt": "2026-09-14T07:49:00.000Z",
-      "fileUrl": "https://www.figma.com/design/CauFaqwznCQDov0Pl5d8sI/UXUI-Sitemap",
       "attachments": [
         {
           "id": "att-sub-a-uxui-11-66010102",
@@ -10749,7 +10401,6 @@
       "studentName": "สุรชัย มีสุข",
       "email": "67010205@kmitl.ac.th",
       "submittedAt": "2026-09-14T07:49:00.000Z",
-      "fileUrl": "https://www.figma.com/design/CauFaqwznCQDov0Pl5d8sI/UXUI-Sitemap",
       "attachments": [
         {
           "id": "att-sub-a-uxui-11-67010205",
@@ -10780,7 +10431,6 @@
       "studentName": "พิมพ์ชนก แซ่ลิ้ม",
       "email": "69070221@kmitl.ac.th",
       "submittedAt": "2026-09-12T19:24:00.000Z",
-      "fileUrl": "https://www.figma.com/design/P6HGluLDmuhmkNpj9nF21R/UXUI-Sitemap",
       "attachments": [
         {
           "id": "att-sub-a-uxui-11-69070221",
@@ -10811,7 +10461,6 @@
       "studentName": "สุดา วงษ์สา",
       "email": "69070102@kmitl.ac.th",
       "submittedAt": "2026-09-12T19:24:00.000Z",
-      "fileUrl": "https://www.figma.com/design/P6HGluLDmuhmkNpj9nF21R/UXUI-Sitemap",
       "attachments": [
         {
           "id": "att-sub-a-uxui-11-69070102",
@@ -10842,7 +10491,6 @@
       "studentName": "คณิน พึ่งบุญ",
       "email": "69070203@kmitl.ac.th",
       "submittedAt": "2026-09-12T19:24:00.000Z",
-      "fileUrl": "https://www.figma.com/design/P6HGluLDmuhmkNpj9nF21R/UXUI-Sitemap",
       "attachments": [
         {
           "id": "att-sub-a-uxui-11-69070203",
@@ -10873,7 +10521,6 @@
       "studentName": "ศุภชัย บัวทอง",
       "email": "69070201@kmitl.ac.th",
       "submittedAt": "2026-09-12T19:24:00.000Z",
-      "fileUrl": "https://www.figma.com/design/P6HGluLDmuhmkNpj9nF21R/UXUI-Sitemap",
       "attachments": [
         {
           "id": "att-sub-a-uxui-11-69070201",
@@ -10904,7 +10551,6 @@
       "studentName": "สมชาย ใจดี",
       "email": "69070101@kmitl.ac.th",
       "submittedAt": "2026-09-12T19:24:00.000Z",
-      "fileUrl": "https://www.figma.com/design/P6HGluLDmuhmkNpj9nF21R/UXUI-Sitemap",
       "attachments": [
         {
           "id": "att-sub-a-uxui-11-69070101",
@@ -10935,7 +10581,6 @@
       "studentName": "กัญญาวีร์ อัครพงษ์",
       "email": "69070226@kmitl.ac.th",
       "submittedAt": "2026-09-19T16:50:00.000Z",
-      "fileUrl": "https://www.figma.com/design/xKhiDFM9RxgNy3XMDttmC2/UXUI-Wireframe-and-Wireflow",
       "attachments": [
         {
           "id": "att-sub-a-uxui-12-69070226",
@@ -10970,7 +10615,6 @@
       "studentName": "พิมพ์ชนก ทองใบ",
       "email": "66010104@kmitl.ac.th",
       "submittedAt": "2026-09-19T16:50:00.000Z",
-      "fileUrl": "https://www.figma.com/design/xKhiDFM9RxgNy3XMDttmC2/UXUI-Wireframe-and-Wireflow",
       "attachments": [
         {
           "id": "att-sub-a-uxui-12-66010104",
@@ -11005,7 +10649,6 @@
       "studentName": "อรอุมา ชัยมงคล",
       "email": "69070233@kmitl.ac.th",
       "submittedAt": "2026-09-19T16:50:00.000Z",
-      "fileUrl": "https://www.figma.com/design/xKhiDFM9RxgNy3XMDttmC2/UXUI-Wireframe-and-Wireflow",
       "attachments": [
         {
           "id": "att-sub-a-uxui-12-69070233",
@@ -11040,7 +10683,6 @@
       "studentName": "ณัฐริกา เพชรรัตน์",
       "email": "69070238@kmitl.ac.th",
       "submittedAt": "2026-09-19T16:50:00.000Z",
-      "fileUrl": "https://www.figma.com/design/xKhiDFM9RxgNy3XMDttmC2/UXUI-Wireframe-and-Wireflow",
       "attachments": [
         {
           "id": "att-sub-a-uxui-12-69070238",
@@ -11075,7 +10717,6 @@
       "studentName": "สุพัตรา บุญมา",
       "email": "69070206@kmitl.ac.th",
       "submittedAt": "2026-09-19T16:50:00.000Z",
-      "fileUrl": "https://www.figma.com/design/xKhiDFM9RxgNy3XMDttmC2/UXUI-Wireframe-and-Wireflow",
       "attachments": [
         {
           "id": "att-sub-a-uxui-12-69070206",
@@ -11110,7 +10751,6 @@
       "studentName": "นภัสสร เพ็ชรสุวรรณ",
       "email": "68020201@kmitl.ac.th",
       "submittedAt": "2026-09-19T15:10:00.000Z",
-      "fileUrl": "https://www.figma.com/design/5Q3iPtpLJwXgIuvGGnn1Ak/UXUI-Wireframe-and-Wireflow",
       "attachments": [
         {
           "id": "att-sub-a-uxui-12-68020201",
@@ -11145,7 +10785,6 @@
       "studentName": "ปกรณ์ วงศ์ทอง",
       "email": "66010103@kmitl.ac.th",
       "submittedAt": "2026-09-19T15:10:00.000Z",
-      "fileUrl": "https://www.figma.com/design/5Q3iPtpLJwXgIuvGGnn1Ak/UXUI-Wireframe-and-Wireflow",
       "attachments": [
         {
           "id": "att-sub-a-uxui-12-66010103",
@@ -11180,7 +10819,6 @@
       "studentName": "เมธัส ประเสริฐสุข",
       "email": "68020202@kmitl.ac.th",
       "submittedAt": "2026-09-19T15:10:00.000Z",
-      "fileUrl": "https://www.figma.com/design/5Q3iPtpLJwXgIuvGGnn1Ak/UXUI-Wireframe-and-Wireflow",
       "attachments": [
         {
           "id": "att-sub-a-uxui-12-68020202",
@@ -11215,7 +10853,6 @@
       "studentName": "จักรพันธ์ คำแสน",
       "email": "68020204@kmitl.ac.th",
       "submittedAt": "2026-09-19T15:10:00.000Z",
-      "fileUrl": "https://www.figma.com/design/5Q3iPtpLJwXgIuvGGnn1Ak/UXUI-Wireframe-and-Wireflow",
       "attachments": [
         {
           "id": "att-sub-a-uxui-12-68020204",
@@ -11250,7 +10887,6 @@
       "studentName": "พงศกร เพชรรัตน์",
       "email": "67010201@kmitl.ac.th",
       "submittedAt": "2026-09-19T15:10:00.000Z",
-      "fileUrl": "https://www.figma.com/design/5Q3iPtpLJwXgIuvGGnn1Ak/UXUI-Wireframe-and-Wireflow",
       "attachments": [
         {
           "id": "att-sub-a-uxui-12-67010201",
@@ -11285,7 +10921,6 @@
       "studentName": "วารุณี บุญมี",
       "email": "69070236@kmitl.ac.th",
       "submittedAt": "2026-09-21T17:55:00.000Z",
-      "fileUrl": "https://www.figma.com/design/j0t4SYI0RyFfFSZWBJDS2R/UXUI-Wireframe-and-Wireflow",
       "attachments": [
         {
           "id": "att-sub-a-uxui-12-69070236",
@@ -11321,7 +10956,6 @@
       "studentName": "นลินี บุญเลิศ",
       "email": "69070228@kmitl.ac.th",
       "submittedAt": "2026-09-21T17:55:00.000Z",
-      "fileUrl": "https://www.figma.com/design/j0t4SYI0RyFfFSZWBJDS2R/UXUI-Wireframe-and-Wireflow",
       "attachments": [
         {
           "id": "att-sub-a-uxui-12-69070228",
@@ -11357,7 +10991,6 @@
       "studentName": "ชลธิชา วัฒนชัย",
       "email": "66010106@kmitl.ac.th",
       "submittedAt": "2026-09-21T17:55:00.000Z",
-      "fileUrl": "https://www.figma.com/design/j0t4SYI0RyFfFSZWBJDS2R/UXUI-Wireframe-and-Wireflow",
       "attachments": [
         {
           "id": "att-sub-a-uxui-12-66010106",
@@ -11393,7 +11026,6 @@
       "studentName": "ศิริพร ใจเย็น",
       "email": "69070219@kmitl.ac.th",
       "submittedAt": "2026-09-21T17:55:00.000Z",
-      "fileUrl": "https://www.figma.com/design/j0t4SYI0RyFfFSZWBJDS2R/UXUI-Wireframe-and-Wireflow",
       "attachments": [
         {
           "id": "att-sub-a-uxui-12-69070219",
@@ -11429,7 +11061,6 @@
       "studentName": "ปิยธิดา ทองคำ",
       "email": "69070224@kmitl.ac.th",
       "submittedAt": "2026-09-21T17:55:00.000Z",
-      "fileUrl": "https://www.figma.com/design/j0t4SYI0RyFfFSZWBJDS2R/UXUI-Wireframe-and-Wireflow",
       "attachments": [
         {
           "id": "att-sub-a-uxui-12-69070224",
@@ -11465,7 +11096,6 @@
       "studentName": "ธีรภัทร จันทร์เพ็ญ",
       "email": "69070214@kmitl.ac.th",
       "submittedAt": "2026-09-20T12:08:00.000Z",
-      "fileUrl": "https://www.figma.com/design/ED8ZoOOphSnI11Zc1STjwV/UXUI-Wireframe-and-Wireflow",
       "attachments": [
         {
           "id": "att-sub-a-uxui-12-69070214",
@@ -11500,7 +11130,6 @@
       "studentName": "ฐิติมา ปัญญาดี",
       "email": "68020203@kmitl.ac.th",
       "submittedAt": "2026-09-20T12:08:00.000Z",
-      "fileUrl": "https://www.figma.com/design/ED8ZoOOphSnI11Zc1STjwV/UXUI-Wireframe-and-Wireflow",
       "attachments": [
         {
           "id": "att-sub-a-uxui-12-68020203",
@@ -11535,7 +11164,6 @@
       "studentName": "วิภาวี ศรีทอง",
       "email": "69070208@kmitl.ac.th",
       "submittedAt": "2026-09-20T12:08:00.000Z",
-      "fileUrl": "https://www.figma.com/design/ED8ZoOOphSnI11Zc1STjwV/UXUI-Wireframe-and-Wireflow",
       "attachments": [
         {
           "id": "att-sub-a-uxui-12-69070208",
@@ -11570,7 +11198,6 @@
       "studentName": "ปาริชาต ดอกไม้",
       "email": "67010202@kmitl.ac.th",
       "submittedAt": "2026-09-20T12:08:00.000Z",
-      "fileUrl": "https://www.figma.com/design/ED8ZoOOphSnI11Zc1STjwV/UXUI-Wireframe-and-Wireflow",
       "attachments": [
         {
           "id": "att-sub-a-uxui-12-67010202",
@@ -11605,7 +11232,6 @@
       "studentName": "สุภาพร ดวงจันทร์",
       "email": "69070231@kmitl.ac.th",
       "submittedAt": "2026-09-20T12:08:00.000Z",
-      "fileUrl": "https://www.figma.com/design/ED8ZoOOphSnI11Zc1STjwV/UXUI-Wireframe-and-Wireflow",
       "attachments": [
         {
           "id": "att-sub-a-uxui-12-69070231",
@@ -11640,7 +11266,6 @@
       "studentName": "ญาดา พิมสอน",
       "email": "69070212@kmitl.ac.th",
       "submittedAt": "2026-09-19T16:25:00.000Z",
-      "fileUrl": "https://www.figma.com/design/a5oy0EH8bzirWE19lV5oUN/UXUI-Wireframe-and-Wireflow",
       "attachments": [
         {
           "id": "att-sub-a-uxui-12-69070212",
@@ -11675,7 +11300,6 @@
       "studentName": "ปุณณวิช ศรีวงศ์",
       "email": "69070216@kmitl.ac.th",
       "submittedAt": "2026-09-19T16:25:00.000Z",
-      "fileUrl": "https://www.figma.com/design/a5oy0EH8bzirWE19lV5oUN/UXUI-Wireframe-and-Wireflow",
       "attachments": [
         {
           "id": "att-sub-a-uxui-12-69070216",
@@ -11710,7 +11334,6 @@
       "studentName": "อภิสิทธิ์ ทองคำ",
       "email": "67010203@kmitl.ac.th",
       "submittedAt": "2026-09-19T16:25:00.000Z",
-      "fileUrl": "https://www.figma.com/design/a5oy0EH8bzirWE19lV5oUN/UXUI-Wireframe-and-Wireflow",
       "attachments": [
         {
           "id": "att-sub-a-uxui-12-67010203",
@@ -11745,7 +11368,6 @@
       "studentName": "กมลชนก ศรีวิไล",
       "email": "66010102@kmitl.ac.th",
       "submittedAt": "2026-09-19T16:25:00.000Z",
-      "fileUrl": "https://www.figma.com/design/a5oy0EH8bzirWE19lV5oUN/UXUI-Wireframe-and-Wireflow",
       "attachments": [
         {
           "id": "att-sub-a-uxui-12-66010102",
@@ -11780,7 +11402,6 @@
       "studentName": "สุรชัย มีสุข",
       "email": "67010205@kmitl.ac.th",
       "submittedAt": "2026-09-19T16:25:00.000Z",
-      "fileUrl": "https://www.figma.com/design/a5oy0EH8bzirWE19lV5oUN/UXUI-Wireframe-and-Wireflow",
       "attachments": [
         {
           "id": "att-sub-a-uxui-12-67010205",
@@ -11815,7 +11436,6 @@
       "studentName": "พิมพ์ชนก แซ่ลิ้ม",
       "email": "69070221@kmitl.ac.th",
       "submittedAt": "2026-09-18T07:58:00.000Z",
-      "fileUrl": "https://www.figma.com/design/38WuiL1ZqpAcShgIqp6z5C/UXUI-Wireframe-and-Wireflow",
       "attachments": [
         {
           "id": "att-sub-a-uxui-12-69070221",
@@ -11850,7 +11470,6 @@
       "studentName": "สุดา วงษ์สา",
       "email": "69070102@kmitl.ac.th",
       "submittedAt": "2026-09-18T07:58:00.000Z",
-      "fileUrl": "https://www.figma.com/design/38WuiL1ZqpAcShgIqp6z5C/UXUI-Wireframe-and-Wireflow",
       "attachments": [
         {
           "id": "att-sub-a-uxui-12-69070102",
@@ -11885,7 +11504,6 @@
       "studentName": "คณิน พึ่งบุญ",
       "email": "69070203@kmitl.ac.th",
       "submittedAt": "2026-09-18T07:58:00.000Z",
-      "fileUrl": "https://www.figma.com/design/38WuiL1ZqpAcShgIqp6z5C/UXUI-Wireframe-and-Wireflow",
       "attachments": [
         {
           "id": "att-sub-a-uxui-12-69070203",
@@ -11920,7 +11538,6 @@
       "studentName": "ศุภชัย บัวทอง",
       "email": "69070201@kmitl.ac.th",
       "submittedAt": "2026-09-18T07:58:00.000Z",
-      "fileUrl": "https://www.figma.com/design/38WuiL1ZqpAcShgIqp6z5C/UXUI-Wireframe-and-Wireflow",
       "attachments": [
         {
           "id": "att-sub-a-uxui-12-69070201",
@@ -11955,7 +11572,6 @@
       "studentName": "สมชาย ใจดี",
       "email": "69070101@kmitl.ac.th",
       "submittedAt": "2026-09-18T07:58:00.000Z",
-      "fileUrl": "https://www.figma.com/design/38WuiL1ZqpAcShgIqp6z5C/UXUI-Wireframe-and-Wireflow",
       "attachments": [
         {
           "id": "att-sub-a-uxui-12-69070101",
@@ -11990,7 +11606,6 @@
       "studentName": "กมลชนก ศรีวิไล",
       "email": "66010102@kmitl.ac.th",
       "submittedAt": "2026-09-19T20:13:00.000Z",
-      "fileUrl": "https://www.figma.com/design/9fredy27BdYOhpF6WnOv2o/UXUI-UI-design",
       "attachments": [
         {
           "id": "att-sub-a-uxui-13-66010102",
@@ -12024,7 +11639,6 @@
       "studentName": "ปกรณ์ วงศ์ทอง",
       "email": "66010103@kmitl.ac.th",
       "submittedAt": "2026-09-19T19:25:00.000Z",
-      "fileUrl": "https://www.figma.com/design/E6655cvItKUDhoH4yUjOdo/UXUI-UI-design",
       "attachments": [
         {
           "id": "att-sub-a-uxui-13-66010103",
@@ -12058,7 +11672,6 @@
       "studentName": "พิมพ์ชนก ทองใบ",
       "email": "66010104@kmitl.ac.th",
       "submittedAt": "2026-09-21T07:46:00.000Z",
-      "fileUrl": "https://www.figma.com/design/ouq6zp19favKIokyAAzyIa/UXUI-UI-design",
       "attachments": [
         {
           "id": "att-sub-a-uxui-13-66010104",
@@ -12092,7 +11705,6 @@
       "studentName": "ชลธิชา วัฒนชัย",
       "email": "66010106@kmitl.ac.th",
       "submittedAt": "2026-09-21T10:02:00.000Z",
-      "fileUrl": "https://www.figma.com/design/kzkKd9088d0ADpp9UsPhDe/UXUI-UI-design",
       "attachments": [
         {
           "id": "att-sub-a-uxui-13-66010106",
@@ -12126,7 +11738,6 @@
       "studentName": "พงศกร เพชรรัตน์",
       "email": "67010201@kmitl.ac.th",
       "submittedAt": "2026-09-19T06:01:00.000Z",
-      "fileUrl": "https://www.figma.com/design/rzRhOfUeVIIs37S0hnOe9y/UXUI-UI-design",
       "attachments": [
         {
           "id": "att-sub-a-uxui-13-67010201",
@@ -12160,7 +11771,6 @@
       "studentName": "ปาริชาต ดอกไม้",
       "email": "67010202@kmitl.ac.th",
       "submittedAt": "2026-09-21T02:27:00.000Z",
-      "fileUrl": "https://www.figma.com/design/skNwwPDf7tMW6pvMd05gei/UXUI-UI-design",
       "attachments": [
         {
           "id": "att-sub-a-uxui-13-67010202",
@@ -12194,7 +11804,6 @@
       "studentName": "อภิสิทธิ์ ทองคำ",
       "email": "67010203@kmitl.ac.th",
       "submittedAt": "2026-09-18T21:28:00.000Z",
-      "fileUrl": "https://www.figma.com/design/Mhap9hELd8wR3repY45heI/UXUI-UI-design",
       "attachments": [
         {
           "id": "att-sub-a-uxui-13-67010203",
@@ -12228,7 +11837,6 @@
       "studentName": "สุรชัย มีสุข",
       "email": "67010205@kmitl.ac.th",
       "submittedAt": "2026-09-20T14:36:00.000Z",
-      "fileUrl": "https://www.figma.com/design/0bXLEb33HySg7hK7hM2cKX/UXUI-UI-design",
       "attachments": [
         {
           "id": "att-sub-a-uxui-13-67010205",
@@ -12262,7 +11870,6 @@
       "studentName": "นภัสสร เพ็ชรสุวรรณ",
       "email": "68020201@kmitl.ac.th",
       "submittedAt": "2026-09-18T20:16:00.000Z",
-      "fileUrl": "https://www.figma.com/design/B2KCvvGDZlnuCKi52qZLzf/UXUI-UI-design",
       "attachments": [
         {
           "id": "att-sub-a-uxui-13-68020201",
@@ -12296,7 +11903,6 @@
       "studentName": "เมธัส ประเสริฐสุข",
       "email": "68020202@kmitl.ac.th",
       "submittedAt": "2026-09-19T01:21:00.000Z",
-      "fileUrl": "https://www.figma.com/design/gbeTbzTRGjpeucvkJaT6m3/UXUI-UI-design",
       "attachments": [
         {
           "id": "att-sub-a-uxui-13-68020202",
@@ -12330,7 +11936,6 @@
       "studentName": "ฐิติมา ปัญญาดี",
       "email": "68020203@kmitl.ac.th",
       "submittedAt": "2026-09-20T22:03:00.000Z",
-      "fileUrl": "https://www.figma.com/design/oLu0YZ7AbLczEa1iUqPTBV/UXUI-UI-design",
       "attachments": [
         {
           "id": "att-sub-a-uxui-13-68020203",
@@ -12364,7 +11969,6 @@
       "studentName": "จักรพันธ์ คำแสน",
       "email": "68020204@kmitl.ac.th",
       "submittedAt": "2026-09-21T04:21:00.000Z",
-      "fileUrl": "https://www.figma.com/design/wWArgRim6ij8RqMxYWY4sB/UXUI-UI-design",
       "attachments": [
         {
           "id": "att-sub-a-uxui-13-68020204",
@@ -12398,7 +12002,6 @@
       "studentName": "สมชาย ใจดี",
       "email": "69070101@kmitl.ac.th",
       "submittedAt": "2026-09-21T01:36:00.000Z",
-      "fileUrl": "https://www.figma.com/design/KUwJ9Sj9fyFS6KYx4uG4sU/UXUI-UI-design",
       "attachments": [
         {
           "id": "att-sub-a-uxui-13-69070101",
@@ -12432,7 +12035,6 @@
       "studentName": "สุดา วงษ์สา",
       "email": "69070102@kmitl.ac.th",
       "submittedAt": "2026-09-21T08:06:00.000Z",
-      "fileUrl": "https://www.figma.com/design/zG6nxKEtxMB2H769HhB24M/UXUI-UI-design",
       "attachments": [
         {
           "id": "att-sub-a-uxui-13-69070102",
@@ -12466,7 +12068,6 @@
       "studentName": "ศุภชัย บัวทอง",
       "email": "69070201@kmitl.ac.th",
       "submittedAt": "2026-09-19T20:14:00.000Z",
-      "fileUrl": "https://www.figma.com/design/gmAOD8zrB0qZDVSQC3oRGp/UXUI-UI-design",
       "attachments": [
         {
           "id": "att-sub-a-uxui-13-69070201",
@@ -12500,7 +12101,6 @@
       "studentName": "คณิน พึ่งบุญ",
       "email": "69070203@kmitl.ac.th",
       "submittedAt": "2026-09-19T20:29:00.000Z",
-      "fileUrl": "https://www.figma.com/design/2RQwQjNHZMYDPEirKj1WdC/UXUI-UI-design",
       "attachments": [
         {
           "id": "att-sub-a-uxui-13-69070203",
@@ -12534,7 +12134,6 @@
       "studentName": "สุพัตรา บุญมา",
       "email": "69070206@kmitl.ac.th",
       "submittedAt": "2026-09-19T01:42:00.000Z",
-      "fileUrl": "https://www.figma.com/design/CbJsOCxOQFYgUB7RAWd5cW/UXUI-UI-design",
       "attachments": [
         {
           "id": "att-sub-a-uxui-13-69070206",
@@ -12568,7 +12167,6 @@
       "studentName": "วิภาวี ศรีทอง",
       "email": "69070208@kmitl.ac.th",
       "submittedAt": "2026-09-20T06:49:00.000Z",
-      "fileUrl": "https://www.figma.com/design/lkIJ1UXqEHcUQRqqtHhTZt/UXUI-UI-design",
       "attachments": [
         {
           "id": "att-sub-a-uxui-13-69070208",
@@ -12602,7 +12200,6 @@
       "studentName": "ญาดา พิมสอน",
       "email": "69070212@kmitl.ac.th",
       "submittedAt": "2026-09-18T15:47:00.000Z",
-      "fileUrl": "https://www.figma.com/design/xBTzKIqtq3EGwCGu7uW6CG/UXUI-UI-design",
       "attachments": [
         {
           "id": "att-sub-a-uxui-13-69070212",
@@ -12636,7 +12233,6 @@
       "studentName": "ปุณณวิช ศรีวงศ์",
       "email": "69070216@kmitl.ac.th",
       "submittedAt": "2026-09-19T21:14:00.000Z",
-      "fileUrl": "https://www.figma.com/design/juFUSUYz1v3lf2UfDGWKBd/UXUI-UI-design",
       "attachments": [
         {
           "id": "att-sub-a-uxui-13-69070216",
@@ -12670,7 +12266,6 @@
       "studentName": "ศิริพร ใจเย็น",
       "email": "69070219@kmitl.ac.th",
       "submittedAt": "2026-09-18T17:50:00.000Z",
-      "fileUrl": "https://www.figma.com/design/ZAMdb6NRinT8Fvj219qLql/UXUI-UI-design",
       "attachments": [
         {
           "id": "att-sub-a-uxui-13-69070219",
@@ -12704,7 +12299,6 @@
       "studentName": "พิมพ์ชนก แซ่ลิ้ม",
       "email": "69070221@kmitl.ac.th",
       "submittedAt": "2026-09-20T10:06:00.000Z",
-      "fileUrl": "https://www.figma.com/design/dINN5qVL83atKbLLrGyhD3/UXUI-UI-design",
       "attachments": [
         {
           "id": "att-sub-a-uxui-13-69070221",
@@ -12738,7 +12332,6 @@
       "studentName": "ปิยธิดา ทองคำ",
       "email": "69070224@kmitl.ac.th",
       "submittedAt": "2026-09-19T23:09:00.000Z",
-      "fileUrl": "https://www.figma.com/design/U5L8F8dE0fGyFizbGxkTUu/UXUI-UI-design",
       "attachments": [
         {
           "id": "att-sub-a-uxui-13-69070224",
@@ -12772,7 +12365,6 @@
       "studentName": "กัญญาวีร์ อัครพงษ์",
       "email": "69070226@kmitl.ac.th",
       "submittedAt": "2026-09-21T06:44:00.000Z",
-      "fileUrl": "https://www.figma.com/design/sSGDkSDOpiRHDGU9cR46r8/UXUI-UI-design",
       "attachments": [
         {
           "id": "att-sub-a-uxui-13-69070226",
@@ -12806,7 +12398,6 @@
       "studentName": "นลินี บุญเลิศ",
       "email": "69070228@kmitl.ac.th",
       "submittedAt": "2026-09-18T20:32:00.000Z",
-      "fileUrl": "https://www.figma.com/design/dknvEhQF6X94achktZzxmi/UXUI-UI-design",
       "attachments": [
         {
           "id": "att-sub-a-uxui-13-69070228",
@@ -12840,7 +12431,6 @@
       "studentName": "สุภาพร ดวงจันทร์",
       "email": "69070231@kmitl.ac.th",
       "submittedAt": "2026-09-20T22:38:00.000Z",
-      "fileUrl": "https://www.figma.com/design/CCyg5A8KdvPF0mf7124ElW/UXUI-UI-design",
       "attachments": [
         {
           "id": "att-sub-a-uxui-13-69070231",
@@ -12874,7 +12464,6 @@
       "studentName": "อรอุมา ชัยมงคล",
       "email": "69070233@kmitl.ac.th",
       "submittedAt": "2026-09-19T11:11:00.000Z",
-      "fileUrl": "https://www.figma.com/design/GUXtny5MX1IqMI737I1Clz/UXUI-UI-design",
       "attachments": [
         {
           "id": "att-sub-a-uxui-13-69070233",
@@ -12908,7 +12497,6 @@
       "studentName": "วารุณี บุญมี",
       "email": "69070236@kmitl.ac.th",
       "submittedAt": "2026-09-19T20:09:00.000Z",
-      "fileUrl": "https://www.figma.com/design/H6rIo8K5n6CpEo38FcKixt/UXUI-UI-design",
       "attachments": [
         {
           "id": "att-sub-a-uxui-13-69070236",
@@ -12942,7 +12530,6 @@
       "studentName": "ณัฐริกา เพชรรัตน์",
       "email": "69070238@kmitl.ac.th",
       "submittedAt": "2026-09-18T16:23:00.000Z",
-      "fileUrl": "https://www.figma.com/design/hV5TBRWc5OTI6wrRKqAzXw/UXUI-UI-design",
       "attachments": [
         {
           "id": "att-sub-a-uxui-13-69070238",
@@ -12976,7 +12563,6 @@
       "studentName": "กัญญาวีร์ อัครพงษ์",
       "email": "69070226@kmitl.ac.th",
       "submittedAt": "2026-09-18T09:29:00.000Z",
-      "fileUrl": null,
       "aiScore": 8,
       "instructorScore": 8,
       "instructorComment": "",
@@ -13000,7 +12586,6 @@
       "studentName": "พิมพ์ชนก ทองใบ",
       "email": "66010104@kmitl.ac.th",
       "submittedAt": "2026-09-18T09:29:00.000Z",
-      "fileUrl": null,
       "aiScore": 8,
       "instructorScore": 8,
       "instructorComment": "",
@@ -13024,7 +12609,6 @@
       "studentName": "อรอุมา ชัยมงคล",
       "email": "69070233@kmitl.ac.th",
       "submittedAt": "2026-09-18T09:29:00.000Z",
-      "fileUrl": null,
       "aiScore": 8,
       "instructorScore": 8,
       "instructorComment": "",
@@ -13048,7 +12632,6 @@
       "studentName": "ณัฐริกา เพชรรัตน์",
       "email": "69070238@kmitl.ac.th",
       "submittedAt": "2026-09-18T09:29:00.000Z",
-      "fileUrl": null,
       "aiScore": 8,
       "instructorScore": 8,
       "instructorComment": "",
@@ -13072,7 +12655,6 @@
       "studentName": "สุพัตรา บุญมา",
       "email": "69070206@kmitl.ac.th",
       "submittedAt": "2026-09-18T09:29:00.000Z",
-      "fileUrl": null,
       "aiScore": 8,
       "instructorScore": 8,
       "instructorComment": "",
@@ -13096,7 +12678,6 @@
       "studentName": "นภัสสร เพ็ชรสุวรรณ",
       "email": "68020201@kmitl.ac.th",
       "submittedAt": "2026-09-19T01:57:00.000Z",
-      "fileUrl": null,
       "aiScore": 8,
       "instructorScore": 5,
       "instructorComment": "",
@@ -13120,7 +12701,6 @@
       "studentName": "ปกรณ์ วงศ์ทอง",
       "email": "66010103@kmitl.ac.th",
       "submittedAt": "2026-09-19T01:57:00.000Z",
-      "fileUrl": null,
       "aiScore": 8,
       "instructorScore": 5,
       "instructorComment": "",
@@ -13144,7 +12724,6 @@
       "studentName": "เมธัส ประเสริฐสุข",
       "email": "68020202@kmitl.ac.th",
       "submittedAt": "2026-09-19T01:57:00.000Z",
-      "fileUrl": null,
       "aiScore": 8,
       "instructorScore": 5,
       "instructorComment": "",
@@ -13168,7 +12747,6 @@
       "studentName": "จักรพันธ์ คำแสน",
       "email": "68020204@kmitl.ac.th",
       "submittedAt": "2026-09-19T01:57:00.000Z",
-      "fileUrl": null,
       "aiScore": 8,
       "instructorScore": 5,
       "instructorComment": "",
@@ -13192,7 +12770,6 @@
       "studentName": "พงศกร เพชรรัตน์",
       "email": "67010201@kmitl.ac.th",
       "submittedAt": "2026-09-19T01:57:00.000Z",
-      "fileUrl": null,
       "aiScore": 8,
       "instructorScore": 5,
       "instructorComment": "",
@@ -13216,7 +12793,6 @@
       "studentName": "วารุณี บุญมี",
       "email": "69070236@kmitl.ac.th",
       "submittedAt": "2026-09-19T19:04:00.000Z",
-      "fileUrl": null,
       "aiScore": 8,
       "instructorScore": 6,
       "instructorComment": "",
@@ -13240,7 +12816,6 @@
       "studentName": "นลินี บุญเลิศ",
       "email": "69070228@kmitl.ac.th",
       "submittedAt": "2026-09-19T19:04:00.000Z",
-      "fileUrl": null,
       "aiScore": 8,
       "instructorScore": 6,
       "instructorComment": "",
@@ -13264,7 +12839,6 @@
       "studentName": "ชลธิชา วัฒนชัย",
       "email": "66010106@kmitl.ac.th",
       "submittedAt": "2026-09-19T19:04:00.000Z",
-      "fileUrl": null,
       "aiScore": 8,
       "instructorScore": 6,
       "instructorComment": "",
@@ -13288,7 +12862,6 @@
       "studentName": "ศิริพร ใจเย็น",
       "email": "69070219@kmitl.ac.th",
       "submittedAt": "2026-09-19T19:04:00.000Z",
-      "fileUrl": null,
       "aiScore": 8,
       "instructorScore": 6,
       "instructorComment": "",
@@ -13312,7 +12885,6 @@
       "studentName": "ปิยธิดา ทองคำ",
       "email": "69070224@kmitl.ac.th",
       "submittedAt": "2026-09-19T19:04:00.000Z",
-      "fileUrl": null,
       "aiScore": 8,
       "instructorScore": 6,
       "instructorComment": "",
@@ -13336,7 +12908,6 @@
       "studentName": "ธีรภัทร จันทร์เพ็ญ",
       "email": "69070214@kmitl.ac.th",
       "submittedAt": "2026-09-21T06:19:00.000Z",
-      "fileUrl": null,
       "aiScore": 10,
       "instructorScore": 8,
       "instructorComment": "",
@@ -13360,7 +12931,6 @@
       "studentName": "ฐิติมา ปัญญาดี",
       "email": "68020203@kmitl.ac.th",
       "submittedAt": "2026-09-21T06:19:00.000Z",
-      "fileUrl": null,
       "aiScore": 10,
       "instructorScore": 8,
       "instructorComment": "",
@@ -13384,7 +12954,6 @@
       "studentName": "วิภาวี ศรีทอง",
       "email": "69070208@kmitl.ac.th",
       "submittedAt": "2026-09-21T06:19:00.000Z",
-      "fileUrl": null,
       "aiScore": 10,
       "instructorScore": 8,
       "instructorComment": "",
@@ -13408,7 +12977,6 @@
       "studentName": "ปาริชาต ดอกไม้",
       "email": "67010202@kmitl.ac.th",
       "submittedAt": "2026-09-21T06:19:00.000Z",
-      "fileUrl": null,
       "aiScore": 10,
       "instructorScore": 8,
       "instructorComment": "",
@@ -13432,7 +13000,6 @@
       "studentName": "สุภาพร ดวงจันทร์",
       "email": "69070231@kmitl.ac.th",
       "submittedAt": "2026-09-21T06:19:00.000Z",
-      "fileUrl": null,
       "aiScore": 10,
       "instructorScore": 8,
       "instructorComment": "",
@@ -13456,7 +13023,6 @@
       "studentName": "ญาดา พิมสอน",
       "email": "69070212@kmitl.ac.th",
       "submittedAt": "2026-09-20T10:50:00.000Z",
-      "fileUrl": null,
       "aiScore": 5,
       "instructorScore": 8,
       "instructorComment": "",
@@ -13480,7 +13046,6 @@
       "studentName": "ปุณณวิช ศรีวงศ์",
       "email": "69070216@kmitl.ac.th",
       "submittedAt": "2026-09-20T10:50:00.000Z",
-      "fileUrl": null,
       "aiScore": 5,
       "instructorScore": 8,
       "instructorComment": "",
@@ -13504,7 +13069,6 @@
       "studentName": "อภิสิทธิ์ ทองคำ",
       "email": "67010203@kmitl.ac.th",
       "submittedAt": "2026-09-20T10:50:00.000Z",
-      "fileUrl": null,
       "aiScore": 5,
       "instructorScore": 8,
       "instructorComment": "",
@@ -13528,7 +13092,6 @@
       "studentName": "กมลชนก ศรีวิไล",
       "email": "66010102@kmitl.ac.th",
       "submittedAt": "2026-09-20T10:50:00.000Z",
-      "fileUrl": null,
       "aiScore": 5,
       "instructorScore": 8,
       "instructorComment": "",
@@ -13552,7 +13115,6 @@
       "studentName": "สุรชัย มีสุข",
       "email": "67010205@kmitl.ac.th",
       "submittedAt": "2026-09-20T10:50:00.000Z",
-      "fileUrl": null,
       "aiScore": 5,
       "instructorScore": 8,
       "instructorComment": "",
@@ -13576,7 +13138,6 @@
       "studentName": "พิมพ์ชนก แซ่ลิ้ม",
       "email": "69070221@kmitl.ac.th",
       "submittedAt": "2026-09-20T20:56:00.000Z",
-      "fileUrl": null,
       "aiScore": 6,
       "instructorScore": 6,
       "instructorComment": "",
@@ -13600,7 +13161,6 @@
       "studentName": "สุดา วงษ์สา",
       "email": "69070102@kmitl.ac.th",
       "submittedAt": "2026-09-20T20:56:00.000Z",
-      "fileUrl": null,
       "aiScore": 6,
       "instructorScore": 6,
       "instructorComment": "",
@@ -13624,7 +13184,6 @@
       "studentName": "คณิน พึ่งบุญ",
       "email": "69070203@kmitl.ac.th",
       "submittedAt": "2026-09-20T20:56:00.000Z",
-      "fileUrl": null,
       "aiScore": 6,
       "instructorScore": 6,
       "instructorComment": "",
@@ -13648,7 +13207,6 @@
       "studentName": "ศุภชัย บัวทอง",
       "email": "69070201@kmitl.ac.th",
       "submittedAt": "2026-09-20T20:56:00.000Z",
-      "fileUrl": null,
       "aiScore": 6,
       "instructorScore": 6,
       "instructorComment": "",
@@ -13672,7 +13230,6 @@
       "studentName": "สมชาย ใจดี",
       "email": "69070101@kmitl.ac.th",
       "submittedAt": "2026-09-20T20:56:00.000Z",
-      "fileUrl": null,
       "aiScore": 6,
       "instructorScore": 6,
       "instructorComment": "",
@@ -13696,7 +13253,6 @@
       "studentName": "กัญญาวีร์ อัครพงษ์",
       "email": "69070226@kmitl.ac.th",
       "submittedAt": "2026-09-20T20:19:00.000Z",
-      "fileUrl": "https://www.figma.com/design/Tzq3Dq4u9wUdgfsh2ddLUY/UXUI-App-UX-Teardown",
       "attachments": [
         {
           "id": "att-sub-a-uxui-15-69070226",
@@ -13731,7 +13287,6 @@
       "studentName": "พิมพ์ชนก ทองใบ",
       "email": "66010104@kmitl.ac.th",
       "submittedAt": "2026-09-20T20:19:00.000Z",
-      "fileUrl": "https://www.figma.com/design/Tzq3Dq4u9wUdgfsh2ddLUY/UXUI-App-UX-Teardown",
       "attachments": [
         {
           "id": "att-sub-a-uxui-15-66010104",
@@ -13766,7 +13321,6 @@
       "studentName": "อรอุมา ชัยมงคล",
       "email": "69070233@kmitl.ac.th",
       "submittedAt": "2026-09-20T20:19:00.000Z",
-      "fileUrl": "https://www.figma.com/design/Tzq3Dq4u9wUdgfsh2ddLUY/UXUI-App-UX-Teardown",
       "attachments": [
         {
           "id": "att-sub-a-uxui-15-69070233",
@@ -13801,7 +13355,6 @@
       "studentName": "ณัฐริกา เพชรรัตน์",
       "email": "69070238@kmitl.ac.th",
       "submittedAt": "2026-09-20T20:19:00.000Z",
-      "fileUrl": "https://www.figma.com/design/Tzq3Dq4u9wUdgfsh2ddLUY/UXUI-App-UX-Teardown",
       "attachments": [
         {
           "id": "att-sub-a-uxui-15-69070238",
@@ -13836,7 +13389,6 @@
       "studentName": "สุพัตรา บุญมา",
       "email": "69070206@kmitl.ac.th",
       "submittedAt": "2026-09-20T20:19:00.000Z",
-      "fileUrl": "https://www.figma.com/design/Tzq3Dq4u9wUdgfsh2ddLUY/UXUI-App-UX-Teardown",
       "attachments": [
         {
           "id": "att-sub-a-uxui-15-69070206",
@@ -13871,7 +13423,6 @@
       "studentName": "นภัสสร เพ็ชรสุวรรณ",
       "email": "68020201@kmitl.ac.th",
       "submittedAt": "2026-09-19T20:20:00.000Z",
-      "fileUrl": "https://www.figma.com/design/rzWwp1EJVXMmUw6Vhe6pDZ/UXUI-App-UX-Teardown",
       "attachments": [
         {
           "id": "att-sub-a-uxui-15-68020201",
@@ -13906,7 +13457,6 @@
       "studentName": "ปกรณ์ วงศ์ทอง",
       "email": "66010103@kmitl.ac.th",
       "submittedAt": "2026-09-19T20:20:00.000Z",
-      "fileUrl": "https://www.figma.com/design/rzWwp1EJVXMmUw6Vhe6pDZ/UXUI-App-UX-Teardown",
       "attachments": [
         {
           "id": "att-sub-a-uxui-15-66010103",
@@ -13941,7 +13491,6 @@
       "studentName": "เมธัส ประเสริฐสุข",
       "email": "68020202@kmitl.ac.th",
       "submittedAt": "2026-09-19T20:20:00.000Z",
-      "fileUrl": "https://www.figma.com/design/rzWwp1EJVXMmUw6Vhe6pDZ/UXUI-App-UX-Teardown",
       "attachments": [
         {
           "id": "att-sub-a-uxui-15-68020202",
@@ -13976,7 +13525,6 @@
       "studentName": "จักรพันธ์ คำแสน",
       "email": "68020204@kmitl.ac.th",
       "submittedAt": "2026-09-19T20:20:00.000Z",
-      "fileUrl": "https://www.figma.com/design/rzWwp1EJVXMmUw6Vhe6pDZ/UXUI-App-UX-Teardown",
       "attachments": [
         {
           "id": "att-sub-a-uxui-15-68020204",
@@ -14011,7 +13559,6 @@
       "studentName": "พงศกร เพชรรัตน์",
       "email": "67010201@kmitl.ac.th",
       "submittedAt": "2026-09-19T20:20:00.000Z",
-      "fileUrl": "https://www.figma.com/design/rzWwp1EJVXMmUw6Vhe6pDZ/UXUI-App-UX-Teardown",
       "attachments": [
         {
           "id": "att-sub-a-uxui-15-67010201",
@@ -14046,7 +13593,6 @@
       "studentName": "วารุณี บุญมี",
       "email": "69070236@kmitl.ac.th",
       "submittedAt": "2026-09-21T02:15:00.000Z",
-      "fileUrl": "https://www.figma.com/design/akIvW0IJI7iWRONCDy9M7G/UXUI-App-UX-Teardown",
       "attachments": [
         {
           "id": "att-sub-a-uxui-15-69070236",
@@ -14081,7 +13627,6 @@
       "studentName": "นลินี บุญเลิศ",
       "email": "69070228@kmitl.ac.th",
       "submittedAt": "2026-09-21T02:15:00.000Z",
-      "fileUrl": "https://www.figma.com/design/akIvW0IJI7iWRONCDy9M7G/UXUI-App-UX-Teardown",
       "attachments": [
         {
           "id": "att-sub-a-uxui-15-69070228",
@@ -14116,7 +13661,6 @@
       "studentName": "ชลธิชา วัฒนชัย",
       "email": "66010106@kmitl.ac.th",
       "submittedAt": "2026-09-21T02:15:00.000Z",
-      "fileUrl": "https://www.figma.com/design/akIvW0IJI7iWRONCDy9M7G/UXUI-App-UX-Teardown",
       "attachments": [
         {
           "id": "att-sub-a-uxui-15-66010106",
@@ -14151,7 +13695,6 @@
       "studentName": "ศิริพร ใจเย็น",
       "email": "69070219@kmitl.ac.th",
       "submittedAt": "2026-09-21T02:15:00.000Z",
-      "fileUrl": "https://www.figma.com/design/akIvW0IJI7iWRONCDy9M7G/UXUI-App-UX-Teardown",
       "attachments": [
         {
           "id": "att-sub-a-uxui-15-69070219",
@@ -14186,7 +13729,6 @@
       "studentName": "ปิยธิดา ทองคำ",
       "email": "69070224@kmitl.ac.th",
       "submittedAt": "2026-09-21T02:15:00.000Z",
-      "fileUrl": "https://www.figma.com/design/akIvW0IJI7iWRONCDy9M7G/UXUI-App-UX-Teardown",
       "attachments": [
         {
           "id": "att-sub-a-uxui-15-69070224",
@@ -14221,7 +13763,6 @@
       "studentName": "ธีรภัทร จันทร์เพ็ญ",
       "email": "69070214@kmitl.ac.th",
       "submittedAt": "2026-09-18T23:40:00.000Z",
-      "fileUrl": "https://www.figma.com/design/nHcWUkqzKV4EPbYCq3IcSo/UXUI-App-UX-Teardown",
       "attachments": [
         {
           "id": "att-sub-a-uxui-15-69070214",
@@ -14256,7 +13797,6 @@
       "studentName": "ฐิติมา ปัญญาดี",
       "email": "68020203@kmitl.ac.th",
       "submittedAt": "2026-09-18T23:40:00.000Z",
-      "fileUrl": "https://www.figma.com/design/nHcWUkqzKV4EPbYCq3IcSo/UXUI-App-UX-Teardown",
       "attachments": [
         {
           "id": "att-sub-a-uxui-15-68020203",
@@ -14291,7 +13831,6 @@
       "studentName": "วิภาวี ศรีทอง",
       "email": "69070208@kmitl.ac.th",
       "submittedAt": "2026-09-18T23:40:00.000Z",
-      "fileUrl": "https://www.figma.com/design/nHcWUkqzKV4EPbYCq3IcSo/UXUI-App-UX-Teardown",
       "attachments": [
         {
           "id": "att-sub-a-uxui-15-69070208",
@@ -14326,7 +13865,6 @@
       "studentName": "ปาริชาต ดอกไม้",
       "email": "67010202@kmitl.ac.th",
       "submittedAt": "2026-09-18T23:40:00.000Z",
-      "fileUrl": "https://www.figma.com/design/nHcWUkqzKV4EPbYCq3IcSo/UXUI-App-UX-Teardown",
       "attachments": [
         {
           "id": "att-sub-a-uxui-15-67010202",
@@ -14361,7 +13899,6 @@
       "studentName": "สุภาพร ดวงจันทร์",
       "email": "69070231@kmitl.ac.th",
       "submittedAt": "2026-09-18T23:40:00.000Z",
-      "fileUrl": "https://www.figma.com/design/nHcWUkqzKV4EPbYCq3IcSo/UXUI-App-UX-Teardown",
       "attachments": [
         {
           "id": "att-sub-a-uxui-15-69070231",
@@ -14396,7 +13933,6 @@
       "studentName": "ญาดา พิมสอน",
       "email": "69070212@kmitl.ac.th",
       "submittedAt": "2026-09-21T04:59:00.000Z",
-      "fileUrl": "https://www.figma.com/design/y43yhlr1M8CLgRfVEMNUGc/UXUI-App-UX-Teardown",
       "attachments": [
         {
           "id": "att-sub-a-uxui-15-69070212",
@@ -14431,7 +13967,6 @@
       "studentName": "ปุณณวิช ศรีวงศ์",
       "email": "69070216@kmitl.ac.th",
       "submittedAt": "2026-09-21T04:59:00.000Z",
-      "fileUrl": "https://www.figma.com/design/y43yhlr1M8CLgRfVEMNUGc/UXUI-App-UX-Teardown",
       "attachments": [
         {
           "id": "att-sub-a-uxui-15-69070216",
@@ -14466,7 +14001,6 @@
       "studentName": "อภิสิทธิ์ ทองคำ",
       "email": "67010203@kmitl.ac.th",
       "submittedAt": "2026-09-21T04:59:00.000Z",
-      "fileUrl": "https://www.figma.com/design/y43yhlr1M8CLgRfVEMNUGc/UXUI-App-UX-Teardown",
       "attachments": [
         {
           "id": "att-sub-a-uxui-15-67010203",
@@ -14501,7 +14035,6 @@
       "studentName": "กมลชนก ศรีวิไล",
       "email": "66010102@kmitl.ac.th",
       "submittedAt": "2026-09-21T04:59:00.000Z",
-      "fileUrl": "https://www.figma.com/design/y43yhlr1M8CLgRfVEMNUGc/UXUI-App-UX-Teardown",
       "attachments": [
         {
           "id": "att-sub-a-uxui-15-66010102",
@@ -14536,7 +14069,6 @@
       "studentName": "สุรชัย มีสุข",
       "email": "67010205@kmitl.ac.th",
       "submittedAt": "2026-09-21T04:59:00.000Z",
-      "fileUrl": "https://www.figma.com/design/y43yhlr1M8CLgRfVEMNUGc/UXUI-App-UX-Teardown",
       "attachments": [
         {
           "id": "att-sub-a-uxui-15-67010205",
@@ -14571,7 +14103,6 @@
       "studentName": "พิมพ์ชนก แซ่ลิ้ม",
       "email": "69070221@kmitl.ac.th",
       "submittedAt": "2026-09-19T18:05:00.000Z",
-      "fileUrl": "https://www.figma.com/design/Spf4cr84Qp8PXdoLy7rWdE/UXUI-App-UX-Teardown",
       "attachments": [
         {
           "id": "att-sub-a-uxui-15-69070221",
@@ -14606,7 +14137,6 @@
       "studentName": "สุดา วงษ์สา",
       "email": "69070102@kmitl.ac.th",
       "submittedAt": "2026-09-19T18:05:00.000Z",
-      "fileUrl": "https://www.figma.com/design/Spf4cr84Qp8PXdoLy7rWdE/UXUI-App-UX-Teardown",
       "attachments": [
         {
           "id": "att-sub-a-uxui-15-69070102",
@@ -14641,7 +14171,6 @@
       "studentName": "คณิน พึ่งบุญ",
       "email": "69070203@kmitl.ac.th",
       "submittedAt": "2026-09-19T18:05:00.000Z",
-      "fileUrl": "https://www.figma.com/design/Spf4cr84Qp8PXdoLy7rWdE/UXUI-App-UX-Teardown",
       "attachments": [
         {
           "id": "att-sub-a-uxui-15-69070203",
@@ -14676,7 +14205,6 @@
       "studentName": "ศุภชัย บัวทอง",
       "email": "69070201@kmitl.ac.th",
       "submittedAt": "2026-09-19T18:05:00.000Z",
-      "fileUrl": "https://www.figma.com/design/Spf4cr84Qp8PXdoLy7rWdE/UXUI-App-UX-Teardown",
       "attachments": [
         {
           "id": "att-sub-a-uxui-15-69070201",
@@ -14711,7 +14239,6 @@
       "studentName": "สมชาย ใจดี",
       "email": "69070101@kmitl.ac.th",
       "submittedAt": "2026-09-19T18:05:00.000Z",
-      "fileUrl": "https://www.figma.com/design/Spf4cr84Qp8PXdoLy7rWdE/UXUI-App-UX-Teardown",
       "attachments": [
         {
           "id": "att-sub-a-uxui-15-69070101",
@@ -14746,7 +14273,6 @@
       "studentName": "กมลชนก ศรีวิไล",
       "email": "66010102@kmitl.ac.th",
       "submittedAt": "2026-09-27T14:42:00.000Z",
-      "fileUrl": null,
       "aiScore": 8,
       "instructorScore": 8,
       "instructorComment": "",
@@ -14769,7 +14295,6 @@
       "studentName": "ปกรณ์ วงศ์ทอง",
       "email": "66010103@kmitl.ac.th",
       "submittedAt": "2026-09-26T02:44:00.000Z",
-      "fileUrl": null,
       "aiScore": 5,
       "instructorScore": 5,
       "instructorComment": "",
@@ -14792,7 +14317,6 @@
       "studentName": "พิมพ์ชนก ทองใบ",
       "email": "66010104@kmitl.ac.th",
       "submittedAt": "2026-09-26T00:27:00.000Z",
-      "fileUrl": null,
       "aiScore": 8,
       "instructorScore": 8,
       "instructorComment": "",
@@ -14815,7 +14339,6 @@
       "studentName": "ชลธิชา วัฒนชัย",
       "email": "66010106@kmitl.ac.th",
       "submittedAt": "2026-09-25T11:09:00.000Z",
-      "fileUrl": null,
       "aiScore": 7,
       "instructorScore": 8,
       "instructorComment": "",
@@ -14838,7 +14361,6 @@
       "studentName": "พงศกร เพชรรัตน์",
       "email": "67010201@kmitl.ac.th",
       "submittedAt": "2026-09-25T07:51:00.000Z",
-      "fileUrl": null,
       "aiScore": 7,
       "instructorScore": 5,
       "instructorComment": "",
@@ -14861,7 +14383,6 @@
       "studentName": "ปาริชาต ดอกไม้",
       "email": "67010202@kmitl.ac.th",
       "submittedAt": "2026-09-25T10:56:00.000Z",
-      "fileUrl": null,
       "aiScore": 5,
       "instructorScore": 6,
       "instructorComment": "",
@@ -14884,7 +14405,6 @@
       "studentName": "อภิสิทธิ์ ทองคำ",
       "email": "67010203@kmitl.ac.th",
       "submittedAt": "2026-09-27T21:09:00.000Z",
-      "fileUrl": null,
       "aiScore": 10,
       "instructorScore": 8,
       "instructorComment": "ส่งตรงเวลาและครบถ้วน",
@@ -14907,7 +14427,6 @@
       "studentName": "สุรชัย มีสุข",
       "email": "67010205@kmitl.ac.th",
       "submittedAt": "2026-09-28T09:55:00.000Z",
-      "fileUrl": null,
       "aiScore": 8,
       "instructorScore": 8,
       "instructorComment": "",
@@ -14930,7 +14449,6 @@
       "studentName": "นภัสสร เพ็ชรสุวรรณ",
       "email": "68020201@kmitl.ac.th",
       "submittedAt": "2026-09-25T17:59:00.000Z",
-      "fileUrl": null,
       "aiScore": 7,
       "instructorScore": 8,
       "instructorComment": "",
@@ -14953,7 +14471,6 @@
       "studentName": "เมธัส ประเสริฐสุข",
       "email": "68020202@kmitl.ac.th",
       "submittedAt": "2026-09-25T13:40:00.000Z",
-      "fileUrl": null,
       "aiScore": 8,
       "instructorScore": 6,
       "instructorComment": "",
@@ -14976,7 +14493,6 @@
       "studentName": "ฐิติมา ปัญญาดี",
       "email": "68020203@kmitl.ac.th",
       "submittedAt": "2026-09-28T01:19:00.000Z",
-      "fileUrl": null,
       "aiScore": 8,
       "instructorScore": 6,
       "instructorComment": "",
@@ -14999,7 +14515,6 @@
       "studentName": "จักรพันธ์ คำแสน",
       "email": "68020204@kmitl.ac.th",
       "submittedAt": "2026-09-26T05:51:00.000Z",
-      "fileUrl": null,
       "aiScore": 10,
       "instructorScore": 6,
       "instructorComment": "",
@@ -15022,7 +14537,6 @@
       "studentName": "สมชาย ใจดี",
       "email": "69070101@kmitl.ac.th",
       "submittedAt": "2026-09-25T17:20:00.000Z",
-      "fileUrl": null,
       "aiScore": 5,
       "instructorScore": 6,
       "instructorComment": "ทำได้ดี เหตุผลชัดเจน",
@@ -15045,7 +14559,6 @@
       "studentName": "สุดา วงษ์สา",
       "email": "69070102@kmitl.ac.th",
       "submittedAt": "2026-09-27T10:17:00.000Z",
-      "fileUrl": null,
       "aiScore": 7,
       "instructorScore": 8,
       "instructorComment": "",
@@ -15068,7 +14581,6 @@
       "studentName": "ศุภชัย บัวทอง",
       "email": "69070201@kmitl.ac.th",
       "submittedAt": "2026-09-27T01:24:00.000Z",
-      "fileUrl": null,
       "aiScore": 6,
       "instructorScore": 8,
       "instructorComment": "",
@@ -15091,7 +14603,6 @@
       "studentName": "คณิน พึ่งบุญ",
       "email": "69070203@kmitl.ac.th",
       "submittedAt": "2026-09-27T19:10:00.000Z",
-      "fileUrl": null,
       "aiScore": 5,
       "instructorScore": 6,
       "instructorComment": "ส่งตรงเวลาและครบถ้วน",
@@ -15114,7 +14625,6 @@
       "studentName": "สุพัตรา บุญมา",
       "email": "69070206@kmitl.ac.th",
       "submittedAt": "2026-09-27T11:52:00.000Z",
-      "fileUrl": null,
       "aiScore": 7,
       "instructorScore": 8,
       "instructorComment": "",
@@ -15137,7 +14647,6 @@
       "studentName": "วิภาวี ศรีทอง",
       "email": "69070208@kmitl.ac.th",
       "submittedAt": "2026-09-25T14:30:00.000Z",
-      "fileUrl": null,
       "aiScore": 8,
       "instructorScore": 8,
       "instructorComment": "",
@@ -15160,7 +14669,6 @@
       "studentName": "ญาดา พิมสอน",
       "email": "69070212@kmitl.ac.th",
       "submittedAt": "2026-09-27T15:04:00.000Z",
-      "fileUrl": null,
       "aiScore": 8,
       "instructorScore": 6,
       "instructorComment": "",
@@ -15183,7 +14691,6 @@
       "studentName": "ธีรภัทร จันทร์เพ็ญ",
       "email": "69070214@kmitl.ac.th",
       "submittedAt": "2026-09-27T09:46:00.000Z",
-      "fileUrl": null,
       "aiScore": 6,
       "instructorScore": 6,
       "instructorComment": "",
@@ -15206,7 +14713,6 @@
       "studentName": "ปุณณวิช ศรีวงศ์",
       "email": "69070216@kmitl.ac.th",
       "submittedAt": "2026-09-25T14:55:00.000Z",
-      "fileUrl": null,
       "aiScore": 7,
       "instructorScore": 8,
       "instructorComment": "",
@@ -15229,7 +14735,6 @@
       "studentName": "ศิริพร ใจเย็น",
       "email": "69070219@kmitl.ac.th",
       "submittedAt": "2026-09-27T12:43:00.000Z",
-      "fileUrl": null,
       "aiScore": 7,
       "instructorScore": 5,
       "instructorComment": "",
@@ -15252,7 +14757,6 @@
       "studentName": "พิมพ์ชนก แซ่ลิ้ม",
       "email": "69070221@kmitl.ac.th",
       "submittedAt": "2026-09-28T14:15:00.000Z",
-      "fileUrl": null,
       "aiScore": 5,
       "instructorScore": 8,
       "instructorComment": "",
@@ -15275,7 +14779,6 @@
       "studentName": "ปิยธิดา ทองคำ",
       "email": "69070224@kmitl.ac.th",
       "submittedAt": "2026-09-25T12:54:00.000Z",
-      "fileUrl": null,
       "aiScore": 6,
       "instructorScore": 6,
       "instructorComment": "",
@@ -15298,7 +14801,6 @@
       "studentName": "กัญญาวีร์ อัครพงษ์",
       "email": "69070226@kmitl.ac.th",
       "submittedAt": "2026-09-26T19:57:00.000Z",
-      "fileUrl": null,
       "aiScore": 6,
       "instructorScore": 6,
       "instructorComment": "",
@@ -15321,7 +14823,6 @@
       "studentName": "นลินี บุญเลิศ",
       "email": "69070228@kmitl.ac.th",
       "submittedAt": "2026-09-25T23:41:00.000Z",
-      "fileUrl": null,
       "aiScore": 8,
       "instructorScore": 6,
       "instructorComment": "",
@@ -15344,7 +14845,6 @@
       "studentName": "สุภาพร ดวงจันทร์",
       "email": "69070231@kmitl.ac.th",
       "submittedAt": "2026-09-27T13:35:00.000Z",
-      "fileUrl": null,
       "aiScore": 5,
       "instructorScore": 6,
       "instructorComment": "",
@@ -15367,7 +14867,6 @@
       "studentName": "อรอุมา ชัยมงคล",
       "email": "69070233@kmitl.ac.th",
       "submittedAt": "2026-09-25T10:11:00.000Z",
-      "fileUrl": null,
       "aiScore": 5,
       "instructorScore": 6,
       "instructorComment": "",
@@ -15390,7 +14889,6 @@
       "studentName": "วารุณี บุญมี",
       "email": "69070236@kmitl.ac.th",
       "submittedAt": "2026-09-25T11:51:00.000Z",
-      "fileUrl": null,
       "aiScore": 6,
       "instructorScore": 6,
       "instructorComment": "ลองเพิ่มหลักฐานหรือภาพประกอบอีกนิด",
@@ -15413,7 +14911,6 @@
       "studentName": "ณัฐริกา เพชรรัตน์",
       "email": "69070238@kmitl.ac.th",
       "submittedAt": "2026-09-27T20:49:00.000Z",
-      "fileUrl": null,
       "aiScore": 7,
       "instructorScore": 5,
       "instructorComment": "",
@@ -15436,7 +14933,6 @@
       "studentName": "กัญญาวีร์ อัครพงษ์",
       "email": "69070226@kmitl.ac.th",
       "submittedAt": "2026-09-27T03:25:00.000Z",
-      "fileUrl": "https://www.figma.com/design/MOQ7gx8KwdtIa2aYA2v8hh/UXUI-Reorder-Redesign-UI",
       "attachments": [
         {
           "id": "att-sub-a-uxui-17-69070226",
@@ -15471,7 +14967,6 @@
       "studentName": "พิมพ์ชนก ทองใบ",
       "email": "66010104@kmitl.ac.th",
       "submittedAt": "2026-09-27T03:25:00.000Z",
-      "fileUrl": "https://www.figma.com/design/MOQ7gx8KwdtIa2aYA2v8hh/UXUI-Reorder-Redesign-UI",
       "attachments": [
         {
           "id": "att-sub-a-uxui-17-66010104",
@@ -15506,7 +15001,6 @@
       "studentName": "อรอุมา ชัยมงคล",
       "email": "69070233@kmitl.ac.th",
       "submittedAt": "2026-09-27T03:25:00.000Z",
-      "fileUrl": "https://www.figma.com/design/MOQ7gx8KwdtIa2aYA2v8hh/UXUI-Reorder-Redesign-UI",
       "attachments": [
         {
           "id": "att-sub-a-uxui-17-69070233",
@@ -15541,7 +15035,6 @@
       "studentName": "ณัฐริกา เพชรรัตน์",
       "email": "69070238@kmitl.ac.th",
       "submittedAt": "2026-09-27T03:25:00.000Z",
-      "fileUrl": "https://www.figma.com/design/MOQ7gx8KwdtIa2aYA2v8hh/UXUI-Reorder-Redesign-UI",
       "attachments": [
         {
           "id": "att-sub-a-uxui-17-69070238",
@@ -15576,7 +15069,6 @@
       "studentName": "สุพัตรา บุญมา",
       "email": "69070206@kmitl.ac.th",
       "submittedAt": "2026-09-27T03:25:00.000Z",
-      "fileUrl": "https://www.figma.com/design/MOQ7gx8KwdtIa2aYA2v8hh/UXUI-Reorder-Redesign-UI",
       "attachments": [
         {
           "id": "att-sub-a-uxui-17-69070206",
@@ -15611,7 +15103,6 @@
       "studentName": "นภัสสร เพ็ชรสุวรรณ",
       "email": "68020201@kmitl.ac.th",
       "submittedAt": "2026-09-27T07:54:00.000Z",
-      "fileUrl": "https://www.figma.com/design/M03eWVNVoINsSvuV2ScY7u/UXUI-Reorder-Redesign-UI",
       "attachments": [
         {
           "id": "att-sub-a-uxui-17-68020201",
@@ -15646,7 +15137,6 @@
       "studentName": "ปกรณ์ วงศ์ทอง",
       "email": "66010103@kmitl.ac.th",
       "submittedAt": "2026-09-27T07:54:00.000Z",
-      "fileUrl": "https://www.figma.com/design/M03eWVNVoINsSvuV2ScY7u/UXUI-Reorder-Redesign-UI",
       "attachments": [
         {
           "id": "att-sub-a-uxui-17-66010103",
@@ -15681,7 +15171,6 @@
       "studentName": "เมธัส ประเสริฐสุข",
       "email": "68020202@kmitl.ac.th",
       "submittedAt": "2026-09-27T07:54:00.000Z",
-      "fileUrl": "https://www.figma.com/design/M03eWVNVoINsSvuV2ScY7u/UXUI-Reorder-Redesign-UI",
       "attachments": [
         {
           "id": "att-sub-a-uxui-17-68020202",
@@ -15716,7 +15205,6 @@
       "studentName": "จักรพันธ์ คำแสน",
       "email": "68020204@kmitl.ac.th",
       "submittedAt": "2026-09-27T07:54:00.000Z",
-      "fileUrl": "https://www.figma.com/design/M03eWVNVoINsSvuV2ScY7u/UXUI-Reorder-Redesign-UI",
       "attachments": [
         {
           "id": "att-sub-a-uxui-17-68020204",
@@ -15751,7 +15239,6 @@
       "studentName": "พงศกร เพชรรัตน์",
       "email": "67010201@kmitl.ac.th",
       "submittedAt": "2026-09-27T07:54:00.000Z",
-      "fileUrl": "https://www.figma.com/design/M03eWVNVoINsSvuV2ScY7u/UXUI-Reorder-Redesign-UI",
       "attachments": [
         {
           "id": "att-sub-a-uxui-17-67010201",
@@ -15786,7 +15273,6 @@
       "studentName": "วารุณี บุญมี",
       "email": "69070236@kmitl.ac.th",
       "submittedAt": "2026-09-28T00:00:00.000Z",
-      "fileUrl": "https://www.figma.com/design/KgnvbB1IVWmi78FNYtpk1I/UXUI-Reorder-Redesign-UI",
       "attachments": [
         {
           "id": "att-sub-a-uxui-17-69070236",
@@ -15821,7 +15307,6 @@
       "studentName": "นลินี บุญเลิศ",
       "email": "69070228@kmitl.ac.th",
       "submittedAt": "2026-09-28T00:00:00.000Z",
-      "fileUrl": "https://www.figma.com/design/KgnvbB1IVWmi78FNYtpk1I/UXUI-Reorder-Redesign-UI",
       "attachments": [
         {
           "id": "att-sub-a-uxui-17-69070228",
@@ -15856,7 +15341,6 @@
       "studentName": "ชลธิชา วัฒนชัย",
       "email": "66010106@kmitl.ac.th",
       "submittedAt": "2026-09-28T00:00:00.000Z",
-      "fileUrl": "https://www.figma.com/design/KgnvbB1IVWmi78FNYtpk1I/UXUI-Reorder-Redesign-UI",
       "attachments": [
         {
           "id": "att-sub-a-uxui-17-66010106",
@@ -15891,7 +15375,6 @@
       "studentName": "ศิริพร ใจเย็น",
       "email": "69070219@kmitl.ac.th",
       "submittedAt": "2026-09-28T00:00:00.000Z",
-      "fileUrl": "https://www.figma.com/design/KgnvbB1IVWmi78FNYtpk1I/UXUI-Reorder-Redesign-UI",
       "attachments": [
         {
           "id": "att-sub-a-uxui-17-69070219",
@@ -15926,7 +15409,6 @@
       "studentName": "ปิยธิดา ทองคำ",
       "email": "69070224@kmitl.ac.th",
       "submittedAt": "2026-09-28T00:00:00.000Z",
-      "fileUrl": "https://www.figma.com/design/KgnvbB1IVWmi78FNYtpk1I/UXUI-Reorder-Redesign-UI",
       "attachments": [
         {
           "id": "att-sub-a-uxui-17-69070224",
@@ -15961,7 +15443,6 @@
       "studentName": "ธีรภัทร จันทร์เพ็ญ",
       "email": "69070214@kmitl.ac.th",
       "submittedAt": "2026-09-28T11:46:00.000Z",
-      "fileUrl": "https://www.figma.com/design/A5ONh2N8gseFwyPkeeLwiN/UXUI-Reorder-Redesign-UI",
       "attachments": [
         {
           "id": "att-sub-a-uxui-17-69070214",
@@ -15996,7 +15477,6 @@
       "studentName": "ฐิติมา ปัญญาดี",
       "email": "68020203@kmitl.ac.th",
       "submittedAt": "2026-09-28T11:46:00.000Z",
-      "fileUrl": "https://www.figma.com/design/A5ONh2N8gseFwyPkeeLwiN/UXUI-Reorder-Redesign-UI",
       "attachments": [
         {
           "id": "att-sub-a-uxui-17-68020203",
@@ -16031,7 +15511,6 @@
       "studentName": "วิภาวี ศรีทอง",
       "email": "69070208@kmitl.ac.th",
       "submittedAt": "2026-09-28T11:46:00.000Z",
-      "fileUrl": "https://www.figma.com/design/A5ONh2N8gseFwyPkeeLwiN/UXUI-Reorder-Redesign-UI",
       "attachments": [
         {
           "id": "att-sub-a-uxui-17-69070208",
@@ -16066,7 +15545,6 @@
       "studentName": "ปาริชาต ดอกไม้",
       "email": "67010202@kmitl.ac.th",
       "submittedAt": "2026-09-28T11:46:00.000Z",
-      "fileUrl": "https://www.figma.com/design/A5ONh2N8gseFwyPkeeLwiN/UXUI-Reorder-Redesign-UI",
       "attachments": [
         {
           "id": "att-sub-a-uxui-17-67010202",
@@ -16101,7 +15579,6 @@
       "studentName": "สุภาพร ดวงจันทร์",
       "email": "69070231@kmitl.ac.th",
       "submittedAt": "2026-09-28T11:46:00.000Z",
-      "fileUrl": "https://www.figma.com/design/A5ONh2N8gseFwyPkeeLwiN/UXUI-Reorder-Redesign-UI",
       "attachments": [
         {
           "id": "att-sub-a-uxui-17-69070231",
@@ -16136,7 +15613,6 @@
       "studentName": "ญาดา พิมสอน",
       "email": "69070212@kmitl.ac.th",
       "submittedAt": "2026-09-27T15:24:00.000Z",
-      "fileUrl": "https://www.figma.com/design/oySvZdnwOkE0qfAT6gfHBC/UXUI-Reorder-Redesign-UI",
       "attachments": [
         {
           "id": "att-sub-a-uxui-17-69070212",
@@ -16166,7 +15642,6 @@
       "studentName": "ปุณณวิช ศรีวงศ์",
       "email": "69070216@kmitl.ac.th",
       "submittedAt": "2026-09-27T15:24:00.000Z",
-      "fileUrl": "https://www.figma.com/design/oySvZdnwOkE0qfAT6gfHBC/UXUI-Reorder-Redesign-UI",
       "attachments": [
         {
           "id": "att-sub-a-uxui-17-69070216",
@@ -16196,7 +15671,6 @@
       "studentName": "อภิสิทธิ์ ทองคำ",
       "email": "67010203@kmitl.ac.th",
       "submittedAt": "2026-09-27T15:24:00.000Z",
-      "fileUrl": "https://www.figma.com/design/oySvZdnwOkE0qfAT6gfHBC/UXUI-Reorder-Redesign-UI",
       "attachments": [
         {
           "id": "att-sub-a-uxui-17-67010203",
@@ -16226,7 +15700,6 @@
       "studentName": "กมลชนก ศรีวิไล",
       "email": "66010102@kmitl.ac.th",
       "submittedAt": "2026-09-27T15:24:00.000Z",
-      "fileUrl": "https://www.figma.com/design/oySvZdnwOkE0qfAT6gfHBC/UXUI-Reorder-Redesign-UI",
       "attachments": [
         {
           "id": "att-sub-a-uxui-17-66010102",
@@ -16256,7 +15729,6 @@
       "studentName": "สุรชัย มีสุข",
       "email": "67010205@kmitl.ac.th",
       "submittedAt": "2026-09-27T15:24:00.000Z",
-      "fileUrl": "https://www.figma.com/design/oySvZdnwOkE0qfAT6gfHBC/UXUI-Reorder-Redesign-UI",
       "attachments": [
         {
           "id": "att-sub-a-uxui-17-67010205",
@@ -16286,7 +15758,6 @@
       "studentName": "พิมพ์ชนก แซ่ลิ้ม",
       "email": "69070221@kmitl.ac.th",
       "submittedAt": "2026-09-27T14:41:00.000Z",
-      "fileUrl": "https://www.figma.com/design/3hbiQtGTmq0vEP3NZWWm0o/UXUI-Reorder-Redesign-UI",
       "attachments": [
         {
           "id": "att-sub-a-uxui-17-69070221",
@@ -16311,7 +15782,6 @@
       "studentName": "สุดา วงษ์สา",
       "email": "69070102@kmitl.ac.th",
       "submittedAt": "2026-09-27T14:41:00.000Z",
-      "fileUrl": "https://www.figma.com/design/3hbiQtGTmq0vEP3NZWWm0o/UXUI-Reorder-Redesign-UI",
       "attachments": [
         {
           "id": "att-sub-a-uxui-17-69070102",
@@ -16336,7 +15806,6 @@
       "studentName": "คณิน พึ่งบุญ",
       "email": "69070203@kmitl.ac.th",
       "submittedAt": "2026-09-27T14:41:00.000Z",
-      "fileUrl": "https://www.figma.com/design/3hbiQtGTmq0vEP3NZWWm0o/UXUI-Reorder-Redesign-UI",
       "attachments": [
         {
           "id": "att-sub-a-uxui-17-69070203",
@@ -16361,7 +15830,6 @@
       "studentName": "ศุภชัย บัวทอง",
       "email": "69070201@kmitl.ac.th",
       "submittedAt": "2026-09-27T14:41:00.000Z",
-      "fileUrl": "https://www.figma.com/design/3hbiQtGTmq0vEP3NZWWm0o/UXUI-Reorder-Redesign-UI",
       "attachments": [
         {
           "id": "att-sub-a-uxui-17-69070201",
@@ -16386,7 +15854,6 @@
       "studentName": "สมชาย ใจดี",
       "email": "69070101@kmitl.ac.th",
       "submittedAt": "2026-09-27T14:41:00.000Z",
-      "fileUrl": "https://www.figma.com/design/3hbiQtGTmq0vEP3NZWWm0o/UXUI-Reorder-Redesign-UI",
       "attachments": [
         {
           "id": "att-sub-a-uxui-17-69070101",
@@ -16411,7 +15878,6 @@
       "studentName": "กมลชนก ศรีวิไล",
       "email": "66010102@kmitl.ac.th",
       "submittedAt": "2026-09-26T01:32:00.000Z",
-      "fileUrl": null,
       "aiScore": 9,
       "instructorScore": null,
       "instructorComment": "",
@@ -16431,7 +15897,6 @@
       "studentName": "ปกรณ์ วงศ์ทอง",
       "email": "66010103@kmitl.ac.th",
       "submittedAt": "2026-09-26T09:41:00.000Z",
-      "fileUrl": null,
       "aiScore": 8,
       "instructorScore": 8,
       "instructorComment": "ควรอธิบายเหตุผลของการตัดสินใจให้มากขึ้น",
@@ -16456,7 +15921,6 @@
       "studentName": "พิมพ์ชนก ทองใบ",
       "email": "66010104@kmitl.ac.th",
       "submittedAt": "2026-09-27T19:07:00.000Z",
-      "fileUrl": null,
       "aiScore": null,
       "instructorScore": null,
       "instructorComment": "",
@@ -16471,7 +15935,6 @@
       "studentName": "ชลธิชา วัฒนชัย",
       "email": "66010106@kmitl.ac.th",
       "submittedAt": "2026-09-27T00:16:00.000Z",
-      "fileUrl": null,
       "aiScore": 9,
       "instructorScore": 8,
       "instructorComment": "",
@@ -16496,7 +15959,6 @@
       "studentName": "พงศกร เพชรรัตน์",
       "email": "67010201@kmitl.ac.th",
       "submittedAt": "2026-09-27T16:25:00.000Z",
-      "fileUrl": null,
       "aiScore": 5,
       "instructorScore": null,
       "instructorComment": "",
@@ -16516,7 +15978,6 @@
       "studentName": "ปาริชาต ดอกไม้",
       "email": "67010202@kmitl.ac.th",
       "submittedAt": "2026-09-28T00:04:00.000Z",
-      "fileUrl": null,
       "aiScore": 9,
       "instructorScore": 8,
       "instructorComment": "",
@@ -16541,7 +16002,6 @@
       "studentName": "อภิสิทธิ์ ทองคำ",
       "email": "67010203@kmitl.ac.th",
       "submittedAt": "2026-09-25T12:29:00.000Z",
-      "fileUrl": null,
       "aiScore": 8,
       "instructorScore": 9,
       "instructorComment": "ผลงานประณีต ใช้ Component ได้สม่ำเสมอ",
@@ -16566,7 +16026,6 @@
       "studentName": "สุรชัย มีสุข",
       "email": "67010205@kmitl.ac.th",
       "submittedAt": "2026-09-27T20:45:00.000Z",
-      "fileUrl": null,
       "aiScore": 9,
       "instructorScore": 9,
       "instructorComment": "",
@@ -16591,7 +16050,6 @@
       "studentName": "นภัสสร เพ็ชรสุวรรณ",
       "email": "68020201@kmitl.ac.th",
       "submittedAt": "2026-09-26T02:22:00.000Z",
-      "fileUrl": null,
       "aiScore": 9,
       "instructorScore": 9,
       "instructorComment": "",
@@ -16616,7 +16074,6 @@
       "studentName": "เมธัส ประเสริฐสุข",
       "email": "68020202@kmitl.ac.th",
       "submittedAt": "2026-09-27T19:48:00.000Z",
-      "fileUrl": null,
       "aiScore": 8,
       "instructorScore": 8,
       "instructorComment": "ทำได้ดี เหตุผลชัดเจน",
@@ -16641,7 +16098,6 @@
       "studentName": "ฐิติมา ปัญญาดี",
       "email": "68020203@kmitl.ac.th",
       "submittedAt": "2026-09-27T16:21:00.000Z",
-      "fileUrl": null,
       "aiScore": 8,
       "instructorScore": 7,
       "instructorComment": "แนวคิดดี แต่ยังขาดการเชื่อมโยงกับข้อมูลผู้ใช้",
@@ -16666,7 +16122,6 @@
       "studentName": "จักรพันธ์ คำแสน",
       "email": "68020204@kmitl.ac.th",
       "submittedAt": "2026-09-26T15:18:00.000Z",
-      "fileUrl": null,
       "aiScore": 7,
       "instructorScore": null,
       "instructorComment": "",
@@ -16686,7 +16141,6 @@
       "studentName": "สมชาย ใจดี",
       "email": "69070101@kmitl.ac.th",
       "submittedAt": "2026-09-28T10:20:00.000Z",
-      "fileUrl": null,
       "aiScore": 9,
       "instructorScore": 9,
       "instructorComment": "ลองเพิ่มหลักฐานหรือภาพประกอบอีกนิด",
@@ -16711,7 +16165,6 @@
       "studentName": "สุดา วงษ์สา",
       "email": "69070102@kmitl.ac.th",
       "submittedAt": "2026-09-27T23:27:00.000Z",
-      "fileUrl": null,
       "aiScore": 9,
       "instructorScore": 7,
       "instructorComment": "",
@@ -16736,7 +16189,6 @@
       "studentName": "ศุภชัย บัวทอง",
       "email": "69070201@kmitl.ac.th",
       "submittedAt": "2026-09-26T08:17:00.000Z",
-      "fileUrl": null,
       "aiScore": 9,
       "instructorScore": null,
       "instructorComment": "",
@@ -16756,7 +16208,6 @@
       "studentName": "คณิน พึ่งบุญ",
       "email": "69070203@kmitl.ac.th",
       "submittedAt": "2026-09-28T03:52:00.000Z",
-      "fileUrl": null,
       "aiScore": 6,
       "instructorScore": 7,
       "instructorComment": "",
@@ -16781,7 +16232,6 @@
       "studentName": "สุพัตรา บุญมา",
       "email": "69070206@kmitl.ac.th",
       "submittedAt": "2026-09-25T09:43:00.000Z",
-      "fileUrl": null,
       "aiScore": 9,
       "instructorScore": 9,
       "instructorComment": "",
@@ -16806,7 +16256,6 @@
       "studentName": "วิภาวี ศรีทอง",
       "email": "69070208@kmitl.ac.th",
       "submittedAt": "2026-09-26T02:13:00.000Z",
-      "fileUrl": null,
       "aiScore": 9,
       "instructorScore": 9,
       "instructorComment": "",
@@ -16831,7 +16280,6 @@
       "studentName": "ญาดา พิมสอน",
       "email": "69070212@kmitl.ac.th",
       "submittedAt": "2026-09-27T21:18:00.000Z",
-      "fileUrl": null,
       "aiScore": 8,
       "instructorScore": 7,
       "instructorComment": "",
@@ -16856,7 +16304,6 @@
       "studentName": "ธีรภัทร จันทร์เพ็ญ",
       "email": "69070214@kmitl.ac.th",
       "submittedAt": "2026-09-25T19:32:00.000Z",
-      "fileUrl": null,
       "aiScore": 7,
       "instructorScore": 8,
       "instructorComment": "",
@@ -16881,7 +16328,6 @@
       "studentName": "ปุณณวิช ศรีวงศ์",
       "email": "69070216@kmitl.ac.th",
       "submittedAt": "2026-09-26T22:00:00.000Z",
-      "fileUrl": null,
       "aiScore": 8,
       "instructorScore": 7,
       "instructorComment": "",
@@ -16906,7 +16352,6 @@
       "studentName": "ศิริพร ใจเย็น",
       "email": "69070219@kmitl.ac.th",
       "submittedAt": "2026-09-27T03:02:00.000Z",
-      "fileUrl": null,
       "aiScore": 6,
       "instructorScore": 7,
       "instructorComment": "ลองทดสอบกับผู้ใช้เพิ่มอีกสักคนแล้วสรุปให้ชัดขึ้น",
@@ -16931,7 +16376,6 @@
       "studentName": "พิมพ์ชนก แซ่ลิ้ม",
       "email": "69070221@kmitl.ac.th",
       "submittedAt": "2026-09-26T00:17:00.000Z",
-      "fileUrl": null,
       "aiScore": null,
       "instructorScore": null,
       "instructorComment": "",
@@ -16946,7 +16390,6 @@
       "studentName": "ปิยธิดา ทองคำ",
       "email": "69070224@kmitl.ac.th",
       "submittedAt": "2026-09-27T22:02:00.000Z",
-      "fileUrl": null,
       "aiScore": 5,
       "instructorScore": 7,
       "instructorComment": "",
@@ -16971,7 +16414,6 @@
       "studentName": "กัญญาวีร์ อัครพงษ์",
       "email": "69070226@kmitl.ac.th",
       "submittedAt": "2026-09-26T14:30:00.000Z",
-      "fileUrl": null,
       "aiScore": 4,
       "instructorScore": 4,
       "instructorComment": "",
@@ -16996,7 +16438,6 @@
       "studentName": "นลินี บุญเลิศ",
       "email": "69070228@kmitl.ac.th",
       "submittedAt": "2026-09-28T05:22:00.000Z",
-      "fileUrl": null,
       "aiScore": 7,
       "instructorScore": null,
       "instructorComment": "",
@@ -17016,7 +16457,6 @@
       "studentName": "สุภาพร ดวงจันทร์",
       "email": "69070231@kmitl.ac.th",
       "submittedAt": "2026-09-25T22:50:00.000Z",
-      "fileUrl": null,
       "aiScore": null,
       "instructorScore": null,
       "instructorComment": "",
@@ -17031,7 +16471,6 @@
       "studentName": "อรอุมา ชัยมงคล",
       "email": "69070233@kmitl.ac.th",
       "submittedAt": "2026-09-26T08:33:00.000Z",
-      "fileUrl": null,
       "aiScore": 8,
       "instructorScore": 7,
       "instructorComment": "",
@@ -17056,7 +16495,6 @@
       "studentName": "วารุณี บุญมี",
       "email": "69070236@kmitl.ac.th",
       "submittedAt": "2026-09-26T11:11:00.000Z",
-      "fileUrl": null,
       "aiScore": null,
       "instructorScore": null,
       "instructorComment": "",
@@ -17071,7 +16509,6 @@
       "studentName": "ณัฐริกา เพชรรัตน์",
       "email": "69070238@kmitl.ac.th",
       "submittedAt": "2026-09-26T18:11:00.000Z",
-      "fileUrl": null,
       "aiScore": 7,
       "instructorScore": 6,
       "instructorComment": "ควรอธิบายเหตุผลของการตัดสินใจให้มากขึ้น",
@@ -17096,7 +16533,6 @@
       "studentName": "กมลชนก ศรีวิไล",
       "email": "66010102@kmitl.ac.th",
       "submittedAt": "2026-09-27T19:55:00.000Z",
-      "fileUrl": null,
       "aiScore": 4,
       "instructorScore": 4,
       "instructorComment": "",
@@ -17117,7 +16553,6 @@
       "studentName": "ปกรณ์ วงศ์ทอง",
       "email": "66010103@kmitl.ac.th",
       "submittedAt": "2026-09-25T23:58:00.000Z",
-      "fileUrl": null,
       "aiScore": 1,
       "instructorScore": 3,
       "instructorComment": "",
@@ -17138,7 +16573,6 @@
       "studentName": "ชลธิชา วัฒนชัย",
       "email": "66010106@kmitl.ac.th",
       "submittedAt": "2026-09-26T14:14:00.000Z",
-      "fileUrl": null,
       "aiScore": 4,
       "instructorScore": 4,
       "instructorComment": "",
@@ -17159,7 +16593,6 @@
       "studentName": "พงศกร เพชรรัตน์",
       "email": "67010201@kmitl.ac.th",
       "submittedAt": "2026-09-25T19:22:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 3,
       "instructorComment": "",
@@ -17180,7 +16613,6 @@
       "studentName": "ปาริชาต ดอกไม้",
       "email": "67010202@kmitl.ac.th",
       "submittedAt": "2026-09-27T15:56:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 3,
       "instructorComment": "",
@@ -17201,7 +16633,6 @@
       "studentName": "อภิสิทธิ์ ทองคำ",
       "email": "67010203@kmitl.ac.th",
       "submittedAt": "2026-09-26T01:02:00.000Z",
-      "fileUrl": null,
       "aiScore": 4,
       "instructorScore": 4,
       "instructorComment": "",
@@ -17222,7 +16653,6 @@
       "studentName": "สุรชัย มีสุข",
       "email": "67010205@kmitl.ac.th",
       "submittedAt": "2026-09-27T12:46:00.000Z",
-      "fileUrl": null,
       "aiScore": 4,
       "instructorScore": 4,
       "instructorComment": "",
@@ -17243,7 +16673,6 @@
       "studentName": "นภัสสร เพ็ชรสุวรรณ",
       "email": "68020201@kmitl.ac.th",
       "submittedAt": "2026-09-27T05:46:00.000Z",
-      "fileUrl": null,
       "aiScore": 4,
       "instructorScore": 4,
       "instructorComment": "",
@@ -17264,7 +16693,6 @@
       "studentName": "เมธัส ประเสริฐสุข",
       "email": "68020202@kmitl.ac.th",
       "submittedAt": "2026-09-27T18:16:00.000Z",
-      "fileUrl": null,
       "aiScore": 4,
       "instructorScore": 3,
       "instructorComment": "",
@@ -17285,7 +16713,6 @@
       "studentName": "ฐิติมา ปัญญาดี",
       "email": "68020203@kmitl.ac.th",
       "submittedAt": "2026-09-25T09:11:00.000Z",
-      "fileUrl": null,
       "aiScore": 4,
       "instructorScore": 3,
       "instructorComment": "",
@@ -17306,7 +16733,6 @@
       "studentName": "จักรพันธ์ คำแสน",
       "email": "68020204@kmitl.ac.th",
       "submittedAt": "2026-09-27T09:46:00.000Z",
-      "fileUrl": null,
       "aiScore": 4,
       "instructorScore": 3,
       "instructorComment": "",
@@ -17327,7 +16753,6 @@
       "studentName": "สมชาย ใจดี",
       "email": "69070101@kmitl.ac.th",
       "submittedAt": "2026-09-26T20:19:00.000Z",
-      "fileUrl": null,
       "aiScore": 4,
       "instructorScore": 3,
       "instructorComment": "",
@@ -17348,7 +16773,6 @@
       "studentName": "สุดา วงษ์สา",
       "email": "69070102@kmitl.ac.th",
       "submittedAt": "2026-09-25T18:01:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 3,
       "instructorComment": "",
@@ -17369,7 +16793,6 @@
       "studentName": "ศุภชัย บัวทอง",
       "email": "69070201@kmitl.ac.th",
       "submittedAt": "2026-09-25T23:37:00.000Z",
-      "fileUrl": null,
       "aiScore": 4,
       "instructorScore": 4,
       "instructorComment": "",
@@ -17390,7 +16813,6 @@
       "studentName": "คณิน พึ่งบุญ",
       "email": "69070203@kmitl.ac.th",
       "submittedAt": "2026-09-27T21:22:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 3,
       "instructorComment": "ทำได้ดี เหตุผลชัดเจน",
@@ -17411,7 +16833,6 @@
       "studentName": "สุพัตรา บุญมา",
       "email": "69070206@kmitl.ac.th",
       "submittedAt": "2026-09-27T08:00:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 4,
       "instructorComment": "",
@@ -17432,7 +16853,6 @@
       "studentName": "วิภาวี ศรีทอง",
       "email": "69070208@kmitl.ac.th",
       "submittedAt": "2026-09-28T10:23:00.000Z",
-      "fileUrl": null,
       "aiScore": 4,
       "instructorScore": 4,
       "instructorComment": "",
@@ -17453,7 +16873,6 @@
       "studentName": "ญาดา พิมสอน",
       "email": "69070212@kmitl.ac.th",
       "submittedAt": "2026-09-25T07:56:00.000Z",
-      "fileUrl": null,
       "aiScore": 4,
       "instructorScore": 4,
       "instructorComment": "",
@@ -17474,7 +16893,6 @@
       "studentName": "ธีรภัทร จันทร์เพ็ญ",
       "email": "69070214@kmitl.ac.th",
       "submittedAt": "2026-09-27T15:50:00.000Z",
-      "fileUrl": null,
       "aiScore": 4,
       "instructorScore": 4,
       "instructorComment": "",
@@ -17495,7 +16913,6 @@
       "studentName": "ปุณณวิช ศรีวงศ์",
       "email": "69070216@kmitl.ac.th",
       "submittedAt": "2026-09-26T19:03:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 3,
       "instructorComment": "ควรอธิบายเหตุผลของการตัดสินใจให้มากขึ้น",
@@ -17516,7 +16933,6 @@
       "studentName": "ศิริพร ใจเย็น",
       "email": "69070219@kmitl.ac.th",
       "submittedAt": "2026-09-25T15:18:00.000Z",
-      "fileUrl": null,
       "aiScore": 1,
       "instructorScore": 3,
       "instructorComment": "",
@@ -17537,7 +16953,6 @@
       "studentName": "พิมพ์ชนก แซ่ลิ้ม",
       "email": "69070221@kmitl.ac.th",
       "submittedAt": "2026-09-26T22:47:00.000Z",
-      "fileUrl": null,
       "aiScore": 4,
       "instructorScore": 4,
       "instructorComment": "",
@@ -17558,7 +16973,6 @@
       "studentName": "ปิยธิดา ทองคำ",
       "email": "69070224@kmitl.ac.th",
       "submittedAt": "2026-09-26T05:33:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 3,
       "instructorComment": "",
@@ -17579,7 +16993,6 @@
       "studentName": "กัญญาวีร์ อัครพงษ์",
       "email": "69070226@kmitl.ac.th",
       "submittedAt": "2026-09-26T14:22:00.000Z",
-      "fileUrl": null,
       "aiScore": 1,
       "instructorScore": 1,
       "instructorComment": "",
@@ -17600,7 +17013,6 @@
       "studentName": "นลินี บุญเลิศ",
       "email": "69070228@kmitl.ac.th",
       "submittedAt": "2026-09-28T10:29:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 3,
       "instructorComment": "แนวคิดดี แต่ยังขาดการเชื่อมโยงกับข้อมูลผู้ใช้",
@@ -17621,7 +17033,6 @@
       "studentName": "สุภาพร ดวงจันทร์",
       "email": "69070231@kmitl.ac.th",
       "submittedAt": "2026-09-26T11:04:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 3,
       "instructorComment": "",
@@ -17642,7 +17053,6 @@
       "studentName": "อรอุมา ชัยมงคล",
       "email": "69070233@kmitl.ac.th",
       "submittedAt": "2026-09-25T19:03:00.000Z",
-      "fileUrl": null,
       "aiScore": 1,
       "instructorScore": 3,
       "instructorComment": "จัดวางเป็นระเบียบ ปรับระยะห่างอีกเล็กน้อยจะดีขึ้น",
@@ -17663,7 +17073,6 @@
       "studentName": "วารุณี บุญมี",
       "email": "69070236@kmitl.ac.th",
       "submittedAt": "2026-09-26T04:50:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 3,
       "instructorComment": "ทำได้ดี เหตุผลชัดเจน",
@@ -17684,7 +17093,6 @@
       "studentName": "ณัฐริกา เพชรรัตน์",
       "email": "69070238@kmitl.ac.th",
       "submittedAt": "2026-09-27T06:44:00.000Z",
-      "fileUrl": null,
       "aiScore": 3,
       "instructorScore": 3,
       "instructorComment": "",
@@ -17705,7 +17113,6 @@
       "studentName": "กัญญาวีร์ อัครพงษ์",
       "email": "69070226@kmitl.ac.th",
       "submittedAt": "2026-09-27T17:31:00.000Z",
-      "fileUrl": null,
       "aiScore": 4,
       "instructorScore": 7,
       "instructorComment": "",
@@ -17731,7 +17138,6 @@
       "studentName": "พิมพ์ชนก ทองใบ",
       "email": "66010104@kmitl.ac.th",
       "submittedAt": "2026-09-27T17:31:00.000Z",
-      "fileUrl": null,
       "aiScore": 4,
       "instructorScore": 7,
       "instructorComment": "",
@@ -17757,7 +17163,6 @@
       "studentName": "อรอุมา ชัยมงคล",
       "email": "69070233@kmitl.ac.th",
       "submittedAt": "2026-09-27T17:31:00.000Z",
-      "fileUrl": null,
       "aiScore": 4,
       "instructorScore": 7,
       "instructorComment": "",
@@ -17783,7 +17188,6 @@
       "studentName": "ณัฐริกา เพชรรัตน์",
       "email": "69070238@kmitl.ac.th",
       "submittedAt": "2026-09-27T17:31:00.000Z",
-      "fileUrl": null,
       "aiScore": 4,
       "instructorScore": 7,
       "instructorComment": "",
@@ -17809,7 +17213,6 @@
       "studentName": "สุพัตรา บุญมา",
       "email": "69070206@kmitl.ac.th",
       "submittedAt": "2026-09-27T17:31:00.000Z",
-      "fileUrl": null,
       "aiScore": 4,
       "instructorScore": 7,
       "instructorComment": "",
@@ -17835,7 +17238,6 @@
       "studentName": "นภัสสร เพ็ชรสุวรรณ",
       "email": "68020201@kmitl.ac.th",
       "submittedAt": "2026-09-28T17:47:00.000Z",
-      "fileUrl": null,
       "aiScore": 9,
       "instructorScore": 7,
       "instructorComment": "",
@@ -17862,7 +17264,6 @@
       "studentName": "ปกรณ์ วงศ์ทอง",
       "email": "66010103@kmitl.ac.th",
       "submittedAt": "2026-09-28T17:47:00.000Z",
-      "fileUrl": null,
       "aiScore": 9,
       "instructorScore": 7,
       "instructorComment": "",
@@ -17889,7 +17290,6 @@
       "studentName": "เมธัส ประเสริฐสุข",
       "email": "68020202@kmitl.ac.th",
       "submittedAt": "2026-09-28T17:47:00.000Z",
-      "fileUrl": null,
       "aiScore": 9,
       "instructorScore": 7,
       "instructorComment": "",
@@ -17916,7 +17316,6 @@
       "studentName": "จักรพันธ์ คำแสน",
       "email": "68020204@kmitl.ac.th",
       "submittedAt": "2026-09-28T17:47:00.000Z",
-      "fileUrl": null,
       "aiScore": 9,
       "instructorScore": 7,
       "instructorComment": "",
@@ -17943,7 +17342,6 @@
       "studentName": "พงศกร เพชรรัตน์",
       "email": "67010201@kmitl.ac.th",
       "submittedAt": "2026-09-28T17:47:00.000Z",
-      "fileUrl": null,
       "aiScore": 9,
       "instructorScore": 7,
       "instructorComment": "",
@@ -17970,7 +17368,6 @@
       "studentName": "วารุณี บุญมี",
       "email": "69070236@kmitl.ac.th",
       "submittedAt": "2026-09-28T13:11:00.000Z",
-      "fileUrl": null,
       "aiScore": 7,
       "instructorScore": 7,
       "instructorComment": "",
@@ -17996,7 +17393,6 @@
       "studentName": "นลินี บุญเลิศ",
       "email": "69070228@kmitl.ac.th",
       "submittedAt": "2026-09-28T13:11:00.000Z",
-      "fileUrl": null,
       "aiScore": 7,
       "instructorScore": 7,
       "instructorComment": "",
@@ -18022,7 +17418,6 @@
       "studentName": "ชลธิชา วัฒนชัย",
       "email": "66010106@kmitl.ac.th",
       "submittedAt": "2026-09-28T13:11:00.000Z",
-      "fileUrl": null,
       "aiScore": 7,
       "instructorScore": 7,
       "instructorComment": "",
@@ -18048,7 +17443,6 @@
       "studentName": "ศิริพร ใจเย็น",
       "email": "69070219@kmitl.ac.th",
       "submittedAt": "2026-09-28T13:11:00.000Z",
-      "fileUrl": null,
       "aiScore": 7,
       "instructorScore": 7,
       "instructorComment": "",
@@ -18074,7 +17468,6 @@
       "studentName": "ปิยธิดา ทองคำ",
       "email": "69070224@kmitl.ac.th",
       "submittedAt": "2026-09-28T13:11:00.000Z",
-      "fileUrl": null,
       "aiScore": 7,
       "instructorScore": 7,
       "instructorComment": "",
@@ -18100,7 +17493,6 @@
       "studentName": "ธีรภัทร จันทร์เพ็ญ",
       "email": "69070214@kmitl.ac.th",
       "submittedAt": "2026-09-27T15:58:00.000Z",
-      "fileUrl": null,
       "aiScore": 10,
       "instructorScore": 9,
       "instructorComment": "ลองเพิ่มหลักฐานหรือภาพประกอบอีกนิด",
@@ -18126,7 +17518,6 @@
       "studentName": "ฐิติมา ปัญญาดี",
       "email": "68020203@kmitl.ac.th",
       "submittedAt": "2026-09-27T15:58:00.000Z",
-      "fileUrl": null,
       "aiScore": 10,
       "instructorScore": 9,
       "instructorComment": "ลองเพิ่มหลักฐานหรือภาพประกอบอีกนิด",
@@ -18152,7 +17543,6 @@
       "studentName": "วิภาวี ศรีทอง",
       "email": "69070208@kmitl.ac.th",
       "submittedAt": "2026-09-27T15:58:00.000Z",
-      "fileUrl": null,
       "aiScore": 10,
       "instructorScore": 9,
       "instructorComment": "ลองเพิ่มหลักฐานหรือภาพประกอบอีกนิด",
@@ -18178,7 +17568,6 @@
       "studentName": "ปาริชาต ดอกไม้",
       "email": "67010202@kmitl.ac.th",
       "submittedAt": "2026-09-27T15:58:00.000Z",
-      "fileUrl": null,
       "aiScore": 10,
       "instructorScore": 9,
       "instructorComment": "ลองเพิ่มหลักฐานหรือภาพประกอบอีกนิด",
@@ -18204,7 +17593,6 @@
       "studentName": "สุภาพร ดวงจันทร์",
       "email": "69070231@kmitl.ac.th",
       "submittedAt": "2026-09-27T15:58:00.000Z",
-      "fileUrl": null,
       "aiScore": 10,
       "instructorScore": 9,
       "instructorComment": "ลองเพิ่มหลักฐานหรือภาพประกอบอีกนิด",
@@ -18230,7 +17618,6 @@
       "studentName": "ญาดา พิมสอน",
       "email": "69070212@kmitl.ac.th",
       "submittedAt": "2026-09-28T17:06:00.000Z",
-      "fileUrl": null,
       "aiScore": 8,
       "instructorScore": 9,
       "instructorComment": "",
@@ -18257,7 +17644,6 @@
       "studentName": "ปุณณวิช ศรีวงศ์",
       "email": "69070216@kmitl.ac.th",
       "submittedAt": "2026-09-28T17:06:00.000Z",
-      "fileUrl": null,
       "aiScore": 8,
       "instructorScore": 9,
       "instructorComment": "",
@@ -18284,7 +17670,6 @@
       "studentName": "อภิสิทธิ์ ทองคำ",
       "email": "67010203@kmitl.ac.th",
       "submittedAt": "2026-09-28T17:06:00.000Z",
-      "fileUrl": null,
       "aiScore": 8,
       "instructorScore": 9,
       "instructorComment": "",
@@ -18311,7 +17696,6 @@
       "studentName": "กมลชนก ศรีวิไล",
       "email": "66010102@kmitl.ac.th",
       "submittedAt": "2026-09-28T17:06:00.000Z",
-      "fileUrl": null,
       "aiScore": 8,
       "instructorScore": 9,
       "instructorComment": "",
@@ -18338,7 +17722,6 @@
       "studentName": "สุรชัย มีสุข",
       "email": "67010205@kmitl.ac.th",
       "submittedAt": "2026-09-28T17:06:00.000Z",
-      "fileUrl": null,
       "aiScore": 8,
       "instructorScore": 9,
       "instructorComment": "",
@@ -18365,7 +17748,6 @@
       "studentName": "พิมพ์ชนก แซ่ลิ้ม",
       "email": "69070221@kmitl.ac.th",
       "submittedAt": "2026-09-27T10:56:00.000Z",
-      "fileUrl": null,
       "aiScore": 8,
       "instructorScore": 9,
       "instructorComment": "",
@@ -18391,7 +17773,6 @@
       "studentName": "สุดา วงษ์สา",
       "email": "69070102@kmitl.ac.th",
       "submittedAt": "2026-09-27T10:56:00.000Z",
-      "fileUrl": null,
       "aiScore": 8,
       "instructorScore": 9,
       "instructorComment": "",
@@ -18417,7 +17798,6 @@
       "studentName": "คณิน พึ่งบุญ",
       "email": "69070203@kmitl.ac.th",
       "submittedAt": "2026-09-27T10:56:00.000Z",
-      "fileUrl": null,
       "aiScore": 8,
       "instructorScore": 9,
       "instructorComment": "",
@@ -18443,7 +17823,6 @@
       "studentName": "ศุภชัย บัวทอง",
       "email": "69070201@kmitl.ac.th",
       "submittedAt": "2026-09-27T10:56:00.000Z",
-      "fileUrl": null,
       "aiScore": 8,
       "instructorScore": 9,
       "instructorComment": "",
@@ -18469,7 +17848,6 @@
       "studentName": "สมชาย ใจดี",
       "email": "69070101@kmitl.ac.th",
       "submittedAt": "2026-09-27T10:56:00.000Z",
-      "fileUrl": null,
       "aiScore": 8,
       "instructorScore": 9,
       "instructorComment": "",
@@ -18495,7 +17873,6 @@
       "studentName": "กมลชนก ศรีวิไล",
       "email": "66010102@kmitl.ac.th",
       "submittedAt": "2026-10-02T07:56:00.000Z",
-      "fileUrl": "https://www.figma.com/design/2OoUlsUjMpVKvkTrZBPWwe/UXUI-UX-UI-Final-Project",
       "attachments": [
         {
           "id": "att-sub-uxui-66010102",
@@ -18537,7 +17914,6 @@
       "studentName": "ปกรณ์ วงศ์ทอง",
       "email": "66010103@kmitl.ac.th",
       "submittedAt": "2026-10-04T09:13:00.000Z",
-      "fileUrl": "https://www.figma.com/design/n4l9jtPSsuknQQt7TfHorc/UXUI-UX-UI-Final-Project",
       "attachments": [
         {
           "id": "att-sub-uxui-66010103",
@@ -18579,7 +17955,6 @@
       "studentName": "พิมพ์ชนก ทองใบ",
       "email": "66010104@kmitl.ac.th",
       "submittedAt": "2026-10-03T23:53:00.000Z",
-      "fileUrl": "https://www.figma.com/design/6nBdh24Se3OYcK61g6TbbT/UXUI-UX-UI-Final-Project",
       "attachments": [
         {
           "id": "att-sub-uxui-66010104",
@@ -18621,7 +17996,6 @@
       "studentName": "พงศกร เพชรรัตน์",
       "email": "67010201@kmitl.ac.th",
       "submittedAt": "2026-10-03T05:47:00.000Z",
-      "fileUrl": "https://www.figma.com/design/6NHKao6HdLyCwb963NGev3/UXUI-UX-UI-Final-Project",
       "attachments": [
         {
           "id": "att-sub-uxui-67010201",
@@ -18663,7 +18037,6 @@
       "studentName": "ปาริชาต ดอกไม้",
       "email": "67010202@kmitl.ac.th",
       "submittedAt": "2026-10-02T16:18:00.000Z",
-      "fileUrl": "https://www.figma.com/design/6jSNvXg9tLWFVCYeQH1KJ0/UXUI-UX-UI-Final-Project",
       "attachments": [
         {
           "id": "att-sub-uxui-67010202",
@@ -18705,7 +18078,6 @@
       "studentName": "อภิสิทธิ์ ทองคำ",
       "email": "67010203@kmitl.ac.th",
       "submittedAt": "2026-10-04T14:58:00.000Z",
-      "fileUrl": "https://www.figma.com/design/Xco4kyeiEkcjqIN2WxHfN9/UXUI-UX-UI-Final-Project",
       "attachments": [
         {
           "id": "att-sub-uxui-67010203",
@@ -18747,7 +18119,6 @@
       "studentName": "สุรชัย มีสุข",
       "email": "67010205@kmitl.ac.th",
       "submittedAt": "2026-10-04T15:17:00.000Z",
-      "fileUrl": "https://www.figma.com/design/lTdDouRjvyi3oFS9YSvt4B/UXUI-UX-UI-Final-Project",
       "attachments": [
         {
           "id": "att-sub-uxui-67010205",
@@ -18789,7 +18160,6 @@
       "studentName": "นภัสสร เพ็ชรสุวรรณ",
       "email": "68020201@kmitl.ac.th",
       "submittedAt": "2026-10-03T01:31:00.000Z",
-      "fileUrl": "https://www.figma.com/design/JUWUaKlQr59oFJe5IWFYei/UXUI-UX-UI-Final-Project",
       "attachments": [
         {
           "id": "att-sub-uxui-68020201",
@@ -18831,7 +18201,6 @@
       "studentName": "เมธัส ประเสริฐสุข",
       "email": "68020202@kmitl.ac.th",
       "submittedAt": "2026-10-03T13:07:00.000Z",
-      "fileUrl": "https://www.figma.com/design/a8e1ms7XIIUDB4GLdozjtV/UXUI-UX-UI-Final-Project",
       "attachments": [
         {
           "id": "att-sub-uxui-68020202",
@@ -18873,7 +18242,6 @@
       "studentName": "ฐิติมา ปัญญาดี",
       "email": "68020203@kmitl.ac.th",
       "submittedAt": "2026-10-02T16:28:00.000Z",
-      "fileUrl": "https://www.figma.com/design/c9RhzJfRubLMfSIQHnmQn6/UXUI-UX-UI-Final-Project",
       "attachments": [
         {
           "id": "att-sub-uxui-68020203",
@@ -18915,7 +18283,6 @@
       "studentName": "จักรพันธ์ คำแสน",
       "email": "68020204@kmitl.ac.th",
       "submittedAt": "2026-10-04T23:05:00.000Z",
-      "fileUrl": "https://www.figma.com/design/gUn3jQ23x32nlh1jWvdS3F/UXUI-UX-UI-Final-Project",
       "attachments": [
         {
           "id": "att-sub-uxui-68020204",
@@ -18957,7 +18324,6 @@
       "studentName": "สมชาย ใจดี",
       "email": "69070101@kmitl.ac.th",
       "submittedAt": "2026-10-02T15:08:00.000Z",
-      "fileUrl": "https://www.figma.com/design/YjEMtYt58WFdkdLJR2Ylcg/UXUI-UX-UI-Final-Project",
       "attachments": [
         {
           "id": "att-sub-uxui-69070101",
@@ -18999,7 +18365,6 @@
       "studentName": "สุดา วงษ์สา",
       "email": "69070102@kmitl.ac.th",
       "submittedAt": "2026-10-04T13:11:00.000Z",
-      "fileUrl": "https://www.figma.com/design/vdEmU1aUc47cJBU5LXX1Wv/UXUI-UX-UI-Final-Project",
       "attachments": [
         {
           "id": "att-sub-uxui-69070102",
@@ -19041,7 +18406,6 @@
       "studentName": "คณิน พึ่งบุญ",
       "email": "69070203@kmitl.ac.th",
       "submittedAt": "2026-10-03T12:10:00.000Z",
-      "fileUrl": "https://www.figma.com/design/YbQ1BQGFLundcSVei5H7pG/UXUI-UX-UI-Final-Project",
       "attachments": [
         {
           "id": "att-sub-uxui-69070203",
@@ -19083,7 +18447,6 @@
       "studentName": "สุพัตรา บุญมา",
       "email": "69070206@kmitl.ac.th",
       "submittedAt": "2026-10-04T01:46:00.000Z",
-      "fileUrl": "https://www.figma.com/design/1EnKCOoBSW5DYOQJhd1LCL/UXUI-UX-UI-Final-Project",
       "attachments": [
         {
           "id": "att-sub-uxui-69070206",
@@ -19125,7 +18488,6 @@
       "studentName": "วิภาวี ศรีทอง",
       "email": "69070208@kmitl.ac.th",
       "submittedAt": "2026-10-04T16:34:00.000Z",
-      "fileUrl": "https://www.figma.com/design/5rfXAiRepGLQkNm6wyugL9/UXUI-UX-UI-Final-Project",
       "attachments": [
         {
           "id": "att-sub-uxui-69070208",
@@ -19167,7 +18529,6 @@
       "studentName": "ญาดา พิมสอน",
       "email": "69070212@kmitl.ac.th",
       "submittedAt": "2026-10-04T11:50:00.000Z",
-      "fileUrl": "https://www.figma.com/design/084EkpvbKcIZe49cXPsECK/UXUI-UX-UI-Final-Project",
       "attachments": [
         {
           "id": "att-sub-uxui-69070212",
@@ -19209,7 +18570,6 @@
       "studentName": "ธีรภัทร จันทร์เพ็ญ",
       "email": "69070214@kmitl.ac.th",
       "submittedAt": "2026-10-03T20:58:00.000Z",
-      "fileUrl": "https://www.figma.com/design/TNx0Ym9Ykh4hyugzAtyfbC/UXUI-UX-UI-Final-Project",
       "attachments": [
         {
           "id": "att-sub-uxui-69070214",
@@ -19251,7 +18611,6 @@
       "studentName": "ปุณณวิช ศรีวงศ์",
       "email": "69070216@kmitl.ac.th",
       "submittedAt": "2026-10-02T09:04:00.000Z",
-      "fileUrl": "https://www.figma.com/design/9dCN4WRtCMYbMuNymHrvPH/UXUI-UX-UI-Final-Project",
       "attachments": [
         {
           "id": "att-sub-uxui-69070216",
@@ -19293,7 +18652,6 @@
       "studentName": "ศิริพร ใจเย็น",
       "email": "69070219@kmitl.ac.th",
       "submittedAt": "2026-10-05T05:37:00.000Z",
-      "fileUrl": "https://www.figma.com/design/iwoGHRUtoyqdNJFoRbx2Jk/UXUI-UX-UI-Final-Project",
       "attachments": [
         {
           "id": "att-sub-uxui-69070219",
@@ -19335,7 +18693,6 @@
       "studentName": "พิมพ์ชนก แซ่ลิ้ม",
       "email": "69070221@kmitl.ac.th",
       "submittedAt": "2026-10-04T19:54:00.000Z",
-      "fileUrl": "https://www.figma.com/design/en6KwqrfaQXuUbP23nyGdd/UXUI-UX-UI-Final-Project",
       "attachments": [
         {
           "id": "att-sub-uxui-69070221",
@@ -19377,7 +18734,6 @@
       "studentName": "กัญญาวีร์ อัครพงษ์",
       "email": "69070226@kmitl.ac.th",
       "submittedAt": "2026-10-04T22:05:00.000Z",
-      "fileUrl": "https://www.figma.com/design/EF5uzwTtZe1g3fFb8RDbzO/UXUI-UX-UI-Final-Project",
       "attachments": [
         {
           "id": "att-sub-uxui-69070226",
@@ -19419,7 +18775,6 @@
       "studentName": "นลินี บุญเลิศ",
       "email": "69070228@kmitl.ac.th",
       "submittedAt": "2026-10-02T09:51:00.000Z",
-      "fileUrl": "https://www.figma.com/design/AUwqNHkDhhXf4sV2O3uCye/UXUI-UX-UI-Final-Project",
       "attachments": [
         {
           "id": "att-sub-uxui-69070228",
@@ -19461,7 +18816,6 @@
       "studentName": "สุภาพร ดวงจันทร์",
       "email": "69070231@kmitl.ac.th",
       "submittedAt": "2026-10-02T16:46:00.000Z",
-      "fileUrl": "https://www.figma.com/design/gmLFo4YTcA7B142yQBrHEL/UXUI-UX-UI-Final-Project",
       "attachments": [
         {
           "id": "att-sub-uxui-69070231",
@@ -19503,7 +18857,6 @@
       "studentName": "อรอุมา ชัยมงคล",
       "email": "69070233@kmitl.ac.th",
       "submittedAt": "2026-10-03T11:54:00.000Z",
-      "fileUrl": "https://www.figma.com/design/h5Glarwut5VHu3TZTP67At/UXUI-UX-UI-Final-Project",
       "attachments": [
         {
           "id": "att-sub-uxui-69070233",
@@ -19545,7 +18898,6 @@
       "studentName": "วารุณี บุญมี",
       "email": "69070236@kmitl.ac.th",
       "submittedAt": "2026-10-05T10:52:00.000Z",
-      "fileUrl": "https://www.figma.com/design/DbbVDeXEfpkPHJMQN9PD50/UXUI-UX-UI-Final-Project",
       "attachments": [
         {
           "id": "att-sub-uxui-69070236",
@@ -19587,7 +18939,6 @@
       "studentName": "ณัฐริกา เพชรรัตน์",
       "email": "69070238@kmitl.ac.th",
       "submittedAt": "2026-10-04T15:02:00.000Z",
-      "fileUrl": "https://www.figma.com/design/rReHZe1m6iDMEryA42rBYj/UXUI-UX-UI-Final-Project",
       "attachments": [
         {
           "id": "att-sub-uxui-69070238",

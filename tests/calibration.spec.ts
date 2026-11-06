@@ -16,7 +16,7 @@ const COURSE = {
   id: "c-cal", name: "Programming", description: "", status: "active", coverColor: "#0F766E",
   courseTemplateId: "ct-cal", term: 1, academicYear: 2569, sectionNumber: "1", code: "01076112", schedule: "Mon", room: "811", createdAt: NOW, updatedAt: NOW,
 };
-const TEACHER = { id: "t-cal", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", role: "teacher", status: "active", courseIds: ["c-cal"] };
+const TEACHER = { id: "t-cal", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", status: "active", courseIds: ["c-cal"] };
 const LV = (n: string) => [
   { label: "Excellent", description: `${n} top` }, { label: "Fair", description: `${n} ok` }, { label: "Needs Improvement", description: `${n} weak` }, { label: "Fail", description: `${n} none` },
 ];
@@ -48,7 +48,7 @@ const RUBRIC_EXTRA: Record<string, Record<string, unknown>> = { "a-copy": { sour
 
 const sub = (aid: string, n: number, extra: Record<string, unknown> = {}) => ({
   id: `${aid}-s${n}`, assignmentId: aid, studentId: `6407${String(n).padStart(4, "0")}`, studentName: `Student ${n}`, email: `s${n}@kmitl.ac.th`, submittedAt: "2026-01-05T10:00:00.000Z",
-  fileUrl: null, aiScore: null, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "not_graded", updatedAt: NOW, ...extra,
+  aiScore: null, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "not_graded", updatedAt: NOW, ...extra,
 });
 /** A submission the AI has graded (what "Grade with AI" stores). */
 const aiSub = (aid: string, n: number, extra: Record<string, unknown> = {}, offsets?: Record<string, number>) =>
@@ -591,7 +591,7 @@ test.describe("Calibration", () => {
       localStorage.setItem("hwai_lang", "en");
       localStorage.setItem("hwai_user", JSON.stringify({ name: "Somsak", email: "somsak@kmitl.ac.th", role: "teacher" }));
       localStorage.setItem("hwai_courses_v2", JSON.stringify([{ id: "c-cal", name: "Programming", status: "active", coverColor: "#0F766E", description: "", createdAt: "x", updatedAt: "x" }]));
-      localStorage.setItem("hwai_managed_teachers_v1", JSON.stringify([{ id: "t-cal", name: "S", email: "somsak@kmitl.ac.th", role: "teacher", status: "active", courseIds: ["c-cal"] }]));
+      localStorage.setItem("hwai_managed_teachers_v1", JSON.stringify([{ id: "t-cal", name: "S", email: "somsak@kmitl.ac.th", status: "active", courseIds: ["c-cal"] }]));
     });
     await page.goto(`${BASE}/teacher/courses/c-cal/calibration`);
     await expect(page.getByText("Nothing to calibrate yet")).toBeVisible();

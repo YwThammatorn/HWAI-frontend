@@ -28,10 +28,10 @@ const COURSE_B = {
 };
 
 const STUDENT_RECORD_A = {
-  id: "sr-sp4-a", courseId: "c-sp4-a", studentId: "64070501", firstName: "Somchai", lastName: "Jaidee", email: "s1@kmitl.ac.th", cohort: "CE69",
+  id: "sr-sp4-a", courseId: "c-sp4-a", studentId: "64070501", name: "Somchai Jaidee", email: "s1@kmitl.ac.th", cohort: "CE69",
 };
 const STUDENT_RECORD_B = {
-  id: "sr-sp4-b", courseId: "c-sp4-b", studentId: "64070501", firstName: "Somchai", lastName: "Jaidee", email: "s1@kmitl.ac.th", cohort: "CE69",
+  id: "sr-sp4-b", courseId: "c-sp4-b", studentId: "64070501", name: "Somchai Jaidee", email: "s1@kmitl.ac.th", cohort: "CE69",
 };
 
 // One announcement per course, timestamped so course B's is the more recent
@@ -171,7 +171,7 @@ const EVAL_ASSIGNMENTS = [
 
 const EVAL_SUBMISSION_GRADED = {
   id: "sub-sp5-1", assignmentId: "a-sp5-1", studentId: "64070501", studentName: "Somchai Jaidee", email: "s1@kmitl.ac.th",
-  submittedAt: "2026-01-09T10:00:00.000Z", fileUrl: null, aiScore: 75, instructorScore: 80, instructorComment: "",
+  submittedAt: "2026-01-09T10:00:00.000Z", aiScore: 75, instructorScore: 80, instructorComment: "",
   externalUseConsent: false, status: "graded", updatedAt: "2026-01-10T00:00:00.000Z",
 };
 

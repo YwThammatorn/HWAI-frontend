@@ -19,16 +19,16 @@ const COURSE = {
 
 const TEACHER = {
   id: "t-e2e", title: "อ.", name: "Walk Teacher", email: "walk-teacher@kmitl.ac.th",
-  role: "teacher", status: "active", courseIds: ["c-e2e"],
+  status: "active", courseIds: ["c-e2e"],
 };
 
 const FAH = { name: "Fah Nueng", email: "64070801@kmitl.ac.th", role: "student", studentId: "64070801" };
 const BEAM = { name: "Beam Song", email: "64070802@kmitl.ac.th", role: "student", studentId: "64070802" };
 
 const ROSTER = [
-  { id: "s-e2e-1", courseId: "c-e2e", studentId: "64070801", firstName: "Fah", lastName: "Nueng", email: "64070801@kmitl.ac.th", cohort: "CE69" },
-  { id: "s-e2e-2", courseId: "c-e2e", studentId: "64070802", firstName: "Beam", lastName: "Song", email: "64070802@kmitl.ac.th", cohort: "CE69" },
-  { id: "s-e2e-3", courseId: "c-e2e", studentId: "64070803", firstName: "Ploy", lastName: "Saam", email: "64070803@kmitl.ac.th", cohort: "CE69" },
+  { id: "s-e2e-1", courseId: "c-e2e", studentId: "64070801", name: "Fah Nueng", email: "64070801@kmitl.ac.th", cohort: "CE69" },
+  { id: "s-e2e-2", courseId: "c-e2e", studentId: "64070802", name: "Beam Song", email: "64070802@kmitl.ac.th", cohort: "CE69" },
+  { id: "s-e2e-3", courseId: "c-e2e", studentId: "64070803", name: "Ploy Saam", email: "64070803@kmitl.ac.th", cohort: "CE69" },
 ];
 
 const ASSIGNMENT = {

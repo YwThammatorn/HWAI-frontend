@@ -80,7 +80,7 @@ export default function ManagedTeacherProvider({ children }: { children: React.R
   function importTeachers(data: Omit<ManagedTeacher, "id" | "courseIds" | "status">[]): ManagedTeacher[] {
     const newTeachers = data.map((d) => ({ ...d, id: uuid(), courseIds: [] as string[], status: "active" as const }));
     persist([...latest.current, ...newTeachers]);
-    sync(() => api.importManagedTeachers(newTeachers.map(({ id, title, name, email, role }) => ({ id, title, name, email, role }))));
+    sync(() => api.importManagedTeachers(newTeachers.map(({ id, title, name, email }) => ({ id, title, name, email }))));
     return newTeachers;
   }
 

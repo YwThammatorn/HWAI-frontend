@@ -29,7 +29,7 @@ async function withAuth(page: Page) {
     localStorage.setItem("hwai_user", JSON.stringify(u));
     localStorage.setItem("hwai_lang", "en");
     localStorage.setItem("hwai_managed_teachers_v1", JSON.stringify([
-      { id: "e2e-teacher-1", name: u.name, email: u.email, role: "teacher", status: "active", courseIds: ["seed-1", "seed-2"] },
+      { id: "e2e-teacher-1", name: u.name, email: u.email, status: "active", courseIds: ["seed-1", "seed-2"] },
     ]));
   }, MOCK_USER);
 }
@@ -637,7 +637,7 @@ async function withManyCourses(page: Page) {
     localStorage.setItem("hwai_lang", "en");
     localStorage.setItem("hwai_courses_v2", JSON.stringify(courses));
     localStorage.setItem("hwai_managed_teachers_v1", JSON.stringify([
-      { id: "e2e-teacher-1", name: "Test Teacher", email: "test@school.edu", role: "teacher", status: "active", courseIds: courses.map((c) => c.id) },
+      { id: "e2e-teacher-1", name: "Test Teacher", email: "test@school.edu", status: "active", courseIds: courses.map((c) => c.id) },
     ]));
   });
 }

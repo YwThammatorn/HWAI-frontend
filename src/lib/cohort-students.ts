@@ -8,18 +8,14 @@ export interface CohortStudent {
   id: string;
   studentId: string; // institutional ID e.g. "64070501"
   title?: string; // honorific prefix e.g. "นาย"/"นาง"/"นางสาว" — optional, free text
-  firstName: string;
-  lastName: string;
+  /** the whole name, without the title (one field, as for teachers — 6/11/2569) */
+  name: string;
   email: string;
   program: string;  // e.g. "CE"
   /** Account-level status per meeting decision #1 (4/9/2569) — reflects
    *  พ้นสภาพ/ลาออก/จบ, separate from per-section enrollment status.
    *  Defaults to "active" for existing records without this field. */
   status?: AccountStatus;
-  /** FK → CurriculumVersion (see src/lib/curriculum.ts). Not yet enforced
-   *  anywhere — added so the field exists ahead of the /admin/curriculum
-   *  screen that will let admins actually assign it. */
-  curriculumVersionId?: string;
 }
 
 export interface CohortStudentContextValue {

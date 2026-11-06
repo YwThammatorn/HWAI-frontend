@@ -64,7 +64,7 @@ export default function StudentEvaluationPage() {
   // Per-assignment cell states (graded/pending/missing/none) + category grouping, reusing the exact
   // same logic the teacher's matrix uses — just for a single student.
   const book = buildScoreBook({
-    students: [{ studentId, firstName: "", lastName: "" }],
+    students: [{ studentId, name: "" }],
     assignments,
     categories,
     submissions: allSubmissions,

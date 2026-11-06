@@ -24,13 +24,13 @@ const COURSES = [
   course("c-107", "Dropped Course", 2569, 1),
   course("c-108", "Ungraded Old", 2568, 1),
 ];
-const roster = (courseId: string, status = "enrolled") => ({ id: `r-${courseId}`, courseId, studentId: "69070401", firstName: "Ann", lastName: "S", email: "69070401@kmitl.ac.th", sequenceNumber: 1, enrollmentStatus: status });
+const roster = (courseId: string, status = "enrolled") => ({ id: `r-${courseId}`, courseId, studentId: "69070401", name: "Ann S", email: "69070401@kmitl.ac.th", sequenceNumber: 1, enrollmentStatus: status });
 const ROSTERS = COURSES.map((c) => roster(c.id, c.id === "c-107" ? "withdrawn" : "enrolled"));
 
 // c-103: coursework 80/100 (60%) + exam 60/100 (40%) → 72 = B ; c-104: one graded assignment, 90 → A
 const cats = (cid: string) => [{ id: `g1-${cid}`, courseId: cid, name: "Coursework", weight: 60, createdAt: NOW, updatedAt: NOW }, { id: `g2-${cid}`, courseId: cid, name: "Exams", weight: 40, createdAt: NOW, updatedAt: NOW }];
 const asg = (id: string, cid: string, cat: string, finalized = true) => ({ id, courseId: cid, name: id, description: "", dueDate: "2025-12-01", maxPoints: 100, categoryId: cat, acceptsFiles: false, fileTypes: [], submissionType: "individual", maxGroupSize: null, rubricIds: [], gradingFinalized: finalized, createdAt: NOW });
-const sub = (aid: string, score: number) => ({ id: `s-${aid}`, assignmentId: aid, studentId: "69070401", studentName: "Ann S", email: "69070401@kmitl.ac.th", submittedAt: NOW, fileUrl: null, aiScore: null, instructorScore: score, instructorComment: "", externalUseConsent: true, status: "graded", updatedAt: NOW });
+const sub = (aid: string, score: number) => ({ id: `s-${aid}`, assignmentId: aid, studentId: "69070401", studentName: "Ann S", email: "69070401@kmitl.ac.th", submittedAt: NOW, aiScore: null, instructorScore: score, instructorComment: "", externalUseConsent: true, status: "graded", updatedAt: NOW });
 const DATA = {
   hwai_grading_categories_v1: [...cats("c-103"), ...cats("c-104"), ...cats("c-108")],
   hwai_assignments_v1: [asg("a1", "c-103", "g1-c-103"), asg("a2", "c-103", "g2-c-103"), asg("a3", "c-104", "g1-c-104"), asg("a4", "c-108", "g1-c-108", false)],
@@ -254,10 +254,10 @@ test.describe("term-history mock (console command [14])", () => {
     await page.addInitScript(([sid, d]) => {
       if (sessionStorage.getItem("hm")) return;
       sessionStorage.setItem("hm", "1");
-      const x = d as { courses: unknown; teachers: unknown; cohort: { studentId: string; firstName: string; lastName: string; email: string }[]; h: Record<string, unknown[]>; flow: Record<string, unknown[]> };
+      const x = d as { courses: unknown; teachers: unknown; cohort: { studentId: string; name: string; email: string }[]; h: Record<string, unknown[]>; flow: Record<string, unknown[]> };
       const person = x.cohort.find((s) => s.studentId === sid)!;
       localStorage.setItem("hwai_lang", "en");
-      localStorage.setItem("hwai_user", JSON.stringify({ name: `${person.firstName} ${person.lastName}`, email: person.email, role: "student", studentId: sid }));
+      localStorage.setItem("hwai_user", JSON.stringify({ name: `${person.name}`, email: person.email, role: "student", studentId: sid }));
       localStorage.setItem("hwai_courses_v2", JSON.stringify(x.courses));
       localStorage.setItem("hwai_managed_teachers_v1", JSON.stringify(x.teachers));
       localStorage.setItem("hwai_cohort_students_v1", JSON.stringify(x.cohort));

@@ -33,7 +33,7 @@ export interface Me {
   demo: boolean;
   roles: UserRole[];
   defaultRole: UserRole;
-  teacher: { id: string; role: "teacher" | "ta"; name: string } | null;
+  teacher: { id: string; name: string } | null;
   /** The student this account is (null for staff — a teacher is never also a student). */
   student: { id: string; studentId: string; name: string; email: string; ta: boolean } | null;
 }

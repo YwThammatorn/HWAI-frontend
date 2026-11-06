@@ -34,8 +34,8 @@ export default function EnrollStudentModal({ courseId, courseName, onClose }: {
   const wrongProgram = !!match && !fits(match.program);
   const wrongProgramText = wrongProgram && section
     ? t(
-        `${match!.firstName} ${match!.lastName} อยู่หลักสูตร ${match!.program} แต่ section นี้เป็นของหลักสูตร ${section.program} — หนึ่ง section รับนักศึกษาจากหลักสูตรเดียวเท่านั้น`,
-        `${match!.firstName} ${match!.lastName} is in ${match!.program}, but this section is for ${section.program} — a section only takes students from one program`,
+        `${match!.name} อยู่หลักสูตร ${match!.program} แต่ section นี้เป็นของหลักสูตร ${section.program} — หนึ่ง section รับนักศึกษาจากหลักสูตรเดียวเท่านั้น`,
+        `${match!.name} is in ${match!.program}, but this section is for ${section.program} — a section only takes students from one program`,
       )
     : "";
 
@@ -48,8 +48,7 @@ export default function EnrollStudentModal({ courseId, courseName, onClose }: {
     // No enrollmentStatus: the provider marks a newcomer to a non-empty roster "added-midterm" (meeting 4/9/2569)
     addStudents(courseId, [{
       studentId: match.studentId,
-      firstName: match.firstName,
-      lastName: match.lastName,
+      name: match.name,
       email: match.email,
     }]);
     setAdded(match);
@@ -75,7 +74,7 @@ export default function EnrollStudentModal({ courseId, courseName, onClose }: {
             </svg>
           </div>
           <p role="status" className="text-sm font-semibold text-[var(--text-primary)]">
-            {t(`เพิ่ม ${added.firstName} ${added.lastName} เข้าวิชาแล้ว`, `${added.firstName} ${added.lastName} was added to the course`)}
+            {t(`เพิ่ม ${added.name} เข้าวิชาแล้ว`, `${added.name} was added to the course`)}
           </p>
           <p className="text-xs text-[var(--text-secondary)] tabular-nums">{added.studentId}</p>
           <div className="flex gap-2 mt-2">
@@ -110,7 +109,7 @@ export default function EnrollStudentModal({ courseId, courseName, onClose }: {
                 <p role="alert" className="text-xs text-[var(--s-err-text)]">{wrongProgramText}</p>
               ) : match && alreadyEnrolled ? (
                 <p className="text-xs text-[var(--s-warn-text)]">
-                  {t(`${match.firstName} ${match.lastName} ลงทะเบียนในวิชานี้แล้ว`, `${match.firstName} ${match.lastName} is already enrolled in this course`)}
+                  {t(`${match.name} ลงทะเบียนในวิชานี้แล้ว`, `${match.name} is already enrolled in this course`)}
                 </p>
               ) : null}
             </div>
@@ -120,10 +119,10 @@ export default function EnrollStudentModal({ courseId, courseName, onClose }: {
           {match && !alreadyEnrolled && !wrongProgram && !error && (
             <div className="flex items-center gap-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-4 py-3">
               <div className="w-10 h-10 rounded-full bg-[var(--accent-subtle)] text-[var(--accent)] text-xs font-bold flex items-center justify-center shrink-0">
-                {getInitials(`${match.firstName} ${match.lastName}`)}
+                {getInitials(match.name)}
               </div>
               <div className="min-w-0">
-                <p className="text-sm font-semibold text-[var(--text-primary)] truncate">{match.title ? `${match.title} ` : ""}{match.firstName} {match.lastName}</p>
+                <p className="text-sm font-semibold text-[var(--text-primary)] truncate">{match.title ? `${match.title} ` : ""}{match.name}</p>
                 <p className="text-xs text-[var(--text-secondary)] truncate">{match.email}</p>
                 <p className="text-xs text-[var(--text-secondary)]">{match.program}</p>
               </div>

@@ -23,8 +23,8 @@ async function open(page: Page, r: (typeof ROLES)[number], path: string) {
     localStorage.setItem("hwai_lang", "en");
     localStorage.setItem("hwai_user", JSON.stringify(d.user));
     localStorage.setItem("hwai_courses_v2", JSON.stringify([d.course]));
-    localStorage.setItem("hwai_managed_teachers_v1", JSON.stringify([{ id: "t-sp", name: "Somsak", email: "somsak@kmitl.ac.th", role: "teacher", status: "active", courseIds: ["c-sp"] }]));
-    localStorage.setItem("hwai_students_v1", JSON.stringify([{ id: "r-sp", courseId: "c-sp", studentId: "69070401", firstName: "Ann", lastName: "S", email: "69070401@kmitl.ac.th", sequenceNumber: 1, enrollmentStatus: "enrolled" }]));
+    localStorage.setItem("hwai_managed_teachers_v1", JSON.stringify([{ id: "t-sp", name: "Somsak", email: "somsak@kmitl.ac.th", status: "active", courseIds: ["c-sp"] }]));
+    localStorage.setItem("hwai_students_v1", JSON.stringify([{ id: "r-sp", courseId: "c-sp", studentId: "69070401", name: "Ann S", email: "69070401@kmitl.ac.th", sequenceNumber: 1, enrollmentStatus: "enrolled" }]));
   }, { user: r.user, course: COURSE });
   await page.goto(`${BASE}${path}`);
   await page.waitForLoadState("networkidle");

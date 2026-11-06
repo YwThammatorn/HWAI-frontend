@@ -21,7 +21,7 @@ const ASSIGNMENTS = [
   asg("a-exam", "Midterm exam", undefined, { isExam: true, acceptsFiles: false }),
 ];
 const mine = (assignmentId: string, extra: Record<string, unknown> = {}) => ({
-  id: `sub-${assignmentId}`, assignmentId, studentId: "64070501", studentName: "S", email: "s1@kmitl.ac.th", submittedAt: "2026-01-10T10:00:00.000Z", fileUrl: null,
+  id: `sub-${assignmentId}`, assignmentId, studentId: "64070501", studentName: "S", email: "s1@kmitl.ac.th", submittedAt: "2026-01-10T10:00:00.000Z", 
   aiScore: null, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "need_review", updatedAt: NOW, ...extra,
 });
 
@@ -34,8 +34,8 @@ async function open(page: Page, opts: { lang?: "en" | "th"; extra?: Record<strin
     localStorage.setItem("hwai_courses_v2", JSON.stringify([d.course]));
     localStorage.setItem("hwai_assignments_v1", JSON.stringify(d.assignments));
     localStorage.setItem("hwai_submissions_v1", JSON.stringify(d.subs));
-    localStorage.setItem("hwai_students_v1", JSON.stringify([{ id: "sr-1", courseId: "c-cg", studentId: "64070501", firstName: "S", lastName: "S", email: "s1@kmitl.ac.th", cohort: "CE69" }]));
-    localStorage.setItem("hwai_cohort_students_v1", JSON.stringify([{ id: "cs-1", studentId: "64070501", firstName: "S", lastName: "S", email: "s1@kmitl.ac.th", cohort: "CE69", program: "CE" }]));
+    localStorage.setItem("hwai_students_v1", JSON.stringify([{ id: "sr-1", courseId: "c-cg", studentId: "64070501", name: "S S", email: "s1@kmitl.ac.th", cohort: "CE69" }]));
+    localStorage.setItem("hwai_cohort_students_v1", JSON.stringify([{ id: "cs-1", studentId: "64070501", name: "S S", email: "s1@kmitl.ac.th", cohort: "CE69", program: "CE" }]));
     for (const [k, v] of Object.entries(d.extra)) localStorage.setItem(k, v);
   }, { lang: opts.lang ?? "en", course: COURSE, assignments: ASSIGNMENTS, subs: [mine("a-sent")], extra: opts.extra ?? {} });
   await page.goto(`${BASE}/student/courses/c-cg/classwork`);

@@ -14,7 +14,7 @@ const COURSE = {
 };
 const TEACHER = {
   id: "t-tb3", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th",
-  role: "teacher", status: "active", courseIds: ["c-tb3"],
+  status: "active", courseIds: ["c-tb3"],
 };
 
 const CRITERIA = [
@@ -29,7 +29,7 @@ const ASSIGNMENT = {
 const RUBRIC = { id: "r-tb3", assignmentId: "a-tb3", name: "Landing page rubric", criteria: CRITERIA, createdAt: NOW, updatedAt: NOW };
 const SUBMISSION = {
   id: "sub-tb3", assignmentId: "a-tb3", studentId: "64070701", studentName: "Fah Test", email: "64070701@kmitl.ac.th",
-  submittedAt: "2026-01-05T10:00:00.000Z", fileUrl: null, aiScore: 80, instructorScore: null, instructorComment: "",
+  submittedAt: "2026-01-05T10:00:00.000Z", aiScore: 80, instructorScore: null, instructorComment: "",
   externalUseConsent: false, status: "need_review", updatedAt: "2026-01-05T10:00:00.000Z",
 };
 

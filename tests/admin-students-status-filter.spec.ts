@@ -12,7 +12,7 @@ import { BASE } from "./base";
 // instead of being clipped.
 
 const mk = (n: number, program: string, status?: string) => ({
-  id: `s-${n}`, studentId: `6907${String(n).padStart(4, "0")}`, firstName: `Name${n}`, lastName: "Test",
+  id: `s-${n}`, studentId: `6907${String(n).padStart(4, "0")}`, name: `Name${n} Test`,
   email: `6907${String(n).padStart(4, "0")}@kmitl.ac.th`, program, ...(status ? { status } : {}),
 });
 // CECS: 1 (no status), 2 inactive, 3 active   |   CE: 4 active, 5 inactive
@@ -103,7 +103,7 @@ test("deactivating a student moves them to the Inactive tab; activating brings t
 });
 
 test("deactivating the first-ever inactive student still lands on a brand-new Inactive tab", async ({ page }) => {
-  const mk = (id: string, first: string) => ({ id: `s-${id}`, studentId: id, firstName: first, lastName: "Test", email: `${id}@kmitl.ac.th`, program: "CE" });
+  const mk = (id: string, first: string) => ({ id: `s-${id}`, studentId: id, name: `${first} Test`, email: `${id}@kmitl.ac.th`, program: "CE" });
   await open(page, "en", [mk("67010101", "Alpha"), mk("67010102", "Bravo")]);
   await expect(inactiveTab(page)).toHaveCount(0);   // nobody inactive yet, so no tab bar
 
@@ -181,7 +181,7 @@ test.describe("Search autocomplete surfaces inactive matches and jumps to their 
 // 26/9/2569 — "a batch has graduated": deactivate every active student whose ID starts with the batch's two digits.
 test.describe("Deactivate a whole batch", () => {
   const S = (id: string, program: string, status?: string) => ({
-    id: `s-${id}`, studentId: id, firstName: `N${id.slice(-3)}`, lastName: "Test", email: `${id}@kmitl.ac.th`, program, ...(status ? { status } : {}),
+    id: `s-${id}`, studentId: id, name: `N${id.slice(-3)} Test`, email: `${id}@kmitl.ac.th`, program, ...(status ? { status } : {}),
   });
   const BATCHES = [
     S("67010101", "CE"), S("67010102", "CE"), S("67020101", "CECS"), S("67010103", "CE", "inactive"),   // batch 67: 3 active + 1 already inactive

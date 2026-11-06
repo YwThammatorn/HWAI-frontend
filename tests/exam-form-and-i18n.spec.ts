@@ -24,7 +24,7 @@ async function seed(page: Page, lang: "en" | "th", user: object, extra: Record<s
 }
 const TEACHER = { name: "Somsak", email: "somsak@kmitl.ac.th", role: "teacher" };
 const STUDENT = { name: "Ann", email: "69070401@kmitl.ac.th", role: "student", studentId: "69070401" };
-const ANN = [{ id: "r1", courseId: "c-fx", studentId: "69070401", firstName: "Ann", lastName: "S", email: "69070401@kmitl.ac.th", sequenceNumber: 1, enrollmentStatus: "enrolled" }];
+const ANN = [{ id: "r1", courseId: "c-fx", studentId: "69070401", name: "Ann S", email: "69070401@kmitl.ac.th", sequenceNumber: 1, enrollmentStatus: "enrolled" }];
 
 test.describe("Exam form hides the file controls", () => {
   test("New Assignment: Exam on hides Accept Files / file types / Submission Type, and the saved exam has fixed file settings", async ({ page }) => {

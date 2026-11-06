@@ -85,7 +85,7 @@ export default function ScoreSummaryView({ courseId, book, summary, onShowStuden
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium text-[var(--text-primary)]">
                         {row.student.title && <span className="font-normal text-[var(--text-secondary)]">{row.student.title} </span>}
-                        {row.student.firstName} {row.student.lastName}
+                        {row.student.name}
                       </p>
                       <p className="text-xs tabular-nums text-[var(--text-muted)]">{row.student.studentId}</p>
                     </div>
@@ -103,7 +103,7 @@ export default function ScoreSummaryView({ courseId, book, summary, onShowStuden
                       type="button"
                       onClick={() => onShowStudent(row.student.studentId)}
                       className="inline-flex h-8 shrink-0 items-center rounded-lg border border-[var(--border)] bg-[var(--bg-surface)] px-3 text-xs font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)] active:scale-[.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
-                      aria-label={t(`ดู ${row.student.firstName} ${row.student.lastName} ในตารางคะแนน`, `See ${row.student.firstName} ${row.student.lastName} in the score matrix`)}
+                      aria-label={t(`ดู ${row.student.name} ในตารางคะแนน`, `See ${row.student.name} in the score matrix`)}
                     >
                       {t("ดูในตาราง", "View in matrix")}
                     </button>

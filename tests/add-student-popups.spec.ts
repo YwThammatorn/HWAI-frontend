@@ -11,12 +11,12 @@ const COURSE = {
   id: "c-as", name: "Programming", description: "", status: "active",
   coverColor: "#2DD4BF", createdAt: NOW, updatedAt: NOW,
 };
-const TEACHER = { id: "t-as", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", role: "teacher", status: "active", courseIds: ["c-as"] };
+const TEACHER = { id: "t-as", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", status: "active", courseIds: ["c-as"] };
 const COHORT = [
-  { id: "cs-1", studentId: "64070501", title: "Mr.", firstName: "Fah", lastName: "Test", email: "64070501@kmitl.ac.th", cohort: "CE64", program: "CE", status: "active" },
-  { id: "cs-2", studentId: "64070502", firstName: "Beam", lastName: "Suk", email: "64070502@kmitl.ac.th", cohort: "CE64", program: "CE", status: "active" },
+  { id: "cs-1", studentId: "64070501", title: "Mr.", name: "Fah Test", email: "64070501@kmitl.ac.th", cohort: "CE64", program: "CE", status: "active" },
+  { id: "cs-2", studentId: "64070502", name: "Beam Suk", email: "64070502@kmitl.ac.th", cohort: "CE64", program: "CE", status: "active" },
 ];
-const ENROLLED_BEAM = { id: "s-beam", courseId: "c-as", studentId: "64070502", firstName: "Beam", lastName: "Suk", email: "64070502@kmitl.ac.th", cohort: "CE64", sequenceNumber: 1, enrollmentStatus: "enrolled" };
+const ENROLLED_BEAM = { id: "s-beam", courseId: "c-as", studentId: "64070502", name: "Beam Suk", email: "64070502@kmitl.ac.th", cohort: "CE64", sequenceNumber: 1, enrollmentStatus: "enrolled" };
 
 async function seedTeacher(page: Page, roster: unknown[] = [ENROLLED_BEAM]) {
   await page.addInitScript((data) => {
@@ -72,7 +72,7 @@ test.describe("Teacher — Add Student (by ID) popup", () => {
     const roster = await savedRoster(page);
     expect(roster).toHaveLength(2);
     expect(roster[1]).toMatchObject({
-      courseId: "c-as", studentId: "64070501", firstName: "Fah", lastName: "Test",
+      courseId: "c-as", studentId: "64070501", name: "Fah Test",
       email: "64070501@kmitl.ac.th", sequenceNumber: 2, enrollmentStatus: "added-midterm",
     });
   });
@@ -173,15 +173,14 @@ test.describe("Admin — Add Student is a centred popup now", () => {
     await expect(dialog.getByRole("alert").first()).toBeVisible();
 
     await dialog.getByLabel("Student ID").fill("69070199");
-    await dialog.getByLabel("First Name").fill("Nok");
-    await dialog.getByLabel("Last Name").fill("Sai");
+    await dialog.getByLabel("Name", { exact: true }).fill("Nok Sai");
     await dialog.getByLabel("Email").fill("69070199@kmitl.ac.th");
     await dialog.getByLabel("Program").selectOption("CE");
     await dialog.getByRole("button", { name: "Add Student" }).click();
     await expect(dialog).toHaveCount(0);
     const cohort = await page.evaluate(() => JSON.parse(localStorage.getItem("hwai_cohort_students_v1") ?? "[]"));
     expect(cohort).toHaveLength(1);
-    expect(cohort[0]).toMatchObject({ studentId: "69070199", firstName: "Nok", email: "69070199@kmitl.ac.th", program: "CE" });
+    expect(cohort[0]).toMatchObject({ studentId: "69070199", name: "Nok Sai", email: "69070199@kmitl.ac.th", program: "CE" });
   });
 
   test("Esc closes it", async ({ page }) => {

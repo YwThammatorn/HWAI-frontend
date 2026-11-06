@@ -542,10 +542,9 @@ export default function GradingProgressPage() {
       addSubmission({
         assignmentId,
         studentId,
-        studentName: stu ? `${stu.firstName} ${stu.lastName}` : studentId,
+        studentName: stu ? stu.name : studentId,
         email: stu?.email ?? "",
         submittedAt: new Date().toISOString(),
-        fileUrl: null,
         aiScore: null,
         instructorScore: score,
         instructorComment: "",

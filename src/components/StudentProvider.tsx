@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { StudentContext, Student } from "@/lib/students";
+import { StudentContext, Student, withName } from "@/lib/students";
 import { API_ENABLED } from "@/lib/api/client";
 import { enqueueWrite, loadFailed } from "@/lib/api/sync";
 import * as api from "@/lib/api/students";
@@ -25,7 +25,7 @@ export default function StudentProvider({ children }: { children: React.ReactNod
     }
     try {
       const raw = localStorage.getItem(LS_KEY);
-      if (raw) setStudents(JSON.parse(raw) as Student[]);
+      if (raw) setStudents((JSON.parse(raw) as Student[]).map(withName));
     } catch {}
   }, [resync]);
 

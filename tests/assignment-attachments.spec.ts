@@ -144,10 +144,10 @@ test.describe("Assignment attachments — student brief", () => {
       localStorage.setItem("hwai_courses_v2", JSON.stringify([data.course]));
       localStorage.setItem("hwai_assignments_v1", JSON.stringify([data.assignment]));
       localStorage.setItem("hwai_students_v1", JSON.stringify([
-        { id: "sr-att", courseId: "c-att", studentId: "64070501", firstName: "สมชาย", lastName: "ใจดี", email: "64070501@kmitl.ac.th", cohort: "CE69" },
+        { id: "sr-att", courseId: "c-att", studentId: "64070501", name: "สมชาย ใจดี", email: "64070501@kmitl.ac.th", cohort: "CE69" },
       ]));
       localStorage.setItem("hwai_cohort_students_v1", JSON.stringify([
-        { id: "cs-att", studentId: "64070501", firstName: "สมชาย", lastName: "ใจดี", email: "64070501@kmitl.ac.th", cohort: "CE69", program: "CE", status: "active" },
+        { id: "cs-att", studentId: "64070501", name: "สมชาย ใจดี", email: "64070501@kmitl.ac.th", cohort: "CE69", program: "CE", status: "active" },
       ]));
     }, {
       course: COURSE,

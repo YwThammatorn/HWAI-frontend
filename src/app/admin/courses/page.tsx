@@ -43,8 +43,8 @@ function CourseModal({
   const { courses, addCourse, updateCourse } = useCourses();
   const { curriculumVersions, courseTemplates, getCourseTemplatesByCurriculum } = useCurriculum();
   const { teachers: accounts, assignToCourse } = useManagedTeachers();
-  // Admin assigns teachers only — TAs are added per course by the teacher (Collaborators page), never here.
-  const teachers = accounts.filter((tc) => tc.role === "teacher");
+  // Every teacher account is a teacher (no TA accounts here — TAs are students, added per course by the teacher on Collaborators).
+  const teachers = accounts;
 
   const seed = course ?? duplicateFrom;
   const [name, setName] = useState(seed?.name ?? "");
@@ -462,8 +462,7 @@ function CourseAssignPanel({ course }: { course: Course }) {
   const { getStudentsByCourse } = useStudents();
 
   const assignedTeachers = getTeachersByCourse(course.id);
-  // Only teacher accounts are offered; one already on this course (older data) stays listed so it can be removed.
-  const teachers = accounts.filter((tc) => tc.role === "teacher" || assignedTeachers.some((a) => a.id === tc.id));
+  const teachers = accounts;
   const enrolledCount = getStudentsByCourse(course.id).length;
   const [teacherSearch, setTeacherSearch] = useState("");
 
@@ -472,7 +471,6 @@ function CourseAssignPanel({ course }: { course: Course }) {
     else assignToCourse(teacherId, course.id);
   }
 
-  const TEACHER_ROLE_LABEL: Record<"teacher" | "ta", string> = { teacher: t("อาจารย์", "Teacher"), ta: "TA" };
 
   const sortedTeachers = [
     ...teachers.filter((tc) => assignedTeachers.some((a) => a.id === tc.id)),
@@ -532,7 +530,7 @@ function CourseAssignPanel({ course }: { course: Course }) {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className={`text-sm font-medium truncate ${assigned ? "text-[var(--text-primary)]" : "text-[var(--text-secondary)]"}`}>{teacher.name}</p>
-                      <p className="text-[11px] text-[var(--text-muted)]">{TEACHER_ROLE_LABEL[teacher.role]}</p>
+                      <p className="text-[11px] text-[var(--text-muted)] truncate">{teacher.email}</p>
                     </div>
                     {assigned && (
                       <svg className="text-[var(--accent)] shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

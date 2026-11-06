@@ -19,7 +19,7 @@ const COURSES = [
   course("c-db", "Databases", "ct-db", 2568, 1),                // mine, another subject
   course("c-stranger", "Someone else's course", "ct-x", 2568, 1),   // not mine, not the same subject
 ];
-const TEACHER = { id: "t-rp", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", role: "teacher", status: "active", courseIds: ["c-now", "c-prev", "c-old", "c-db"] };
+const TEACHER = { id: "t-rp", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", status: "active", courseIds: ["c-now", "c-prev", "c-old", "c-db"] };
 
 const levels = (a: string, b: string, c: string, d: string) => [
   { label: "Excellent", description: a }, { label: "Fair", description: b }, { label: "Needs Improvement", description: c }, { label: "Fail", description: d },
@@ -48,7 +48,7 @@ const RUBRICS = [
   { id: "r-stranger", assignmentId: "a-stranger", name: "stranger", createdAt: NOW, updatedAt: NOW, criteria: [crit("s1", "C1 · Argument / ข้อโต้แย้ง", 10)] },
 ];
 const sub = (id: string, studentId: string, p1: number, p2: number, p3: number) => ({
-  id, assignmentId: "a-prev", studentId, studentName: studentId, email: `${studentId}@kmitl.ac.th`, submittedAt: "2025-01-05T10:00:00.000Z", fileUrl: null,
+  id, assignmentId: "a-prev", studentId, studentName: studentId, email: `${studentId}@kmitl.ac.th`, submittedAt: "2025-01-05T10:00:00.000Z", 
   aiScore: null, instructorScore: p1 + p2 + p3, instructorComment: "", externalUseConsent: false, status: "graded", updatedAt: NOW, criterionScores: { p1, p2, p3 },
 });
 const SUBS = [sub("s1", "64070701", 10, 4, 2), sub("s2", "64070702", 7, 2, 2)];   // p1 avg 85%, p2 50%, p3 50%

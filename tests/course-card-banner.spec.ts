@@ -21,10 +21,10 @@ const COURSES = [PASTEL, DARK, LONG, OLD, NOCODE];
 
 const TEACHER = {
   id: "t-ccb", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th",
-  role: "teacher", status: "active", courseIds: COURSES.map((c) => c.id),
+  status: "active", courseIds: COURSES.map((c) => c.id),
 };
 const ROSTER = COURSES.map((c, i) => ({
-  id: `s-ccb-${i}`, courseId: c.id, studentId: "69070101", firstName: "Somchai", lastName: "Jaidee",
+  id: `s-ccb-${i}`, courseId: c.id, studentId: "69070101", name: "Somchai Jaidee",
   email: "69070101@kmitl.ac.th", cohort: "CE69", sequenceNumber: 1, enrollmentStatus: "enrolled",
 }));
 

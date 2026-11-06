@@ -154,7 +154,7 @@ export default function LoginPage() {
         return;
       }
       login({
-        name: `${found.firstName} ${found.lastName}`,
+        name: found.name,
         email,
         role: "student",
         studentId: found.studentId,

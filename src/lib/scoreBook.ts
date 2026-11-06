@@ -44,8 +44,7 @@ export type ScoreCell =
 
 export interface ScoreBookStudent {
   studentId: string;
-  firstName: string;
-  lastName: string;
+  name: string;
   email?: string;
   title?: string;
 }
@@ -161,12 +160,12 @@ const csvCell = (v: string | number) => {
 /** CSV text (with a UTF-8 BOM so Thai opens correctly in Excel). Column order follows the on-screen groups. No grade column since 15/10/2569 — the course is not graded with letters. */
 export function scoreBookToCsv(
   book: ScoreBook,
-  labels: { id: string; title: string; first: string; last: string; total: string; pending: string; missing: string; categoryPct: (name: string) => string },
+  labels: { id: string; title: string; name: string; total: string; pending: string; missing: string; categoryPct: (name: string) => string },
 ): string {
   const columns = book.groups.flatMap((g) => g.columns);
   const cats = book.groups.filter((g) => g.category).map((g) => g.category!);
   const header = [
-    labels.id, labels.title, labels.first, labels.last,
+    labels.id, labels.title, labels.name,
     ...columns.map((a) => `${a.name} (/${a.maxPoints})`),
     ...cats.map((c) => labels.categoryPct(`${c.name} ${c.weight}%`)),
     labels.total,
@@ -178,7 +177,7 @@ export function scoreBookToCsv(
     });
     const catCells = cats.map((c) => (r.categoryPct[c.id] === null || r.categoryPct[c.id] === undefined ? "" : (r.categoryPct[c.id] as number).toFixed(1)));
     return [
-      r.student.studentId, r.student.title ?? "", r.student.firstName, r.student.lastName,
+      r.student.studentId, r.student.title ?? "", r.student.name,
       ...cells, ...catCells,
       r.total === null ? "" : r.total.toFixed(1),
     ];

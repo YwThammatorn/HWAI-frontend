@@ -30,19 +30,19 @@ const ASSIGNMENT_GRADED = {
 
 const STUDENT_RECORD = {
   id: "sr-1", courseId: "c-p3", studentId: "64070501",
-  firstName: "สมชาย", lastName: "ใจดี", email: "s1@kmitl.ac.th", cohort: "CE69",
+  name: "สมชาย ใจดี", email: "s1@kmitl.ac.th", cohort: "CE69",
 };
 
 const SUBMISSION_GRADED = {
   id: "sub-graded", assignmentId: "a-graded", studentId: "64070501",
   studentName: "สมชาย ใจดี", email: "s1@kmitl.ac.th",
-  submittedAt: "2026-01-10T10:00:00.000Z", fileUrl: null,
+  submittedAt: "2026-01-10T10:00:00.000Z", 
   aiScore: 9, instructorScore: 10, instructorComment: "งานดีมาก ส่งทัน",
   externalUseConsent: false, status: "graded",
 };
 
 const COHORT_STUDENT = {
-  id: "cs-1", studentId: "64070501", firstName: "สมชาย", lastName: "ใจดี",
+  id: "cs-1", studentId: "64070501", name: "สมชาย ใจดี",
   email: "s1@kmitl.ac.th", cohort: "CE69", program: "CE",
 };
 
@@ -453,7 +453,7 @@ test.describe("P3 — Student Home (/student)", () => {
         name: "Anucha Phanphet", email: "cei1@kmitl.ac.th", role: "student", studentId: "69999999",
       }));
       localStorage.setItem("hwai_cohort_students_v1", JSON.stringify([
-        { id: "cs-cei-1", studentId: "69999999", firstName: "Anucha", lastName: "Phanphet", email: "cei1@kmitl.ac.th", program: "CEI" },
+        { id: "cs-cei-1", studentId: "69999999", name: "Anucha Phanphet", email: "cei1@kmitl.ac.th", program: "CEI" },
       ]));
       localStorage.setItem("hwai_courses_v2", "[]");
       localStorage.setItem("hwai_students_v1", "[]");

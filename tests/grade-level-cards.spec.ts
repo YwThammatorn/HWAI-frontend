@@ -11,7 +11,7 @@ const COURSE = {
   coverColor: "#2DD4BF", courseTemplateId: "ct-glc", term: 1, academicYear: 2569,
   sectionNumber: "1", code: "01076112", schedule: "Mon", room: "811", createdAt: NOW, updatedAt: NOW,
 };
-const TEACHER = { id: "t-glc", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", role: "teacher", status: "active", courseIds: ["c-glc"] };
+const TEACHER = { id: "t-glc", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", status: "active", courseIds: ["c-glc"] };
 const lv = (label: string) => ({ label, description: `${label} wording` });
 const LEVELS = [lv("Excellent"), lv("Fair"), lv("Needs work"), lv("Fail")];
 const ASSIGNMENT = {
@@ -27,7 +27,7 @@ const RUBRIC = {
 };
 const sub = (id: string, extra: Record<string, unknown>) => ({
   id, assignmentId: "a-glc", studentId: id, studentName: `Student ${id}`, email: `${id}@kmitl.ac.th`,
-  submittedAt: "2026-01-05T10:00:00.000Z", fileUrl: null, aiScore: null, instructorScore: null, instructorComment: "",
+  submittedAt: "2026-01-05T10:00:00.000Z", aiScore: null, instructorScore: null, instructorComment: "",
   externalUseConsent: false, status: "not_graded", updatedAt: "2026-01-05T10:00:00.000Z", ...extra,
 });
 const SUBS = [

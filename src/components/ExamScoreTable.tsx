@@ -65,7 +65,7 @@ export default function ExamScoreTable({ students, titleOf, scores, maxPoints, e
   }
 
   const q = search.trim().toLowerCase();
-  const visible = students.filter((s) => !q || [s.studentId, s.firstName, s.lastName, `${s.firstName} ${s.lastName}`].some((f) => f.toLowerCase().includes(q)));
+  const visible = students.filter((s) => !q || [s.studentId, s.name].some((f) => f.toLowerCase().includes(q)));
   const th = "px-4 py-2 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider";
 
   return (
@@ -122,7 +122,7 @@ export default function ExamScoreTable({ students, titleOf, scores, maxPoints, e
             placeholder={t("ค้นหานักศึกษา...", "Search students...")}
             ariaLabel={t("ค้นหานักศึกษา", "Search students")}
             className="w-64"
-            suggestions={students.flatMap((s) => [`${s.firstName} ${s.lastName}`, s.studentId])}
+            suggestions={students.flatMap((s) => [s.name, s.studentId])}
           />
         </div>
       )}
@@ -155,7 +155,7 @@ export default function ExamScoreTable({ students, titleOf, scores, maxPoints, e
                   <tr key={s.id} className="border-b border-[var(--border-subtle)] last:border-b-0 hover:bg-[var(--bg-subtle)] transition-colors">
                     <td className="px-4 py-2 text-xs text-[var(--text-muted)] tabular-nums">{students.indexOf(s) + 1}</td>
                     <td className="px-4 py-2 text-[var(--text-secondary)] tabular-nums">{s.studentId}</td>
-                    <td className="px-4 py-2 font-medium text-[var(--text-primary)]">{title ? `${title} ` : ""}{s.firstName} {s.lastName}</td>
+                    <td className="px-4 py-2 font-medium text-[var(--text-primary)]">{title ? `${title} ` : ""}{s.name}</td>
                     <td className="px-4 py-2">
                       <div className="flex items-center gap-2">
                         <input
@@ -167,7 +167,7 @@ export default function ExamScoreTable({ students, titleOf, scores, maxPoints, e
                           value={raw}
                           disabled={readOnly}
                           onChange={(e) => { setDraft((d) => ({ ...d, [s.studentId]: e.target.value })); if (imported.has(s.studentId)) setImported((p) => { const n = new Set(p); n.delete(s.studentId); return n; }); }}
-                          aria-label={t(`คะแนนของ ${s.firstName} ${s.lastName}`, `Score for ${s.firstName} ${s.lastName}`)}
+                          aria-label={t(`คะแนนของ ${s.name}`, `Score for ${s.name}`)}
                           aria-invalid={bad}
                           className={`w-24 h-9 px-3 rounded-lg border text-sm tabular-nums text-[var(--text-primary)] bg-[var(--bg-surface)] disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-2 ${
                             bad ? "border-[var(--s-err-bd)] focus:ring-[var(--s-err-text)]/30" : imported.has(s.studentId) ? "border-[var(--s-info-bd)] bg-[var(--s-info-bg)] focus:ring-[var(--accent)]/30 focus:border-[var(--accent)]" : "border-[var(--border)] focus:ring-[var(--accent)]/30 focus:border-[var(--accent)]"

@@ -103,9 +103,6 @@ export interface Submission {
   studentName: string; // denormalized for display; replace with join when API is ready
   email: string;       // denormalized for display
   submittedAt: string;
-  /** Legacy single-link field. New submissions keep the student's link here (if any)
-   *  and put everything they handed in — files, images and the link — in `attachments`. */
-  fileUrl: string | null;
   /** What the student submitted: up to 10 files/images plus an optional link. */
   attachments?: AssignmentAttachment[];
   aiScore: number | null;
@@ -141,11 +138,17 @@ export interface Submission {
 /** Everything a submission holds, including ones saved before multi-file support. */
 export function submissionAttachments(sub: Submission | undefined): AssignmentAttachment[] {
   if (!sub) return [];
-  if (sub.attachments) return sub.attachments;
-  // Old rows only ever had one link in fileUrl; a blob: URL from an old upload can't be reopened, so skip it.
-  return sub.fileUrl && /^https?:\/\//i.test(sub.fileUrl)
-    ? [{ id: `legacy-${sub.id}`, kind: "link", name: sub.fileUrl, source: "url", ref: sub.fileUrl }]
-    : [];
+  return sub.attachments ?? [];
+}
+
+/** A submission saved before attachments existed (localStorage mock data) kept its one link in `fileUrl`. Returns it with
+ *  that link in `attachments` and without `fileUrl` — the same move the database migration made for server rows
+ *  (20261110100000_drop_unused_columns). A blob: URL from an old upload can't be reopened, so it is dropped. */
+export function withoutFileUrl(sub: Submission): Submission {
+  const { fileUrl, ...rest } = sub as Submission & { fileUrl?: string | null };
+  if (fileUrl === undefined) return sub;
+  if (rest.attachments?.length || !fileUrl || !/^https?:\/\//i.test(fileUrl)) return rest;
+  return { ...rest, attachments: [{ id: `legacy-${sub.id}`, kind: "link", name: fileUrl, source: "url", ref: fileUrl }] };
 }
 
 /** Student deadline thresholds (25/9/2569), one place so the pages agree: an unsubmitted assignment
@@ -226,7 +229,11 @@ export interface AssignmentContextValue {
   getAssignment: (id: string) => Assignment | undefined;
   getAssignmentsByCourse: (courseId: string) => Assignment[];
   addSubmission: (data: Omit<Submission, "id" | "updatedAt">) => Submission;
-  updateSubmission: (id: string, data: Partial<Pick<Submission, "aiScore" | "instructorScore" | "instructorComment" | "criterionComments" | "criterionScores" | "aiCriterionScores" | "aiOffsetsUsed" | "status" | "fileUrl" | "attachments" | "submittedAt" | "late">>) => void;
+  updateSubmission: (id: string, data: Partial<Pick<Submission, "aiScore" | "instructorScore" | "instructorComment" | "criterionComments" | "criterionScores" | "aiCriterionScores" | "aiOffsetsUsed" | "status" | "attachments" | "submittedAt" | "late">>) => void;
+  /** A student hands the work in again: on screen the result is cleared (CLEARED_RESULT), the status goes back to
+   *  not graded and submittedAt / late are the new ones. The server is sent only what a student may change —
+   *  `{ attachments, status: "not_graded" }` — and clears the result and sets the time itself. */
+  resubmitSubmission: (id: string, data: { attachments: AssignmentAttachment[]; submittedAt: string; late: boolean }) => void;
   getSubmissionsByAssignment: (assignmentId: string) => Submission[];
   addRubric: (data: Omit<Rubric, "id" | "createdAt" | "updatedAt">) => Rubric;
   updateRubric: (id: string, data: Partial<Omit<Rubric, "id" | "assignmentId" | "createdAt" | "updatedAt">>) => void;

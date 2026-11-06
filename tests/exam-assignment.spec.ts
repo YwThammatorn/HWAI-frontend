@@ -11,13 +11,13 @@ const COURSE = {
   coverColor: "#0F766E", courseTemplateId: "ct-ex", term: 1, academicYear: 2569,
   sectionNumber: "1", code: "01076555", schedule: "Mon", room: "811", createdAt: NOW, updatedAt: NOW,
 };
-const TEACHER = { id: "t-ex", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", role: "teacher", status: "active", courseIds: ["c-ex"] };
+const TEACHER = { id: "t-ex", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", status: "active", courseIds: ["c-ex"] };
 const PEOPLE = [["69070301", "Nok", "Exam"], ["69070302", "Pim", "Exam"]] as const;
 const COHORT = PEOPLE.map(([studentId, firstName, lastName], i) => ({
-  id: `cs-${i}`, studentId, firstName, lastName, email: `${studentId}@kmitl.ac.th`, program: "CE", status: "active",
+  id: `cs-${i}`, studentId, name: `${firstName} ${lastName}`, email: `${studentId}@kmitl.ac.th`, program: "CE", status: "active",
 }));
 const ROSTER = PEOPLE.map(([studentId, firstName, lastName], i) => ({
-  id: `r-${i}`, courseId: "c-ex", studentId, firstName, lastName, email: `${studentId}@kmitl.ac.th`, sequenceNumber: i + 1, enrollmentStatus: "enrolled",
+  id: `r-${i}`, courseId: "c-ex", studentId, name: `${firstName} ${lastName}`, email: `${studentId}@kmitl.ac.th`, sequenceNumber: i + 1, enrollmentStatus: "enrolled",
 }));
 const EXAM = {
   id: "ex1", courseId: "c-ex", name: "Midterm exam", description: "Chapters 1-5", maxPoints: 50, acceptsFiles: false, fileTypes: [],
@@ -49,7 +49,7 @@ async function seed(page: Page, role: "teacher" | "student", extra: { submission
 
 const graded = (studentId: string, score: number) => ({
   id: `s-${studentId}`, assignmentId: "ex1", studentId, studentName: `Student ${studentId}`, email: `${studentId}@kmitl.ac.th`,
-  submittedAt: NOW, fileUrl: null, aiScore: null, instructorScore: score, instructorComment: "", externalUseConsent: false, status: "graded", updatedAt: NOW,
+  submittedAt: NOW, aiScore: null, instructorScore: score, instructorComment: "", externalUseConsent: false, status: "graded", updatedAt: NOW,
 });
 
 const stored = (page: Page) => page.evaluate(() => JSON.parse(localStorage.getItem("hwai_submissions_v1") ?? "[]"));
@@ -115,7 +115,7 @@ test.describe("Exam — teacher enters the scores", () => {
 
     const subs = await stored(page);
     expect(subs).toHaveLength(1);
-    expect(subs[0]).toMatchObject({ assignmentId: "ex1", studentId: "69070301", instructorScore: 42, status: "graded", fileUrl: null });
+    expect(subs[0]).toMatchObject({ assignmentId: "ex1", studentId: "69070301", instructorScore: 42, status: "graded" });
     await expect(page.getByRole("row", { name: /Nok Exam/ }).getByText("Scored")).toBeVisible();
     await expect(page.getByRole("row", { name: /Pim Exam/ }).getByText("Not scored")).toBeVisible();
     // Pim still has no score → the button is there, but disabled, and the note says how many are left

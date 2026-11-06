@@ -11,13 +11,13 @@ const COURSE = {
   coverColor: "#0F766E", courseTemplateId: "ct-an", term: 1, academicYear: 2569,
   sectionNumber: "1", code: "01076777", schedule: "Mon", room: "811", createdAt: NOW, updatedAt: NOW,
 };
-const TEACHER = { id: "t-an", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", role: "teacher", status: "active", courseIds: ["c-an"] };
+const TEACHER = { id: "t-an", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", status: "active", courseIds: ["c-an"] };
 const PEOPLE = [["69070401", "Ann", "Student"], ["69070402", "Ben", "Student"]] as const;
 const COHORT = PEOPLE.map(([studentId, firstName, lastName], i) => ({
-  id: `cs-${i}`, studentId, firstName, lastName, email: `${studentId}@kmitl.ac.th`, program: "CE", status: "active",
+  id: `cs-${i}`, studentId, name: `${firstName} ${lastName}`, email: `${studentId}@kmitl.ac.th`, program: "CE", status: "active",
 }));
 const ROSTER = PEOPLE.map(([studentId, firstName, lastName], i) => ({
-  id: `r-${i}`, courseId: "c-an", studentId, firstName, lastName, email: `${studentId}@kmitl.ac.th`, sequenceNumber: i + 1, enrollmentStatus: "enrolled",
+  id: `r-${i}`, courseId: "c-an", studentId, name: `${firstName} ${lastName}`, email: `${studentId}@kmitl.ac.th`, sequenceNumber: i + 1, enrollmentStatus: "enrolled",
 }));
 const assignment = (finalized: boolean) => ({
   id: "hw", courseId: "c-an", name: "Homework", description: "", dueDate: "2026-01-10", maxPoints: 10, acceptsFiles: true, fileTypes: ["pdf"],
@@ -25,7 +25,7 @@ const assignment = (finalized: boolean) => ({
 });
 const sub = (studentId: string) => ({
   id: `s-${studentId}`, assignmentId: "hw", studentId, studentName: `Student ${studentId}`, email: `${studentId}@kmitl.ac.th`,
-  submittedAt: "2026-01-05T10:00:00.000Z", fileUrl: null, aiScore: 9, instructorScore: 9, instructorComment: "Nice work",
+  submittedAt: "2026-01-05T10:00:00.000Z", aiScore: 9, instructorScore: 9, instructorComment: "Nice work",
   externalUseConsent: false, status: "graded", updatedAt: NOW,
 });
 

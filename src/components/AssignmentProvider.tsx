@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { buildCriteria, UX_RESEARCH } from "@/lib/rubricTemplates";
-import { AssignmentContext, Assignment, Submission, Rubric, DEFAULT_LEVELS } from "@/lib/assignments";
+import { AssignmentContext, Assignment, AssignmentAttachment, Submission, Rubric, DEFAULT_LEVELS, CLEARED_RESULT, withoutFileUrl } from "@/lib/assignments";
 import { removeFile } from "@/lib/fileStorage";
 import { API_ENABLED } from "@/lib/api/client";
 import { enqueueWrite, loadFailed } from "@/lib/api/sync";
@@ -67,32 +67,32 @@ const SEED_RUBRICS: Rubric[] = [
 
 const SEED_SUBMISSIONS: Submission[] = [
   // a-seed-1-1: User Research Report — all graded
-  { id: "sub-1-1-1", assignmentId: "a-seed-1-1", studentId: "s1", studentName: "สมชาย ใจดี", email: "somchai.j@kmitl.ac.th", submittedAt: "2026-08-04T14:30:00.000Z", fileUrl: null, aiScore: 88, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "graded", updatedAt: "2026-08-05T10:00:00.000Z" },
-  { id: "sub-1-1-2", assignmentId: "a-seed-1-1", studentId: "s2", studentName: "สมหญิง รักดี", email: "somying.r@kmitl.ac.th", submittedAt: "2026-08-04T16:00:00.000Z", fileUrl: null, aiScore: 76, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "graded", updatedAt: "2026-08-05T10:00:00.000Z" },
-  { id: "sub-1-1-3", assignmentId: "a-seed-1-1", studentId: "s3", studentName: "วิชัย สุขสันต์", email: "wichai.s@kmitl.ac.th", submittedAt: "2026-08-05T09:00:00.000Z", fileUrl: null, aiScore: 92, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "graded", updatedAt: "2026-08-05T10:00:00.000Z" },
-  { id: "sub-1-1-4", assignmentId: "a-seed-1-1", studentId: "s4", studentName: "นภา แสงทอง", email: "napa.s@kmitl.ac.th", submittedAt: "2026-08-03T11:20:00.000Z", fileUrl: null, aiScore: 85, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "graded", updatedAt: "2026-08-05T10:00:00.000Z" },
-  { id: "sub-1-1-5", assignmentId: "a-seed-1-1", studentId: "s5", studentName: "ธนภัทร มีสุข", email: "thanapat.m@kmitl.ac.th", submittedAt: "2026-08-05T08:45:00.000Z", fileUrl: null, aiScore: 79, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "graded", updatedAt: "2026-08-05T10:00:00.000Z" },
+  { id: "sub-1-1-1", assignmentId: "a-seed-1-1", studentId: "s1", studentName: "สมชาย ใจดี", email: "somchai.j@kmitl.ac.th", submittedAt: "2026-08-04T14:30:00.000Z", aiScore: 88, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "graded", updatedAt: "2026-08-05T10:00:00.000Z" },
+  { id: "sub-1-1-2", assignmentId: "a-seed-1-1", studentId: "s2", studentName: "สมหญิง รักดี", email: "somying.r@kmitl.ac.th", submittedAt: "2026-08-04T16:00:00.000Z", aiScore: 76, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "graded", updatedAt: "2026-08-05T10:00:00.000Z" },
+  { id: "sub-1-1-3", assignmentId: "a-seed-1-1", studentId: "s3", studentName: "วิชัย สุขสันต์", email: "wichai.s@kmitl.ac.th", submittedAt: "2026-08-05T09:00:00.000Z", aiScore: 92, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "graded", updatedAt: "2026-08-05T10:00:00.000Z" },
+  { id: "sub-1-1-4", assignmentId: "a-seed-1-1", studentId: "s4", studentName: "นภา แสงทอง", email: "napa.s@kmitl.ac.th", submittedAt: "2026-08-03T11:20:00.000Z", aiScore: 85, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "graded", updatedAt: "2026-08-05T10:00:00.000Z" },
+  { id: "sub-1-1-5", assignmentId: "a-seed-1-1", studentId: "s5", studentName: "ธนภัทร มีสุข", email: "thanapat.m@kmitl.ac.th", submittedAt: "2026-08-05T08:45:00.000Z", aiScore: 79, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "graded", updatedAt: "2026-08-05T10:00:00.000Z" },
   // a-seed-1-2: Wireframe Prototype — mixed
-  { id: "sub-1-2-1", assignmentId: "a-seed-1-2", studentId: "s1", studentName: "สมชาย ใจดี", email: "somchai.j@kmitl.ac.th", submittedAt: "2026-08-14T20:15:00.000Z", fileUrl: null, aiScore: 82, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "need_review", updatedAt: "2026-08-15T08:00:00.000Z" },
-  { id: "sub-1-2-2", assignmentId: "a-seed-1-2", studentId: "s3", studentName: "วิชัย สุขสันต์", email: "wichai.s@kmitl.ac.th", submittedAt: "2026-08-13T10:00:00.000Z", fileUrl: null, aiScore: 91, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "graded", updatedAt: "2026-08-15T08:00:00.000Z" },
-  { id: "sub-1-2-3", assignmentId: "a-seed-1-2", studentId: "s6", studentName: "กานต์ดา พรหมดี", email: "kanda.p@kmitl.ac.th", submittedAt: "2026-08-15T22:55:00.000Z", fileUrl: null, aiScore: 74, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "need_review", updatedAt: "2026-08-16T00:00:00.000Z" },
-  { id: "sub-1-2-4", assignmentId: "a-seed-1-2", studentId: "s7", studentName: "ปิยะ วงศ์ดี", email: "piya.w@kmitl.ac.th", submittedAt: "2026-08-16T01:10:00.000Z", fileUrl: null, aiScore: null, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "not_graded", updatedAt: "2026-08-16T01:10:00.000Z" },
+  { id: "sub-1-2-1", assignmentId: "a-seed-1-2", studentId: "s1", studentName: "สมชาย ใจดี", email: "somchai.j@kmitl.ac.th", submittedAt: "2026-08-14T20:15:00.000Z", aiScore: 82, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "need_review", updatedAt: "2026-08-15T08:00:00.000Z" },
+  { id: "sub-1-2-2", assignmentId: "a-seed-1-2", studentId: "s3", studentName: "วิชัย สุขสันต์", email: "wichai.s@kmitl.ac.th", submittedAt: "2026-08-13T10:00:00.000Z", aiScore: 91, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "graded", updatedAt: "2026-08-15T08:00:00.000Z" },
+  { id: "sub-1-2-3", assignmentId: "a-seed-1-2", studentId: "s6", studentName: "กานต์ดา พรหมดี", email: "kanda.p@kmitl.ac.th", submittedAt: "2026-08-15T22:55:00.000Z", aiScore: 74, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "need_review", updatedAt: "2026-08-16T00:00:00.000Z" },
+  { id: "sub-1-2-4", assignmentId: "a-seed-1-2", studentId: "s7", studentName: "ปิยะ วงศ์ดี", email: "piya.w@kmitl.ac.th", submittedAt: "2026-08-16T01:10:00.000Z", aiScore: null, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "not_graded", updatedAt: "2026-08-16T01:10:00.000Z" },
   // a-seed-2-1: Interaction Flow Diagram — all graded
-  { id: "sub-2-1-1", assignmentId: "a-seed-2-1", studentId: "t1", studentName: "ณัฐพล เจริญสุข", email: "nattapon.j@kmitl.ac.th", submittedAt: "2026-07-27T14:00:00.000Z", fileUrl: null, aiScore: 90, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "graded", updatedAt: "2026-07-28T10:00:00.000Z" },
-  { id: "sub-2-1-2", assignmentId: "a-seed-2-1", studentId: "t2", studentName: "ศิริพร วัฒนา", email: "siriporn.w@kmitl.ac.th", submittedAt: "2026-07-26T16:30:00.000Z", fileUrl: null, aiScore: 85, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "graded", updatedAt: "2026-07-28T10:00:00.000Z" },
-  { id: "sub-2-1-3", assignmentId: "a-seed-2-1", studentId: "t3", studentName: "ภาณุวัฒน์ สมบูรณ์", email: "panuwat.s@kmitl.ac.th", submittedAt: "2026-07-28T08:00:00.000Z", fileUrl: null, aiScore: 72, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "graded", updatedAt: "2026-07-28T10:00:00.000Z" },
-  { id: "sub-2-1-4", assignmentId: "a-seed-2-1", studentId: "t4", studentName: "ชนิดา ดีเลิศ", email: "chanida.d@kmitl.ac.th", submittedAt: "2026-07-25T11:00:00.000Z", fileUrl: null, aiScore: 95, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "graded", updatedAt: "2026-07-28T10:00:00.000Z" },
-  { id: "sub-2-1-5", assignmentId: "a-seed-2-1", studentId: "t5", studentName: "ธีรศักดิ์ แก้วใส", email: "teerasak.k@kmitl.ac.th", submittedAt: "2026-07-27T19:00:00.000Z", fileUrl: null, aiScore: 88, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "graded", updatedAt: "2026-07-28T10:00:00.000Z" },
-  { id: "sub-2-1-6", assignmentId: "a-seed-2-1", studentId: "t6", studentName: "มาลี สุดสวย", email: "malee.su@kmitl.ac.th", submittedAt: "2026-07-28T07:30:00.000Z", fileUrl: null, aiScore: 78, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "graded", updatedAt: "2026-07-28T10:00:00.000Z" },
-  { id: "sub-2-1-7", assignmentId: "a-seed-2-1", studentId: "t7", studentName: "กิตติ พันธุ์ดี", email: "kitti.p@kmitl.ac.th", submittedAt: "2026-07-26T13:00:00.000Z", fileUrl: null, aiScore: 82, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "graded", updatedAt: "2026-07-28T10:00:00.000Z" },
-  { id: "sub-2-1-8", assignmentId: "a-seed-2-1", studentId: "t8", studentName: "วรรณี ชัยชนะ", email: "wannee.c@kmitl.ac.th", submittedAt: "2026-07-27T10:00:00.000Z", fileUrl: null, aiScore: 86, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "graded", updatedAt: "2026-07-28T10:00:00.000Z" },
+  { id: "sub-2-1-1", assignmentId: "a-seed-2-1", studentId: "t1", studentName: "ณัฐพล เจริญสุข", email: "nattapon.j@kmitl.ac.th", submittedAt: "2026-07-27T14:00:00.000Z", aiScore: 90, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "graded", updatedAt: "2026-07-28T10:00:00.000Z" },
+  { id: "sub-2-1-2", assignmentId: "a-seed-2-1", studentId: "t2", studentName: "ศิริพร วัฒนา", email: "siriporn.w@kmitl.ac.th", submittedAt: "2026-07-26T16:30:00.000Z", aiScore: 85, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "graded", updatedAt: "2026-07-28T10:00:00.000Z" },
+  { id: "sub-2-1-3", assignmentId: "a-seed-2-1", studentId: "t3", studentName: "ภาณุวัฒน์ สมบูรณ์", email: "panuwat.s@kmitl.ac.th", submittedAt: "2026-07-28T08:00:00.000Z", aiScore: 72, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "graded", updatedAt: "2026-07-28T10:00:00.000Z" },
+  { id: "sub-2-1-4", assignmentId: "a-seed-2-1", studentId: "t4", studentName: "ชนิดา ดีเลิศ", email: "chanida.d@kmitl.ac.th", submittedAt: "2026-07-25T11:00:00.000Z", aiScore: 95, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "graded", updatedAt: "2026-07-28T10:00:00.000Z" },
+  { id: "sub-2-1-5", assignmentId: "a-seed-2-1", studentId: "t5", studentName: "ธีรศักดิ์ แก้วใส", email: "teerasak.k@kmitl.ac.th", submittedAt: "2026-07-27T19:00:00.000Z", aiScore: 88, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "graded", updatedAt: "2026-07-28T10:00:00.000Z" },
+  { id: "sub-2-1-6", assignmentId: "a-seed-2-1", studentId: "t6", studentName: "มาลี สุดสวย", email: "malee.su@kmitl.ac.th", submittedAt: "2026-07-28T07:30:00.000Z", aiScore: 78, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "graded", updatedAt: "2026-07-28T10:00:00.000Z" },
+  { id: "sub-2-1-7", assignmentId: "a-seed-2-1", studentId: "t7", studentName: "กิตติ พันธุ์ดี", email: "kitti.p@kmitl.ac.th", submittedAt: "2026-07-26T13:00:00.000Z", aiScore: 82, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "graded", updatedAt: "2026-07-28T10:00:00.000Z" },
+  { id: "sub-2-1-8", assignmentId: "a-seed-2-1", studentId: "t8", studentName: "วรรณี ชัยชนะ", email: "wannee.c@kmitl.ac.th", submittedAt: "2026-07-27T10:00:00.000Z", aiScore: 86, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "graded", updatedAt: "2026-07-28T10:00:00.000Z" },
   // a-seed-2-2: Usability Test Report — mixed
-  { id: "sub-2-2-1", assignmentId: "a-seed-2-2", studentId: "t1", studentName: "ณัฐพล เจริญสุข", email: "nattapon.j@kmitl.ac.th", submittedAt: "2026-08-11T18:00:00.000Z", fileUrl: null, aiScore: 87, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "need_review", updatedAt: "2026-08-12T00:00:00.000Z" },
-  { id: "sub-2-2-2", assignmentId: "a-seed-2-2", studentId: "t2", studentName: "ศิริพร วัฒนา", email: "siriporn.w@kmitl.ac.th", submittedAt: "2026-08-10T22:00:00.000Z", fileUrl: null, aiScore: 79, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "need_review", updatedAt: "2026-08-12T00:00:00.000Z" },
-  { id: "sub-2-2-3", assignmentId: "a-seed-2-2", studentId: "t4", studentName: "ชนิดา ดีเลิศ", email: "chanida.d@kmitl.ac.th", submittedAt: "2026-08-09T14:00:00.000Z", fileUrl: null, aiScore: 93, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "graded", updatedAt: "2026-08-12T00:00:00.000Z" },
-  { id: "sub-2-2-4", assignmentId: "a-seed-2-2", studentId: "t5", studentName: "ธีรศักดิ์ แก้วใส", email: "teerasak.k@kmitl.ac.th", submittedAt: "2026-08-12T11:55:00.000Z", fileUrl: null, aiScore: null, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "not_graded", updatedAt: "2026-08-12T11:55:00.000Z" },
-  { id: "sub-2-2-5", assignmentId: "a-seed-2-2", studentId: "t6", studentName: "มาลี สุดสวย", email: "malee.su@kmitl.ac.th", submittedAt: "2026-08-11T09:30:00.000Z", fileUrl: null, aiScore: 81, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "need_review", updatedAt: "2026-08-12T00:00:00.000Z" },
-  { id: "sub-2-2-6", assignmentId: "a-seed-2-2", studentId: "t3", studentName: "ภาณุวัฒน์ สมบูรณ์", email: "panuwat.s@kmitl.ac.th", submittedAt: "2026-08-10T16:00:00.000Z", fileUrl: null, aiScore: 88, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "graded", updatedAt: "2026-08-12T00:00:00.000Z" },
+  { id: "sub-2-2-1", assignmentId: "a-seed-2-2", studentId: "t1", studentName: "ณัฐพล เจริญสุข", email: "nattapon.j@kmitl.ac.th", submittedAt: "2026-08-11T18:00:00.000Z", aiScore: 87, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "need_review", updatedAt: "2026-08-12T00:00:00.000Z" },
+  { id: "sub-2-2-2", assignmentId: "a-seed-2-2", studentId: "t2", studentName: "ศิริพร วัฒนา", email: "siriporn.w@kmitl.ac.th", submittedAt: "2026-08-10T22:00:00.000Z", aiScore: 79, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "need_review", updatedAt: "2026-08-12T00:00:00.000Z" },
+  { id: "sub-2-2-3", assignmentId: "a-seed-2-2", studentId: "t4", studentName: "ชนิดา ดีเลิศ", email: "chanida.d@kmitl.ac.th", submittedAt: "2026-08-09T14:00:00.000Z", aiScore: 93, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "graded", updatedAt: "2026-08-12T00:00:00.000Z" },
+  { id: "sub-2-2-4", assignmentId: "a-seed-2-2", studentId: "t5", studentName: "ธีรศักดิ์ แก้วใส", email: "teerasak.k@kmitl.ac.th", submittedAt: "2026-08-12T11:55:00.000Z", aiScore: null, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "not_graded", updatedAt: "2026-08-12T11:55:00.000Z" },
+  { id: "sub-2-2-5", assignmentId: "a-seed-2-2", studentId: "t6", studentName: "มาลี สุดสวย", email: "malee.su@kmitl.ac.th", submittedAt: "2026-08-11T09:30:00.000Z", aiScore: 81, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "need_review", updatedAt: "2026-08-12T00:00:00.000Z" },
+  { id: "sub-2-2-6", assignmentId: "a-seed-2-2", studentId: "t3", studentName: "ภาณุวัฒน์ สมบูรณ์", email: "panuwat.s@kmitl.ac.th", submittedAt: "2026-08-10T16:00:00.000Z", aiScore: 88, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "graded", updatedAt: "2026-08-12T00:00:00.000Z" },
 ];
 
 function loadData<T>(key: string, fallback: T[]): T[] {
@@ -145,7 +145,7 @@ export default function AssignmentProvider({ children }: { children: React.React
     }
     const rawA = loadData<Assignment>(LS_ASSIGNMENTS, SEED_ASSIGNMENTS);
     setAssignments(rawA.map(a => ({ ...ASSIGNMENT_DEFAULTS, ...a })));
-    setSubmissions(loadData<Submission>(LS_SUBMISSIONS, SEED_SUBMISSIONS));
+    setSubmissions(loadData<Submission>(LS_SUBMISSIONS, SEED_SUBMISSIONS).map(withoutFileUrl));
     setAllRubrics(loadData<Rubric>(LS_RUBRICS, SEED_RUBRICS));
   }, [resync, setAllRubrics]);
 
@@ -220,10 +220,17 @@ export default function AssignmentProvider({ children }: { children: React.React
 
   const updateSubmission = useCallback((
     id: string,
-    data: Partial<Pick<Submission, "aiScore" | "instructorScore" | "instructorComment" | "criterionComments" | "criterionScores" | "aiCriterionScores" | "aiOffsetsUsed" | "status" | "fileUrl" | "attachments" | "submittedAt" | "late">>
+    data: Partial<Pick<Submission, "aiScore" | "instructorScore" | "instructorComment" | "criterionComments" | "criterionScores" | "aiCriterionScores" | "aiOffsetsUsed" | "status" | "attachments" | "submittedAt" | "late">>
   ) => {
     persistS(prev => prev.map(s => s.id === id ? { ...s, ...data, updatedAt: new Date().toISOString() } : s));
     sync(() => api.updateSubmission(id, data));
+  }, [persistS, sync]);
+
+  const resubmitSubmission = useCallback((id: string, data: { attachments: AssignmentAttachment[]; submittedAt: string; late: boolean }) => {
+    persistS(prev => prev.map(s => s.id === id
+      ? { ...s, ...CLEARED_RESULT, status: "not_graded" as const, ...data, updatedAt: new Date().toISOString() }
+      : s));
+    sync(() => api.updateSubmission(id, { attachments: data.attachments, status: "not_graded" }));
   }, [persistS, sync]);
 
   const getSubmissionsByAssignment = useCallback((assignmentId: string) =>
@@ -257,7 +264,7 @@ export default function AssignmentProvider({ children }: { children: React.React
       assignments, submissions, rubrics,
       addAssignment, updateAssignment, removeAssignment,
       getAssignment, getAssignmentsByCourse,
-      addSubmission, updateSubmission, getSubmissionsByAssignment,
+      addSubmission, updateSubmission, resubmitSubmission, getSubmissionsByAssignment,
       addRubric, updateRubric, removeRubric, getRubric, getRubricsByAssignment,
     }}>
       {children}

@@ -20,7 +20,7 @@ for (const lang of ["th", "en"] as const) {
     await page.goto(`${BASE}/login`);
     await page.evaluate(() => {
       localStorage.setItem("hwai_courses_v2", JSON.stringify([{ id: "c-mock-1", name: "this year" }, { id: "c-own", name: "mine" }]));
-      localStorage.setItem("hwai_managed_teachers_v1", JSON.stringify([{ id: "t-mock-1", name: "T", email: "t@kmitl.ac.th", role: "teacher", status: "active", courseIds: ["c-mock-1"] }, { id: "t-other", name: "O", email: "o@kmitl.ac.th", role: "teacher", status: "active", courseIds: ["c-own"] }]));
+      localStorage.setItem("hwai_managed_teachers_v1", JSON.stringify([{ id: "t-mock-1", name: "T", email: "t@kmitl.ac.th", status: "active", courseIds: ["c-mock-1"] }, { id: "t-other", name: "O", email: "o@kmitl.ac.th", status: "active", courseIds: ["c-own"] }]));
       localStorage.setItem("hwai_assignments_v1", JSON.stringify([{ id: "a-keep" }]));
       localStorage.setItem("hwai_rubrics_v1", JSON.stringify([{ id: "r-keep", assignmentId: "a-keep", criteria: [] }]));
       localStorage.setItem("hwai_submissions_v1", JSON.stringify([{ id: "keep-me", assignmentId: "a-keep" }]));

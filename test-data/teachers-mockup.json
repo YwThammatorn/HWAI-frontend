@@ -4,7 +4,6 @@
     "title": "ผศ.",
     "name": "เกียรติณรงค์ ทองประเสริฐ",
     "email": "kiatnarong.to@kmitl.ac.th",
-    "role": "teacher",
     "status": "active",
     "courseIds": [
       "c-mock-1",
@@ -31,7 +30,6 @@
     "title": "ผศ.ดร.",
     "name": "อำนาจ ขาวเน",
     "email": "amnach.kh@kmitl.ac.th",
-    "role": "teacher",
     "status": "active",
     "courseIds": []
   },
@@ -40,7 +38,6 @@
     "title": "รศ.ดร.",
     "name": "เจริญ วงษ์ชุ่มเย็น",
     "email": "charoen.vo@kmitl.ac.th",
-    "role": "teacher",
     "status": "active",
     "courseIds": [
       "c-mock-5"
@@ -51,7 +48,6 @@
     "title": "รศ.ดร.",
     "name": "เกียรติกูล เจียรนัยธนะกิจ",
     "email": "kietikul.je@kmitl.ac.th",
-    "role": "teacher",
     "status": "active",
     "courseIds": [
       "c-mock-29",
@@ -63,7 +59,6 @@
     "title": "รศ.ดร.",
     "name": "อรฉัตร จิตต์โสภักตร์",
     "email": "orachat.ch@kmitl.ac.th",
-    "role": "teacher",
     "status": "active",
     "courseIds": [
       "c-mock-39",
@@ -75,7 +70,6 @@
     "title": "รศ.ดร.",
     "name": "รัฐชัย ชาวอุทัย",
     "email": "rathachai.ch@kmitl.ac.th",
-    "role": "teacher",
     "status": "active",
     "courseIds": [
       "c-mock-21",
@@ -91,7 +85,6 @@
     "title": "รศ.ดร.",
     "name": "สุรินทร์ กิตติธรกุล",
     "email": "surin.ki@kmitl.ac.th",
-    "role": "teacher",
     "status": "active",
     "courseIds": [
       "c-mock-16",
@@ -104,7 +97,6 @@
     "title": "ผศ.ดร.",
     "name": "อรัญญา วลัยรัชต์",
     "email": "kwaranya@kmitl.ac.th",
-    "role": "teacher",
     "status": "active",
     "courseIds": [
       "c-mock-13",
@@ -118,7 +110,6 @@
     "title": "ผศ.ดร.",
     "name": "ชมพูนุท เต็งเจริญ",
     "email": "chompoonuch.te@kmitl.ac.th",
-    "role": "teacher",
     "status": "active",
     "courseIds": [
       "c-mock-4",
@@ -132,7 +123,6 @@
     "title": "ผศ.ดร.",
     "name": "ชุติเมษฏ์ ศรีนิลทา",
     "email": "kschutim@kmitl.ac.th",
-    "role": "teacher",
     "status": "active",
     "courseIds": [
       "c-mock-41",
@@ -144,7 +134,6 @@
     "title": "ผศ.ดร.",
     "name": "ปกรณ์ วัฒนจตุรพร",
     "email": "pakorn.wa@kmitl.ac.th",
-    "role": "teacher",
     "status": "active",
     "courseIds": [
       "c-mock-27"
@@ -155,7 +144,6 @@
     "title": "ผศ.ดร.",
     "name": "พงษ์ศักดิ์ กีรติวินทกร",
     "email": "phongsak.ke@kmitl.ac.th",
-    "role": "teacher",
     "status": "active",
     "courseIds": [
       "c-mock-6",
@@ -167,7 +155,6 @@
     "title": "ผศ.ดร.",
     "name": "ธนัญชัย ตรีภาค",
     "email": "thanunchai.th@kmitl.ac.th",
-    "role": "teacher",
     "status": "active",
     "courseIds": [
       "c-mock-24",
@@ -179,7 +166,6 @@
     "title": "ผศ.",
     "name": "อัครเดช วัชระภูพงษ์",
     "email": "kwakkrad@kmitl.ac.th",
-    "role": "teacher",
     "status": "active",
     "courseIds": [
       "c-mock-37"
@@ -190,7 +176,6 @@
     "title": "ผศ.",
     "name": "บัณฑิต พัสยา",
     "email": "bundit.pa@kmitl.ac.th",
-    "role": "teacher",
     "status": "active",
     "courseIds": []
   },
@@ -199,7 +184,6 @@
     "title": "ผศ.",
     "name": "สรยุทธ กลมกล่อม",
     "email": "sorayut.gl@kmitl.ac.th",
-    "role": "teacher",
     "status": "active",
     "courseIds": []
   },
@@ -208,7 +192,6 @@
     "title": "ผศ.",
     "name": "ธนา หงษ์สุวรรณ",
     "email": "khthana@kmitl.ac.th",
-    "role": "teacher",
     "status": "active",
     "courseIds": []
   },
@@ -217,7 +200,6 @@
     "title": "ดร.",
     "name": "จิรายุ เพชรแหน",
     "email": "jirayu.pe@kmitl.ac.th",
-    "role": "teacher",
     "status": "active",
     "courseIds": []
   },
@@ -226,7 +208,6 @@
     "title": "ดร.",
     "name": "ปริญญา เอกปริญญา",
     "email": "parinya.ek@kmitl.ac.th",
-    "role": "teacher",
     "status": "active",
     "courseIds": []
   },
@@ -235,7 +216,6 @@
     "title": "อ.",
     "name": "คณัฐ ตังติสานนท์",
     "email": "ktkanut@kmitl.ac.th",
-    "role": "teacher",
     "status": "active",
     "courseIds": [
       "c-mock-30",
@@ -247,7 +227,6 @@
     "title": "อ.",
     "name": "วัจนพงศ์ เกษมศิริ",
     "email": "watjanapong.ka@kmitl.ac.th",
-    "role": "teacher",
     "status": "active",
     "courseIds": []
   },
@@ -255,7 +234,6 @@
     "id": "t-mock-24",
     "name": "จิระศักดิ์ สิทธิกร",
     "email": "jirasak.si@kmitl.ac.th",
-    "role": "teacher",
     "status": "active",
     "courseIds": [
       "c-mock-23"

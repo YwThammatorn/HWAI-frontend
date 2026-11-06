@@ -13,7 +13,7 @@ const COURSE = {
   coverColor: "#0F766E", courseTemplateId: "ct-gs", term: 1, academicYear: 2569,
   sectionNumber: "1", code: "01076112", schedule: "Mon", room: "811", createdAt: NOW, updatedAt: NOW,
 };
-const TEACHER = { id: "t-gs", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", role: "teacher", status: "active", courseIds: ["c-gs"] };
+const TEACHER = { id: "t-gs", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", status: "active", courseIds: ["c-gs"] };
 const CATEGORY = { id: "cat-hw", courseId: "c-gs", name: "Homework", weight: 40, createdAt: NOW, updatedAt: NOW };
 
 const assignment = (id: string, name: string, dueDate: string, extra: Record<string, unknown> = {}) => ({
@@ -23,7 +23,7 @@ const assignment = (id: string, name: string, dueDate: string, extra: Record<str
 });
 const sub = (id: string, assignmentId: string, studentId: string, status: string, score: number | null) => ({
   id, assignmentId, studentId, studentName: `Student ${studentId}`, email: `${studentId}@kmitl.ac.th`,
-  submittedAt: "2026-01-05T10:00:00.000Z", fileUrl: null, aiScore: score, instructorScore: status === "graded" ? score : null,
+  submittedAt: "2026-01-05T10:00:00.000Z", aiScore: score, instructorScore: status === "graded" ? score : null,
   instructorComment: "", externalUseConsent: false, status, updatedAt: "2026-01-05T10:00:00.000Z",
 });
 
@@ -43,7 +43,7 @@ const SUBMISSIONS = [
   sub("s6", "a-late", "64070701", "not_graded", null),
 ];
 const ROSTER = ["64070701", "64070702", "64070703", "64070704"].map((studentId, i) => ({
-  id: `r-${i}`, courseId: "c-gs", studentId, firstName: "Student", lastName: studentId, email: `${studentId}@kmitl.ac.th`,
+  id: `r-${i}`, courseId: "c-gs", studentId, name: `Student ${studentId}`, email: `${studentId}@kmitl.ac.th`,
   cohort: "CE64", sequenceNumber: i + 1, enrollmentStatus: "enrolled",
 }));
 

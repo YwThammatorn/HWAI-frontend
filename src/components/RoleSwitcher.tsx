@@ -70,7 +70,7 @@ export default function RoleSwitcher() {
       setOpen(false);
       if (r !== user.role) {
         const student = r === "student" && account.studentId ? findByStudentId(account.studentId) : undefined;
-        switchRole(r, student ? `${student.firstName} ${student.lastName}` : undefined);
+        switchRole(r, student ? student.name : undefined);
       }
       router.push(r === "admin" && ADMIN_DASHBOARD_DISABLED ? "/admin/users" : ROLE_ROUTE[r]);
     };

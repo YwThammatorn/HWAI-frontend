@@ -12,7 +12,7 @@ const COURSE = {
   id: "c-fp", name: "Programming", description: "", status: "active", coverColor: "#2DD4BF",
   courseTemplateId: "ct-fp", term: 1, academicYear: 2569, sectionNumber: "1", code: "01076112", schedule: "Mon", room: "811", createdAt: NOW, updatedAt: NOW,
 };
-const TEACHER = { id: "t-fp", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", role: "teacher", status: "active", courseIds: ["c-fp"] };
+const TEACHER = { id: "t-fp", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", status: "active", courseIds: ["c-fp"] };
 const lv = (label: string) => ({ label, description: `${label} wording` });
 const LEVELS = [lv("Excellent"), lv("Fair"), lv("Needs work"), lv("Fail")];
 const ASSIGNMENT = {
@@ -28,7 +28,7 @@ const RUBRIC = {
 };
 const sub = (id: string, attachments: unknown[]) => ({
   id, assignmentId: "a-fp", studentId: id, studentName: `Student ${id}`, email: `${id}@kmitl.ac.th`, submittedAt: "2026-01-05T10:00:00.000Z",
-  fileUrl: null, attachments, aiScore: null, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "not_graded", updatedAt: NOW,
+  attachments, aiScore: null, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "not_graded", updatedAt: NOW,
 });
 const LINK = (to: string) => ({ id: "l1", kind: "link", name: to, source: "url", ref: to });
 const SUBS = (to: string) => [sub("with-link", [LINK(to)]), sub("no-link", [])];

@@ -5,7 +5,7 @@ import Modal from "@/components/Modal";
 import { useLanguage } from "@/context/LanguageContext";
 import { parseExamScoreCsv, scoreCsvTemplate, type ScoreCsvRow, type ScoreRowStatus } from "@/lib/examScoreCsv";
 
-type Person = { studentId: string; firstName: string; lastName: string };
+type Person = { studentId: string; name: string };
 
 const NEUTRAL = "border-[var(--border)] bg-[var(--bg-app)] text-[var(--text-secondary)]";
 const TONE: Record<ScoreRowStatus, string> = {
@@ -57,7 +57,7 @@ export default function ImportExamScoresModal({ students, withdrawnIds, maxPoint
     reader.onload = (e) => {
       const { rows: parsed } = parseExamScoreCsv(e.target?.result as string, {
         maxPoints,
-        enrolled: new Map(students.map((s) => [s.studentId, `${s.firstName} ${s.lastName}`])),
+        enrolled: new Map(students.map((s) => [s.studentId, s.name])),
         withdrawn: withdrawnIds,
         current: currentOf,
       });

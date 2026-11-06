@@ -228,11 +228,12 @@ test.describe("Admin Courses — no schedule / room, Add Section per subject", (
   });
 });
 
-// 26/9/2569 — the system has no TAs yet, and admin never assigns them: only teacher accounts are offered.
-test.describe("Admin Courses — teachers only, no TA", () => {
+// A teacher account is always a teacher (7/11/2569: the account-level "ta" role is gone — TAs are students,
+// added per course on Collaborators), so admin is offered every teacher account.
+test.describe("Admin Courses — teacher accounts", () => {
   const TEACHERS = [
-    { id: "t-john", name: "John Smith", email: "john@kmitl.ac.th", role: "teacher", status: "active", courseIds: [] },
-    { id: "t-ta", name: "Alice Johnson", email: "alice@kmitl.ac.th", role: "ta", status: "active", courseIds: [] },
+    { id: "t-john", name: "John Smith", email: "john@kmitl.ac.th", status: "active", courseIds: [] },
+    { id: "t-alice", name: "Alice Johnson", email: "alice@kmitl.ac.th", status: "active", courseIds: [] },
   ];
   const COURSE = { id: "c-x", name: "Web Design", description: "", status: "active", coverColor: "#0F766E", createdAt: "2026-01-01T00:00:00.000Z", updatedAt: "2026-01-01T00:00:00.000Z" };
 
@@ -247,36 +248,33 @@ test.describe("Admin Courses — teachers only, no TA", () => {
     await page.waitForLoadState("networkidle");
   }
 
-  test("the assign panel lists teachers, not TA accounts", async ({ page }) => {
+  test("the assign panel lists every teacher account", async ({ page }) => {
     await seed(page, TEACHERS);
     await page.getByRole("button", { name: /Web Design/ }).click();
     await expect(page.getByRole("checkbox", { name: /John Smith/ })).toBeVisible();
-    await expect(page.getByRole("checkbox", { name: /Alice Johnson/ })).toHaveCount(0);
+    await expect(page.getByRole("checkbox", { name: /Alice Johnson/ })).toBeVisible();
   });
 
-  test("a TA already on the course (older data) stays listed so it can be removed", async ({ page }) => {
+  test("an assigned teacher can be removed from the course", async ({ page }) => {
     await seed(page, [TEACHERS[0], { ...TEACHERS[1], courseIds: ["c-x"] }]);
     await page.getByRole("button", { name: /Web Design/ }).click();
     const box = page.getByRole("checkbox", { name: /Alice Johnson/ });
     await expect(box).toBeChecked();
     await box.click();
-    // once removed it is not offered again
-    await expect(box).toHaveCount(0);
+    await expect(box).not.toBeChecked();
   });
 
-  test("New Course's Primary Teacher autocomplete does not offer a TA", async ({ page }) => {
+  test("New Course's Primary Teacher autocomplete offers teacher accounts", async ({ page }) => {
     await seed(page, TEACHERS);
     await page.getByRole("button", { name: "New Course" }).first().click();
     const dialog = page.getByRole("dialog", { name: "New Course" });
-    await dialog.getByLabel("Primary Teacher").fill("Alice");
-    await expect(dialog.getByRole("option", { name: "Alice Johnson" })).toHaveCount(0);
     await dialog.getByLabel("Primary Teacher").fill("John");
     await expect(dialog.getByRole("option", { name: "John Smith" })).toBeVisible();
   });
 
-  test("the mock teachers have no TA", async () => {
+  test("the mock teachers carry no account role", async () => {
     for (const f of ["teachers-mockup.json", "teachers-mockup-en.json"]) {
-      expect(rd(f).filter((t: { role: string }) => t.role !== "teacher")).toEqual([]);
+      expect(rd(f).filter((t: Record<string, unknown>) => "role" in t)).toEqual([]);
     }
   });
 });

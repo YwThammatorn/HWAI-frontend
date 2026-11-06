@@ -8,8 +8,8 @@ export interface Student {
   id: string;
   courseId: string; // conceptually a Section id now that Course carries section fields — see lib/courses.ts
   studentId: string;
-  firstName: string;
-  lastName: string;
+  /** the student's name from their account (CohortStudent.name), without the title */
+  name: string;
   email: string;
   /** ลำดับนักศึกษาในวิชานี้ (มติที่ประชุม 4/9/2569) — คนใหม่ที่เพิ่มกลางเทอมได้เลขต่อท้าย
    *  ไม่ recompute ของเดิมเมื่อมีคนออก. Optional เพราะ record เก่ายังไม่มีค่านี้. */
@@ -42,4 +42,13 @@ export function useStudents(): StudentContextValue {
   const ctx = useContext(StudentContext);
   if (!ctx) throw new Error("useStudents must be used inside <StudentProvider>");
   return ctx;
+}
+
+/** A record saved before names became one field (6/11/2569) — localStorage mock data — has firstName + lastName
+ *  instead of name. Returns it with `name`, and leaves records that already have one alone. */
+export function withName<T extends { name: string }>(record: T): T {
+  const r = record as T & { firstName?: string; lastName?: string };
+  if (typeof r.name === "string") return record;
+  const { firstName, lastName, ...rest } = r;
+  return { ...rest, name: `${firstName ?? ""} ${lastName ?? ""}`.trim() } as unknown as T;
 }

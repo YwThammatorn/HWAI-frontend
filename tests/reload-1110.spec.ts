@@ -19,9 +19,9 @@ for (const lang of ["th", "en"] as const) {
   test(`[20] ${lang}: everything changed on 11/10 arrives, and nothing outside it is touched`, async ({ page }) => {
     await page.goto(`${BASE}/login`);
     await page.evaluate(() => {
-      const sub = (id: string, assignmentId: string, status: string, ai: number | null) => ({ id, assignmentId, studentId: "69070102", studentName: "x", email: "x", submittedAt: "2026-09-05T09:15:00.000Z", fileUrl: null, aiScore: ai, instructorScore: null, instructorComment: "", externalUseConsent: true, status, updatedAt: "x" });
+      const sub = (id: string, assignmentId: string, status: string, ai: number | null) => ({ id, assignmentId, studentId: "69070102", studentName: "x", email: "x", submittedAt: "2026-09-05T09:15:00.000Z", aiScore: ai, instructorScore: null, instructorComment: "", externalUseConsent: true, status, updatedAt: "x" });
       localStorage.setItem("hwai_courses_v2", JSON.stringify([{ id: "c-mock-15", name: "old ML course nobody teaches" }]));
-      localStorage.setItem("hwai_managed_teachers_v1", JSON.stringify([{ id: "t-old", name: "old", email: "old@kmitl.ac.th", role: "teacher", status: "active", courseIds: [] }]));
+      localStorage.setItem("hwai_managed_teachers_v1", JSON.stringify([{ id: "t-old", name: "old", email: "old@kmitl.ac.th", status: "active", courseIds: [] }]));
       localStorage.setItem("hwai_rubrics_v1", JSON.stringify([{ id: "r-mock-1", assignmentId: "a-mock-1", name: "old", criteria: [{ id: "rc-1", name: "C1 · Program correctness", description: "", maxPoints: 9, weight: 100, levels: [{ label: "Fair", description: "mostly sound, with only minor gaps" }] }], createdAt: "x", updatedAt: "x" }, { id: "r-keep", assignmentId: "a-other", name: "mine", criteria: [], createdAt: "x", updatedAt: "x" }]));
       localStorage.setItem("hwai_clos_v1", JSON.stringify([{ id: "own-clo", courseId: "c-other", code: "X", text: "mine" }]));
       localStorage.setItem("hwai_submissions_v1", JSON.stringify([
