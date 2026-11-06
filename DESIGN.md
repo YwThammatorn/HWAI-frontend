@@ -12,7 +12,7 @@ HWAI is an academic tool (AI-assisted grading, course/CLO management) — not a 
 
 | Category | Soft (ambient, default) | Solid (the one decisive moment) |
 |---|---|---|
-| Accent/Primary | `--accent` #4EA8A0 — strips, badges, focus ring, active nav | `--accent-solid` #0F766E + white — the Primary button only |
+| Accent/Primary | `--accent-bright` #4EA8A0 — strips, badge fills, focus ring · `--accent` #0F766E — the teal that is safe as text, a link or a border | `--accent-solid` #0F766E + white — the Primary button only |
 | Destructive | `--s-err-*` — outline/tinted row actions, inline warnings | `--danger-solid` #C43A4A + white — the confirm-dialog's final "delete" button only |
 
 ## 2. Color Tokens
@@ -35,10 +35,9 @@ HWAI is an academic tool (AI-assisted grading, course/CLO management) — not a 
   --text-muted:     #607080;
 
   /* Accent — soft (ambient) */
-  --accent:              #4EA8A0;
+  --accent-bright:       #4EA8A0;  /* strips, badge fills, focus ring. NEVER text on a light surface (2.79:1) */
+  --accent:              #0F766E;  /* text, links, borders — 5.48:1 on white */
   --accent-subtle:       #DFF0EE;
-  --accent-text:         #0D1820;  /* pairs with --accent as bg — avatar-solid only */
-  --accent-text-onlight: #2D8A82;  /* the ONLY safe way to put accent color in text/links */
 
   /* Accent — solid (Primary button only) */
   --accent-solid:       #0F766E;
@@ -88,10 +87,9 @@ HWAI is an academic tool (AI-assisted grading, course/CLO management) — not a 
   --text-secondary: #7A9AB2;
   --text-muted:     #7090A8;
 
-  --accent:              #4EA8A0;
+  --accent-bright:       #4EA8A0;
+  --accent:              #4EA8A0;  /* the same teal reads as text on the dark surfaces (5.68:1) */
   --accent-subtle:       #123A38;
-  --accent-text:         #D4EEF0;
-  --accent-text-onlight: #6BC4BB;
 
   /* NOT the same value as light mode — #0F766E only hits 2.93:1 against
      dark --bg-card, below the 3:1 floor for UI-component separation. */
@@ -126,7 +124,7 @@ HWAI is an academic tool (AI-assisted grading, course/CLO management) — not a 
 
 ## 3. The one rule that broke twice during review
 
-`--accent` is a **background/border token**, never a text color on a light surface — `color: var(--accent)` on white is 2.79:1, fails AA. Every time this system slipped, it was this exact mistake (a badge, a link) reintroducing the failure after it had already been fixed once. If teal needs to be text, it's `--accent-text-onlight`. No exceptions.
+`--accent-bright` (#4EA8A0) is a **background/border token**, never a text color on a light surface — on white it is 2.79:1, fails AA. Every time this system slipped, it was this exact mistake (a badge, a link) reintroducing the failure after it had already been fixed once. If teal needs to be text, it's `--accent` (#0F766E). No exceptions. (This file once named them the other way round; the names above are the ones in `globals.css`.)
 
 ## 4. Buttons
 
@@ -286,11 +284,78 @@ Settled 21/9/2569 while building the Score Book; the roster and admin Students t
 - **Every tinted cell/pill gets its `--s-*-bd` border** (§6's `.badge` pattern applies here too, not just to status pills) — the pale `-bg` tints are calibrated against `--bg-card`; on a plain white/dark `--bg-surface` table they wash out (read as "kind of the same colour as the page") without the border. Real regression, caught by the user on the Score Book (21/9/2569): a `bg`-only chip and a `border-dashed` outline-only chip both blended into the surface; fixed by adding a solid border in the matching `-bd` token (e.g. `border-[var(--s-ok-bd)]`) to every one, including the legend swatches and any inline notice box built from the same tokens.
 - **Totals** say what they are out of ("15.0 / 30"): the weighted total counts only categories that already have graded work, and it is the same figure the student sees on the Evaluation page.
 
+## 9c. Icons
+
+One component draws every icon: `components/Icon.tsx`. A page never contains an `<svg>` of its own for a UI glyph.
+
+```tsx
+<Icon name="check" size="sm" className="text-[var(--s-ok-text)]" />
+```
+
+| Rule | Value | Why |
+|---|---|---|
+| Grid, style | 24 × 24, outline, round caps and joins | one visual language; the set is Feather-style |
+| Stroke | **2**, always — never passed in, never overridden | 355 inline icons used five widths (1.5 / 1.8 / 2 / 2.5 / 3) so no two screens drew the same glyph the same way |
+| Size | `xs` 12 · `sm` 14 · `md` 16 (default) · `lg` 20 · `xl` 24 — a token, never a number | eight different pixel sizes were in use |
+| Colour | `currentColor`: set the text colour with a token class (`text-[var(--accent)]`) | no hex in an icon; the icon follows the theme |
+| Fill | `filled` fills the glyph with the same colour (rating star, play) | the only exception to "outline" |
+| Accessibility | decorative (`aria-hidden`) by default; pass `label="…"` only when the icon stands alone | the text next to an icon names it |
+
+**Which size where:** `xs` inside a small chip or badge (10–12px text) · `sm` next to 14px text, in table cells and row actions, sidebar sub-items · `md` in buttons, form fields, top-level sidebar items · `lg` in stat cards and section headers · `xl` in empty states.
+
+**Icon beside text follows the text** (buttons, links, chips): `text-xs` (14px) → `sm`, `text-sm` (16px) → `md`, `text-base` (18px) → `lg`. The type scale is shifted up one step in `globals.css`, so these are the pixel sizes that match. A sidebar nav item is `md`; nothing sets an icon's size from CSS (`[&>svg]:w-4` on a parent beat the prop and drew every sidebar icon at 18px, because `w-4` is 18px on this app's spacing scale).
+
+**Building blocks made of icons** — use them, never hand-build the same thing:
+
+| Piece | What it is | Sizes / tones |
+|---|---|---|
+| `<IconTile>` | the tinted box an icon sits in: row marks, file tiles, empty states, "done" marks, a course's own icon | `sm` 36px (icon sm) · `md` 45px (icon lg) · `lg` 54px (icon xl); `shape="round"` for a status mark; tones `accent · ok · warn · err · info · ta · neutral · onDark · brand · cover` |
+| `<IconButton>` | a button that is only an icon (edit, delete, close, show/hide, ⋮, page arrows): 36px, icon `sm`, always visible, **label required** (it is the accessible name and the tooltip) | tones `default · danger · warn · onDark`; `round` only for pagination; `dense` (27px) only inside a dense table cell such as the Score Book; `href` makes it a link |
+| `<Avatar>` | a person's initials circle | `sm` 36px · `md` 45px; tones `accent` (people in a list) · `solid` + `bg` (a person's own colour / role) · `muted` · `brand` (the signed-in user in the top bar) |
+| `<StatCard>` / `<MetricCard>` | a number with its icon. StatCard: icon left (admin, queue, results). MetricCard: icon top-right with a unit line (assignment Grading and Results). Both draw the icon in the same tile and take the same tones, so a "graded" card is the same green everywhere; every card in a row has the same icon tile, the same header height and the number on the same line | tones `ok · warn · info · accent · neutral · rating` |
+| `<EmptyState icon="…">` | the empty panel; its icon is an `IconTile lg accent`. Empty states inside a card use the same tile | |
+| `<Pagination>` | page arrows + numbers (… for long lists); the only pagination | |
+| `<BrandLogo>` / `<CourseIcon>` | the HWAI mark; a course's icon (a glyph of the set) | |
+
+**A glyph that is missing:** add one entry to `ICONS` in `Icon.tsx` (24-grid outline shapes only — no stroke or fill attributes on the shapes), then use it by name. Do not paste an SVG into a page. The names are typed, so a typo fails `tsc`.
+
+**What is not an icon, and where it lives:** HWAI's mark and the Google / Microsoft sign-in logos → `components/BrandLogo.tsx`. Illustrations and charts (404 robot, empty-state art, progress ring, dashboard charts, donut) keep their own `<svg>`; they are listed, with a reason, in `tests/design-rules.spec.ts` (`SVG_ALLOWED`) — adding to that list is a design decision, not a shortcut. Course icons → `CourseIcon` (a name → glyph map on top of `Icon`).
+
+## 9d. Colour usage — tokens only
+
+Every colour in a component is a token from `globals.css` (`var(--…)`). That is what makes dark mode, the teal/navy chrome and contrast fixes work from one place.
+
+- **No Tailwind palette classes**: `text-gray-500`, `bg-white`, `border-gray-200`, `text-amber-600`, `bg-green-100` … are all replaced. Use the table below. `text-white`, `bg-black/40` scrims and white-at-an-opacity (on the dark teal chrome) are fine.
+- **No hex literals** in `.tsx`/`.ts` (except stored data such as the course cover presets, and brand/illustration artwork — both listed in the test). A colour the palette lacks becomes a token first (in both themes), with a comment saying what it is for.
+- A colour is never built by string concatenation (`color + "80"`) — use `color-mix(in srgb, <colour> 50%, transparent)`, which works for hex and `var()` alike.
+
+| You wrote | Write instead |
+|---|---|
+| `text-gray-900 / 800 / 700` | `text-[var(--text-primary)]` |
+| `text-gray-600 / 500` | `text-[var(--text-secondary)]` |
+| `text-gray-400 / 300`, `placeholder-gray-400` | `text-[var(--text-muted)]`, `placeholder:text-[var(--text-muted)]` |
+| `bg-white` | `bg-[var(--bg-surface)]` |
+| `bg-gray-50 / 100` (a static fill) | `bg-[var(--bg-app)]` — never `--bg-subtle` as a static fill (§9b) |
+| `hover:bg-gray-50`, `hover:bg-white` | `hover:bg-[var(--bg-subtle)]` |
+| `border-gray-100 / 50` | `border-[var(--border-subtle)]` |
+| `border-gray-200 / 300` | `border-[var(--border)]` |
+| amber / yellow (text, tint, border) | `--s-warn-text` / `--s-warn-bg` / `--s-warn-bd` · a solid button: `--warn-solid`, `--warn-solid-hover` |
+| green / emerald | `--s-ok-*` · a dot or bar: `bg-[var(--s-ok-text)]` |
+| red | `--s-err-*` (a solid confirm: `--danger-solid`) |
+| blue / sky | `--s-info-*` |
+| orange | `--st-todo-*` (to-do status) |
+| purple / violet | `--role-ta-*` |
+| teal tint | `--accent-subtle` |
+| the bright logo teal `#2DD4BF` | `--brand-bright` (logo tile, avatar fill, accent words on the dark brand panel); text on it: `--brand-ink` |
+| a 5-step good→bad scale (rubric levels, password strength) | `--level-1` … `--level-5` |
+| a filled rating star | `--rating-fill` |
+| a person's avatar hue | `--cat-1` … `--cat-8` |
+
 ## 10. Migration — old KB patterns → new tokens
 
 | KB Pattern | What it hardcodes today | Maps to |
 |---|---|---|
-| `AccentColorStrip` | `#2DD4BF` literal | `var(--accent)` |
+| `AccentColorStrip` | `#2DD4BF` literal | `var(--accent-bright)` |
 | `OutlineDestructive` | `border-red-300 bg-red-50 text-red-700` (Tailwind) | `--s-err-bd` / `--s-err-bg` / `--s-err-text` |
 | `WCAGColorMap` | Raw Tailwind pairs (`amber-800`/`amber-100`, `green-700`, `red-700`/`red-50`) | Superseded by `--s-warn-*`, `--s-ok-*`, `--s-err-*` — same intent (dark saturated text on light tint), now theme-aware (has dark-mode pairs, the old map didn't) |
 | `StatCard` role tints | `#0F766E` (teacher), `#4F46E5` (student), `#7C3AED` (TA) — indigo/purple are a different hue family from navy, same "กระโดด" problem the old accent had | Teacher → `--accent`; Student → `--s-info-text`; TA → `--role-ta-text` (new, muted) |
@@ -311,6 +376,18 @@ Unchanged from the existing stack — no new font introduced.
 2. `globals.css` currently names surface tokens `--bg-surface` (alias of `--bg-card`) — this file uses `--bg-card` as primary. Reconcile naming before merge: rename in `globals.css` or add the alias here, don't maintain two names for the same thing.
 3. `--danger-solid` (#C43A4A) is a new token — nothing in the current codebase uses it yet (existing destructive actions use `bg-red-500`/`bg-red-600` per the earlier button audit). Implementing this file means replacing those, not adding a third destructive color.
 4. Not yet covered here: toast/notification styling and pagination controls (modal / popup is §9a, data tables §9b). Extend this file when those get designed, don't invent them ad hoc in component code.
+
+## 13. Before you ship UI — the checklist (every UI change, new page or small tweak)
+
+1. **Icons** from `<Icon>` only, a size token, colour from a token class. Missing glyph → add it to `Icon.tsx`.
+2. **Colours** from tokens only (§9d). No gray / palette class, no hex. Missing colour → add a token in both themes first.
+3. **Look at both themes** (light and dark) and at the teal chrome — a screen that only works in one is not done.
+4. **Contrast**: text on a tint uses that tint's `-text` pair; teal as text is `--accent`, never `--accent-bright` (§3).
+5. **Buttons / badges / modals / tables / empty states** follow §4, §6, §9a, §9b and `EmptyState`; no hover-only actions.
+6. **Words**: every visible string goes through `t("ไทย", "English")` (CLAUDE.md i18n rule); wording follows the terminology notes in `docs/design-stability-audit.md`.
+7. **Run** `npx playwright test -c playwright.rules.config.ts` (the rules above, 1 second) — and the normal suite before calling it done. `tests/design-rules.spec.ts` fails the build on an inline icon, a palette class or a hex colour.
+
+A rule that does not fit is changed *here* first (with the reason), then in the code — not worked around in one page.
 
 ---
 
