@@ -78,14 +78,14 @@ export default function SubmissionViewer({ attachments, zoom, caption, empty, an
   const paperWidth = zoom * 5;
   const paperHeight = zoom * 7;
   // shrink-0: a zoomed-in file must scroll inside the pane, not get squeezed to fit it
-  const card = "shrink-0 bg-white shadow-xl rounded-sm p-8 text-center flex flex-col items-center gap-3";
+  const card = "shrink-0 bg-[var(--bg-surface)] shadow-xl rounded-sm p-8 text-center flex flex-col items-center gap-3";
 
   let body: ReactNode;
   if (sel.source === "url") {
     body = (
       <div className={card} style={{ width: paperWidth }}>
         <p className="text-sm font-semibold text-[var(--text-primary)] break-all">{anonymous ? shownName(sel) : sel.ref}</p>
-        <p className="text-xs text-gray-400">{t("ลิงก์ที่นักศึกษาส่ง — เปิดในแท็บใหม่", "Link submitted by the student — opens in a new tab")}</p>
+        <p className="text-xs text-[var(--text-muted)]">{t("ลิงก์ที่นักศึกษาส่ง — เปิดในแท็บใหม่", "Link submitted by the student — opens in a new tab")}</p>
         <a
           href={sel.ref}
           target="_blank"
@@ -96,35 +96,35 @@ export default function SubmissionViewer({ attachments, zoom, caption, empty, an
         >
           {onOpenLink ? t("เปิดลิงก์และตรวจในก้อนเล็ก", "Open link and grade in a small window") : t("เปิดลิงก์", "Open link")}
         </a>
-        {onOpenLink && <p className="text-xs text-gray-400">{t("ส่วนตรวจจะลอยอยู่ในหน้าต่างเล็ก ให้ตรวจไปพร้อมดูลิงก์ได้", "The grading part floats in a small window, so you can grade while you look at the link")}</p>}
+        {onOpenLink && <p className="text-xs text-[var(--text-muted)]">{t("ส่วนตรวจจะลอยอยู่ในหน้าต่างเล็ก ให้ตรวจไปพร้อมดูลิงก์ได้", "The grading part floats in a small window, so you can grade while you look at the link")}</p>}
       </div>
     );
   } else if (!ready) {
-    body = <p className="text-sm text-gray-400 mt-10">{t("กำลังโหลดไฟล์...", "Loading file...")}</p>;
+    body = <p className="text-sm text-[var(--text-muted)] mt-10">{t("กำลังโหลดไฟล์...", "Loading file...")}</p>;
   } else if (!ready.url) {
     body = (
       <div className={card} style={{ width: paperWidth }}>
         <p className="text-sm font-semibold text-[var(--text-primary)]">{shownName(sel)}</p>
-        <p className="text-xs text-gray-400">{t("ไม่พบไฟล์นี้ในที่เก็บข้อมูลแล้ว", "This file is no longer in storage")}</p>
+        <p className="text-xs text-[var(--text-muted)]">{t("ไม่พบไฟล์นี้ในที่เก็บข้อมูลแล้ว", "This file is no longer in storage")}</p>
       </div>
     );
   } else if (sel.kind === "image" || ready.type.startsWith("image/")) {
     // eslint-disable-next-line @next/next/no-img-element
-    body = <img src={ready.url} alt={shownName(sel)} style={{ width: paperWidth, maxWidth: "none" }} className="shrink-0 bg-white shadow-xl rounded-sm" />;
+    body = <img src={ready.url} alt={shownName(sel)} style={{ width: paperWidth, maxWidth: "none" }} className="shrink-0 bg-[var(--bg-surface)] shadow-xl rounded-sm" />;
   } else if (ready.type === "application/pdf" || /\.pdf$/i.test(sel.name)) {
     body = (
       <iframe
         src={ready.url}
         title={shownName(sel)}
         style={{ width: paperWidth, height: paperHeight }}
-        className="shrink-0 bg-white shadow-xl rounded-sm border-0"
+        className="shrink-0 bg-[var(--bg-surface)] shadow-xl rounded-sm border-0"
       />
     );
   } else {
     body = (
       <div className={card} style={{ width: paperWidth }}>
         <p className="text-sm font-semibold text-[var(--text-primary)] break-all">{shownName(sel)}</p>
-        <p className="text-xs text-gray-400">{t("ไม่สามารถแสดงตัวอย่างไฟล์ประเภทนี้ — ดาวน์โหลดเพื่อเปิดดู", "No preview for this file type — download it to open")}</p>
+        <p className="text-xs text-[var(--text-muted)]">{t("ไม่สามารถแสดงตัวอย่างไฟล์ประเภทนี้ — ดาวน์โหลดเพื่อเปิดดู", "No preview for this file type — download it to open")}</p>
         <a
           href={ready.url}
           download={anonymous ? shownName(sel) : sel.name}
@@ -138,8 +138,8 @@ export default function SubmissionViewer({ attachments, zoom, caption, empty, an
 
   return (
     <div className="flex-1 min-h-0 flex flex-col">
-      <div className="px-5 py-2.5 bg-white border-b border-gray-100 flex flex-col gap-2">
-        {caption && <p className="text-xs text-gray-500">{caption}</p>}
+      <div className="px-5 py-2.5 bg-[var(--bg-surface)] border-b border-[var(--border-subtle)] flex flex-col gap-2">
+        {caption && <p className="text-xs text-[var(--text-secondary)]">{caption}</p>}
         <ul className="flex gap-2 overflow-x-auto" aria-label={t("ไฟล์ที่นักศึกษาส่ง", "Files the student submitted")}>
           {attachments.map((a) => {
             const active = a.id === sel.id;
@@ -153,7 +153,7 @@ export default function SubmissionViewer({ attachments, zoom, caption, empty, an
                   className={`max-w-[220px] truncate h-8 px-3 rounded-lg border text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] ${
                     active
                       ? "border-[var(--accent)] bg-[var(--accent-subtle)] text-[var(--accent)]"
-                      : "border-gray-200 text-gray-600 hover:border-[var(--accent)] hover:text-[var(--accent)]"
+                      : "border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--accent)] hover:text-[var(--accent)]"
                   }`}
                 >
                   {a.kind === "link" && !anonymous ? `${t("ลิงก์", "Link")}: ${a.name}` : shownName(a)}

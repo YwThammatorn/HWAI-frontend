@@ -4,6 +4,8 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
 
+import Icon from "@/components/Icon";
+import IconButton from "@/components/IconButton";
 export interface StudentCalendarItem {
   date: string; // YYYY-MM-DD
   assignmentId: string;
@@ -69,21 +71,9 @@ export default function StudentCalendar({ items }: { items: StudentCalendarItem[
     <div className="flex flex-col gap-3">
       {/* Month nav */}
       <div className="flex items-center justify-between">
-        <button
-          onClick={() => goMonth(-1)}
-          aria-label={t("เดือนก่อนหน้า", "Previous month")}
-          className="w-7 h-7 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]"
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><polyline points="15 18 9 12 15 6" /></svg>
-        </button>
+        <IconButton icon="chevron-left" label={t("เดือนก่อนหน้า", "Previous month")} onClick={() => goMonth(-1)} />
         <p className="text-sm font-semibold text-[var(--text-primary)] tabular-nums">{monthLabel}</p>
-        <button
-          onClick={() => goMonth(1)}
-          aria-label={t("เดือนถัดไป", "Next month")}
-          className="w-7 h-7 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]"
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><polyline points="9 18 15 12 9 6" /></svg>
-        </button>
+        <IconButton icon="chevron-right" label={t("เดือนถัดไป", "Next month")} onClick={() => goMonth(1)} />
       </div>
 
       {/* Weekday header */}

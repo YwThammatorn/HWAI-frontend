@@ -4,14 +4,19 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCourses } from "@/lib/courses";
-import { useAssignments, Assignment } from "@/lib/assignments";
+import { useAssignments, Assignment, gradingOpen, cleanLatePolicy, latePolicyProblem, activeLatePolicy, describeLatePolicy, type LatePolicy } from "@/lib/assignments";
+import LatePolicyEditor from "@/components/LatePolicyEditor";
 import { useGradingCategories } from "@/lib/gradingCategories";
 import { useLanguage } from "@/context/LanguageContext";
 import { AttachmentsEditor, useAttachmentsDraft } from "@/components/AssignmentAttachments";
 import Modal from "@/components/Modal";
 import RubricCriteriaEditor, { CriterionDraft, newCriterionDraft, toDraft, criteriaPointsOk, levelsUniform, criteriaTotalPoints, finalizeCriteria, scoringSignature } from "@/components/RubricCriteriaEditor";
 import { useCLOs } from "@/lib/clo";
-
+import { appNow } from "@/lib/clock";
+import { useAiGrading } from "@/lib/useAiGrading";
+
+import Icon from "@/components/Icon";
+import IconButton from "@/components/IconButton";
 export default function EditAssignmentPage() {
   const { id, assignmentId } = useParams<{ id: string; assignmentId: string }>();
   const router = useRouter();
@@ -24,6 +29,7 @@ export default function EditAssignmentPage() {
   } = useAssignments();
   const { getCategoriesByCourse } = useGradingCategories();
   const { getCLOsByCourse } = useCLOs();
+  const { unitsOf, gradeUnits } = useAiGrading();
 
   const CONFIRM_MSG = t(
     "การเปลี่ยนแปลงจะไม่ถูกบันทึก\nต้องการออกจากหน้านี้หรือไม่?",
@@ -44,6 +50,7 @@ export default function EditAssignmentPage() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState("");
+  const [latePolicy, setLatePolicy] = useState<LatePolicy | undefined>();
   const [isExam, setIsExam] = useState(false);
   const [maxPoints, setMaxPoints] = useState("100");
   const [categoryId, setCategoryId] = useState("");
@@ -62,7 +69,7 @@ export default function EditAssignmentPage() {
   const [sourceRubricId, setSourceRubricId] = useState<string | undefined>();
 
   const origRef = useRef({
-    name: "", description: "", dueDate: "", isExam: false, maxPoints: "", categoryId: "",
+    name: "", description: "", dueDate: "", latePolicyJson: "", isExam: false, maxPoints: "", categoryId: "",
     acceptsFiles: true, fileTypesJson: "[]",
     submissionType: "individual" as "individual" | "group",
     maxGroupSizeStr: "", criteriaJson: "[]", scoringSig: "[]",
@@ -85,6 +92,7 @@ export default function EditAssignmentPage() {
         name: assignment.name,
         description: assignment.description,
         dueDate: assignment.dueDate ?? "",
+        latePolicyJson: JSON.stringify(assignment.latePolicy ?? null),
         isExam: assignment.isExam ?? false,
         maxPoints: String(assignment.maxPoints),
         categoryId: assignment.categoryId ?? "",
@@ -98,6 +106,7 @@ export default function EditAssignmentPage() {
       setName(orig.name);
       setDescription(orig.description);
       setDueDate(orig.dueDate);
+      setLatePolicy(assignment.latePolicy);
       setIsExam(orig.isExam);
       setMaxPoints(orig.maxPoints);
       setCategoryId(orig.categoryId);
@@ -121,6 +130,7 @@ export default function EditAssignmentPage() {
       name !== origRef.current.name ||
       description !== origRef.current.description ||
       dueDate !== origRef.current.dueDate ||
+      JSON.stringify(latePolicy ?? null) !== origRef.current.latePolicyJson ||
       isExam !== origRef.current.isExam ||
       maxPoints !== origRef.current.maxPoints ||
       categoryId !== origRef.current.categoryId ||
@@ -161,15 +171,18 @@ export default function EditAssignmentPage() {
     commitSave(false);
   }
 
-  /** `restart`: the rubric changed under work that was already graded, so that work goes back to "not graded". */
-  function commitSave(restart: boolean) {
+  /** `restart`: the rubric changed under work that was already graded, so that work goes back to "not graded".
+   *  `regrade` (22/10/2569): and the AI grades it again at once, with the new rubric, instead of leaving it for "Grade with AI". */
+  function commitSave(restart: boolean, regrade = false) {
     setRestartOpen(false);
+    const finalized = finalizeCriteria(criteria, t("ไม่มีชื่อ", "Untitled"));
     updateAssignment(assignmentId, {
       name: name.trim(),
       description: description.trim(),
       attachments: att.items,
       // An Exam has no deadline and students never submit it (25/9/2569)
       dueDate: isExam ? undefined : dueDate,
+      latePolicy: !isExam && latePolicy ? cleanLatePolicy(latePolicy) : undefined,
       maxPoints: needsManualScore ? (parseInt(maxPoints) || 100) : criteriaTotalPoints(criteria),
       categoryId: categoryId || undefined,
       // an exam isn't submitted at all, so its file / submission-type settings are fixed, not left at whatever the hidden controls held
@@ -184,9 +197,17 @@ export default function EditAssignmentPage() {
       scoredSubs.forEach((sub) => updateSubmission(sub.id, {
         aiScore: null, instructorScore: null, criterionScores: undefined, criterionComments: undefined, status: "not_graded",
       }));
+      if (assignment!.gradingMode !== "manual") {
+        if (regrade) {
+          gradeUnits(assignment!, unitsOf(assignment!, scoredSubs), { criteria: finalized, aiOffsets: linkedRubrics[0]?.aiOffsets });
+          updateAssignment(assignmentId, { rubricRestartedAt: undefined });
+        } else {
+          // the work waits for the AI again: the course Grading page and this assignment's Grading page offer "Regrade with new rubric"
+          updateAssignment(assignmentId, { rubricRestartedAt: new Date().toISOString() });
+        }
+      }
     }
     if (!needsManualScore && !rubricLocked) {
-      const finalized = finalizeCriteria(criteria, t("ไม่มีชื่อ", "Untitled"));
       if (linkedRubrics[0]) {
         updateRubric(linkedRubrics[0].id, { name: linkedRubrics[0].name, criteria: finalized, ...(sourceRubricId ? { sourceRubricId } : {}) });
       } else {
@@ -212,7 +233,7 @@ export default function EditAssignmentPage() {
 
   if (!course || !assignment) {
     return (
-        <main className="flex-1 flex items-center justify-center text-gray-500 text-sm">
+        <main className="flex-1 flex items-center justify-center text-[var(--text-secondary)] text-sm">
           {t("ไม่พบข้อมูล", "Not found")} —{" "}
           <Link href={`/teacher/courses/${id}/assignments`} className="text-[var(--accent)] ml-1 hover:underline">
             {t("กลับรายการชิ้นงาน", "Back to assignments")}
@@ -232,10 +253,12 @@ export default function EditAssignmentPage() {
   // CLO tags are metadata: re-tagging alone never restarts grading, only a change to what is scored does
   const rubricChanged = !needsManualScore && !rubricLocked && scoringSignature(criteria) !== origRef.current.scoringSig;
   const scoredSubs = getSubmissionsByAssignment(assignmentId).filter((sub) => sub.status !== "not_graded");
+  // the AI can grade it again right now only when AI is part of this assignment's grading and grading is open
+  const canRegradeNow = assignment.gradingMode !== "manual" && gradingOpen(assignment, appNow());
   const totalPoints = criteriaTotalPoints(criteria);
   const pointsOk = criteriaPointsOk(criteria);
   const levelsOk = levelsUniform(criteria);   // every criterion has the same number of levels (14/10/2569)
-  const isValid = name.trim().length > 0 && (isExam || dueDate !== "") && (isExam || !acceptsFiles || fileTypes.length > 0) &&
+  const isValid = name.trim().length > 0 && (isExam || dueDate !== "") && (isExam || !latePolicy || !latePolicyProblem(latePolicy, dueDate)) && (isExam || !acceptsFiles || fileTypes.length > 0) &&
     (needsManualScore ? (parseInt(maxPoints) || 0) > 0 : pointsOk && levelsOk);
 
   return (
@@ -243,12 +266,8 @@ export default function EditAssignmentPage() {
 
         {/* Breadcrumb (23/9/2569 round 4: replaced the old "Back to assignment" chevron button —
             same exact structure as New Assignment's, per the user's "ทำเหมือนหน้าตอน create" ask). */}
-        <div className="flex items-center gap-2 text-sm text-gray-500 mb-6 flex-wrap">
-          <button type="button" onClick={() => navAway("/teacher/courses")} aria-label={t("วิชาทั้งหมด", "All Courses")} className="hover:text-[var(--accent)] transition-colors">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
-            </svg>
-          </button>
+        <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)] mb-6 flex-wrap">
+          <IconButton icon="home" label={t("วิชาทั้งหมด", "All Courses")} onClick={() => navAway("/teacher/courses")} />
           <span>/</span>
           <button type="button" onClick={() => navAway(`/teacher/courses/${id}`)} className="hover:text-[var(--accent)] transition-colors">{course?.name ?? "..."}</button>
           <span>/</span>
@@ -258,7 +277,7 @@ export default function EditAssignmentPage() {
         </div>
 
         <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">{t("แก้ไขชิ้นงาน", "Edit Assignment")}</h1>
-        <p className="text-sm text-gray-500 mb-8">
+        <p className="text-sm text-[var(--text-secondary)] mb-8">
           {t("กำลังแก้ไข", "Editing")}{" "}
           <span className="font-semibold text-[var(--text-primary)]">{assignment.name}</span>{" "}
           {t("ในวิชา", "in")} <span className="font-semibold text-[var(--text-primary)]">{course.name}</span>
@@ -279,36 +298,36 @@ export default function EditAssignmentPage() {
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
 
           {/* General Information */}
-          <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+          <section className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-subtle)] shadow-sm p-6">
             <SectionHeader icon="info" label={t("ข้อมูลทั่วไป", "General Information")} />
             <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">
               {t("ชื่อชิ้นงาน", "Assignment Name")} <span className="text-[var(--s-err-text)]">*</span>
             </label>
             <input
               value={name} onChange={(e) => setName(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
               required
             />
           </section>
 
           {/* Description */}
-          <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col">
+          <section className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-subtle)] shadow-sm p-6 flex flex-col">
             <SectionHeader icon="doc" label={t("รายละเอียดชิ้นงาน", "Description")} />
             <textarea
               value={description} onChange={(e) => setDescription(e.target.value)}
-              className="w-full flex-1 min-h-[100px] px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] resize-none transition-colors"
+              className="w-full flex-1 min-h-[100px] px-3.5 py-2.5 rounded-xl border border-[var(--border)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] resize-none transition-colors"
             />
             <AttachmentsEditor items={att.items} onChange={att.setItems} />
           </section>
 
           {/* Submission Settings */}
-          <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+          <section className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-subtle)] shadow-sm p-6">
             <SectionHeader icon="upload" label={t("การรับและรูปแบบงาน", "Submission Settings")} />
 
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-sm font-medium text-[var(--text-primary)]">{t("งานประเภทสอบ", "Exam Assignment")}</p>
-                <p className="text-xs text-gray-500 mt-0.5">{t("เปิดไว้เพื่อกำหนดคะแนนเต็มเอง — งานประเภทนี้ไม่ใช้ rubric", "Turn on to set the max score manually — no rubric is used for this type")}</p>
+                <p className="text-xs text-[var(--text-secondary)] mt-0.5">{t("เปิดไว้เพื่อกำหนดคะแนนเต็มเอง — งานประเภทนี้ไม่ใช้ rubric", "Turn on to set the max score manually — no rubric is used for this type")}</p>
               </div>
               <button
                 type="button"
@@ -317,12 +336,12 @@ export default function EditAssignmentPage() {
                 aria-pressed={isExam}
                 className={["relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none", isExam ? "bg-[var(--accent)]" : "bg-[var(--border-subtle)]"].join(" ")}
               >
-                <span className={["inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform", isExam ? "translate-x-6" : "translate-x-1"].join(" ")} />
+                <span className={["inline-block h-4 w-4 transform rounded-full bg-[var(--bg-surface)] shadow transition-transform", isExam ? "translate-x-6" : "translate-x-1"].join(" ")} />
               </button>
             </div>
 
             {isExam ? (
-              <p className="text-xs text-gray-500 rounded-xl border border-dashed border-[var(--border-subtle)] px-4 py-3">
+              <p className="text-xs text-[var(--text-secondary)] rounded-xl border border-dashed border-[var(--border-subtle)] px-4 py-3">
                 {t("งานสอบไม่ต้องส่งไฟล์ — นักศึกษาไม่ต้องทำอะไร อาจารย์กรอกคะแนนของทุกคนในหน้าตรวจงาน", "Students don't submit an exam — you enter everyone's score on the grading page")}
               </p>
             ) : (
@@ -330,7 +349,7 @@ export default function EditAssignmentPage() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-sm font-medium text-[var(--text-primary)]">{t("รับไฟล์จากนักศึกษา", "Accept Files")}</p>
-                <p className="text-xs text-gray-500 mt-0.5">{t("ปิดถ้างานนี้ไม่ต้องอัปโหลดไฟล์", "Disable if no upload needed")}</p>
+                <p className="text-xs text-[var(--text-secondary)] mt-0.5">{t("ปิดถ้างานนี้ไม่ต้องอัปโหลดไฟล์", "Disable if no upload needed")}</p>
               </div>
               <button
                 type="button"
@@ -339,20 +358,20 @@ export default function EditAssignmentPage() {
                 aria-pressed={acceptsFiles}
                 className={["relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none", acceptsFiles ? "bg-[var(--accent)]" : "bg-[var(--border-subtle)]"].join(" ")}
               >
-                <span className={["inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform", acceptsFiles ? "translate-x-6" : "translate-x-1"].join(" ")} />
+                <span className={["inline-block h-4 w-4 transform rounded-full bg-[var(--bg-surface)] shadow transition-transform", acceptsFiles ? "translate-x-6" : "translate-x-1"].join(" ")} />
               </button>
             </div>
 
             {acceptsFiles && (
               <div className="mb-5">
-                <label className="block text-xs font-medium text-gray-500 mb-2">{t("ประเภทไฟล์ที่รับ", "Accepted File Types")}</label>
+                <label className="block text-xs font-medium text-[var(--text-secondary)] mb-2">{t("ประเภทไฟล์ที่รับ", "Accepted File Types")}</label>
                 <div className="flex gap-2">
                   {FILE_TYPE_OPTIONS.map(({ id: fid, label }) => (
                     <button key={fid} type="button" onClick={() => toggleFileType(fid)}
                       className={["px-3.5 py-1.5 rounded-xl text-sm font-medium border transition-colors",
                         fileTypes.includes(fid)
                           ? "bg-[var(--bg-nav)] text-white border-[var(--bg-nav)]"
-                          : "border-gray-200 text-gray-500 hover:border-[var(--bg-nav)] hover:text-[var(--text-primary)]"
+                          : "border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--bg-nav)] hover:text-[var(--text-primary)]"
                       ].join(" ")}
                     >{label}</button>
                   ))}
@@ -364,12 +383,12 @@ export default function EditAssignmentPage() {
             )}
 
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-2">{t("รูปแบบการส่งงาน", "Submission Type")}</label>
-              <div className="inline-flex rounded-xl border border-gray-200 overflow-hidden">
+              <label className="block text-xs font-medium text-[var(--text-secondary)] mb-2">{t("รูปแบบการส่งงาน", "Submission Type")}</label>
+              <div className="inline-flex rounded-xl border border-[var(--border)] overflow-hidden">
                 {(["individual", "group"] as const).map((tp) => (
                   <button key={tp} type="button" onClick={() => handleSubmissionTypeChange(tp)}
                     className={["px-4 py-2 text-sm font-medium transition-colors",
-                      submissionType === tp ? "bg-[var(--bg-nav)] text-white" : "bg-white text-gray-500 hover:bg-gray-50"
+                      submissionType === tp ? "bg-[var(--bg-nav)] text-white" : "bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)]"
                     ].join(" ")}>
                     {tp === "individual" ? t("รายบุคคล", "Individual") : t("กลุ่ม", "Group")}
                   </button>
@@ -377,14 +396,14 @@ export default function EditAssignmentPage() {
               </div>
               {submissionType === "group" && (
                 <div className="mt-3 flex items-center gap-2">
-                  <label className="text-sm text-gray-500">{t("สมาชิกต่อกลุ่มสูงสุด", "Max members per group")}</label>
+                  <label className="text-sm text-[var(--text-secondary)]">{t("สมาชิกต่อกลุ่มสูงสุด", "Max members per group")}</label>
                   <input
                     type="number" min="2" max="20"
                     value={maxGroupSize} onChange={e => setMaxGroupSize(e.target.value)}
                     placeholder="4"
-                    className="w-24 px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
+                    className="w-24 px-3 py-2 rounded-xl border border-[var(--border)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
                   />
-                  <span className="text-sm text-gray-500">{t("คน", "members")}</span>
+                  <span className="text-sm text-[var(--text-secondary)]">{t("คน", "members")}</span>
                 </div>
               )}
             </div>
@@ -393,7 +412,7 @@ export default function EditAssignmentPage() {
           </section>
 
           {/* Details */}
-          <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+          <section className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-subtle)] shadow-sm p-6">
             <SectionHeader icon="cal" label={isExam ? t("คะแนน", "Score") : t("กำหนดเวลาและคะแนน", "Deadline & Score")} />
             <div className={isExam ? "" : "grid grid-cols-2 gap-4"}>
               {!isExam && (
@@ -402,13 +421,11 @@ export default function EditAssignmentPage() {
                   {t("วันครบกำหนด", "Due Date")} <span className="text-[var(--s-err-text)]">*</span>
                 </label>
                 <div className="relative">
-                  <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-                  </svg>
+                  <Icon name="calendar" size="sm" className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]" />
                   <input
                     type="date" value={dueDate} min={minDate}
                     onChange={(e) => setDueDate(e.target.value)}
-                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
+                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-[var(--border)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
                     required
                   />
                 </div>
@@ -420,15 +437,24 @@ export default function EditAssignmentPage() {
                   <input
                     type="number" min="1" max="1000" value={maxPoints}
                     onChange={(e) => setMaxPoints(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
                   />
                 ) : (
-                  <div className="w-full px-3.5 py-2.5 rounded-xl border border-gray-100 bg-gray-50 text-sm text-gray-600">
+                  <div className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-app)] text-sm text-[var(--text-secondary)]">
                     {t(`รวม ${totalPoints} คะแนน (จาก Rubric ด้านล่าง)`, `Total: ${totalPoints} pts (from the rubric below)`)}
                   </div>
                 )}
               </div>
             </div>
+
+            {!isExam && (assignment?.gradingFinalized ? (
+              <p data-testid="late-policy-locked" className="mt-5 border-t border-[var(--border-subtle)] pt-5 text-xs text-[var(--text-secondary)]">
+                {t("ผลถูกประกาศแล้ว — แก้การรับงานส่งช้าไม่ได้ (เปิดการตรวจใหม่ก่อนถ้าต้องแก้) · ", "Results are announced — late-work settings are locked (reopen grading to change them) · ")}
+                {assignment && activeLatePolicy(assignment) ? describeLatePolicy(activeLatePolicy(assignment)!, t) : t("ไม่รับงานส่งช้า", "Late work is not accepted")}
+              </p>
+            ) : (
+              <LatePolicyEditor value={latePolicy} onChange={setLatePolicy} dueDate={dueDate} maxPoints={needsManualScore ? (parseInt(maxPoints) || 100) : totalPoints} />
+            ))}
 
             {categories.length > 0 && (
               <div className="mt-4">
@@ -436,7 +462,7 @@ export default function EditAssignmentPage() {
                 <select
                   value={categoryId}
                   onChange={(e) => setCategoryId(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
                 >
                   <option value="">{t("ไม่ระบุ", "None")}</option>
                   {categories.map((c) => (
@@ -454,19 +480,15 @@ export default function EditAssignmentPage() {
           {!needsManualScore && (
             <section className="mt-8" aria-labelledby="rubric-heading">
               <div className="flex items-center gap-2 mb-1.5">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent-bright)" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                  <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
-                </svg>
+                <Icon name="check-square" size="sm" className="text-[var(--accent-bright)]" />
                 <h2 id="rubric-heading" className="text-base font-semibold text-[var(--text-primary)]">{t("เกณฑ์การให้คะแนน (Rubric)", "Grading Rubric")}</h2>
               </div>
-              <p className="text-sm text-gray-500 mb-5">
+              <p className="text-sm text-[var(--text-secondary)] mb-5">
                 {t("ตั้งเกณฑ์ที่ HWAI Agent จะใช้ตรวจงานนี้ พร้อมคะแนนของแต่ละเกณฑ์ — คะแนนเต็มของชิ้นงานจะมาจากผลรวมนี้", "Set the criteria the HWAI Agent will grade this assignment with, each with its own points. The assignment's max score is the sum.")}
               </p>
               {rubricLocked ? (
                 <p data-testid="rubric-locked" role="note" className="mb-4 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-xl border border-[var(--s-info-bd)] bg-[var(--s-info-bg)] px-4 py-3 text-sm leading-relaxed text-[var(--s-info-text)]">
-                  <svg className="shrink-0" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                    <rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>
-                  </svg>
+                  <Icon name="lock" size="sm" className="shrink-0" />
                   <span>{t("ตรวจเสร็จและประกาศผลแล้ว — แก้เกณฑ์ไม่ได้ ถ้าต้องแก้ ให้ “เปิดตรวจใหม่” ที่หน้าตรวจงานก่อน", "Grading is finished and announced — the rubric can't be changed. To change it, “Reopen grading” on the Grading page first.")}</span>
                   <Link href={`/teacher/courses/${id}/assignments/${assignmentId}/grading`} className="font-semibold underline underline-offset-2">{t("ไปหน้าตรวจงาน", "Go to Grading")}</Link>
                 </p>
@@ -491,7 +513,7 @@ export default function EditAssignmentPage() {
 
           {/* Danger Zone — New Assignment has no equivalent (nothing to delete yet); kept as its
               own full-width card, same mt-8 rhythm as the Rubric section above it. */}
-          <section className="bg-white rounded-2xl border border-[var(--s-err-bd)] shadow-sm p-6 mt-8">
+          <section className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--s-err-bd)] shadow-sm p-6 mt-8">
             <h2 className="text-sm font-semibold text-[var(--s-err-text)] uppercase tracking-wider mb-4">{t("โซนอันตราย", "Danger Zone")}</h2>
             <button
               type="button" onClick={handleDelete}
@@ -499,7 +521,7 @@ export default function EditAssignmentPage() {
             >
               {t("ลบชิ้นงาน", "Delete Assignment")}
             </button>
-            <p className="text-xs text-gray-500 mt-3">
+            <p className="text-xs text-[var(--text-secondary)] mt-3">
               {t("การลบชิ้นงานจะลบข้อมูลการส่งและผลการตรวจทั้งหมด ไม่สามารถกู้คืนได้", "Deleting this assignment removes all submission and grading data permanently.")}
             </p>
           </section>
@@ -507,25 +529,25 @@ export default function EditAssignmentPage() {
           {/* Actions — flex-wrap + basis-full (23/9/2569): a plain inline sibling next to the two
               buttons gets flex-shrunk down to almost nothing on a narrower viewport (see New
               Assignment's identical fix, same underlying pattern; same classes as New's own Actions row). */}
-          <div className="flex flex-wrap items-center justify-end gap-3 mt-8 pt-6 pb-4 border-t border-gray-100">
+          <div className="flex flex-wrap items-center justify-end gap-3 mt-8 pt-6 pb-4 border-t border-[var(--border-subtle)]">
             {!needsManualScore && pointsOk && !levelsOk && (
-              <span className="text-xs text-amber-600 basis-full text-left">{t("ทุกเกณฑ์ต้องมีจำนวนระดับเท่ากัน ก่อนบันทึก", "Every criterion needs the same number of levels before you can save")}</span>
+              <span className="text-xs text-[var(--s-warn-text)] basis-full text-left">{t("ทุกเกณฑ์ต้องมีจำนวนระดับเท่ากัน ก่อนบันทึก", "Every criterion needs the same number of levels before you can save")}</span>
             )}
             {!needsManualScore && !pointsOk && (
-              <span className="text-xs text-amber-600 basis-full text-left">{t("ทุกเกณฑ์ต้องมีคะแนนมากกว่า 0 ก่อนบันทึก", "Every criterion needs more than 0 points before you can save")}</span>
+              <span className="text-xs text-[var(--s-warn-text)] basis-full text-left">{t("ทุกเกณฑ์ต้องมีคะแนนมากกว่า 0 ก่อนบันทึก", "Every criterion needs more than 0 points before you can save")}</span>
             )}
             <button type="button" onClick={() => navAway(`/teacher/courses/${id}/assignments/${assignmentId}`)}
-              className="px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
+              className="px-5 py-2.5 rounded-xl border border-[var(--border)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] transition-colors">
               {t("ยกเลิก", "Cancel")}
             </button>
             <button
               type="submit" disabled={!isValid}
               className={["flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-colors",
-                saved ? "bg-emerald-500 text-white" : "bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] disabled:opacity-50 disabled:cursor-not-allowed"
+                saved ? "bg-[var(--s-ok-text)] text-white" : "bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] disabled:opacity-50 disabled:cursor-not-allowed"
               ].join(" ")}
             >
               {saved ? (
-                <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>{t("บันทึกแล้ว", "Saved")}</>
+                <><Icon name="check" size="sm" />{t("บันทึกแล้ว", "Saved")}</>
               ) : t("บันทึกการเปลี่ยนแปลง", "Save Changes")}
             </button>
           </div>
@@ -543,9 +565,17 @@ export default function EditAssignmentPage() {
                 {t("กลับไปแก้ต่อ", "Keep editing")}
               </button>
               <button type="button" data-testid="confirm-restart" onClick={() => commitSave(true)}
-                className="h-10 px-4 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors">
+                className={canRegradeNow
+                  ? "h-10 px-4 rounded-xl border border-[var(--border)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
+                  : "h-10 px-4 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"}>
                 {t("บันทึกและเริ่มตรวจใหม่", "Save and restart grading")}
               </button>
+              {canRegradeNow && (
+                <button type="button" data-testid="confirm-regrade" onClick={() => commitSave(true, true)}
+                  className="h-10 px-4 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors">
+                  {t("บันทึกและให้ AI ตรวจใหม่ทันที", "Save and regrade with AI now")}
+                </button>
+              )}
             </>
           }
         >
@@ -554,6 +584,9 @@ export default function EditAssignmentPage() {
             <li>{t(`ล้างคะแนนและคะแนนรายเกณฑ์ของงาน ${scoredSubs.length} ชิ้น (ทั้งที่ AI และอาจารย์ให้ไว้)`, `clear the scores and per-criterion scores of ${scoredSubs.length} ${scoredSubs.length === 1 ? "submission" : "submissions"} (both the AI's and yours)`)}</li>
             <li>{t("ส่งงานเหล่านั้นกลับไปเป็น “ยังไม่ตรวจ” เพื่อตรวจใหม่ตามเกณฑ์ใหม่", "send them back to “Not graded” to be graded again under the new criteria")}</li>
           </ul>
+          {canRegradeNow && (
+            <p className="mt-3 text-sm text-[var(--text-secondary)] leading-relaxed">{t("เลือก “ให้ AI ตรวจใหม่ทันที” เพื่อให้ AI ตรวจงานเหล่านี้ด้วยเกณฑ์ใหม่เลย หรือเริ่มตรวจใหม่เองทีหลังจากหน้าตรวจงาน", "Choose “regrade with AI now” to have the AI grade this work under the new criteria straight away, or start it yourself later from the Grading page.")}</p>
+          )}
           <p className="mt-3 text-sm font-medium text-[var(--s-err-text)]">{t("ย้อนกลับไม่ได้ — คะแนนที่ล้างไปจะไม่กลับมา", "This can't be undone — cleared scores don't come back.")}</p>
         </Modal>
       </main>
@@ -564,24 +597,16 @@ function SectionHeader({ icon, label }: { icon: "info" | "doc" | "cal" | "upload
   return (
     <div className="flex items-center gap-2 mb-5">
       {icon === "info" && (
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent-bright)" strokeWidth="2" strokeLinecap="round">
-          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-        </svg>
+        <Icon name="alert-circle" size="sm" className="text-[var(--accent-bright)]" />
       )}
       {icon === "doc" && (
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent-bright)" strokeWidth="2" strokeLinecap="round">
-          <rect x="5" y="2" width="14" height="20" rx="2"/><line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="11" x2="15" y2="11"/><line x1="9" y1="15" x2="13" y2="15"/>
-        </svg>
+        <Icon name="document-list" size="sm" className="text-[var(--accent-bright)]" />
       )}
       {icon === "cal" && (
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent-bright)" strokeWidth="2" strokeLinecap="round">
-          <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-        </svg>
+        <Icon name="calendar" size="sm" className="text-[var(--accent-bright)]" />
       )}
       {icon === "upload" && (
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent-bright)" strokeWidth="2" strokeLinecap="round">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
-        </svg>
+        <Icon name="upload" size="sm" className="text-[var(--accent-bright)]" />
       )}
       <h2 className="text-sm font-semibold text-[var(--text-primary)]">{label}</h2>
     </div>

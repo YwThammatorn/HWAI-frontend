@@ -25,6 +25,8 @@ export interface Assignment {
   attachments?: AssignmentAttachment[];
   /** YYYY-MM-DD. Absent for an Exam (isExam): it has no deadline and students never submit it. */
   dueDate?: string;
+  /** Late work (21/10/2569): until when it is accepted and what it costs. Absent = work closes at the deadline. See LatePolicy. */
+  latePolicy?: LatePolicy;
   maxPoints: number;
   categoryId?: string; // FK -> GradingCategory, which % of the course grade this assignment counts toward
   acceptsFiles: boolean;
@@ -45,6 +47,10 @@ export interface Assignment {
    *  Absent = "ai". An exam or an assignment without files can only be graded by hand whatever this says — use
    *  isManualGrading(), never this field alone. */
   gradingMode?: "ai" | "manual";
+  /** ISO time the rubric's scoring was changed after grading had started (22/10/2569): the earlier scores were cleared, and the
+   *  work waits to be graded again under the new rubric. Only labels the AI button "Regrade with new rubric"; cleared as soon
+   *  as the AI has graded the work again. Absent = the rubric has not been restarted. */
+  rubricRestartedAt?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -55,21 +61,43 @@ export function isManualGrading(a: Pick<Assignment, "isExam" | "acceptsFiles" | 
   return !!a.isExam || a.acceptsFiles === false || a.gradingMode === "manual";
 }
 
-// ── when students may submit and when the teacher may start grading (15/10/2569) ───────────────────────────────────────────────
-// `dueDate` is a date only; the deadline is the end of that day. Students get LATE_WINDOW_MS more to submit or resubmit, and grading may
-// start only after that: nothing is graded while the work can still change. One value for the whole system, no teacher override.
-// An exam (scores are typed or imported) and an assignment without a due date are never locked. `now` is epoch ms (see lib/clock.ts).
-export const LATE_WINDOW_MS = 60 * 60 * 1000;
+// ── when students may submit, what late work costs, and when the teacher may start grading ─────────────────────────────────────
+// `dueDate` is a date only; the deadline is the end of that day. Late work is the teacher's choice per assignment (21/10/2569, replacing the
+// fixed "one late hour" of 15/10): an optional `latePolicy` sets the last day work is still accepted (`closeDate`) and what each late day costs.
+// Without a policy the work closes at the deadline. Grading may start only once submissions have closed: nothing is graded while the work can
+// still change. An exam (scores are typed or imported) and an assignment without a due date are never locked. `now` is epoch ms (lib/clock.ts).
 
-type Dated = Pick<Assignment, "dueDate" | "isExam">;
+/** What a late hand-in costs. `none` = accepted with no deduction; the amounts are a share of the assignment's full score (`percent`) or fixed `points`. */
+export interface LatePolicy {
+  /** YYYY-MM-DD, after the due date: the last day work is still accepted (the end of that day). */
+  closeDate: string;
+  mode: "none" | "perDay" | "tiers" | "flat";
+  unit: "percent" | "points";
+  /** perDay: taken for every late day. flat: taken once, however late. */
+  amount?: number;
+  /** perDay: the most that can be taken in total, in the same unit. Absent = no limit (the score still never goes below 0). */
+  cap?: number;
+  /** tiers: sorted by `untilDay`; a hand-in `n` days late pays the first tier with n <= untilDay (the last tier also covers anything later). */
+  tiers?: { untilDay: number; amount: number }[];
+}
+
+type Dated = Pick<Assignment, "dueDate" | "isExam"> & { latePolicy?: LatePolicy };
+const endOfDay = (ymd: string) => new Date(ymd + "T23:59:59");
 /** The deadline: 23:59:59 of the due date. Null without one. */
-export const dueAt = (a: Pick<Assignment, "dueDate">): Date | null => (a.dueDate ? new Date(a.dueDate + "T23:59:59") : null);
-/** The last moment a student can still submit: the deadline plus the late window. Null without a due date or for an exam. */
+export const dueAt = (a: Pick<Assignment, "dueDate">): Date | null => (a.dueDate ? endOfDay(a.dueDate) : null);
+/** The policy when it is usable (a close date after the due date), otherwise undefined: no late work. */
+export const activeLatePolicy = (a: Dated): LatePolicy | undefined => {
+  const p = a.latePolicy;
+  return p && !a.isExam && a.dueDate && p.closeDate > a.dueDate ? p : undefined;
+};
+/** The last moment a student can still submit: the end of the close date, or the deadline when late work is not accepted. Null without a due date or for an exam. */
 export const submissionClosesAt = (a: Dated): Date | null => {
   const d = a.isExam ? null : dueAt(a);
-  return d ? new Date(d.getTime() + LATE_WINDOW_MS) : null;
+  if (!d) return null;
+  const p = activeLatePolicy(a);
+  return p ? endOfDay(p.closeDate) : d;
 };
-/** Past the deadline but still inside the late window. */
+/** Past the deadline but still inside the accepted-late period. */
 export const isLate = (a: Dated, now: number): boolean => {
   const d = a.isExam ? null : dueAt(a), c = submissionClosesAt(a);
   return !!d && !!c && now > d.getTime() && now <= c.getTime();
@@ -82,11 +110,79 @@ export const gradingOpen = (a: Dated, now: number): boolean => {
   const c = submissionClosesAt(a);
   return !c || now > c.getTime();
 };
-/** When grading becomes possible (the first second after the window closes), for "opens at …". Null = always open. */
+/** When grading becomes possible (the first second after submissions close), for "opens at …". Null = always open. */
 export const gradingOpensAt = (a: Dated): Date | null => {
   const c = submissionClosesAt(a);
   return c ? new Date(c.getTime() + 1000) : null;
 };
+
+const ymdLocal = (ms: number) => { const d = new Date(ms); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
+const DAY_MS = 86_400_000;
+/** Whole calendar days a hand-in at `submittedAt` is past the due date: 0 = on time, 1 = the day after, … */
+export const daysLate = (a: Pick<Assignment, "dueDate">, submittedAt: string | number): number => {
+  if (!a.dueDate) return 0;
+  const at = typeof submittedAt === "number" ? submittedAt : new Date(submittedAt).getTime();
+  if (Number.isNaN(at) || at <= endOfDay(a.dueDate).getTime()) return 0;
+  const due = new Date(a.dueDate + "T00:00:00").getTime(), day = new Date(ymdLocal(at) + "T00:00:00").getTime();
+  return Math.max(1, Math.round((day - due) / DAY_MS));
+};
+/** The deduction, in points, for work handed in `late` days after the deadline under `policy`; whole points, never more than `maxPoints`. */
+export function latePenaltyFor(policy: LatePolicy | undefined, late: number, maxPoints: number): number {
+  if (!policy || late <= 0 || policy.mode === "none") return 0;
+  let amount = 0;
+  if (policy.mode === "flat") amount = policy.amount ?? 0;
+  else if (policy.mode === "perDay") { amount = (policy.amount ?? 0) * late; if (policy.cap !== undefined) amount = Math.min(amount, policy.cap); }
+  else {
+    const tiers = [...(policy.tiers ?? [])].sort((x, y) => x.untilDay - y.untilDay);
+    const tier = tiers.find((t) => late <= t.untilDay) ?? tiers[tiers.length - 1];
+    amount = tier?.amount ?? 0;
+  }
+  const points = policy.unit === "percent" ? (amount / 100) * maxPoints : amount;
+  return Math.min(maxPoints, Math.max(0, Math.round(points)));
+}
+/** Points taken off a submission for being late (0 when on time, or no policy). Uses the latest hand-in's time. */
+export const latePenaltyOf = (a: Dated & Pick<Assignment, "maxPoints">, s: { submittedAt: string }): number =>
+  latePenaltyFor(activeLatePolicy(a), daysLate(a as Pick<Assignment, "dueDate">, s.submittedAt), a.maxPoints);
+/** The score that counts: the teacher's (or else the AI's) score minus the late deduction, never below 0. Null when nothing is scored. */
+export function finalScoreOf(a: Dated & Pick<Assignment, "maxPoints">, s: { submittedAt: string; instructorScore: number | null; aiScore: number | null }): number | null {
+  const raw = s.instructorScore ?? s.aiScore;
+  return raw === null || raw === undefined ? null : Math.max(0, raw - latePenaltyOf(a, s));
+}
+/** The days between the due date and the close date, i.e. how many late days the policy covers. */
+export const lateDaysCovered = (dueDate: string, closeDate: string): number =>
+  Math.max(0, Math.round((new Date(closeDate + "T00:00:00").getTime() - new Date(dueDate + "T00:00:00").getTime()) / DAY_MS));
+/** The day after `ymd` (YYYY-MM-DD) — the earliest close date. */
+export const dayAfter = (ymd: string): string => { const d = new Date(ymd + "T00:00:00"); d.setDate(d.getDate() + 1); return ymdLocal(d.getTime()); };
+/** Why a late policy cannot be saved, or null when it can. Keys are stable so forms can show their own wording. */
+export function latePolicyProblem(p: LatePolicy, dueDate: string): "close" | "amount" | "tiers" | null {
+  if (!dueDate || !p.closeDate || p.closeDate <= dueDate) return "close";
+  const okAmt = (n: number | undefined) => typeof n === "number" && Number.isFinite(n) && n >= 0 && (p.unit === "points" || n <= 100);
+  if (p.mode === "flat" && !okAmt(p.amount)) return "amount";
+  if (p.mode === "perDay" && (!okAmt(p.amount) || (p.cap !== undefined && !okAmt(p.cap)))) return "amount";
+  if (p.mode === "tiers") {
+    const ts = p.tiers ?? [];
+    if (ts.length === 0 || ts.some((x) => !Number.isInteger(x.untilDay) || x.untilDay < 1 || !okAmt(x.amount))) return "tiers";
+    if (new Set(ts.map((x) => x.untilDay)).size !== ts.length) return "tiers";
+  }
+  return null;
+}
+/** Only the fields the chosen mode uses, tiers sorted — what gets stored. */
+export function cleanLatePolicy(p: LatePolicy): LatePolicy {
+  const base = { closeDate: p.closeDate, mode: p.mode, unit: p.unit };
+  if (p.mode === "none") return base;
+  if (p.mode === "flat") return { ...base, amount: p.amount ?? 0 };
+  if (p.mode === "perDay") return { ...base, amount: p.amount ?? 0, ...(p.cap !== undefined ? { cap: p.cap } : {}) };
+  return { ...base, tiers: [...(p.tiers ?? [])].sort((x, y) => x.untilDay - y.untilDay) };
+}
+/** One line saying what late work costs, e.g. "10% of the score per late day, up to 30%" — for forms and the student's page. */
+export function describeLatePolicy(p: LatePolicy, t: (th: string, en: string) => string): string {
+  const u = (n: number) => (p.unit === "percent" ? `${n}%` : t(`${n} คะแนน`, `${n} pt${n === 1 ? "" : "s"}`));
+  if (p.mode === "none") return t("ส่งช้าได้ ไม่หักคะแนน", "Late work accepted with no deduction");
+  if (p.mode === "flat") return t(`ส่งช้าหัก ${u(p.amount ?? 0)} (ครั้งเดียว)`, `Late work loses ${u(p.amount ?? 0)} (once)`);
+  if (p.mode === "perDay") return t(`ส่งช้าหัก ${u(p.amount ?? 0)} ต่อวัน${p.cap !== undefined ? ` สูงสุด ${u(p.cap)}` : ""}`, `Late work loses ${u(p.amount ?? 0)} per day${p.cap !== undefined ? `, up to ${u(p.cap)}` : ""}`);
+  const ts = [...(p.tiers ?? [])].sort((x, y) => x.untilDay - y.untilDay);
+  return ts.map((x) => t(`ช้า ≤${x.untilDay} วัน −${u(x.amount)}`, `≤${x.untilDay} d late −${u(x.amount)}`)).join(" · ");
+}
 /** What a resubmission clears: the earlier file's result must not stay on the new file. */
 export const CLEARED_RESULT = {
   aiScore: null, instructorScore: null, instructorComment: "", criterionScores: undefined, aiCriterionScores: undefined, aiOffsetsUsed: undefined, criterionComments: undefined,

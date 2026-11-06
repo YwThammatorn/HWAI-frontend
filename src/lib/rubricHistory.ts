@@ -3,7 +3,7 @@
 
 import type { Course } from "./courses";
 import type { Assignment, Rubric, RubricCriterion, Submission } from "./assignments";
-import { achievedLevelIndex } from "./assignments";
+import { achievedLevelIndex, finalScoreOf } from "./assignments";
 import type { RubricLibraryEntry } from "./rubricLibrary";
 import { buildCriteria, pickAiTemplate, PROGRAMMING_AI, EXAM_AI, UXUI_FINAL, type CriterionSpec, type RubricLang, type BuiltCriterion } from "./rubricTemplates";
 import { splitCriterionName } from "./rubricName";
@@ -44,7 +44,7 @@ export interface RubricCandidate {
 
 /** How well the graded work of one assignment scored, as a % of its maximum. */
 export function assignmentAvgPct(a: Assignment, subs: Submission[]): { avgPct: number | null; gradedCount: number } {
-  const scores = subs.filter((s) => s.assignmentId === a.id && s.status === "graded").map((s) => s.instructorScore ?? s.aiScore ?? 0);
+  const scores = subs.filter((s) => s.assignmentId === a.id && s.status === "graded").map((s) => finalScoreOf(a, s) ?? 0);
   if (scores.length === 0 || a.maxPoints <= 0) return { avgPct: null, gradedCount: scores.length };
   return { avgPct: (scores.reduce((x, y) => x + y, 0) / scores.length / a.maxPoints) * 100, gradedCount: scores.length };
 }

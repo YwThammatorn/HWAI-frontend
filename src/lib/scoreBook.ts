@@ -1,4 +1,4 @@
-import type { Assignment, Submission } from "./assignments";
+import { finalScoreOf, activeLatePolicy, type Assignment, type Submission } from "./assignments";
 import { computeCategoryGradeRows, computeTotalSoFar, type GradingCategory } from "./gradingCategories";
 
 // Score Book: one matrix of students × assignments for a course, grouped by grading category.
@@ -115,9 +115,9 @@ export function buildScoreBook(input: {
     for (const a of assignments) {
       const sub = subOf.get(`${a.id}::${student.studentId}`);
       if (!sub) {
-        if (a.dueDate && a.dueDate < today) { cells[a.id] = { kind: "missing" }; missingCells++; } else cells[a.id] = { kind: "none" };
+        if (a.dueDate && (activeLatePolicy(a)?.closeDate ?? a.dueDate) < today) { cells[a.id] = { kind: "missing" }; missingCells++; } else cells[a.id] = { kind: "none" };
       } else if (sub.status === "graded") {
-        const score = sub.instructorScore ?? sub.aiScore ?? 0;
+        const score = finalScoreOf(a, sub) ?? 0;
         const pct = a.maxPoints > 0 ? (score / a.maxPoints) * 100 : 0;
         cells[a.id] = { kind: "graded", score, max: a.maxPoints, pct, submissionId: sub.id };
         gradedCells++;

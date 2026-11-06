@@ -93,6 +93,27 @@
      the navbar/sidebar are teal in light AND dark mode — the navy/teal toggle was removed, see "Chrome"
      note below the dark block. */
   --navbar-bg:     #084541;
+  /* The original bright brand teal, kept only for the logo tile, avatar fills and accent words on the dark brand panel (23/10 token; was a hex in 28 places). Same in both themes. Never as text on a light surface. */
+  --brand-bright:  #2DD4BF;
+  /* Colours that are the same in both themes — brand artwork, the dark top-bar menu, avatar hues (23/10: all were hex literals in components) */
+  --brand-ink:         #1B2A4A;   /* the logo navy: text on a --brand-bright fill */
+  --cover-ink-light:   #FFFFFF;   /* text on a dark course cover */
+  --cover-ink-dark:    #0F1E2E;   /* text on a light course cover */
+  --chrome-menu-bg:    #0D1628;   /* role-switcher dropdown, opens from the dark top bar */
+  --on-chrome-info:    #93C5FD;   /* role names on that dropdown */
+  --on-chrome-ta:      #C4B5FD;
+  --on-chrome-ok:      #6EE7B7;
+  --on-chrome-muted:   #94A3B8;
+  --on-chrome-faint:   #64748B;
+  /* Categorical hues for person avatars (white text on each is >= 4.5:1) */
+  --cat-1: #4F46E5; --cat-2: #7C3AED; --cat-3: #BE185D; --cat-4: #B45309; --cat-5: #047857; --cat-6: #0369A1; --cat-7: #C2410C; --cat-8: #0E7490;
+  /* Warning, solid (a confirm button for a risky-but-reversible action such as Suspend) — white text on it is 5.0:1 */
+  --warn-solid:        #B45309;
+  --warn-solid-hover:  #92400E;
+  /* Filled rating star — decorative, never text */
+  --rating-fill:       #F59E0B;
+  /* Rubric level scale, best → worst (a level's colour comes from its place in the scale). All pass 4.5:1 as text on their surface */
+  --level-1: #1A6645; --level-2: #4D7C0F; --level-3: #9A6700; --level-4: #C2410C; --level-5: #8C2535;
 
   /* Shared portal-sidebar theme (9/9/2569) — NOT --bg-nav. --bg-nav turned out
      to be reused as a general-purpose "navy" accent across ~15 other places
@@ -183,6 +204,10 @@
   /* Chrome stays teal in dark mode but a much deeper one (14/10/2569: the light-mode #0F766E sidebar glared
      against the dark page). White/90 on #0A4640 is ≈ 10:1, so --sidebar-text-muted (set in :root) still passes. */
   --navbar-bg:     #052E2B;
+  --warn-solid:        #B45309;
+  --warn-solid-hover:  #C2610F;
+  --rating-fill:       #FBBF24;
+  --level-1: #5CC490; --level-2: #A3C94A; --level-3: #D4A04A; --level-4: #FDBA74; --level-5: #E07080;
   --sidebar-bg:        #0A4640;
   --nav-active-text:   #FFFFFF;
   --text-primary:  #D4E4F0;
@@ -248,128 +273,14 @@ body {
   font-family: "Lexend", "Prompt", ui-sans-serif, system-ui, sans-serif;
 }
 
-/* ── Tailwind class overrides (all modes) ──────────────────────────────────── */
-/* Rules outside @layer beat Tailwind's @layer utilities — no !important needed */
-/* Remap gray-400/500 to semantic tokens so all instances pass WCAG AA in light mode */
-.text-gray-400 { color: var(--text-muted); }
-.text-gray-500 { color: var(--text-secondary); }
-.placeholder\:text-gray-400::placeholder { color: var(--text-muted); }
-
-/* ── Dark mode Tailwind class overrides ────────────────────────────────────── */
-
-/* Backgrounds */
-[data-theme="dark"] .bg-white              { background-color: var(--bg-card); }
-[data-theme="dark"] .bg-gray-50            { background-color: var(--surface); }
-[data-theme="dark"] .bg-gray-100           { background-color: var(--surface); }
-[data-theme="dark"] .bg-gray-200           { background-color: var(--border); }
-[data-theme="dark"] .bg-gray-300           { background-color: var(--border); }
-[data-theme="dark"] .hover\:bg-gray-50:hover  { background-color: var(--surface); }
-[data-theme="dark"] .hover\:bg-gray-100:hover { background-color: var(--surface); }
-[data-theme="dark"] .hover\:bg-white:hover    { background-color: var(--surface); }
-[data-theme="dark"] .hover\:bg-red-50:hover   { background-color: rgba(69,10,10,0.5); }
-
-/* Borders */
-[data-theme="dark"] .border-gray-50            { border-color: var(--border); }
-[data-theme="dark"] .border-gray-100           { border-color: var(--border); }
-[data-theme="dark"] .border-gray-200           { border-color: var(--border); }
-[data-theme="dark"] .border-gray-300           { border-color: var(--border); }
-[data-theme="dark"] .hover\:border-gray-300:hover { border-color: var(--border); }
-[data-theme="dark"] .divide-gray-100 > * + *   { border-color: var(--border); }
-[data-theme="dark"] .divide-gray-200 > * + *   { border-color: var(--border); }
-
-/* Text */
-[data-theme="dark"] .text-gray-400 { color: var(--text-muted); }
-[data-theme="dark"] .text-gray-500 { color: var(--text-secondary); }
-[data-theme="dark"] .text-gray-600 { color: var(--text-secondary); }
-[data-theme="dark"] .text-gray-700 { color: var(--text-primary); }
-[data-theme="dark"] .text-gray-800 { color: var(--text-primary); }
-[data-theme="dark"] .text-gray-900 { color: var(--text-primary); }
-[data-theme="dark"] .placeholder\:text-gray-400::placeholder { color: var(--text-muted); }
-
-/* Status badge backgrounds */
-[data-theme="dark"] .bg-green-100  { background-color: #052e16; }
-[data-theme="dark"] .bg-red-100    { background-color: #450a0a; }
-[data-theme="dark"] .bg-orange-100 { background-color: #431407; }
-[data-theme="dark"] .bg-yellow-100 { background-color: #451a03; }
-[data-theme="dark"] .bg-yellow-200 { background-color: #451a03; }
-[data-theme="dark"] .bg-blue-100   { background-color: #0c1a6b; }
-[data-theme="dark"] .bg-purple-100 { background-color: #2d1b69; }
-
-/* Status badge text */
-[data-theme="dark"] .text-green-700  { color: #34d399; }
-[data-theme="dark"] .text-green-600  { color: #34d399; }
-[data-theme="dark"] .text-red-600    { color: #f87171; }
-[data-theme="dark"] .text-red-700    { color: #f87171; }
-[data-theme="dark"] .text-red-400    { color: #f87171; }
-[data-theme="dark"] .text-orange-700 { color: #fb923c; }
-[data-theme="dark"] .text-yellow-700 { color: #fbbf24; }
-[data-theme="dark"] .text-amber-700  { color: #fbbf24; }
-[data-theme="dark"] .text-amber-800  { color: #fbbf24; }
-[data-theme="dark"] .text-amber-600  { color: #fbbf24; }
-[data-theme="dark"] .text-blue-700   { color: #60a5fa; }
-[data-theme="dark"] .text-indigo-700 { color: #818cf8; }
-[data-theme="dark"] .text-indigo-600 { color: #818cf8; }
-[data-theme="dark"] .text-purple-600 { color: #a78bfa; }
-[data-theme="dark"] .text-purple-700 { color: #a78bfa; }
+/* The Tailwind palette overrides that used to live here (gray / amber / green … remapped per theme) are gone: no component uses a raw palette class any more,
+   colours come from the tokens above, which flip with the theme by themselves. tests/design-rules.spec.ts keeps it that way. */
 
 /* Shadows — soften on dark */
 [data-theme="dark"] .shadow-sm { box-shadow: 0 1px 2px 0 rgba(0,0,0,0.4); }
 [data-theme="dark"] .shadow    { box-shadow: 0 1px 3px 0 rgba(0,0,0,0.5); }
 [data-theme="dark"] .shadow-md { box-shadow: 0 4px 6px -1px rgba(0,0,0,0.5); }
 [data-theme="dark"] .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.6); }
-
-/* Additional light bg overrides */
-[data-theme="dark"] .bg-red-50      { background-color: rgba(69,10,10,0.4); }
-[data-theme="dark"] .bg-green-50    { background-color: #052e16; }
-[data-theme="dark"] .bg-blue-50     { background-color: rgba(12,26,107,0.5); }
-[data-theme="dark"] .bg-purple-50   { background-color: #2d1b69; }
-[data-theme="dark"] .bg-violet-50   { background-color: #2d1b69; }
-[data-theme="dark"] .bg-emerald-50  { background-color: #052e16; }
-[data-theme="dark"] .bg-emerald-100 { background-color: #052e16; }
-[data-theme="dark"] .bg-amber-50    { background-color: rgba(69,26,3,0.5); }
-[data-theme="dark"] .bg-amber-100   { background-color: #451a03; }
-[data-theme="dark"] .bg-teal-50     { background-color: var(--accent-subtle); }
-[data-theme="dark"] .bg-teal-100    { background-color: var(--accent-subtle); }
-
-/* Opacity variants — /XX suffix creates a different class name from the base */
-[data-theme="dark"] .hover\:bg-gray-50\/50:hover  { background-color: var(--surface); }
-[data-theme="dark"] .hover\:bg-gray-50\/70:hover  { background-color: var(--surface); }
-[data-theme="dark"] .bg-red-50\/60   { background-color: rgba(69,10,10,0.4); }
-[data-theme="dark"] .bg-teal-50\/40  { background-color: var(--accent-subtle); }
-[data-theme="dark"] .bg-teal-50\/50  { background-color: var(--accent-subtle); }
-[data-theme="dark"] .bg-amber-50\/30 { background-color: rgba(69,26,3,0.3); }
-
-/* Hover backgrounds */
-[data-theme="dark"] .hover\:bg-red-100:hover  { background-color: rgba(69,10,10,0.6); }
-[data-theme="dark"] .hover\:bg-teal-50:hover  { background-color: var(--accent-subtle); }
-[data-theme="dark"] .hover\:bg-teal-100:hover { background-color: var(--accent-subtle); }
-
-/* Additional text overrides */
-[data-theme="dark"] .text-red-500     { color: #f87171; }
-[data-theme="dark"] .text-blue-600    { color: #60a5fa; }
-[data-theme="dark"] .text-violet-600  { color: #a78bfa; }
-[data-theme="dark"] .text-emerald-600 { color: #34d399; }
-[data-theme="dark"] .text-emerald-700 { color: #34d399; }
-[data-theme="dark"] .text-amber-600   { color: #fbbf24; }
-[data-theme="dark"] .text-amber-700   { color: #fbbf24; }
-[data-theme="dark"] .text-teal-600    { color: var(--accent); }
-[data-theme="dark"] .text-teal-700    { color: var(--accent); }
-
-/* Border overrides for additional color classes */
-[data-theme="dark"] .border-red-100     { border-color: var(--border); }
-[data-theme="dark"] .border-green-200   { border-color: var(--border); }
-[data-theme="dark"] .border-emerald-100 { border-color: var(--border); }
-[data-theme="dark"] .border-emerald-200 { border-color: var(--border); }
-[data-theme="dark"] .border-amber-100   { border-color: var(--border); }
-[data-theme="dark"] .border-amber-200   { border-color: var(--border); }
-[data-theme="dark"] .border-teal-100    { border-color: var(--border); }
-[data-theme="dark"] .border-teal-200    { border-color: var(--border); }
-[data-theme="dark"] .border-blue-100    { border-color: var(--border); }
-[data-theme="dark"] .border-purple-200  { border-color: var(--border); }
-
-/* Teal logo-mark background: dark navy text works in both light and dark modes */
-/* bg-[#2DD4BF] with text-white fails dark mode */
-.bg-\[\#2DD4BF\] { color: #1B2A4A; }
 
 /* Input dark mode */
 [data-theme="dark"] input,

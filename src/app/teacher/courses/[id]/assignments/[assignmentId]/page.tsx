@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useCourses } from "@/lib/courses";
-import { useAssignments, submissionClosesAt, gradingOpensAt } from "@/lib/assignments";
+import { useAssignments, submissionClosesAt, gradingOpensAt, activeLatePolicy, describeLatePolicy } from "@/lib/assignments";
 import { useGradingCategories } from "@/lib/gradingCategories";
 import { useLanguage } from "@/context/LanguageContext";
 import { dateLocale } from "@/lib/dateLocale";
@@ -12,7 +12,9 @@ import { AttachmentList } from "@/components/AssignmentAttachments";
 import CloChips from "@/components/CloChips";
 import CriterionName from "@/components/CriterionName";
 import { useCLOs } from "@/lib/clo";
-
+
+import Icon from "@/components/Icon";
+import IconButton from "@/components/IconButton";
 function fmtDate(dateStr: string, lang: string) {
   return new Date(dateStr + "T00:00:00").toLocaleDateString(dateLocale(lang), {
     month: "short", day: "numeric", year: "numeric",
@@ -89,7 +91,7 @@ export default function ViewAssignmentPage() {
       ) : (assignment.fileTypes ?? []).length > 0 ? (
         <span className="inline-flex gap-1.5 flex-wrap">
           {assignment.fileTypes.map((ft) => (
-            <span key={ft} className="px-2 py-0.5 rounded-full bg-[var(--bg-subtle)] text-[var(--text-secondary)] text-xs font-mono">{fileTypeLabel(ft)}</span>
+            <span key={ft} className="px-2 py-0.5 rounded-full bg-[var(--bg-app)] text-[var(--text-secondary)] text-xs font-mono">{fileTypeLabel(ft)}</span>
           ))}
         </span>
       ) : (
@@ -97,13 +99,21 @@ export default function ViewAssignmentPage() {
       ),
     },
   ];
-  // The window the due date opens (15/10/2569): students can submit until the late hour is over, and only then can grading start.
+  // When submissions close and what late work costs (21/10/2569, the teacher's own settings): grading can start only once they have closed.
   const closes = submissionClosesAt(assignment), opens = gradingOpensAt(assignment);
   if (closes && opens) {
     const when = (d: Date) => d.toLocaleString(dateLocale(lang), { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+    const policy = activeLatePolicy(assignment);
     detailRows.splice(1, 0, {
-      label: t("ส่งช้า · เริ่มตรวจ", "Late · grading"),
-      value: <span data-testid="grading-window-row">{t(`ส่งช้าได้ถึง ${when(closes)} น. · เริ่มตรวจได้ตั้งแต่ ${when(opens)} น.`, `Late work accepted until ${when(closes)} · grading opens ${when(opens)}`)}</span>,
+      label: t("ปิดรับงาน · เริ่มตรวจ", "Closes · grading"),
+      value: (
+        <span data-testid="grading-window-row">
+          {policy
+            ? t(`รับงานส่งช้าได้ถึง ${when(closes)} น. · เริ่มตรวจได้ตั้งแต่ ${when(opens)} น.`, `Late work accepted until ${when(closes)} · grading opens ${when(opens)}`)
+            : t(`ปิดรับงาน ${when(closes)} น. (ไม่รับงานส่งช้า) · เริ่มตรวจได้ตั้งแต่ ${when(opens)} น.`, `Closes ${when(closes)} (no late work) · grading opens ${when(opens)}`)}
+          {policy && <span data-testid="late-policy-row" className="block text-xs text-[var(--text-secondary)] mt-0.5">{describeLatePolicy(policy, t)}</span>}
+        </span>
+      ),
     });
   }
 
@@ -112,11 +122,7 @@ export default function ViewAssignmentPage() {
 
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)] mb-6">
-        <Link href="/teacher/courses" className="hover:text-[var(--accent)]" aria-label={t("รายวิชาทั้งหมด", "All courses")}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
-          </svg>
-        </Link>
+        <IconButton icon="home" label={t("รายวิชาทั้งหมด", "All courses")} href="/teacher/courses" />
         <span>/</span>
         <Link href={`/teacher/courses/${id}/assignments`} className="hover:text-[var(--accent)] transition-colors">{course.name}</Link>
         <span>/</span>
@@ -146,19 +152,14 @@ export default function ViewAssignmentPage() {
             href={editHref}
             className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)] active:scale-[.97] transition-colors"
           >
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-            </svg>
+            <Icon name="edit" />
             {t("แก้ไขงาน", "Edit Assignment")}
           </Link>
           <Link
             href={`/teacher/courses/${id}/assignments/${assignmentId}/grading`}
             className="flex items-center gap-2 px-4 py-2 bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-semibold rounded-xl active:scale-[.97] transition-colors"
           >
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-              <polygon points="5 3 19 12 5 21 5 3"/>
-            </svg>
+            <Icon name="play" />
             {t("ไปตรวจงาน", "Go to grading")}
             {needReview > 0 && (
               <span

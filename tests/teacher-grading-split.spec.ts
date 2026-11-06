@@ -199,6 +199,7 @@ test.describe("Course Grading page", () => {
     await expect(li("Waiting Project")).toContainText("Awaiting submissions");
     await expect(li("Waiting Project").getByRole("link", { name: "Start Grading" })).toHaveCount(0);
     await li("Review Me").getByRole("button", { name: "Grade with AI" }).click();
+    await page.getByTestId("ai-preview-confirm").click();
     await expect(page).toHaveURL(/\/teacher\/courses\/c-gs\/assignments\/a-review\/grading$/);
   });
 
@@ -353,6 +354,14 @@ test.describe("Per-assignment grading page took over the stats and the submissio
     await expect(statCard(page, "Submitted")).toContainText("/ 4 · 1 pending");
     await expect(statCard(page, "Needs Review")).toContainText("1");
     await expect(statCard(page, "Avg. Score")).toBeVisible();
+  });
+
+  test("the Avg. Score card is just the average with the highest and lowest score (21/10/2569)", async ({ page }) => {
+    await open(page, "/assignments/a-review/grading");
+    const card = statCard(page, "Avg. Score");
+    await expect(card).toContainText(/of \d+ · Max \d+(\.\d+)? · Min \d+(\.\d+)?/);
+    await expect(card).not.toContainText("pts");
+    await expect(card).not.toContainText("submitted");
   });
 
   test("lists every submission with a Grade link to the recheck page, including not-yet-graded rows", async ({ page }) => {

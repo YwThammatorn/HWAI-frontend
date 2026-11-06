@@ -12,6 +12,9 @@ import { useLanguage } from "@/context/LanguageContext";
 import SearchInput from "@/components/SearchInput";
 import Modal from "@/components/Modal";
 
+import Icon from "@/components/Icon";
+import IconButton from "@/components/IconButton";
+import Avatar from "@/components/Avatar";
 // ─── Resolved-row shape (SectionRole joined against the account it points to) ──
 
 interface TeamRow {
@@ -30,19 +33,6 @@ interface TeamRow {
 function initialsOf(name: string) {
   const parts = name.trim().split(/\s+/);
   return ((parts[0]?.[0] ?? "") + (parts[1]?.[0] ?? "")).toUpperCase() || "?";
-}
-
-// ─── Components ───────────────────────────────────────────────────────────────
-
-function Avatar({ initials, bg }: { initials: string; bg: string }) {
-  return (
-    <div
-      className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0"
-      style={{ background: bg }}
-    >
-      {initials}
-    </div>
-  );
 }
 
 // ─── Add collaborator (centred popup) ────────────────────────────────────────────────────
@@ -158,7 +148,7 @@ function AddCollaboratorModal({
           <>
             {alreadyAddedTa.map((s) => (
               <div key={s.id} className="flex items-center gap-3 px-3 py-2 rounded-xl bg-[var(--role-ta-bg)]">
-                <Avatar initials={initialsOf(s.name)} bg="#7C3AED" />
+                <Avatar size="md" initials={initialsOf(s.name)} bg="var(--role-ta-text)" />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-[var(--text-primary)] truncate">{s.name}</p>
                   <p className="text-[11px] text-[var(--text-muted)] tabular-nums truncate">{s.studentId}</p>
@@ -175,14 +165,12 @@ function AddCollaboratorModal({
                   onClick={() => addTa(s.id)}
                   className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-[var(--bg-subtle)] text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]"
                 >
-                  <Avatar initials={initialsOf(s.name)} bg="#9CA3AF" />
+                  <Avatar size="md" initials={initialsOf(s.name)} bg="var(--text-muted)" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-[var(--text-primary)] truncate">{s.name}</p>
                     <p className="text-[11px] text-[var(--text-muted)] tabular-nums truncate">{s.studentId} · {s.email}</p>
                   </div>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-[var(--text-muted)] shrink-0">
-                    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-                  </svg>
+                  <Icon name="plus" className="text-[var(--text-muted)] shrink-0" />
                 </button>
               ))
             )}
@@ -191,7 +179,7 @@ function AddCollaboratorModal({
           <>
             {alreadyAddedCoTeacher.map((tc) => (
               <div key={tc.id} className="flex items-center gap-3 px-3 py-2 rounded-xl bg-[var(--accent-bright)]/10">
-                <Avatar initials={initialsOf(tc.name)} bg="#0F766E" />
+                <Avatar size="md" initials={initialsOf(tc.name)} bg="var(--accent-solid)" />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-[var(--text-primary)] truncate">{tc.name}</p>
                   <p className="text-[11px] text-[var(--text-muted)] truncate">{tc.email}</p>
@@ -208,14 +196,12 @@ function AddCollaboratorModal({
                   onClick={() => addCoTeacher(tc.id)}
                   className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-[var(--bg-subtle)] text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]"
                 >
-                  <Avatar initials={initialsOf(tc.name)} bg="#9CA3AF" />
+                  <Avatar size="md" initials={initialsOf(tc.name)} bg="var(--text-muted)" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-[var(--text-primary)] truncate">{tc.name}</p>
                     <p className="text-[11px] text-[var(--text-muted)] truncate">{tc.email}</p>
                   </div>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-[var(--text-muted)] shrink-0">
-                    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-                  </svg>
+                  <Icon name="plus" className="text-[var(--text-muted)] shrink-0" />
                 </button>
               ))
             )}
@@ -262,7 +248,7 @@ export default function CollaboratorsPage() {
       name: tc.name,
       email: tc.email,
       initials: initialsOf(tc.name),
-      avatarBg: "#1B2A4A",
+      avatarBg: "var(--brand-ink)",
       roleLabel: t("อาจารย์ผู้สอน", "Primary Teacher"),
       roleBadgeColor: "var(--accent)",
       permissionSummary: t("สิทธิ์เต็ม — กำหนดโดยผู้ดูแลระบบ", "Full access — assigned by admin"),
@@ -285,7 +271,7 @@ export default function CollaboratorsPage() {
             name: student.name,
             email: student.email,
             initials: initialsOf(student.name),
-            avatarBg: "#7C3AED",
+            avatarBg: "var(--role-ta-text)",
             roleLabel: t("ผู้ช่วยสอน", "Teaching Assistant"),
             roleBadgeColor: "var(--role-ta-text)",
             permissionSummary,
@@ -302,7 +288,7 @@ export default function CollaboratorsPage() {
           name: teacher.name,
           email: teacher.email,
           initials: initialsOf(teacher.name),
-          avatarBg: "#0F766E",
+          avatarBg: "var(--accent-solid)",
           roleLabel: t("อาจารย์ร่วมสอน", "Co-Teacher"),
           roleBadgeColor: "var(--accent)",
           permissionSummary,
@@ -338,11 +324,7 @@ export default function CollaboratorsPage() {
     <main className="w-full px-8 py-8">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-[var(--text-muted)] mb-6">
-        <Link href="/teacher/courses" className="hover:text-[var(--accent)] transition-colors">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="inline -mt-0.5">
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
-          </svg>
-        </Link>
+        <IconButton icon="home" label={t("รายวิชาทั้งหมด", "All courses")} href="/teacher/courses" />
         <span>/</span>
         <Link href={`/teacher/courses/${id}`} className="hover:text-[var(--accent)] transition-colors">{course.name}</Link>
         <span>/</span>
@@ -362,9 +344,7 @@ export default function CollaboratorsPage() {
             onClick={() => setAddOpen(true)}
             className="flex items-center gap-2 h-10 px-4 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors shrink-0"
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>
+            <Icon name="plus" />
             {t("เพิ่มผู้ร่วมงาน", "Add Collaborator")}
           </button>
         )}
@@ -409,7 +389,7 @@ export default function CollaboratorsPage() {
                   <tr key={row.key} className="hover:bg-[var(--bg-subtle)]/50 transition-colors">
                     <td className="px-6 py-3.5">
                       <div className="flex items-center gap-3 min-w-0">
-                        <Avatar initials={row.initials} bg={row.avatarBg} />
+                        <Avatar size="md" initials={row.initials} bg={row.avatarBg} />
                         <p className="text-sm font-semibold text-[var(--text-primary)] truncate">{row.name}</p>
                       </div>
                     </td>
@@ -420,16 +400,7 @@ export default function CollaboratorsPage() {
                     <td className="px-4 py-3.5 text-xs text-[var(--text-muted)] max-w-[260px]">{row.permissionSummary}</td>
                     <td className="px-4 py-3.5 text-right">
                       {row.removable && canManage ? (
-                        <button
-                          onClick={() => remove(row)}
-                          title={t("ลบออกจากรายวิชา", "Remove from course")}
-                          className="w-7 h-7 inline-flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--s-err-text)] hover:bg-[var(--s-err-bg)] transition-colors"
-                        >
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                            <polyline points="3 6 5 6 21 6"/>
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-                          </svg>
-                        </button>
+                        <IconButton icon="trash" label={t("ลบออกจากรายวิชา", "Remove from course")} tone="danger" onClick={() => remove(row)} />
                       ) : (
                         <span className="text-xs text-[var(--text-muted)]">—</span>
                       )}
@@ -447,9 +418,7 @@ export default function CollaboratorsPage() {
             {t("แสดง", "Showing")} <strong className="text-[var(--text-primary)]">{filtered.length}</strong> {t("ผู้ร่วมงาน", filtered.length !== 1 ? "collaborators" : "collaborator")}
           </p>
           <p className="text-xs text-[var(--text-muted)] flex items-center gap-1">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
+            <Icon name="alert-circle" size="xs" />
             {t("อาจารย์ผู้สอนหลักกำหนดโดยผู้ดูแลระบบ", "Primary teacher is assigned by an admin")}
           </p>
         </div>

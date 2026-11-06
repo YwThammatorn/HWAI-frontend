@@ -5,6 +5,7 @@ import Modal from "@/components/Modal";
 import { useLanguage } from "@/context/LanguageContext";
 import { parseExamScoreCsv, scoreCsvTemplate, type ScoreCsvRow, type ScoreRowStatus } from "@/lib/examScoreCsv";
 
+import Icon from "@/components/Icon";
 type Person = { studentId: string; name: string };
 
 const NEUTRAL = "border-[var(--border)] bg-[var(--bg-app)] text-[var(--text-secondary)]";
@@ -126,9 +127,7 @@ export default function ImportExamScoresModal({ students, withdrawnIds, maxPoint
         {step === "upload" && (
           <>
             <div className="flex gap-2.5 rounded-xl border border-[var(--s-info-bd)] bg-[var(--s-info-bg)] px-4 py-3">
-              <svg className="shrink-0 mt-0.5 text-[var(--s-info-text)]" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
-              </svg>
+              <Icon name="info" size="xs" className="shrink-0 mt-0.5 text-[var(--s-info-text)]" />
               <p className="text-xs text-[var(--s-info-text)] leading-relaxed">
                 {t(
                   "ระบบจะเทียบรหัสนักศึกษาในไฟล์กับรายชื่อที่ลงทะเบียนในวิชานี้ แล้วกรอกคะแนนลงในตาราง — ยังไม่บันทึกจนกว่าคุณจะกด “บันทึกคะแนน” รหัสที่ไม่ได้ลงทะเบียน คะแนนนอกช่วง หรือรหัสซ้ำจะถูกข้ามพร้อมบอกเหตุผล",
@@ -145,9 +144,7 @@ export default function ImportExamScoresModal({ students, withdrawnIds, maxPoint
               className={`border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition-colors ${isDragging ? "border-[var(--accent-bright)] bg-[var(--accent-bright)]/5" : "border-[var(--border-subtle)] hover:border-[var(--accent-bright)]/50"}`}
             >
               <input ref={fileRef} type="file" accept=".csv,text/csv" aria-label={t("ไฟล์ CSV คะแนนสอบ", "Exam scores CSV file")} className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent-bright)" strokeWidth="1.5" strokeLinecap="round" className="mx-auto mb-3" aria-hidden="true">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>
-              </svg>
+              <Icon name="file-plus" size="xl" className="mx-auto mb-3 text-[var(--accent-bright)]" />
               <p className="text-sm font-semibold text-[var(--text-primary)]">{t("ลากไฟล์ CSV มาวาง หรือคลิกเลือก", "Drag CSV here or click to browse")}</p>
               <p className="text-xs text-[var(--text-muted)] mt-1">{t("รองรับ .csv • UTF-8 (คั่นด้วย , ; หรือ Tab)", "Supports .csv • UTF-8 (separated by , ; or Tab)")}</p>
             </div>

@@ -186,10 +186,11 @@ test.describe("P5 — Results page merges by team", () => {
     await expect(page.getByText(/grade distribution/i)).toHaveCount(0);
     await expect(page.getByText("90/100").first()).toBeVisible();                       // the score stays, as score/max
     await expect(page.getByText("A+")).toHaveCount(0);
-    // the Avg. Score card says what it is out of and over how many (15/10/2569)
+    // the Avg. Score card shows the average with the highest and lowest score only (21/10/2569)
     const avg = page.locator("main div.grid > div").filter({ hasText: "Avg. Score" });
     await expect(avg).toContainText("90.0");
-    await expect(avg).toContainText("/ 100 pts · 1 team(s) scored");
+    await expect(avg).toContainText("of 100 · Max 90 · Min 90");
+    await expect(avg).not.toContainText("pts");
     await expect(page.locator("main td").filter({ hasText: /^\s*90\/100\s*[A-F]\s*$/ })).toHaveCount(0);
     await expect(page.getByText(/\(\s*[A-F]\s*\)/)).toHaveCount(0);                      // "Score: 40/100 (F)" in the attention box
   });

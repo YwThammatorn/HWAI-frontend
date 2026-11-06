@@ -5,7 +5,8 @@ import { useLanguage } from "@/context/LanguageContext";
 import type { Student } from "@/lib/students";
 import SearchInput from "@/components/SearchInput";
 import ImportExamScoresModal from "@/components/ImportExamScoresModal";
-
+
+import Icon from "@/components/Icon";
 /**
  * Score entry for an Exam (25/9/2569). Students never submit an exam, so there are no submissions to
  * open — every enrolled student gets a row here and the teacher types each score in, then saves them
@@ -91,9 +92,7 @@ export default function ExamScoreTable({ students, titleOf, scores, maxPoints, e
               onClick={() => setImportOpen(true)}
               className="inline-flex h-9 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] px-4 text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
             >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>
-              </svg>
+              <Icon name="file-plus" />
               {t("นำเข้าด้วย CSV", "Import CSV")}
             </button>
             <button

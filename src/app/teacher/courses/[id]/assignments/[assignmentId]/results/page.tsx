@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useCourses } from "@/lib/courses";
-import { useAssignments, Submission } from "@/lib/assignments";
+import { useAssignments, Submission, finalScoreOf } from "@/lib/assignments";
 import { useStudentGroups } from "@/lib/studentGroups";
 import { groupSubmissionsByTeam, SubmissionRow } from "@/lib/groupSubmissions";
 import { useLanguage } from "@/context/LanguageContext";
@@ -12,8 +12,11 @@ import SearchInput from "@/components/SearchInput";
 import ExamStatsCard from "@/components/ExamStatsCard";
 import { statsFromScores } from "@/lib/examStats";
 import { SCORE_TONE_CLASSES } from "@/lib/scoreBook";
-
-const AVATAR_COLORS = ["#4F46E5", "#7C3AED", "#BE185D", "#B45309", "#047857", "#0369A1", "#C2410C", "#0E7490"];
+
+import Icon from "@/components/Icon";
+import MetricCard from "@/components/MetricCard";
+import Avatar from "@/components/Avatar";
+const AVATAR_COLORS = ["var(--cat-1)", "var(--cat-2)", "var(--cat-3)", "var(--cat-4)", "var(--cat-5)", "var(--cat-6)", "var(--cat-7)", "var(--cat-8)"];
 function avatarColor(name: string) { return AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length]; }
 function initials(name: string) {
   return name.trim().split(" ").slice(0, 2).map((p) => p[0] ?? "").join("").toUpperCase();
@@ -36,7 +39,7 @@ export default function ResultsPage() {
 
   if (!course || !assignment) {
     return (
-        <main className="flex-1 flex items-center justify-center text-gray-500 text-sm">
+        <main className="flex-1 flex items-center justify-center text-[var(--text-secondary)] text-sm">
           {t("ไม่พบข้อมูล", "Not found")} —{" "}
           <Link href={`/teacher/courses/${id}/assignments`} className="text-[var(--accent)] ml-1 hover:underline">
             {t("กลับหน้างาน", "Back to assignments")}
@@ -46,6 +49,9 @@ export default function ResultsPage() {
   }
 
   const max = assignment.maxPoints;
+  // the score that counts: the marks minus any late deduction (Assignment.latePolicy)
+  const fin = (s: Submission) => finalScoreOf(assignment, s);
+  const sc = (s: Submission) => fin(s) ?? 0;
   const isGroupAssignment = assignment.submissionType === "group";
   const groups = isGroupAssignment ? getGroupsByAssignment(assignmentId) : [];
 
@@ -66,12 +72,12 @@ export default function ResultsPage() {
   const scoredRows = repRows.filter((r) => r.rep.aiScore !== null || r.rep.instructorScore !== null);
   const avgScore =
     scoredRows.length > 0
-      ? scoredRows.reduce((sum, r) => sum + (r.rep.instructorScore ?? r.rep.aiScore ?? 0), 0) / scoredRows.length
+      ? scoredRows.reduce((sum, r) => sum + (sc(r.rep)), 0) / scoredRows.length
       : null;
 
   // Exam: the same class-statistics card (with the bell curve) a student gets once the results are announced.
   const examStats = assignment.isExam
-    ? statsFromScores(allSubs.filter((s) => s.status === "graded").map((s) => s.instructorScore ?? s.aiScore ?? 0))
+    ? statsFromScores(allSubs.filter((s) => s.status === "graded").map((s) => sc(s)))
     : null;
 
   const filtered = repRows.filter((r) =>
@@ -80,13 +86,13 @@ export default function ResultsPage() {
   );
 
   const requiresAttention = [...scoredRows]
-    .filter((r) => ((r.rep.instructorScore ?? r.rep.aiScore ?? 0) / max) * 100 < 60)
-    .sort((a, b) => (a.rep.instructorScore ?? a.rep.aiScore ?? 0) - (b.rep.instructorScore ?? b.rep.aiScore ?? 0))
+    .filter((r) => ((sc(r.rep)) / max) * 100 < 60)
+    .sort((a, b) => (sc(a.rep)) - (sc(b.rep)))
     .slice(0, 3);
 
   const topPerformer = scoredRows.length > 0
     ? scoredRows.reduce((best, r) =>
-        (r.rep.instructorScore ?? r.rep.aiScore ?? 0) > (best.rep.instructorScore ?? best.rep.aiScore ?? 0) ? r : best
+        (sc(r.rep)) > (sc(best.rep)) ? r : best
       )
     : null;
 
@@ -94,7 +100,7 @@ export default function ResultsPage() {
     const rows = [
       ["Student Name", "Email", "Score", "Max", "Status"],
       ...allSubs.map((s) => {
-        const score = s.instructorScore ?? s.aiScore ?? "";
+        const score = fin(s) ?? "";
         return [s.studentName, s.email, score, max, s.status];
       }),
     ];
@@ -115,14 +121,8 @@ export default function ResultsPage() {
       value: repRows.filter((r) => r.rep.status === "graded").length,
       subTh: "เสร็จสิ้น",
       subEn: "completed",
-      color: "#059669",
-      icon: (
-        <div className="w-7 h-7 rounded-full bg-emerald-100 flex items-center justify-center">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.5" strokeLinecap="round">
-            <polyline points="20 6 9 17 4 12"/>
-          </svg>
-        </div>
-      ),
+      tone: "ok" as const,
+      icon: "check" as const,
     },
     {
       labelTh: isGroupAssignment ? "ทีมทั้งหมด" : "ไฟล์ทั้งหมด",
@@ -130,13 +130,8 @@ export default function ResultsPage() {
       value: repRows.length,
       subTh: isGroupAssignment ? "ทีม" : "ไฟล์ที่ส่ง",
       subEn: isGroupAssignment ? "team(s)" : "submissions",
-      color: "#1B2A4A",
-      icon: (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="1.5">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-          <polyline points="14 2 14 8 20 8"/>
-        </svg>
-      ),
+      tone: "neutral" as const,
+      icon: "file-text" as const,
     },
     {
       labelTh: "รอตรวจสอบ",
@@ -144,30 +139,18 @@ export default function ResultsPage() {
       value: repRows.filter((r) => r.rep.status === "need_review").length,
       subTh: "รอดำเนินการ",
       subEn: "Pending",
-      color: "#D97706",
-      icon: (
-        <div className="w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2" strokeLinecap="round">
-            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-            <line x1="12" y1="9" x2="12" y2="13"/>
-            <line x1="12" y1="17" x2="12.01" y2="17"/>
-          </svg>
-        </div>
-      ),
+      tone: "warn" as const,
+      icon: "alert-triangle" as const,
     },
     {
       labelTh: "คะแนนเฉลี่ย",
       labelEn: "Avg. Score",
       value: avgScore !== null ? avgScore.toFixed(1) : "—",
-      // Out of what, and over how many (15/10/2569, same as the Grading page card): "7.7 / 10 pts · 26 scored"
-      subTh: `/ ${max} คะแนน · มีคะแนนแล้ว ${scoredRows.length} ${isGroupAssignment ? "ทีม" : "ชิ้น"}`,
-      subEn: `/ ${max} pts · ${scoredRows.length} ${isGroupAssignment ? "team(s)" : ""} scored`.replace("  ", " "),
-      color: "#1B2A4A",
-      icon: (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="#FCD34D" stroke="#F59E0B" strokeWidth="1.5">
-          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-        </svg>
-      ),
+      // Average, highest and lowest only (21/10/2569, same as the Grading page card)
+      subTh: scoredRows.length > 0 ? `เต็ม ${max} · สูงสุด ${Math.max(...scoredRows.map((r) => sc(r.rep)))} · ต่ำสุด ${Math.min(...scoredRows.map((r) => sc(r.rep)))}` : `เต็ม ${max} · สูงสุด — · ต่ำสุด —`,
+      subEn: scoredRows.length > 0 ? `of ${max} · Max ${Math.max(...scoredRows.map((r) => sc(r.rep)))} · Min ${Math.min(...scoredRows.map((r) => sc(r.rep)))}` : `of ${max} · Max — · Min —`,
+      tone: "rating" as const,
+      icon: "star" as const,
     },
   ];
 
@@ -176,11 +159,9 @@ export default function ResultsPage() {
         {/* Back link */}
         <Link
           href={`/teacher/courses/${id}/assignments/${assignmentId}`}
-          className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-[var(--accent)] transition-colors mb-4"
+          className="inline-flex items-center gap-1.5 text-xs text-[var(--text-muted)] hover:text-[var(--accent)] transition-colors mb-4"
         >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-            <polyline points="15 18 9 12 15 6"/>
-          </svg>
+          <Icon name="chevron-left" size="sm" />
           {t("กลับหน้างาน", "Back to Assignments")}
         </Link>
 
@@ -190,7 +171,7 @@ export default function ResultsPage() {
             <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">
               {t("ผลการตรวจ", "Grading Result")} : {assignment.name}
             </h1>
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-[var(--text-muted)]">
               {t("ตรวจเมื่อ", "Graded on")}{" "}
               {new Date().toLocaleDateString(lang === "th" ? "th-TH" : "en-US", { month: "short", day: "numeric", year: "numeric" })}{" "}
               {t("เวลา 23:59 น.", "at 11:59 PM")}
@@ -199,7 +180,7 @@ export default function ResultsPage() {
           <div className="flex items-center gap-3 shrink-0">
             <Link
               href={`/teacher/courses/${id}/assignments`}
-              className="px-4 py-2 rounded-xl border border-gray-200 text-sm text-gray-500 hover:bg-gray-50 transition-colors"
+              className="px-4 py-2 rounded-xl border border-[var(--border)] text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] transition-colors"
             >
               {t("กลับรายวิชา", "Back to Course")}
             </Link>
@@ -207,12 +188,7 @@ export default function ResultsPage() {
               onClick={exportCSV}
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-semibold transition-colors"
             >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                <polyline points="14 2 14 8 20 8"/>
-                <line x1="12" y1="11" x2="12" y2="17"/>
-                <polyline points="9 14 12 17 15 14"/>
-              </svg>
+              <Icon name="file-download" />
               {t("ส่งออกผลลัพธ์", "Export Result")}
             </button>
           </div>
@@ -253,20 +229,7 @@ export default function ResultsPage() {
         {/* Stats */}
         <div className="grid grid-cols-4 gap-4 mb-6">
           {statCards.map((s) => (
-            <div key={s.labelEn} className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-              <div className="flex items-start justify-between mb-3">
-                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">
-                  {lang === "th" ? s.labelTh : s.labelEn}
-                </p>
-                {s.icon}
-              </div>
-              <p className="text-2xl font-bold" style={{ color: s.color }}>
-                {s.value}{" "}
-                <span className="text-sm font-normal text-gray-400">
-                  {lang === "th" ? s.subTh : s.subEn}
-                </span>
-              </p>
-            </div>
+            <MetricCard key={s.labelEn} label={lang === "th" ? s.labelTh : s.labelEn} value={s.value} sub={lang === "th" ? s.subTh : s.subEn} tone={s.tone} icon={s.icon} filled={s.icon === "star"} />
           ))}
         </div>
 
@@ -275,8 +238,8 @@ export default function ResultsPage() {
           {/* Left column */}
           <div className="flex-1 min-w-0 space-y-5">
             {/* Student results table */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50">
+            <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-subtle)] shadow-sm overflow-hidden">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border-subtle)]">
                 <h2 className="text-sm font-semibold text-[var(--text-primary)]">
                   {t("ผลลัพธ์นักศึกษา", "Student Results")}
                 </h2>
@@ -290,7 +253,7 @@ export default function ResultsPage() {
               </div>
 
               {filtered.length === 0 ? (
-                <div className="px-6 py-12 text-center text-sm text-gray-400">
+                <div className="px-6 py-12 text-center text-sm text-[var(--text-muted)]">
                   {search
                     ? t("ไม่พบนักศึกษาที่ค้นหา", "No students found")
                     : t("ยังไม่มีการส่งงาน", "No submissions yet")}
@@ -298,54 +261,46 @@ export default function ResultsPage() {
               ) : (
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider border-b border-gray-50">
+                    <tr className="text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider border-b border-[var(--border-subtle)]">
                       <th className="px-6 py-3">{t("ชื่อนักศึกษา", "Student Name")}</th>
                       <th className="px-6 py-3">{t("คะแนน", "Score")}</th>
                       <th className="px-6 py-3">{t("ดำเนินการ", "Action")}</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-50">
+                  <tbody className="divide-y divide-[var(--border-subtle)]">
                     {filtered.map((r) => {
-                      const score = r.rep.instructorScore ?? r.rep.aiScore;
+                      const score = fin(r.rep);
                       return (
-                        <tr key={r.key} className="hover:bg-gray-50/50 transition-colors">
+                        <tr key={r.key} className="hover:bg-[var(--bg-subtle)]/50 transition-colors">
                           <td className="px-6 py-3 max-w-[22rem]">
                             {r.isTeam ? (
                               <div>
                                 <div className="flex items-center gap-1.5 mb-1">
-                                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth="2" strokeLinecap="round">
-                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
-                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                                  </svg>
+                                  <Icon name="users" size="xs" className="text-[var(--role-ta-text)]" />
                                   <p className="font-medium text-[var(--text-primary)] text-sm">{r.displayName}</p>
                                 </div>
                                 <div className="flex items-center">
                                   {r.members.map((s, idx) => (
                                     <div
                                       key={s.id}
-                                      className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-bold shrink-0 border-2 border-white"
+                                      className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-bold shrink-0 border-2 border-[var(--bg-surface)]"
                                       style={{ backgroundColor: avatarColor(s.studentName), marginLeft: idx > 0 ? "-8px" : 0 }}
                                       title={s.studentName}
                                     >
                                       {initials(s.studentName)}
                                     </div>
                                   ))}
-                                  <p className="text-xs text-gray-400 ml-2 truncate min-w-0">
+                                  <p className="text-xs text-[var(--text-muted)] ml-2 truncate min-w-0">
                                     {r.members.map((s) => s.studentName).join(", ")}
                                   </p>
                                 </div>
                               </div>
                             ) : (
                               <div className="flex items-center gap-3">
-                                <div
-                                  className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
-                                  style={{ backgroundColor: avatarColor(r.rep.studentName) }}
-                                >
-                                  {initials(r.rep.studentName)}
-                                </div>
+                                <Avatar initials={initials(r.rep.studentName)} bg={avatarColor(r.rep.studentName)} />
                                 <div>
                                   <p className="font-medium text-[var(--text-primary)] text-sm">{r.rep.studentName}</p>
-                                  <p className="text-xs text-gray-400">{r.rep.email}</p>
+                                  <p className="text-xs text-[var(--text-muted)]">{r.rep.email}</p>
                                 </div>
                               </div>
                             )}
@@ -358,7 +313,7 @@ export default function ResultsPage() {
                                 </span>
                               </div>
                             ) : (
-                              <span className="text-xs text-gray-400">{t("ยังไม่ได้ตรวจ", "Not graded")}</span>
+                              <span className="text-xs text-[var(--text-muted)]">{t("ยังไม่ได้ตรวจ", "Not graded")}</span>
                             )}
                           </td>
                           <td className="px-6 py-3">
@@ -367,7 +322,7 @@ export default function ResultsPage() {
                                 <>
                                   <Link
                                     href={`/teacher/courses/${id}/assignments/${assignmentId}/recheck?sub=${r.rep.id}`}
-                                    className="text-xs text-amber-600 hover:underline font-medium"
+                                    className="text-xs text-[var(--s-warn-text)] hover:underline font-medium"
                                   >
                                     {t("ตรวจสอบ", "Review")}
                                   </Link>
@@ -381,7 +336,7 @@ export default function ResultsPage() {
                               ) : (
                                 <Link
                                   href={`/teacher/courses/${id}/assignments/${assignmentId}/recheck?sub=${r.rep.id}`}
-                                  className="px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-500 hover:bg-gray-50 transition-colors"
+                                  className="px-3 py-1.5 rounded-lg border border-[var(--border)] text-xs text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] transition-colors"
                                 >
                                   {t("ดูรายละเอียด", "View Details")}
                                 </Link>
@@ -401,13 +356,13 @@ export default function ResultsPage() {
           <div className="w-64 shrink-0 space-y-4">
             {/* Requires attention */}
             {requiresAttention.length > 0 && (
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-3">
+              <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-subtle)] shadow-sm p-5">
+                <p className="text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-widest mb-3">
                   {t("ต้องตรวจสอบ", "Requires Attention")}
                 </p>
                 <div className="space-y-2">
                   {requiresAttention.map((r) => {
-                    const score = r.rep.instructorScore ?? r.rep.aiScore ?? 0;
+                    const score = sc(r.rep);
                     return (
                       <div
                         key={r.key}
@@ -434,22 +389,22 @@ export default function ResultsPage() {
 
             {/* Top performer */}
             {topPerformer && (
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-3">
+              <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-subtle)] shadow-sm p-5">
+                <p className="text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-widest mb-3">
                   {t("ผู้ที่ทำได้ดีที่สุด", "Top Performer")}
                 </p>
-                <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-100">
+                <div className="p-3 rounded-xl bg-[var(--s-ok-bg)] border border-[var(--s-ok-bd)]">
                   <p className="text-xs font-semibold text-[var(--text-primary)]">{topPerformer.displayName}</p>
-                  <p className="text-xs text-emerald-700 font-medium mt-0.5">
-                    {t("คะแนน", "Score")}: {topPerformer.rep.instructorScore ?? topPerformer.rep.aiScore}/{max}
+                  <p className="text-xs text-[var(--s-ok-text)] font-medium mt-0.5">
+                    {t("คะแนน", "Score")}: {fin(topPerformer.rep)}/{max}
                   </p>
                 </div>
               </div>
             )}
 
             {/* AI Feedback — star rating removed 22/9/2569 */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-              <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-4">
+            <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-subtle)] shadow-sm p-5">
+              <p className="text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-widest mb-4">
                 {t("ให้ Feedback AI", "Provide AI Feedback")}
               </p>
               <textarea
@@ -457,7 +412,7 @@ export default function ResultsPage() {
                 onChange={(e) => setFeedbackText(e.target.value)}
                 rows={5}
                 placeholder="แชร์ความคิดเห็นเกี่ยวกับคุณภาพการตรวจของ AI..."
-                className="w-full px-3 py-2 text-xs border border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors text-[var(--text-primary)] placeholder:text-gray-300"
+                className="w-full px-3 py-2 text-xs border border-[var(--border)] rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
               />
               <button
                 onClick={() => { setFeedbackSent(true); setTimeout(() => setFeedbackSent(false), 3000); }}

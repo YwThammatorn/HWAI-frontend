@@ -1,6 +1,7 @@
 import Link from "next/link";
 import AppShell from "@/components/AppShell";
 
+import Icon from "@/components/Icon";
 export default function NotFound() {
   return (
     <AppShell>
@@ -10,7 +11,7 @@ export default function NotFound() {
           {/* Illustration */}
           <div className="relative flex-shrink-0 w-72 h-72 flex items-center justify-center">
             {/* Background blob */}
-            <div className="absolute inset-4 rounded-3xl bg-white shadow-md" />
+            <div className="absolute inset-4 rounded-3xl bg-[var(--bg-surface)] shadow-md" />
             {/* Decorative teal blob behind */}
             <div className="absolute top-6 left-6 w-40 h-40 rounded-3xl bg-[var(--accent-bright)]/10" />
 
@@ -57,7 +58,7 @@ export default function NotFound() {
               <br />
               <span className="text-[var(--accent)]">graduated</span>.
             </h1>
-            <p className="text-gray-500 text-base mt-5 leading-relaxed max-w-sm">
+            <p className="text-[var(--text-secondary)] text-base mt-5 leading-relaxed max-w-sm">
               It looks like the page you're looking for isn't here anymore.
               It might have been moved, deleted, or simply never existed in our curriculum.
             </p>
@@ -65,10 +66,7 @@ export default function NotFound() {
               href="/teacher/courses"
               className="inline-flex items-center gap-2.5 mt-8 px-7 py-3.5 bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] font-semibold rounded-2xl transition-colors"
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                <line x1="19" y1="12" x2="5" y2="12"/>
-                <polyline points="12 19 5 12 12 5"/>
-              </svg>
+              <Icon name="arrow-left" />
               Back to Dashboard
             </Link>
           </div>

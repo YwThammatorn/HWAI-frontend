@@ -2,7 +2,7 @@
 // It reads the FIRST worksheet into a grid of strings and nothing else (no styles, formulas are read through their cached result, dates stay
 // numbers). Written by hand so the app needs no spreadsheet library; no I/O and no React, so it is checked directly in tests/xls-reader.spec.ts.
 //
-//   readXls(await file.arrayBuffer())  →  string[][]   (rows × columns, "" for an empty cell, numbers as plain text: 66010016, 3.5)
+//   readXls(await file.arrayBuffer())  →  string[][]   (rows × columns, "" for an empty cell, numbers as plain text: 99000001, 3.5)
 //
 // What it understands: OLE2 sectors + mini stream, the Workbook stream, BOUNDSHEET, SST (+ CONTINUE, strings split across records,
 // compressed and UTF-16 characters, rich-text and phonetic extras), LABELSST, LABEL, NUMBER, RK, MULRK, FORMULA (+ STRING). Anything else is skipped.

@@ -78,7 +78,7 @@ export const FAMILIES: string[][] = [
 const IDS = [1, 2, 3, 6, 7, 8, ...Array.from({ length: 30 }, (_, i) => 9 + i)];
 
 interface Course { id: string; code?: string; name: string }
-interface MockTeacher { id: string; title?: string; name: string; email: string; role: "teacher"; status: "active"; courseIds: string[] }
+interface MockTeacher { id: string; title?: string; name: string; email: string; status: "active"; courseIds: string[] }
 
 export function buildTeachers(courses: Course[]): MockTeacher[] {
   const subjectOf = (c: Course) => c.code ?? c.name;
@@ -99,7 +99,6 @@ export function buildTeachers(courses: Course[]): MockTeacher[] {
     ...(t.title ? { title: t.title } : {}),
     name: t.name,
     email: t.email,
-    role: "teacher" as const,
     status: "active" as const,
     courseIds: courses.filter((c) => owner.get(subjectOf(c)) === t.key).map((c) => c.id).sort((a, b) => num(a) - num(b)),
   }));

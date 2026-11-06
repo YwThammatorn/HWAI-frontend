@@ -15,7 +15,9 @@ import { buildScoreBook, toneForPct, SCORE_TONE_CLASSES, PENDING_CHIP_CLASSES, M
 import EmptyState from "@/components/EmptyState";
 import StatCard from "@/components/StatCard";
 import RubricBreakdownModal from "@/components/RubricBreakdownModal";
-
+
+import Icon from "@/components/Icon";
+import IconButton from "@/components/IconButton";
 // Adapted from the teacher Score Book (src/app/teacher/courses/[id]/results/page.tsx) — same cell
 // states/tones/legend/rubric-breakdown, transposed to a single row (rows = assignments instead of
 // columns, since there's only one student here). See DESIGN.md §9b. `computeCategoryGradeRows` /
@@ -93,17 +95,7 @@ export default function StudentEvaluationPage() {
               {Number.isInteger(cell.score) ? cell.score : cell.score.toFixed(1)}/{cell.max}
             </span>
             {hasRubric && (
-              <button
-                type="button"
-                onClick={() => setBreakdown(assignment)}
-                title={t("ดูคะแนนรายเกณฑ์", "See rubric breakdown")}
-                aria-label={t(`ดูคะแนนรายเกณฑ์ — ${assignment.name}`, `See the rubric breakdown for ${assignment.name}`)}
-                className="w-6 h-6 shrink-0 flex items-center justify-center rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-subtle)] active:scale-[.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
-              >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <polyline points="6 9 12 15 18 9" />
-                </svg>
-              </button>
+              <IconButton icon="chevron-down" label={t(`ดูคะแนนรายเกณฑ์ — ${assignment.name}`, `See the rubric breakdown for ${assignment.name}`)} onClick={() => setBreakdown(assignment)} />
             )}
           </div>
         );
@@ -137,12 +129,7 @@ export default function StudentEvaluationPage() {
 
       {categories.length === 0 && !hasAnyGradedWork ? (
         <EmptyState
-          iconColor="var(--accent-bright)"
-          icon={
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent-bright)" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
-              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-            </svg>
-          }
+          icon="activity"
           title={t("ยังไม่มีผลการประเมิน", "No evaluation results yet")}
           description={t("ผลการตรวจงานทั้งหมดจะแสดงที่นี่", "All graded assignment results will appear here")}
         />
@@ -160,12 +147,12 @@ export default function StudentEvaluationPage() {
           {/* Summary */}
           <div className="grid grid-cols-2 gap-4 mb-4">
             <StatCard
-              label={t("ตรวจแล้ว", "Graded")} value={gradedPct} suffix="%" color="var(--s-ok-text)" bg="var(--s-ok-bg)"
-              icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/></svg>}
+              label={t("ตรวจแล้ว", "Graded")} value={gradedPct} suffix="%"
+              tone="ok" icon="check-circle"
             />
             <StatCard
-              label={t("รอตรวจ", "Awaiting grading")} value={awaitingCount} color="var(--s-warn-text)" bg="var(--s-warn-bg)"
-              icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="M5 3h14l-2 7H7L5 3z"/><path d="M7 10l-2 11h14L17 10"/></svg>}
+              label={t("รอตรวจ", "Awaiting grading")} value={awaitingCount}
+              tone="warn" icon="hourglass"
             />
           </div>
 

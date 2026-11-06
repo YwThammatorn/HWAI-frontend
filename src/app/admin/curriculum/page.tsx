@@ -12,7 +12,10 @@ import { splitCsvLine } from "@/lib/csv";
 import EmptyState from "@/components/EmptyState";
 import StatCard from "@/components/StatCard";
 import Modal from "@/components/Modal";
-
+
+import Icon from "@/components/Icon";
+import IconTile from "@/components/IconTile";
+import IconButton from "@/components/IconButton";
 const PROGRAMS: Program[] = ["CECS", "CEI", "CE"];
 
 // ── Course template CSV import ──────────────────────────────────────────────
@@ -135,10 +138,7 @@ function CourseTemplateImportModal({
             className={`border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition-colors ${dragOver ? "border-[var(--accent-bright)] bg-[var(--accent-bright)]/5" : "border-[var(--border-subtle)] hover:border-[var(--accent-bright)]/50"}`}
           >
             <input ref={fileRef} type="file" accept=".csv" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent-bright)" strokeWidth="1.5" strokeLinecap="round" className="mx-auto mb-3" aria-hidden="true">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-              <polyline points="14 2 14 8 20 8"/>
-            </svg>
+            <Icon name="file" size="xl" className="mx-auto mb-3 text-[var(--accent-bright)]" />
             <p className="text-sm font-semibold text-[var(--text-primary)]">{t("ลากไฟล์ CSV มาวาง หรือคลิกเลือก", "Drag CSV here or click to browse")}</p>
             <p className="text-xs text-[var(--text-muted)] mt-1">{t("คอลัมน์: code, name, description", "Columns: code, name, description")}</p>
           </div>
@@ -146,14 +146,7 @@ function CourseTemplateImportModal({
         {!rows && !done && (
           <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-app)] p-3.5 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-8 h-8 rounded-lg bg-[var(--accent-bright)]/15 flex items-center justify-center shrink-0">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                  <polyline points="14 2 14 8 20 8"/>
-                  <line x1="12" y1="18" x2="12" y2="12"/>
-                  <polyline points="9 15 12 18 15 15"/>
-                </svg>
-              </div>
+              <IconTile icon="file-download" size="sm" tone="accent" />
               <div className="min-w-0">
                 <p className="text-xs font-medium text-[var(--text-primary)]">{t("ดาวน์โหลด Template", "Download Template")}</p>
                 <p className="text-[11px] text-[var(--text-muted)] truncate">course-templates-template.csv</p>
@@ -217,11 +210,7 @@ function CourseTemplateImportModal({
         )}
         {done && (
           <div className="flex flex-col items-center gap-3 py-8">
-            <div className="w-12 h-12 rounded-full bg-[var(--s-ok-bg)] flex items-center justify-center">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--s-ok-text)" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
-            </div>
+            <IconTile icon="check" size="lg" shape="round" tone="ok" />
             <p className="text-sm font-semibold text-[var(--text-primary)]">{t("นำเข้าสำเร็จ", "Import complete")}</p>
             <p className="text-xs text-[var(--text-muted)]">
               {t(`เพิ่ม ${result?.added ?? 0} วิชา (ข้าม ${result?.skipped ?? 0} รายการ)`,
@@ -538,25 +527,8 @@ function CourseTemplateRow({
         <p className="text-[11px] text-[var(--text-muted)] tabular-nums truncate">{template.code}</p>
       </div>
       <div className="flex items-center gap-1 shrink-0">
-        <button
-          onClick={onEdit}
-          title="Edit"
-          className="w-7 h-7 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--accent)] hover:bg-[var(--accent-bright)]/10 transition-colors"
-        >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-          </svg>
-        </button>
-        <button
-          onClick={onDelete}
-          title="Delete"
-          className="w-7 h-7 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--s-err-text)] hover:bg-[var(--s-err-bg)] transition-colors"
-        >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-          </svg>
-        </button>
+        <IconButton icon="edit" label="Edit" onClick={onEdit} />
+        <IconButton icon="x" label="Delete" tone="danger" onClick={onDelete} />
       </div>
     </div>
   );
@@ -584,7 +556,7 @@ function CurriculumRow({
   const templates = getCourseTemplatesByCurriculum(version.id);
   const isActive = version.effectiveTo === undefined;
 
-  const PROGRAM_COLOR: Record<Program, string> = { CECS: "#7C3AED", CEI: "#2563EB", CE: "#0F766E" };
+  const PROGRAM_COLOR: Record<Program, string> = { CECS: "var(--role-ta-text)", CEI: "var(--s-info-text)", CE: "var(--accent-solid)" };
 
   return (
     <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] overflow-hidden">
@@ -605,7 +577,7 @@ function CurriculumRow({
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <p className="text-sm font-semibold text-[var(--text-primary)] truncate">{version.label}</p>
-              <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full shrink-0 ${isActive ? "bg-[var(--s-ok-bg)] text-[var(--s-ok-text)]" : "bg-[var(--bg-subtle)] text-[var(--text-muted)]"}`}>
+              <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full shrink-0 ${isActive ? "bg-[var(--s-ok-bg)] text-[var(--s-ok-text)]" : "bg-[var(--bg-app)] text-[var(--text-muted)]"}`}>
                 {isActive ? t("ใช้อยู่", "Active") : t("เลิกใช้แล้ว", "Retired")}
               </span>
             </div>
@@ -614,9 +586,7 @@ function CurriculumRow({
             </p>
           </div>
           <span className={`transition-transform duration-200 text-[var(--text-muted)] shrink-0 ${expanded ? "rotate-180" : ""}`} aria-hidden="true">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <polyline points="6 9 12 15 18 9"/>
-            </svg>
+            <Icon name="chevron-down" size="sm" />
           </span>
         </button>
 
@@ -626,26 +596,8 @@ function CurriculumRow({
             <p className="text-[10px] text-[var(--text-muted)]">{t("รายวิชา", "courses")}</p>
           </div>
           <div className="flex items-center gap-1">
-            <button
-              onClick={onEdit}
-              title={t("แก้ไขหลักสูตร", "Edit curriculum")}
-              className="w-7 h-7 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--accent)] hover:bg-[var(--accent-bright)]/10 transition-colors"
-            >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-              </svg>
-            </button>
-            <button
-              onClick={onDelete}
-              title={t("ลบหลักสูตร", "Delete curriculum")}
-              className="w-7 h-7 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--s-err-text)] hover:bg-[var(--s-err-bg)] transition-colors"
-            >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
-              </svg>
-            </button>
+            <IconButton icon="edit" label={t("แก้ไขหลักสูตร", "Edit curriculum")} onClick={onEdit} />
+            <IconButton icon="trash" label={t("ลบหลักสูตร", "Delete curriculum")} tone="danger" onClick={onDelete} />
           </div>
         </div>
       </div>
@@ -660,11 +612,7 @@ function CurriculumRow({
                   onClick={() => setImportOpen(true)}
                   className="h-7 px-2.5 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-[var(--text-secondary)] text-xs font-semibold hover:bg-[var(--bg-subtle)] hover:border-[var(--accent-bright)] hover:text-[var(--text-primary)] transition-colors inline-flex items-center gap-1.5"
                 >
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                    <line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>
-                  </svg>
+                  <Icon name="file-plus" size="sm" />
                   {t("นำเข้า CSV", "Import CSV")}
                 </button>
                 <button
@@ -753,9 +701,7 @@ export default function AdminCurriculumPage() {
           onClick={() => { setEditTarget(undefined); setModalMode("create"); }}
           className="flex items-center gap-2 h-10 px-4 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors shrink-0"
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-          </svg>
+          <Icon name="plus" />
           {t("สร้างหลักสูตร", "New Curriculum")}
         </button>
       </div>
@@ -765,48 +711,23 @@ export default function AdminCurriculumPage() {
         <StatCard
           label={t("หลักสูตรทั้งหมด", "Total Curriculum")}
           value={curriculumVersions.length}
-          color="var(--accent)"
-          bg="var(--accent-subtle)"
-          icon={
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
-              <path d="M22 10v6M2 10l10-5 10 5-10 5-10-5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
-            </svg>
-          }
+          tone="accent" icon="graduation-cap"
         />
         <StatCard
           label={t("ใช้อยู่", "Active")}
           value={activeVersions.length}
-          color="#2563EB"
-          bg="rgba(37,99,235,0.1)"
-          icon={
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
-              <polyline points="9 11 12 14 22 4"/>
-              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
-            </svg>
-          }
+          tone="info" icon="check-square"
         />
         <StatCard
           label={t("รายวิชาทั้งหมด", "Total Course Templates")}
           value={totalTemplates}
-          color="#92400E"
-          bg="rgba(146,64,14,0.1)"
-          icon={
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
-              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-            </svg>
-          }
+          tone="warn" icon="book"
         />
       </div>
 
       {curriculumVersions.length === 0 ? (
         <EmptyState
-          iconColor="var(--accent-bright)"
-          icon={
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
-              <path d="M22 10v6M2 10l10-5 10 5-10 5-10-5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
-            </svg>
-          }
+          icon="graduation-cap"
           title={t("ยังไม่มีหลักสูตรในระบบ", "No curriculum versions yet")}
           description={t("สร้างหลักสูตรแรกก่อนเพิ่มรายวิชาและเปิด Section", "Create a curriculum version before adding course templates and opening sections")}
           action={
@@ -814,9 +735,7 @@ export default function AdminCurriculumPage() {
               onClick={() => { setEditTarget(undefined); setModalMode("create"); }}
               className="flex items-center gap-2 h-9 px-4 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] transition-colors"
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-              </svg>
+              <Icon name="plus" />
               {t("สร้างหลักสูตร", "New Curriculum")}
             </button>
           }

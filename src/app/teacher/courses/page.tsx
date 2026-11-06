@@ -14,6 +14,8 @@ import SearchInput from "@/components/SearchInput";
 import Pagination from "@/components/Pagination";
 import CourseBanner from "@/components/CourseBanner";
 
+
+import Icon from "@/components/Icon";
 export default function CoursesPage() {
   const { t } = useLanguage();
   const { courses: allCourses, updateCourse } = useCourses();
@@ -82,7 +84,7 @@ export default function CoursesPage() {
         <div className="flex items-end justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold text-[var(--text-primary)]">{t("รายวิชาของฉัน", "My Courses")}</h1>
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-[var(--text-secondary)]">
               {t("จัดการรายวิชา งาน และความคืบหน้าของนักศึกษาจากที่นี่", "Manage your classes, assignments, and student progress from here.")}
             </p>
           </div>
@@ -111,11 +113,11 @@ export default function CoursesPage() {
                 onClick={() => setTab(tabKey)}
                 className={[
                   "px-4 py-1.5 rounded-lg text-sm font-medium transition-colors",
-                  tab === tabKey ? "bg-[var(--bg-nav)] text-white" : "text-gray-500 hover:bg-gray-100",
+                  tab === tabKey ? "bg-[var(--bg-nav)] text-white" : "text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)]",
                 ].join(" ")}
               >
                 {tabKey === "active" ? t("ใช้งานอยู่", "Active") : t("เก็บถาวร", "Archived")}
-                <span className={["ml-1.5 text-xs px-1.5 py-0.5 rounded-full", tab === tabKey ? "bg-white/20" : "bg-gray-200"].join(" ")}>
+                <span className={["ml-1.5 text-xs px-1.5 py-0.5 rounded-full", tab === tabKey ? "bg-white/20" : "bg-[var(--border)]"].join(" ")}>
                   {tabKey === "active" ? active.length : archived.length}
                 </span>
               </button>
@@ -126,11 +128,11 @@ export default function CoursesPage() {
         {/* Content */}
         {visible.length === 0 ? (
           search ? (
-            <p className="text-center text-gray-500 text-sm py-20">{t("ไม่พบรายวิชาที่ตรงกับ", "No courses matching")} &ldquo;{search}&rdquo;</p>
+            <p className="text-center text-[var(--text-secondary)] text-sm py-20">{t("ไม่พบรายวิชาที่ตรงกับ", "No courses matching")} &ldquo;{search}&rdquo;</p>
           ) : tab === "active" ? (
             <EmptyState />
           ) : (
-            <p className="text-center text-gray-500 text-sm py-20">{t("ไม่มีรายวิชาที่ถูก archive", "No archived courses")}</p>
+            <p className="text-center text-[var(--text-secondary)] text-sm py-20">{t("ไม่มีรายวิชาที่ถูก archive", "No archived courses")}</p>
           )
         ) : (
           <>
@@ -161,7 +163,7 @@ function EmptyState() {
   const { t } = useLanguage();
   return (
     <div className="flex items-center justify-center py-16">
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 px-16 py-14 flex flex-col items-center text-center max-w-md w-full">
+      <div className="bg-[var(--bg-surface)] rounded-2xl shadow-sm border border-[var(--border-subtle)] px-16 py-14 flex flex-col items-center text-center max-w-md w-full">
         {/* Illustration */}
         <div className="relative mb-8">
           <div className="w-28 h-28 rounded-full bg-[var(--accent-subtle)] flex items-center justify-center">
@@ -172,12 +174,12 @@ function EmptyState() {
             </svg>
           </div>
           <div className="absolute top-1 right-0 w-3 h-3 rounded-full bg-[var(--accent-bright)] opacity-60"/>
-          <div className="absolute bottom-2 left-0 w-2 h-2 rounded-full bg-gray-300"/>
+          <div className="absolute bottom-2 left-0 w-2 h-2 rounded-full bg-[var(--border)]"/>
           <div className="absolute top-8 -left-3 w-2 h-2 rounded-full bg-[var(--accent-bright)] opacity-40"/>
         </div>
 
         <h2 className="text-base font-bold text-[var(--text-primary)] mb-2">{t("ยังไม่มีรายวิชาที่ได้รับมอบหมาย", "No courses assigned yet")}</h2>
-        <p className="text-sm text-gray-500 leading-relaxed">
+        <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
           {t("ติดต่อแอดมินเพื่อให้เพิ่มคุณเข้ารายวิชา", "Contact your admin to be assigned to a course.")}
         </p>
       </div>
@@ -218,13 +220,13 @@ function CourseCard({ course, studentCount, allGraded, activeAssignments, isArch
         <div className="flex-1">
           {/* DEEP-QA-style meta rows — always shown for a consistent card shape;
               em-dash when a course has no Section / CourseTemplate link */}
-          <div className="grid grid-cols-2 gap-3 pb-3 border-b border-gray-50">
+          <div className="grid grid-cols-2 gap-3 pb-3 border-b border-[var(--border-subtle)]">
             <div className="min-w-0">
-              <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-0.5">{t("กลุ่ม", "Section")}</p>
+              <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wide mb-0.5">{t("กลุ่ม", "Section")}</p>
               <p className="text-xs font-semibold text-[var(--text-primary)] truncate">{course.sectionNumber || "—"}</p>
             </div>
             <div className="min-w-0">
-              <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-0.5">{t("ภาคเรียนที่", "Term")}</p>
+              <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wide mb-0.5">{t("ภาคเรียนที่", "Term")}</p>
               <p className="text-xs font-semibold text-[var(--text-primary)] truncate">{termLabel}</p>
             </div>
           </div>
@@ -232,11 +234,11 @@ function CourseCard({ course, studentCount, allGraded, activeAssignments, isArch
           {(course.schedule || course.room) && (
             <div className="grid grid-cols-2 gap-3 pt-3">
               <div className="min-w-0">
-                <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-0.5">{t("วันเวลาเรียน", "Schedule")}</p>
+                <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wide mb-0.5">{t("วันเวลาเรียน", "Schedule")}</p>
                 <p className="text-xs font-semibold text-[var(--text-primary)] truncate">{course.schedule || "—"}</p>
               </div>
               <div className="min-w-0">
-                <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-0.5">{t("ห้องเรียน", "Room")}</p>
+                <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wide mb-0.5">{t("ห้องเรียน", "Room")}</p>
                 <p className="text-xs font-semibold text-[var(--text-primary)] truncate">{course.room || "—"}</p>
               </div>
             </div>
@@ -251,19 +253,19 @@ function CourseCard({ course, studentCount, allGraded, activeAssignments, isArch
             {t("คืนค่า", "Restore")}
           </button>
         ) : (
-          <div className="flex items-center justify-between text-xs text-gray-500 border-t border-gray-50 pt-3 mt-3">
+          <div className="flex items-center justify-between text-xs text-[var(--text-secondary)] border-t border-[var(--border-subtle)] pt-3 mt-3">
             <span className="flex items-center gap-1">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              <Icon name="users" size="xs" />
               {studentCount} {t("นักศึกษา", "Students")}
             </span>
             {allGraded ? (
               <span className="flex items-center gap-1 text-[var(--accent)] font-medium">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <Icon name="check" size="xs" />
                 {t("ตรวจแล้วทั้งหมด", "All Graded")}
               </span>
             ) : (
-              <span className="flex items-center gap-1 text-orange-500">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <span className="flex items-center gap-1 text-[var(--st-todo-text)]">
+                <Icon name="calendar" size="xs" />
                 {activeAssignments} {t("งานรอตรวจ", "Active")}
               </span>
             )}
@@ -273,7 +275,7 @@ function CourseCard({ course, studentCount, allGraded, activeAssignments, isArch
     </>
   );
 
-  const cardClassName = "flex flex-col bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]";
+  const cardClassName = "flex flex-col bg-[var(--bg-surface)] rounded-2xl shadow-sm border border-[var(--border-subtle)] overflow-hidden hover:shadow-md transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]";
 
   if (isArchived) {
     return <div className={cardClassName}>{cardContent}</div>;

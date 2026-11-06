@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { useLanguage } from "@/context/LanguageContext";
+import { useLanguage, LANGUAGE_TOGGLE_DISABLED } from "@/context/LanguageContext";
 import { useCohortStudents } from "@/lib/cohort-students";
 import { ADMIN_DASHBOARD_DISABLED } from "@/lib/featureFlags";
 import type { UserRole } from "@/context/AuthContext";
@@ -12,19 +12,14 @@ import { API_ENABLED } from "@/lib/api/client";
 import * as authApi from "@/lib/api/auth";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
 
+
+import Icon from "@/components/Icon";
+import IconButton from "@/components/IconButton";
+import BrandLogo, { BrandMark, GoogleLogo } from "@/components/BrandLogo";
+import IconTile from "@/components/IconTile";
 function HwaiLogo() {
   return (
-    <div className="flex items-center gap-2.5">
-      <div className="w-9 h-9 rounded-xl bg-[#2DD4BF] flex items-center justify-center shrink-0">
-        <svg width="20" height="20" viewBox="0 0 18 18" fill="none">
-          <rect x="2" y="2" width="6" height="6" rx="1" fill="white" fillOpacity="0.9"/>
-          <rect x="10" y="2" width="6" height="6" rx="1" fill="white" fillOpacity="0.9"/>
-          <rect x="2" y="10" width="6" height="6" rx="1" fill="white" fillOpacity="0.9"/>
-          <rect x="10" y="10" width="6" height="6" rx="1" fill="white" fillOpacity="0.6"/>
-        </svg>
-      </div>
-      <span className="font-bold text-[17px] tracking-tight text-white">HWAI Agent</span>
-    </div>
+    <BrandLogo size="lg" tone="onDark" />
   );
 }
 
@@ -38,38 +33,23 @@ function detectRole(email: string): UserRole {
 export default function LoginPage() {
   const router = useRouter();
   const { user, login, logout } = useAuth();
-  const { t, lang } = useLanguage();
+  const { t, lang, toggleLang } = useLanguage();
   const { findByStudentId } = useCohortStudents();
 
   const FEATURES = [
     {
       id: "ai-grading",
-      icon: (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-        </svg>
-      ),
+      icon: "zap" as const,
       label: t("ตรวจงานด้วย AI ตาม Rubric", "AI-powered rubric grading"),
     },
     {
       id: "clo-tracking",
-      icon: (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-        </svg>
-      ),
+      icon: "activity" as const,
       label: t("ติดตาม CLO / TABEE", "CLO / TABEE progress tracking"),
     },
     {
       id: "collaboration",
-      icon: (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-          <circle cx="9" cy="7" r="4"/>
-          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-        </svg>
-      ),
+      icon: "users" as const,
       label: t("จัดการรายวิชาร่วมกัน", "Collaborative course management"),
     },
   ];
@@ -169,15 +149,17 @@ export default function LoginPage() {
   return (
     <div className="h-screen flex overflow-hidden">
       {/* Left panel — branding */}
-      <div className="hidden lg:flex lg:w-[42%] flex-col bg-[#1B2A4A] px-12 py-10">
+      <div data-testid="login-brand" className="relative hidden lg:flex lg:w-[42%] flex-col overflow-hidden bg-[var(--navbar-bg)] px-12 py-10">
+        {/* the logo's four squares, drawn large and faint — the same mark as the top bar, used as the panel's one decoration */}
+        <BrandMark className="pointer-events-none absolute -top-32 -right-32 h-[24rem] w-[24rem] text-white opacity-[0.05]" />
         <HwaiLogo />
 
-        <div className="mt-auto mb-auto">
-          <h2 className="text-4xl font-extrabold text-white leading-tight">
+        <div className="relative mt-auto mb-auto">
+          <h2 className="text-4xl font-extrabold text-white leading-tight [text-wrap:balance]">
             {t("ตรวจงานด้วย", "Grading at the")}<br />
-            <span className="text-[#2DD4BF]">{t("ความเร็วแห่งความคิด", "speed of thought.")}</span>
+            <span className="text-[var(--brand-bright)]">{t("ความเร็วแห่งความคิด", "speed of thought.")}</span>
           </h2>
-          <p className="mt-4 text-white/60 text-sm leading-relaxed max-w-xs">
+          <p className="mt-4 text-white/75 text-sm leading-relaxed max-w-xs [text-wrap:pretty]">
             {t(
               "เสริมพลังห้องเรียนด้วย AI ตรวจงานอัตโนมัติ ใช้เวลาตรวจน้อยลง สอนมากขึ้น",
               "Empower your classroom with AI-driven insights. Spend less time grading and more time teaching."
@@ -187,43 +169,40 @@ export default function LoginPage() {
           <div className="mt-8 flex flex-col gap-3">
             {FEATURES.map((f) => (
               <div key={f.id} className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-[var(--accent-bright)]/15 flex items-center justify-center shrink-0 text-[#2DD4BF]">
-                  {f.icon}
-                </div>
-                <span className="text-white/80 text-sm font-medium">{f.label}</span>
+                <IconTile icon={f.icon} size="sm" tone="brand" />
+                <span className="text-white/90 text-sm font-medium">{f.label}</span>
               </div>
             ))}
           </div>
         </div>
 
-        <p className="text-white/60 text-xs">
+        <p className="relative text-white/70 text-xs">
           {t("© 2569 กลุ่มโครงการ HWAI Agent สงวนลิขสิทธิ์", "© 2026 HWAI Agent Project Group. All rights reserved.")}
         </p>
       </div>
 
       {/* Right panel — form */}
-      <div className="flex-1 overflow-y-auto bg-white dark:bg-[var(--bg-app)]">
+      <div className="relative flex-1 overflow-y-auto bg-[var(--bg-surface)] dark:bg-[var(--bg-app)]">
+        {/* language toggle: same control as the top bar, available before signing in */}
+        {!LANGUAGE_TOGGLE_DISABLED && (
+          <button
+            type="button" onClick={toggleLang} aria-label="Toggle language"
+            className="absolute right-6 top-5 z-10 h-8 px-3 rounded-lg border border-[var(--border)] bg-[var(--bg-surface)] text-xs font-semibold tracking-wide text-[var(--text-secondary)] hover:text-[var(--accent)] hover:border-[var(--accent-bright)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
+          >
+            {lang === "th" ? "TH" : "EN"}
+          </button>
+        )}
         <div className="min-h-full flex items-center justify-center px-6 py-8">
           <div className="w-full max-w-[420px]">
             {/* Mobile logo */}
             <div className="lg:hidden mb-8 flex justify-center">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-[#2DD4BF] flex items-center justify-center">
-                  <svg width="20" height="20" viewBox="0 0 18 18" fill="none">
-                    <rect x="2" y="2" width="6" height="6" rx="1" fill="#1B2A4A" fillOpacity="0.9"/>
-                    <rect x="10" y="2" width="6" height="6" rx="1" fill="#1B2A4A" fillOpacity="0.9"/>
-                    <rect x="2" y="10" width="6" height="6" rx="1" fill="#1B2A4A" fillOpacity="0.9"/>
-                    <rect x="10" y="10" width="6" height="6" rx="1" fill="#1B2A4A" fillOpacity="0.6"/>
-                  </svg>
-                </div>
-                <span className="font-bold text-[17px] text-[var(--text-primary)]">HWAI Agent</span>
-              </div>
+              <BrandLogo size="lg" tone="onLight" />
             </div>
 
             <h1 className="text-3xl font-extrabold text-[var(--text-primary)]">
               {t("ยินดีต้อนรับกลับ", "Welcome back")}
             </h1>
-            <p className="mt-1.5 text-sm text-gray-500">
+            <p className="mt-1.5 text-sm text-[var(--text-secondary)]">
               {t("กรอกอีเมลและรหัสผ่านเพื่อเข้าสู่ระบบ", "Enter your email and password to sign in.")}
             </p>
 
@@ -234,11 +213,8 @@ export default function LoginPage() {
                   {t("อีเมล", "Email")}
                 </label>
                 <div className="relative">
-                  <span aria-hidden="true" className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                      <polyline points="22,6 12,13 2,6"/>
-                    </svg>
+                  <span aria-hidden="true" className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)] pointer-events-none">
+                    <Icon name="mail" />
                   </span>
                   <input
                     type="email"
@@ -246,7 +222,7 @@ export default function LoginPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@kmitl.ac.th"
                     autoComplete="email"
-                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm text-[var(--text-primary)] placeholder-gray-400 bg-white dark:bg-[var(--bg-card)] focus:outline-none focus:border-[var(--accent-bright)] focus:ring-2 focus:ring-[var(--accent-bright)]/20 transition-colors"
+                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-[var(--border)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] bg-[var(--bg-surface)] dark:bg-[var(--bg-card)] focus:outline-none focus:border-[var(--accent-bright)] focus:ring-2 focus:ring-[var(--accent-bright)]/20 transition-colors"
                     required
                   />
                 </div>
@@ -258,11 +234,8 @@ export default function LoginPage() {
                   {t("รหัสผ่าน", "Password")}
                 </label>
                 <div className="relative">
-                  <span aria-hidden="true" className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                      <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                    </svg>
+                  <span aria-hidden="true" className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)] pointer-events-none">
+                    <Icon name="lock" />
                   </span>
                   <input
                     type={showPw ? "text" : "password"}
@@ -270,28 +243,10 @@ export default function LoginPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
                     autoComplete="current-password"
-                    className="w-full pl-10 pr-11 py-3 rounded-xl border border-gray-200 text-sm text-[var(--text-primary)] placeholder-gray-400 bg-white dark:bg-[var(--bg-card)] focus:outline-none focus:border-[var(--accent-bright)] focus:ring-2 focus:ring-[var(--accent-bright)]/20 transition-colors"
+                    className="w-full pl-10 pr-11 py-3 rounded-xl border border-[var(--border)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] bg-[var(--bg-surface)] dark:bg-[var(--bg-card)] focus:outline-none focus:border-[var(--accent-bright)] focus:ring-2 focus:ring-[var(--accent-bright)]/20 transition-colors"
                     required
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowPw(!showPw)}
-                    aria-label={showPw ? t("ซ่อนรหัสผ่าน", "Hide password") : t("แสดงรหัสผ่าน", "Show password")}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] rounded"
-                  >
-                    {showPw ? (
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
-                        <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
-                        <line x1="1" y1="1" x2="23" y2="23"/>
-                      </svg>
-                    ) : (
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                        <circle cx="12" cy="12" r="3"/>
-                      </svg>
-                    )}
-                  </button>
+                  <IconButton icon={showPw ? "eye-off" : "eye"} label={showPw ? t("ซ่อนรหัสผ่าน", "Hide password") : t("แสดงรหัสผ่าน", "Show password")} onClick={() => setShowPw(!showPw)} className="absolute right-1.5 top-1/2 -translate-y-1/2" />
                 </div>
               </div>
 
@@ -311,9 +266,9 @@ export default function LoginPage() {
             </form>
 
             <div className="my-6 flex items-center gap-3">
-              <div className="flex-1 h-px bg-gray-200" />
-              <span className="text-xs text-gray-400 font-medium">{t("หรือเข้าสู่ระบบด้วย", "Or continue with")}</span>
-              <div className="flex-1 h-px bg-gray-200" />
+              <div className="flex-1 h-px bg-[var(--border)]" />
+              <span className="text-xs text-[var(--text-muted)] font-medium">{t("หรือเข้าสู่ระบบด้วย", "Or continue with")}</span>
+              <div className="flex-1 h-px bg-[var(--border)]" />
             </div>
 
             <div className="grid grid-cols-1 gap-3">
@@ -330,14 +285,9 @@ export default function LoginPage() {
                 type="button"
                 disabled
                 title={t("เร็วๆ นี้", "Coming soon")}
-                className="flex items-center justify-center gap-2.5 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-[var(--text-primary)] opacity-50 cursor-not-allowed"
+                className="flex items-center justify-center gap-2.5 py-2.5 rounded-xl border border-[var(--border)] text-sm font-medium text-[var(--text-primary)] opacity-50 cursor-not-allowed"
               >
-                <svg width="18" height="18" viewBox="0 0 24 24">
-                  <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                  <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                  <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                  <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                </svg>
+                <GoogleLogo />
                 Google
               </button>
               )}
@@ -347,8 +297,8 @@ export default function LoginPage() {
                  password only: each button signs in as a real seeded account with that account's own
                  permissions (สมศักดิ์ is a demo admin + teacher; 69070101 is a student). ── */}
             {API_ENABLED && demoLogin && (
-              <div className="mt-6 rounded-xl border border-dashed border-amber-300 bg-amber-50 dark:border-amber-700/50 dark:bg-amber-900/10 p-4">
-                <p className="text-[10px] font-bold tracking-widest uppercase text-amber-600 dark:text-amber-400 mb-3">
+              <div className="mt-6 rounded-xl border border-dashed border-[var(--s-warn-bd)] bg-[var(--s-warn-bg)] p-4">
+                <p className="text-[10px] font-bold tracking-widest uppercase text-[var(--s-warn-text)] mb-3">
                   {t("เข้าสู่ระบบแบบเดโม", "Demo sign-in")}
                 </p>
                 <div className="grid grid-cols-3 gap-2">
@@ -365,7 +315,7 @@ export default function LoginPage() {
                       disabled={loading}
                       title={demoEmail}
                       onClick={() => signInWith(() => authApi.demoLogin(demoEmail), role)}
-                      className="py-2 rounded-lg text-xs font-semibold border border-amber-300 bg-white text-amber-700 hover:bg-amber-100 disabled:opacity-50 dark:bg-amber-900/20 dark:border-amber-700/60 dark:text-amber-300 dark:hover:bg-amber-900/40 transition-colors"
+                      className="py-2 rounded-lg text-xs font-semibold border border-[var(--s-warn-bd)] bg-[var(--bg-surface)] text-[var(--s-warn-text)] hover:bg-[var(--s-warn-bg)] disabled:opacity-50 transition-colors"
                     >
                       {label}
                     </button>
@@ -376,8 +326,8 @@ export default function LoginPage() {
 
             {/* ── DEV BYPASS — only in development build, and only without the backend (localStorage mock) ── */}
             {process.env.NODE_ENV === "development" && !API_ENABLED && (
-              <div className="mt-6 rounded-xl border border-dashed border-amber-300 bg-amber-50 dark:border-amber-700/50 dark:bg-amber-900/10 p-4">
-                <p className="text-[10px] font-bold tracking-widest uppercase text-amber-600 dark:text-amber-400 mb-3">
+              <div className="mt-6 rounded-xl border border-dashed border-[var(--s-warn-bd)] bg-[var(--s-warn-bg)] p-4">
+                <p className="text-[10px] font-bold tracking-widest uppercase text-[var(--s-warn-text)] mb-3">
                   Dev Bypass
                 </p>
                 <div className="grid grid-cols-3 gap-2">
@@ -403,7 +353,7 @@ export default function LoginPage() {
                           ? { name: swap.name ?? name, email: `${swap.studentId}@kmitl.ac.th`, role, studentId: swap.studentId }
                           : { name, email: devEmail, role, ...(studentId ? { studentId } : {}) });
                       }}
-                      className="py-2 rounded-lg text-xs font-semibold border border-amber-300 bg-white text-amber-700 hover:bg-amber-100 dark:bg-amber-900/20 dark:border-amber-700/60 dark:text-amber-300 dark:hover:bg-amber-900/40 transition-colors"
+                      className="py-2 rounded-lg text-xs font-semibold border border-[var(--s-warn-bd)] bg-[var(--bg-surface)] text-[var(--s-warn-text)] hover:bg-[var(--s-warn-bg)] transition-colors"
                     >
                       {label}
                     </button>

@@ -9,6 +9,8 @@ import CloChips from "@/components/CloChips";
 import { splitCriterionName } from "@/lib/rubricName";
 import type { CLO } from "@/lib/clo";
 
+import Icon from "@/components/Icon";
+import IconButton from "@/components/IconButton";
 // How a level looks on a distribution bar: best → worst. warn is not used — it means "awaiting grading" everywhere else.
 const FILL = ["bg-[var(--s-ok-text)]", "bg-[var(--s-info-text)]", "bg-[var(--text-muted)]", "bg-[var(--s-err-text)]"];
 const TEXT = ["text-[var(--s-ok-text)]", "text-[var(--s-info-text)]", "text-[var(--text-secondary)]", "text-[var(--s-err-text)]"];
@@ -86,7 +88,7 @@ export default function GradingRubricPanel({ rubric, graded, editHref, locked = 
           </button>
           {locked ? (
             <span data-testid="rubric-locked-chip" className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-[var(--border)] bg-[var(--bg-app)] px-3 text-xs font-medium text-[var(--text-secondary)]">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+              <Icon name="lock" size="xs" />
               {t("ล็อกแล้ว — ประกาศผลแล้ว", "Locked once announced")}
             </span>
           ) : (
@@ -165,18 +167,7 @@ export default function GradingRubricPanel({ rubric, graded, editHref, locked = 
                   <span className="text-xs tabular-nums text-[var(--text-muted)]">{t(`เต็ม ${c.maxPoints} คะแนน`, `of ${c.maxPoints} pts`)}</span>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => toggle(c.id)}
-                  aria-expanded={isOpen}
-                  aria-label={t(`คำอธิบายระดับของ ${c.name}`, `Level descriptions for ${c.name}`)}
-                  title={t("คำอธิบายระดับ", "Level descriptions")}
-                  className="inline-flex h-8 w-8 items-center justify-center justify-self-end rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)] active:scale-[.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={`transition-transform ${isOpen ? "rotate-180" : ""}`}>
-                    <polyline points="6 9 12 15 18 9" />
-                  </svg>
-                </button>
+                <IconButton icon="chevron-down" label={t(`คำอธิบายระดับของ ${c.name}`, `Level descriptions for ${c.name}`)} onClick={() => toggle(c.id)} aria-expanded={isOpen} iconClassName={`transition-transform ${isOpen ? "rotate-180" : ""}`} className="justify-self-end" />
               </div>
 
               {isOpen && (

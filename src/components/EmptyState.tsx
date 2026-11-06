@@ -1,33 +1,21 @@
 "use client";
 
 import React from "react";
+import IconTile from "@/components/IconTile";
+import type { IconName } from "@/components/Icon";
 
 interface EmptyStateProps {
-  icon: React.ReactNode;
-  /** Any valid CSS color (hex or var(--token)) for the icon background circle (10% opacity applied automatically) */
-  iconColor?: string;
+  /** a glyph name from components/Icon.tsx — drawn in the shared IconTile (lg, accent) */
+  icon: IconName;
   title: string;
   description?: string;
   action?: React.ReactNode;
 }
 
-export default function EmptyState({
-  icon,
-  iconColor = "#6B7280",
-  title,
-  description,
-  action,
-}: EmptyStateProps) {
+export default function EmptyState({ icon, title, description, action }: EmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--border-subtle)] bg-[var(--bg-surface)] py-16 px-8 text-center">
-      <div
-        className="w-12 h-12 rounded-full flex items-center justify-center mb-3"
-        // color-mix works for both raw hex and var(--token) — the old `${iconColor}1a`
-        // hex-alpha-suffix trick silently broke for any non-hex (e.g. token) value.
-        style={{ backgroundColor: `color-mix(in srgb, ${iconColor} 10%, transparent)` }}
-      >
-        {icon}
-      </div>
+      <IconTile icon={icon} size="lg" tone="accent" className="mb-3" />
       <p className="text-sm font-semibold text-[var(--text-primary)]">{title}</p>
       {description && (
         <p className="text-xs text-[var(--text-muted)] mt-1">{description}</p>

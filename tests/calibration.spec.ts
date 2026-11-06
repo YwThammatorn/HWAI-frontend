@@ -418,6 +418,7 @@ test.describe("Calibration", () => {
     }, offsets);
     await page.goto(`${BASE}/teacher/courses/c-cal/grading`);
     await page.locator("main li", { hasText: "Not graded by the AI yet" }).getByRole("button", { name: /Grade with AI/ }).click();
+    await page.getByTestId("ai-preview-confirm").click();
     await expect(page).toHaveURL(/assignments\/a-new\/grading$/);
     const s1 = (await storedSubs(page)).find((s) => s.id === "a-new-s1")!;
     expect(s1.aiCriterionScores).toEqual(mockAiGradeCriteria("a-new-s1", CRITERIA, offsets).criterionScores);

@@ -8,7 +8,8 @@ import { useCurriculum } from "@/lib/curriculum";
 import { useLanguage } from "@/context/LanguageContext";
 import { CourseIcon, COURSE_ICON_KEYS, type CourseIconKey } from "@/components/CourseIcon";
 import CourseBanner from "@/components/CourseBanner";
-
+
+import Icon from "@/components/Icon";
 export default function CourseSettingsPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
@@ -67,7 +68,7 @@ export default function CourseSettingsPage() {
 
   if (!course) {
     return (
-        <main className="flex-1 flex items-center justify-center text-gray-500 text-sm">
+        <main className="flex-1 flex items-center justify-center text-[var(--text-secondary)] text-sm">
           {t("ไม่พบรายวิชานี้", "Course not found")} —{" "}
           <Link href="/teacher/courses" className="text-[var(--accent)] ml-1 hover:underline">{t("กลับไปหน้าหลัก", "Back to home")}</Link>
         </main>
@@ -97,10 +98,8 @@ export default function CourseSettingsPage() {
   return (
       <main className="w-full px-8 py-8">
         {/* Back */}
-        <button onClick={() => navAway("/teacher/courses")} className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-[var(--accent)] mb-6 transition-colors">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-            <polyline points="15 18 9 12 15 6"/>
-          </svg>
+        <button onClick={() => navAway("/teacher/courses")} className="inline-flex items-center gap-1.5 text-sm text-[var(--text-secondary)] hover:text-[var(--accent)] mb-6 transition-colors">
+          <Icon name="chevron-left" />
           {t("กลับไปหน้ารายวิชา", "Back to All Courses")}
         </button>
 
@@ -109,10 +108,7 @@ export default function CourseSettingsPage() {
         {/* Curriculum link — read-only, set only at course creation */}
         {linkedTemplate && (
           <div className="flex items-center gap-3 mb-6 px-4 py-3 rounded-xl border border-[var(--accent)]/30 bg-[var(--accent-subtle)]">
-            <svg className="text-[var(--accent)] shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-              <path d="M22 10v6M2 10l10-5 10 5-10 5-10-5z"/>
-              <path d="M6 12v5c0 1.66 2.69 3 6 3s6-1.34 6-3v-5"/>
-            </svg>
+            <Icon name="graduation-cap" size="lg" className="text-[var(--accent)] shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-[var(--text-primary)]">
                 {linkedTemplate.code} — {linkedTemplate.name}
@@ -129,8 +125,8 @@ export default function CourseSettingsPage() {
 
         <form onSubmit={handleSave} className="space-y-6">
           {/* General Information */}
-          <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-5">{t("ข้อมูลทั่วไป", "General Information")}</h2>
+          <section className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-subtle)] shadow-sm p-6">
+            <h2 className="text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-5">{t("ข้อมูลทั่วไป", "General Information")}</h2>
 
             <div className="mb-4">
               <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">
@@ -139,7 +135,7 @@ export default function CourseSettingsPage() {
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
                 required
               />
             </div>
@@ -150,14 +146,14 @@ export default function CourseSettingsPage() {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={3}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] resize-none transition-colors"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] resize-none transition-colors"
               />
             </div>
           </section>
 
           {/* Course Visuals */}
-          <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-5">{t("รูปแบบรายวิชา", "Course Visuals")}</h2>
+          <section className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-subtle)] shadow-sm p-6">
+            <h2 className="text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-5">{t("รูปแบบรายวิชา", "Course Visuals")}</h2>
 
             <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-8">
               {/* Pickers */}
@@ -176,11 +172,11 @@ export default function CourseSettingsPage() {
                         className={[
                           "w-9 h-9 rounded-lg border-2 flex items-center justify-center transition-all",
                           icon === k
-                            ? "border-[#1B2A4A] text-[var(--text-primary)] scale-110"
-                            : "border-gray-100 text-gray-400 hover:text-[var(--text-primary)] hover:border-gray-200",
+                            ? "border-[var(--text-primary)] text-[var(--text-primary)] scale-110"
+                            : "border-[var(--border-subtle)] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:border-[var(--border)]",
                         ].join(" ")}
                       >
-                        <CourseIcon iconKey={k} size={16} />
+                        <CourseIcon iconKey={k} size="md" />
                       </button>
                     ))}
                   </div>
@@ -200,7 +196,7 @@ export default function CourseSettingsPage() {
                         className="w-9 h-9 rounded-lg border-2 transition-all"
                         style={{
                           background: c,
-                          borderColor: coverColor === c ? "#1B2A4A" : "transparent",
+                          borderColor: coverColor === c ? "var(--text-primary)" : "transparent",
                           transform: coverColor === c ? "scale(1.1)" : "scale(1)",
                         }}
                       />
@@ -215,7 +211,7 @@ export default function CourseSettingsPage() {
                   contrast logic included). */}
               <div className="flex flex-col">
                 <p className="text-sm font-medium text-[var(--text-primary)] mb-2.5">{t("ตัวอย่าง", "Preview")}</p>
-                <div className="w-64 rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
+                <div className="w-64 rounded-2xl overflow-hidden border border-[var(--border-subtle)] shadow-sm">
                   <CourseBanner coverColor={coverColor} icon={icon} name={name || t("ชื่อรายวิชา", "Course Name")} code={course.code} />
                 </div>
               </div>
@@ -225,18 +221,18 @@ export default function CourseSettingsPage() {
           {/* Danger Zone — Delete removed 22/9/2569: only admin can permanently delete a course now
               (admin/courses/page.tsx already has its own delete flow); teachers can still archive
               their own course (reversible) but no longer see a path to permanent deletion here. */}
-          <section className="bg-white rounded-2xl border border-orange-200 shadow-sm p-6">
-            <h2 className="text-sm font-semibold text-orange-600 uppercase tracking-wider mb-4">{t("โซนอันตราย", "Danger Zone")}</h2>
+          <section className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--s-warn-bd)] shadow-sm p-6">
+            <h2 className="text-sm font-semibold text-[var(--st-todo-text)] uppercase tracking-wider mb-4">{t("โซนอันตราย", "Danger Zone")}</h2>
             <div className="flex gap-3">
               <button
                 type="button"
                 onClick={handleArchive}
-                className="px-4 py-2 text-sm font-medium rounded-xl border border-orange-200 text-orange-500 hover:bg-orange-50 transition-colors"
+                className="px-4 py-2 text-sm font-medium rounded-xl border border-[var(--s-warn-bd)] text-[var(--st-todo-text)] hover:bg-[var(--st-todo-bg)] transition-colors"
               >
                 {t("จัดเก็บรายวิชา", "Archive Course")}
               </button>
             </div>
-            <p className="text-xs text-gray-500 mt-3">{t("Archive จะซ่อนรายวิชา — สามารถ restore ได้ภายหลัง. การลบรายวิชาถาวรทำได้โดยแอดมินเท่านั้น", "Archive hides the course — you can restore it later. Permanently deleting a course is admin-only.")}</p>
+            <p className="text-xs text-[var(--text-secondary)] mt-3">{t("Archive จะซ่อนรายวิชา — สามารถ restore ได้ภายหลัง. การลบรายวิชาถาวรทำได้โดยแอดมินเท่านั้น", "Archive hides the course — you can restore it later. Permanently deleting a course is admin-only.")}</p>
           </section>
 
           {/* Actions */}
@@ -244,7 +240,7 @@ export default function CourseSettingsPage() {
             <button
               type="button"
               onClick={() => navAway(`/teacher/courses/${id}`)}
-              className="px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+              className="px-5 py-2.5 rounded-xl border border-[var(--border)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] transition-colors"
             >
               {t("ยกเลิก", "Cancel")}
             </button>
@@ -253,12 +249,12 @@ export default function CourseSettingsPage() {
               disabled={!isValid}
               className={[
                 "flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-colors",
-                saved ? "bg-emerald-500 text-white" : "bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] disabled:opacity-50 disabled:cursor-not-allowed",
+                saved ? "bg-[var(--s-ok-text)] text-white" : "bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] disabled:opacity-50 disabled:cursor-not-allowed",
               ].join(" ")}
             >
               {saved ? (
                 <>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  <Icon name="check" size="sm" />
                   {t("บันทึกแล้ว", "Saved")}
                 </>
               ) : (

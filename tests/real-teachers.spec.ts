@@ -7,7 +7,7 @@ import { findMultiRoleAccount } from "../src/lib/accounts";
 // 15/10/2569 — the mock's teachers are the real teachers of the CE department (public page https://www.ce.kmitl.ac.th/FacultyMem). Which subject
 // each teaches is invented except the four the department's Moodle shows (see scripts/build-real-teachers.ts). These guard the data.
 
-interface T { id: string; title?: string; name: string; email: string; role: string; status: string; courseIds: string[] }
+interface T { id: string; title?: string; name: string; email: string; status: string; courseIds: string[] }
 interface C { id: string; code?: string; name: string; academicYear: number; term: number; sectionNumber: string }
 const read = <X>(p: string) => JSON.parse(fs.readFileSync(p, "utf8")) as X;
 const TEACHERS = read<T[]>("public/mock-data/teachers-mockup.json");
@@ -25,7 +25,7 @@ test("22 teachers: the head of department and the 21 อาจารย์, uniq
   expect(new Set(TEACHERS.map((t) => t.email)).size).toBe(22);
   for (const t of TEACHERS) {
     expect(t.email).toMatch(/^[a-z0-9.]+@kmitl\.ac\.th$/);                                  // lower case, kmitl only: no gmail / hotmail, no "[at]"
-    expect(t.role).toBe("teacher");
+    expect("role" in t).toBe(false);                                                         // a teacher account is a teacher (no account role, 7/11/2569)
     expect(t.status).toBe("active");
     if (t.title) expect(["ผศ.ดร.", "รศ.ดร.", "ผศ.", "ดร.", "อ."]).toContain(t.title);        // the app's own prefixes (lib/managed-teachers.ts)
     expect(t.name).toMatch(/^[\u0E00-\u0E7F]+ [\u0E00-\u0E7F]+$/);                          // Thai first + last name, whatever the language

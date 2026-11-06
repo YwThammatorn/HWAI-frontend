@@ -72,11 +72,11 @@ test.describe("Exam — teacher form", () => {
     await page.goto(`${BASE}/teacher/courses/c-exf/assignments/new`);
     await page.waitForLoadState("networkidle");
     await page.getByPlaceholder("เช่น รายงานการวิจัยผู้ใช้").fill("Final exam");
-    await expect(page.getByText("Due Date")).toBeVisible();
+    await expect(page.locator("label", { hasText: "Due Date" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Create Assignment" })).toBeDisabled(); // a normal assignment needs a date
 
     await page.getByRole("button", { name: "Exam Assignment" }).click();
-    await expect(page.getByText("Due Date")).toHaveCount(0);
+    await expect(page.locator("label", { hasText: "Due Date" })).toHaveCount(0);
     await expect(page.locator('input[type="date"]')).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Create Assignment" })).toBeEnabled();
 

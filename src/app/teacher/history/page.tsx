@@ -5,7 +5,9 @@ import { useRouter } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
 import { TEACHER_HISTORY_DISABLED } from "@/lib/featureFlags";
 import SearchInput from "@/components/SearchInput";
-
+
+import Icon from "@/components/Icon";
+import Pagination from "@/components/Pagination";
 // ─── Types & Seed Data ────────────────────────────────────────────────────────
 
 type GradingStatus = "completed" | "failed";
@@ -25,26 +27,26 @@ interface GradingSession {
 }
 
 const HISTORY: GradingSession[] = [
-  { id: "h-1",  date: "2026-08-20T11:30:00Z", assignmentId: "a-seed-1-1", assignment: "User Research Report",       courseId: "seed-1", course: "UX/UI Design",        courseColor: "#2DD4BF", count: 5,  cost: 75,  status: "completed", grader: "You" },
-  { id: "h-2",  date: "2026-08-18T09:15:00Z", assignmentId: "a-seed-1-2", assignment: "Wireframe Prototype",        courseId: "seed-1", course: "UX/UI Design",        courseColor: "#2DD4BF", count: 4,  cost: 60,  status: "completed", grader: "You" },
-  { id: "h-3",  date: "2026-08-15T14:00:00Z", assignmentId: "a-seed-2-1", assignment: "Interaction Flow Diagram",   courseId: "seed-2", course: "Interaction Design",  courseColor: "#A78BFA", count: 4,  cost: 60,  status: "completed", grader: "You" },
-  { id: "h-4",  date: "2026-08-12T16:45:00Z", assignmentId: "a-seed-2-2", assignment: "Usability Test Report",      courseId: "seed-2", course: "Interaction Design",  courseColor: "#A78BFA", count: 3,  cost: 45,  status: "failed",    grader: "You" },
-  { id: "h-5",  date: "2026-08-10T10:20:00Z", assignmentId: "a-seed-2-2", assignment: "Usability Test Report",      courseId: "seed-2", course: "Interaction Design",  courseColor: "#A78BFA", count: 5,  cost: 75,  status: "completed", grader: "You" },
-  { id: "h-6",  date: "2026-08-07T08:00:00Z", assignmentId: "a-seed-1-1", assignment: "User Research Report",       courseId: "seed-1", course: "UX/UI Design",        courseColor: "#2DD4BF", count: 10, cost: 150, status: "completed", grader: "You" },
-  { id: "h-7",  date: "2026-08-05T13:30:00Z", assignmentId: "a-seed-1-3", assignment: "Final UI Design (Figma)",   courseId: "seed-1", course: "UX/UI Design",        courseColor: "#2DD4BF", count: 8,  cost: 120, status: "completed", grader: "You" },
-  { id: "h-8",  date: "2026-08-03T11:00:00Z", assignmentId: "a-seed-2-1", assignment: "Interaction Flow Diagram",   courseId: "seed-2", course: "Interaction Design",  courseColor: "#A78BFA", count: 12, cost: 180, status: "completed", grader: "You" },
-  { id: "h-9",  date: "2026-07-30T09:45:00Z", assignmentId: "a-seed-1-2", assignment: "Wireframe Prototype",        courseId: "seed-1", course: "UX/UI Design",        courseColor: "#2DD4BF", count: 15, cost: 225, status: "completed", grader: "You" },
-  { id: "h-10", date: "2026-07-28T15:20:00Z", assignmentId: "a-seed-1-1", assignment: "User Research Report",       courseId: "seed-1", course: "UX/UI Design",        courseColor: "#2DD4BF", count: 7,  cost: 105, status: "failed",    grader: "You" },
-  { id: "h-11", date: "2026-07-25T10:00:00Z", assignmentId: "a-seed-1-3", assignment: "Final UI Design (Figma)",   courseId: "seed-1", course: "UX/UI Design",        courseColor: "#2DD4BF", count: 9,  cost: 135, status: "completed", grader: "You" },
-  { id: "h-12", date: "2026-07-22T14:15:00Z", assignmentId: "a-seed-2-2", assignment: "Usability Test Report",      courseId: "seed-2", course: "Interaction Design",  courseColor: "#A78BFA", count: 6,  cost: 90,  status: "completed", grader: "You" },
-  { id: "h-13", date: "2026-07-20T08:30:00Z", assignmentId: "a-seed-1-2", assignment: "Wireframe Prototype",        courseId: "seed-1", course: "UX/UI Design",        courseColor: "#2DD4BF", count: 20, cost: 300, status: "completed", grader: "You" },
-  { id: "h-14", date: "2026-07-17T11:45:00Z", assignmentId: "a-seed-2-1", assignment: "Interaction Flow Diagram",   courseId: "seed-2", course: "Interaction Design",  courseColor: "#A78BFA", count: 14, cost: 210, status: "completed", grader: "You" },
-  { id: "h-15", date: "2026-07-15T09:00:00Z", assignmentId: "a-seed-1-1", assignment: "User Research Report",       courseId: "seed-1", course: "UX/UI Design",        courseColor: "#2DD4BF", count: 11, cost: 165, status: "completed", grader: "You" },
-  { id: "h-16", date: "2026-07-12T13:00:00Z", assignmentId: "a-seed-1-3", assignment: "Final UI Design (Figma)",   courseId: "seed-1", course: "UX/UI Design",        courseColor: "#2DD4BF", count: 18, cost: 270, status: "completed", grader: "You" },
-  { id: "h-17", date: "2026-07-10T10:30:00Z", assignmentId: "a-seed-2-2", assignment: "Usability Test Report",      courseId: "seed-2", course: "Interaction Design",  courseColor: "#A78BFA", count: 9,  cost: 135, status: "completed", grader: "You" },
-  { id: "h-18", date: "2026-07-08T15:00:00Z", assignmentId: "a-seed-1-2", assignment: "Wireframe Prototype",        courseId: "seed-1", course: "UX/UI Design",        courseColor: "#2DD4BF", count: 22, cost: 330, status: "failed",    grader: "You" },
-  { id: "h-19", date: "2026-07-05T09:30:00Z", assignmentId: "a-seed-2-1", assignment: "Interaction Flow Diagram",   courseId: "seed-2", course: "Interaction Design",  courseColor: "#A78BFA", count: 16, cost: 240, status: "completed", grader: "You" },
-  { id: "h-20", date: "2026-07-02T14:00:00Z", assignmentId: "a-seed-1-1", assignment: "User Research Report",       courseId: "seed-1", course: "UX/UI Design",        courseColor: "#2DD4BF", count: 13, cost: 195, status: "completed", grader: "You" },
+  { id: "h-1",  date: "2026-08-20T11:30:00Z", assignmentId: "a-seed-1-1", assignment: "User Research Report",       courseId: "seed-1", course: "UX/UI Design",        courseColor: "var(--brand-bright)", count: 5,  cost: 75,  status: "completed", grader: "You" },
+  { id: "h-2",  date: "2026-08-18T09:15:00Z", assignmentId: "a-seed-1-2", assignment: "Wireframe Prototype",        courseId: "seed-1", course: "UX/UI Design",        courseColor: "var(--brand-bright)", count: 4,  cost: 60,  status: "completed", grader: "You" },
+  { id: "h-3",  date: "2026-08-15T14:00:00Z", assignmentId: "a-seed-2-1", assignment: "Interaction Flow Diagram",   courseId: "seed-2", course: "Interaction Design",  courseColor: "var(--role-ta-text)", count: 4,  cost: 60,  status: "completed", grader: "You" },
+  { id: "h-4",  date: "2026-08-12T16:45:00Z", assignmentId: "a-seed-2-2", assignment: "Usability Test Report",      courseId: "seed-2", course: "Interaction Design",  courseColor: "var(--role-ta-text)", count: 3,  cost: 45,  status: "failed",    grader: "You" },
+  { id: "h-5",  date: "2026-08-10T10:20:00Z", assignmentId: "a-seed-2-2", assignment: "Usability Test Report",      courseId: "seed-2", course: "Interaction Design",  courseColor: "var(--role-ta-text)", count: 5,  cost: 75,  status: "completed", grader: "You" },
+  { id: "h-6",  date: "2026-08-07T08:00:00Z", assignmentId: "a-seed-1-1", assignment: "User Research Report",       courseId: "seed-1", course: "UX/UI Design",        courseColor: "var(--brand-bright)", count: 10, cost: 150, status: "completed", grader: "You" },
+  { id: "h-7",  date: "2026-08-05T13:30:00Z", assignmentId: "a-seed-1-3", assignment: "Final UI Design (Figma)",   courseId: "seed-1", course: "UX/UI Design",        courseColor: "var(--brand-bright)", count: 8,  cost: 120, status: "completed", grader: "You" },
+  { id: "h-8",  date: "2026-08-03T11:00:00Z", assignmentId: "a-seed-2-1", assignment: "Interaction Flow Diagram",   courseId: "seed-2", course: "Interaction Design",  courseColor: "var(--role-ta-text)", count: 12, cost: 180, status: "completed", grader: "You" },
+  { id: "h-9",  date: "2026-07-30T09:45:00Z", assignmentId: "a-seed-1-2", assignment: "Wireframe Prototype",        courseId: "seed-1", course: "UX/UI Design",        courseColor: "var(--brand-bright)", count: 15, cost: 225, status: "completed", grader: "You" },
+  { id: "h-10", date: "2026-07-28T15:20:00Z", assignmentId: "a-seed-1-1", assignment: "User Research Report",       courseId: "seed-1", course: "UX/UI Design",        courseColor: "var(--brand-bright)", count: 7,  cost: 105, status: "failed",    grader: "You" },
+  { id: "h-11", date: "2026-07-25T10:00:00Z", assignmentId: "a-seed-1-3", assignment: "Final UI Design (Figma)",   courseId: "seed-1", course: "UX/UI Design",        courseColor: "var(--brand-bright)", count: 9,  cost: 135, status: "completed", grader: "You" },
+  { id: "h-12", date: "2026-07-22T14:15:00Z", assignmentId: "a-seed-2-2", assignment: "Usability Test Report",      courseId: "seed-2", course: "Interaction Design",  courseColor: "var(--role-ta-text)", count: 6,  cost: 90,  status: "completed", grader: "You" },
+  { id: "h-13", date: "2026-07-20T08:30:00Z", assignmentId: "a-seed-1-2", assignment: "Wireframe Prototype",        courseId: "seed-1", course: "UX/UI Design",        courseColor: "var(--brand-bright)", count: 20, cost: 300, status: "completed", grader: "You" },
+  { id: "h-14", date: "2026-07-17T11:45:00Z", assignmentId: "a-seed-2-1", assignment: "Interaction Flow Diagram",   courseId: "seed-2", course: "Interaction Design",  courseColor: "var(--role-ta-text)", count: 14, cost: 210, status: "completed", grader: "You" },
+  { id: "h-15", date: "2026-07-15T09:00:00Z", assignmentId: "a-seed-1-1", assignment: "User Research Report",       courseId: "seed-1", course: "UX/UI Design",        courseColor: "var(--brand-bright)", count: 11, cost: 165, status: "completed", grader: "You" },
+  { id: "h-16", date: "2026-07-12T13:00:00Z", assignmentId: "a-seed-1-3", assignment: "Final UI Design (Figma)",   courseId: "seed-1", course: "UX/UI Design",        courseColor: "var(--brand-bright)", count: 18, cost: 270, status: "completed", grader: "You" },
+  { id: "h-17", date: "2026-07-10T10:30:00Z", assignmentId: "a-seed-2-2", assignment: "Usability Test Report",      courseId: "seed-2", course: "Interaction Design",  courseColor: "var(--role-ta-text)", count: 9,  cost: 135, status: "completed", grader: "You" },
+  { id: "h-18", date: "2026-07-08T15:00:00Z", assignmentId: "a-seed-1-2", assignment: "Wireframe Prototype",        courseId: "seed-1", course: "UX/UI Design",        courseColor: "var(--brand-bright)", count: 22, cost: 330, status: "failed",    grader: "You" },
+  { id: "h-19", date: "2026-07-05T09:30:00Z", assignmentId: "a-seed-2-1", assignment: "Interaction Flow Diagram",   courseId: "seed-2", course: "Interaction Design",  courseColor: "var(--role-ta-text)", count: 16, cost: 240, status: "completed", grader: "You" },
+  { id: "h-20", date: "2026-07-02T14:00:00Z", assignmentId: "a-seed-1-1", assignment: "User Research Report",       courseId: "seed-1", course: "UX/UI Design",        courseColor: "var(--brand-bright)", count: 13, cost: 195, status: "completed", grader: "You" },
 ];
 
 const TOTAL_CREDIT_LIMIT = 5000;
@@ -79,41 +81,31 @@ function exportCSV(sessions: GradingSession[]) {
 
 function IconBolt() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-    </svg>
+    <Icon name="zap" />
   );
 }
 
 function IconCheck() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-      <path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
-    </svg>
+    <Icon name="check-square" />
   );
 }
 
 function IconDownload() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
-    </svg>
+    <Icon name="download" />
   );
 }
 
 function IconChevronRight() {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-      <polyline points="9 18 15 12 9 6" />
-    </svg>
+    <Icon name="chevron-right" size="sm" />
   );
 }
 
 function IconPlus() {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-      <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-    </svg>
+    <Icon name="plus" size="sm" />
   );
 }
 
@@ -190,13 +182,6 @@ export default function HistoryPage() {
     setPage(1);
   }
 
-  const pageNums: (number | "...")[] = (() => {
-    if (totalPages <= 5) return Array.from({ length: totalPages }, (_, i) => i + 1);
-    if (safeePage <= 3) return [1, 2, 3, "...", totalPages];
-    if (safeePage >= totalPages - 2) return [1, "...", totalPages - 2, totalPages - 1, totalPages];
-    return [1, "...", safeePage - 1, safeePage, safeePage + 1, "...", totalPages];
-  })();
-
   if (TEACHER_HISTORY_DISABLED) return null;
 
   return (
@@ -204,44 +189,44 @@ export default function HistoryPage() {
         {/* ── Page Title ── */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-[var(--text-primary)]">{t("ประวัติการตรวจงาน", "Grading History")}</h1>
-          <p className="text-sm text-gray-500 mt-1">{t("ติดตามกิจกรรมการตรวจและการใช้ credit", "Track your grading activity and credit consumption.")}</p>
+          <p className="text-sm text-[var(--text-secondary)] mt-1">{t("ติดตามกิจกรรมการตรวจและการใช้ credit", "Track your grading activity and credit consumption.")}</p>
         </div>
 
         {/* ── Stat Cards ── */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
           {/* Credits Used */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+          <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-subtle)] shadow-sm p-5">
             <div className="flex items-center gap-2 text-[var(--accent)] mb-3">
               <IconBolt />
-              <span className="text-xs font-semibold tracking-wide uppercase text-gray-500">{t("Credit ที่ใช้ไปทั้งหมด", "Total Credits Used")}</span>
+              <span className="text-xs font-semibold tracking-wide uppercase text-[var(--text-secondary)]">{t("Credit ที่ใช้ไปทั้งหมด", "Total Credits Used")}</span>
             </div>
             <div className="flex items-end gap-2">
               <span className="text-2xl font-bold text-[var(--text-primary)] tabular-nums">{totalCreditsUsed.toLocaleString()}</span>
-              <span className="text-sm text-gray-400 mb-1">/ {TOTAL_CREDIT_LIMIT.toLocaleString()}</span>
+              <span className="text-sm text-[var(--text-muted)] mb-1">/ {TOTAL_CREDIT_LIMIT.toLocaleString()}</span>
             </div>
             <p className="text-xs text-[var(--accent)] mt-2 font-medium">↑ {usedPct}% {t("ของ credit ทั้งหมดที่ใช้ไป", "of total limit used")}</p>
           </div>
 
           {/* Assignments Graded */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+          <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-subtle)] shadow-sm p-5">
             <div className="flex items-center gap-2 mb-3">
               <IconCheck />
-              <span className="text-xs font-semibold tracking-wide uppercase text-gray-500">{t("งานที่ตรวจแล้ว", "Assignments Graded")}</span>
+              <span className="text-xs font-semibold tracking-wide uppercase text-[var(--text-secondary)]">{t("งานที่ตรวจแล้ว", "Assignments Graded")}</span>
             </div>
             <div className="flex items-end gap-2">
               <span className="text-2xl font-bold text-[var(--text-primary)] tabular-nums">{totalPapersGraded}</span>
-              <span className="text-sm text-gray-400 mb-1">{t("ชิ้นงาน", "papers")}</span>
+              <span className="text-sm text-[var(--text-muted)] mb-1">{t("ชิ้นงาน", "papers")}</span>
             </div>
-            <p className="text-xs text-gray-400 mt-2">{t("เฉลี่ย", "Avg.")} {avgCostPerPaper} {t("credit ต่อชิ้นงาน", "credits per paper")}</p>
+            <p className="text-xs text-[var(--text-muted)] mt-2">{t("เฉลี่ย", "Avg.")} {avgCostPerPaper} {t("credit ต่อชิ้นงาน", "credits per paper")}</p>
           </div>
 
           {/* Remaining Balance — dark card */}
           <div className="bg-[var(--bg-nav)] rounded-2xl shadow-sm p-5 flex flex-col">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">{t("ยอด Credit คงเหลือ", "Remaining Balance")}</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)] mb-2">{t("ยอด Credit คงเหลือ", "Remaining Balance")}</p>
                 <span className="text-2xl font-bold text-white tabular-nums">{remaining.toLocaleString()}</span>
-                <p className="text-xs text-gray-400 mt-2 leading-relaxed max-w-[140px]">
+                <p className="text-xs text-[var(--text-muted)] mt-2 leading-relaxed max-w-[140px]">
                   {remainingPct < 30
                     ? t("Credit ใกล้หมดแล้ว กรุณาเติมก่อนตรวจงาน", "You are running low on credits for upcoming assignments.")
                     : t("มี Credit เพียงพอสำหรับการตรวจงาน", "You have enough credits for upcoming assignments.")}
@@ -257,9 +242,9 @@ export default function HistoryPage() {
         </div>
 
         {/* ── Table Card ── */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-subtle)] shadow-sm overflow-hidden">
           {/* Table header / controls */}
-          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 flex-wrap gap-3">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border-subtle)] flex-wrap gap-3">
             <h2 className="text-base font-bold text-[var(--text-primary)]">{t("บันทึกการตรวจงาน", "Detailed Grading Log")}</h2>
             <div className="flex items-center gap-2">
               {/* Search */}
@@ -275,7 +260,7 @@ export default function HistoryPage() {
               <select
                 value={statusFilter}
                 onChange={(e) => handleStatusFilter(e.target.value as typeof statusFilter)}
-                className="text-xs px-3 py-1.5 rounded-xl border border-gray-200 bg-gray-50 text-gray-600 focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]/40 cursor-pointer"
+                className="text-xs px-3 py-1.5 rounded-xl border border-[var(--border)] bg-[var(--bg-app)] text-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]/40 cursor-pointer"
               >
                 <option value="all">{t("ทุกสถานะ", "All Status")}</option>
                 <option value="completed">{t("สำเร็จ", "Completed")}</option>
@@ -286,7 +271,7 @@ export default function HistoryPage() {
               <button
                 onClick={() => exportCSV(filtered)}
                 title="Export CSV"
-                className="p-2 rounded-xl border border-gray-200 text-gray-500 hover:text-[var(--text-primary)] hover:border-gray-300 hover:bg-gray-50 transition-colors"
+                className="p-2 rounded-xl border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border)] hover:bg-[var(--bg-subtle)] transition-colors"
               >
                 <IconDownload />
               </button>
@@ -297,30 +282,30 @@ export default function HistoryPage() {
           <div className="overflow-x-auto">
             <table className="w-full min-w-[700px]">
               <thead>
-                <tr className="border-b border-gray-100">
-                  <th className="text-left text-[10.5px] font-semibold uppercase tracking-wider text-gray-400 px-5 py-3 whitespace-nowrap">{t("วันที่ & เวลา", "Date & Time")}</th>
-                  <th className="text-left text-[10.5px] font-semibold uppercase tracking-wider text-gray-400 px-4 py-3">{t("ชิ้นงาน", "Assignment")}</th>
-                  <th className="text-left text-[10.5px] font-semibold uppercase tracking-wider text-gray-400 px-4 py-3">{t("รายวิชา", "Course")}</th>
-                  <th className="text-right text-[10.5px] font-semibold uppercase tracking-wider text-gray-400 px-4 py-3">{t("จำนวน", "Count")}</th>
-                  <th className="text-right text-[10.5px] font-semibold uppercase tracking-wider text-gray-400 px-4 py-3">{t("ค่าใช้จ่าย", "Cost")}</th>
-                  <th className="text-left text-[10.5px] font-semibold uppercase tracking-wider text-gray-400 px-4 py-3">{t("สถานะ", "Status")}</th>
-                  <th className="text-left text-[10.5px] font-semibold uppercase tracking-wider text-gray-400 px-4 py-3">{t("ผู้ตรวจ", "Grader")}</th>
+                <tr className="border-b border-[var(--border-subtle)]">
+                  <th className="text-left text-[10.5px] font-semibold uppercase tracking-wider text-[var(--text-muted)] px-5 py-3 whitespace-nowrap">{t("วันที่ & เวลา", "Date & Time")}</th>
+                  <th className="text-left text-[10.5px] font-semibold uppercase tracking-wider text-[var(--text-muted)] px-4 py-3">{t("ชิ้นงาน", "Assignment")}</th>
+                  <th className="text-left text-[10.5px] font-semibold uppercase tracking-wider text-[var(--text-muted)] px-4 py-3">{t("รายวิชา", "Course")}</th>
+                  <th className="text-right text-[10.5px] font-semibold uppercase tracking-wider text-[var(--text-muted)] px-4 py-3">{t("จำนวน", "Count")}</th>
+                  <th className="text-right text-[10.5px] font-semibold uppercase tracking-wider text-[var(--text-muted)] px-4 py-3">{t("ค่าใช้จ่าย", "Cost")}</th>
+                  <th className="text-left text-[10.5px] font-semibold uppercase tracking-wider text-[var(--text-muted)] px-4 py-3">{t("สถานะ", "Status")}</th>
+                  <th className="text-left text-[10.5px] font-semibold uppercase tracking-wider text-[var(--text-muted)] px-4 py-3">{t("ผู้ตรวจ", "Grader")}</th>
                   <th className="px-3 py-3" />
                 </tr>
               </thead>
               <tbody>
                 {visible.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="py-16 text-center text-sm text-gray-400">
+                    <td colSpan={8} className="py-16 text-center text-sm text-[var(--text-muted)]">
                       {t("ไม่พบประวัติการตรวจที่ตรงกัน", "No grading sessions match your search.")}
                     </td>
                   </tr>
                 ) : (
                   visible.map((session) => (
-                    <tr key={session.id} className="border-b border-gray-50 hover:bg-gray-50/70 transition-colors">
+                    <tr key={session.id} className="border-b border-[var(--border-subtle)] hover:bg-[var(--bg-subtle)]/70 transition-colors">
                       <td className="px-5 py-3.5 whitespace-nowrap">
                         <p className="text-sm font-medium text-[var(--text-primary)]">{formatDate(session.date)}</p>
-                        <p className="text-xs text-gray-400">{formatTime(session.date)}</p>
+                        <p className="text-xs text-[var(--text-muted)]">{formatTime(session.date)}</p>
                       </td>
                       <td className="px-4 py-3.5">
                         <p className="text-sm font-medium text-[var(--text-primary)] leading-snug max-w-[200px]">{session.assignment}</p>
@@ -331,14 +316,14 @@ export default function HistoryPage() {
                             className="w-2.5 h-2.5 rounded-full shrink-0"
                             style={{ background: session.courseColor }}
                           />
-                          <span className="text-sm text-gray-700">{session.course}</span>
+                          <span className="text-sm text-[var(--text-primary)]">{session.course}</span>
                         </div>
                       </td>
                       <td className="px-4 py-3.5 text-right tabular-nums">
                         <span className="text-sm font-medium text-[var(--text-primary)]">{session.count}</span>
                       </td>
                       <td className="px-4 py-3.5 text-right tabular-nums">
-                        <span className={`text-sm font-medium ${session.status === "failed" ? "text-gray-400" : "text-[var(--s-err-text)]"}`}>
+                        <span className={`text-sm font-medium ${session.status === "failed" ? "text-[var(--text-muted)]" : "text-[var(--s-err-text)]"}`}>
                           {session.status === "failed" ? "—" : `-${session.cost} Cr`}
                         </span>
                       </td>
@@ -358,7 +343,7 @@ export default function HistoryPage() {
                       <td className="px-4 py-3.5">
                         <span className="text-sm font-medium text-[var(--accent)]">{session.grader}</span>
                       </td>
-                      <td className="px-3 py-3.5 text-gray-300">
+                      <td className="px-3 py-3.5 text-[var(--text-muted)]">
                         <IconChevronRight />
                       </td>
                     </tr>
@@ -369,44 +354,11 @@ export default function HistoryPage() {
           </div>
 
           {/* Pagination */}
-          <div className="flex items-center justify-between px-5 py-3.5 border-t border-gray-100">
-            <p className="text-xs text-gray-400">
+          <div className="flex items-center justify-between px-5 py-3.5 border-t border-[var(--border-subtle)]">
+            <p className="text-xs text-[var(--text-muted)]">
               {t("แสดง", "Showing")} {filtered.length === 0 ? 0 : (safeePage - 1) * PER_PAGE + 1}–{Math.min(safeePage * PER_PAGE, filtered.length)} {t("จาก", "of")} {filtered.length} {t("รายการ", "results")}
             </p>
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={safeePage === 1}
-                className="w-7 h-7 flex items-center justify-center rounded-lg text-xs text-gray-500 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                ‹
-              </button>
-              {pageNums.map((n, i) =>
-                n === "..." ? (
-                  <span key={`ellipsis-${i}`} className="w-7 h-7 flex items-center justify-center text-xs text-gray-400">…</span>
-                ) : (
-                  <button
-                    key={n}
-                    onClick={() => setPage(n)}
-                    className={[
-                      "w-7 h-7 flex items-center justify-center rounded-lg text-xs font-medium transition-colors",
-                      n === safeePage
-                        ? "bg-[var(--accent-solid)] text-[var(--accent-solid-text)] font-semibold"
-                        : "text-gray-500 hover:bg-gray-100",
-                    ].join(" ")}
-                  >
-                    {n}
-                  </button>
-                )
-              )}
-              <button
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={safeePage === totalPages}
-                className="w-7 h-7 flex items-center justify-center rounded-lg text-xs text-gray-500 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                ›
-              </button>
-            </div>
+            <Pagination page={safeePage} totalPages={totalPages} onChange={setPage} className="" />
           </div>
         </div>
       </main>

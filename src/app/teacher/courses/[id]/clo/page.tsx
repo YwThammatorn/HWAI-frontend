@@ -9,7 +9,10 @@ import { useLanguage } from "@/context/LanguageContext";
 import Modal from "@/components/Modal";
 import { useAssignments } from "@/lib/assignments";
 import { cloLinks } from "@/lib/cloLinks";
-
+
+import Icon from "@/components/Icon";
+import IconTile from "@/components/IconTile";
+import IconButton from "@/components/IconButton";
 export default function CLOPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
@@ -25,6 +28,10 @@ export default function CLOPage() {
   // Which assignments mention each CLO (names only — no criteria, no scores, since 15/10/2569)
   const { getAssignmentsByCourse, rubrics } = useAssignments();
   const linked = cloLinks({ clos, assignments: getAssignmentsByCourse(id), rubrics });
+
+  // which CLO cards have their "linked assignments" dropdown open — all closed to start with
+  const [openLinks, setOpenLinks] = useState<Set<string>>(() => new Set());
+  const toggleLinks = (cloId: string) => setOpenLinks((prev) => { const next = new Set(prev); if (next.has(cloId)) next.delete(cloId); else next.add(cloId); return next; });
 
   const [formMode, setFormMode] = useState<"idle" | "add" | "edit">("idle");
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -87,7 +94,7 @@ export default function CLOPage() {
 
   if (!course) {
     return (
-        <main className="flex-1 flex items-center justify-center text-sm text-gray-500">
+        <main className="flex-1 flex items-center justify-center text-sm text-[var(--text-secondary)]">
           {t("ไม่พบวิชา", "Course not found")}
         </main>
     );
@@ -104,11 +111,9 @@ export default function CLOPage() {
         {/* Back */}
         <button
           onClick={() => navAway(`/teacher/courses/${id}`)}
-          className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-[var(--accent)] mb-6 transition-colors"
+          className="inline-flex items-center gap-1.5 text-sm text-[var(--text-secondary)] hover:text-[var(--accent)] mb-6 transition-colors"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-            <polyline points="15 18 9 12 15 6"/>
-          </svg>
+          <Icon name="chevron-left" />
           {t("กลับหน้าวิชา", "Back to course")}
         </button>
 
@@ -116,15 +121,13 @@ export default function CLOPage() {
         <div className="flex items-start justify-between gap-4 mb-1">
           <div className="min-w-0">
             <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">{t("ผลลัพธ์การเรียนรู้รายวิชา (CLO)", "Course Learning Outcomes (CLO)")}</h1>
-            <p className="text-sm text-gray-500">{course.name}</p>
+            <p className="text-sm text-[var(--text-secondary)]">{course.name}</p>
           </div>
           <button
             onClick={openAdd}
             className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-semibold shadow-sm active:scale-[0.98] transition-all shrink-0"
           >
-            <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
-              <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
-            </svg>
+            <Icon name="plus" />
             {t("เพิ่ม CLO", "Add CLO")}
           </button>
         </div>
@@ -136,23 +139,15 @@ export default function CLOPage() {
         </p>
 
         {showEmpty ? (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-14 text-center">
-            <div className="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center mx-auto mb-4">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="1.5" strokeLinecap="round">
-                <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
-                <rect x="9" y="3" width="6" height="4" rx="1"/>
-                <line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="12" y2="16"/>
-              </svg>
-            </div>
-            <p className="text-sm font-medium text-gray-500 mb-1">{t("ยังไม่มี CLO กำหนดไว้", "No CLOs defined yet")}</p>
-            <p className="text-xs text-gray-500 mb-6">{t("เพิ่ม CLO แล้วผูกกับเกณฑ์การให้คะแนนของแต่ละชิ้นงาน", "Add CLOs, then link them to each assignment's grading criteria")}</p>
+          <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-subtle)] shadow-sm p-14 text-center">
+            <IconTile icon="clipboard-list" size="lg" tone="accent" className="mx-auto mb-4" />
+            <p className="text-sm font-medium text-[var(--text-secondary)] mb-1">{t("ยังไม่มี CLO กำหนดไว้", "No CLOs defined yet")}</p>
+            <p className="text-xs text-[var(--text-secondary)] mb-6">{t("เพิ่ม CLO แล้วผูกกับเกณฑ์การให้คะแนนของแต่ละชิ้นงาน", "Add CLOs, then link them to each assignment's grading criteria")}</p>
             <button
               onClick={openAdd}
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-medium transition-colors"
             >
-              <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-                <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
-              </svg>
+              <Icon name="plus" />
               {t("เพิ่ม CLO แรก", "Add First CLO")}
             </button>
           </div>
@@ -164,56 +159,49 @@ export default function CLOPage() {
                 return (
                 <div
                   key={clo.id}
-                  className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5"
+                  className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-subtle)] shadow-sm p-5"
                 >
                   <div className="flex items-start gap-4">
-                    <span className="shrink-0 inline-flex items-center h-7 px-2.5 rounded-lg bg-teal-50 text-[var(--accent)] text-xs font-bold font-mono tabular-nums">
+                    <span className="shrink-0 inline-flex items-center h-7 px-2.5 rounded-lg bg-[var(--accent-subtle)] text-[var(--accent)] text-xs font-bold font-mono tabular-nums">
                       {clo.code}
                     </span>
                     <p className="flex-1 min-w-0 text-sm text-[var(--text-primary)] leading-relaxed pt-0.5">{clo.text}</p>
                     <div className="flex items-center gap-1 shrink-0">
-                      <button
-                        onClick={() => openEdit(clo)}
-                        className="w-8 h-8 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--accent)] hover:bg-[var(--accent-bright)]/10 transition-colors"
-                        title={t("แก้ไข", "Edit")}
-                        aria-label={t(`แก้ไข ${clo.code}`, `Edit ${clo.code}`)}
-                      >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                        </svg>
-                      </button>
-                      <button
-                        onClick={() => handleDelete(clo)}
-                        className="w-8 h-8 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--s-err-text)] hover:bg-[var(--s-err-bg)] transition-colors"
-                        title={t("ลบ", "Delete")}
-                        aria-label={t(`ลบ ${clo.code}`, `Delete ${clo.code}`)}
-                      >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                          <polyline points="3 6 5 6 21 6"/>
-                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-                        </svg>
-                      </button>
+                      <IconButton icon="edit" label={t(`แก้ไข ${clo.code}`, `Edit ${clo.code}`)} onClick={() => openEdit(clo)} />
+                      <IconButton icon="trash" label={t(`ลบ ${clo.code}`, `Delete ${clo.code}`)} tone="danger" onClick={() => handleDelete(clo)} />
                     </div>
                   </div>
 
-                  {/* The assignments that mention this CLO — one line each, no criteria, no scores */}
-                  <div className="mt-4 border-t border-[var(--border-subtle)] pt-4" data-testid={`clo-links-${clo.code}`}>
-                    {res && res.assignments.length > 0 ? (
-                      <>
-                        <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">{t("งานที่กล่าวถึง CLO นี้", "Assignments that mention this CLO")}</p>
-                        <ul className="mt-3 divide-y divide-[var(--border-subtle)] rounded-xl border border-[var(--border-subtle)]">
-                          {res.assignments.map((a) => (
-                            <li key={a.id} className="px-3 py-2 text-sm">
-                              <Link href={`/teacher/courses/${id}/assignments/${a.id}`} className="font-medium text-[var(--accent)] hover:underline">{a.name}</Link>
-                            </li>
-                          ))}
-                        </ul>
-                      </>
-                    ) : (
-                      <p data-testid="clo-unmeasured" className="text-xs leading-relaxed text-[var(--text-secondary)]">
-                        {t("ยังไม่มีงานใดกล่าวถึง CLO นี้ — เลือก CLO ในส่วน Rubric ตอนสร้างหรือแก้ไขชิ้นงาน", "No assignment mentions this CLO yet — pick it in a criterion's CLO row when you create or edit an assignment's rubric")}
-                      </p>
+                  {/* The assignments that mention this CLO — a dropdown, closed until asked for (21/10/2569); one line each, no criteria, no scores */}
+                  <div className="mt-4 border-t border-[var(--border-subtle)] pt-3" data-testid={`clo-links-${clo.code}`}>
+                    <button
+                      type="button"
+                      onClick={() => toggleLinks(clo.id)}
+                      aria-expanded={openLinks.has(clo.id)}
+                      aria-controls={`clo-links-panel-${clo.id}`}
+                      data-testid={`clo-links-toggle-${clo.code}`}
+                      className="flex w-full items-center gap-2 rounded-lg px-1 py-1.5 text-left text-xs font-semibold text-[var(--text-secondary)] hover:text-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
+                    >
+                      <Icon name="chevron-right" size="sm" className={`shrink-0 transition-transform ${openLinks.has(clo.id) ? "rotate-90" : ""}`} />
+                      {t("งานที่เกี่ยวข้องกับ CLO นี้", "Assignments linked to this CLO")}
+                      <span className="rounded-md bg-[var(--bg-card)] px-1.5 py-0.5 tabular-nums text-[var(--text-muted)]">{res?.assignments.length ?? 0}</span>
+                    </button>
+                    {openLinks.has(clo.id) && (
+                      <div id={`clo-links-panel-${clo.id}`} className="mt-2">
+                        {res && res.assignments.length > 0 ? (
+                          <ul className="divide-y divide-[var(--border-subtle)] rounded-xl border border-[var(--border-subtle)]">
+                            {res.assignments.map((a) => (
+                              <li key={a.id} className="px-3 py-2 text-sm">
+                                <Link href={`/teacher/courses/${id}/assignments/${a.id}`} className="font-medium text-[var(--accent)] hover:underline">{a.name}</Link>
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p data-testid="clo-unmeasured" className="text-xs leading-relaxed text-[var(--text-secondary)]">
+                            {t("ยังไม่มีงานใดกล่าวถึง CLO นี้ — เลือก CLO ในส่วน Rubric ตอนสร้างหรือแก้ไขชิ้นงาน", "No assignment mentions this CLO yet — pick it in a criterion's CLO row when you create or edit an assignment's rubric")}
+                          </p>
+                        )}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -221,7 +209,7 @@ export default function CLOPage() {
               })}
             </div>
 
-            <p className="text-xs text-gray-500 mt-4 text-right">{clos.length} CLO</p>
+            <p className="text-xs text-[var(--text-secondary)] mt-4 text-right">{clos.length} CLO</p>
           </>
         )}
 
@@ -255,7 +243,7 @@ export default function CLOPage() {
         >
           <div className="flex flex-col gap-4">
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1.5">
+              <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1.5">
                 {t("รหัส", "Code")} <span className="text-[var(--s-err-text)]">*</span>
               </label>
               <input
@@ -264,11 +252,11 @@ export default function CLOPage() {
                 onChange={e => setFormCode(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSave()}
                 placeholder="CLO1"
-                className="w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-white text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
+                className="w-full px-3 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1.5">
+              <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1.5">
                 {t("ข้อความ CLO", "CLO Text")} <span className="text-[var(--s-err-text)]">*</span>
               </label>
               <textarea
@@ -276,7 +264,7 @@ export default function CLOPage() {
                 onChange={e => setFormText(e.target.value)}
                 placeholder="นักศึกษาสามารถ..."
                 rows={3}
-                className="w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] resize-none transition-colors"
+                className="w-full px-3 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] resize-none transition-colors"
               />
             </div>
           </div>

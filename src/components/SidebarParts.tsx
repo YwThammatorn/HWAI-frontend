@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 
+import Icon from "@/components/Icon";
 /**
  * The pieces the Teacher and Student portal sidebars share (25/9/2569), so the two read as one
  * pattern: same width and padding; outside a course a "Main" caption + top-level items; inside a
@@ -22,7 +23,7 @@ export function SidebarNavItem({ label, href, icon, active }: {
       href={href}
       aria-current={active ? "page" : undefined}
       className={[
-        "relative flex items-center gap-3 rounded-xl font-medium transition-colors min-h-[44px] [&>svg]:w-4 [&>svg]:h-4",
+        "relative flex items-center gap-3 rounded-xl font-medium transition-colors min-h-[44px]",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--sidebar-bg)]",
         "px-3 py-2.5 text-sm",
         // active = tinted pill + a bar on the sidebar's outer edge (the aside has px-3, hence -right-3)
@@ -60,13 +61,13 @@ export function SidebarCourseHeader({ backHref, backLabel, code, name, termLine,
         href={backHref}
         className="inline-flex items-center gap-1 -ml-1 mb-3 px-1 min-h-[32px] rounded-md text-xs font-semibold text-white hover:bg-white/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]"
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6" /></svg>
+        <Icon name="chevron-left" size="sm" />
         {backLabel}
       </Link>
       <p className="text-xl font-bold leading-tight text-white tabular-nums break-words">{code ?? name}</p>
       {code && <p className="mt-1 text-sm font-medium leading-snug text-white/90 line-clamp-3">{name}</p>}
       {termLine && <p className="mt-2.5 text-xs font-normal leading-snug text-white/70 tabular-nums">{termLine}</p>}
-      {section && <p className="mt-4 rounded-full bg-white px-3 py-1.5 text-xs font-medium text-[var(--sidebar-bg)] truncate">{section}</p>}
+      {section && <p className="mt-4 rounded-full bg-[var(--bg-surface)] px-3 py-1.5 text-xs font-medium text-[var(--accent)] truncate">{section}</p>}
     </div>
   );
 }

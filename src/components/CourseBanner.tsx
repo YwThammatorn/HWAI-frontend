@@ -1,10 +1,11 @@
 import type { ReactNode } from "react";
 import { CourseIcon, type CourseIconKey } from "@/components/CourseIcon";
+import IconTile from "@/components/IconTile";
 
 // Cover colours are user data (a preset from the picker, or any colour a seed/mock
 // course carries), so the text tone can't be fixed in CSS: pick whichever of
 // white / deep navy has the higher WCAG contrast against the actual cover.
-const DARK_INK = "#0F1E2E";
+const DARK_INK = "var(--cover-ink-dark)";
 
 function luminance(hex: string): number | null {
   let h = hex.trim().replace(/^#/, "");
@@ -42,16 +43,11 @@ export default function CourseBanner({ coverColor, icon, name, code, overlay }: 
     <div
       data-course-banner
       className="relative h-40 shrink-0 flex items-end p-4"
-      style={{ background: coverColor, color: onLight ? "#FFFFFF" : DARK_INK }}
+      style={{ background: coverColor, color: onLight ? "var(--cover-ink-light)" : DARK_INK }}
     >
       {/* icon sits on the same row as the code + name, centred against them */}
       <div className="flex items-center gap-3 w-full min-w-0">
-        <div
-          className="w-9 h-9 shrink-0 rounded-xl flex items-center justify-center"
-          style={{ background: onLight ? "rgba(255,255,255,0.22)" : "rgba(15,30,46,0.12)" }}
-        >
-          <CourseIcon iconKey={icon} size={18} />
-        </div>
+        <IconTile course={icon} size="md" tone="cover" style={{ background: onLight ? "color-mix(in srgb, var(--cover-ink-light) 22%, transparent)" : "color-mix(in srgb, var(--cover-ink-dark) 12%, transparent)", color: "inherit" }} />
         <div className="min-w-0 flex-1">
           {code && <p className="text-xs font-semibold tracking-wide tabular-nums truncate mb-0.5">{code}</p>}
           <h3 className="font-bold text-base leading-snug line-clamp-2">{name}</h3>

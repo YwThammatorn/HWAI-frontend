@@ -25,7 +25,7 @@ interface Row {
   /** units the teacher scored — left alone */
   kept: number;
   announced: boolean;
-  /** the due date or the students' late hour has not passed: nothing can be graded yet (15/10/2569) */
+  /** submissions have not closed yet: nothing can be graded yet (15/10/2569) */
   notOpen: boolean;
 }
 
@@ -143,7 +143,7 @@ export default function CalibrationRegrade({ assignment, rubric, courseId, empha
                   {r.announced
                     ? t("ประกาศผลแล้ว — เปลี่ยนไม่ได้", "Results announced — cannot be changed")
                     : r.notOpen
-                    ? t("ยังไม่เปิดให้ตรวจ — ยังไม่พ้นกำหนดส่งและช่วงส่งช้า", "Not open for grading yet — the due date and the late hour have not passed")
+                    ? t("ยังไม่เปิดให้ตรวจ — ยังไม่พ้นวันปิดรับงาน", "Not open for grading yet — submissions have not closed yet")
                     : r.regrade.length === 0
                       ? t("ไม่มีงานที่ AI ให้คะแนนไว้ให้ตรวจใหม่", "No work the AI scored to grade again")
                       : t(`จะตรวจใหม่ ${r.regrade.length} ชิ้น`, `${r.regrade.length} to grade again`)}

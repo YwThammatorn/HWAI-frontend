@@ -8,6 +8,10 @@ import { useCohortStudents, CohortStudent } from "@/lib/cohort-students";
 import { getInitials } from "@/lib/utils";
 import { useSectionProgram } from "@/lib/sectionProgram";
 
+
+import Icon from "@/components/Icon";
+import IconTile from "@/components/IconTile";
+import Avatar from "@/components/Avatar";
 /**
  * Teacher: enrol ONE student in a course by student ID. Same rule as the CSV
  * import — the ID must already exist in the system's student database (the
@@ -68,11 +72,7 @@ export default function EnrollStudentModal({ courseId, courseName, onClose }: {
     >
       {added ? (
         <div className="flex flex-col items-center text-center gap-3 py-2">
-          <div className="w-12 h-12 rounded-full bg-[var(--accent-subtle)] flex items-center justify-center">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
-          </div>
+          <IconTile icon="check" size="lg" shape="round" tone="accent" />
           <p role="status" className="text-sm font-semibold text-[var(--text-primary)]">
             {t(`เพิ่ม ${added.name} เข้าวิชาแล้ว`, `${added.name} was added to the course`)}
           </p>
@@ -117,10 +117,8 @@ export default function EnrollStudentModal({ courseId, courseName, onClose }: {
 
           {/* The student the ID resolves to — confirm it's the right person before adding */}
           {match && !alreadyEnrolled && !wrongProgram && !error && (
-            <div className="flex items-center gap-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-4 py-3">
-              <div className="w-10 h-10 rounded-full bg-[var(--accent-subtle)] text-[var(--accent)] text-xs font-bold flex items-center justify-center shrink-0">
-                {getInitials(match.name)}
-              </div>
+            <div className="flex items-center gap-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-app)] px-4 py-3">
+              <Avatar size="md" initials={getInitials(match.name)} />
               <div className="min-w-0">
                 <p className="text-sm font-semibold text-[var(--text-primary)] truncate">{match.title ? `${match.title} ` : ""}{match.name}</p>
                 <p className="text-xs text-[var(--text-secondary)] truncate">{match.email}</p>

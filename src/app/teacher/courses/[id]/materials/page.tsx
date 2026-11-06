@@ -8,25 +8,13 @@ import { storeFile, resolveFileUrl, FileTooLargeError, MAX_FILE_MB } from "@/lib
 import { useLanguage } from "@/context/LanguageContext";
 import { MATERIALS_DISABLED } from "@/lib/featureFlags";
 
-const TYPE_ICON: Record<TeachingMaterialType, React.ReactNode> = {
-  link: (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
-    </svg>
-  ),
-  file: (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-      <polyline points="14 2 14 8 20 8"/>
-    </svg>
-  ),
-  recording: (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-      <polygon points="23 7 16 12 23 17 23 7"/>
-      <rect x="1" y="5" width="15" height="14" rx="2"/>
-    </svg>
-  ),
+import Icon, { type IconName } from "@/components/Icon";
+import IconTile from "@/components/IconTile";
+import IconButton from "@/components/IconButton";
+const TYPE_ICON: Record<TeachingMaterialType, IconName> = {
+  link: "link",
+  file: "file",
+  recording: "video",
 };
 
 export default function TeachingMaterialsPage() {
@@ -111,7 +99,7 @@ export default function TeachingMaterialsPage() {
 
   if (!course) {
     return (
-        <main className="flex-1 flex items-center justify-center text-sm text-gray-500">
+        <main className="flex-1 flex items-center justify-center text-sm text-[var(--text-secondary)]">
           {t("ไม่พบวิชา", "Course not found")}
         </main>
     );
@@ -126,39 +114,31 @@ export default function TeachingMaterialsPage() {
 
         <button
           onClick={() => history.back()}
-          className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-[var(--accent)] mb-6 transition-colors"
+          className="inline-flex items-center gap-1.5 text-sm text-[var(--text-secondary)] hover:text-[var(--accent)] mb-6 transition-colors"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-            <polyline points="15 18 9 12 15 6"/>
-          </svg>
+          <Icon name="chevron-left" />
           {t("กลับหน้าวิชา", "Back to course")}
         </button>
 
         <div className="flex items-start justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">{t("สื่อการสอน", "Teaching Materials")}</h1>
-            <p className="text-sm text-gray-500">{course.name}</p>
+            <p className="text-sm text-[var(--text-secondary)]">{course.name}</p>
           </div>
           <button
             onClick={openAdd}
             className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-medium transition-colors mt-1"
           >
-            <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
-              <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
-            </svg>
+            <Icon name="plus" />
             {t("เพิ่มสื่อการสอน", "Add Material")}
           </button>
         </div>
 
         {showEmpty ? (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-14 text-center">
-            <div className="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center mx-auto mb-4">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="1.5" strokeLinecap="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
-              </svg>
-            </div>
-            <p className="text-sm font-medium text-gray-500 mb-1">{t("ยังไม่มีสื่อการสอน", "No teaching materials yet")}</p>
-            <p className="text-xs text-gray-500 mb-6">{t("แนบลิงก์ เอกสาร หรือบันทึกการสอนให้นักศึกษาเข้าถึงได้", "Attach links, documents, or recordings for students")}</p>
+          <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-subtle)] shadow-sm p-14 text-center">
+            <IconTile icon="file" size="lg" tone="accent" className="mx-auto mb-4" />
+            <p className="text-sm font-medium text-[var(--text-secondary)] mb-1">{t("ยังไม่มีสื่อการสอน", "No teaching materials yet")}</p>
+            <p className="text-xs text-[var(--text-secondary)] mb-6">{t("แนบลิงก์ เอกสาร หรือบันทึกการสอนให้นักศึกษาเข้าถึงได้", "Attach links, documents, or recordings for students")}</p>
             <button
               onClick={openAdd}
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-medium transition-colors"
@@ -167,53 +147,42 @@ export default function TeachingMaterialsPage() {
             </button>
           </div>
         ) : (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-subtle)] shadow-sm overflow-hidden">
             {materials.map((m, idx) => (
               <div
                 key={m.id}
                 className={[
-                  "flex items-center gap-3 py-3.5 px-4 transition-colors hover:bg-gray-50/50",
-                  idx < materials.length - 1 ? "border-b border-gray-50" : "",
+                  "flex items-center gap-3 py-3.5 px-4 transition-colors hover:bg-[var(--bg-subtle)]/50",
+                  idx < materials.length - 1 ? "border-b border-[var(--border-subtle)]" : "",
                 ].join(" ")}
               >
-                <span className="shrink-0 w-9 h-9 rounded-xl bg-teal-50 text-[var(--accent)] flex items-center justify-center">
-                  {TYPE_ICON[m.type]}
-                </span>
+                <IconTile icon={TYPE_ICON[m.type]} size="sm" />
                 <button onClick={() => openMaterial(m)} className="flex-1 min-w-0 text-left">
                   <p className="text-sm font-medium text-[var(--text-primary)] truncate hover:text-[var(--accent)] transition-colors">{m.title}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">{TYPE_LABEL[m.type]}{m.source === "upload" ? ` · ${t("อัปโหลด", "uploaded")}` : ""}</p>
+                  <p className="text-xs text-[var(--text-secondary)] mt-0.5">{TYPE_LABEL[m.type]}{m.source === "upload" ? ` · ${t("อัปโหลด", "uploaded")}` : ""}</p>
                 </button>
-                <button
-                  onClick={() => handleDelete(m)}
-                  className="shrink-0 p-1.5 rounded-lg hover:bg-[var(--s-err-bg)] text-gray-500 hover:text-[var(--s-err-text)] transition-colors"
-                  title={t("ลบ", "Delete")}
-                >
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                    <polyline points="3 6 5 6 21 6"/>
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-                  </svg>
-                </button>
+                <IconButton icon="trash" label={t("ลบ", "Delete")} tone="danger" onClick={() => handleDelete(m)} />
               </div>
             ))}
 
             {formOpen && (
-              <div className="border-t-2 border-[var(--accent)]/20 bg-teal-50/40 p-6">
+              <div className="border-t-2 border-[var(--accent)]/20 bg-[var(--accent-subtle)]/40 p-6">
                 <p className="text-xs font-semibold text-[var(--accent)] uppercase tracking-wider mb-4">{t("เพิ่มสื่อการสอน", "Add Teaching Material")}</p>
 
                 <div className="mb-3">
-                  <label className="block text-xs font-medium text-gray-500 mb-1.5">
+                  <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1.5">
                     {t("ชื่อสื่อ", "Title")} <span className="text-[var(--s-err-text)]">*</span>
                   </label>
                   <input
                     value={title}
                     onChange={e => setTitle(e.target.value)}
                     placeholder="เช่น สไลด์บทที่ 1"
-                    className="w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
+                    className="w-full px-3 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
                   />
                 </div>
 
                 <div className="mb-4">
-                  <label className="block text-xs font-medium text-gray-500 mb-2">{t("ประเภท", "Type")}</label>
+                  <label className="block text-xs font-medium text-[var(--text-secondary)] mb-2">{t("ประเภท", "Type")}</label>
                   <div className="flex gap-2">
                     {(["link", "file", "recording"] as TeachingMaterialType[]).map((tp) => (
                       <button
@@ -224,7 +193,7 @@ export default function TeachingMaterialsPage() {
                           "px-3.5 py-1.5 rounded-xl text-sm font-medium border transition-colors",
                           type === tp
                             ? "bg-[var(--bg-nav)] text-white border-[var(--bg-nav)]"
-                            : "border-gray-200 text-gray-500 hover:border-[var(--bg-nav)] hover:text-[var(--text-primary)]",
+                            : "border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--bg-nav)] hover:text-[var(--text-primary)]",
                         ].join(" ")}
                       >
                         {TYPE_LABEL[tp]}
@@ -235,26 +204,26 @@ export default function TeachingMaterialsPage() {
 
                 {type === "file" ? (
                   <div className="mb-2">
-                    <label className="block text-xs font-medium text-gray-500 mb-1.5">{t("ไฟล์", "File")} <span className="text-[var(--s-err-text)]">*</span></label>
+                    <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1.5">{t("ไฟล์", "File")} <span className="text-[var(--s-err-text)]">*</span></label>
                     <input
                       type="file"
                       onChange={handleFileChange}
                       disabled={uploading}
-                      className="w-full text-sm text-gray-500 file:mr-3 file:px-3.5 file:py-2 file:rounded-xl file:border-0 file:bg-[var(--accent-solid)] file:text-[var(--accent-solid-text)] file:text-sm file:font-medium hover:file:bg-[var(--accent-solid-hover)] file:cursor-pointer disabled:opacity-50"
+                      className="w-full text-sm text-[var(--text-secondary)] file:mr-3 file:px-3.5 file:py-2 file:rounded-xl file:border-0 file:bg-[var(--accent-solid)] file:text-[var(--accent-solid-text)] file:text-sm file:font-medium hover:file:bg-[var(--accent-solid-hover)] file:cursor-pointer disabled:opacity-50"
                     />
                     {uploadError && <p className="text-xs text-[var(--s-err-text)] mt-1.5">{uploadError}</p>}
-                    <p className="text-xs text-gray-400 mt-1.5">{t(`จำกัดไฟล์ไม่เกิน ${MAX_FILE_MB}MB`, `${MAX_FILE_MB}MB limit`)}</p>
+                    <p className="text-xs text-[var(--text-muted)] mt-1.5">{t(`จำกัดไฟล์ไม่เกิน ${MAX_FILE_MB}MB`, `${MAX_FILE_MB}MB limit`)}</p>
                   </div>
                 ) : (
                   <div className="mb-2">
-                    <label className="block text-xs font-medium text-gray-500 mb-1.5">
+                    <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1.5">
                       {t("ลิงก์", "URL")} <span className="text-[var(--s-err-text)]">*</span>
                     </label>
                     <input
                       value={urlValue}
                       onChange={e => setUrlValue(e.target.value)}
                       placeholder="https://..."
-                      className="w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
+                      className="w-full px-3 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
                     />
                   </div>
                 )}
@@ -263,7 +232,7 @@ export default function TeachingMaterialsPage() {
                   <button
                     type="button"
                     onClick={cancelForm}
-                    className="px-4 py-2 rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+                    className="px-4 py-2 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] transition-colors"
                   >
                     {t("ยกเลิก", "Cancel")}
                   </button>
@@ -284,7 +253,7 @@ export default function TeachingMaterialsPage() {
         )}
 
         {materials.length > 0 && (
-          <p className="text-xs text-gray-500 mt-3 text-right">{t(`${materials.length} รายการ`, `${materials.length} item(s)`)}</p>
+          <p className="text-xs text-[var(--text-secondary)] mt-3 text-right">{t(`${materials.length} รายการ`, `${materials.length} item(s)`)}</p>
         )}
       </main>
   );

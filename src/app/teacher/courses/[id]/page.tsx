@@ -12,6 +12,10 @@ import { DAY_OPTIONS, SLOT_OPTIONS, parseSchedule } from "@/lib/schedule";
 import { useLanguage } from "@/context/LanguageContext";
 import { CourseIcon } from "@/components/CourseIcon";
 
+
+import Icon from "@/components/Icon";
+import IconTile from "@/components/IconTile";
+import IconButton from "@/components/IconButton";
 export default function CourseDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { t } = useLanguage();
@@ -135,7 +139,7 @@ export default function CourseDetailPage() {
 
   if (!course) {
     return (
-        <main className="flex-1 flex items-center justify-center text-gray-500 text-sm">
+        <main className="flex-1 flex items-center justify-center text-[var(--text-secondary)] text-sm">
           {t("ไม่พบรายวิชานี้", "Course not found")} —{" "}
           <Link href="/teacher/courses" className="text-[var(--accent)] ml-1 hover:underline">{t("กลับไปหน้าหลัก", "Back to home")}</Link>
         </main>
@@ -145,7 +149,7 @@ export default function CourseDetailPage() {
   return (
       <main className="w-full px-8 py-8">
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
+        <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)] mb-6">
           <Link href="/teacher/courses" className="hover:text-[var(--accent)] transition-colors">{t("รายวิชาทั้งหมด", "All Courses")}</Link>
           <span>/</span>
           <span className="text-[var(--text-primary)] font-medium">{course.name}</span>
@@ -155,9 +159,7 @@ export default function CourseDetailPage() {
         <div className="relative h-36 rounded-2xl mb-6 overflow-hidden" style={{ background: course.coverColor }}>
           <div className="absolute inset-0 bg-black/10" />
           <div className="absolute bottom-4 left-5 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center shrink-0">
-              <CourseIcon iconKey={course.icon} size={20} className="text-white" />
-            </div>
+            <IconTile course={course.icon} size="md" tone="onDark" />
             <div className="min-w-0">
               {course.code && <p className="text-white/80 text-xs font-semibold tracking-wide tabular-nums truncate">{course.code}</p>}
               <h1 className="text-xl font-bold text-white truncate">{course.name}</h1>
@@ -167,29 +169,17 @@ export default function CourseDetailPage() {
             href={`/teacher/courses/${id}/settings`}
             className="absolute bottom-4 right-4 flex items-center gap-1.5 px-3 py-1.5 bg-white/15 hover:bg-white/25 backdrop-blur-sm text-white text-xs font-medium rounded-lg transition-colors"
           >
-            <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
-              <path d="M7 1v2M7 11v2M1 7h2M11 7h2M3.22 3.22l1.41 1.41M9.37 9.37l1.41 1.41M3.22 10.78l1.41-1.41M9.37 4.63l1.41-1.41" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-              <circle cx="7" cy="7" r="2" stroke="currentColor" strokeWidth="1.5"/>
-            </svg>
+            <Icon name="settings" size="sm" />
             {t("ตั้งค่า", "Settings")}
           </Link>
         </div>
 
         {/* Description — its own card, separate from the banner (30/9/2569), with inline edit */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-6">
+        <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-subtle)] shadow-sm p-6 mb-6">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-base font-bold text-[var(--text-primary)]">{t("คำอธิบายรายวิชา", "Description")}</h2>
             {!descEditing && (
-              <button
-                onClick={openEditDesc}
-                className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-[var(--text-primary)] transition-colors"
-                title={t("แก้ไข", "Edit")}
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                </svg>
-              </button>
+              <IconButton icon="edit" label={t("แก้ไข", "Edit")} onClick={openEditDesc} />
             )}
           </div>
           {descEditing ? (
@@ -199,13 +189,13 @@ export default function CourseDetailPage() {
                 onChange={(e) => setDescValue(e.target.value)}
                 rows={3}
                 placeholder="อธิบายรายวิชาโดยย่อ (ไม่บังคับ)"
-                className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm text-[var(--text-primary)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] text-sm text-[var(--text-primary)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
               />
               <div className="flex justify-end gap-2">
                 <button
                   type="button"
                   onClick={cancelEditDesc}
-                  className="px-3.5 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+                  className="px-3.5 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--bg-surface)] text-xs font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] transition-colors"
                 >
                   {t("ยกเลิก", "Cancel")}
                 </button>
@@ -220,35 +210,33 @@ export default function CourseDetailPage() {
             </div>
           ) : (
             <p className="text-sm text-[var(--text-primary)] whitespace-pre-wrap">
-              {course.description || <span className="text-gray-400">{t("ยังไม่มีคำอธิบายรายวิชา", "No description yet")}</span>}
+              {course.description || <span className="text-[var(--text-muted)]">{t("ยังไม่มีคำอธิบายรายวิชา", "No description yet")}</span>}
             </p>
           )}
         </div>
 
         {/* Stats strip — one compact bar instead of 3 tall cards */}
-        <div className="grid grid-cols-3 divide-x divide-gray-100 bg-white rounded-xl border border-gray-100 shadow-sm mb-6">
+        <div className="grid grid-cols-3 divide-x divide-[var(--border-subtle)] bg-[var(--bg-surface)] rounded-xl border border-[var(--border-subtle)] shadow-sm mb-6">
           {[
             {
               label: t("นักศึกษา", "Students"), value: `${students.length}`,
-              icon: <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />,
+              icon: "users" as const,
             },
             {
               label: t("ชิ้นงาน", "Assignments"), value: `${assignments.length}`,
-              icon: <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M9 13h6M9 17h6" />,
+              icon: "file-text" as const,
             },
             {
               label: t("สถานะการตรวจ", "Grading Status"),
               value: allGraded ? t("ตรวจครบแล้ว", "All Graded") : `${activeAssignments} ${t("กำลังดำเนินการ", "Active")}`,
-              icon: allGraded ? <polyline points="20 6 9 17 4 12" /> : <><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></>,
+              icon: allGraded ? ("check" as const) : ("calendar" as const),
             },
           ].map((s) => (
             <div key={s.label} className="flex items-center gap-3 px-5 py-3.5">
-              <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${s.label === t("สถานะการตรวจ", "Grading Status") && allGraded ? "bg-[var(--accent-subtle)] text-[var(--accent)]" : "bg-gray-50 text-gray-400"}`}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{s.icon}</svg>
-              </div>
+              <IconTile icon={s.icon} size="sm" tone={s.label === t("สถานะการตรวจ", "Grading Status") && allGraded ? "accent" : "neutral"} />
               <div className="min-w-0">
                 <p className="text-base font-bold text-[var(--text-primary)] leading-tight truncate">{s.value}</p>
-                <p className="text-xs text-gray-500 truncate">{s.label}</p>
+                <p className="text-xs text-[var(--text-secondary)] truncate">{s.label}</p>
               </div>
             </div>
           ))}
@@ -256,20 +244,11 @@ export default function CourseDetailPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
           {/* Details */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+          <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-subtle)] shadow-sm p-6">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-base font-bold text-[var(--text-primary)]">{t("รายละเอียด", "Details")}</h2>
               {!detailsEditing && (
-                <button
-                  onClick={openEditDetails}
-                  className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-[var(--text-primary)] transition-colors"
-                  title={t("แก้ไข", "Edit")}
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                  </svg>
-                </button>
+                <IconButton icon="edit" label={t("แก้ไข", "Edit")} onClick={openEditDetails} />
               )}
             </div>
             <div className="grid grid-cols-2 gap-x-6 gap-y-4">
@@ -279,7 +258,7 @@ export default function CourseDetailPage() {
                   <input
                     value={detailsName}
                     onChange={(e) => setDetailsName(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
+                    className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
                   />
                 </div>
               ) : (
@@ -296,7 +275,7 @@ export default function CourseDetailPage() {
                     <select
                       value={detailsDay}
                       onChange={(e) => setDetailsDay(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
+                      className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
                     >
                       <option value="">{t("เลือกวัน", "Select day")}</option>
                       {DAY_OPTIONS.map((d) => (
@@ -309,7 +288,7 @@ export default function CourseDetailPage() {
                     <select
                       value={detailsSlot}
                       onChange={(e) => setDetailsSlot(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
+                      className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
                     >
                       <option value="">{t("เลือกคาบเวลา", "Select time slot")}</option>
                       {SLOT_OPTIONS.map((s) => (
@@ -329,7 +308,7 @@ export default function CourseDetailPage() {
                     value={detailsRoom}
                     onChange={(e) => setDetailsRoom(e.target.value)}
                     placeholder="เช่น 811"
-                    className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
+                    className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
                   />
                 </div>
               ) : (
@@ -348,7 +327,7 @@ export default function CourseDetailPage() {
                 <button
                   type="button"
                   onClick={cancelEditDetails}
-                  className="px-3.5 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+                  className="px-3.5 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--bg-surface)] text-xs font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] transition-colors"
                 >
                   {t("ยกเลิก", "Cancel")}
                 </button>
@@ -370,7 +349,7 @@ export default function CourseDetailPage() {
           </div>
 
           {/* Grading Categories — สัดส่วนคะแนน */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+          <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-subtle)] shadow-sm p-6">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-base font-bold text-[var(--text-primary)]">{t("สัดส่วนคะแนน", "Grading Categories")}</h2>
               <button
@@ -378,23 +357,21 @@ export default function CourseDetailPage() {
                 disabled={catFormOpen}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-xs font-medium transition-colors shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <svg width="11" height="11" viewBox="0 0 16 16" fill="none">
-                  <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
-                </svg>
+                <Icon name="plus" size="sm" />
                 {t("เพิ่มเกณฑ์คะแนน", "Add Category")}
               </button>
             </div>
 
             {categories.length === 0 && !catFormOpen ? (
               <div className="py-10 flex flex-col items-center justify-center text-center">
-                <p className="text-sm font-medium text-gray-500 mb-1">{t("ยังไม่มีข้อมูล", "No data")}</p>
-                <p className="text-xs text-gray-500">{t("เช่น Quiz, Midterm, Final, Project ฯลฯ", "e.g. Quiz, Midterm, Final, Project")}</p>
+                <p className="text-sm font-medium text-[var(--text-secondary)] mb-1">{t("ยังไม่มีข้อมูล", "No data")}</p>
+                <p className="text-xs text-[var(--text-secondary)]">{t("เช่น Quiz, Midterm, Final, Project ฯลฯ", "e.g. Quiz, Midterm, Final, Project")}</p>
               </div>
             ) : (
-              <div className="rounded-xl border border-gray-100 overflow-hidden">
-                <div className="grid gap-0 border-b border-gray-100 bg-gray-50/60" style={{ gridTemplateColumns: "1fr 96px 64px" }}>
+              <div className="rounded-xl border border-[var(--border-subtle)] overflow-hidden">
+                <div className="grid gap-0 border-b border-[var(--border-subtle)] bg-[var(--bg-app)]/60" style={{ gridTemplateColumns: "1fr 96px 64px" }}>
                   {[t("หัวข้อ", "Category"), t("น้ำหนัก (%)", "Weight (%)"), ""].map((h, i) => (
-                    <div key={i} className="px-3 py-2.5 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">{h}</div>
+                    <div key={i} className="px-3 py-2.5 text-[11px] font-semibold text-[var(--text-secondary)] uppercase tracking-wider">{h}</div>
                   ))}
                 </div>
                 {categories.map((cat, idx) => {
@@ -402,7 +379,7 @@ export default function CourseDetailPage() {
                   return catEditingId === cat.id ? (
                     <div
                       key={cat.id}
-                      className={`grid gap-0 items-center py-2 bg-[#F0FFFE] ${isRowLast ? "" : "border-b border-gray-50"}`}
+                      className={`grid gap-0 items-center py-2 bg-[var(--accent-subtle)] ${isRowLast ? "" : "border-b border-[var(--border-subtle)]"}`}
                       style={{ gridTemplateColumns: "1fr 96px 64px" }}
                     >
                       <div className="px-3">
@@ -411,7 +388,7 @@ export default function CourseDetailPage() {
                           onChange={(e) => setCatName(e.target.value)}
                           placeholder="เช่น Midterm"
                           autoFocus
-                          className="w-full px-2.5 py-1.5 rounded-lg border border-[var(--accent)]/40 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 transition-colors"
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-[var(--accent)]/40 bg-[var(--bg-surface)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 transition-colors"
                         />
                       </div>
                       <div className="px-3">
@@ -422,62 +399,25 @@ export default function CourseDetailPage() {
                           value={catWeight}
                           onChange={(e) => setCatWeight(e.target.value)}
                           placeholder="30"
-                          className="w-full px-2.5 py-1.5 rounded-lg border border-[var(--accent)]/40 bg-white text-sm tabular-nums focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 transition-colors"
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-[var(--accent)]/40 bg-[var(--bg-surface)] text-sm tabular-nums focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 transition-colors"
                         />
                       </div>
                       <div className="px-3 flex items-center gap-1">
-                        <button
-                          onClick={cancelCategoryForm}
-                          className="p-1 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-[var(--text-primary)] transition-colors"
-                          title={t("ยกเลิก", "Cancel")}
-                        >
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                          </svg>
-                        </button>
-                        <button
-                          onClick={handleSaveCategory}
-                          disabled={!catName.trim() || !(Number(catWeight) > 0 && Number(catWeight) <= 100)}
-                          className="p-1 rounded-lg hover:bg-[var(--accent-bright)]/10 text-[var(--accent)] transition-colors disabled:opacity-40"
-                          title={t("บันทึก", "Save")}
-                        >
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                            <polyline points="20 6 9 17 4 12"/>
-                          </svg>
-                        </button>
+                        <IconButton icon="x" label={t("ยกเลิก", "Cancel")} onClick={cancelCategoryForm} />
+                        <IconButton icon="check" label={t("บันทึก", "Save")} onClick={handleSaveCategory} disabled={!catName.trim() || !(Number(catWeight) > 0 && Number(catWeight) <= 100)} />
                       </div>
                     </div>
                   ) : (
                     <div
                       key={cat.id}
-                      className={`grid gap-0 items-center py-2.5 transition-colors hover:bg-gray-50/50 ${isRowLast ? "" : "border-b border-gray-50"}`}
+                      className={`grid gap-0 items-center py-2.5 transition-colors hover:bg-[var(--bg-subtle)]/50 ${isRowLast ? "" : "border-b border-[var(--border-subtle)]"}`}
                       style={{ gridTemplateColumns: "1fr 96px 64px" }}
                     >
                       <div className="px-3 text-sm text-[var(--text-primary)]">{cat.name}</div>
                       <div className="px-3 text-sm font-semibold text-[var(--accent)] tabular-nums">{cat.weight}%</div>
                       <div className="px-3 flex items-center gap-1">
-                        <button
-                          onClick={() => openEditCategory(cat)}
-                          disabled={catFormOpen}
-                          className="p-1 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-[var(--text-primary)] transition-colors disabled:opacity-50"
-                          title={t("แก้ไข", "Edit")}
-                        >
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                          </svg>
-                        </button>
-                        <button
-                          onClick={() => handleDeleteCategory(cat)}
-                          disabled={catFormOpen}
-                          className="p-1 rounded-lg hover:bg-[var(--s-err-bg)] text-gray-500 hover:text-[var(--s-err-text)] transition-colors disabled:opacity-50"
-                          title={t("ลบ", "Delete")}
-                        >
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                            <polyline points="3 6 5 6 21 6"/>
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-                          </svg>
-                        </button>
+                        <IconButton icon="edit" label={t("แก้ไข", "Edit")} onClick={() => openEditCategory(cat)} disabled={catFormOpen} />
+                        <IconButton icon="trash" label={t("ลบ", "Delete")} tone="danger" onClick={() => handleDeleteCategory(cat)} disabled={catFormOpen} />
                       </div>
                     </div>
                   );
@@ -485,14 +425,14 @@ export default function CourseDetailPage() {
 
                 {/* New-category row — appended in place instead of a form panel below */}
                 {catFormOpen && !catEditingId && (
-                  <div className="grid gap-0 items-center py-2 bg-[#F0FFFE]" style={{ gridTemplateColumns: "1fr 96px 64px" }}>
+                  <div className="grid gap-0 items-center py-2 bg-[var(--accent-subtle)]" style={{ gridTemplateColumns: "1fr 96px 64px" }}>
                     <div className="px-3">
                       <input
                         value={catName}
                         onChange={(e) => setCatName(e.target.value)}
                         placeholder="เช่น Midterm"
                         autoFocus
-                        className="w-full px-2.5 py-1.5 rounded-lg border border-[var(--accent)]/40 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 transition-colors"
+                        className="w-full px-2.5 py-1.5 rounded-lg border border-[var(--accent)]/40 bg-[var(--bg-surface)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 transition-colors"
                       />
                     </div>
                     <div className="px-3">
@@ -503,29 +443,12 @@ export default function CourseDetailPage() {
                         value={catWeight}
                         onChange={(e) => setCatWeight(e.target.value)}
                         placeholder="30"
-                        className="w-full px-2.5 py-1.5 rounded-lg border border-[var(--accent)]/40 bg-white text-sm tabular-nums focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 transition-colors"
+                        className="w-full px-2.5 py-1.5 rounded-lg border border-[var(--accent)]/40 bg-[var(--bg-surface)] text-sm tabular-nums focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 transition-colors"
                       />
                     </div>
                     <div className="px-3 flex items-center gap-1">
-                      <button
-                        onClick={cancelCategoryForm}
-                        className="p-1 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-[var(--text-primary)] transition-colors"
-                        title={t("ยกเลิก", "Cancel")}
-                      >
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                        </svg>
-                      </button>
-                      <button
-                        onClick={handleSaveCategory}
-                        disabled={!catName.trim() || !(Number(catWeight) > 0 && Number(catWeight) <= 100)}
-                        className="p-1 rounded-lg hover:bg-[var(--accent-bright)]/10 text-[var(--accent)] transition-colors disabled:opacity-40"
-                        title={t("บันทึก", "Save")}
-                      >
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                          <polyline points="20 6 9 17 4 12"/>
-                        </svg>
-                      </button>
+                      <IconButton icon="x" label={t("ยกเลิก", "Cancel")} onClick={cancelCategoryForm} />
+                      <IconButton icon="check" label={t("บันทึก", "Save")} onClick={handleSaveCategory} disabled={!catName.trim() || !(Number(catWeight) > 0 && Number(catWeight) <= 100)} />
                     </div>
                   </div>
                 )}
@@ -549,7 +472,7 @@ function DetailField({ label, value, placeholder, span2 }: { label: string; valu
   return (
     <div className={span2 ? "col-span-2" : undefined}>
       <p className="text-xs font-semibold text-[var(--accent)] mb-1">{label}</p>
-      <p className="text-sm text-[var(--text-primary)]">{value || <span className="text-gray-400">{placeholder ?? "—"}</span>}</p>
+      <p className="text-sm text-[var(--text-primary)]">{value || <span className="text-[var(--text-muted)]">{placeholder ?? "—"}</span>}</p>
     </div>
   );
 }

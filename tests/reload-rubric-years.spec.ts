@@ -70,7 +70,7 @@ for (const sfx of ["", "-en"]) {
       const r = y.rubrics.find((x: { assignmentId: string }) => x.assignmentId === a.id);
       expect(r.criteria.reduce((n: number, c: { maxPoints: number }) => n + c.maxPoints, 0), a.id).toBe(a.maxPoints);
       expect(Object.values(s.criterionScores as Record<string, number>).reduce((p, q) => p + q, 0), s.id).toBe(s.instructorScore);
-      expect(s.studentId, "synthetic ids only").toMatch(/^(67|68)99\d{4}$/);
+      expect(s.studentId, "synthetic ids only").toMatch(/^(64|65)99\d{4}$/);   // past classes (<66), inactive accounts in the backend seed
     }
   });
 }

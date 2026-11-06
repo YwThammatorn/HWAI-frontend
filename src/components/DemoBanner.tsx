@@ -11,7 +11,7 @@ export default function DemoBanner({ email }: { email: string }) {
   return (
     <div
       role="status"
-      className="fixed bottom-3 left-1/2 -translate-x-1/2 z-[100] pointer-events-none max-w-[calc(100vw-32px)] rounded-full border border-amber-300 bg-amber-50/95 px-4 py-1.5 text-xs font-semibold text-amber-700 shadow-sm dark:border-amber-700/60 dark:bg-amber-900/80 dark:text-amber-200 truncate"
+      className="fixed bottom-3 left-1/2 -translate-x-1/2 z-[100] pointer-events-none max-w-[calc(100vw-32px)] rounded-full border border-[var(--s-warn-bd)] bg-[var(--s-warn-bg)] px-4 py-1.5 text-xs font-semibold text-[var(--s-warn-text)] shadow-sm truncate"
     >
       {t("โหมดเดโม", "Demo mode")} · {email} · {t("เข้าสู่ระบบโดยไม่ผ่าน Google", "signed in without Google")}
     </div>

@@ -18,6 +18,9 @@ import {
 import { useLanguage } from "@/context/LanguageContext";
 import Modal from "@/components/Modal";
 
+import Icon from "@/components/Icon";
+import IconButton from "@/components/IconButton";
+import Avatar from "@/components/Avatar";
 function initialsOf(name: string) {
   const parts = name.trim().split(/\s+/);
   return ((parts[0]?.[0] ?? "") + (parts[1]?.[0] ?? "")).toUpperCase() || "?";
@@ -196,9 +199,7 @@ function GradingAssignmentModal({
                       taAccountId === s.id ? "border-[var(--role-ta-border)] bg-[var(--role-ta-bg)]" : "border-[var(--border-subtle)] hover:bg-[var(--bg-subtle)]"
                     }`}
                   >
-                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0" style={{ background: "#7C3AED" }}>
-                      {initialsOf(s.name)}
-                    </div>
+                    <Avatar initials={initialsOf(s.name)} bg="var(--role-ta-text)" />
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-[var(--text-primary)] truncate">{s.name}</p>
                       <p className="text-[11px] text-[var(--text-muted)] font-mono truncate">{s.subtitle}</p>
@@ -287,9 +288,7 @@ function GradingAssignmentModal({
                     {weekNumbers.map((n) => (
                       <span key={n} className="inline-flex items-center gap-1 pl-2.5 pr-1.5 py-1 rounded-full bg-[var(--accent-bright)]/10 text-[var(--accent)] text-xs font-semibold">
                         {t(`สัปดาห์ ${n}`, `Week ${n}`)}
-                        <button type="button" onClick={() => removeWeek(n)} className="w-4 h-4 flex items-center justify-center rounded-full hover:bg-[var(--accent)]/20" aria-label={t("ลบ", "Remove")}>
-                          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                        </button>
+                        <IconButton icon="x" label={t("ลบ", "Remove")} onClick={() => removeWeek(n)} />
                       </span>
                     ))}
                   </div>
@@ -298,7 +297,7 @@ function GradingAssignmentModal({
             )}
 
             {scopeType === "all" && (
-              <p className="text-xs text-[var(--text-muted)] px-3 py-2 rounded-xl bg-[var(--bg-subtle)]">
+              <p className="text-xs text-[var(--text-muted)] px-3 py-2 rounded-xl bg-[var(--bg-app)]">
                 {t("ผู้ช่วยสอนคนนี้จะตรวจงานทุกชิ้นในวิชานี้", "This TA will grade every submission in this course")}
               </p>
             )}
@@ -388,9 +387,7 @@ function GradingAssignmentRow({
   if (!canManage) {
     return (
       <div className="flex items-center gap-4 px-6 py-4">
-        <div className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0" style={{ background: "#7C3AED" }}>
-          {initialsOf(taName)}
-        </div>
+        <Avatar size="md" initials={initialsOf(taName)} bg="var(--role-ta-text)" />
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-[var(--text-primary)] truncate">{taName}</p>
           <p className="text-xs text-[var(--text-muted)]">{scopeDescription(assignment.scope, t)}</p>
@@ -400,35 +397,14 @@ function GradingAssignmentRow({
   }
   return (
     <div className="flex items-center gap-4 px-6 py-4 hover:bg-[var(--bg-subtle)]/50 transition-colors">
-      <div className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0" style={{ background: "#7C3AED" }}>
-        {initialsOf(taName)}
-      </div>
+      <Avatar size="md" initials={initialsOf(taName)} bg="var(--role-ta-text)" />
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold text-[var(--text-primary)] truncate">{taName}</p>
         <p className="text-xs text-[var(--text-muted)]">{scopeDescription(assignment.scope, t)}</p>
       </div>
       <div className="flex items-center gap-1 shrink-0">
-        <button
-          onClick={onEdit}
-          disabled={isGroupScoped}
-          title={isGroupScoped ? t("แก้ไขแบบกลุ่มยังไม่รองรับในหน้านี้", "Group-scoped splits can't be edited here yet") : t("แก้ไข", "Edit")}
-          className="w-8 h-8 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--accent)] hover:bg-[var(--accent-bright)]/10 disabled:opacity-50 disabled:hover:bg-transparent disabled:cursor-not-allowed transition-colors"
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-          </svg>
-        </button>
-        <button
-          onClick={onRemove}
-          title={t("ลบ", "Remove")}
-          className="w-8 h-8 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--s-err-text)] hover:bg-[var(--s-err-bg)] transition-colors"
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-            <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-            <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
-          </svg>
-        </button>
+        <IconButton icon="edit" label={isGroupScoped ? t("แก้ไขแบบกลุ่มยังไม่รองรับในหน้านี้", "Group-scoped splits can't be edited here yet") : t("แก้ไข", "Edit")} onClick={onEdit} disabled={isGroupScoped} />
+        <IconButton icon="trash" label={t("ลบ", "Remove")} tone="danger" onClick={onRemove} />
       </div>
     </div>
   );
@@ -496,11 +472,7 @@ export default function GradingSplitPage() {
     <main className="w-full px-8 py-8">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-[var(--text-muted)] mb-6">
-        <Link href="/teacher/courses" className="hover:text-[var(--accent)] transition-colors">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="inline -mt-0.5">
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
-          </svg>
-        </Link>
+        <IconButton icon="home" label={t("รายวิชาทั้งหมด", "All courses")} href="/teacher/courses" />
         <span>/</span>
         <Link href={`/teacher/courses/${id}`} className="hover:text-[var(--accent)] transition-colors">{course.name}</Link>
         <span>/</span>
@@ -520,9 +492,7 @@ export default function GradingSplitPage() {
             onClick={() => { setEditTarget(undefined); setModalMode("create"); }}
             className="flex items-center gap-2 h-10 px-4 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors shrink-0"
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>
+            <Icon name="plus" />
             {t("เพิ่มการแบ่งงาน", "Add Split")}
           </button>
         )}
