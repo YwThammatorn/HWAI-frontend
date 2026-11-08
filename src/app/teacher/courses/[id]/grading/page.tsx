@@ -15,6 +15,7 @@ import SearchInput from "@/components/SearchInput";
 import PillTabBar, { type PillTabTone } from "@/components/PillTabBar";
 import StatCard from "@/components/StatCard";
 import EmptyState from "@/components/EmptyState";
+import AssignmentGradingCard from "@/components/AssignmentGradingCard";
 import AssignmentTypeBadge from "@/components/AssignmentTypeBadge";
 import Modal from "@/components/Modal";
 import AiGradePreviewModal from "@/components/AiGradePreviewModal";
@@ -238,162 +239,132 @@ export default function CourseGradingPage() {
             />
           </div>
 
-          {/* Queue */}
-          <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] overflow-hidden">
+          {/* Queue — one stat card per assignment */}
+          <div>
             {visible.length === 0 ? (
-              <p className="py-14 text-center text-sm text-[var(--text-muted)]">
+              <p className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] py-14 text-center text-sm text-[var(--text-muted)]">
                 {q ? t(`ไม่พบชิ้นงานที่ตรงกับ "${search}"`, `No assignments match "${search}"`) : t("ไม่มีชิ้นงานในหมวดนี้", "No assignments in this view")}
               </p>
             ) : (
-              <ul>
+              <ul className="flex flex-col gap-4">
                 {visible.map(({ a, subs, p }) => {
                   const category = a.categoryId ? categories.find((c) => c.id === a.categoryId) : undefined;
                   const total = subs.length;
-                  const seg = (n: number) => (total > 0 ? `${(n / total) * 100}%` : "0%");
                   return (
-                    <li key={a.id} className="grid grid-cols-[minmax(0,1fr)_13.5rem] md:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)_13.5rem] items-center gap-x-8 gap-y-2 px-5 py-4 border-b border-[var(--border-subtle)] last:border-b-0 hover:bg-[var(--bg-subtle)] transition-colors">
-                      {/* What it is */}
-                      <div className="min-w-0 flex-1">
-                        <Link
-                          href={`/teacher/courses/${id}/assignments/${a.id}/grading`}
-                          className="text-sm font-semibold text-[var(--text-primary)] hover:text-[var(--accent)] hover:underline truncate block"
-                        >
-                          {a.name}
-                        </Link>
-                        <div className="flex items-center gap-2 mt-1 flex-wrap text-xs text-[var(--text-secondary)]">
+                    <AssignmentGradingCard
+                      key={a.id}
+                      name={a.name}
+                      total={subs.length}
+                      enrolled={students.length}
+                      isExam={!!a.isExam}
+                      graded={p.gradedCount}
+                      needReview={p.needReview}
+                      notGraded={p.notGraded}
+                      avgPct={p.avgPct}
+                      meta={
+                        <>
                           <span>{a.dueDate ? <>{t("กำหนดส่ง", "Due")} {fmtDate(a.dueDate, lang)}</> : t("สอบ · ไม่มีกำหนดส่ง", "Exam · no due date")}</span>
                           {p.overdue && (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-[var(--s-err-bg)] text-[var(--s-err-text)] font-semibold">
-                              {t("เลยกำหนด", "Overdue")}
-                            </span>
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-[var(--s-err-bg)] text-[var(--s-err-text)] font-semibold">
+                            {t("เลยกำหนด", "Overdue")}
+                          </span>
                           )}
                           <AssignmentTypeBadge type={a.submissionType} />
                           {category && (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-[var(--accent-subtle)] text-[var(--accent)] font-medium tabular-nums">
-                              {category.name} ({category.weight}%)
-                            </span>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Progress */}
-                      <div className="hidden md:block min-w-0">
-                        <div className="flex items-baseline justify-between text-xs text-[var(--text-secondary)] mb-1.5">
-                          <span className="tabular-nums">
-                            <span className="font-semibold text-[var(--text-primary)]">{total}</span> / {students.length} {a.isExam ? t("ให้คะแนนแล้ว", "scored") : t("ส่งแล้ว", "submitted")}
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-[var(--accent-subtle)] text-[var(--accent)] font-medium tabular-nums">
+                            {category.name} ({category.weight}%)
                           </span>
-                          {p.avgPct !== null && (
-                            <span className="tabular-nums">{t("เฉลี่ย", "Avg")} <span className="font-semibold text-[var(--text-primary)]">{p.avgPct}%</span></span>
                           )}
-                        </div>
-                        <div
-                          className="flex h-2 rounded-full overflow-hidden bg-[var(--bg-app)]"
-                          role="img"
-                          aria-label={t(
-                            `ตรวจแล้ว ${p.gradedCount}, รอตรวจสอบ ${p.needReview}, ยังไม่ตรวจ ${p.notGraded}`,
-                            `${p.gradedCount} graded, ${p.needReview} need review, ${p.notGraded} not graded`,
-                          )}
-                        >
-                          <span className="bg-[var(--s-ok-text)]" style={{ width: seg(p.gradedCount) }} />
-                          <span className="bg-[var(--s-warn-text)]" style={{ width: seg(p.needReview) }} />
-                          <span className="bg-[var(--text-muted)]/40" style={{ width: seg(p.notGraded) }} />
-                        </div>
-                        <p className="text-xs text-[var(--text-muted)] mt-1.5 tabular-nums">
-                          {total === 0
-                            ? t("ยังไม่มีการส่งงาน", "No submissions yet")
-                            : <>
-                <span className="whitespace-nowrap">{t("ตรวจแล้ว", "Graded")} {p.gradedCount}</span>{" · "}
-                <span className="whitespace-nowrap">{t("รอตรวจสอบ", "Needs review")} {p.needReview}</span>{" · "}
-                <span className="whitespace-nowrap">{t("ยังไม่ตรวจ", "Not graded")} {p.notGraded}</span>
-              </>}
-                        </p>
-                      </div>
 
-                      {/* Actions */}
-                      <div className="flex items-center gap-2 justify-end">
-                        {p.complete ? (
-                          <>
-                            <Link
-                              href={`/teacher/courses/${id}/assignments/${a.id}/grading`}
-                              className="px-3 h-9 inline-flex items-center whitespace-nowrap rounded-xl border border-[var(--border)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-surface)] hover:text-[var(--text-primary)] active:scale-[.97] transition-colors"
-                            >
-                              {t("ทบทวน", "Review")}
-                            </Link>
-                            <Link
-                              href={`/teacher/courses/${id}/assignments/${a.id}/results`}
-                              className="px-3 h-9 inline-flex items-center whitespace-nowrap rounded-xl bg-[var(--accent-solid)] text-sm font-semibold text-[var(--accent-solid-text)] hover:bg-[var(--accent-solid-hover)] active:scale-[.97] transition-colors"
-                            >
-                              {t("ดูผลลัพธ์", "View Results")}
-                            </Link>
-                          </>
-                        ) : total === 0 ? (
-                          <span className="text-xs text-[var(--text-muted)]">{t("รอนักศึกษาส่งงาน", "Awaiting submissions")}</span>
-                        ) : !gradingOpen(a, now) ? (
-                          // the due date or the late hour has not passed yet: nothing can be graded while the work can still change
-                          <div data-testid="grading-locked" className="flex flex-col items-end gap-0.5 text-right">
-                            <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--text-secondary)]">
-                              <Icon name="lock" size="xs" />
-                              {t("ยังตรวจไม่ได้", "Not open for grading yet")}
-                            </span>
-                            <span className="text-xs text-[var(--text-muted)]">
-                              {t(`เปิดตรวจได้ ${opensText(a, lang)} น.`, `Opens ${opensText(a, lang)}`)}
-                            </span>
-                          </div>
-                        ) : a.isExam || a.acceptsFiles === false || a.gradingFinalized ? (
-                          // nothing to choose: an exam is typed in, no files means nothing for the AI, announced work keeps its method
-                          <div className="flex flex-col items-end gap-1">
-                            <Link
-                              href={gradingHref(a)}
-                              className="px-3 h-9 inline-flex items-center gap-1.5 rounded-xl bg-[var(--accent-solid)] text-sm font-semibold text-[var(--accent-solid-text)] hover:bg-[var(--accent-solid-hover)] active:scale-[.97] transition-colors"
-                            >
-                              <Icon name="play" />
-                              {t("เริ่มตรวจงาน", "Start Grading")}
-                            </Link>
-                            {!a.isExam && (
-                              <span data-testid="grading-mode-locked" className="text-xs text-[var(--text-muted)]">
-                                {a.acceptsFiles === false ? t("ตรวจเองเท่านั้น — ไม่รับไฟล์", "Manual only — takes no files") : t("ล็อกวิธีตรวจ — ประกาศผลแล้ว", "Method locked — results announced")}
+                        </>
+                      }
+                      actions={
+                        <>
+                          {p.complete ? (
+                            <>
+                              <Link
+                                href={`/teacher/courses/${id}/assignments/${a.id}/grading`}
+                                className="px-3 h-9 inline-flex items-center whitespace-nowrap rounded-xl border border-[var(--border)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-surface)] hover:text-[var(--text-primary)] active:scale-[.97] transition-colors"
+                              >
+                                {t("ทบทวน", "Review")}
+                              </Link>
+                              <Link
+                                href={`/teacher/courses/${id}/assignments/${a.id}/results`}
+                                className="px-3 h-9 inline-flex items-center whitespace-nowrap rounded-xl bg-[var(--accent-solid)] text-sm font-semibold text-[var(--accent-solid-text)] hover:bg-[var(--accent-solid-hover)] active:scale-[.97] transition-colors"
+                              >
+                                {t("ดูผลลัพธ์", "View Results")}
+                              </Link>
+                            </>
+                          ) : total === 0 ? (
+                            <span className="text-xs text-[var(--text-muted)]">{t("รอนักศึกษาส่งงาน", "Awaiting submissions")}</span>
+                          ) : !gradingOpen(a, now) ? (
+                            // the due date or the late hour has not passed yet: nothing can be graded while the work can still change
+                            <div data-testid="grading-locked" className="flex flex-col items-end gap-0.5 text-right">
+                              <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--text-secondary)]">
+                                <Icon name="lock" size="xs" />
+                                {t("ยังตรวจไม่ได้", "Not open for grading yet")}
                               </span>
-                            )}
-                          </div>
-                        ) : (
-                          // the choice: the method already in use is the filled button, the other one is outlined
-                          <div role="group" aria-label={t(`เลือกวิธีตรวจ — ${a.name}`, `Choose how to grade — ${a.name}`)} className="flex flex-col gap-1.5 w-full">
-                            {(["ai", "manual"] as const).map((m) => {
-                              const current = (isManualGrading(a) ? "manual" : "ai") === m;
-                              const waiting = m === "ai" ? waitingUnits(a).length : 0;
-                              const busy = sendingId === a.id && m === "ai";
-                              return (
-                                <button
-                                  key={m}
-                                  type="button"
-                                  disabled={!!sendingId}
-                                  onClick={() => startGrading(a, m)}
-                                  title={m === "ai"
-                                    ? (waiting > 0
-                                      ? t(`ส่งงานที่ยังไม่ตรวจ ${waiting} ชิ้นให้ AI ตรวจ แล้วเปิดให้คุณตรวจทาน`, `Sends the ${waiting} not-graded ${waiting === 1 ? "submission" : "submissions"} to the AI, then opens them for your review`)
-                                      : t("ไม่มีงานที่รอ AI — ดู rubric แล้วเปิดหน้าตรวจต่อ", "Nothing is waiting for the AI — shows the rubric, then opens the grading page"))
-                                    : t("ไม่ใช้ AI — คุณให้คะแนนเองทีละงาน", "No AI — you score each submission yourself")}
-                                  className={`px-3 h-9 inline-flex items-center justify-center gap-1.5 rounded-xl text-sm font-semibold active:scale-[.97] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] disabled:cursor-wait disabled:opacity-70 ${current
-                                    ? "bg-[var(--accent-solid)] text-[var(--accent-solid-text)] hover:bg-[var(--accent-solid-hover)]"
-                                    : "border border-[var(--border)] bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)]"}`}
-                                >
-                                  {busy && (
-                                    <Icon name="spinner" className="animate-spin" />
-                                  )}
-                                  {busy
-                                    ? t(`AI กำลังตรวจ ${waiting} ชิ้น…`, `AI grading ${waiting}…`)
-                                    : m === "ai"
+                              <span className="text-xs text-[var(--text-muted)]">
+                                {t(`เปิดตรวจได้ ${opensText(a, lang)} น.`, `Opens ${opensText(a, lang)}`)}
+                              </span>
+                            </div>
+                          ) : a.isExam || a.acceptsFiles === false || a.gradingFinalized ? (
+                            // nothing to choose: an exam is typed in, no files means nothing for the AI, announced work keeps its method
+                            <div className="flex flex-col items-end gap-1">
+                              <Link
+                                href={gradingHref(a)}
+                                className="px-3 h-9 inline-flex items-center gap-1.5 rounded-xl bg-[var(--accent-solid)] text-sm font-semibold text-[var(--accent-solid-text)] hover:bg-[var(--accent-solid-hover)] active:scale-[.97] transition-colors"
+                              >
+                                <Icon name="play" />
+                                {t("เริ่มตรวจงาน", "Start Grading")}
+                              </Link>
+                              {!a.isExam && (
+                                <span data-testid="grading-mode-locked" className="text-xs text-[var(--text-muted)]">
+                                  {a.acceptsFiles === false ? t("ตรวจเองเท่านั้น — ไม่รับไฟล์", "Manual only — takes no files") : t("ล็อกวิธีตรวจ — ประกาศผลแล้ว", "Method locked — results announced")}
+                                </span>
+                              )}
+                            </div>
+                          ) : (
+                            // the choice: the method already in use is the filled button, the other one is outlined
+                            <div role="group" aria-label={t(`เลือกวิธีตรวจ — ${a.name}`, `Choose how to grade — ${a.name}`)} className="flex w-full flex-wrap gap-2">
+                              {(["ai", "manual"] as const).map((m) => {
+                                const current = (isManualGrading(a) ? "manual" : "ai") === m;
+                                const waiting = m === "ai" ? waitingUnits(a).length : 0;
+                                const busy = sendingId === a.id && m === "ai";
+                                return (
+                                  <button
+                                    key={m}
+                                    type="button"
+                                    disabled={!!sendingId}
+                                    onClick={() => startGrading(a, m)}
+                                    title={m === "ai"
                                       ? (waiting > 0
-                                        ? (a.rubricRestartedAt ? t(`ตรวจใหม่ด้วย rubric ใหม่ (${waiting})`, `Regrade with new rubric (${waiting})`) : t(`ตรวจด้วย AI (${waiting})`, `Grade with AI (${waiting})`))
-                                        : t("ตรวจด้วย AI", "Grade with AI"))
-                                      : t("ตรวจเอง", "Grade manually")}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    </li>
+                                        ? t(`ส่งงานที่ยังไม่ตรวจ ${waiting} ชิ้นให้ AI ตรวจ แล้วเปิดให้คุณตรวจทาน`, `Sends the ${waiting} not-graded ${waiting === 1 ? "submission" : "submissions"} to the AI, then opens them for your review`)
+                                        : t("ไม่มีงานที่รอ AI — ดู rubric แล้วเปิดหน้าตรวจต่อ", "Nothing is waiting for the AI — shows the rubric, then opens the grading page"))
+                                      : t("ไม่ใช้ AI — คุณให้คะแนนเองทีละงาน", "No AI — you score each submission yourself")}
+                                    className={`flex-1 min-w-[9rem] whitespace-nowrap px-3 h-9 inline-flex items-center justify-center gap-1.5 rounded-xl text-sm font-semibold active:scale-[.97] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] disabled:cursor-wait disabled:opacity-70 ${current
+                                      ? "bg-[var(--accent-solid)] text-[var(--accent-solid-text)] hover:bg-[var(--accent-solid-hover)]"
+                                      : "border border-[var(--border)] bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)]"}`}
+                                  >
+                                    {busy && (
+                                      <Icon name="spinner" className="animate-spin" />
+                                    )}
+                                    {busy
+                                      ? t(`AI กำลังตรวจ ${waiting} ชิ้น…`, `AI grading ${waiting}…`)
+                                      : m === "ai"
+                                        ? (waiting > 0
+                                          ? (a.rubricRestartedAt ? t(`ตรวจใหม่ด้วย rubric ใหม่ (${waiting})`, `Regrade with new rubric (${waiting})`) : t(`ตรวจด้วย AI (${waiting})`, `Grade with AI (${waiting})`))
+                                          : t("ตรวจด้วย AI", "Grade with AI"))
+                                        : t("ตรวจเอง", "Grade manually")}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          )}
+
+                        </>
+                      }
+                    />
                   );
                 })}
               </ul>

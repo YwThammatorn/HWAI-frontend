@@ -7,6 +7,10 @@ import { useCourses } from "@/lib/courses";
 import { useAssignments, RubricCriterion, submissionAttachments, isManualGrading, levelShare, gradingOpen, gradingOpensAt, latePenaltyOf, daysLate } from "@/lib/assignments";
 import { useNow } from "@/lib/clock";
 import SubmissionViewer from "@/components/SubmissionViewer";
+import MetricCard from "@/components/MetricCard";
+import AiGradePreviewModal from "@/components/AiGradePreviewModal";
+import { useAiGrading } from "@/lib/useAiGrading";
+import { SCORE_TONE_CLASSES, PENDING_CHIP_CLASSES } from "@/lib/scoreBook";
 import FloatingPanel, { openFloatingWindow } from "@/components/FloatingPanel";
 import CriterionName from "@/components/CriterionName";
 import { CriterionPoints } from "@/components/RubricCriterionCard";
@@ -70,6 +74,10 @@ export default function RecheckPage() {
     ? getGroupsByAssignment(assignmentId).find((g) => g.id === submission.groupId)
     : undefined;
 
+  const { waitingUnits, sendWaiting } = useAiGrading();
+  // "Regrade with the new rubric" right here (9/11/2569): when the rubric changed after grading started, the work waits for the AI again
+  const [regradeOpen, setRegradeOpen] = useState(false);
+  const [regrading, setRegrading] = useState(false);
   const [zoom, setZoom] = useState(100);
   // The grading part in its own small window (14/10/2569): for a submitted link, which opens in another tab, so the teacher can grade
   // while looking at it. The state stays in this page; the small window just shows the same panel.
@@ -249,9 +257,37 @@ export default function RecheckPage() {
     <div className={floating ? "flex-1 min-h-0 flex flex-col bg-[var(--bg-surface)] overflow-y-auto" : "w-[26rem] shrink-0 flex flex-col border-l border-[var(--border-subtle)] bg-[var(--bg-surface)] overflow-y-auto"}>
       <div className="px-5 py-5 border-b border-[var(--border-subtle)]">
         {/* No "AI confidence" any more (15/10/2569, user's request): only a note when there is no AI result behind this submission. */}
-        <h2 className="text-base font-bold text-[var(--text-primary)]">
-          {t("ตรวจสอบการให้คะแนน", "Grading Review")}
-        </h2>
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h2 className="text-base font-bold text-[var(--text-primary)]">
+            {t("ตรวจสอบการให้คะแนน", "Grading Review")}
+          </h2>
+          <span data-testid="grade-status" className={`inline-flex h-7 items-center rounded-lg px-2.5 text-xs font-semibold ${submission.status === "graded" ? SCORE_TONE_CLASSES.ok : PENDING_CHIP_CLASSES}`}>{submission.status === "graded" ? t("ตรวจแล้ว", "Graded") : t("รอตรวจ", "Pending")}</span>
+        </div>
+        {/* The same three-block score card as the assignment's Grading page (9/11/2569): what this submission is worth now, what the AI gave, what is saved */}
+        <MetricCard
+          label={t(`คะแนน (เต็ม ${assignment.maxPoints})`, `Score (of ${assignment.maxPoints})`)}
+          parts={[
+            { label: t("ตอนนี้", "Now"), value: totalScore },
+            ...(handGraded ? [] : [{ label: "AI", value: submission.aiScore ?? "—" }]),
+            { label: t("ของคุณ", "Yours"), value: submission.instructorScore ?? "—" },
+          ]}
+          tone="rating"
+          icon="star"
+        />
+        {!handGraded && !assignment.gradingFinalized && assignment.rubricRestartedAt && waitingUnits(assignment).length > 0 && (
+          <div data-testid="regrade-banner" role="note" className="mt-4 flex flex-col gap-3 rounded-xl border border-[var(--s-info-bd)] bg-[var(--s-info-bg)] px-4 py-3 text-xs leading-relaxed text-[var(--s-info-text)]">
+            <p>{t(`แก้ rubric หลังเริ่มตรวจ — เหลือ ${waitingUnits(assignment).length} งานที่รอตรวจด้วย rubric ใหม่`, `The rubric changed after grading started — ${waitingUnits(assignment).length} submission(s) wait to be graded under the new one.`)}</p>
+            <button
+              type="button"
+              data-testid="regrade-new-rubric"
+              disabled={regrading}
+              onClick={() => setRegradeOpen(true)}
+              className="inline-flex h-9 items-center justify-center whitespace-nowrap rounded-xl bg-[var(--accent-solid)] px-4 text-sm font-semibold text-[var(--accent-solid-text)] transition-colors hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {regrading ? t("AI กำลังตรวจ…", "AI grading…") : t("Regrade ด้วย rubric ใหม่", "Regrade with new rubric")}
+            </button>
+          </div>
+        )}
         {handGraded ? (
           <p className="mt-3 text-xs text-[var(--text-secondary)]">
             {t("ตรวจเอง — ไม่ใช้ AI ในงานนี้", "Graded by hand — no AI on this assignment")}
@@ -470,19 +506,9 @@ export default function RecheckPage() {
             <span className="text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-widest">
               {t("มุมมอง", "View")}:
             </span>
-            <button
-              onClick={() => setZoom((z) => Math.max(25, z - 25))}
-              className="w-6 h-6 flex items-center justify-center rounded hover:bg-[var(--bg-subtle)] text-[var(--text-secondary)] text-sm font-bold transition-colors"
-            >
-              −
-            </button>
+            <IconButton icon="minus" dense label={t("ซูมออก", "Zoom out")} onClick={() => setZoom((z) => Math.max(25, z - 25))} />
             <span className="text-sm font-medium text-[var(--text-primary)] w-12 text-center">{zoom}%</span>
-            <button
-              onClick={() => setZoom((z) => Math.min(200, z + 25))}
-              className="w-6 h-6 flex items-center justify-center rounded hover:bg-[var(--bg-subtle)] text-[var(--text-secondary)] text-sm font-bold transition-colors"
-            >
-              +
-            </button>
+            <IconButton icon="plus" dense label={t("ซูมเข้า", "Zoom in")} onClick={() => setZoom((z) => Math.min(200, z + 25))} />
             <div className="w-px h-4 bg-[var(--border)] mx-1" />
             <IconButton icon="refresh" label={t("รีเซ็ตการซูม", "Reset zoom")} onClick={() => setZoom(100)} />
             {hasLink && (
@@ -553,6 +579,14 @@ export default function RecheckPage() {
             <FloatingPanel target={floatWin} title={`${t("ตรวจงาน", "Grade")} — ${submission.studentName}`} onClosed={() => setFloatWin(null)}>{gradePanel(true)}</FloatingPanel>
           </>
         ) : gradePanel(false)}
+        {regradeOpen && (
+          <AiGradePreviewModal
+            assignment={assignment}
+            open
+            onClose={() => setRegradeOpen(false)}
+            onConfirm={async () => { setRegradeOpen(false); setRegrading(true); await sendWaiting(assignment); setRegrading(false); }}
+          />
+        )}
       </div>
   );
 }

@@ -4,12 +4,36 @@ import { useEffect, useState, ReactNode } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import { AssignmentAttachment } from "@/lib/assignments";
 import { resolveFileUrl } from "@/lib/fileStorage";
+import { linkInfo } from "@/lib/linkProvider";
+import Icon from "@/components/Icon";
+import IconTile from "@/components/IconTile";
 
 interface Resolved {
   id: string;
   /** Blob URL of the stored upload; null when the file is gone from storage. */
   url: string | null;
   type: string;
+}
+
+/** The picture on a strip card (9/11/2569): the image itself for an image upload, the provider's glyph for a link, a file glyph with its extension otherwise. */
+export function Thumb({ a, tall = false }: { a: AssignmentAttachment; tall?: boolean }) {
+  const box = `flex ${tall ? "h-24" : "h-14"} w-full items-center justify-center bg-[var(--bg-app)] text-[var(--accent)]`;
+  if (a.source === "upload" && a.kind === "image") {
+    const src = resolveFileUrl(a.ref);
+    if (src) {
+      // eslint-disable-next-line @next/next/no-img-element
+      return <span className={box}><img src={src} alt="" className="h-full w-full object-cover" /></span>;
+    }
+    return <span className={box}><Icon name="image" size="lg" /></span>;
+  }
+  if (a.source === "url") return <span className={box}><Icon name={linkInfo(a.ref).icon} size="lg" /></span>;
+  const ext = (a.name.match(/\.([a-z0-9]{1,5})$/i)?.[1] ?? "").toUpperCase();
+  return (
+    <span className={`${box} flex-col gap-0.5`}>
+      <Icon name="file-text" size="lg" />
+      {ext && <span className="text-[10px] font-bold leading-none tracking-wider text-[var(--text-secondary)]">{ext}</span>}
+    </span>
+  );
 }
 
 /**
@@ -22,7 +46,7 @@ export default function SubmissionViewer({ attachments, zoom, caption, empty, an
   attachments: AssignmentAttachment[];
   /** Same 25–200 % scale as the grading toolbar. */
   zoom: number;
-  caption?: string;
+  caption?: ReactNode;
   empty: ReactNode;
   /** Blind calibration (14/10/2569): file and link names can carry a student's name or account, so they are shown as "File 1", "Link 1"
    *  (the link itself still opens). The caption is the caller's to leave out. */
@@ -78,7 +102,9 @@ export default function SubmissionViewer({ attachments, zoom, caption, empty, an
   if (sel.source === "url") {
     body = (
       <div className={card} style={{ width: paperWidth }}>
-        <p className="text-sm font-semibold text-[var(--text-primary)] break-all">{anonymous ? shownName(sel) : sel.ref}</p>
+        <IconTile icon={linkInfo(sel.ref).icon} size="lg" tone="accent" />
+        <p className="text-base font-bold text-[var(--text-primary)]">{linkInfo(sel.ref).label}</p>
+        <p data-testid="link-address" className="max-w-full break-all text-sm text-[var(--text-secondary)]">{anonymous ? shownName(sel) : <>{linkInfo(sel.ref).host}{linkInfo(sel.ref).path && <span className="text-[var(--text-muted)]"> / {linkInfo(sel.ref).path}</span>}</>}</p>
         <p className="text-xs text-[var(--text-muted)]">{t("ลิงก์ที่นักศึกษาส่ง — เปิดในแท็บใหม่", "Link submitted by the student — opens in a new tab")}</p>
         <a
           href={sel.ref}
@@ -144,13 +170,16 @@ export default function SubmissionViewer({ attachments, zoom, caption, empty, an
                   onClick={() => setSelectedId(a.id)}
                   aria-pressed={active}
                   title={shownName(a)}
-                  className={`max-w-[220px] truncate h-8 px-3 rounded-lg border text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] ${
+                  className={`w-28 overflow-hidden rounded-xl border text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] ${
                     active
-                      ? "border-[var(--accent)] bg-[var(--accent-subtle)] text-[var(--accent)]"
-                      : "border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--accent)] hover:text-[var(--accent)]"
+                      ? "border-[var(--accent)] bg-[var(--accent-subtle)]"
+                      : "border-[var(--border)] bg-[var(--bg-surface)] hover:border-[var(--accent)]"
                   }`}
                 >
-                  {a.kind === "link" && !anonymous ? `${t("ลิงก์", "Link")}: ${a.name}` : shownName(a)}
+                  <Thumb a={a} />
+                  <span className={`block truncate px-2 py-1 text-xs font-medium ${active ? "text-[var(--accent)]" : "text-[var(--text-secondary)]"}`}>
+                    {a.kind === "link" && !anonymous ? `${t("ลิงก์", "Link")}: ${a.name}` : shownName(a)}
+                  </span>
                 </button>
               </li>
             );

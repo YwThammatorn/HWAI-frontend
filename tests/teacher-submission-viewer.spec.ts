@@ -1,6 +1,7 @@
 import { test, expect, Page } from "@playwright/test";
 
 import { BASE } from "./base";
+import { linkInfo } from "../src/lib/linkProvider";
 
 // Teacher grading screen (20/9/2569): the left pane shows what the student actually
 // submitted — images and PDFs inline, links and other files as buttons — instead of
@@ -85,11 +86,32 @@ test.describe("Teacher grading — the student's submitted files", () => {
     await expect(page.locator("iframe")).toHaveCount(0);
   });
 
+  test("each item on the strip is a card with a picture: the image itself, a file glyph with its extension, the link's provider (9/11/2569)", async ({ page }) => {
+    await open(page, withFiles(), stored);
+    const cards = strip(page).getByRole("button");
+    const thumb = cards.nth(0).locator("img");
+    await expect(thumb).toHaveCount(1);
+    await expect.poll(() => thumb.evaluate((el) => (el as HTMLImageElement).naturalWidth)).toBe(1);   // the uploaded picture, not an icon
+    await expect(cards.nth(1)).toContainText("PDF");                                                  // a file glyph + its extension
+    await expect(cards.nth(1).locator("svg")).toHaveCount(1);
+    await expect(cards.nth(2).locator("svg")).toHaveCount(1);                                         // the provider's glyph
+    await expect(cards.nth(2).locator("svg")).toHaveAttribute("data-icon", "code");                    // github.com
+  });
+
+  test("a submitted link is shown as a preview card: the provider, then the address — and still opens in a new tab", async ({ page }) => {
+    await open(page, withFiles(), stored);
+    await strip(page).getByRole("button", { name: /github\.com\/fah\/lab/ }).click();
+    await expect(page.getByText("GitHub", { exact: true })).toBeVisible();
+    await expect(page.getByTestId("link-address")).toContainText("github.com");
+    await expect(page.getByTestId("link-address")).toContainText("fah/lab");
+    await expect(page.getByRole("link", { name: "Open link" })).toHaveAttribute("target", "_blank");
+  });
+
   test("the zoom buttons scale the file", async ({ page }) => {
     await open(page, withFiles(), stored);
     const img = page.getByRole("img", { name: "photo.png" });
     await expect(img).toHaveCSS("width", "500px");
-    await page.getByRole("button", { name: "+", exact: true }).click();
+    await page.getByRole("button", { name: "Zoom in", exact: true }).click();
     await expect(img).toHaveCSS("width", "625px");
   });
 
@@ -118,5 +140,19 @@ test.describe("Teacher grading — the student's submitted files", () => {
     await open(page, submission());
     await expect(page.getByText("File preview not available in sandbox mode")).toBeVisible();
     await expect(strip(page)).toHaveCount(0);
+  });
+});
+
+test.describe("linkInfo — what a submitted link is", () => {
+  test("known providers get their name and a glyph, anything else its host", () => {
+    expect(linkInfo("https://www.figma.com/design/9fredy/UXUI-design")).toMatchObject({ label: "Figma", icon: "palette", host: "figma.com", path: "design/9fredy/UXUI-design" });
+    expect(linkInfo("https://github.com/fah/lab")).toMatchObject({ label: "GitHub", icon: "code" });
+    expect(linkInfo("https://youtu.be/abc")).toMatchObject({ label: "YouTube", icon: "video" });
+    expect(linkInfo("https://drive.google.com/file/d/1/view")).toMatchObject({ label: "Google Drive", icon: "folder" });
+    expect(linkInfo("https://example.org/a/b?x=1")).toMatchObject({ label: "example.org", icon: "globe", path: "a/b?x=1" });
+  });
+  test("an address without a scheme still parses; garbage falls back to itself", () => {
+    expect(linkInfo("figma.com/file/1")).toMatchObject({ label: "Figma", host: "figma.com" });
+    expect(linkInfo("not a url").icon).toBe("globe");
   });
 });

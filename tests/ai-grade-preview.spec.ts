@@ -217,6 +217,35 @@ test.describe("Rubric changed while grading — regrade with the new rubric", ()
     expect((await stored(page)).asg.rubricRestartedAt).toBeUndefined();
   });
 
+  test("the grading screen itself carries the banner too (9/11/2569): the rubric changed while a submission is open, regrade from there", async ({ page }) => {
+    await seed(page);
+    await changeRubricAndSave(page);
+    await page.getByTestId("confirm-restart").click();
+    await expect.poll(async () => (await stored(page)).asg.rubricRestartedAt).toBeTruthy();
+
+    await go(page, `${BASE}/teacher/courses/c-rs/assignments/as1/recheck?sub=sub-69071105`);
+    const banner = page.getByTestId("regrade-banner");
+    await expect(banner).toContainText("wait to be graded under the new one");
+    await page.getByTestId("regrade-new-rubric").click();
+    await expect(page.getByRole("dialog", { name: "Regrade with the new rubric?" })).toBeVisible();
+    await page.getByTestId("ai-preview-confirm").click();
+    await expect(banner).toHaveCount(0);
+    await expect.poll(async () => (await stored(page)).subs.filter((x) => x.aiScore !== null).length).toBe(5);
+    expect((await stored(page)).asg.rubricRestartedAt).toBeUndefined();
+  });
+
+  test("the grading screen shows the score as three blocks and the status chip, like the Score Book (9/11/2569)", async ({ page }) => {
+    await seed(page);
+    await go(page, `${BASE}/teacher/courses/c-rs/assignments/as1/recheck?sub=sub-69071101`);
+    const card = page.getByText("Score (of 100)").locator("xpath=ancestor::div[contains(@class,'rounded-xl')][1]");
+    for (const part of ["Now", "AI", "Yours"]) await expect(card.getByText(part, { exact: true })).toBeVisible();
+    await expect(page.getByTestId("grade-status")).toHaveText("Graded");
+    await expect(page.getByTestId("grade-status")).toHaveClass(/s-ok-bg/);
+    await go(page, `${BASE}/teacher/courses/c-rs/assignments/as1/recheck?sub=sub-69071105`);
+    await expect(page.getByTestId("grade-status")).toHaveText("Pending");
+    await expect(page.getByTestId("grade-status")).toHaveClass(/accent-subtle/);   // pending = the primary colour
+  });
+
   test("without the marker there is no banner (nothing was restarted)", async ({ page }) => {
     await seed(page);
     await go(page, ASSIGNMENT_GRADING);
