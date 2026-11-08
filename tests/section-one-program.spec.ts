@@ -163,7 +163,7 @@ test.describe("a section with no curriculum", () => {
       }
     }
     expect(await roster(page)).toEqual(["c-free:69071003"]);
-    await expect(page.getByText("Program CECS")).toBeVisible();
+    await expect(page.getByText("Program Computer Engineering and Cybersecurity")).toBeVisible();   // the header carries the full name
   });
 
   test("one CSV can't smuggle in a mix either: the first row pins the program", async ({ page }) => {
@@ -183,7 +183,7 @@ test.describe("Roster page", () => {
   test("shows which program the section is for", async ({ page }) => {
     await seed(page, { roster: ["69071001"] });
     await page.goto(`${BASE}/teacher/courses/c-ce/students`);
-    await expect(page.getByText("Program CE")).toBeVisible();
+    await expect(page.getByText("Program Computer Engineering", { exact: true })).toBeVisible();
     await expect(page.getByTestId("program-mismatch")).toHaveCount(0);
   });
 
@@ -235,7 +235,7 @@ test("from a stale browser that still holds the mixed roster, running [15] leave
   await reloaded;
   await page.goto(`${BASE}/teacher/courses/c-mock-1/students`);
   await expect(page.getByText("42 students")).toBeVisible();
-  await expect(page.getByText("Program CE", { exact: true })).toBeVisible();
+  await expect(page.getByText("Program Computer Engineering", { exact: true })).toBeVisible();
   await expect(page.getByTestId("program-mismatch")).toHaveCount(0);
   await expect(page.getByText(/^Not CE$/)).toHaveCount(0);
 });

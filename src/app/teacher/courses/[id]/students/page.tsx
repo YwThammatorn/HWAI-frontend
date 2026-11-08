@@ -43,7 +43,8 @@ export default function StudentsRosterPage() {
 
   // Display-only full names for the 3 known abbreviations (same map as admin/users.tsx — `program`
   // isn't FK-enforced, see CohortStudent.program, so this is deliberately duplicated per-page rather
-  // than shared); falls back to the raw value for anything else.
+  // than shared); falls back to the raw value for anything else. 9/11/2569: the FULL name is shown once, in the page header
+  // (there is room there); the table column shows the short code, so a long name can no longer be cut with "…".
   const PROGRAM_LABEL: Record<string, string> = {
     CE: t("วิศวกรรมคอมพิวเตอร์", "Computer Engineering"),
     CECS: t("วิศวกรรมคอมพิวเตอร์และความมั่นคงปลอดภัยไซเบอร์", "Computer Engineering and Cybersecurity"),
@@ -122,7 +123,7 @@ export default function StudentsRosterPage() {
               {course.name}
               {section && (
                 <span className="ml-2 text-sm font-semibold text-[var(--text-secondary)]" title={t("section นี้รับเฉพาะนักศึกษาหลักสูตรนี้", "This section only takes students from this program")}>
-                  {t("หลักสูตร", "Program")} {section.program}
+                  {t("หลักสูตร", "Program")} {PROGRAM_LABEL[section.program] ?? section.program}
                 </span>
               )}
             </p>
@@ -240,13 +241,13 @@ export default function StudentsRosterPage() {
                           <td className="px-4 py-2 whitespace-nowrap font-medium text-[var(--text-primary)]">{s.firstName} {s.lastName}</td>
                           <td className="px-4 py-2 text-[var(--text-secondary)]">{s.email || "—"}</td>
                           <td className="px-4 py-2 text-[var(--text-secondary)]">
-                            {/* One line whatever the program's name (15/10/2569): the full name is cut with "…" and shown whole on hover; the "Not CE" tag never wraps. */}
+                            {/* The short code (CE / CECS / CEI), always on one line; the full name is in the page header and in this cell's tooltip. The "Not CE" tag never wraps. */}
                             {(() => {
                               const p = findByStudentId(s.studentId)?.program;
                               const full = p ? (PROGRAM_LABEL[p] ?? p) : "—";
                               return (
-                                <div className="flex items-center gap-2 max-w-[15rem]">
-                                  <span className="truncate" title={full}>{full}</span>
+                                <div className="flex items-center gap-2">
+                                  <span className="whitespace-nowrap" title={full}>{p ?? "—"}</span>
                                   {mismatchedIds.has(s.studentId) && section && (
                                     <span className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap text-xs font-semibold text-[var(--s-warn-text)]">
                                       <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--s-warn-text)]" aria-hidden="true" />

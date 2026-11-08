@@ -221,17 +221,18 @@ test.describe("Teacher roster — table edge", () => {
 });
 
 // Program / Status / delete (23/9/2569, Program relabelled to the full name 23/9/2569 follow-up):
-// Program is looked up live from the central cohort record (same pattern as Title) and shown as its
-// full name, not the raw abbreviation (same PROGRAM_LABEL map as admin/users.tsx). Status is the
+// Program is looked up live from the central cohort record (same pattern as Title). 9/11/2569: the table shows the SHORT code (CE),
+// the full name lives in the page header (same PROGRAM_LABEL map as admin/users.tsx) — a long name was being cut with "…". Status is the
 // per-section EnrollmentStatus, not CohortStudent's account-level active/inactive. The Cohort column
 // itself was dropped the same follow-up — unused, the sidebar already scopes to one course.
 const rowCells = (page: Page, studentId: string) => page.getByRole("row", { name: new RegExp(studentId) }).getByRole("cell");
 
 test.describe("Teacher roster — Program / Status", () => {
-  test("Program is looked up from the central record and shown as its full name; a student missing from it shows a dash", async ({ page }) => {
+  test("Program is looked up from the central record and shown as its short code (full name on hover and in the header); a student missing from it shows a dash", async ({ page }) => {
     await open(page);
     const somchai = rowCells(page, "69070101");
-    await expect(somchai.nth(5)).toHaveText("Computer Engineering");
+    await expect(somchai.nth(5)).toHaveText("CE");
+    await expect(somchai.nth(5).getByText("CE", { exact: true })).toHaveAttribute("title", "Computer Engineering");
     const ghost = rowCells(page, "69079999");
     await expect(ghost.nth(5)).toHaveText("—"); // not in the central list — no program to look up
   });
