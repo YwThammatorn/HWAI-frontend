@@ -8,10 +8,10 @@ import { useCohortStudents } from "@/lib/cohort-students";
 import { ADMIN_DASHBOARD_DISABLED } from "@/lib/featureFlags";
 import type { UserRole } from "@/context/AuthContext";
 import { demoStudent } from "@/lib/accounts";
-
+
 import Icon from "@/components/Icon";
 import IconButton from "@/components/IconButton";
-import BrandLogo, { BrandMark, GoogleLogo } from "@/components/BrandLogo";
+import BrandLogo, { GoogleLogo } from "@/components/BrandLogo";
 import IconTile from "@/components/IconTile";
 function HwaiLogo() {
   return (
@@ -112,8 +112,6 @@ export default function LoginPage() {
     <div className="h-screen flex overflow-hidden">
       {/* Left panel — branding */}
       <div data-testid="login-brand" className="relative hidden lg:flex lg:w-[42%] flex-col overflow-hidden bg-[var(--navbar-bg)] px-12 py-10">
-        {/* the logo's four squares, drawn large and faint — the same mark as the top bar, used as the panel's one decoration */}
-        <BrandMark className="pointer-events-none absolute -top-32 -right-32 h-[24rem] w-[24rem] text-white opacity-[0.05]" />
         <HwaiLogo />
 
         <div className="relative mt-auto mb-auto">
