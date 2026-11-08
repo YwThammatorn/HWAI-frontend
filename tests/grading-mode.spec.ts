@@ -97,9 +97,10 @@ test.describe("Grading method — the button that starts grading is the choice",
     await page.getByTestId("ai-preview-confirm").click();
     await onAssignmentPage(page, "a-mix");
     await expect(page.getByTestId("grading-mode-note")).toContainText("AI-assisted");
-    await expect(page.getByRole("tab", { name: /Needs review/ })).toBeVisible();
-    await expect(page.getByRole("button", { name: /Re-grade/ })).toHaveCount(4);
-    await expect(page.getByText("AI: 70")).toBeVisible();
+    await expect(page.getByRole("combobox", { name: "Filter by status" }).locator("option", { hasText: "Needs review" })).toHaveCount(1);
+    await page.locator("main tbody tr").first().click();
+    await expect(page.getByTestId("detail-regrade")).toBeVisible();
+    await expect(page.locator("main tbody tr").getByText("Edited")).toHaveCount(1);      // m3: the teacher's 90 against the AI's 70
     expect((await stored(page)).asg.find((a) => a.id === "a-mix")?.gradingMode).toBeUndefined();
   });
 
@@ -129,15 +130,15 @@ test.describe("Grading method — the button that starts grading is the choice",
     expect(after.subs.find((s) => s.id === "d1")?.aiScore).toBe(80);                    // another assignment is untouched
 
     await expect(page.getByTestId("grading-mode-note")).toContainText("Manual — no AI");
-    // the stat cards say whose work they count: the 1 graded is the teacher's own, the 3 waiting are waiting for the teacher
-    await expect(page.getByText("scored by you", { exact: true })).toBeVisible();
-    await expect(page.getByText("waiting for you", { exact: true })).toBeVisible();
-    await expect(page.getByRole("button", { name: /Re-grade/ })).toHaveCount(0);
-    await expect(page.getByRole("columnheader", { name: "Re-grade" })).toHaveCount(0);
-    await expect(page.getByText(/AI: \d/)).toHaveCount(0);
-    await expect(page.getByRole("tab", { name: /Needs review/ })).toHaveCount(0);       // that status only comes from the AI
-    await expect(page.getByRole("tab", { name: /Not graded\s*3/ })).toBeVisible();      // m1, m2, m4
-    await expect(page.getByRole("tab", { name: /^Graded\s*1/ })).toBeVisible();         // m3, scored by the teacher
+    // the summary strip counts the teacher's own work: the 1 graded is theirs, the 3 waiting are waiting for them
+    await expect(page.getByTestId("grading-strip")).toContainText("1 / 4 graded");
+    await page.locator("main tbody tr").first().click();
+    await expect(page.getByTestId("grading-detail")).toBeVisible();
+    await expect(page.getByTestId("detail-regrade")).toHaveCount(0);                     // no AI, nothing to re-grade
+    await expect(page.getByTestId("grading-detail").getByText("AI", { exact: true })).toHaveCount(0);   // …and no AI figure
+    await expect(page.getByRole("combobox", { name: "Filter by status" }).locator("option", { hasText: "Needs review" })).toHaveCount(0);       // that status only comes from the AI
+    await expect(page.getByRole("combobox", { name: "Filter by status" }).locator("option", { hasText: "Not graded (3)" })).toHaveCount(1);      // m1, m2, m4
+    await expect(page.getByRole("combobox", { name: "Filter by status" }).locator("option", { hasText: "Graded (1)" })).toHaveCount(1);          // m3, scored by the teacher
   });
 
   test("Manual: the Grade screen shows no AI confidence, AI feedback or Feedback-to-AI box", async ({ page }) => {
@@ -164,7 +165,8 @@ test.describe("Grading method — the button that starts grading is the choice",
     await page.getByTestId("ai-preview-confirm").click();
     await onAssignmentPage(page, "a-mix");
     await expect(page.getByTestId("grading-mode-note")).toContainText("AI-assisted");
-    await expect(page.getByRole("button", { name: /Re-grade/ })).toHaveCount(4);
+    await page.locator("main tbody tr").first().click();
+    await expect(page.getByTestId("detail-regrade")).toBeVisible();
     expect((await stored(page)).asg.find((a) => a.id === "a-mix")?.gradingMode).toBe("ai");
   });
 
@@ -206,8 +208,9 @@ test.describe("Grading method — the button that starts grading is the choice",
     expect(after.subs.find((x) => x.id === "n1")).toMatchObject({ status: "not_graded", aiScore: null });
     expect(after.subs.find((x) => x.id === "t1")).toMatchObject({ status: "not_graded", aiScore: null });
     // the page now shows the AI's score for it
-    await expect(page.getByText("AI: 70")).toBeVisible();
-    await expect(page.getByRole("tab", { name: /Not graded\s*0/ })).toBeVisible();
+    await page.locator("main tbody tr", { hasText: "Edited" }).click();                    // m3, the edited one: the AI's 70 is in its detail
+    await expect(page.getByTestId("grading-detail")).toContainText("70");
+    await expect(page.getByRole("combobox", { name: "Filter by status" }).locator("option", { hasText: "Not graded (0)" })).toHaveCount(1);
   });
 
   test("the AI's answer is the same every time for the same submission", async ({ page }) => {

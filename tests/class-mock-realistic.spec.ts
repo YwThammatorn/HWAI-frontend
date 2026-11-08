@@ -221,9 +221,8 @@ test("Lab 5: review the last 2 through the Grade screen → 100% → Finish & an
   await expect(page.getByRole("note")).toContainText("Grade the remaining 2 submissions");
 
   for (let left = 2; left > 0; left--) {
-    await page.goto(lab5);
+    await page.goto(`${lab5}?filter=need_review`);                                   // the list narrowed to the work waiting for the teacher
     await page.waitForLoadState("networkidle");
-    await page.getByRole("tab", { name: /Needs review/ }).click();
     await page.getByRole("link", { name: "Grade", exact: true }).first().click();
     await page.getByRole("button", { name: "Save Changes" }).click();
     await page.waitForURL(/\/grading/);

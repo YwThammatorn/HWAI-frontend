@@ -167,6 +167,7 @@ test.describe("Rubric locked once results are announced", () => {
     await seed(page, { finalized: true });
     await page.goto(`${BASE}/teacher/courses/c-rs/assignments/as1/grading`);
     await page.waitForLoadState("networkidle");
+    await page.getByRole("tab", { name: "Rubric" }).click();                       // the rubric is the second tab of the right pane (10/11/2569)
     await expect(page.getByTestId("rubric-locked-chip")).toBeVisible();
     await expect(page.getByTestId("grading-rubric").getByRole("link", { name: "Edit rubric" })).toHaveCount(0);
   });
@@ -175,6 +176,7 @@ test.describe("Rubric locked once results are announced", () => {
     await seed(page);
     await page.goto(`${BASE}/teacher/courses/c-rs/assignments/as1/grading`);
     await page.waitForLoadState("networkidle");
+    await page.getByRole("tab", { name: "Rubric" }).click();
     await expect(page.getByTestId("grading-rubric").getByRole("link", { name: "Edit rubric" })).toBeVisible();
     await expect(page.getByTestId("rubric-locked-chip")).toHaveCount(0);
   });

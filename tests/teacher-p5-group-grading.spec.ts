@@ -186,10 +186,9 @@ test.describe("P5 — Results page merges by team", () => {
     await expect(page.getByText(/grade distribution/i)).toHaveCount(0);
     await expect(page.getByText("90/100").first()).toBeVisible();                       // the score stays, as score/max
     await expect(page.getByText("A+")).toHaveCount(0);
-    // the Avg. Score card shows the average with the highest and lowest score only (21/10/2569)
-    const avg = page.locator("main div.grid > div").filter({ hasText: "Avg. Score" });
-    await expect(avg).toContainText("90.0");
-    await expect(avg).toContainText("of 100 · Max 90 · Min 90");
+    // the score card shows the average, the highest and the lowest score as three blocks (9/11/2569; one line "of 100 · Max 90 · Min 90" before)
+    const avg = page.locator("main div.grid > div").filter({ hasText: "Score (of 100)" });
+    await expect(avg.locator("dd")).toHaveText(["90.0", "90", "90"]);
     await expect(avg).not.toContainText("pts");
     await expect(page.locator("main td").filter({ hasText: /^\s*90\/100\s*[A-F]\s*$/ })).toHaveCount(0);
     await expect(page.getByText(/\(\s*[A-F]\s*\)/)).toHaveCount(0);                      // "Score: 40/100 (F)" in the attention box
@@ -211,9 +210,9 @@ test.describe("P5 — Grade Adjustment table merges by team", () => {
     await page.goto(`${BASE}/teacher/courses/c-tp5/assignments/a-tp5-1/grading`);
     await page.waitForLoadState("networkidle");
     // 3 raw submissions collapse to 2 rows: the team (2 members) + the solo student.
-    await expect(page.getByText(/2 row\(s\)/i)).toBeVisible();
-
-    const regrade = page.getByRole("button", { name: /Re-grade team Prototype Pals/i });
+    await expect(page.locator("main tbody tr")).toHaveCount(2);
+    await page.locator("main tbody tr", { hasText: "Prototype Pals" }).click();      // Re-grade is in the detail of the picked team
+    const regrade = page.getByTestId("detail-regrade");
     await regrade.click();
     await expect(regrade).toBeDisabled(); // the mock re-grade takes 1.5s: wait for it to start, then to finish
     await expect(regrade).toBeEnabled();

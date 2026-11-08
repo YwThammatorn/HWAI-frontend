@@ -156,7 +156,7 @@ test.describe("Grading Progress", () => {
 
   test("search box is present and accepts input", async ({ page }) => {
     await waitReady(page, "/teacher/courses/seed-1/assignments/a-seed-1-1/grading");
-    const search = page.getByPlaceholder("Search students...");
+    const search = page.getByRole("combobox", { name: "Search students" });
     await expect(search).toBeVisible();
     await search.fill("test");
     await expect(search).toHaveValue("test");
@@ -221,7 +221,7 @@ test.describe("Recheck", () => {
   test("zoom + button increments display value", async ({ page }) => {
     await waitReady(page, "/teacher/courses/seed-1/assignments/a-seed-1-1/recheck?sub=sub-1-1-1");
     await expect(page.locator("text=100%")).toBeVisible();
-    await page.getByRole("button", { name: "+" }).click();
+    await page.getByRole("button", { name: "Zoom in" }).click();
     await expect(page.locator("text=125%")).toBeVisible();
   });
 });

@@ -28,7 +28,6 @@ const SVG_ALLOWED: Record<string, string> = {
   "components/BrandLogo.tsx": "HWAI's mark and the Google / Microsoft sign-in logos",
   "app/not-found.tsx": "the 404 robot illustration",
   "app/teacher/courses/page.tsx": "the empty-state illustration",
-  "app/teacher/courses/[id]/assignments/[assignmentId]/grading/page.tsx": "the progress ring (a chart)",
   "app/teacher/dashboard/page.tsx": "two charts",
   "app/teacher/history/page.tsx": "the donut (a chart)",
 };

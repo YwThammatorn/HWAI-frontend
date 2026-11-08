@@ -19,7 +19,7 @@ import IconButton from "@/components/IconButton";
  * the wording of every level with the number of students who reached it. So the rubric sits next to the grading
  * instead of behind the Edit page, and shows where the class is strong or weak at a glance.
  */
-export default function GradingRubricPanel({ rubric, graded, editHref, locked = false, unit = "student", clos = [] }: {
+export default function GradingRubricPanel({ rubric, graded, editHref, locked = false, unit = "student", clos = [], weakestId, flush = false }: {
   rubric: Rubric;
   /** the course's CLOs, to tag each criterion with the outcomes it measures */
   clos?: CLO[];
@@ -30,6 +30,10 @@ export default function GradingRubricPanel({ rubric, graded, editHref, locked = 
   locked?: boolean;
   /** what one counted item is — a group assignment counts teams */
   unit?: "student" | "team";
+  /** the criterion people scored lowest on (lib/gradingInsights) — gets a "Lowest" tag so it can be found at a glance */
+  weakestId?: string;
+  /** no top margin — for inside a pane that already has its own spacing (the Grading page workspace) */
+  flush?: boolean;
 }) {
   const { t } = useLanguage();
   const [open, setOpen] = useState<Set<string>>(new Set());
@@ -56,7 +60,7 @@ export default function GradingRubricPanel({ rubric, graded, editHref, locked = 
   const card = "rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)]";
 
   return (
-    <section className={`${card} mt-6`} aria-labelledby="grading-rubric-h" data-testid="grading-rubric">
+    <section id="rubric" className={`@container ${card} ${flush ? "" : "mt-6"} scroll-mt-6`} aria-labelledby="grading-rubric-h" data-testid="grading-rubric">
       <div className="flex flex-wrap items-center justify-between gap-3 px-6 pt-5 pb-4">
         <div className="min-w-0">
           <h2 id="grading-rubric-h" className="text-base font-bold text-[var(--text-primary)]">{t("เกณฑ์การให้คะแนน", "Grading rubric")}</h2>
@@ -99,7 +103,7 @@ export default function GradingRubricPanel({ rubric, graded, editHref, locked = 
           const avgPct = avg !== null && c.maxPoints > 0 ? (avg / c.maxPoints) * 100 : null;
           return (
             <li key={c.id} data-testid={`rubric-row-${c.id}`}>
-              <div className="grid items-center gap-x-6 gap-y-3 px-6 py-4 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1.4fr)_9.5rem_2rem]">
+              <div className="grid items-center gap-x-6 gap-y-3 px-6 py-4 @3xl:grid-cols-[minmax(0,1.25fr)_minmax(0,1.4fr)_9.5rem_2rem]">
                 <div className="flex min-w-0 items-start gap-3">
                   {(() => {
                     const nm = splitCriterionName(c.name);
@@ -109,7 +113,7 @@ export default function GradingRubricPanel({ rubric, graded, editHref, locked = 
                           <span className="mt-0.5 inline-flex h-6 min-w-8 shrink-0 items-center justify-center rounded-md border border-[var(--border)] bg-[var(--bg-app)] px-1.5 text-xs font-bold tabular-nums text-[var(--text-secondary)]">{nm.code}</span>
                         )}
                         <div className="min-w-0">
-                          <p className="text-sm font-semibold leading-snug text-[var(--text-primary)]">{nm.main}</p>
+                          <p className="text-sm font-semibold leading-snug text-[var(--text-primary)]">{nm.main}{c.id === weakestId && <span data-testid="weakest-tag" className="ml-2 inline-flex h-5 items-center rounded-md border border-[var(--s-err-bd)] bg-[var(--s-err-bg)] px-1.5 align-middle text-xs font-semibold text-[var(--s-err-text)]">{t("ต่ำสุด", "Lowest")}</span>}</p>
                           {nm.second && <p className="mt-0.5 text-xs leading-snug text-[var(--text-secondary)]">{nm.second}</p>}
                           <CloChips cloIds={c.cloIds} clos={clos} />
                         </div>
@@ -143,7 +147,7 @@ export default function GradingRubricPanel({ rubric, graded, editHref, locked = 
                 </div>
 
                 {/* the class average as the one coloured fact, the criterion's full marks under it as plain text */}
-                <div className="flex flex-col gap-1 lg:items-end">
+                <div className="flex flex-col gap-1 @3xl:items-end">
                   {avgPct !== null && avg !== null ? (
                     <span
                       className={`inline-flex h-7 items-center whitespace-nowrap rounded-lg px-2.5 text-xs font-semibold tabular-nums ${SCORE_TONE_CLASSES[toneForPct(avgPct)]}`}

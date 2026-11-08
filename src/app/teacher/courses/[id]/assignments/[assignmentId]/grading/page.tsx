@@ -1,71 +1,40 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useState } from "react";
+import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useCourses } from "@/lib/courses";
-import { useAssignments, isManualGrading, gradingOpen, gradingOpensAt, submissionClosesAt, latePenaltyOf, finalScoreOf, activeLatePolicy, type Assignment, type Submission } from "@/lib/assignments";
+import { useAssignments, isManualGrading, gradingOpen, gradingOpensAt, submissionClosesAt, finalScoreOf, activeLatePolicy } from "@/lib/assignments";
 import { appNow, useNow } from "@/lib/clock";
 import { aiGradingUpdate } from "@/lib/aiGrading";
 import { useStudents, isWithdrawn } from "@/lib/students";
 import { useStudentGroups } from "@/lib/studentGroups";
 import { useGradingCategories } from "@/lib/gradingCategories";
-import { groupSubmissionsByTeam, SubmissionRow } from "@/lib/groupSubmissions";
+import { groupSubmissionsByTeam, type SubmissionRow } from "@/lib/groupSubmissions";
 import { useLanguage } from "@/context/LanguageContext";
 import { dateLocale } from "@/lib/dateLocale";
-import { getInitials } from "@/lib/utils";
-import { toneForPct, SCORE_TONE_CLASSES } from "@/lib/scoreBook";
-import SearchInput from "@/components/SearchInput";
-import PillTabBar from "@/components/PillTabBar";
 import WithdrawnTabs, { type WithdrawnTab } from "@/components/WithdrawnTabs";
 import ExamScoreTable from "@/components/ExamScoreTable";
 import Modal from "@/components/Modal";
-import GradingRubricPanel from "@/components/GradingRubricPanel";
 import AiGradePreviewModal from "@/components/AiGradePreviewModal";
 import { useAiGrading } from "@/lib/useAiGrading";
 import { useCLOs } from "@/lib/clo";
 import { useCohortStudents } from "@/lib/cohort-students";
 
 import Icon from "@/components/Icon";
-import MetricCard from "@/components/MetricCard";
-import Avatar from "@/components/Avatar";
-// ── Circle progress ────────────────────────────────────────────────────────
-
-function CircleProgress({ pct, className }: { pct: number; className?: string }) {
-  const [displayPct, setDisplayPct] = useState(0);
-  const r = 80;
-  const circ = 2 * Math.PI * r;
-  const dash = (displayPct / 100) * circ;
-
-  useEffect(() => {
-    const timer = setTimeout(() => setDisplayPct(pct), 80);
-    return () => clearTimeout(timer);
-  }, [pct]);
-
-  return (
-    <svg width="200" height="200" viewBox="0 0 200 200" className={className}>
-      <circle cx="100" cy="100" r={r} fill="none" stroke="var(--border)" strokeWidth="12" />
-      <circle
-        cx="100" cy="100" r={r}
-        fill="none" stroke="var(--accent)" strokeWidth="12" strokeLinecap="round"
-        strokeDasharray={`${dash.toFixed(2)} ${circ.toFixed(2)}`}
-        transform="rotate(-90 100 100)"
-        style={{ transition: "stroke-dasharray 1.2s cubic-bezier(0.23, 1, 0.32, 1)" }}
-      />
-      <text x="100" y="112" textAnchor="middle" fill="var(--text-primary)"
-        fontSize="38" fontWeight="700" fontFamily="ui-sans-serif, system-ui, sans-serif">
-        {Math.round(displayPct)}%
-      </text>
-    </svg>
-  );
-}
+import GradingWorkspace, { FILTER_KEYS, type StatusFilter } from "@/components/GradingWorkspace";
+import AttentionChips from "@/components/AttentionChips";
+import GradingProgressBar from "@/components/GradingProgressBar";
+import { assignmentInsights, ATTENTION_KEYS, type AttentionKey } from "@/lib/gradingInsights";
+import { nextToGrade } from "@/lib/gradingRows";
+// (the progress circle was replaced by GradingProgressBar on 10/11/2569 — one picture of progress app-wide)
 
 // ── Grading method: shown here, chosen on the Grading list (11/10/2569) ────────────────────────
 
 function GradingModeNote({ manual, forced, courseId }: { manual: boolean; forced: boolean; courseId: string }) {
   const { t } = useLanguage();
   return (
-    <p data-testid="grading-mode-note" className="mb-5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-[var(--text-secondary)]">
+    <p data-testid="grading-mode-note" className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-[var(--text-secondary)]">
       <span className="font-semibold text-[var(--text-primary)]">{t("วิธีตรวจ", "Grading method")}:</span>
       <span>{manual ? t("ตรวจเอง — ไม่ใช้ AI", "Manual — no AI") : t("ให้ AI ช่วยตรวจ", "AI-assisted")}</span>
       {!forced && (
@@ -78,324 +47,6 @@ function GradingModeNote({ manual, forced, courseId }: { manual: boolean; forced
 }
 
 
-
-interface RowState {
-  regrading: boolean;
-}
-
-function GradeRow({
-  row,
-  maxPoints,
-  penalty,
-  rowState,
-  onRegrade,
-  reviewHref,
-  aiGraded,
-  gradeLocked,
-}: {
-  row: SubmissionRow;
-  maxPoints: number;
-  /** Points taken off for late work under the assignment's late policy (0 = none), applied to the shown score. */
-  penalty: number;
-  rowState: RowState;
-  onRegrade: () => void;
-  /** Grading has not opened yet (the due date or the late window has not passed, 15/10/2569): Grade and Re-grade are off. */
-  gradeLocked: boolean;
-  /** Where the Grade link opens this row's submission (recheck page, keyed by the representative submission). */
-  reviewHref: string;
-  /** The AI is part of grading this assignment (11/10/2569). False = graded by hand (the teacher's choice, an exam, or no
-   *  file to check): no AI score, no "Edited" comparison and no Re-grade. Was just "accepts files" (23/9/2569 round 3). */
-  aiGraded: boolean;
-}) {
-  const { t, lang } = useLanguage();
-  const rep = row.subs[0];
-  const isTeam = !!row.teamName;
-
-  // Score here is read-only display only (23/9/2569, corrects the 22/9 merge — the instructor never
-  // edits a score inline in this table; the only place to change one is the per-criterion recheck page,
-  // reached via the Review/Recheck link below). The effective score is the instructor's saved override
-  // once one exists, else the AI's own score; "Edited" marks a submission where those two differ.
-  const rawScore = aiGraded ? rep.instructorScore ?? rep.aiScore : rep.instructorScore;
-  const displayScore = rawScore !== null ? Math.max(0, rawScore - penalty) : null;
-  const isModified = aiGraded && rep.instructorScore !== null && rep.instructorScore !== rep.aiScore;
-  // The score reads as a chip in the Score Book colours (green ≥ 80%, blue 60–79%, red < 60%): a bare number with a
-  // faint "/100" beside it was hard to scan down a long column. Every pair below is ≥ 4.5:1 (see HANDOFF).
-  const scoreTone = displayScore !== null && maxPoints > 0 ? toneForPct((displayScore / maxPoints) * 100) : null;
-
-  const STATUS_MAP = {
-    not_graded: { label: t("ยังไม่ได้ตรวจ", "Not graded"), cls: "bg-[var(--bg-app)] text-[var(--text-secondary)]" },
-    need_review: { label: t("รอตรวจสอบ", "Needs review"), cls: "bg-[var(--s-warn-bg)] text-[var(--s-warn-text)]" },
-    graded: { label: t("ตรวจแล้ว", "Graded"), cls: "bg-[var(--s-ok-bg)] text-[var(--s-ok-text)]" },
-  };
-  const mixedStatus = new Set(row.subs.map((s) => s.status)).size > 1;
-  const statusInfo = mixedStatus
-    ? { label: t("ไม่ตรงกัน", "Mixed"), cls: "bg-[var(--s-warn-bg)] text-[var(--s-warn-text)]" }
-    : STATUS_MAP[rep.status];
-
-  return (
-    <tr className={`border-b border-[var(--border-subtle)] last:border-0 transition-colors ${isModified ? "bg-[var(--s-warn-bg)]/60" : "hover:bg-[var(--bg-subtle)]"}`}>
-      {/* Student / team */}
-      <td className="px-4 py-3">
-        {isTeam ? (
-          <div className="min-w-0">
-            <p className="text-sm font-medium text-[var(--text-primary)] truncate mb-1">{row.teamName}</p>
-            <div className="flex items-center">
-              {row.subs.map((s, idx) => (
-                <div
-                  key={s.id}
-                  className="w-6 h-6 rounded-full bg-[var(--accent-bright)]/20 text-[var(--accent)] text-[9px] font-bold flex items-center justify-center shrink-0 select-none border-2 border-[var(--bg-surface)]"
-                  style={{ marginLeft: idx > 0 ? "-8px" : 0 }}
-                  title={s.studentName}
-                >
-                  {getInitials(s.studentName)}
-                </div>
-              ))}
-              <p className="text-xs text-[var(--text-muted)] truncate ml-2">{row.subs.map((s) => s.studentName).join(", ")}</p>
-            </div>
-          </div>
-        ) : (
-          <div className="flex items-center gap-2.5">
-            <Avatar initials={getInitials(rep.studentName)} />
-            <div className="min-w-0">
-              <p className="text-sm font-medium text-[var(--text-primary)] truncate">{rep.studentName}</p>
-              <p className="text-xs text-[var(--text-muted)] truncate">{rep.email}</p>
-            </div>
-          </div>
-        )}
-      </td>
-
-      {/* Submitted at */}
-      <td className="px-4 py-3 text-xs text-[var(--text-muted)] whitespace-nowrap">
-        {new Date(rep.submittedAt).toLocaleDateString(dateLocale(lang), { day: "numeric", month: "short" })}
-        {row.subs.some((s) => s.late) && (
-          <span data-testid="late-chip" className="ml-2 rounded-md border border-[var(--s-warn-bd)] bg-[var(--s-warn-bg)] px-1.5 py-0.5 text-xs font-semibold text-[var(--s-warn-text)]">{t("ส่งช้า", "Late")}{penalty > 0 && <span data-testid="late-penalty" className="tabular-nums"> · −{penalty}</span>}</span>
-        )}
-      </td>
-
-      {/* Score — read-only (23/9/2569). Editing happens only on the recheck page, per criterion. */}
-      <td className="px-4 py-3">
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-          <span className={`inline-flex items-baseline gap-1 rounded-lg px-2.5 py-1 tabular-nums ${scoreTone ? SCORE_TONE_CLASSES[scoreTone] : "text-[var(--text-secondary)]"}`}>
-            <span className="text-sm font-bold">{displayScore !== null ? displayScore : "—"}</span>
-            {displayScore !== null && <span className="text-xs font-medium">/{maxPoints}</span>}
-          </span>
-          {isModified && rep.aiScore !== null && (
-            <span className="text-xs text-[var(--text-secondary)] whitespace-nowrap">AI: {rep.aiScore}</span>
-          )}
-          {isModified && (
-            <span className="rounded-md border border-[var(--s-warn-bd)] bg-[var(--s-warn-bg)] px-1.5 py-0.5 text-xs font-bold text-[var(--s-warn-text)] whitespace-nowrap">
-              {t("แก้ไขแล้ว", "Edited")}
-            </span>
-          )}
-        </div>
-      </td>
-
-      {/* Status */}
-      <td className="px-4 py-3">
-        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${statusInfo.cls}`}>
-          {statusInfo.label}
-        </span>
-      </td>
-
-      {/* Grade — opens the submission (moved here from the assignment detail page). Always visible
-          regardless of status (23/9/2569 round 3, was gated on need_review/graded, i.e. required an
-          AI score to exist first — a teacher couldn't jump straight into a no-AI assignment to enter a
-          score by hand). One consistent label instead of the old status-dependent Review/Recheck text.
-          Styled as an outlined pill button (22/9/2569) — matches the Re-grade button next to it. */}
-      <td className="px-4 py-3 whitespace-nowrap">
-        {gradeLocked ? (
-          <span
-            data-testid="grade-locked"
-            aria-disabled="true"
-            title={t("ยังไม่เปิดให้ตรวจ — ดูเวลาเปิดที่ด้านบนของหน้า", "Grading is not open yet — see the time at the top of the page")}
-            className="inline-flex items-center h-7 px-2.5 whitespace-nowrap rounded-lg border border-[var(--border)] text-xs font-medium text-[var(--text-muted)] cursor-not-allowed"
-          >
-            {isTeam ? t("ตรวจทั้งทีม", "Grade team") : t("ตรวจ", "Grade")}
-          </span>
-        ) : (
-          <Link
-            href={reviewHref}
-            className="inline-flex items-center h-7 px-2.5 whitespace-nowrap rounded-lg border border-[var(--accent)]/30 text-xs font-medium text-[var(--accent)] hover:border-[var(--accent)] hover:bg-[var(--accent-bright)]/10 active:scale-[0.97] transition-all"
-          >
-            {isTeam ? t("ตรวจทั้งทีม", "Grade team") : t("ตรวจ", "Grade")}
-          </Link>
-        )}
-      </td>
-
-      {/* Re-grade (AI) button — only when the AI is part of grading (11/10/2569; was "accepts files", 23/9/2569);
-          otherwise the teacher grades entirely by hand via the Grade link above. */}
-      {aiGraded && (
-      <td className="px-4 py-3">
-        {(
-          <button
-            onClick={onRegrade}
-            disabled={rowState.regrading || gradeLocked}
-            aria-label={isTeam ? t(`Re-grade team ${row.teamName}`, `Re-grade team ${row.teamName}`) : t(`Re-grade ${rep.studentName}`, `Re-grade ${rep.studentName}`)}
-            className="flex items-center gap-1.5 h-7 px-2.5 whitespace-nowrap rounded-lg border border-[var(--border)] text-xs font-medium text-[var(--text-secondary)] hover:border-[var(--accent-bright)] hover:text-[var(--accent)] hover:bg-[var(--accent-bright)]/5 active:scale-[0.97] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-all"
-          >
-            {rowState.regrading ? (
-              <Icon name="spinner" size="sm" className="animate-spin" />
-            ) : (
-              <Icon name="rotate-ccw" size="sm" />
-            )}
-            {t("Re-grade", "Re-grade")}
-          </button>
-        )}
-      </td>
-      )}
-    </tr>
-  );
-}
-
-// ── Grade adjustment table ─────────────────────────────────────────────────
-
-type StatusFilter = "all" | "need_review" | "not_graded" | "graded";
-
-function GradeAdjustmentTable({
-  rows,
-  maxPoints,
-  assignment,
-  courseId,
-  assignmentId,
-  isGroup,
-  onSaveAll,
-  onRegradeRow,
-  aiGraded,
-  gradeLocked,
-}: {
-  rows: SubmissionRow[];
-  maxPoints: number;
-  /** For the late deduction on each row (Assignment.latePolicy). */
-  assignment: Assignment;
-  courseId: string;
-  assignmentId: string;
-  isGroup: boolean;
-  onSaveAll: (changes: Record<string, number | null>) => void;
-  /** Send one row (a submission, or a whole team) back to the AI with the rubric as it is now (14/10/2569 — was a random score). */
-  onRegradeRow: (row: SubmissionRow) => void;
-  aiGraded: boolean;
-  /** Grading is not open yet: every row's Grade and Re-grade are disabled. */
-  gradeLocked: boolean;
-}) {
-  const { t } = useLanguage();
-
-  const [rowStates, setRowStates] = useState<Record<string, RowState>>(() =>
-    Object.fromEntries(rows.map((row) => [row.key, { regrading: false }]))
-  );
-
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
-
-  // Search matches student name / email / team name; the status filter looks at the representative submission.
-  const q = search.trim().toLowerCase();
-  const visibleRows = rows.filter((row) => {
-    if (statusFilter !== "all" && row.subs[0].status !== statusFilter) return false;
-    if (!q) return true;
-    return [row.teamName ?? "", ...row.subs.flatMap((s) => [s.studentName, s.email])].some((f) => f.toLowerCase().includes(q));
-  });
-  const countBy = (st: Submission["status"]) => rows.filter((r) => r.subs[0].status === st).length;
-
-  async function handleRegrade(row: SubmissionRow) {
-    setRowStates((prev) => ({ ...prev, [row.key]: { regrading: true } }));
-    await new Promise((r) => setTimeout(r, 1500));
-    onRegradeRow(row);     // the AI's answer for the same work is the same every time, so a re-grade only changes when the rubric or its correction did
-    setRowStates((prev) => ({ ...prev, [row.key]: { regrading: false } }));
-  }
-
-  return (
-    <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-subtle)] shadow-sm mt-6 overflow-hidden">
-      {/* Section header */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border-subtle)]">
-        <div>
-          <h2 className="text-sm font-bold text-[var(--text-primary)]">{t("ปรับคะแนน", "Grade Adjustment")}</h2>
-          <p className="text-xs text-[var(--text-muted)] mt-0.5">
-            {aiGraded
-              ? t(
-                  `${rows.length} รายการ — กด "ตรวจ" เพื่อแก้คะแนนรายเกณฑ์ หรือกด Re-grade เพื่อให้ AI ตรวจใหม่ทั้งชิ้น`,
-                  `${rows.length} row(s) — open Grade to edit per-criterion scores, or Re-grade to have AI re-check the whole submission`
-                )
-              : t(
-                  `${rows.length} รายการ — กด "ตรวจ" เพื่อให้คะแนนรายเกณฑ์ด้วยตัวเอง`,
-                  `${rows.length} row(s) — open Grade to score each criterion yourself`
-                )}
-          </p>
-        </div>
-      </div>
-
-      {rows.length > 0 && (
-        <div className="flex items-center justify-between gap-3 px-5 py-3 border-b border-[var(--border-subtle)] flex-wrap">
-          <PillTabBar
-            ariaLabel={t("กรองตามสถานะ", "Filter by status")}
-            variant="boxed"
-            activeKey={statusFilter}
-            onChange={(k) => setStatusFilter(k as StatusFilter)}
-            tabs={[
-              { key: "all", label: t("ทั้งหมด", "All"), count: rows.length, tone: "info" },
-              ...(aiGraded ? [{ key: "need_review", label: t("รอตรวจสอบ", "Needs review"), count: countBy("need_review"), tone: "warn" as const }] : []),
-              { key: "not_graded", label: t("ยังไม่ตรวจ", "Not graded"), count: countBy("not_graded"), tone: "neutral" },
-              { key: "graded", label: t("ตรวจแล้ว", "Graded"), count: countBy("graded"), tone: "ok" },
-            ]}
-          />
-          <SearchInput
-            value={search}
-            onChange={setSearch}
-            placeholder={t("ค้นหานักศึกษา...", "Search students...")}
-            ariaLabel={t("ค้นหานักศึกษา", "Search students")}
-            suggestions={rows.flatMap((r) => r.subs.map((s) => s.studentName))}
-            className="w-56 shrink-0"
-          />
-        </div>
-      )}
-
-      {rows.length === 0 ? (
-        <div className="py-12 text-center text-sm text-[var(--text-muted)]">
-          {t("ยังไม่มีการส่งงาน", "No submissions yet")}
-        </div>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[820px]">
-            <thead>
-              <tr className="bg-[var(--bg-app)] border-b border-[var(--border-subtle)]">
-                <th scope="col" className="px-4 py-2.5 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider whitespace-nowrap">{t("นักศึกษา", "Student")}</th>
-                <th scope="col" className="px-4 py-2.5 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider whitespace-nowrap">{t("วันที่ส่ง", "Submitted")}</th>
-                <th scope="col" className="px-4 py-2.5 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider whitespace-nowrap">{t("คะแนน", "Score")}</th>
-                <th scope="col" className="px-4 py-2.5 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider whitespace-nowrap">{t("สถานะ", "Status")}</th>
-                <th scope="col" className="px-4 py-2.5 w-32" aria-label={t("ตรวจ", "Grade")}></th>
-                {aiGraded && <th scope="col" className="px-4 py-2.5 w-32" aria-label={t("Re-grade", "Re-grade")}></th>}
-              </tr>
-            </thead>
-            <tbody>
-              {visibleRows.length === 0 && (
-                <tr>
-                  <td colSpan={aiGraded ? 6 : 5} className="px-4 py-10 text-center text-sm text-[var(--text-muted)]">{t("ไม่พบผลการค้นหา", "No results found")}</td>
-                </tr>
-              )}
-              {visibleRows.map((row) => (
-                <GradeRow
-                  key={row.key}
-                  row={row}
-                  maxPoints={maxPoints}
-                  penalty={latePenaltyOf(assignment, row.subs[0])}
-                  rowState={rowStates[row.key] ?? { regrading: false }}
-                  onRegrade={() => handleRegrade(row)}
-                  reviewHref={`/teacher/courses/${courseId}/assignments/${assignmentId}/recheck?sub=${row.subs[0].id}`}
-                  aiGraded={aiGraded}
-                  gradeLocked={gradeLocked}
-                />
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-      {rows.length > 0 && (
-        <div className="px-5 py-3 text-xs text-[var(--text-secondary)] border-t border-[var(--border-subtle)]" aria-live="polite">
-          {t("แสดง", "Showing")} <span className="font-medium text-[var(--text-primary)]">1–{visibleRows.length}</span> {t("จาก", "of")} <span className="font-medium text-[var(--text-primary)]">{visibleRows.length}</span>{" "}
-          {isGroup ? t("ทีม", "team(s)") : t("งาน", "submissions")}
-        </div>
-      )}
-    </div>
-  );
-}
 
 // ── Main page ──────────────────────────────────────────────────────────────
 
@@ -411,6 +62,19 @@ export default function GradingProgressPage() {
   const { getCategoriesByCourse } = useGradingCategories();
   const [tabState, setTabState] = useState<WithdrawnTab>("active");
   const [announceOpen, setAnnounceOpen] = useState(false);
+  // The table's filter lives here so the "needs a second look" chips can set it, and a link from a course Grading card (?filter=low) opens it narrowed
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const filterParam = searchParams.get("filter");
+  const selectedSubId = searchParams.get("sub");
+  // The picked row lives in the URL (?sub=), so a reload — or coming back from the grading screen — lands on the same person
+  function selectSub(id: string | null) {
+    const p = new URLSearchParams(searchParams.toString());
+    if (id) p.set("sub", id); else p.delete("sub");
+    const qs = p.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+  }
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>(() => (FILTER_KEYS.includes(filterParam as StatusFilter) ? (filterParam as StatusFilter) : "all"));
   // the rubric was changed after grading had started: the earlier scores were cleared, and this sends the work to the AI again (22/10/2569)
   const [regradeOpen, setRegradeOpen] = useState(false);
   const [regrading, setRegrading] = useState(false);
@@ -473,17 +137,10 @@ export default function GradingProgressPage() {
   const needsReview = isExam ? 0 : repSubs.filter((s) => s.status === "need_review").length;
   // Grading method (11/10/2569). An exam or an assignment without files is manual whatever was chosen.
   const manual = isManualGrading(assignment);
-  const scoredSubs = repSubs.filter((s) => s.aiScore !== null);
-  const handScored = repSubs.filter((s) => s.status === "graded").map((s) => finalScoreOf(assignment, s) ?? 0);
-  const avgScore = isExam
-    ? (activeScores.length > 0 ? activeScores.reduce((a, b) => a + b, 0) / activeScores.length : null)
-    : manual
-      ? (handScored.length > 0 ? handScored.reduce((a, b) => a + b, 0) / handScored.length : null)
-    : scoredSubs.length > 0
-      ? scoredSubs.reduce((sum, s) => sum + (s.aiScore ?? 0), 0) / scoredSubs.length
-      : null;
-  const topScore = activeScores.length > 0 ? Math.max(...activeScores) : null;
-  const pct = total > 0 ? (processed / total) * 100 : 0;
+  const shownRows = tab === "active" ? rows : withdrawnRows;
+  const insights = assignmentInsights(assignment, shownRows.map((r) => r.subs[0]), rubric);
+  const stripScores = insights.scores;
+  const next = !isExam ? nextToGrade(rows, assignment, !manual) : { row: undefined, left: 0 };
   const isDone = total > 0 && processed === total;
   const finalized = !!assignment.gradingFinalized;
   const modeForced = !!assignment.isExam || assignment.acceptsFiles === false || finalized;
@@ -571,9 +228,9 @@ export default function GradingProgressPage() {
   }
 
   return (
-      <main className="w-full px-8 py-8">
+      <main className={`flex w-full flex-col px-8 py-6 ${isExam ? "" : "lg:h-full lg:min-h-0"}`}>
         {/* Breadcrumb */}
-        <div className="flex items-center gap-1.5 text-xs text-[var(--text-muted)] mb-5 flex-wrap">
+        <div className="flex items-center gap-1.5 text-xs text-[var(--text-muted)] mb-3 flex-wrap">
           <Link href="/teacher/courses" className="hover:text-[var(--accent)] transition-colors">{t("รายวิชา", "Courses")}</Link>
           <span>/</span>
           <Link href={`/teacher/courses/${id}`} className="hover:text-[var(--accent)] transition-colors">{course.name}</Link>
@@ -584,7 +241,7 @@ export default function GradingProgressPage() {
         </div>
 
         {/* Header */}
-        <div className="flex items-start justify-between gap-4 mb-6">
+        <div className="flex items-start justify-between gap-4 mb-3">
           <div>
             <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">{assignment.name}</h1>
             <div className="flex items-center gap-3 text-sm text-[var(--text-muted)]">
@@ -666,7 +323,7 @@ export default function GradingProgressPage() {
           <div
             data-testid="grading-window-note"
             role="note"
-            className="mb-5 flex items-start gap-3 rounded-xl border border-[var(--s-warn-bd)] bg-[var(--s-warn-bg)] px-4 py-3 text-sm leading-relaxed text-[var(--s-warn-text)]"
+            className="mb-3 flex items-start gap-3 rounded-xl border border-[var(--s-warn-bd)] bg-[var(--s-warn-bg)] px-4 py-2.5 text-sm leading-relaxed text-[var(--s-warn-text)]"
           >
             <Icon name="lock" className="mt-0.5 shrink-0" />
             <p>
@@ -676,22 +333,24 @@ export default function GradingProgressPage() {
           </div>
         )}
 
+        <div className="mb-3 flex flex-wrap items-center gap-x-6 gap-y-2">
         {total > 0 && (
           <div
             id="finish-hint"
             role="note"
-            className={`mb-5 flex items-start gap-3 rounded-xl border px-4 py-3 text-sm leading-relaxed ${finalized ? "border-[var(--s-ok-bd)] bg-[var(--s-ok-bg)] text-[var(--s-ok-text)]" : "border-[var(--s-info-bd)] bg-[var(--s-info-bg)] text-[var(--s-info-text)]"}`}
+            className={`flex min-w-0 flex-1 items-center gap-2 rounded-xl border px-3 py-2 text-sm leading-relaxed ${finalized ? "border-[var(--s-ok-bd)] bg-[var(--s-ok-bg)] text-[var(--s-ok-text)]" : "border-[var(--s-info-bd)] bg-[var(--s-info-bg)] text-[var(--s-info-text)]"}`}
           >
-            <Icon name="info" className="mt-0.5 shrink-0" />
+            <Icon name="info" className="shrink-0" />
             <p>{finishHint}</p>
           </div>
         )}
 
         {!isExam && <GradingModeNote manual={manual} forced={modeForced} courseId={id} />}
+        </div>
 
         {/* Rubric changed while grading was under way: the earlier scores are gone, so offer the AI run again — right here, with the new rubric */}
         {!isExam && !manual && !finalized && gradeOpen && assignment.rubricRestartedAt && waitingUnits(assignment).length > 0 && (
-          <div data-testid="regrade-banner" role="note" className="mb-5 flex flex-wrap items-center gap-3 rounded-xl border border-[var(--s-info-bd)] bg-[var(--s-info-bg)] px-4 py-3 text-sm leading-relaxed text-[var(--s-info-text)]">
+          <div data-testid="regrade-banner" role="note" className="mb-3 flex flex-wrap items-center gap-3 rounded-xl border border-[var(--s-info-bd)] bg-[var(--s-info-bg)] px-4 py-3 text-sm leading-relaxed text-[var(--s-info-text)]">
             <p className="min-w-0 flex-1">
               {t(`แก้ rubric หลังเริ่มตรวจ คะแนนเดิมถูกล้างแล้ว — เหลือ ${waitingUnits(assignment).length} ${isGroupAssignment ? "ทีม" : "งาน"}ที่รอตรวจตาม rubric ใหม่`,
                 `The rubric was changed after grading started and the earlier scores were cleared — ${waitingUnits(assignment).length} ${isGroupAssignment ? "team(s)" : "submission(s)"} wait to be graded under the new rubric.`)}
@@ -711,108 +370,59 @@ export default function GradingProgressPage() {
         {/* Enrolled / Withdrawn — only appears once someone has withdrawn */}
         <WithdrawnTabs tab={tab} onChange={setTabState} activeCount={isExam ? activeCount : rows.length} withdrawnCount={withdrawnCount} />
 
-        {tab === "active" && (<>
-        {/* Stats */}
-        <div className="grid grid-cols-4 gap-4 mb-6">
-          <MetricCard
-            label={isExam ? t("ให้คะแนนแล้ว", "Scored") : t("ตรวจแล้ว", "Processed")}
-            value={processed}
-            sub={isExam ? t(`จาก ${total} คน`, `of ${total} students`) : manual ? t("ที่คุณให้คะแนนเอง", "scored by you") : t("เสร็จสิ้น", "completed")}
-            tone="ok"
-            icon="check"
-          />
-          <MetricCard
-            label={isExam ? t("ยังไม่มีคะแนน", "Not scored yet") : isGroupAssignment ? t("ทีมทั้งหมด", "Total Teams") : t("ส่งแล้ว", "Submitted")}
-            value={isExam ? total - processed : total}
-            sub={isExam ? t("คน", "students") : isGroupAssignment
-              ? t("ทีม", "team(s)")
-              : enrolled > 0
-                ? t(`/ ${enrolled} · ยังไม่ส่ง ${Math.max(0, enrolled - total)}`, `/ ${enrolled} · ${Math.max(0, enrolled - total)} pending`)
-                : t("งานที่ส่ง", "submissions")}
-            tone="neutral"
-            icon="file-text"
-          />
-          <MetricCard
-            label={isExam ? t("คะแนนสูงสุด", "Highest") : manual ? t("ยังไม่ได้ตรวจ", "Not graded") : t("รอตรวจสอบ", "Needs Review")}
-            value={isExam ? (topScore ?? "—") : manual ? Math.max(0, total - processed) : needsReview}
-            sub={isExam ? t(`เต็ม ${assignment.maxPoints}`, `of ${assignment.maxPoints}`) : manual ? t("รอคุณให้คะแนน", "waiting for you") : t("รอดำเนินการ", "Pending")}
-            tone={isExam ? "accent" : "warn"}
-            icon={isExam ? "trending-up" : "alert-triangle"}
-          />
-          <MetricCard
-            label={t("คะแนนเฉลี่ย", "Avg. Score")}
-            value={avgScore !== null ? avgScore.toFixed(1) : "—"}
-            // Only what a teacher needs to read at a glance (21/10/2569): the average, with the full score and the highest and lowest score beside it
-            // (it was "11.9 / 15 pts · AI score, 40 submitted" — too much in one cell).
-            sub={(() => {
-              const xs = isExam ? activeScores : manual ? handScored : scoredSubs.map((s) => s.aiScore ?? 0);
-              const full = assignment.maxPoints;
-              if (xs.length === 0) return t(`เต็ม ${full} · สูงสุด — · ต่ำสุด —`, `of ${full} · Max — · Min —`);
-              return t(`เต็ม ${full} · สูงสุด ${Math.max(...xs)} · ต่ำสุด ${Math.min(...xs)}`, `of ${full} · Max ${Math.max(...xs)} · Min ${Math.min(...xs)}`);
-            })()}
-            tone="rating"
-            icon="star"
-          />
-        </div>
-
-        {/* Progress circle */}
-        <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-subtle)] p-5">
-          <div className="flex items-center gap-6">
-            <CircleProgress pct={total > 0 ? pct : 0} className="w-28 h-28 shrink-0" />
-            <div>
-              <p className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-1">
-                {t("ความคืบหน้า", "Overall Progress")}
+        {/* The summary strip (10/11/2569): how far, the scores in three numbers, who needs a second look, and the button for what to do next */}
+        {tab === "active" && (
+          <section data-testid="grading-strip" aria-label={t("สรุป", "Summary")} className="mb-3 flex shrink-0 flex-wrap items-center gap-x-6 gap-y-3 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-5 py-3">
+            <div className="w-full min-w-[14rem] sm:w-56">
+              <p className="mb-1.5 text-sm tabular-nums text-[var(--text-secondary)]">
+                <span className="font-bold text-[var(--text-primary)]">{processed}</span> / {total} {isExam ? t("ให้คะแนนแล้ว", "scored") : t("ตรวจแล้ว", "graded")}
+                {!isExam && !isGroupAssignment && enrolled > total && <span className="text-[var(--text-muted)]"> · {total} / {enrolled} {t("ส่งแล้ว", "submitted")}</span>}
               </p>
-              <p className="text-base font-semibold text-[var(--text-primary)]">
-                {total === 0
-                  ? (isExam ? t("ยังไม่มีนักศึกษาในวิชานี้", "No students yet") : t("ยังไม่มีการส่งงาน", "No Submissions Yet"))
-                  : isDone
-                  ? (isExam ? t("ให้คะแนนครบทุกคนแล้ว", "Everyone is scored") : t("ตรวจเสร็จแล้ว", "Grading Complete"))
-                  : (isExam ? t("กำลังกรอกคะแนน", "Entering scores") : manual ? t("กำลังตรวจ", "Grading by hand") : t("กำลังวิเคราะห์งาน", "Analyzing Submissions"))}
-              </p>
-              {!isDone && total > 0 && !manual && (
-                <p className="text-sm text-[var(--text-muted)] mt-1">
-                  {t("เวลาที่เหลือโดยประมาณ:", "Estimated remaining time:")}{" "}
-                  <span className="text-[var(--accent)] font-medium">
-                    ~{Math.max(1, Math.round((total - processed) * 0.3))} {t("นาที", "mins")}
-                  </span>
-                </p>
-              )}
-              {isDone && finalized && (
-                <Link
-                  href={`/teacher/courses/${id}/assignments/${assignmentId}/results`}
-                  className="inline-flex items-center gap-2 mt-4 px-5 py-2.5 bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-semibold rounded-xl transition-colors"
-                >
-                  {t("ดูผลลัพธ์", "View Results")}
-                  <Icon name="arrow-right" />
-                </Link>
-              )}
-              {isDone && !finalized && gradeOpen && (
-                <button
-                  type="button"
-                  onClick={() => setAnnounceOpen(true)}
-                  className="inline-flex items-center gap-2 mt-4 px-5 py-2.5 bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-semibold rounded-xl transition-colors"
-                >
-                  {t("ประกาศผล", "Announce results")}
-                </button>
-              )}
+              <GradingProgressBar total={total} graded={processed} needReview={needsReview} notGraded={Math.max(0, total - processed - needsReview)} />
             </div>
-          </div>
-        </div>
-
-        {/* The rubric next to the grading (4/10/2569): criteria, how the graded work spreads over each one's levels, level wording */}
-        {rubric && rubric.criteria.length > 0 && (
-          <GradingRubricPanel
-            rubric={rubric}
-            graded={repSubs.filter((s) => s.status === "graded")}
-            editHref={`/teacher/courses/${id}/assignments/${assignmentId}/edit`}
-            locked={finalized}
-            clos={getCLOsByCourse(id)}
-            unit={isGroupAssignment ? "team" : "student"}
-          />
+            <dl className="flex gap-5" title={t(`คะแนนเต็ม ${assignment.maxPoints}`, `Out of ${assignment.maxPoints}`)} data-testid="grading-strip-scores">
+              {[
+                { label: t("เฉลี่ย", "Avg"), value: stripScores.length ? (stripScores.reduce((a, b) => a + b, 0) / stripScores.length).toFixed(1) : "—" },
+                { label: t("สูงสุด", "High"), value: stripScores.length ? Math.max(...stripScores) : "—" },
+                { label: t("ต่ำสุด", "Low"), value: stripScores.length ? Math.min(...stripScores) : "—" },
+              ].map((x) => (
+                <div key={x.label} className="flex flex-col-reverse">
+                  <dt className="text-xs font-medium text-[var(--text-muted)]">{x.label}</dt>
+                  <dd className="text-xl font-bold tabular-nums text-[var(--text-primary)]">{x.value}</dd>
+                </div>
+              ))}
+            </dl>
+            <AttentionChips
+              counts={insights.attention}
+              active={ATTENTION_KEYS.includes(statusFilter as AttentionKey) ? (statusFilter as AttentionKey) : null}
+              onSelect={(k) => setStatusFilter(statusFilter === k ? "all" : k)}
+            />
+            {next.row && (
+              <div className="ml-auto">
+                {!gradeOpen ? (
+                  <span
+                    data-testid="grade-next-locked"
+                    aria-disabled="true"
+                    title={t("ยังไม่เปิดให้ตรวจ — ดูเวลาเปิดที่ด้านบนของหน้า", "Grading is not open yet — see the time at the top of the page")}
+                    className="inline-flex h-9 cursor-not-allowed items-center gap-1.5 whitespace-nowrap rounded-xl border border-[var(--border)] px-4 text-sm font-semibold text-[var(--text-muted)]"
+                  >
+                    <Icon name="lock" />
+                    {t(`ตรวจงานถัดไป (เหลือ ${next.left})`, `Grade next (${next.left} left)`)}
+                  </span>
+                ) : (
+                  <Link
+                    href={`/teacher/courses/${id}/assignments/${assignmentId}/recheck?sub=${next.row.subs[0].id}`}
+                    data-testid="grade-next"
+                    className="inline-flex h-9 items-center gap-1.5 whitespace-nowrap rounded-xl bg-[var(--accent-solid)] px-4 text-sm font-semibold text-[var(--accent-solid-text)] transition-colors hover:bg-[var(--accent-solid-hover)] active:scale-[.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]"
+                  >
+                    <Icon name="play" />
+                    {t(`ตรวจงานถัดไป (เหลือ ${next.left})`, `Grade next (${next.left} left)`)}
+                  </Link>
+                )}
+              </div>
+            )}
+          </section>
         )}
-
-        </>)}
 
         {isExam ? (
           <ExamScoreTable
@@ -831,20 +441,28 @@ export default function GradingProgressPage() {
             onSave={handleSaveExamScores}
           />
         ) : (
-        /* Grade Adjustment table */
-        <GradeAdjustmentTable
-          key={`${tab}-${manual}`}
-          rows={tab === "active" ? rows : withdrawnRows}
-          maxPoints={assignment.maxPoints}
-          assignment={assignment}
-          courseId={id}
-          assignmentId={assignmentId}
-          isGroup={isGroupAssignment}
-          onSaveAll={handleSaveChanges}
-          onRegradeRow={handleRegradeRow}
-          aiGraded={!manual}
-          gradeLocked={!gradeOpen}
-        />
+          <GradingWorkspace
+            key={tab}
+            rows={shownRows}
+            assignment={assignment}
+            rubric={rubric}
+            courseId={id}
+            assignmentId={assignmentId}
+            aiGraded={!manual}
+            gradeLocked={!gradeOpen}
+            statusFilter={statusFilter}
+            onStatusFilter={setStatusFilter}
+            selectedSubId={selectedSubId}
+            onSelect={selectSub}
+            onRegradeRow={handleRegradeRow}
+            insights={insights}
+            gradedSubs={shownRows.map((r) => r.subs[0]).filter((s) => s.status === "graded")}
+            clos={getCLOsByCourse(id)}
+            finalized={finalized}
+            editHref={`/teacher/courses/${id}/assignments/${assignmentId}/edit`}
+            unit={isGroupAssignment ? "team" : "student"}
+            isGroup={isGroupAssignment}
+          />
         )}
         {regradeOpen && (
           <AiGradePreviewModal
