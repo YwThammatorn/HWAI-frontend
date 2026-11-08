@@ -7,6 +7,7 @@ import Icon, { type IconName } from "@/components/Icon";
  * shapes and three sizes — and the cards with the taller icon pushed their number lower than the others. Here the icon always sits in the same
  * tinted tile of fixed size, in a header row of fixed height, so every number lands on the same line and every icon has the same weight.
  *
+ *   parts  (optional) two or three small blocks instead of one value + unit line, e.g. Average · Highest · Lowest — each a number with its caption under it (so the number sits on the same line as the other cards' numbers), the first one emphasised
  *   tone   ok · warn · info · accent · neutral · rating — picks the tile colours (and the number's colour for ok / warn / accent)
  *   icon   a name from components/Icon.tsx — always an outline, in the tone's own text colour (the rating star too)
  */
@@ -21,11 +22,13 @@ const TONES: Record<MetricTone, { tile: string; icon: string; value: string }> =
   rating: { tile: "bg-[var(--s-warn-bg)]", icon: "text-[var(--s-warn-text)]", value: "text-[var(--text-primary)]" },
 };
 
-export default function MetricCard({ label, value, sub, icon, tone }: {
+export default function MetricCard({ label, value, sub, parts, icon, tone }: {
   label: string;
-  value: string | number;
+  value?: string | number;
   /** The unit / context beside the number, e.g. "completed", "of 10 · Max 9 · Min 4". */
-  sub: string;
+  sub?: string;
+  /** Three small blocks (caption over number) in place of value + sub. */
+  parts?: { label: string; value: string | number }[];
   icon: IconName;
   tone: MetricTone;
 }) {
@@ -38,10 +41,21 @@ export default function MetricCard({ label, value, sub, icon, tone }: {
           <Icon name={icon} size="sm" className={c.icon} />
         </span>
       </div>
-      <p className={`text-2xl font-bold ${c.value}`}>
-        {value}{" "}
-        <span className="text-sm font-normal text-[var(--text-muted)]">{sub}</span>
-      </p>
+      {parts ? (
+        <dl className="grid" style={{ gridTemplateColumns: `repeat(${parts.length}, minmax(0, 1fr))` }}>
+          {parts.map((p, i) => (
+            <div key={p.label} className={`flex flex-col-reverse ${i === 0 ? "pr-3" : "border-l border-[var(--border-subtle)] px-3"}`}>
+              <dt className="text-xs font-medium text-[var(--text-muted)]">{p.label}</dt>
+              <dd className={`text-2xl font-bold tabular-nums ${i === 0 ? c.value : "text-[var(--text-secondary)]"}`}>{p.value}</dd>
+            </div>
+          ))}
+        </dl>
+      ) : (
+        <p className={`text-2xl font-bold ${c.value}`}>
+          {value}{" "}
+          <span className="text-sm font-normal text-[var(--text-muted)]">{sub}</span>
+        </p>
+      )}
     </div>
   );
 }

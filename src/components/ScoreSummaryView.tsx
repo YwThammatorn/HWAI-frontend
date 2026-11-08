@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
-import { toneForPct, SCORE_TONE_CLASSES, PENDING_CHIP_CLASSES, MISSING_CHIP_CLASSES, type ScoreBook } from "@/lib/scoreBook";
+import { toneForPct, SCORE_TONE_CLASSES, PENDING_CHIP_CLASSES, NOTICE_CHIP_CLASSES, MISSING_CHIP_CLASSES, type ScoreBook } from "@/lib/scoreBook";
 import type { AssignmentState, AssignmentSummary, ScoreSummary } from "@/lib/scoreSummary";
 import ExamStatsCard from "@/components/ExamStatsCard";
 
@@ -72,7 +72,7 @@ export default function ScoreSummaryView({ courseId, book, summary, onShowStuden
               <p className="mt-0.5 mb-4 text-xs text-[var(--text-muted)]">{t("คะแนนรวมสะสมต่ำกว่า 60% หรือมีงานที่เลยกำหนดแล้วไม่ส่ง", "Running total under 60%, or work past its due date that was never handed in")}</p>
             </div>
             {summary.attention.length > 0 && (
-              <span className={`inline-flex h-7 shrink-0 items-center rounded-lg px-2.5 text-xs font-bold tabular-nums ${PENDING_CHIP_CLASSES}`} data-testid="attention-count">{summary.attention.length}</span>
+              <span className={`inline-flex h-7 shrink-0 items-center rounded-lg px-2.5 text-xs font-bold tabular-nums ${NOTICE_CHIP_CLASSES}`} data-testid="attention-count">{summary.attention.length}</span>
             )}
           </div>
           {summary.attention.length === 0 ? (

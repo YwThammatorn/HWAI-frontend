@@ -143,12 +143,11 @@ export default function ResultsPage() {
       icon: "alert-triangle" as const,
     },
     {
-      labelTh: "คะแนนเฉลี่ย",
-      labelEn: "Avg. Score",
-      value: avgScore !== null ? avgScore.toFixed(1) : "—",
-      // Average, highest and lowest only (21/10/2569, same as the Grading page card)
-      subTh: scoredRows.length > 0 ? `เต็ม ${max} · สูงสุด ${Math.max(...scoredRows.map((r) => sc(r.rep)))} · ต่ำสุด ${Math.min(...scoredRows.map((r) => sc(r.rep)))}` : `เต็ม ${max} · สูงสุด — · ต่ำสุด —`,
-      subEn: scoredRows.length > 0 ? `of ${max} · Max ${Math.max(...scoredRows.map((r) => sc(r.rep)))} · Min ${Math.min(...scoredRows.map((r) => sc(r.rep)))}` : `of ${max} · Max — · Min —`,
+      // Three small blocks (9/11/2569): average · highest · lowest; the full score is in the label.
+      labelTh: `คะแนน (เต็ม ${max})`,
+      labelEn: `Score (of ${max})`,
+      partsTh: [["เฉลี่ย", avgScore !== null ? avgScore.toFixed(1) : "—"], ["สูงสุด", scoredRows.length > 0 ? Math.max(...scoredRows.map((r) => sc(r.rep))) : "—"], ["ต่ำสุด", scoredRows.length > 0 ? Math.min(...scoredRows.map((r) => sc(r.rep))) : "—"]] as [string, string | number][],
+      partsEn: [["Average", avgScore !== null ? avgScore.toFixed(1) : "—"], ["Highest", scoredRows.length > 0 ? Math.max(...scoredRows.map((r) => sc(r.rep))) : "—"], ["Lowest", scoredRows.length > 0 ? Math.min(...scoredRows.map((r) => sc(r.rep))) : "—"]] as [string, string | number][],
       tone: "rating" as const,
       icon: "star" as const,
     },
@@ -229,7 +228,7 @@ export default function ResultsPage() {
         {/* Stats */}
         <div className="grid grid-cols-4 gap-4 mb-6">
           {statCards.map((s) => (
-            <MetricCard key={s.labelEn} label={lang === "th" ? s.labelTh : s.labelEn} value={s.value} sub={lang === "th" ? s.subTh : s.subEn} tone={s.tone} icon={s.icon} />
+            <MetricCard key={s.icon} label={lang === "th" ? s.labelTh : s.labelEn} value={s.value} sub={lang === "th" ? s.subTh : s.subEn} parts={(lang === "th" ? s.partsTh : s.partsEn)?.map(([label, value]) => ({ label, value }))} tone={s.tone} icon={s.icon} />
           ))}
         </div>
 

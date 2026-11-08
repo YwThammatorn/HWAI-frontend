@@ -8,7 +8,7 @@ import { useStudents, isWithdrawn } from "@/lib/students";
 import { useCohortStudents } from "@/lib/cohort-students";
 import { useAssignments, type Assignment } from "@/lib/assignments";
 import { useGradingCategories } from "@/lib/gradingCategories";
-import { buildScoreBook, scoreBookToCsv, toneForPct, SCORE_TEXT_CLASSES, PENDING_TEXT_CLASSES, MISSING_TEXT_CLASSES, type ScoreCell, type ScoreBookRow } from "@/lib/scoreBook";
+import { buildScoreBook, scoreBookToCsv, scoreCellFill, PRESSABLE_SCORE_CLASSES, SCORE_FILL_CLASSES, PENDING_FILL_CLASSES, MISSING_FILL_CLASSES, type ScoreCell, type ScoreBookRow } from "@/lib/scoreBook";
 import { useLanguage } from "@/context/LanguageContext";
 import SearchInput from "@/components/SearchInput";
 import FilterSelect from "@/components/FilterSelect";
@@ -143,11 +143,17 @@ export default function ScoreBookPage() {
     URL.revokeObjectURL(url);
   }
 
+  /** The status of a cell is its background (9/11/2569); a cell with no status (not submitted yet) keeps the plain row hover. */
+  function cellFill(cell: ScoreCell): string {
+    return scoreCellFill(cell) ?? "group-hover:bg-[var(--bg-subtle)]";
+  }
+
   function renderCell(cell: ScoreCell, assignment: Assignment, row: ScoreBookRow) {
     const recheck = (submissionId: string) => `/teacher/courses/${id}/assignments/${assignment.id}/recheck?sub=${submissionId}`;
-    // Text only, no box (15/10/2569): the score in its tone colour, "..." while pending, "-" when missing — the words stay for screen readers.
-    const chip = "inline-flex items-center gap-1 text-sm font-semibold tabular-nums whitespace-nowrap";
-    const link = "hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] rounded-sm";
+    // 9/11/2569: the status is the colour of the CELL (see cellFill), so the number itself stays in the primary text colour; "..." while pending, "-" when
+    // missing — the words stay for screen readers. A number you can click (it opens the criteria, or the recheck page) is underlined, so it reads as pressable.
+    const chip = "inline-flex items-center gap-1 text-sm font-semibold tabular-nums whitespace-nowrap text-[var(--text-primary)]";
+    const link = PRESSABLE_SCORE_CLASSES;
     const rubric = rubricsByAssignment.get(assignment.id);
     const hasRubric = !!rubric && rubric.criteria.length > 0;
     // Score Book is view-only once the teacher finishes grading an assignment (23/9/2569) — no more
@@ -155,48 +161,46 @@ export default function ScoreBookPage() {
     // assignments keep the existing clickable behaviour regardless of how much of them is graded.
     const locked = !!assignment.gradingFinalized;
     switch (cell.kind) {
-      case "graded":
-        return (
-          <div className="inline-flex items-center gap-1">
-            {locked ? (
-              <span
-                title={t("ตรวจเสร็จสิ้นแล้ว — ดูได้อย่างเดียว", "Grading finished — view only")}
-                className={`${chip} ${SCORE_TEXT_CLASSES[toneForPct(cell.pct)]}`}
-              >
-                {assignment.submissionType === "group" && <span aria-label={t("คะแนนทีม", "Team score")}>{TEAM_GLYPH}</span>}
-                {Number.isInteger(cell.score) ? cell.score : cell.score.toFixed(1)}
-              </span>
-            ) : (
-              <Link
-                href={recheck(cell.submissionId)}
-                title={t("เปิดดู/ตรวจใหม่", "Open / recheck")}
-                className={`${chip} ${SCORE_TEXT_CLASSES[toneForPct(cell.pct)]} ${link}`}
-              >
-                {assignment.submissionType === "group" && <span aria-label={t("คะแนนทีม", "Team score")}>{TEAM_GLYPH}</span>}
-                {Number.isInteger(cell.score) ? cell.score : cell.score.toFixed(1)}
-              </Link>
-            )}
-            {/* Score comes from the rubric — expand to see what each criterion earned (21/9/2569).
-                Still available when locked: viewing the breakdown isn't editing. */}
-            {hasRubric && (
-              <IconButton icon="chevron-down" dense label={t(
-                  `ดูคะแนนรายเกณฑ์ของ ${row.student.firstName} ${row.student.lastName} — ${assignment.name}`,
-                  `See the rubric breakdown for ${row.student.firstName} ${row.student.lastName} — ${assignment.name}`,
-                )} onClick={() => setBreakdown({ row, assignment })} />
-            )}
-          </div>
+      case "graded": {
+        const shown = (
+          <>
+            {assignment.submissionType === "group" && <span aria-label={t("คะแนนทีม", "Team score")}>{TEAM_GLYPH}</span>}
+            {Number.isInteger(cell.score) ? cell.score : cell.score.toFixed(1)}
+          </>
         );
+        // The score comes from the rubric: the underlined number opens what each criterion earned (21/9/2569; the chevron button became the underline 9/11/2569).
+        // Still available when locked — viewing the breakdown isn't editing; the popup carries the "Open / recheck" link while the grading is not finished.
+        if (hasRubric) {
+          return (
+            <button
+              type="button"
+              onClick={() => setBreakdown({ row, assignment })}
+              aria-label={t(
+                `ดูคะแนนรายเกณฑ์ของ ${row.student.firstName} ${row.student.lastName} — ${assignment.name}`,
+                `See the rubric breakdown for ${row.student.firstName} ${row.student.lastName} — ${assignment.name}`,
+              )}
+              title={t("ดูคะแนนรายเกณฑ์", "See the criteria")}
+              className={`${chip} ${link}`}
+            >{shown}</button>
+          );
+        }
+        return locked ? (
+          <span title={t("ตรวจเสร็จสิ้นแล้ว — ดูได้อย่างเดียว", "Grading finished — view only")} className={chip}>{shown}</span>
+        ) : (
+          <Link href={recheck(cell.submissionId)} title={t("เปิดดู/ตรวจใหม่", "Open / recheck")} className={`${chip} ${link}`}>{shown}</Link>
+        );
+      }
       case "pending": {
         const body = (<><span aria-hidden="true">...</span><span className="sr-only">{t("รอตรวจ", "Pending")}</span></>);
         return locked ? (
-          <span title={t("รอตรวจ", "Pending")} className={`${chip} ${PENDING_TEXT_CLASSES}`}>{body}</span>
+          <span title={t("รอตรวจ", "Pending")} className={chip}>{body}</span>
         ) : (
-          <Link href={recheck(cell.submissionId)} title={t("รอตรวจ", "Pending")} className={`${chip} ${PENDING_TEXT_CLASSES} ${link}`}>{body}</Link>
+          <Link href={recheck(cell.submissionId)} title={t("รอตรวจ", "Pending")} className={`${chip} ${link}`}>{body}</Link>
         );
       }
       case "missing":
         return (
-          <span title={t("ไม่ส่ง", "Missing")} className={`${chip} ${MISSING_TEXT_CLASSES}`}>
+          <span title={t("ไม่ส่ง", "Missing")} className={chip}>
             <span aria-hidden="true">-</span><span className="sr-only">{t("ไม่ส่ง", "Missing")}</span>
           </span>
         );
@@ -332,13 +336,11 @@ export default function ScoreBookPage() {
                 </FilterSelect>
               )}
             </div>
-            {/* The legend shows the same text colours the cells use — no boxes (15/10/2569). */}
-            <ul className="flex items-center gap-3 text-xs text-[var(--text-secondary)]" aria-label={t("คำอธิบายสี", "Legend")}>
-              <li className={`font-semibold tabular-nums ${SCORE_TEXT_CLASSES.ok}`}>≥ 80%</li>
-              <li className={`font-semibold tabular-nums ${SCORE_TEXT_CLASSES.info}`}>60–79%</li>
-              <li className={`font-semibold tabular-nums ${SCORE_TEXT_CLASSES.err}`}>&lt; 60%</li>
-              <li className={`font-semibold ${PENDING_TEXT_CLASSES}`}><span aria-hidden="true">...</span> {t("รอตรวจ", "Pending")}</li>
-              <li className={`font-semibold ${MISSING_TEXT_CLASSES}`}><span aria-hidden="true">-</span> {t("ไม่ส่ง", "Missing")}</li>
+            {/* The legend swatches are the cell fills themselves (9/11/2569). */}
+            <ul className="flex items-center gap-4 text-xs text-[var(--text-secondary)]" aria-label={t("คำอธิบายสี", "Legend")}>
+              {([[SCORE_FILL_CLASSES.ok, "≥ 80%"], [SCORE_FILL_CLASSES.info, "60–79%"], [SCORE_FILL_CLASSES.err, "< 60%"], [PENDING_FILL_CLASSES, t("รอตรวจ", "Pending")], [MISSING_FILL_CLASSES, t("ไม่ส่ง", "Missing")]] as const).map(([fill, label]) => (
+                <li key={label} className="inline-flex items-center gap-1.5 font-medium tabular-nums"><span className={`h-4 w-4 rounded border border-[var(--border-subtle)] ${fill}`} aria-hidden="true" />{label}</li>
+              ))}
             </ul>
           </div>
 
@@ -436,7 +438,7 @@ export default function ScoreBookPage() {
                         </span>
                       </td>
                       {columns.map((a) => (
-                        <td key={a.id} className="px-3 py-1 border-b border-l border-[var(--border-subtle)] group-hover:bg-[var(--bg-subtle)]">
+                        <td key={a.id} className={`px-3 py-1 border-b border-l border-[var(--border-subtle)] ${cellFill(r.cells[a.id])}`}>
                           {renderCell(r.cells[a.id], a, r)}
                         </td>
                       ))}
@@ -505,6 +507,7 @@ export default function ScoreBookPage() {
             rubric={rubric}
             cell={cell}
             storedCriterionScores={stored}
+            recheckHref={breakdown.assignment.gradingFinalized ? undefined : `/teacher/courses/${id}/assignments/${breakdown.assignment.id}/recheck?sub=${cell.submissionId}`}
           />
         );
       })()}

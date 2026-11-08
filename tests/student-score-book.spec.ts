@@ -122,25 +122,30 @@ test.describe("Student Evaluation — layout", () => {
 });
 
 test.describe("Student Evaluation — cells", () => {
-  test("graded cells show score/max with a colour band that follows the percentage", async ({ page }) => {
+  test("graded cells show score/max; the colour band is the CELL's background and follows the percentage (9/11/2569, same as the teacher Score Book)", async ({ page }) => {
     await open(page);
-    const hw1 = scoreCell(page, "HW 1").locator("span").first();
+    const hw1 = scoreCell(page, "HW 1");
     await expect(hw1).toHaveText("90/100");
     await expect(hw1).toHaveClass(/s-ok-bg/);
-    const hw2 = scoreCell(page, "HW 2").locator("span").first();
+    const hw2 = scoreCell(page, "HW 2");
     await expect(hw2).toHaveText("70/100");
     await expect(hw2).toHaveClass(/s-info-bg/);
-    const extra = scoreCell(page, "Extra Credit").locator("span").first();
+    const extra = scoreCell(page, "Extra Credit");
     await expect(extra).toHaveText("8/10");
     await expect(extra).toHaveClass(/s-ok-bg/);
+    // a ruled score is an underlined button (opens the criteria), not a chip with a chevron
+    const btn = scoreCell(page, "HW 1").getByRole("button");
+    await expect(btn).toHaveCSS("text-decoration-line", "underline");
+    await expect(btn).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+    await expect(scoreCell(page, "HW 1").locator("svg")).toHaveCount(0);
   });
 
   test("missing, pending, and not-due-yet cells are told apart", async ({ page }) => {
     await open(page);
     await expect(scoreCell(page, "HW 3")).toContainText("Missing");
-    await expect(scoreCell(page, "HW 3").locator("span").first()).toHaveClass(/s-err-bg/);
+    await expect(scoreCell(page, "HW 3")).toHaveClass(/s-err-bg/);
     await expect(scoreCell(page, "Midterm Exam")).toContainText("Pending");
-    await expect(scoreCell(page, "Midterm Exam").locator("span").first()).toHaveClass(/s-warn-bg/);
+    await expect(scoreCell(page, "Midterm Exam")).toHaveClass(/accent-subtle/);   // pending = the primary colour (9/11/2569)
     await expect(scoreCell(page, "HW 4")).toHaveText("—");
   });
 });
@@ -188,7 +193,7 @@ test.describe("Student Evaluation — fallback and empty states", () => {
     await expect(page.getByText(/hasn't set up grade categories/i)).toBeVisible();
     await expect(page.getByText("Total so far")).toHaveCount(0);
     await expect(page.getByText("HW 1")).toBeVisible();
-    const hw1 = scoreCell(page, "HW 1").locator("span").first();
+    const hw1 = scoreCell(page, "HW 1");
     await expect(hw1).toHaveText("90/100");
     // No section-header row — every assignment sits directly under the plain "Assignment"/"Score" header.
     await expect(page.getByText("Uncategorized")).toHaveCount(0);

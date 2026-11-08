@@ -1,8 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
+import Icon from "./Icon";
 import type { Rubric } from "@/lib/assignments";
-import { PENDING_CHIP_CLASSES } from "@/lib/scoreBook";
+import { NOTICE_CHIP_CLASSES } from "@/lib/scoreBook";
 import Modal from "./Modal";
 import RubricTable from "./RubricTable";
 
@@ -20,17 +22,31 @@ export interface RubricBreakdownModalProps {
   cell: { score: number; max: number };
   /** The submission's saved per-criterion scores, if any — falls back to an estimate split by weight. */
   storedCriterionScores: Record<string, number> | undefined;
+  /** Teacher Score Book only: where to open / recheck this submission (left out once the grading is finished — view only). */
+  recheckHref?: string;
 }
 
 export default function RubricBreakdownModal({
-  open, onClose, assignmentName, subtitle, rubric, cell, storedCriterionScores,
+  open, onClose, assignmentName, subtitle, rubric, cell, storedCriterionScores, recheckHref,
 }: RubricBreakdownModalProps) {
   const { t } = useLanguage();
 
   return (
-    <Modal open={open} onClose={onClose} title={assignmentName} description={subtitle} size="md">
+    <Modal
+      open={open}
+      onClose={onClose}
+      title={assignmentName}
+      description={subtitle}
+      size="md"
+      footer={recheckHref ? (
+        <Link href={recheckHref} className="inline-flex h-9 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] px-4 text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors">
+          <Icon name="edit" />
+          {t("เปิดดู/ตรวจใหม่", "Open / recheck")}
+        </Link>
+      ) : undefined}
+    >
       {!storedCriterionScores && (
-        <p className={`text-xs rounded-lg px-3 py-2 mb-4 leading-relaxed ${PENDING_CHIP_CLASSES}`}>
+        <p className={`text-xs rounded-lg px-3 py-2 mb-4 leading-relaxed ${NOTICE_CHIP_CLASSES}`}>
           {t(
             "ประมาณจากน้ำหนักของเกณฑ์ — งานนี้ยังไม่มีคะแนนรายเกณฑ์ที่บันทึกไว้",
             "Estimated from the criteria weights — this submission has no per-criterion scores saved yet",

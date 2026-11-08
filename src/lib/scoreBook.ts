@@ -24,7 +24,9 @@ export const SCORE_TONE_CLASSES: Record<ScoreTone, string> = {
   info: "bg-[var(--s-info-bg)] text-[var(--s-info-text)] border border-[var(--s-info-bd)]",
   err: "bg-[var(--s-err-bg)] text-[var(--s-err-text)] border border-[var(--s-err-bd)]",
 };
-export const PENDING_CHIP_CLASSES = "bg-[var(--s-warn-bg)] text-[var(--s-warn-text)] border border-[var(--s-warn-bd)]";
+// A pending-status chip is the primary colour too (9/11/2569). A NOTICE or a warning (the "estimated" note, "needs follow-up") is not a score state and keeps the warn colour.
+export const PENDING_CHIP_CLASSES = "bg-[var(--accent-subtle)] text-[var(--accent)] border border-[color-mix(in_srgb,var(--accent)_35%,transparent)]";
+export const NOTICE_CHIP_CLASSES = "bg-[var(--s-warn-bg)] text-[var(--s-warn-text)] border border-[var(--s-warn-bd)]";
 // Text-only versions for the teacher Score Book matrix (15/10/2569, user's request): no fill, no border — just the colour of the number,
 // so a cell is only as wide as its content. The chip classes above stay for every other screen.
 export const SCORE_TEXT_CLASSES: Record<ScoreTone, string> = {
@@ -33,6 +35,26 @@ export const SCORE_TEXT_CLASSES: Record<ScoreTone, string> = {
   err: "text-[var(--s-err-text)]",
 };
 export const PENDING_TEXT_CLASSES = "text-[var(--s-warn-text)]";
+// Cell fills for the teacher Score Book matrix (9/11/2569, user's request — reverses the text-only look of 15/10): the status is the colour of the
+// CELL's background, the number stays in the primary text colour. Fill only (no border): the table's own lines frame the cell.
+export const SCORE_FILL_CLASSES: Record<ScoreTone, string> = {
+  ok: "bg-[var(--s-ok-bg)]",
+  info: "bg-[var(--s-info-bg)]",
+  err: "bg-[var(--s-err-bg)]",
+};
+// Pending is the system's primary colour (9/11/2569, user's request): amber sat next to the red of "Missing" and read as the same family. The estimate NOTICE in
+// RubricBreakdownModal keeps the warn chip (PENDING_CHIP_CLASSES) — that one is a warning, not a score state.
+export const PENDING_FILL_CLASSES = "bg-[var(--accent-subtle)]";
+export const MISSING_FILL_CLASSES = "bg-[var(--s-err-bg)]";
+/** The background of a score cell for its state, or null for a cell with no status yet (not submitted / not due) — one rule for the teacher and the student screen. */
+export function scoreCellFill(cell: { kind: string; pct?: number }): string | null {
+  if (cell.kind === "graded") return SCORE_FILL_CLASSES[toneForPct(cell.pct ?? 0)];
+  if (cell.kind === "pending") return PENDING_FILL_CLASSES;
+  if (cell.kind === "missing") return MISSING_FILL_CLASSES;
+  return null;
+}
+/** A number you can press (it opens the criteria, or the recheck page) is underlined, never a chevron: the same on every score screen. */
+export const PRESSABLE_SCORE_CLASSES = "underline decoration-1 underline-offset-4 hover:decoration-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] rounded-sm";
 export const MISSING_TEXT_CLASSES = "text-[var(--s-err-text)]";
 export const MISSING_CHIP_CLASSES = "bg-[var(--s-err-bg)] text-[var(--s-err-text)] border border-[var(--s-err-bd)]";
 

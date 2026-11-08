@@ -155,20 +155,17 @@ test.describe("Score Book — layout", () => {
 });
 
 test.describe("Score Book — cells", () => {
-  test("graded cells carry the score and a colour band; the band follows the percentage", async ({ page }) => {
+  test("graded cells carry the score and a colour band — the CELL's background (9/11/2569); the band follows the percentage", async ({ page }) => {
     await open(page);
-    const s90 = cell(page, "69070101", "hw1").getByRole("link");
-    await expect(s90).toHaveText("90");
-    await expect(s90).toHaveClass(/s-ok-text/);
-    const s70 = cell(page, "69070102", "hw1").getByRole("link");
-    await expect(s70).toHaveText("70");
-    await expect(s70).toHaveClass(/s-info-text/);
-    const s50 = cell(page, "69070103", "hw1").getByRole("link");
-    await expect(s50).toHaveText("50");
-    await expect(s50).toHaveClass(/s-err-text/);
+    await expect(cell(page, "69070101", "hw1")).toHaveText("90");
+    await expect(cell(page, "69070101", "hw1")).toHaveClass(/s-ok-bg/);
+    await expect(cell(page, "69070102", "hw1")).toHaveText("70");
+    await expect(cell(page, "69070102", "hw1")).toHaveClass(/s-info-bg/);
+    await expect(cell(page, "69070103", "hw1")).toHaveText("50");
+    await expect(cell(page, "69070103", "hw1")).toHaveClass(/s-err-bg/);
     // HW 2 is out of 50: 45/50 = 90% is green, 25/50 = 50% is red
-    await expect(cell(page, "69070101", "hw2").getByRole("link")).toHaveClass(/s-ok-text/);
-    await expect(cell(page, "69070102", "hw2").getByRole("link")).toHaveClass(/s-err-text/);
+    await expect(cell(page, "69070101", "hw2")).toHaveClass(/s-ok-bg/);
+    await expect(cell(page, "69070102", "hw2")).toHaveClass(/s-err-bg/);
   });
 
   test("pending, missing and not-yet cells are told apart", async ({ page }) => {
@@ -187,23 +184,31 @@ test.describe("Score Book — cells", () => {
     expect(h).toBeLessThan(40);
   });
 
-  test("cells are text only, no boxes: the score in its tone colour, \"...\" for pending, \"-\" for missing", async ({ page }) => {
+  test("the status is the cell's background, not the number's colour: the number has no box of its own; a pressable number is underlined; \"...\" for pending, \"-\" for missing", async ({ page }) => {
     await open(page);
     const noBox = async (loc: ReturnType<typeof cell> | ReturnType<ReturnType<typeof cell>["locator"]>) => {
       await expect(loc).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
       await expect(loc).toHaveCSS("border-top-width", "0px");
     };
-    const score = cell(page, "69070101", "hw1").getByRole("link");
+    // graded on a ruled assignment: an underlined button (opens the criteria), no chevron
+    const score = cell(page, "69070101", "hw1").getByRole("button");
     await noBox(score);
     await expect(score).toHaveText("90");
+    await expect(score).toHaveCSS("text-decoration-line", "underline");
+    await expect(score).not.toHaveClass(/s-ok-text/);
+    await expect(cell(page, "69070101", "hw1").locator("svg")).toHaveCount(0);   // no dropdown chevron any more
+    // graded without a rubric: an underlined link to recheck
+    const plain = cell(page, "69070101", "hw2").getByRole("link");
+    await noBox(plain);
+    await expect(plain).toHaveCSS("text-decoration-line", "underline");
     const pending = cell(page, "69070104", "hw1").getByRole("link");
     await noBox(pending);
+    await expect(cell(page, "69070104", "hw1")).toHaveClass(/accent-subtle/);   // pending = the primary colour (9/11/2569)
     await expect(pending.locator("[aria-hidden=true]")).toHaveText("...");
-    await expect(pending).toHaveClass(/s-warn-text/);
     const missing = cell(page, "69070105", "hw1").locator("span").first();
     await noBox(missing);
+    await expect(cell(page, "69070105", "hw1")).toHaveClass(/s-err-bg/);
     await expect(missing.locator("[aria-hidden=true]")).toHaveText("-");
-    await expect(missing).toHaveClass(/s-err-text/);
     // the words are still there for a screen reader
     await expect(pending.getByText("Pending")).toHaveClass(/sr-only/);
     await expect(missing.getByText("Missing")).toHaveClass(/sr-only/);
@@ -216,17 +221,20 @@ test.describe("Score Book — cells", () => {
     await open(page);
     for (const sid of ["69070101", "69070102"]) {
       const c = cell(page, sid, "proj");
-      await expect(c.getByRole("link")).toContainText("80");
+      await expect(c).toContainText("80");
       await expect(c.getByLabel("Team score")).toBeVisible();
     }
     await expect(cell(page, "69070101", "hw1").getByLabel("Team score")).toHaveCount(0); // individual work has none
   });
 
-  test("graded and pending cells open the submission on the recheck page", async ({ page }) => {
+  test("pending cells (and graded ones with no rubric) open the submission on the recheck page; a ruled graded score opens its criteria, whose popup links to recheck", async ({ page }) => {
     await open(page);
-    await expect(cell(page, "69070101", "hw1").getByRole("link")).toHaveAttribute("href", "/teacher/courses/c-sb/assignments/hw1/recheck?sub=s-1-1");
     await expect(cell(page, "69070104", "hw1").getByRole("link")).toHaveAttribute("href", "/teacher/courses/c-sb/assignments/hw1/recheck?sub=s-1-4");
+    await expect(cell(page, "69070101", "hw2").getByRole("link")).toHaveAttribute("href", /\/assignments\/hw2\/recheck\?sub=/);
     await expect(cell(page, "69070105", "hw1").getByRole("link")).toHaveCount(0);
+    await expect(cell(page, "69070101", "hw1").getByRole("link")).toHaveCount(0);   // the number is a button now
+    await cell(page, "69070101", "hw1").getByRole("button").click();
+    await expect(page.getByRole("dialog", { name: "HW 1" }).getByRole("link", { name: "Open / recheck" })).toHaveAttribute("href", "/teacher/courses/c-sb/assignments/hw1/recheck?sub=s-1-1");
   });
 });
 
@@ -236,7 +244,7 @@ test.describe("Score Book — cells", () => {
 test.describe("Score Book — rubric breakdown", () => {
   const expandBtn = (page: Page, studentId: string, col: keyof typeof COL) => cell(page, studentId, col).getByRole("button");
 
-  test("only graded cells on a ruled assignment get an expand control", async ({ page }) => {
+  test("only graded cells on a ruled assignment are an underlined button that opens the criteria", async ({ page }) => {
     await open(page);
     await expect(expandBtn(page, "69070101", "hw1")).toBeVisible();   // hw1 has a rubric, this cell is graded
     await expect(expandBtn(page, "69070104", "hw1")).toHaveCount(0);  // pending — nothing graded to expand
@@ -245,9 +253,8 @@ test.describe("Score Book — rubric breakdown", () => {
     await expect(expandBtn(page, "69070101", "proj")).toHaveCount(0); // neither does the project
   });
 
-  test("clicking the score still opens recheck; the expand control opens a breakdown instead, without navigating", async ({ page }) => {
+  test("clicking the underlined score opens the breakdown without navigating", async ({ page }) => {
     await open(page);
-    await expect(cell(page, "69070101", "hw1").getByRole("link")).toHaveAttribute("href", "/teacher/courses/c-sb/assignments/hw1/recheck?sub=s-1-1");
     await expandBtn(page, "69070101", "hw1").click();
     await expect(page).toHaveURL(/\/results$/); // did not navigate
     await expect(page.getByRole("dialog", { name: "HW 1" })).toBeVisible();
@@ -477,9 +484,9 @@ test.describe("Score Book — a real recheck feeds the breakdown", () => {
 
     await page.goto(`${BASE}/teacher/courses/c-sb/results`);
     await page.waitForLoadState("networkidle");
-    const chip = cell(page, "69070104", "hw1").getByRole("link");
+    const chip = cell(page, "69070104", "hw1").getByRole("button");
     await expect(chip).toHaveText("78"); // 60 (edited) + 18 (untouched Style, round(0.3*60))
-    await cell(page, "69070104", "hw1").getByRole("button").click();
+    await chip.click();
     const dialog = page.getByRole("dialog", { name: "HW 1" });
     await expect(dialog.getByRole("row", { name: /Correctness/ })).toContainText("60 / 70");
     await expect(dialog.getByRole("row", { name: /^Style/ })).toContainText("18 / 30");
