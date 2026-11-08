@@ -3,26 +3,16 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
-import { achievedLevelIndex, levelShare, type Rubric, type Submission } from "@/lib/assignments";
+import { achievedLevelIndex, type Rubric, type Submission } from "@/lib/assignments";
+import { criterionWorth, levelTone } from "@/lib/rubricLevels";
 import { toneForPct, SCORE_TONE_CLASSES } from "@/lib/scoreBook";
 import CloChips from "@/components/CloChips";
+import { RubricLevelGrid } from "@/components/RubricLevels";
 import { splitCriterionName } from "@/lib/rubricName";
 import type { CLO } from "@/lib/clo";
 
 import Icon from "@/components/Icon";
 import IconButton from "@/components/IconButton";
-// How a level looks on a distribution bar: best → worst. warn is not used — it means "awaiting grading" everywhere else.
-const FILL = ["bg-[var(--s-ok-text)]", "bg-[var(--s-info-text)]", "bg-[var(--text-muted)]", "bg-[var(--s-err-text)]"];
-const TEXT = ["text-[var(--s-ok-text)]", "text-[var(--s-info-text)]", "text-[var(--text-secondary)]", "text-[var(--s-err-text)]"];
-const BOX = [
-  "border-[var(--s-ok-bd)] bg-[var(--s-ok-bg)]",
-  "border-[var(--s-info-bd)] bg-[var(--s-info-bg)]",
-  "border-[var(--border)] bg-[var(--bg-app)]",
-  "border-[var(--s-err-bd)] bg-[var(--s-err-bg)]",
-];
-/** position on the scale → one of the four looks (3 levels: green / grey / red; 4: green / blue / grey / red) */
-const toneOf = (i: number, n: number) => (n <= 1 ? 0 : Math.round((i / (n - 1)) * 3));
-
 /**
  * The teacher's view of the assignment's rubric on the grading screen: every criterion with its points, how the
  * graded work so far is spread across its levels (a segmented bar + counts) and its class average; each row opens to
@@ -136,12 +126,12 @@ export default function GradingRubricPanel({ rubric, graded, editHref, locked = 
                         aria-label={c.levels.map((lv, i) => `${lv.label}: ${counts[i]}`).join(", ")}
                         className="flex h-3 w-full overflow-hidden rounded-full border border-[var(--border-subtle)] bg-[var(--bg-app)]"
                       >
-                        {counts.map((k, i) => k > 0 && <div key={i} className={`${FILL[toneOf(i, n)]} hwai-bar-grow`} style={{ width: `${(k / scored) * 100}%` }} />)}
+                        {counts.map((k, i) => k > 0 && <div key={i} className={`${levelTone(i, n).dot} hwai-bar-grow`} style={{ width: `${(k / scored) * 100}%` }} />)}
                       </div>
                       <ul className="mt-1.5 flex flex-wrap gap-x-3 gap-y-0.5 text-xs tabular-nums" aria-hidden="true">
                         {c.levels.map((lv, i) => (
-                          <li key={i} className={`inline-flex items-center gap-1 ${counts[i] > 0 ? TEXT[toneOf(i, n)] : "text-[var(--text-muted)]"}`}>
-                            <span className={`h-2 w-2 rounded-full ${FILL[toneOf(i, n)]} ${counts[i] > 0 ? "" : "opacity-40"}`} />
+                          <li key={i} className={`inline-flex items-center gap-1 ${counts[i] > 0 ? "text-[var(--text-primary)]" : "text-[var(--text-muted)]"}`}>
+                            <span className={`h-2 w-2 rounded-full ${levelTone(i, n).dot} ${counts[i] > 0 ? "" : "opacity-40"}`} />
                             {lv.label} <span className="font-semibold">{counts[i]}</span>
                           </li>
                         ))}
@@ -164,7 +154,7 @@ export default function GradingRubricPanel({ rubric, graded, editHref, locked = 
                   ) : (
                     <span className="inline-flex h-7 items-center px-2.5 text-xs text-[var(--text-muted)]">—</span>
                   )}
-                  <span className="text-xs tabular-nums text-[var(--text-muted)]">{t(`เต็ม ${c.maxPoints} คะแนน`, `of ${c.maxPoints} pts`)}</span>
+                  <span className="text-xs tabular-nums text-[var(--text-muted)]">{criterionWorth(c.maxPoints, c.weight, t)}</span>
                 </div>
 
                 <IconButton icon="chevron-down" label={t(`คำอธิบายระดับของ ${c.name}`, `Level descriptions for ${c.name}`)} onClick={() => toggle(c.id)} aria-expanded={isOpen} iconClassName={`transition-transform ${isOpen ? "rotate-180" : ""}`} className="justify-self-end" />
@@ -173,18 +163,7 @@ export default function GradingRubricPanel({ rubric, graded, editHref, locked = 
               {isOpen && (
                 <div className="px-6 pb-5">
                   {c.description && <p className="mb-3 text-xs leading-relaxed text-[var(--text-secondary)]">{c.description}</p>}
-                  <div className="grid gap-2.5 sm:grid-cols-2 xl:grid-cols-4" style={n > 4 ? { gridTemplateColumns: `repeat(${Math.min(n, 6)}, minmax(0, 1fr))` } : undefined}>
-                    {c.levels.map((lv, i) => (
-                      <div key={i} className={`rounded-xl border p-3.5 ${BOX[toneOf(i, n)]}`}>
-                        <p className="flex items-baseline justify-between gap-2 text-[11px] tabular-nums text-[var(--text-secondary)]">
-                          <span>{t("ระดับ", "Level")} {n - 1 - i} · {Math.round(c.maxPoints * levelShare(i, n))} {t("คะแนน", "pts")}</span>
-                          <span><span className="font-semibold text-[var(--text-primary)]">{counts[i]}</span> {unit === "team" ? t("ทีม", counts[i] === 1 ? "team" : "teams") : t("คน", counts[i] === 1 ? "student" : "students")}</span>
-                        </p>
-                        <p className={`mt-1 text-xs font-bold uppercase tracking-wider ${TEXT[toneOf(i, n)]}`}>{lv.label}</p>
-                        <p className="mt-1.5 text-xs leading-relaxed text-[var(--text-primary)]">{lv.description || <span className="text-[var(--text-muted)]">{t("ไม่มีคำอธิบาย", "No description")}</span>}</p>
-                      </div>
-                    ))}
-                  </div>
+                  <RubricLevelGrid criterion={c} counts={counts} unit={unit} />
                 </div>
               )}
             </li>

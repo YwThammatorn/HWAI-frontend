@@ -9,10 +9,9 @@ import { useLanguage } from "@/context/LanguageContext";
 import { dateLocale } from "@/lib/dateLocale";
 import AssignmentTypeBadge from "@/components/AssignmentTypeBadge";
 import { AttachmentList } from "@/components/AssignmentAttachments";
-import CloChips from "@/components/CloChips";
-import CriterionName from "@/components/CriterionName";
+import RubricCriterionCard from "@/components/RubricCriterionCard";
 import { useCLOs } from "@/lib/clo";
-
+
 import Icon from "@/components/Icon";
 import IconButton from "@/components/IconButton";
 function fmtDate(dateStr: string, lang: string) {
@@ -218,32 +217,7 @@ export default function ViewAssignmentPage() {
                     a compact weight/level-count table. */}
                 <div className="flex flex-col gap-3">
                   {rubric.criteria.map((c) => (
-                    <div key={c.id} className="rounded-xl border border-[var(--border-subtle)] p-3">
-                      <div className="flex items-start justify-between gap-3 mb-1">
-                        <div className="min-w-0">
-                          <CriterionName name={c.name} />
-                          <CloChips cloIds={c.cloIds} clos={getCLOsByCourse(id)} />
-                        </div>
-                        <span className="shrink-0 text-xs font-semibold text-[var(--accent)] tabular-nums">
-                          {c.weight}% · {c.maxPoints} {t("คะแนน", "pts")}
-                        </span>
-                      </div>
-                      {c.description && (
-                        <p className="text-xs text-[var(--text-muted)] mb-2">{c.description}</p>
-                      )}
-                      {c.levels.length > 0 && (
-                        <div className="grid gap-2 mt-2 [grid-template-columns:repeat(auto-fit,minmax(140px,1fr))]">
-                          {c.levels.map((lvl, i) => (
-                            <div key={i} className="rounded-lg bg-[var(--bg-app)] p-2">
-                              <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">{lvl.label}</p>
-                              {lvl.description && (
-                                <p className="text-[11px] text-[var(--text-secondary)] mt-0.5 leading-snug">{lvl.description}</p>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+                    <RubricCriterionCard key={c.id} criterion={c} clos={getCLOsByCourse(id)} />
                   ))}
                 </div>
                 {/* Teacher-only: the weight-total sanity check students don't need to see. */}

@@ -223,7 +223,7 @@ test.describe("Use a rubric from before", () => {
     const help = d.getByTestId("picker-preview-help");
     await expect(help).toContainText("how the class did on each criterion when this rubric was used");
     await expect(help).toContainText("green 80% and up");
-    await expect(d.getByTestId("picker-preview")).toContainText("max 10");                      // the criterion's own total, not a bare number
+    await expect(d.getByTestId("picker-preview")).toContainText("10 pts");                      // the criterion's own total with its unit (DESIGN.md §9e), not a bare number
 
     await d.getByRole("tab", { name: /Library\s*1/ }).click();
     await pickRow(d, "Saved by me").click();

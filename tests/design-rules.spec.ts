@@ -171,6 +171,62 @@ test.describe("Design rules (DESIGN.md)", () => {
     expect(hits.slice(0, 40), `${hits.length} hex literal(s) — add a token to globals.css and DESIGN.md if the palette truly lacks the colour`).toEqual([]);
   });
 
+  // 8/11/2569 — a rubric's levels look the same on every screen (DESIGN.md §9e). Four forms: RubricCriterionCard / RubricLevelGrid (read),
+  // RubricLevelPicker (pick), RubricCriteriaEditor (edit), RubricTable (compact). A screen that lists a criterion's levels by itself is how
+  // seven different looks happened.
+  const LEVEL_UI_ALLOWED: Record<string, string> = {
+    "components/RubricLevels.tsx": "the level cell: read grid and picker",
+    "components/RubricTable.tsx": "the compact table's level-names column",
+    "components/RubricCriteriaEditor.tsx": "the editor — its level cells are inputs",
+    "components/GradingRubricPanel.tsx": "the legend under the distribution bar (colour dot + count), not a level cell",
+  };
+
+  test("a criterion's levels are drawn by the shared rubric components, not by a page (DESIGN.md §9e)", () => {
+    const bad: string[] = [];
+    for (const f of FILES) {
+      if (!f.rel.endsWith(".tsx") || LEVEL_UI_ALLOWED[f.rel]) continue;
+      for (const m of code(f.text).matchAll(/\.levels\??\.map\(([\s\S]{0,200})/g)) if (/<[A-Za-z]/.test(m[1])) bad.push(f.rel);
+    }
+    expect(bad, "Use <RubricCriterionCard> / <RubricLevelGrid> (read), <RubricLevelPicker> (pick) or <RubricTable> (popup) — not your own level cells").toEqual([]);
+  });
+
+  test("the allow-list of level screens has no stale entries", () => {
+    const stale = Object.keys(LEVEL_UI_ALLOWED).filter((rel) => !FILES.find((f) => f.rel === rel && /\.levels\??\.map\(/.test(code(f.text))));
+    expect(stale).toEqual([]);
+  });
+
+  test("a level's colour comes from levelTone() only — no --level-N class outside lib/rubricLevels.ts", () => {
+    const bad = FILES.filter((f) => f.rel !== "lib/rubricLevels.ts" && /-\[var\(--level-\d\)\]/.test(code(f.text))).map((f) => f.rel);
+    expect(bad, "Use levelTone(i, total).dot / .label from lib/rubricLevels.ts").toEqual([]);
+  });
+
+  test("a level's name is readable in both themes: each --level-N passes 4.5:1 on the page, a card and the highlighted cell", () => {
+    const css = fs.readFileSync(path.join(SRC, "app", "globals.css"), "utf8");
+    const light = css.slice(css.indexOf(":root"), css.indexOf('[data-theme="dark"] {'));
+    const dark = css.slice(css.indexOf('[data-theme="dark"] {'));
+    const tok = (blk: string, name: string) => blk.match(new RegExp(`--${name}:\\s*(#[0-9A-Fa-f]{6})`))?.[1] ?? "";
+    const lum = (h: string) => { const c = [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255).map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; };
+    const ratio = (a: string, b: string) => (Math.max(lum(a), lum(b)) + 0.05) / (Math.min(lum(a), lum(b)) + 0.05);
+    const low: string[] = [];
+    for (const [theme, blk] of [["light", light], ["dark", dark]] as const) {
+      for (const bg of ["bg-app", "bg-surface", "accent-subtle"]) {
+        for (let n = 1; n <= 5; n++) {
+          const fg = tok(blk, `level-${n}`), back = tok(blk, bg);
+          expect(fg && back, `${theme}: --level-${n} / --${bg} not found in globals.css`).toBeTruthy();
+          const r = ratio(fg, back);
+          if (r < 4.5) low.push(`${theme} --level-${n} ${fg} on --${bg} ${back} = ${r.toFixed(2)}`);
+        }
+      }
+    }
+    expect(low, "The level name is text in this colour: darken (light) or lighten (dark) the token until it passes").toEqual([]);
+  });
+
+  test("no screen keeps its own green/blue/grey/red ramp for levels — a bar uses levelTone() too", () => {
+    // two screens had one (the grading rubric panel and the Rubrics compare bar); a third copy is how the looks drift apart again
+    const bad = FILES.filter((f) => /["']bg-\[var\(--s-ok-text\)\]["'],\s*["']bg-\[var\(--s-info-text\)\]["']/.test(code(f.text))).map((f) => f.rel);
+    expect(bad, "Use levelTone(i, total).dot from lib/rubricLevels.ts for a level's colour").toEqual([]);
+  });
+
   test("the old bright teal is a token now (--brand-bright), defined once in :root (it is the same in both themes)", () => {
     const css = fs.readFileSync(path.join(SRC, "app", "globals.css"), "utf8");
     expect((css.match(/--brand-bright:/g) ?? []).length).toBe(1);

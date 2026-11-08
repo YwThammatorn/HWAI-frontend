@@ -7,7 +7,8 @@ import RubricPickerModal, { type PickedCriterion } from "@/components/RubricPick
 import { useRubricLibrary } from "@/lib/rubricLibrary";
 import { useCourses } from "@/lib/courses";
 import Modal from "@/components/Modal";
-import { buildCriteria, pickAiTemplate, briefLanguage, blankLevels, resizeLevels, levelRatio, levelDescription, levelsUniform, rubricLevelCount } from "@/lib/rubricTemplates";
+import { buildCriteria, pickAiTemplate, briefLanguage, blankLevels, resizeLevels, levelDescription, levelsUniform, rubricLevelCount } from "@/lib/rubricTemplates";
+import { levelTone } from "@/lib/rubricLevels";
 
 import Icon from "@/components/Icon";
 import IconTile from "@/components/IconTile";
@@ -104,20 +105,6 @@ export interface CloOption { id: string; code: string; text: string }
 // A rubric scale runs best → worst; teachers can use anywhere from 2 to 6 levels.
 const MIN_LEVELS = 2;
 const MAX_LEVELS = 6;
-
-// Green → red ramp. A level's colour comes from its position in the scale, so
-// 3 levels still read green / amber / red and 4–6 fill in lime and orange.
-const LEVEL_TONES = [
-  { label: "text-[var(--level-1)]", dot: "bg-[var(--level-1)]" },
-  { label: "text-[var(--level-2)]", dot: "bg-[var(--level-2)]" },
-  { label: "text-[var(--level-3)]", dot: "bg-[var(--level-3)]" },
-  { label: "text-[var(--level-4)]", dot: "bg-[var(--level-4)]" },
-  { label: "text-[var(--level-5)]", dot: "bg-[var(--level-5)]" },
-];
-
-function levelTone(i: number, total: number) {
-  return LEVEL_TONES[Math.round(levelRatio(i, total) * (LEVEL_TONES.length - 1))];
-}
 
 interface AiSuggestion { name: string; description: string; points: number; levels: CriterionLevel[] }
 

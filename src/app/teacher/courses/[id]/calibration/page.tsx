@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
 import { useCourses } from "@/lib/courses";
-import { useAssignments, isManualGrading, submissionAttachments, levelShare, gradingOpen, type Assignment } from "@/lib/assignments";
+import { useAssignments, isManualGrading, submissionAttachments, gradingOpen, type Assignment } from "@/lib/assignments";
 import { useNow } from "@/lib/clock";
 import { useStudents, withdrawnIds } from "@/lib/students";
 import { useStudentGroups } from "@/lib/studentGroups";
@@ -13,6 +13,7 @@ import { useCalibrations, pickSample, compare, suggestOffsets, suggestRubricChan
 import RubricEditModal from "@/components/RubricEditModal";
 import CalibrationRegrade from "@/components/CalibrationRegrade";
 import CriterionName from "@/components/CriterionName";
+import { RubricLevelPicker } from "@/components/RubricLevels";
 import EmptyState from "@/components/EmptyState";
 import SubmissionViewer from "@/components/SubmissionViewer";
 
@@ -276,20 +277,15 @@ export default function CalibrationPage() {
                                 return (
                                   <li key={c.id} className="rounded-xl border border-[var(--border-subtle)] p-4">
                                     <CriterionName name={c.name} />
-                                    <div role="radiogroup" aria-label={t(`ระดับของ ${c.name} — ตัวอย่างที่ ${ci + 1}`, `Level for ${c.name} — sample ${ci + 1}`)} className="mt-3 flex flex-col gap-1.5">
-                                      {c.levels.map((lv, li) => (
-                                        <button
-                                          key={li} type="button" role="radio" aria-checked={chosen === li}
-                                          onClick={() => setLevel(u.key, c.id, li)}
-                                          className={`rounded-lg border px-3 py-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] ${chosen === li ? "border-[var(--accent)] bg-[var(--accent-subtle)]" : "border-[var(--border)] hover:bg-[var(--bg-subtle)]"}`}
-                                        >
-                                          <span className="flex items-center gap-2 text-xs font-semibold tabular-nums text-[var(--text-primary)]">
-                                            {lv.label} · {Math.round(c.maxPoints * levelShare(li, c.levels.length))}
-                                            {aiLevel === li && <span data-testid={`mark-ai-${c.id}`} className="rounded-md border border-[var(--s-info-bd)] bg-[var(--s-info-bg)] px-1.5 py-0.5 text-[10px] font-semibold text-[var(--s-info-text)]">AI</span>}
-                                          </span>
-                                          {lv.description && <span className="mt-0.5 block text-xs leading-snug text-[var(--text-secondary)]">{lv.description}</span>}
-                                        </button>
-                                      ))}
+                                    <div className="mt-3">
+                                      <RubricLevelPicker
+                                        criterion={c}
+                                        label={t(`ระดับของ ${c.name} — ตัวอย่างที่ ${ci + 1}`, `Level for ${c.name} — sample ${ci + 1}`)}
+                                        value={chosen}
+                                        onPick={(li) => setLevel(u.key, c.id, li)}
+                                        aiLevel={aiLevel}
+                                        aiTestId={`mark-ai-${c.id}`}
+                                      />
                                     </div>
                                   </li>
                                 );

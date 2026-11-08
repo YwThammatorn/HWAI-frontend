@@ -86,7 +86,7 @@ test("no per-criterion scores saved → the rubric stays the plain read-only one
   await open(page);
   await expect(page.getByRole("heading", { name: "Grading Rubric", exact: true })).toBeVisible();
   await expect(page.getByRole("progressbar")).toHaveCount(0);
-  await expect(page.getByText("60% · 60 pts")).toBeVisible();
+  await expect(page.getByText("60 pts · 60%")).toBeVisible();      // what a criterion is worth, the one wording (DESIGN.md §9e)
 });
 
 test("before the teacher announces results the points are not shown", async ({ page }) => {

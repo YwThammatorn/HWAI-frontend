@@ -113,7 +113,7 @@ async function scoreAll(page: Page, n = 5) {
     await page.getByRole("button", { name: `Sample ${i + 1}`, exact: true }).click(); // one sample is open at a time
     for (const c of CRITERIA) {
       const label = ["Excellent", "Fair", "Needs Improvement", "Fail"][teacherLevel(ai.levels[c.id], c.id)];
-      await page.getByRole("radiogroup", { name: new RegExp(`Level for ${c.name.replace(/[/·]/g, ".")} — sample ${i + 1}`) }).getByRole("radio", { name: new RegExp(`^${label} ·`) }).click();
+      await page.getByRole("radiogroup", { name: new RegExp(`Level for ${c.name.replace(/[/·]/g, ".")} — sample ${i + 1}`) }).getByRole("radio", { name: new RegExp("\\b" + label + "\\b") }).click();
     }
   }
   return picked;

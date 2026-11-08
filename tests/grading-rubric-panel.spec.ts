@@ -80,13 +80,13 @@ test.describe("Grading page — rubric panel", () => {
     await expect(c1.getByText("C1", { exact: true })).toBeVisible();
     await expect(c1.getByText("Content", { exact: true })).toBeVisible();
     await expect(c1.getByText("Is the content complete")).toHaveCount(0);
-    await expect(c1).toContainText("of 15 pts");
+    await expect(c1).toContainText("15 pts · ");
     await expect(c1.getByRole("img")).toHaveAttribute("aria-label", "ดีมาก: 1, พอใช้: 2, ต้องปรับปรุง: 1, ไม่ผ่าน: 0");
     await expect(c1).toContainText("Avg 10 · 67%");
 
     await expect(row(page, "k2").getByRole("img")).toHaveAttribute("aria-label", "ดีมาก: 1, พอใช้: 1, ต้องปรับปรุง: 1, ไม่ผ่าน: 1");
     await expect(row(page, "k2")).toContainText("Avg 5 · 50%");
-    await expect(row(page, "k2")).toContainText("of 10 pts");
+    await expect(row(page, "k2")).toContainText("10 pts · ");
     await expect(row(page, "k3")).toContainText("Avg 7.5 · 50%");
   });
 
@@ -149,7 +149,7 @@ test.describe("Grading page — rubric panel", () => {
     await expect(panel).toContainText("nothing graded yet");
     await expect(panel.getByRole("img")).toHaveCount(0);
     await expect(row(page, "k1")).toContainText("No per-criterion scores to summarise yet");
-    await expect(row(page, "k1")).toContainText("of 15 pts");
+    await expect(row(page, "k1")).toContainText("15 pts · ");
   });
 
   test("a bilingual name shows the code, the main name and the second-language name apart", async ({ page }) => {

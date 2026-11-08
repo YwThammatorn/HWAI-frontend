@@ -4,6 +4,7 @@ import Modal from "@/components/Modal";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAssignments, activeLatePolicy, describeLatePolicy, latePenaltyOf, type Assignment } from "@/lib/assignments";
 import { useAiGrading } from "@/lib/useAiGrading";
+import RubricTable from "@/components/RubricTable";
 
 /**
  * "Grade with AI" asks first (22/10/2569): which work goes to the AI, with which rubric, how strict the AI is on it, and what a late
@@ -88,30 +89,7 @@ export default function AiGradePreviewModal({ assignment, open, onClose, onConfi
           <h3 className={sectionTitle}>{t("rubric ที่ AI จะใช้", "Rubric the AI will use")}</h3>
           {hasRubric ? (
             <div data-testid="ai-preview-rubric" className="mt-2 max-h-64 overflow-auto rounded-xl border border-[var(--border-subtle)]">
-              <table className="w-full text-sm">
-                <thead className="sticky top-0 bg-[var(--bg-surface)]">
-                  <tr className="border-b border-[var(--border-subtle)] text-left text-xs text-[var(--text-secondary)]">
-                    <th scope="col" className="px-3 py-2 font-semibold">{t("เกณฑ์", "Criterion")}</th>
-                    <th scope="col" className="px-3 py-2 font-semibold">{t("ระดับ (ดี → ต้องปรับปรุง)", "Levels (best → worst)")}</th>
-                    <th scope="col" className="px-3 py-2 text-right font-semibold">{t("คะแนน", "Points")}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {criteria.map((c) => (
-                    <tr key={c.id} className="border-b border-[var(--border-subtle)] last:border-b-0 align-top">
-                      <td className="px-3 py-2 font-medium text-[var(--text-primary)]">{c.name}</td>
-                      <td className="px-3 py-2 text-[var(--text-secondary)]">{c.levels.map((l) => l.label).join(" › ")}</td>
-                      <td className="px-3 py-2 text-right tabular-nums text-[var(--text-primary)]">{c.maxPoints}</td>
-                    </tr>
-                  ))}
-                </tbody>
-                <tfoot>
-                  <tr className="border-t border-[var(--border-subtle)] bg-[var(--bg-app)] text-sm font-semibold text-[var(--text-primary)]">
-                    <td className="px-3 py-2" colSpan={2}>{rubric?.name}</td>
-                    <td className="px-3 py-2 text-right tabular-nums">{total}</td>
-                  </tr>
-                </tfoot>
-              </table>
+              <RubricTable criteria={criteria} columns={["levels", "points"]} footer={{ label: rubric?.name, value: total }} />
             </div>
           ) : (
             <p data-testid="ai-preview-norubric" role="note" className="mt-2 rounded-xl border border-[var(--s-warn-bd)] bg-[var(--s-warn-bg)] px-4 py-3 text-sm leading-relaxed text-[var(--s-warn-text)]">

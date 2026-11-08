@@ -9,11 +9,13 @@ import { useNow } from "@/lib/clock";
 import SubmissionViewer from "@/components/SubmissionViewer";
 import FloatingPanel, { openFloatingWindow } from "@/components/FloatingPanel";
 import CriterionName from "@/components/CriterionName";
+import { CriterionPoints } from "@/components/RubricCriterionCard";
+import { RubricLevelPicker } from "@/components/RubricLevels";
 import { splitCriterionName } from "@/lib/rubricName";
 import { useStudentGroups } from "@/lib/studentGroups";
 import { useLanguage } from "@/context/LanguageContext";
 import { dateLocale } from "@/lib/dateLocale";
-
+
 import Icon from "@/components/Icon";
 import IconTile from "@/components/IconTile";
 import IconButton from "@/components/IconButton";
@@ -322,9 +324,11 @@ export default function RecheckPage() {
                     <span className="text-xs text-[var(--text-muted)]">/ {s.maxPoints}</span>
                   </span>
                 ) : (
-                  <span data-testid={`crit-score-${s.criterionId}`} className="shrink-0 text-sm tabular-nums text-[var(--text-muted)]">
-                    <span className="font-bold text-[var(--text-primary)]">{s.score ?? "—"}</span> / {s.maxPoints}
-                  </span>
+                  s.score !== null ? (
+                    <CriterionPoints maxPoints={s.maxPoints} weight={c.weight} earned={s.score} testId={`crit-score-${s.criterionId}`} />
+                  ) : (
+                    <span data-testid={`crit-score-${s.criterionId}`} className="shrink-0 text-sm tabular-nums text-[var(--text-muted)]">— / {s.maxPoints}</span>
+                  )
                 )}
               </div>
 
@@ -335,31 +339,15 @@ export default function RecheckPage() {
                 </p>
               )}
 
-              {/* Click the level that fits the work — the same cards as Calibration */}
-              <div
-                role="radiogroup"
-                aria-label={t(`ระดับของ ${splitCriterionName(c.name).main}`, `Level for ${splitCriterionName(c.name).main}`)}
-                className={c.levels.length === 0 ? "hidden" : "flex flex-col gap-1.5"}
-              >
-                {c.levels.map((lv, li) => (
-                  <button
-                    key={li}
-                    type="button"
-                    role="radio"
-                    aria-checked={s.level === li}
-                    onClick={() => pickLevel(s.criterionId, li)}
-                    className={`rounded-lg border px-3 py-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] ${s.level === li ? "border-[var(--accent)] bg-[var(--accent-subtle)]" : "border-[var(--border)] hover:bg-[var(--bg-subtle)]"}`}
-                  >
-                    <span className="flex items-center gap-2 text-xs font-semibold tabular-nums text-[var(--text-primary)]">
-                      {lv.label} · {levelPts(c, li)}
-                      {!handGraded && s.aiPts !== null && levelOfPts(c, s.aiPts) === li && (
-                        <span data-testid={`mark-ai-${s.criterionId}`} className="rounded-md border border-[var(--s-info-bd)] bg-[var(--s-info-bg)] px-1.5 py-0.5 text-[10px] font-semibold text-[var(--s-info-text)]">AI</span>
-                      )}
-                    </span>
-                    {lv.description && <span className="mt-0.5 block text-xs leading-snug text-[var(--text-secondary)]">{lv.description}</span>}
-                  </button>
-                ))}
-              </div>
+              {/* Click the level that fits the work — the same cells as Calibration (RubricLevelPicker) */}
+              <RubricLevelPicker
+                criterion={c}
+                label={t(`ระดับของ ${splitCriterionName(c.name).main}`, `Level for ${splitCriterionName(c.name).main}`)}
+                value={s.level}
+                onPick={(li) => pickLevel(s.criterionId, li)}
+                aiLevel={!handGraded && s.aiPts !== null ? levelOfPts(c, s.aiPts) : null}
+                aiTestId={`mark-ai-${s.criterionId}`}
+              />
 
               {s.edited && !handGraded && (
                 <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-[var(--s-warn-text)] bg-[var(--s-warn-bg)] px-1.5 py-0.5 rounded mt-3 mb-1">

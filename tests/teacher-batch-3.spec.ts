@@ -171,7 +171,7 @@ test.describe("Recheck — comment on a manually adjusted score", () => {
   // Scores are picked by clicking a level card (Excellent 60 / Good 30 / Needs Improvement 0 for Layout, 40 / 20 / 0 for Accessibility).
   // The AI's 80 starts as round(0.6 × 80) = 48 and 32 — on no level, so nothing is highlighted until a card is clicked.
   const level = (page: Page, criterion: string, label: string) =>
-    page.getByRole("radiogroup", { name: `Level for ${criterion}` }).getByRole("radio", { name: new RegExp(`^${label}`) });
+    page.getByRole("radiogroup", { name: `Level for ${criterion}` }).getByRole("radio", { name: new RegExp("\\b" + label + "\\b") });
 
   test("the comment box appears only after the score is changed, and is saved per criterion", async ({ page }) => {
     await open(page);

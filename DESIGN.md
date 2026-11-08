@@ -351,6 +351,33 @@ Every colour in a component is a token from `globals.css` (`var(--…)`). That i
 | a filled rating star | `--rating-fill` |
 | a person's avatar hue | `--cat-1` … `--cat-8` |
 
+## 9e. Rubric — four forms, one level cell (8/11/2569)
+
+A rubric is shown in a few ways, but a **level** always looks the same. Use the shared pieces; never draw a criterion's levels in a page.
+
+| Job | Piece | Where |
+|---|---|---|
+| **Read** — a criterion with its levels | `<RubricCriterionCard>` (`<RubricLevelGrid>` inside) | assignment page, the student's classwork, the expanded row of the grading rubric panel |
+| **Pick** — choose the level that fits the work | `<RubricLevelPicker>` | grading / recheck panel, Calibration (narrow panels beside a piece of work, so the options stack) |
+| **Edit** | `RubricCriteriaEditor` | New / Edit assignment — its level cells are inputs, in the same order, colour and wording |
+| **Compact** — rubric in a popup | `<RubricTable columns=[…]>` | Grade-with-AI preview (levels, points), Score Book breakdown (weight, earned) |
+
+Rules (all of them are in `lib/rubricLevels.ts` and the pieces above):
+- **Level text** is "Level 3 · 4 pts" / "ระดับ 3 · 4 คะแนน" — `levelText()`. Never "Excellent · 4" or a bare label.
+- **What a criterion is worth**: "4 pts · 40%" while only reading or editing (`criterionWorth()`); "Earned 3 / 4" with its weight under it once there is a score (`<CriterionPoints>`). No "4 / 4" on its own, no "100% 3 / 3".
+- **Colour**: a level's only colours are its dot and its name, from `levelTone(i, total)` (the `--level-1…5` ramp). The cell is neutral (`--bg-app`); only the cell the reader should look at — your level, the picked level, the level the AI gave — takes the accent border + `--accent-subtle`. No green / blue / red tinted cards.
+- **Layout**: 4 levels sit 2 × 2 and go 4 across only when the card is wide (container query), never 3 + 1; other counts flow by width.
+- Counts per level ("3 students") are text inside the cell, not a fill.
+
+`tests/design-rules.spec.ts` fails if a page maps a criterion's `levels` into its own markup, or uses a `--level-N` class outside `lib/rubricLevels.ts`.
+
+| You wrote | Write instead |
+|---|---|
+| `c.levels.map(lv => <div>…{lv.label}…</div>)` in a page | `<RubricLevelGrid criterion={c} />` / `<RubricLevelPicker …>` |
+| `{lv.label} · {points}` | `levelText(i, n, max, t)` (inside the pieces) |
+| `{weight}% · {max} pts` for a criterion | `<CriterionPoints maxPoints weight earned? />` |
+| a table of criteria in a popup | `<RubricTable columns={["levels","points"]} />` |
+
 ## 10. Migration — old KB patterns → new tokens
 
 | KB Pattern | What it hardcodes today | Maps to |
@@ -383,7 +410,7 @@ Unchanged from the existing stack — no new font introduced.
 2. **Colours** from tokens only (§9d). No gray / palette class, no hex. Missing colour → add a token in both themes first.
 3. **Look at both themes** (light and dark) and at the teal chrome — a screen that only works in one is not done.
 4. **Contrast**: text on a tint uses that tint's `-text` pair; teal as text is `--accent`, never `--accent-bright` (§3).
-5. **Buttons / badges / modals / tables / empty states** follow §4, §6, §9a, §9b and `EmptyState`; no hover-only actions.
+5. **Buttons / badges / modals / tables / empty states** follow §4, §6, §9a, §9b and `EmptyState`; no hover-only actions. **A rubric** is shown with the pieces of §9e (`RubricCriterionCard`, `RubricLevelPicker`, `RubricTable`) — never your own level cells.
 6. **Words**: every visible string goes through `t("ไทย", "English")` (CLAUDE.md i18n rule); wording follows the terminology notes in `docs/design-stability-audit.md`.
 7. **Run** `npx playwright test -c playwright.rules.config.ts` (the rules above, 1 second) — and the normal suite before calling it done. `tests/design-rules.spec.ts` fails the build on an inline icon, a palette class or a hex colour.
 

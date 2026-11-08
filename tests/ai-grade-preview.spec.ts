@@ -71,7 +71,7 @@ test.describe("Grade with AI — look before it starts", () => {
     const rubric = page.getByTestId("ai-preview-rubric");
     await expect(rubric).toContainText("Layout");
     await expect(rubric).toContainText("Accessibility");
-    await expect(rubric).toContainText("Excellent › Good › Needs Improvement");
+    for (const level of ["Excellent", "Good", "Needs Improvement"]) await expect(rubric).toContainText(level);      // every level name, in the shared table
     await expect(page.getByTestId("ai-preview").getByRole("link")).toHaveCount(0);        // no way out to Edit rubric / Calibration from here: that lives on the assignment's Grading page
     await expect(page.getByTestId("ai-preview-strictness")).toContainText("Standard");
     await expect(page.getByTestId("ai-preview-late")).toHaveCount(0);
