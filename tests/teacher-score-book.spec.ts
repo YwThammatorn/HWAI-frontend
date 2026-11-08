@@ -133,6 +133,14 @@ test.describe("Score Book — layout", () => {
     await expect(page.locator("main tbody tr").first().locator("td").first()).toHaveCSS("border-bottom-width", "1px");
   });
 
+  test("the vertical line before the first assignment is one pixel in the footer too (the label cell has no right border of its own)", async ({ page }) => {
+    await open(page);
+    // the line comes from the first assignment column's left border; a right border on the "Class average" label stacked next to it into a 2px line in that row only
+    await expect(page.locator("main tfoot td").first()).toHaveCSS("border-right-width", "0px");
+    await expect(page.locator("main tfoot td").nth(1)).toHaveCSS("border-left-width", "1px");
+    await expect(page.locator("main tbody tr").first().locator("td").nth(2)).toHaveCSS("border-left-width", "1px");
+  });
+
   test("assignment headers link to that assignment's grading page", async ({ page }) => {
     await open(page);
     await expect(page.getByRole("link", { name: "HW 1" })).toHaveAttribute("href", "/teacher/courses/c-sb/assignments/hw1/grading");

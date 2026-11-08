@@ -459,7 +459,7 @@ export default function ScoreBookPage() {
                 {/* class averages only make sense for the enrolled group */}
                 {tab === "active" && <tfoot>
                   <tr>
-                    <td colSpan={2} className="sticky left-0 bottom-0 z-20 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] bg-[var(--bg-surface)] border-t border-r border-[var(--border-subtle)]">
+                    <td colSpan={2} className="sticky left-0 bottom-0 z-20 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] bg-[var(--bg-surface)] border-t border-[var(--border-subtle)]">
                       {t("เฉลี่ยทั้งห้อง", "Class average")}
                     </td>
                     {columns.map((a) => {
