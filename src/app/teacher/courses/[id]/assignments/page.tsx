@@ -11,7 +11,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { dateLocale } from "@/lib/dateLocale";
 import SearchInput from "@/components/SearchInput";
 import AssignmentTypeBadge from "@/components/AssignmentTypeBadge";
-
+
 import Icon from "@/components/Icon";
 import IconTile from "@/components/IconTile";
 import IconButton from "@/components/IconButton";
@@ -127,7 +127,7 @@ export default function AssignmentsPage() {
               <p className="text-[var(--text-secondary)] text-sm">{t(`ไม่พบชิ้นงานที่ตรงกับ "${search}"`, `No results for "${search}"`)}</p>
             ) : (
               <>
-                <IconTile icon="document-list" size="lg" tone="accent" className="mb-3" />
+                <IconTile icon="file-text" size="lg" tone="accent" className="mb-3" />
                 <p className="text-sm font-medium text-[var(--text-secondary)] mb-1">{t("ยังไม่มีชิ้นงาน", "No assignments yet")}</p>
                 <p className="text-xs text-[var(--text-muted)] mb-4">{t("กด Create Assignment เพื่อเพิ่มชิ้นงานแรก", "Click Create Assignment to add your first one")}</p>
                 <Link
@@ -213,7 +213,7 @@ export default function AssignmentsPage() {
                     <div className="flex items-center gap-3 shrink-0 ml-4" onClick={(e) => e.stopPropagation()}>
                       {/* ▼ dropdown menu */}
                       <div className="relative" ref={openMenu === a.id ? menuRef : undefined}>
-                        <IconButton icon="more-vertical" filled label={t(`เมนูของ ${a.name}`, `Actions for ${a.name}`)} onClick={(e) => { e.stopPropagation(); setOpenMenu(openMenu === a.id ? null : a.id); }} aria-haspopup="menu" aria-expanded={openMenu === a.id} />
+                        <IconButton icon="more-vertical" label={t(`เมนูของ ${a.name}`, `Actions for ${a.name}`)} onClick={(e) => { e.stopPropagation(); setOpenMenu(openMenu === a.id ? null : a.id); }} aria-haspopup="menu" aria-expanded={openMenu === a.id} />
                         {openMenu === a.id && (
                           <div role="menu" className="absolute right-0 top-9 z-20 bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-xl shadow-lg py-1 w-36 text-sm">
                             <Link

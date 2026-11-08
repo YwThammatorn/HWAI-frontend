@@ -596,7 +596,7 @@ export default function GradingProgressPage() {
                     {t("เวลา 23:59 น.", "at 11:59 PM")}</>
                   : t("สอบ · ไม่มีกำหนดส่ง", "Exam · no due date")}
               </span>
-              <span className="font-medium text-[var(--accent)]">• {t("ตรวจงาน", "Grading")}</span>
+              <span className="inline-flex items-center gap-1.5 font-medium text-[var(--accent)]"><Icon name="check-square" size="sm" />{t("ตรวจงาน", "Grading")}</span>
             </div>
           </div>
           <div className="flex items-center gap-3 shrink-0">
@@ -752,7 +752,6 @@ export default function GradingProgressPage() {
             })()}
             tone="rating"
             icon="star"
-            filled
           />
         </div>
 
@@ -784,7 +783,8 @@ export default function GradingProgressPage() {
                   href={`/teacher/courses/${id}/assignments/${assignmentId}/results`}
                   className="inline-flex items-center gap-2 mt-4 px-5 py-2.5 bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-semibold rounded-xl transition-colors"
                 >
-                  {t("ดูผลลัพธ์", "View Results")} →
+                  {t("ดูผลลัพธ์", "View Results")}
+                  <Icon name="arrow-right" />
                 </Link>
               )}
               {isDone && !finalized && gradeOpen && (

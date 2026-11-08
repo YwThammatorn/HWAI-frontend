@@ -6,6 +6,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { parseExamScoreCsv, scoreCsvTemplate, type ScoreCsvRow, type ScoreRowStatus } from "@/lib/examScoreCsv";
 
 import Icon from "@/components/Icon";
+import IconTile from "@/components/IconTile";
 type Person = { studentId: string; firstName: string; lastName: string };
 
 const NEUTRAL = "border-[var(--border)] bg-[var(--bg-app)] text-[var(--text-secondary)]";
@@ -144,7 +145,7 @@ export default function ImportExamScoresModal({ students, withdrawnIds, maxPoint
               className={`border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition-colors ${isDragging ? "border-[var(--accent-bright)] bg-[var(--accent-bright)]/5" : "border-[var(--border-subtle)] hover:border-[var(--accent-bright)]/50"}`}
             >
               <input ref={fileRef} type="file" accept=".csv,text/csv" aria-label={t("ไฟล์ CSV คะแนนสอบ", "Exam scores CSV file")} className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
-              <Icon name="file-plus" size="xl" className="mx-auto mb-3 text-[var(--accent-bright)]" />
+              <div className="mb-3 flex justify-center"><IconTile icon="download" size="lg" tone="accent" /></div>
               <p className="text-sm font-semibold text-[var(--text-primary)]">{t("ลากไฟล์ CSV มาวาง หรือคลิกเลือก", "Drag CSV here or click to browse")}</p>
               <p className="text-xs text-[var(--text-muted)] mt-1">{t("รองรับ .csv • UTF-8 (คั่นด้วย , ; หรือ Tab)", "Supports .csv • UTF-8 (separated by , ; or Tab)")}</p>
             </div>

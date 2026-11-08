@@ -239,7 +239,7 @@ export default function ScoreBookPage() {
           disabled={roster.length === 0 || assignments.length === 0}
           className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)] active:scale-[.97] disabled:opacity-50 disabled:pointer-events-none transition-colors shrink-0"
         >
-          <Icon name="file-download" />
+          <Icon name="upload" />
           {t("ส่งออก CSV", "Export CSV")}
         </button>
       </div>

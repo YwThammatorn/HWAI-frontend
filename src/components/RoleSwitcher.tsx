@@ -79,7 +79,7 @@ export default function RoleSwitcher() {
           style={{ color: meta.color, background: meta.bg, borderColor: `color-mix(in srgb, ${meta.color} 50%, transparent)` }}
         >
           {lang === "th" ? meta.th : meta.en}
-          <Icon name="chevron-down" size="xs" filled style={{ opacity: .6 }} />
+          <Icon name="chevron-down" size="xs" style={{ opacity: .6 }} />
         </button>
 
         {open && (
@@ -144,7 +144,7 @@ export default function RoleSwitcher() {
         {viewAs && (
           <span className="opacity-60 font-normal">{t("มุมมอง", "view")}</span>
         )}
-        <Icon name="chevron-down" size="xs" filled style={{ opacity: .6 }} />
+        <Icon name="chevron-down" size="xs" style={{ opacity: .6 }} />
       </button>
 
       {open && (

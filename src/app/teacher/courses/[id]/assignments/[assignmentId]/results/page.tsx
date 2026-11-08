@@ -12,7 +12,7 @@ import SearchInput from "@/components/SearchInput";
 import ExamStatsCard from "@/components/ExamStatsCard";
 import { statsFromScores } from "@/lib/examStats";
 import { SCORE_TONE_CLASSES } from "@/lib/scoreBook";
-
+
 import Icon from "@/components/Icon";
 import MetricCard from "@/components/MetricCard";
 import Avatar from "@/components/Avatar";
@@ -188,7 +188,7 @@ export default function ResultsPage() {
               onClick={exportCSV}
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-semibold transition-colors"
             >
-              <Icon name="file-download" />
+              <Icon name="upload" />
               {t("ส่งออกผลลัพธ์", "Export Result")}
             </button>
           </div>
@@ -229,7 +229,7 @@ export default function ResultsPage() {
         {/* Stats */}
         <div className="grid grid-cols-4 gap-4 mb-6">
           {statCards.map((s) => (
-            <MetricCard key={s.labelEn} label={lang === "th" ? s.labelTh : s.labelEn} value={s.value} sub={lang === "th" ? s.subTh : s.subEn} tone={s.tone} icon={s.icon} filled={s.icon === "star"} />
+            <MetricCard key={s.labelEn} label={lang === "th" ? s.labelTh : s.labelEn} value={s.value} sub={lang === "th" ? s.subTh : s.subEn} tone={s.tone} icon={s.icon} />
           ))}
         </div>
 
@@ -416,9 +416,9 @@ export default function ResultsPage() {
               />
               <button
                 onClick={() => { setFeedbackSent(true); setTimeout(() => setFeedbackSent(false), 3000); }}
-                className="w-full mt-3 py-2.5 rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-xs font-semibold transition-colors"
+                className="w-full mt-3 inline-flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-xs font-semibold transition-colors"
               >
-                {feedbackSent ? `✓ ${t("ส่งแล้ว!", "Sent!")}` : t("ส่ง Feedback", "Feedback Grading")}
+                {feedbackSent ? <><Icon name="check" size="sm" />{t("ส่งแล้ว!", "Sent!")}</> : t("ส่ง Feedback", "Feedback Grading")}
               </button>
             </div>
           </div>

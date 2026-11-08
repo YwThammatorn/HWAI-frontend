@@ -36,14 +36,13 @@ const TONE: Record<IconTileTone, string> = {
   cover: "text-white",
 };
 
-export default function IconTile({ icon, course, size = "sm", shape = "square", tone = "accent", filled, spin, className = "", style }: {
+export default function IconTile({ icon, course, size = "sm", shape = "square", tone = "accent", spin, className = "", style }: {
   icon?: IconName;
   /** a course's own icon (CourseIconKey) instead of a named glyph */
   course?: CourseIconKey;
   size?: IconTileSize;
   shape?: "square" | "round";
   tone?: IconTileTone;
-  filled?: boolean;
   spin?: boolean;
   className?: string;
   /** for tone="cover": `{ background: course.coverColor }` */
@@ -54,7 +53,7 @@ export default function IconTile({ icon, course, size = "sm", shape = "square", 
     <span aria-hidden="true" style={style} className={`inline-flex shrink-0 items-center justify-center ${b.box} ${shape === "round" ? "rounded-full" : b.radius} ${TONE[tone]} ${className}`}>
       {course !== undefined || !icon
         ? <CourseIcon iconKey={course} size={b.icon} />
-        : <Icon name={icon} size={b.icon} filled={filled} className={spin ? "animate-spin" : undefined} />}
+        : <Icon name={icon} size={b.icon} className={spin ? "animate-spin" : undefined} />}
     </span>
   );
 }

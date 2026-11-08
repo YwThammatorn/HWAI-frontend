@@ -356,7 +356,7 @@ export default function RubricCriteriaEditor({
             onClick={openAiAssistant}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[var(--accent)] text-xs text-[var(--accent)] hover:bg-[var(--accent-subtle)] transition-colors font-medium"
           >
-            <Icon name="star" size="sm" filled />
+            <Icon name="star" size="sm" />
             {t("AI ช่วยสร้างเกณฑ์", "AI Rubric Assistant")}
           </button>
           {courseId && (
@@ -497,7 +497,7 @@ export default function RubricCriteriaEditor({
                     {generating[c.id] ? (
                       <Icon name="spinner" size="sm" className="animate-spin" />
                     ) : (
-                      <Icon name="star" size="sm" filled />
+                      <Icon name="star" size="sm" />
                     )}
                     {t("สร้าง", "Generate")}
                   </button>

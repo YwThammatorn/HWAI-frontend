@@ -453,9 +453,9 @@ export default function RecheckPage() {
         <button
           onClick={handleSave}
           disabled={unmarked > 0}
-          className="flex-1 py-2.5 rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-xs font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[var(--accent-solid)]"
+          className="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-xs font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[var(--accent-solid)]"
         >
-          {saved ? `✓ ${t("บันทึกแล้ว!", "Saved!")}` : t("บันทึกการเปลี่ยนแปลง", "Save Changes")}
+          {saved ? <><Icon name="check" size="sm" />{t("บันทึกแล้ว!", "Saved!")}</> : t("บันทึกการเปลี่ยนแปลง", "Save Changes")}
         </button>
       </div>
     </div>

@@ -9,7 +9,7 @@ import type { ReactNode, SVGProps } from "react";
  * Use: <Icon name="check" size="sm" className="text-[var(--s-ok-text)]" />
  *   size   xs 12 (inside small chips and badges) · sm 14 (next to 14px text, table cells, row actions) · md 16 (default: buttons, sidebar) · lg 20 (stat cards, section headers) · xl 24 (empty states)
  *   colour comes from the text colour (currentColor) — set it with a token class, never a hex value
- *   `filled` fills the glyph with the same colour (a rating star, a play button)
+ *   always an outline — there is no filled variant (a star or a play button is drawn the same way as every other glyph; 9/11/2569)
  *   decorative by default (aria-hidden); pass `label` only for an icon that stands alone with no text next to it
  * A new glyph = add one entry below (24 × 24 grid, outline, no stroke or fill attributes on the shapes), then use it by name.
  * Rules and the reason for each: DESIGN.md "Icons". tests/design-rules.spec.ts fails on an inline <svg> outside the few art / logo files it lists.
@@ -174,22 +174,6 @@ const ICONS = {
   ),
   file: (
     <>
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-      <polyline points="14 2 14 8 20 8" />
-    </>
-  ),
-  "file-download": (
-    <>
-      <line x1="12" y1="18" x2="12" y2="12" />
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-      <polyline points="14 2 14 8 20 8" />
-      <polyline points="9 15 12 18 15 15" />
-    </>
-  ),
-  "file-plus": (
-    <>
-      <line x1="12" y1="18" x2="12" y2="12" />
-      <line x1="9" y1="15" x2="15" y2="15" />
       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
       <polyline points="14 2 14 8 20 8" />
     </>
@@ -481,24 +465,24 @@ export const ICON_NAMES = Object.keys(ICONS) as IconName[];
 type Props = Omit<SVGProps<SVGSVGElement>, "name" | "width" | "height" | "viewBox" | "fill" | "stroke" | "strokeWidth"> & {
   name: IconName;
   size?: IconSize;
-  filled?: boolean;
   /** Accessible name for an icon that is the only thing in its control or line. Leave out when text sits next to it. */
   label?: string;
 };
 
-export default function Icon({ name, size = "md", filled = false, label, className, ...rest }: Props) {
+export default function Icon({ name, size = "md", label, className, ...rest }: Props) {
   const px = ICON_SIZES[size];
   return (
     <svg
       width={px}
       height={px}
       viewBox="0 0 24 24"
-      fill={filled ? "currentColor" : "none"}
+      fill="none"
       stroke="currentColor"
       strokeWidth={ICON_STROKE}
       strokeLinecap="round"
       strokeLinejoin="round"
       focusable="false"
+      data-icon={name}
       aria-hidden={label ? undefined : true}
       role={label ? "img" : undefined}
       aria-label={label}

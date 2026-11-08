@@ -32,7 +32,7 @@ const readIcons = (page: Page) => page.evaluate(() =>
   [...document.querySelectorAll("svg[focusable='false']")].map((el) => {
     const r = el.getBoundingClientRect();
     const cs = getComputedStyle(el);
-    return { w: Math.round(r.width), h: Math.round(r.height), stroke: cs.strokeWidth, view: el.getAttribute("viewBox"), cap: cs.strokeLinecap, hidden: el.closest("[hidden]") !== null || cs.display === "none" };
+    return { w: Math.round(r.width), h: Math.round(r.height), stroke: cs.strokeWidth, view: el.getAttribute("viewBox"), cap: cs.strokeLinecap, fill: cs.fill, hidden: el.closest("[hidden]") !== null || cs.display === "none" };
   }).filter((i) => !i.hidden));
 
 async function check(page: Page, url: string, minIcons: number) {
@@ -44,6 +44,7 @@ async function check(page: Page, url: string, minIcons: number) {
     expect(i.view).toBe("0 0 24 24");
     expect(i.stroke).toBe("2px");
     expect(i.cap).toBe("round");
+    expect(i.fill, `${url}: an icon is always an outline (fill none)`).toBe("none");
     expect(i.w).toBe(i.h);
     expect(SIZES, `${url}: icon size ${i.w}px is not on the scale`).toContain(i.w);
   }

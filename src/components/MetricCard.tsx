@@ -8,7 +8,7 @@ import Icon, { type IconName } from "@/components/Icon";
  * tinted tile of fixed size, in a header row of fixed height, so every number lands on the same line and every icon has the same weight.
  *
  *   tone   ok · warn · info · accent · neutral · rating — picks the tile colours (and the number's colour for ok / warn / accent)
- *   icon   a name from components/Icon.tsx (a rating star is `filled`)
+ *   icon   a name from components/Icon.tsx — always an outline, in the tone's own text colour (the rating star too)
  */
 export type MetricTone = "ok" | "warn" | "info" | "accent" | "neutral" | "rating";
 
@@ -18,17 +18,16 @@ const TONES: Record<MetricTone, { tile: string; icon: string; value: string }> =
   info: { tile: "bg-[var(--s-info-bg)]", icon: "text-[var(--s-info-text)]", value: "text-[var(--text-primary)]" },
   accent: { tile: "bg-[var(--accent-subtle)]", icon: "text-[var(--accent)]", value: "text-[var(--accent)]" },
   neutral: { tile: "bg-[var(--bg-app)]", icon: "text-[var(--text-secondary)]", value: "text-[var(--text-primary)]" },
-  rating: { tile: "bg-[var(--s-warn-bg)]", icon: "text-[var(--rating-fill)]", value: "text-[var(--text-primary)]" },
+  rating: { tile: "bg-[var(--s-warn-bg)]", icon: "text-[var(--s-warn-text)]", value: "text-[var(--text-primary)]" },
 };
 
-export default function MetricCard({ label, value, sub, icon, tone, filled }: {
+export default function MetricCard({ label, value, sub, icon, tone }: {
   label: string;
   value: string | number;
   /** The unit / context beside the number, e.g. "completed", "of 10 · Max 9 · Min 4". */
   sub: string;
   icon: IconName;
   tone: MetricTone;
-  filled?: boolean;
 }) {
   const c = TONES[tone];
   return (
@@ -36,7 +35,7 @@ export default function MetricCard({ label, value, sub, icon, tone, filled }: {
       <div className="mb-3 flex h-8 items-center justify-between gap-3">
         <p className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">{label}</p>
         <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${c.tile}`}>
-          <Icon name={icon} size="sm" filled={filled} className={c.icon} />
+          <Icon name={icon} size="sm" className={c.icon} />
         </span>
       </div>
       <p className={`text-2xl font-bold ${c.value}`}>

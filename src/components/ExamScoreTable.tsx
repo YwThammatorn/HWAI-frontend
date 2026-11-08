@@ -5,7 +5,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import type { Student } from "@/lib/students";
 import SearchInput from "@/components/SearchInput";
 import ImportExamScoresModal from "@/components/ImportExamScoresModal";
-
+
 import Icon from "@/components/Icon";
 /**
  * Score entry for an Exam (25/9/2569). Students never submit an exam, so there are no submissions to
@@ -92,7 +92,7 @@ export default function ExamScoreTable({ students, titleOf, scores, maxPoints, e
               onClick={() => setImportOpen(true)}
               className="inline-flex h-9 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] px-4 text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
             >
-              <Icon name="file-plus" />
+              <Icon name="download" />
               {t("นำเข้าด้วย CSV", "Import CSV")}
             </button>
             <button

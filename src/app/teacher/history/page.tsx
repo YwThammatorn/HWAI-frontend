@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
+import IconButton from "@/components/IconButton";
 import { TEACHER_HISTORY_DISABLED } from "@/lib/featureFlags";
 import SearchInput from "@/components/SearchInput";
 
@@ -88,12 +89,6 @@ function IconBolt() {
 function IconCheck() {
   return (
     <Icon name="check-square" />
-  );
-}
-
-function IconDownload() {
-  return (
-    <Icon name="download" />
   );
 }
 
@@ -204,7 +199,7 @@ export default function HistoryPage() {
               <span className="text-2xl font-bold text-[var(--text-primary)] tabular-nums">{totalCreditsUsed.toLocaleString()}</span>
               <span className="text-sm text-[var(--text-muted)] mb-1">/ {TOTAL_CREDIT_LIMIT.toLocaleString()}</span>
             </div>
-            <p className="text-xs text-[var(--accent)] mt-2 font-medium">↑ {usedPct}% {t("ของ credit ทั้งหมดที่ใช้ไป", "of total limit used")}</p>
+            <p className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-[var(--accent)]"><Icon name="trending-up" size="sm" />{usedPct}% {t("ของ credit ทั้งหมดที่ใช้ไป", "of total limit used")}</p>
           </div>
 
           {/* Assignments Graded */}
@@ -268,13 +263,7 @@ export default function HistoryPage() {
               </select>
 
               {/* Export */}
-              <button
-                onClick={() => exportCSV(filtered)}
-                title="Export CSV"
-                className="p-2 rounded-xl border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border)] hover:bg-[var(--bg-subtle)] transition-colors"
-              >
-                <IconDownload />
-              </button>
+              <IconButton icon="upload" label={t("ส่งออก CSV", "Export CSV")} onClick={() => exportCSV(filtered)} />
             </div>
           </div>
 

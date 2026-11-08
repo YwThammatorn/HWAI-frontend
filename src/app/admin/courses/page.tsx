@@ -13,7 +13,7 @@ import SearchInput from "@/components/SearchInput";
 import FilterSelect from "@/components/FilterSelect";
 import { groupCourses, curriculumKeyOf, NO_CURRICULUM_KEY, type SubjectGroup, type CurriculumGroup } from "@/lib/courseGroups";
 import { useStudents } from "@/lib/students";
-
+
 import Icon from "@/components/Icon";
 import IconButton from "@/components/IconButton";
 import Avatar from "@/components/Avatar";
@@ -357,7 +357,7 @@ function CourseModal({
                       )}
                       {shared && <span className="flex-1 min-w-0 text-xs text-[var(--text-muted)] truncate">{teacherQuery.trim() || t("ใช้อาจารย์ด้านบน", "Uses the teacher above")}</span>}
                       {rows.length > 1 && (
-                        <IconButton icon="x" label={t(`ลบ section แถวที่ ${i + 1}`, `Remove section row ${i + 1}`)} tone="danger" onClick={() => removeRow(r.key)} />
+                        <IconButton icon="trash" label={t(`ลบ section แถวที่ ${i + 1}`, `Remove section row ${i + 1}`)} tone="danger" onClick={() => removeRow(r.key)} />
                       )}
                     </div>
                     {showErr && <p role="alert" className="text-[11px] text-[var(--s-err-text)] pl-1">{err}</p>}

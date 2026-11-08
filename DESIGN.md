@@ -298,7 +298,7 @@ One component draws every icon: `components/Icon.tsx`. A page never contains an 
 | Stroke | **2**, always — never passed in, never overridden | 355 inline icons used five widths (1.5 / 1.8 / 2 / 2.5 / 3) so no two screens drew the same glyph the same way |
 | Size | `xs` 12 · `sm` 14 · `md` 16 (default) · `lg` 20 · `xl` 24 — a token, never a number | eight different pixel sizes were in use |
 | Colour | `currentColor`: set the text colour with a token class (`text-[var(--accent)]`) | no hex in an icon; the icon follows the theme |
-| Fill | `filled` fills the glyph with the same colour (rating star, play) | the only exception to "outline" |
+| Fill | none — **an icon is always an outline**; there is no `filled` prop (a rating star and a play button are drawn like every other glyph) | one visual language: a solid star next to outline icons in the same row of cards read as a different set (9/11/2569) |
 | Accessibility | decorative (`aria-hidden`) by default; pass `label="…"` only when the icon stands alone | the text next to an icon names it |
 
 **Which size where:** `xs` inside a small chip or badge (10–12px text) · `sm` next to 14px text, in table cells and row actions, sidebar sub-items · `md` in buttons, form fields, top-level sidebar items · `lg` in stat cards and section headers · `xl` in empty states.
@@ -316,6 +316,32 @@ One component draws every icon: `components/Icon.tsx`. A page never contains an 
 | `<EmptyState icon="…">` | the empty panel; its icon is an `IconTile lg accent`. Empty states inside a card use the same tile | |
 | `<Pagination>` | page arrows + numbers (… for long lists); the only pagination | |
 | `<BrandLogo>` / `<CourseIcon>` | the HWAI mark; a course's icon (a glyph of the set) | |
+
+**Which icon means what** (9/11/2569). The glyph set is uniform; what drifted was its use (a bin on one screen and a cross on another for "delete", a red Cancel, two icons for "export"). One meaning, one icon, everywhere — `tests/design-rules.spec.ts` checks the ones a machine can see.
+
+| Meaning | Icon | Rule |
+|---|---|---|
+| Delete, or remove a record, file or row you added | `trash` | `<IconButton tone="danger">` — the only red icon button |
+| Close, cancel, dismiss, clear a chip | `x` | neutral, **never** `tone="danger"` (the Modal close, Cancel on an inline edit, "remove from comparison") |
+| Export (CSV, results, a rubric) — data leaves the app | `upload` (the arrow out of the tray) | the Windows / Microsoft Import / Export pair; picked by the user 9/11/2569 |
+| Import (CSV, Excel, a rubric) — data comes into the app; also "fill this form from …" | `download` (the arrow into the tray) | import buttons and the drop area of an import popup |
+| A template file, a file | `file-text` | the "Download Template" row — the tray arrow would repeat the Import arrow right above it |
+| A cover image · attached / submitted files | `image` · `paperclip` | words say "upload", but these are not Import / Export, so they never use the tray arrows |
+| An assignment, a piece of work | `file-text` | `document-list` is a description or a list of items (a rubric, the Description header), not an assignment |
+| Grading, to-do check | `check-square` | |
+| Done, saved, sent, OK | `check` (`check-circle` on a status card) | never the character ✓ — `<Icon name="check" size="sm" />` before the word |
+| Trend up, "used" | `trending-up` | never ↗ or ↑ |
+| A teal glyph | `text-[var(--accent)]` | never `--accent-bright` (2.79:1 as a glyph) |
+| An empty or drop area | `<IconTile icon=… size="lg" tone="accent" />` or `<EmptyState>` | never a bare `xl` `<Icon>` with `mx-auto` |
+| A symbol or emoji as an icon (✓ ✕ ↑ ↗ ▲ ▼ ★ 👋) | not used | an arrow inside a sentence (A → B) is punctuation and stays |
+
+| You wrote | Write instead |
+|---|---|
+| `<IconButton icon="x" tone="danger">` to delete | `icon="trash"` (a cross is only close / cancel, and neutral) |
+| `<Icon name="file-plus">`, or `upload` on an import button | `<Icon name="download">` (Import = arrow INTO the tray); Export = `upload`; a template = `file-text` |
+| `✓ Saved!` in a string | `<Icon name="check" size="sm" />` + the word, inside an `inline-flex items-center gap-1.5` button |
+| `<Icon … className="text-[var(--accent-bright)]">` | `text-[var(--accent)]` |
+| `<Icon name="file" size="xl" className="mx-auto mb-3 …">` in a drop area | `<div className="mb-3 flex justify-center"><IconTile icon="upload" size="lg" tone="accent" /></div>` |
 
 **A glyph that is missing:** add one entry to `ICONS` in `Icon.tsx` (24-grid outline shapes only — no stroke or fill attributes on the shapes), then use it by name. Do not paste an SVG into a page. The names are typed, so a typo fails `tsc`.
 
@@ -348,7 +374,6 @@ Every colour in a component is a token from `globals.css` (`var(--…)`). That i
 | teal tint | `--accent-subtle` |
 | the bright logo teal `#2DD4BF` | `--brand-bright` (logo tile, avatar fill, accent words on the dark brand panel); text on it: `--brand-ink` |
 | a 5-step good→bad scale (rubric levels, password strength) | `--level-1` … `--level-5` |
-| a filled rating star | `--rating-fill` |
 | a person's avatar hue | `--cat-1` … `--cat-8` |
 
 ## 9e. Rubric — four forms, one level cell (8/11/2569)

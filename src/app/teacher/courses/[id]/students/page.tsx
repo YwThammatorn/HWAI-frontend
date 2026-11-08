@@ -133,7 +133,7 @@ export default function StudentsRosterPage() {
               onClick={() => setImportOpen(true)}
               className="inline-flex items-center gap-2 px-4 py-2.5 border border-[var(--border)] bg-[var(--bg-surface)] hover:bg-[var(--bg-subtle)] text-[var(--text-secondary)] text-sm font-medium rounded-xl transition-colors"
             >
-              <Icon name="file-plus" />
+              <Icon name="download" />
               {t("นำเข้าจาก Excel", "Import Excel")}
             </button>
             <button

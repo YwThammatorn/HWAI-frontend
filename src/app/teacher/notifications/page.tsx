@@ -11,7 +11,7 @@ import {
 } from "@/lib/notifications";
 import { useLanguage } from "@/context/LanguageContext";
 import { NOTIFICATIONS_DISABLED } from "@/lib/featureFlags";
-
+
 import Icon from "@/components/Icon";
 import IconTile, { type IconTileTone } from "@/components/IconTile";
 import type { IconName } from "@/components/Icon";
@@ -19,7 +19,7 @@ import type { IconName } from "@/components/Icon";
 
 const ICON_CONFIG: Record<Notif["type"], { icon: IconName; tone: IconTileTone }> = {
   ai_grading_complete: { icon: "check", tone: "accent" },
-  late_submission: { icon: "file-plus", tone: "info" },
+  late_submission: { icon: "clock", tone: "info" },
   ta_invitation: { icon: "message-square", tone: "ta" },
   plagiarism_alert: { icon: "alert-triangle", tone: "warn" },
   joining_approved: { icon: "check", tone: "accent" },

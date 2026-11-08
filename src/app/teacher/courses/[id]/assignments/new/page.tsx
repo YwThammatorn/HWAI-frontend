@@ -10,7 +10,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { AttachmentsEditor, useAttachmentsDraft } from "@/components/AssignmentAttachments";
 import { useCLOs } from "@/lib/clo";
 import RubricCriteriaEditor, { CriterionDraft, newCriterionDraft, criteriaPointsOk, levelsUniform, criteriaTotalPoints, finalizeCriteria } from "@/components/RubricCriteriaEditor";
-
+
 import Icon from "@/components/Icon";
 import IconButton from "@/components/IconButton";
 export default function NewAssignmentPage() {
@@ -191,7 +191,7 @@ export default function NewAssignmentPage() {
 
           {/* Submission Settings */}
           <section className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-subtle)] shadow-sm p-6">
-            <SectionHeader icon="upload" label={t("การรับและรูปแบบงาน", "Submission Settings")} />
+            <SectionHeader icon="files" label={t("การรับและรูปแบบงาน", "Submission Settings")} />
 
             <div className="flex items-center justify-between mb-4">
               <div>
@@ -370,7 +370,7 @@ export default function NewAssignmentPage() {
           {!needsManualScore && (
             <section className="mt-8" aria-labelledby="rubric-heading">
               <div className="flex items-center gap-2 mb-1.5">
-                <Icon name="check-square" size="sm" className="text-[var(--accent-bright)]" />
+                <Icon name="check-square" size="sm" className="text-[var(--accent)]" />
                 <h2 id="rubric-heading" className="text-base font-semibold text-[var(--text-primary)]">{t("เกณฑ์การให้คะแนน (Rubric)", "Grading Rubric")}</h2>
               </div>
               <p className="text-sm text-[var(--text-secondary)] mb-5">
@@ -421,19 +421,19 @@ export default function NewAssignmentPage() {
   );
 }
 
-function SectionHeader({ icon, label }: { icon: "info" | "doc" | "cal" | "upload"; label: string }) {
+function SectionHeader({ icon, label }: { icon: "info" | "doc" | "cal" | "files"; label: string }) {
   const icons: Record<string, React.ReactNode> = {
     info: (
-      <Icon name="alert-circle" size="sm" className="text-[var(--accent-bright)]" />
+      <Icon name="alert-circle" size="sm" className="text-[var(--accent)]" />
     ),
     doc: (
-      <Icon name="document-list" size="sm" className="text-[var(--accent-bright)]" />
+      <Icon name="document-list" size="sm" className="text-[var(--accent)]" />
     ),
     cal: (
-      <Icon name="calendar" size="sm" className="text-[var(--accent-bright)]" />
+      <Icon name="calendar" size="sm" className="text-[var(--accent)]" />
     ),
-    upload: (
-      <Icon name="upload" size="sm" className="text-[var(--accent-bright)]" />
+    files: (
+      <Icon name="paperclip" size="sm" className="text-[var(--accent)]" />
     ),
   };
   return (

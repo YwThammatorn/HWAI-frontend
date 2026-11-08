@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import { AssignmentAttachment } from "@/lib/assignments";
 import { storeFile, resolveFileUrl, removeFile, FileTooLargeError } from "@/lib/fileStorage";
-
+
 import Icon, { type IconName } from "@/components/Icon";
 import IconTile from "@/components/IconTile";
 import IconButton from "@/components/IconButton";
@@ -135,7 +135,7 @@ function AttachmentChip({ a, onRemove, removeLabel }: { a: AssignmentAttachment;
         </span>
       </button>
       {onRemove && (
-        <IconButton icon="x" label={removeLabel ?? "Remove"} tone="danger" onClick={onRemove} />
+        <IconButton icon="trash" label={removeLabel ?? "Remove"} tone="danger" onClick={onRemove} />
       )}
     </li>
   );

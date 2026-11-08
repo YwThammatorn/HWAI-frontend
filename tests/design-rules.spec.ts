@@ -227,6 +227,71 @@ test.describe("Design rules (DESIGN.md)", () => {
     expect(bad, "Use levelTone(i, total).dot from lib/rubricLevels.ts for a level's colour").toEqual([]);
   });
 
+  // 9/11/2569 — one meaning, one icon (DESIGN.md §9c "Which icon means what"). The glyph set was already uniform; what drifted was its use:
+  // delete drawn as a bin on some screens and a cross on others, a red Cancel, a pale teal glyph that fails contrast, ✓ and 👋 typed as text.
+  test("a teal icon is --accent: --accent-bright is a fill, never a glyph on a light surface (2.79:1, DESIGN.md §3)", () => {
+    const bad = FILES.filter((f) => !PIECES.has(f.rel)).flatMap((f) => [...noArrows(code(f.text)).matchAll(/<Icon\b[^>]*accent-bright[^>]*>/g)].map((m) => `${f.rel}: ${m[0].slice(0, 90)}`));
+    expect(bad, "Use text-[var(--accent)] on the icon").toEqual([]);
+  });
+
+  test("no symbol or emoji character stands in for an icon (✓ ✕ ↑ ↗ ▲ ▼ ★ 👋 …) — use <Icon name=…>; arrows inside a sentence (A → B) are punctuation and stay", () => {
+    const symbol = /[↑↓↖-↙▲▼★☆☐-☒✓-✘⭐\u{1F300}-\u{1FAFF}]/u;
+    const bad: string[] = [];
+    for (const f of FILES) {
+      code(f.text).split("\n").forEach((line, i) => { const m = line.match(symbol); if (m) bad.push(`${f.rel}:${i + 1} ${m[0]}`); });
+    }
+    expect(bad, "A done mark is <Icon name=\"check\">, a trend is <Icon name=\"trending-up\">, a sort arrow is the SortableTh icon").toEqual([]);
+  });
+
+  test("delete is a bin and is red; close / cancel is a cross and is never red — the two meanings do not swap", () => {
+    const bad: string[] = [];
+    for (const f of FILES) {
+      for (const m of noArrows(code(f.text)).matchAll(/<IconButton\b[^>]*>/g)) {
+        const tag = m[0];
+        const icon = tag.match(/\bicon="([\w-]+)"/)?.[1];
+        const danger = /\btone="danger"/.test(tag);
+        if (icon === "x" && danger) bad.push(`${f.rel}: a red cross — a cross closes or cancels (neutral); deleting is icon="trash"`);
+        if (icon === "trash" && !danger) bad.push(`${f.rel}: a bin that is not tone="danger"`);
+      }
+    }
+    expect(bad).toEqual([]);
+  });
+
+  test("an empty or drop area draws its icon in an <IconTile>, not a bare xl <Icon> with mx-auto", () => {
+    const bad = FILES.filter((f) => !PIECES.has(f.rel)).filter((f) => /<Icon\b[^>]*size="xl"[^>]*mx-auto/.test(noArrows(code(f.text)))).map((f) => f.rel);
+    expect(bad, "Use <IconTile icon=… size=\"lg\" tone=\"accent\" /> (or <EmptyState>)").toEqual([]);
+  });
+
+  test("an export or template download is the download icon, an import is upload — the file-plus / file-download glyphs are gone", () => {
+    const icon = FILES.find((f) => f.rel === "components/Icon.tsx")!.text;
+    expect(icon).not.toMatch(/"file-plus"|"file-download"/);
+  });
+
+  test("import and export arrows point the way the data goes: Import = download (into the tray), Export = upload (out of the tray)", () => {
+    // 9/11/2569 — the tray glyphs follow the Windows / Microsoft Import / Export pair: data coming IN is the arrow into the tray, data going OUT is the arrow out of it.
+    // A screen that means "pick a file" or "attach files" uses image / paperclip, never one of these two. Checked by the words around the icon.
+    const out = /Export|ส่งออก/, into = /Import|นำเข้า|Fill from|ดึงจาก|Drag|ลากไฟล์/;
+    const bad: string[] = [];
+    for (const f of FILES) {
+      const t = noArrows(code(f.text));
+      for (const m of t.matchAll(/<(?:Icon name|IconTile icon|IconButton icon)="(upload|download)"/g)) {
+        const around = t.slice(Math.max(0, m.index! - 250), m.index! + 250);
+        if (m[1] === "upload" && !out.test(around)) bad.push(`${f.rel}: upload arrow with no "Export" beside it`);
+        if (m[1] === "download" && !into.test(around)) bad.push(`${f.rel}: download arrow with no "Import" / drop-area words beside it`);
+      }
+    }
+    expect(bad, "Import = download, Export = upload; a template or a file is file-text, a cover is image, attached files are paperclip").toEqual([]);
+  });
+
+  test("an icon is always an outline: there is no `filled` prop and no --rating-fill token (a solid star beside outline icons read as another set)", () => {
+    const icon = FILES.find((f) => f.rel === "components/Icon.tsx")!.text;
+    expect(icon).not.toMatch(/\bfilled\??:/);
+    const bad = FILES.filter((f) => /<(?:Icon|IconTile|IconButton|MetricCard)\b[^>]*\sfilled\b/.test(noArrows(code(f.text)))).map((f) => f.rel);
+    expect(bad, "Draw the glyph as an outline like every other icon").toEqual([]);
+    const css = fs.readFileSync(path.join(SRC, "app", "globals.css"), "utf8");
+    expect(css).not.toContain("--rating-fill");
+  });
+
   test("the old bright teal is a token now (--brand-bright), defined once in :root (it is the same in both themes)", () => {
     const css = fs.readFileSync(path.join(SRC, "app", "globals.css"), "utf8");
     expect((css.match(/--brand-bright:/g) ?? []).length).toBe(1);

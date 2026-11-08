@@ -288,7 +288,7 @@ function GradingAssignmentModal({
                     {weekNumbers.map((n) => (
                       <span key={n} className="inline-flex items-center gap-1 pl-2.5 pr-1.5 py-1 rounded-full bg-[var(--accent-bright)]/10 text-[var(--accent)] text-xs font-semibold">
                         {t(`สัปดาห์ ${n}`, `Week ${n}`)}
-                        <IconButton icon="x" label={t("ลบ", "Remove")} onClick={() => removeWeek(n)} />
+                        <IconButton icon="trash" label={t("ลบ", "Remove")} tone="danger" onClick={() => removeWeek(n)} />
                       </span>
                     ))}
                   </div>

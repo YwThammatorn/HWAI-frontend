@@ -162,7 +162,7 @@ export default function CourseGradingPage() {
   const statCards = [
     {
       label: t("งานทั้งหมด", "Total Assignments"), value: totalAssignments,
-      tone: "info" as const, icon: "document-list" as const,
+      tone: "info" as const, icon: "file-text" as const,
     },
     {
       label: t("ให้คะแนนแล้ว", "Graded"), value: gradedAssignments,
@@ -346,7 +346,7 @@ export default function CourseGradingPage() {
                               href={gradingHref(a)}
                               className="px-3 h-9 inline-flex items-center gap-1.5 rounded-xl bg-[var(--accent-solid)] text-sm font-semibold text-[var(--accent-solid-text)] hover:bg-[var(--accent-solid-hover)] active:scale-[.97] transition-colors"
                             >
-                              <Icon name="play" filled />
+                              <Icon name="play" />
                               {t("เริ่มตรวจงาน", "Start Grading")}
                             </Link>
                             {!a.isExam && (
