@@ -9,6 +9,7 @@
 - Refactor & cleanup workflow → `.claude/rules/refactor-protocol.md`
 - Testing (เขียน test เมื่อไหร่ + hook ที่รัน test เอง) → `.claude/rules/testing.md`
 - **UI design (ทุกครั้งที่แตะ UI — เพิ่มหน้า/คอมโพเนนต์/แก้เล็กๆ)** → `.claude/rules/ui-design.md` + `DESIGN.md` §9c Icons, §9d Colour, §13 checklist — ไอคอนต้องมาจาก `<Icon>` เท่านั้น, สีต้องเป็น token เท่านั้น (ไม่มี gray/palette class, ไม่มี hex), เช็คทั้ง light/dark; `tests/design-rules.spec.ts` ล้มถ้าฝ่าฝืน
+- **เพิ่มอะไรใหม่ใน UI (หน้า/การ์ด/ปุ่ม/ไอคอน/สถานะ) — ต้องไม่หลุดดีไซน์** → ใช้ชิ้นส่วนที่มีอยู่ก่อน (อย่าคัดลอก markup), ไอคอนเลือกตามตาราง "Which icon means what" (DESIGN.md §9c) เป็นเส้นโครงเสมอ, ของใหม่ที่ยังไม่มีในดีไซน์ต้องเขียนลง DESIGN.md (+ token ทั้งสองธีม) ก่อนใช้, หน้าที่เหมือนกันต้องหน้าตาเหมือนกัน, เสร็จแล้วรัน rules spec + ดูที่ความกว้างจริง + แสดง before/after, และทุกกฎใหม่ต้องมี guard ใน tests/design-rules.spec.ts — รายละเอียดใน `.claude/rules/ui-design.md` หัวข้อ "When you ADD something new"
 
 ## หลักการหลัก (ย่อ)
 - ก่อนเริ่ม task ที่กระทบวงกว้าง (refactor, migration, เปลี่ยน architecture) → เปิด Plan Mode เสมอ

@@ -431,7 +431,8 @@ Unchanged from the existing stack — no new font introduced.
 
 ## 13. Before you ship UI — the checklist (every UI change, new page or small tweak)
 
-1. **Icons** from `<Icon>` only, a size token, colour from a token class. Missing glyph → add it to `Icon.tsx`.
+0. **Adding something new?** Look for the piece that already does the job and use it; a new card / tile / tone / button style / colour is written into this file first (and the token into `globals.css`, both themes). The same fact on two screens looks identical. Full routine: `.claude/rules/ui-design.md` → "When you ADD something new".
+1. **Icons** from `<Icon>` only, a size token, colour from a token class, **always an outline**, glyph chosen from "Which icon means what" (§9c) — never a ✓ ↑ ↗ • or emoji. Missing glyph → add it to `Icon.tsx`.
 2. **Colours** from tokens only (§9d). No gray / palette class, no hex. Missing colour → add a token in both themes first.
 3. **Look at both themes** (light and dark) and at the teal chrome — a screen that only works in one is not done.
 4. **Contrast**: text on a tint uses that tint's `-text` pair; teal as text is `--accent`, never `--accent-bright` (§3).
