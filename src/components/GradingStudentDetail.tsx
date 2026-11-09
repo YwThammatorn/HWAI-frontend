@@ -26,7 +26,7 @@ import { Thumb } from "@/components/SubmissionViewer";
  * grading this assignment). Nothing here is hover-only.
  */
 export default function GradingStudentDetail({
-  row, assignment, rubric, aiGraded, gradeLocked, reviewHref, regrading, onRegrade, classAvgPct, position, onPrev, onNext, onBack,
+  row, assignment, rubric, aiGraded, gradeLocked, reviewHref, regrading, onRegrade, canReGrade = true, classAvgPct, position, onPrev, onNext, onBack,
 }: {
   row: SubmissionRow;
   assignment: Assignment;
@@ -38,6 +38,8 @@ export default function GradingStudentDetail({
   reviewHref: string;
   regrading: boolean;
   onRegrade: () => void;
+  /** false for a TA: the AI is the teacher's */
+  canReGrade?: boolean;
   /** class average per criterion (0–100, from lib/gradingInsights) */
   classAvgPct: Record<string, number>;
   /** "3 of 30" for the arrows, null when the row is not in the shown list */
@@ -70,10 +72,20 @@ export default function GradingStudentDetail({
 
   return (
     <div data-testid="grading-detail" className="flex flex-col gap-6 p-5">
-      <button type="button" onClick={onBack} data-testid="detail-back" className="-mb-2 -ml-2 inline-flex h-8 w-fit items-center gap-1.5 rounded-lg px-2 text-sm font-medium text-[var(--accent)] hover:bg-[var(--accent-subtle)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]">
-        <Icon name="arrow-left" />
-        {t("ภาพรวมของห้อง", "Class overview")}
-      </button>
+      {/* The way back on the left, the way along the list on the right — one row */}
+      <div className="-mb-2 flex items-center justify-between gap-3">
+        <button type="button" onClick={onBack} data-testid="detail-back" className="-ml-2 inline-flex h-8 items-center gap-1.5 rounded-lg px-2 text-sm font-medium text-[var(--accent)] hover:bg-[var(--accent-subtle)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]">
+          <Icon name="arrow-left" />
+          {t("ภาพรวมของห้อง", "Class overview")}
+        </button>
+        {position && (
+          <span className="flex items-center gap-0.5">
+            <IconButton icon="chevron-left" label={t("คนก่อนหน้า", "Previous")} onClick={onPrev} disabled={!onPrev} />
+            <span className="min-w-14 text-center text-sm tabular-nums text-[var(--text-secondary)]">{position.index + 1} / {position.total}</span>
+            <IconButton icon="chevron-right" label={t("คนถัดไป", "Next")} onClick={onNext} disabled={!onNext} />
+          </span>
+        )}
+      </div>
 
       {/* Who, and what to do with it */}
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -85,14 +97,7 @@ export default function GradingStudentDetail({
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {position && (
-            <span className="flex items-center gap-0.5">
-              <IconButton icon="chevron-left" label={t("คนก่อนหน้า", "Previous")} onClick={onPrev} disabled={!onPrev} />
-              <span className="min-w-12 text-center text-xs tabular-nums text-[var(--text-muted)]">{position.index + 1} / {position.total}</span>
-              <IconButton icon="chevron-right" label={t("คนถัดไป", "Next")} onClick={onNext} disabled={!onNext} />
-            </span>
-          )}
-          {aiGraded && (
+          {aiGraded && canReGrade && (
             <button
               type="button"
               onClick={onRegrade}

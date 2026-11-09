@@ -52,7 +52,7 @@ const ROSTER = ["64070701", "64070702", "64070703", "64070704"].map((studentId, 
   cohort: "CE64", sequenceNumber: i + 1, enrollmentStatus: "enrolled",
 }));
 
-async function seed(page: Page, opts: { lang?: "en" | "th"; empty?: boolean; submissions?: unknown[] } = {}) {
+async function seed(page: Page, opts: { lang?: "en" | "th"; empty?: boolean; submissions?: unknown[]; assignments?: unknown[] } = {}) {
   await page.addInitScript((d) => {
     // addInitScript re-runs on every navigation — seed once so in-test changes survive
     if (sessionStorage.getItem("gs_seeded")) return;
@@ -66,10 +66,10 @@ async function seed(page: Page, opts: { lang?: "en" | "th"; empty?: boolean; sub
     localStorage.setItem("hwai_assignments_v1", JSON.stringify(d.empty ? [] : d.assignments));
     localStorage.setItem("hwai_rubrics_v1", JSON.stringify(d.empty ? [] : d.rubrics));
     localStorage.setItem("hwai_submissions_v1", JSON.stringify(d.empty ? [] : d.submissions));
-  }, { lang: opts.lang ?? "en", empty: !!opts.empty, course: COURSE, teacher: TEACHER, category: CATEGORY, assignments: ASSIGNMENTS, rubrics: RUBRICS, submissions: opts.submissions ?? SUBMISSIONS, roster: ROSTER });
+  }, { lang: opts.lang ?? "en", empty: !!opts.empty, course: COURSE, teacher: TEACHER, category: CATEGORY, assignments: opts.assignments ?? ASSIGNMENTS, rubrics: RUBRICS, submissions: opts.submissions ?? SUBMISSIONS, roster: ROSTER });
 }
 
-async function open(page: Page, url: string, opts: { lang?: "en" | "th"; empty?: boolean; submissions?: unknown[] } = {}) {
+async function open(page: Page, url: string, opts: { lang?: "en" | "th"; empty?: boolean; submissions?: unknown[]; assignments?: unknown[] } = {}) {
   await seed(page, opts);
   await page.goto(`${BASE}/teacher/courses/c-gs${url}`);
   await page.waitForLoadState("networkidle");
@@ -428,6 +428,14 @@ test.describe("Per-assignment grading page: a summary strip, the list on the lef
     await expect(rows(page)).toHaveCount(3);
   });
 
+  test("the filter and sort selects fill their own box, so the chevron sits inside it (a fixed-width wrapper left the arrow outside)", async ({ page }) => {
+    await open(page, "/assignments/a-review/grading");
+    const sizes = await page.locator("main section[aria-label='Students'] select").evaluateAll((els) =>
+      els.map((e) => ({ select: Math.round(e.getBoundingClientRect().width), box: Math.round(e.parentElement!.getBoundingClientRect().width) })));
+    expect(sizes).toHaveLength(2);
+    for (const s of sizes) expect(s.select).toBe(s.box);
+  });
+
   test("sorting: attention first by default, then by name or by score either way", async ({ page }) => {
     await open(page, "/assignments/a-done/grading", { submissions: WITH_MARKS });
     const sort = page.getByRole("combobox", { name: "Sort" });
@@ -544,6 +552,28 @@ test.describe("Per-assignment grading page: a summary strip, the list on the lef
     await expect(page.getByRole("button", { name: /Re-grade/ })).toHaveCount(0);
     await rows(page).first().click();
     await expect(page.getByTestId("detail-regrade")).toBeEnabled();
+  });
+
+  test("Calibrate AI is one click away: a button in the header and a card in the class overview, both to the Calibration page of THIS assignment", async ({ page }) => {
+    await open(page, "/assignments/a-done/grading");              // has a rubric and files, graded with the AI
+    const href = "/teacher/courses/c-gs/calibration?assignment=a-done";
+    await expect(page.getByTestId("calibrate-ai")).toHaveAttribute("href", href);
+    await expect(page.getByTestId("calibrate-card").getByRole("link", { name: "Calibrate AI" })).toHaveAttribute("href", href);
+  });
+
+  test("graded by hand: Calibrate AI is still there but greyed, and the class overview says why and where to change it", async ({ page }) => {
+    const manual = ASSIGNMENTS.map((a) => (a.id === "a-done" ? { ...a, gradingFinalized: false, gradingMode: "manual" } : a));
+    await open(page, "/assignments/a-done/grading", { assignments: manual });
+    await expect(page.getByTestId("calibrate-ai")).toHaveCount(0);                        // no link: nothing of the AI's to compare
+    await expect(page.getByTestId("calibrate-ai-off")).toBeVisible();
+    await expect(page.getByTestId("calibrate-why")).toContainText("graded by hand");
+    await expect(page.getByTestId("calibrate-why").getByRole("link", { name: "Change it on the Grading list" })).toHaveAttribute("href", "/teacher/courses/c-gs/grading");
+  });
+
+  test("Calibrate AI is not shown where it does not apply at all: an exam, no files, or an assignment with no rubric", async ({ page }) => {
+    await open(page, "/assignments/a-review/grading");                     // no rubric
+    await expect(page.getByTestId("calibrate-ai")).toHaveCount(0);
+    await expect(page.getByTestId("calibrate-card")).toHaveCount(0);
   });
 
   test("Grade next opens the first piece of work that is not graded yet, with how many are left", async ({ page }) => {

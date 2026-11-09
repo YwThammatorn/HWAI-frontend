@@ -31,7 +31,7 @@ export const FILTER_KEYS: StatusFilter[] = ["all", "need_review", "not_graded", 
  */
 export default function GradingWorkspace({
   rows, assignment, rubric, courseId, assignmentId, aiGraded, gradeLocked, statusFilter, onStatusFilter, selectedSubId, onSelect, onRegradeRow,
-  insights, gradedSubs, clos, finalized, editHref, unit, isGroup,
+  insights, gradedSubs, clos, finalized, editHref, unit, isGroup, calibrate, canReGrade = true,
 }: {
   rows: SubmissionRow[];
   assignment: Assignment;
@@ -50,9 +50,13 @@ export default function GradingWorkspace({
   gradedSubs: Submission[];
   clos: CLO[];
   finalized: boolean;
-  editHref: string;
+  editHref?: string;
   unit: "student" | "team";
   isGroup: boolean;
+  /** Re-grade (the AI again) is offered in the detail — false for a TA */
+  canReGrade?: boolean;
+  /** Calibration for this assignment (absent where it does not apply: an exam, no files, no rubric). `blocked` = graded by hand, so there is nothing of the AI's to compare. */
+  calibrate?: { href: string; blocked: boolean; canChangeMode: boolean; gradingListHref: string };
 }) {
   const { t } = useLanguage();
   const [search, setSearch] = useState("");
@@ -87,7 +91,7 @@ export default function GradingWorkspace({
   async function regrade(row: SubmissionRow) {
     setRegrading((p) => ({ ...p, [row.key]: true }));
     await new Promise((r) => setTimeout(r, 1500));
-    onRegradeRow(row);     // the AI's answer for the same work is the same every time, so a re-grade only changes when the rubric or its correction did
+    onRegradeRow(row);     // the AI's answer for the same work is the same every time, so a re-grade only changes when the rubric did
     setRegrading((p) => ({ ...p, [row.key]: false }));
   }
 
@@ -266,6 +270,7 @@ export default function GradingWorkspace({
             reviewHref={`/teacher/courses/${courseId}/assignments/${assignmentId}/recheck?sub=${selected.subs[0].id}`}
             regrading={!!regrading[selected.key]}
             onRegrade={() => regrade(selected)}
+            canReGrade={canReGrade}
             classAvgPct={Object.fromEntries(insights.weakCriteria.map((c) => [c.criterionId, c.avgPct]))}
             position={selectedIndex >= 0 ? { index: selectedIndex, total: visible.length } : null}
             onPrev={selectedIndex > 0 ? () => pick(visible[selectedIndex - 1]) : undefined}
@@ -309,6 +314,30 @@ export default function GradingWorkspace({
                         </li>
                       ))}
                     </ul>
+                  </section>
+                )}
+                {calibrate && (
+                  <section aria-labelledby="calibrate-h" data-testid="calibrate-card" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[var(--border)] px-4 py-3">
+                    <div className="min-w-0 flex-1">
+                      <h3 id="calibrate-h" className="text-sm font-bold text-[var(--text-primary)]">{t("AI เข้มหรือใจดีไปไหม?", "Is the AI too strict or too generous?")}</h3>
+                      <p className="mt-0.5 text-xs text-[var(--text-secondary)]">
+                        {calibrate.blocked
+                          ? <span data-testid="calibrate-why">{t("ปรับเทียบ AI ใช้ได้เมื่อให้ AI ช่วยตรวจ แต่งานนี้ตรวจเอง", "Calibration compares the AI with you, so it needs AI-assisted grading — this one is graded by hand.")}{" "}
+                              {calibrate.canChangeMode && <Link href={calibrate.gradingListHref} className="font-medium text-[var(--accent)] underline-offset-2 hover:underline">{t("เปลี่ยนที่หน้ารายการตรวจงาน", "Change it on the Grading list")}</Link>}</span>
+                          : t("ให้ระดับเองกับงานตัวอย่าง แล้วดูว่า AI ต่างจากคุณตรงไหน", "Score a sample yourself and see where the AI differs from you.")}
+                      </p>
+                    </div>
+                    {calibrate.blocked ? (
+                      <span aria-disabled="true" className="inline-flex h-9 cursor-not-allowed items-center gap-1.5 whitespace-nowrap rounded-xl border border-[var(--border)] px-4 text-sm font-semibold text-[var(--text-muted)]">
+                        <Icon name="sliders" />
+                        {t("ปรับเทียบ AI", "Calibrate AI")}
+                      </span>
+                    ) : (
+                    <Link href={calibrate.href} className="inline-flex h-9 items-center gap-1.5 whitespace-nowrap rounded-xl border border-[var(--border)] px-4 text-sm font-semibold text-[var(--text-secondary)] transition-colors hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)] active:scale-[.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]">
+                      <Icon name="sliders" />
+                      {t("ปรับเทียบ AI", "Calibrate AI")}
+                    </Link>
+                    )}
                   </section>
                 )}
                 <p className="rounded-xl bg-[var(--bg-app)] px-4 py-3 text-sm text-[var(--text-secondary)]">

@@ -27,6 +27,7 @@ import AttentionChips from "@/components/AttentionChips";
 import GradingProgressBar from "@/components/GradingProgressBar";
 import { assignmentInsights, ATTENTION_KEYS, type AttentionKey } from "@/lib/gradingInsights";
 import { nextToGrade } from "@/lib/gradingRows";
+import { useCan } from "@/lib/useCan";
 // (the progress circle was replaced by GradingProgressBar on 10/11/2569 — one picture of progress app-wide)
 
 // ── Grading method: shown here, chosen on the Grading list (11/10/2569) ────────────────────────
@@ -79,6 +80,7 @@ export default function GradingProgressPage() {
   const [regradeOpen, setRegradeOpen] = useState(false);
   const [regrading, setRegrading] = useState(false);
   const { waitingUnits, sendWaiting } = useAiGrading();
+  const can = useCan();
   const now = useNow();
 
   const course = getCourse(id);
@@ -138,6 +140,12 @@ export default function GradingProgressPage() {
   // Grading method (11/10/2569). An exam or an assignment without files is manual whatever was chosen.
   const manual = isManualGrading(assignment);
   const shownRows = tab === "active" ? rows : withdrawnRows;
+  // Calibration compares the AI with the teacher's own levels: it needs AI-assisted grading of work with files, against a rubric
+  // It is always shown where it applies, so it can be found: pressable when the AI grades this assignment, otherwise greyed with the reason beside it
+  const calibrationApplies = !isExam && assignment.acceptsFiles !== false && !!rubric && rubric.criteria.length > 0;
+  const canCalibrate = calibrationApplies && !manual;
+  const showCalibrate = calibrationApplies && can.calibrate;
+  const calibrateHref = `/teacher/courses/${id}/calibration?assignment=${assignmentId}`;
   const insights = assignmentInsights(assignment, shownRows.map((r) => r.subs[0]), rubric);
   const stripScores = insights.scores;
   const next = !isExam ? nextToGrade(rows, assignment, !manual) : { row: undefined, left: 0 };
@@ -151,8 +159,10 @@ export default function GradingProgressPage() {
     ? t("นักศึกษาเห็นคะแนนของตัวเองแล้ว", "Students can see their own score now.")
         + (pending > 0 ? " " + t(`ยังไม่ตรวจอีก ${pending} ${pendingUnit} — จะเห็นทันทีที่ตรวจเสร็จ`, `${pending} ${pendingUnit} still to grade — shown as soon as graded.`) : "")
     : isDone
-      ? t("ตรวจครบแล้ว — พร้อมประกาศผล", "All graded — ready to announce the results.")
-      : t(`ตรวจให้ครบก่อน (เหลืออีก ${pending} ${pendingUnit}) จึงจะประกาศผลได้`, `Grade the remaining ${pending} ${pendingUnit}, then you can announce the results.`);
+      ? (can.announce ? t("ตรวจครบแล้ว — พร้อมประกาศผล", "All graded — ready to announce the results.") : t("ตรวจครบแล้ว — อาจารย์เป็นผู้ประกาศผล", "All graded — the teacher announces the results."))
+      : (can.announce
+          ? t(`ตรวจให้ครบก่อน (เหลืออีก ${pending} ${pendingUnit}) จึงจะประกาศผลได้`, `Grade the remaining ${pending} ${pendingUnit}, then you can announce the results.`)
+          : t(`ยังเหลืออีก ${pending} ${pendingUnit} ให้ตรวจ`, `${pending} ${pendingUnit} left to grade.`));
 
   // "Finish" is also the announcement (25/9/2569): students see no score until this is confirmed
   // (see studentVisibleSubmission), so it always goes through a confirm popup.
@@ -200,8 +210,7 @@ export default function GradingProgressPage() {
     });
   }
 
-  // Re-grade one row: the stand-in AI scores it again against the rubric as it is NOW (criterion by criterion, through the correction Calibration
-  // saved), and what the teacher had put on top of the earlier AI result is cleared — they pressed Re-grade on this row on purpose.
+  // Re-grade one row: the stand-in AI scores it again against the rubric as it is NOW (criterion by criterion), and what the teacher had put on top of the earlier AI result is cleared — they pressed Re-grade on this row on purpose.
   function handleRegradeRow(row: SubmissionRow) {
     if (!gradingOpen(assignment!, appNow())) return;
     const update = aiGradingUpdate(row.key, assignment!.maxPoints, getRubricsByAssignment(assignmentId)[0]);
@@ -257,14 +266,41 @@ export default function GradingProgressPage() {
             </div>
           </div>
           <div className="flex items-center gap-3 shrink-0">
-            <Link
-              href={`/teacher/courses/${id}/assignments/${assignmentId}/edit`}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-[var(--border)] text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] transition-colors"
-            >
-              <Icon name="edit" />
-              {t("แก้ไขงาน", "Edit Assignment")}
-            </Link>
-            {finalized ? (
+            {showCalibrate && (canCalibrate ? (
+              <Link
+                href={calibrateHref}
+                data-testid="calibrate-ai"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-[var(--border)] text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] transition-colors"
+              >
+                <Icon name="sliders" />
+                {t("ปรับเทียบ AI", "Calibrate AI")}
+              </Link>
+            ) : (
+              <span
+                data-testid="calibrate-ai-off"
+                aria-disabled="true"
+                title={t("ปรับเทียบ AI ใช้ได้เมื่อให้ AI ช่วยตรวจ — งานนี้ตรวจเอง", "Calibration needs AI-assisted grading — this assignment is graded by hand")}
+                className="inline-flex cursor-not-allowed items-center gap-1.5 px-4 py-2 rounded-xl border border-[var(--border)] text-sm text-[var(--text-muted)]"
+              >
+                <Icon name="sliders" />
+                {t("ปรับเทียบ AI", "Calibrate AI")}
+              </span>
+            ))}
+            {can.editAssignment && (
+              <Link
+                href={`/teacher/courses/${id}/assignments/${assignmentId}/edit`}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-[var(--border)] text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] transition-colors"
+              >
+                <Icon name="edit" />
+                {t("แก้ไขงาน", "Edit Assignment")}
+              </Link>
+            )}
+            {!can.announce ? (finalized ? (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border bg-[var(--s-ok-bg)] text-[var(--s-ok-text)] border-[var(--s-ok-bd)]">
+                <span className="w-1.5 h-1.5 rounded-full bg-current" aria-hidden="true" />
+                {t("ประกาศผลแล้ว", "Results announced")}
+              </span>
+            ) : null) : finalized ? (
               <>
                 <Link
                   href={`/teacher/courses/${id}/assignments/${assignmentId}/results`}
@@ -345,11 +381,11 @@ export default function GradingProgressPage() {
           </div>
         )}
 
-        {!isExam && <GradingModeNote manual={manual} forced={modeForced} courseId={id} />}
+        {!isExam && <GradingModeNote manual={manual} forced={modeForced || can.isTa} courseId={id} />}
         </div>
 
         {/* Rubric changed while grading was under way: the earlier scores are gone, so offer the AI run again — right here, with the new rubric */}
-        {!isExam && !manual && !finalized && gradeOpen && assignment.rubricRestartedAt && waitingUnits(assignment).length > 0 && (
+        {can.useAi && !isExam && !manual && !finalized && gradeOpen && assignment.rubricRestartedAt && waitingUnits(assignment).length > 0 && (
           <div data-testid="regrade-banner" role="note" className="mb-3 flex flex-wrap items-center gap-3 rounded-xl border border-[var(--s-info-bd)] bg-[var(--s-info-bg)] px-4 py-3 text-sm leading-relaxed text-[var(--s-info-text)]">
             <p className="min-w-0 flex-1">
               {t(`แก้ rubric หลังเริ่มตรวจ คะแนนเดิมถูกล้างแล้ว — เหลือ ${waitingUnits(assignment).length} ${isGroupAssignment ? "ทีม" : "งาน"}ที่รอตรวจตาม rubric ใหม่`,
@@ -456,10 +492,12 @@ export default function GradingProgressPage() {
             onSelect={selectSub}
             onRegradeRow={handleRegradeRow}
             insights={insights}
+            calibrate={showCalibrate ? { href: calibrateHref, blocked: !canCalibrate, canChangeMode: !modeForced, gradingListHref: `/teacher/courses/${id}/grading` } : undefined}
             gradedSubs={shownRows.map((r) => r.subs[0]).filter((s) => s.status === "graded")}
             clos={getCLOsByCourse(id)}
             finalized={finalized}
-            editHref={`/teacher/courses/${id}/assignments/${assignmentId}/edit`}
+            editHref={can.editRubric ? `/teacher/courses/${id}/assignments/${assignmentId}/edit` : undefined}
+            canReGrade={can.useAi}
             unit={isGroupAssignment ? "team" : "student"}
             isGroup={isGroupAssignment}
           />

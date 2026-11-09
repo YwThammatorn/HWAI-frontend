@@ -25,7 +25,8 @@ export default function GradingRubricPanel({ rubric, graded, editHref, locked = 
   clos?: CLO[];
   /** the graded work to count (one per student, or one per team) */
   graded: Submission[];
-  editHref: string;
+  /** where "Edit rubric" goes; absent = this person cannot edit the rubric (a TA), so no link and no lock chip */
+  editHref?: string;
   /** results are announced: the rubric can't be changed any more, so no Edit link */
   locked?: boolean;
   /** what one counted item is — a group assignment counts teams */
@@ -85,14 +86,14 @@ export default function GradingRubricPanel({ rubric, graded, editHref, locked = 
               <Icon name="lock" size="xs" />
               {t("ล็อกแล้ว — ประกาศผลแล้ว", "Locked once announced")}
             </span>
-          ) : (
+          ) : editHref ? (
           <Link
             href={editHref}
             className="inline-flex h-9 items-center rounded-lg border border-[var(--border)] bg-[var(--bg-surface)] px-3 text-xs font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)] active:scale-[.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
           >
             {t("แก้ไขเกณฑ์", "Edit rubric")}
           </Link>
-          )}
+          ) : null}
         </div>
       </div>
 

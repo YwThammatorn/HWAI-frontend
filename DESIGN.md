@@ -330,6 +330,7 @@ One component draws every icon: `components/Icon.tsx`. A page never contains an 
 | Meaning | Icon | Rule |
 |---|---|---|
 | Delete, or remove a record, file or row you added | `trash` | `<IconButton tone="danger">` — the only red icon button |
+| Calibration (compare the AI with your own marks) — the sidebar item and the "Calibrate AI" buttons on the Grading page | `sliders` | one icon for it everywhere |
 | Close, cancel, dismiss, clear a chip | `x` | neutral, **never** `tone="danger"` (the Modal close, Cancel on an inline edit, "remove from comparison") |
 | Export (CSV, results, a rubric) — data leaves the app | `upload` (the arrow out of the tray) | the Windows / Microsoft Import / Export pair; picked by the user 9/11/2569 |
 | Import (CSV, Excel, a rubric) — data comes into the app; also "fill this form from …" | `download` (the arrow into the tray) | import buttons and the drop area of an import popup |
