@@ -10,6 +10,7 @@ import SubmissionViewer from "@/components/SubmissionViewer";
 import MetricCard from "@/components/MetricCard";
 import AiGradePreviewModal from "@/components/AiGradePreviewModal";
 import { useAiGrading } from "@/lib/useAiGrading";
+import { useCan } from "@/lib/useCan";
 import { SCORE_TONE_CLASSES, PENDING_CHIP_CLASSES } from "@/lib/scoreBook";
 import FloatingPanel, { openFloatingWindow } from "@/components/FloatingPanel";
 import CriterionName from "@/components/CriterionName";
@@ -75,6 +76,7 @@ export default function RecheckPage() {
     : undefined;
 
   const { waitingUnits, sendWaiting } = useAiGrading();
+  const can = useCan();          // a TA gives and changes scores; the AI (regrade, notes to it) is the teacher's (10/11/2569)
   // "Regrade with the new rubric" right here (9/11/2569): when the rubric changed after grading started, the work waits for the AI again
   const [regradeOpen, setRegradeOpen] = useState(false);
   const [regrading, setRegrading] = useState(false);
@@ -274,7 +276,7 @@ export default function RecheckPage() {
           tone="rating"
           icon="star"
         />
-        {!handGraded && !assignment.gradingFinalized && assignment.rubricRestartedAt && waitingUnits(assignment).length > 0 && (
+        {can.useAi && !handGraded && !assignment.gradingFinalized && assignment.rubricRestartedAt && waitingUnits(assignment).length > 0 && (
           <div data-testid="regrade-banner" role="note" className="mt-4 flex flex-col gap-3 rounded-xl border border-[var(--s-info-bd)] bg-[var(--s-info-bg)] px-4 py-3 text-xs leading-relaxed text-[var(--s-info-text)]">
             <p>{t(`แก้ rubric หลังเริ่มตรวจ — เหลือ ${waitingUnits(assignment).length} งานที่รอตรวจด้วย rubric ใหม่`, `The rubric changed after grading started — ${waitingUnits(assignment).length} submission(s) wait to be graded under the new one.`)}</p>
             <button
@@ -401,7 +403,7 @@ export default function RecheckPage() {
               )}
 
               {/* Shown once the instructor overrides the score (or a note already exists) */}
-              {!handGraded && (s.edited || criterionComments[s.criterionId]) && (
+              {can.useAi && !handGraded && (s.edited || criterionComments[s.criterionId]) && (
                 <div className="mt-3">
                   <label
                     htmlFor={`criterion-note-${s.criterionId}`}

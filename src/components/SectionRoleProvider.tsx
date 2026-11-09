@@ -9,12 +9,14 @@ export default function SectionRoleProvider({ children }: { children: React.Reac
   // See CourseProvider.tsx for why this starts empty and loads in an effect
   // instead of during the initial render (hydration-mismatch fix, [[project-hwai-meeting-20260826]]).
   const [sectionRoles, setSectionRoles] = useState<SectionRole[]>([]);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     try {
       const raw = localStorage.getItem(LS_KEY);
       if (raw) setSectionRoles(JSON.parse(raw) as SectionRole[]);
     } catch {}
+    setReady(true);
   }, []);
 
   const persist = useCallback((next: SectionRole[]) => {
@@ -51,7 +53,7 @@ export default function SectionRoleProvider({ children }: { children: React.Reac
 
   return (
     <SectionRoleContext.Provider value={{
-      sectionRoles, addSectionRole, removeSectionRole, removeRolesByAccount,
+      sectionRoles, ready, addSectionRole, removeSectionRole, removeRolesByAccount,
       getRolesBySection, getRolesByAccount, hasPermission,
     }}>
       {children}

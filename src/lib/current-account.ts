@@ -29,6 +29,11 @@ export function useCurrentAccountId(): string | null {
     return student?.id ?? null;
   }
 
+  // a student wearing the TA hat is still that student's own CohortStudent (the account a TA role is keyed on)
+  if (user.role === "ta" && user.studentId) {
+    return cohortStudents.find((s) => s.studentId === user.studentId)?.id ?? null;
+  }
+
   if (effectiveRole === "teacher" || effectiveRole === "ta") {
     const teacher = teachers.find((t) => t.email.toLowerCase() === user.email.toLowerCase());
     return teacher?.id ?? null;

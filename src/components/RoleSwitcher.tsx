@@ -7,6 +7,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { useCohortStudents } from "@/lib/cohort-students";
 import { findMultiRoleAccount, identityEmail } from "@/lib/accounts";
 import { ADMIN_DASHBOARD_DISABLED } from "@/lib/featureFlags";
+import { useTaCourseIds } from "@/lib/taAccess";
 import type { UserRole } from "@/context/AuthContext";
 
 import Icon from "@/components/Icon";
@@ -30,7 +31,8 @@ const DEV_SWITCHABLE: UserRole[] = ["admin", "teacher", "ta", "student"];
 const TEACHER_PREVIEW_TARGETS: UserRole[] = ["teacher", "ta", "student"];
 
 export default function RoleSwitcher() {
-  const { user, viewAs, setViewAs, effectiveRole, switchRole } = useAuth();
+  const { user, viewAs, setViewAs, effectiveRole, switchRole, wearHat } = useAuth();
+  const taCourseIds = useTaCourseIds();
   const { t, lang } = useLanguage();
   const { findByStudentId } = useCohortStudents();
   const router = useRouter();
@@ -54,6 +56,63 @@ export default function RoleSwitcher() {
 
   const displayRole = effectiveRole ?? user.role;
   const meta = ROLE_LABELS[displayRole];
+
+  // A student the teacher appointed as TA (Collaborators page): one real switch between the student's own two hats — never a preview.
+  // (An account that already holds several roles uses the menu below.)
+  if ((user.role === "student" || user.role === "ta") && user.studentId && taCourseIds.size > 0 && !(user.roles && user.roles.length > 1)) {
+    const hats: UserRole[] = ["student", "ta"];
+    const pickHat = (h: UserRole) => {
+      setOpen(false);
+      if (h !== user.role) wearHat(h as "student" | "ta");
+      router.push(ROLE_ROUTE[h]);
+    };
+    return (
+      <div ref={ref} className="relative">
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          aria-label={t("สลับบทบาท", "Switch role")}
+          aria-haspopup="menu"
+          aria-expanded={open}
+          data-testid="hat-switch"
+          className="flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[10px] font-bold transition-colors hover:opacity-80"
+          style={{ color: meta.color, background: meta.bg, borderColor: `color-mix(in srgb, ${meta.color} 50%, transparent)` }}
+        >
+          {lang === "th" ? meta.th : meta.en}
+          <Icon name="chevron-down" size="xs" style={{ opacity: .6 }} />
+        </button>
+        {open && (
+          <div role="menu" className="absolute right-0 top-full mt-1.5 w-60 rounded-xl border border-white/10 bg-[var(--chrome-menu-bg)] shadow-xl z-50 py-1 overflow-hidden">
+            <p className="text-[9px] font-bold tracking-widest uppercase text-white/30 px-3 pt-2 pb-1">{t("สลับบทบาท", "Switch role")}</p>
+            {hats.map((h) => {
+              const m = ROLE_LABELS[h];
+              const isActive = user.role === h;
+              return (
+                <button
+                  key={h}
+                  type="button"
+                  role="menuitemradio"
+                  aria-checked={isActive}
+                  onClick={() => pickHat(h)}
+                  className="w-full text-left px-3 py-1.5 flex items-center gap-2 transition-colors hover:bg-white/5"
+                >
+                  <span className="w-2 shrink-0 flex items-center" style={{ color: m.color }}>
+                    {isActive && <span className="h-2 w-2 rounded-full bg-current" aria-hidden="true" />}
+                  </span>
+                  <span className="flex flex-col min-w-0">
+                    <span className="text-xs font-medium" style={{ color: isActive ? m.color : "var(--on-chrome-muted)" }}>{lang === "th" ? m.th : m.en}</span>
+                    <span className="text-[10px] text-white/55 truncate">
+                      {h === "ta" ? t(`ผู้ช่วยสอน ${taCourseIds.size} วิชา`, `Assisting ${taCourseIds.size} ${taCourseIds.size === 1 ? "course" : "courses"}`) : user.email}
+                    </span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  }
 
   // One sign-in, several roles (see lib/accounts.ts): a real switch between the
   // roles this account actually holds — never a preview, and never any other role.

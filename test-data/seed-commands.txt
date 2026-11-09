@@ -472,6 +472,17 @@ fetch('/local-data/real-identities.json').then(r=>{if(!r.ok)throw new Error('ย
 
 ---
 
+[30] ตั้งนักศึกษาคนหนึ่งเป็น TA ของวิชา (10/11) — เฉพาะในเครื่องนี้ รหัสจริงไม่เข้า git (repo เป็น public) ใช้ลองบทบาท TA
+
+     อ่านว่า "ใครเป็น TA ของวิชาไหน" จาก public/local-data/ta-demo.json (ถูก .gitignore) รูปแบบ: {"studentId":"รหัสนักศึกษา","courseId":"c-mock-4"} คนอื่นที่ clone repo ไม่มีไฟล์นี้ คำสั่งจะแจ้งว่ายังไม่มีไฟล์
+     ผล: ตามกฎ "TA ต้องไม่ได้ลงเรียนวิชานั้นในเทอมนั้น" คำสั่งจึงถอนคนนั้นออกจากวิชา (แถวในรายชื่อ, งานที่ส่ง, ชื่อในทีม) ในข้อมูลบนเครื่องนี้ แล้วเพิ่ม section role "ta" ให้ (เหมือนที่อาจารย์กดเพิ่มที่หน้า Collaborators)
+     ล็อกอินด้วยอีเมลนักศึกษาคนนั้น (<รหัส>@kmitl.ac.th) ที่แท็บนักศึกษา แล้วกดสลับบทบาท Student ↔ TA ที่ navbar
+     ต้องรันหลัง [2] [3] [5] [16] (และ [24] ถ้าใช้รหัสจริง) ย้อนกลับ: รัน [28] (กู้รายชื่อ) หรือโหลด mock ใหม่ แล้วลบ section role ที่หน้า Collaborators
+
+fetch('/local-data/ta-demo.json').then(r=>{if(!r.ok)throw new Error('ยังไม่มีไฟล์ local-data/ta-demo.json — ดูรูปแบบในคำอธิบายของคำสั่งนี้');return r.json()}).then(d=>{const get=k=>JSON.parse(localStorage.getItem(k)||'[]'),set=(k,v)=>localStorage.setItem(k,JSON.stringify(v));const me=get('hwai_cohort_students_v1').find(s=>s.studentId===d.studentId);if(!me)throw new Error('ไม่พบนักศึกษา '+d.studentId+' — รัน [24] ก่อน (หรือตรวจรหัสใน ta-demo.json)');const asg=get('hwai_assignments_v1').filter(a=>a.courseId===d.courseId).map(a=>a.id);set('hwai_students_v1',get('hwai_students_v1').filter(r=>!(r.courseId===d.courseId&&r.studentId===d.studentId)));set('hwai_submissions_v1',get('hwai_submissions_v1').filter(s=>!(asg.includes(s.assignmentId)&&s.studentId===d.studentId)));set('hwai_student_groups_v1',get('hwai_student_groups_v1').map(g=>asg.includes(g.assignmentId)?{...g,memberStudentIds:(g.memberStudentIds||[]).filter(x=>x!==d.studentId)}:g));const roles=get('hwai_section_roles_v1').filter(r=>!(r.accountId===me.id&&r.courseId===d.courseId));roles.push({id:crypto.randomUUID(),accountId:me.id,courseId:d.courseId,role:'ta'});set('hwai_section_roles_v1',roles);console.log('ตั้ง '+me.firstName+' เป็น TA ของ '+d.courseId+' แล้ว — ล็อกอินด้วย '+me.email);location.reload()})
+
+---
+
 [4] ล้างข้อมูลทั้งหมด (ถ้าอยากเริ่มใหม่)
 
 ['hwai_user','hwai_managed_teachers_v1','hwai_cohort_students_v1','hwai_courses_v2','hwai_curriculum_versions_v1','hwai_course_templates_v1','hwai_students_v1','hwai_grading_categories_v1','hwai_assignments_v1','hwai_rubrics_v1','hwai_submissions_v1','hwai_student_groups_v1','hwai_clos_v1'].forEach(k=>localStorage.removeItem(k)); location.reload();

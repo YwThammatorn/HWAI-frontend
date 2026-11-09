@@ -6,6 +6,7 @@ import { useCourses } from "@/lib/courses";
 import { useAssignments, submissionClosesAt, gradingOpensAt, activeLatePolicy, describeLatePolicy } from "@/lib/assignments";
 import { useGradingCategories } from "@/lib/gradingCategories";
 import { useLanguage } from "@/context/LanguageContext";
+import { useCan } from "@/lib/useCan";
 import { dateLocale } from "@/lib/dateLocale";
 import AssignmentTypeBadge from "@/components/AssignmentTypeBadge";
 import { AttachmentList } from "@/components/AssignmentAttachments";
@@ -25,6 +26,7 @@ function fmtDate(dateStr: string, lang: string) {
 export default function ViewAssignmentPage() {
   const { id, assignmentId } = useParams<{ id: string; assignmentId: string }>();
   const { t, lang } = useLanguage();
+  const can = useCan();
   const { getCourse } = useCourses();
   const { getAssignment, getSubmissionsByAssignment, getRubricsByAssignment } = useAssignments();
   const { getCategoriesByCourse } = useGradingCategories();
@@ -147,13 +149,13 @@ export default function ViewAssignmentPage() {
           </div>
         </div>
         <div className="flex items-center gap-3 shrink-0">
-          <Link
+          {can.editAssignment && <Link
             href={editHref}
             className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)] active:scale-[.97] transition-colors"
           >
             <Icon name="edit" />
             {t("แก้ไขงาน", "Edit Assignment")}
-          </Link>
+          </Link>}
           <Link
             href={`/teacher/courses/${id}/assignments/${assignmentId}/grading`}
             className="flex items-center gap-2 px-4 py-2 bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-semibold rounded-xl active:scale-[.97] transition-colors"
@@ -178,7 +180,7 @@ export default function ViewAssignmentPage() {
           <section className="bg-[var(--bg-surface)] rounded-xl border border-[var(--border-subtle)] p-5" aria-labelledby="brief-heading">
             <div className="flex items-start justify-between gap-4 mb-2">
               <h2 id="brief-heading" className="text-base font-bold text-[var(--text-primary)]">{t("คำอธิบายงาน", "Assignment brief")}</h2>
-              <Link href={editHref} className="text-[var(--accent)] text-sm hover:underline shrink-0">{t("แก้ไข", "Edit")}</Link>
+              {can.editAssignment && <Link href={editHref} className="text-[var(--accent)] text-sm hover:underline shrink-0">{t("แก้ไข", "Edit")}</Link>}
             </div>
             {assignment.description ? (
               <p className="text-sm text-[var(--text-primary)] leading-relaxed whitespace-pre-line">{assignment.description}</p>
@@ -198,7 +200,7 @@ export default function ViewAssignmentPage() {
                   </p>
                 )}
               </div>
-              {!assignment.isExam && (
+              {!assignment.isExam && can.editRubric && (
                 <Link href={editHref} className="text-sm font-medium text-[var(--accent)] hover:underline shrink-0">
                   {rubric ? t("แก้ไข Rubric", "Edit Rubric") : t("เพิ่ม Rubric", "Add Rubric")}
                 </Link>

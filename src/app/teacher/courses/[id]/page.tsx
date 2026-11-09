@@ -10,6 +10,7 @@ import { useManagedTeachers } from "@/lib/managed-teachers";
 import { useGradingCategories, GradingCategory } from "@/lib/gradingCategories";
 import { DAY_OPTIONS, SLOT_OPTIONS, parseSchedule } from "@/lib/schedule";
 import { useLanguage } from "@/context/LanguageContext";
+import { useCan } from "@/lib/useCan";
 import { CourseIcon } from "@/components/CourseIcon";
 
 import Icon from "@/components/Icon";
@@ -18,6 +19,7 @@ import IconButton from "@/components/IconButton";
 export default function CourseDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { t } = useLanguage();
+  const can = useCan();     // a TA reads the course overview; the course's text, details and grading categories are the teacher's (10/11/2569)
   const { getCourse, updateCourse } = useCourses();
   const { getStudentsByCourse } = useStudents();
   const { getAssignmentsByCourse, getSubmissionsByAssignment } = useAssignments();
@@ -163,20 +165,20 @@ export default function CourseDetailPage() {
               <h1 className="text-xl font-bold text-white truncate">{course.name}</h1>
             </div>
           </div>
-          <Link
+          {can.editAssignment && <Link
             href={`/teacher/courses/${id}/settings`}
             className="absolute bottom-4 right-4 flex items-center gap-1.5 px-3 py-1.5 bg-white/15 hover:bg-white/25 backdrop-blur-sm text-white text-xs font-medium rounded-lg transition-colors"
           >
             <Icon name="settings" size="sm" />
             {t("ตั้งค่า", "Settings")}
-          </Link>
+          </Link>}
         </div>
 
         {/* Description — its own card, separate from the banner (30/9/2569), with inline edit */}
         <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-subtle)] shadow-sm p-6 mb-6">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-base font-bold text-[var(--text-primary)]">{t("คำอธิบายรายวิชา", "Description")}</h2>
-            {!descEditing && (
+            {!descEditing && can.editAssignment && (
               <IconButton icon="edit" label={t("แก้ไข", "Edit")} onClick={openEditDesc} />
             )}
           </div>
@@ -245,7 +247,7 @@ export default function CourseDetailPage() {
           <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-subtle)] shadow-sm p-6">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-base font-bold text-[var(--text-primary)]">{t("รายละเอียด", "Details")}</h2>
-              {!detailsEditing && (
+              {!detailsEditing && can.editAssignment && (
                 <IconButton icon="edit" label={t("แก้ไข", "Edit")} onClick={openEditDetails} />
               )}
             </div>
@@ -350,14 +352,14 @@ export default function CourseDetailPage() {
           <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-subtle)] shadow-sm p-6">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-base font-bold text-[var(--text-primary)]">{t("สัดส่วนคะแนน", "Grading Categories")}</h2>
-              <button
+              {can.editAssignment && <button
                 onClick={openAddCategory}
                 disabled={catFormOpen}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-xs font-medium transition-colors shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Icon name="plus" size="sm" />
                 {t("เพิ่มเกณฑ์คะแนน", "Add Category")}
-              </button>
+              </button>}
             </div>
 
             {categories.length === 0 && !catFormOpen ? (
@@ -414,8 +416,8 @@ export default function CourseDetailPage() {
                       <div className="px-3 text-sm text-[var(--text-primary)]">{cat.name}</div>
                       <div className="px-3 text-sm font-semibold text-[var(--accent)] tabular-nums">{cat.weight}%</div>
                       <div className="px-3 flex items-center gap-1">
-                        <IconButton icon="edit" label={t("แก้ไข", "Edit")} onClick={() => openEditCategory(cat)} disabled={catFormOpen} />
-                        <IconButton icon="trash" label={t("ลบ", "Delete")} tone="danger" onClick={() => handleDeleteCategory(cat)} disabled={catFormOpen} />
+                        {can.editAssignment && <IconButton icon="edit" label={t("แก้ไข", "Edit")} onClick={() => openEditCategory(cat)} disabled={catFormOpen} />}
+                        {can.editAssignment && <IconButton icon="trash" label={t("ลบ", "Delete")} tone="danger" onClick={() => handleDeleteCategory(cat)} disabled={catFormOpen} />}
                       </div>
                     </div>
                   );

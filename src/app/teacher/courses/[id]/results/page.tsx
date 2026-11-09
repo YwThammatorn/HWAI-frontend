@@ -10,6 +10,7 @@ import { useAssignments, type Assignment } from "@/lib/assignments";
 import { useGradingCategories } from "@/lib/gradingCategories";
 import { buildScoreBook, scoreBookToCsv, scoreCellFill, PRESSABLE_SCORE_CLASSES, SCORE_FILL_CLASSES, PENDING_FILL_CLASSES, MISSING_FILL_CLASSES, type ScoreCell, type ScoreBookRow } from "@/lib/scoreBook";
 import { useLanguage } from "@/context/LanguageContext";
+import { useCan } from "@/lib/useCan";
 import SearchInput from "@/components/SearchInput";
 import FilterSelect from "@/components/FilterSelect";
 import SortableTh from "@/components/SortableTh";
@@ -39,6 +40,7 @@ export default function ScoreBookPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const { t } = useLanguage();
+  const can = useCan();     // a TA looks at the Score Book but does not export it (10/11/2569)
   const { getCourse } = useCourses();
   const { getStudentsByCourse } = useStudents();
   const { findByStudentId } = useCohortStudents();
@@ -237,7 +239,7 @@ export default function ScoreBookPage() {
             {course.name} · {roster.length} {t("นักศึกษา", "students")} · {assignments.length} {t("งาน", "assignments")}
           </p>
         </div>
-        <button
+        {can.exportScores && <button
           type="button"
           onClick={exportCsv}
           disabled={roster.length === 0 || assignments.length === 0}
@@ -245,7 +247,7 @@ export default function ScoreBookPage() {
         >
           <Icon name="upload" />
           {t("ส่งออก CSV", "Export CSV")}
-        </button>
+        </button>}
       </div>
 
       {assignments.length > 0 && roster.length > 0 && tab === "active" && (

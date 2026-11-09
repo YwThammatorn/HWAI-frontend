@@ -8,6 +8,7 @@ import { useAssignments, Submission, finalScoreOf } from "@/lib/assignments";
 import { useStudentGroups } from "@/lib/studentGroups";
 import { groupSubmissionsByTeam, SubmissionRow } from "@/lib/groupSubmissions";
 import { useLanguage } from "@/context/LanguageContext";
+import { useCan } from "@/lib/useCan";
 import SearchInput from "@/components/SearchInput";
 import ExamStatsCard from "@/components/ExamStatsCard";
 import { statsFromScores } from "@/lib/examStats";
@@ -25,6 +26,7 @@ function initials(name: string) {
 export default function ResultsPage() {
   const { id, assignmentId } = useParams<{ id: string; assignmentId: string }>();
   const { t, lang } = useLanguage();
+  const can = useCan();
   const { getCourse } = useCourses();
   const { getAssignment, getSubmissionsByAssignment } = useAssignments();
   const { getGroupsByAssignment } = useStudentGroups();
@@ -183,13 +185,13 @@ export default function ResultsPage() {
             >
               {t("กลับรายวิชา", "Back to Course")}
             </Link>
-            <button
+            {can.exportScores && <button
               onClick={exportCSV}
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-semibold transition-colors"
             >
               <Icon name="upload" />
               {t("ส่งออกผลลัพธ์", "Export Result")}
-            </button>
+            </button>}
           </div>
         </div>
 

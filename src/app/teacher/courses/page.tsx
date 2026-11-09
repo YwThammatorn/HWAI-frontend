@@ -5,9 +5,8 @@ import Link from "next/link";
 import { useCourses } from "@/lib/courses";
 import { useStudents, isWithdrawn, withdrawnIds } from "@/lib/students";
 import { useAssignments } from "@/lib/assignments";
-import { useManagedTeachers } from "@/lib/managed-teachers";
-import { useSectionRoles } from "@/lib/section-roles";
-import { useCurrentAccountId } from "@/lib/current-account";
+import { useMyCourseIds } from "@/lib/useMyCourseIds";
+import { useAuth } from "@/context/AuthContext";
 import type { Course } from "@/lib/courses";
 import { useLanguage } from "@/context/LanguageContext";
 import SearchInput from "@/components/SearchInput";
@@ -20,21 +19,16 @@ export default function CoursesPage() {
   const { courses: allCourses, updateCourse } = useCourses();
   const { getStudentsByCourse } = useStudents();
   const { getAssignmentsByCourse, getSubmissionsByAssignment } = useAssignments();
-  const { teachers } = useManagedTeachers();
-  const { getRolesByAccount } = useSectionRoles();
-  const currentAccountId = useCurrentAccountId();
+  const { effectiveRole } = useAuth();
   const [tab, setTab] = useState<"active" | "archived">("active");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 6;
 
-  // Only courses this teacher/TA is actually assigned to — either via the
-  // admin-managed courseIds list or a per-section SectionRole (collaborators).
-  // No matching ManagedTeacher for the session (e.g. an unlinked dev-bypass
-  // account) → empty list, not "show everything".
-  const myTeacher = currentAccountId ? teachers.find((tc) => tc.id === currentAccountId) : undefined;
-  const roleCourseIds = currentAccountId ? getRolesByAccount(currentAccountId).map((r) => r.courseId) : [];
-  const myCourseIds = new Set([...(myTeacher?.courseIds ?? []), ...roleCourseIds]);
+  // Only courses this teacher is assigned to (the admin-managed list or a per-section role); for a TA, only the courses they assist (useMyCourseIds).
+  // No matching account (e.g. an unlinked dev-bypass session) → empty list, not "show everything".
+  const myCourseIds = useMyCourseIds();
+  const isTa = effectiveRole === "ta";
   const courses = allCourses.filter((c) => myCourseIds.has(c.id));
 
   const active = courses.filter((c) => c.status !== "archived");
@@ -83,9 +77,15 @@ export default function CoursesPage() {
         <div className="flex items-end justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold text-[var(--text-primary)]">{t("รายวิชาของฉัน", "My Courses")}</h1>
-            <p className="mt-1 text-sm text-[var(--text-secondary)]">
+            {isTa && (
+              <p data-testid="ta-note" className="mt-1 flex items-center gap-2 text-sm text-[var(--text-secondary)]">
+                <span className="inline-flex h-6 items-center rounded-md border border-[var(--role-ta-border)] bg-[var(--role-ta-bg)] px-2 text-xs font-semibold text-[var(--role-ta-text)]">TA</span>
+                {t("วิชาที่คุณเป็นผู้ช่วยสอน — ตรวจงานและดูคะแนนได้", "Courses you assist as a TA — you can grade work and see the scores")}
+              </p>
+            )}
+            {!isTa && <p className="mt-1 text-sm text-[var(--text-secondary)]">
               {t("จัดการรายวิชา งาน และความคืบหน้าของนักศึกษาจากที่นี่", "Manage your classes, assignments, and student progress from here.")}
-            </p>
+            </p>}
           </div>
 
           {active.length > 0 && (

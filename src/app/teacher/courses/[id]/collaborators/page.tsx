@@ -6,6 +6,8 @@ import { useParams } from "next/navigation";
 import { useCourses } from "@/lib/courses";
 import { useSectionRoles, SectionRoleType, defaultPermissionsFor } from "@/lib/section-roles";
 import { useCohortStudents } from "@/lib/cohort-students";
+import { useStudents } from "@/lib/students";
+import { isEnrolledInSubjectThatTerm } from "@/lib/taAccess";
 import { useManagedTeachers } from "@/lib/managed-teachers";
 import { useCurrentAccountId } from "@/lib/current-account";
 import { useLanguage } from "@/context/LanguageContext";
@@ -48,6 +50,11 @@ function AddCollaboratorModal({
   const { sectionRoles, addSectionRole, removeSectionRole } = useSectionRoles();
   const { cohortStudents } = useCohortStudents();
   const { teachers, getTeachersByCourse } = useManagedTeachers();
+  const { getCourse, courses } = useCourses();
+  const { students: allEnrollments } = useStudents();
+  const course = getCourse(courseId);
+  // A TA must not be enrolled in this subject in this term (10/11/2569): those students are not offered
+  const enrolledHere = (studentId: string) => !!course && isEnrolledInSubjectThatTerm(studentId, course, courses, allEnrollments);
 
   const [roleTab, setRoleTab] = useState<Exclude<SectionRoleType, "teacher">>("ta");
   const [search, setSearch] = useState("");
@@ -62,6 +69,7 @@ function AddCollaboratorModal({
   const taCandidates = cohortStudents.filter((s) => {
     if (existingTaIds.has(s.id)) return false;
     if (s.status === "inactive") return false;
+    if (enrolledHere(s.studentId)) return false;
     if (!q) return true;
     return (
       `${s.firstName} ${s.lastName}`.toLowerCase().includes(q) ||
@@ -83,6 +91,7 @@ function AddCollaboratorModal({
     return tc.name.toLowerCase().includes(q) || tc.email.toLowerCase().includes(q);
   });
 
+  const enrolledCount = cohortStudents.filter((s) => s.status !== "inactive" && !existingTaIds.has(s.id) && enrolledHere(s.studentId)).length;
   function addTa(studentId: string) {
     addSectionRole({ accountId: studentId, courseId, role: "ta" });
   }
@@ -132,6 +141,11 @@ function AddCollaboratorModal({
           ? t("ผู้ช่วยสอนตรวจงานได้ แต่จัดการรายชื่อ/ตั้งค่าวิชาไม่ได้", "TAs can grade but cannot manage the roster or edit course settings")
           : t("อาจารย์ร่วมสอนมีสิทธิ์เต็มเหมือนอาจารย์ผู้สอนหลัก", "Co-teachers have full access, same as the primary teacher")}
       </p>
+      {roleTab === "ta" && enrolledCount > 0 && (
+        <p data-testid="ta-enrolled-note" className="pt-1 text-[11px] text-[var(--text-muted)]">
+          {t(`ไม่แสดงนักศึกษา ${enrolledCount} คนที่ลงเรียนวิชานี้ในเทอมนี้ — ผู้ช่วยสอนต้องไม่ได้ลงเรียนวิชานั้นในเทอมนั้น`, `${enrolledCount} ${enrolledCount === 1 ? "student is" : "students are"} not listed: enrolled in this subject this term — a TA must not be.`)}
+        </p>
+      )}
 
       {/* Search */}
       <div className="pt-3">
@@ -227,6 +241,8 @@ export default function CollaboratorsPage() {
   const { sectionRoles, removeSectionRole, hasPermission } = useSectionRoles();
   const { cohortStudents } = useCohortStudents();
   const { teachers, getTeachersByCourse } = useManagedTeachers();
+  const { courses: allCourses } = useCourses();
+  const { students: allEnrollments } = useStudents();
   const currentAccountId = useCurrentAccountId();
   const course = getCourse(id);
   // The primary teacher's access comes from ManagedTeacher.courseIds
@@ -280,6 +296,7 @@ export default function CollaboratorsPage() {
         if (r.role === "ta") {
           const student = cohortStudents.find((s) => s.id === r.accountId);
           if (!student) return null;
+          const enrolled = !!course && isEnrolledInSubjectThatTerm(student.studentId, course, allCourses, allEnrollments);
           return {
             key: `role-${r.id}`,
             name: `${student.firstName} ${student.lastName}`,
@@ -288,7 +305,8 @@ export default function CollaboratorsPage() {
             avatarBg: "var(--role-ta-text)",
             roleLabel: t("ผู้ช่วยสอน", "Teaching Assistant"),
             roleBadgeColor: "var(--role-ta-text)",
-            permissionSummary,
+            // enrolled in this subject this term: the appointment stays on record but gives no TA access
+            permissionSummary: enrolled ? t("ลงเรียนวิชานี้ในเทอมนี้ — ใช้สิทธิ์ผู้ช่วยสอนไม่ได้", "Enrolled in this subject this term — no TA access") : permissionSummary,
             removable: true,
             onRemove: () => removeSectionRole(r.id),
           };

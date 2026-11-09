@@ -9,6 +9,7 @@ import { useAssignments, isManualGrading, isAiOnlyGraded, gradingOpen, gradingOp
 import { appNow, useNow } from "@/lib/clock";
 import { useGradingCategories } from "@/lib/gradingCategories";
 import { useAiGrading } from "@/lib/useAiGrading";
+import { useCan } from "@/lib/useCan";
 import { useLanguage } from "@/context/LanguageContext";
 import { dateLocale } from "@/lib/dateLocale";
 import SearchInput from "@/components/SearchInput";
@@ -65,6 +66,7 @@ export default function CourseGradingPage() {
   const { getAssignmentsByCourse, getSubmissionsByAssignment, updateAssignment, updateSubmission } = useAssignments();
   const { getCategoriesByCourse } = useGradingCategories();
   const { waitingUnits, sendWaiting } = useAiGrading();
+  const can = useCan();
   // Grading opens only once the due date and the students' late window have passed (15/10/2569) — see gradingOpen in lib/assignments.ts
   const now = useNow();
 
@@ -308,6 +310,16 @@ export default function CourseGradingPage() {
                                 {t(`เปิดตรวจได้ ${opensText(a, lang)} น.`, `Opens ${opensText(a, lang)}`)}
                               </span>
                             </div>
+                          ) : can.isTa ? (
+                            // a TA gives and changes scores; the AI and the grading method are the teacher's (10/11/2569)
+                            <Link
+                              href={gradingHref(a)}
+                              data-testid="ta-grade"
+                              className="px-3 h-9 inline-flex items-center gap-1.5 rounded-xl bg-[var(--accent-solid)] text-sm font-semibold text-[var(--accent-solid-text)] hover:bg-[var(--accent-solid-hover)] active:scale-[.97] transition-colors"
+                            >
+                              <Icon name="play" />
+                              {t("ตรวจงาน", "Grade")}
+                            </Link>
                           ) : a.isExam || a.acceptsFiles === false || a.gradingFinalized ? (
                             // nothing to choose: an exam is typed in, no files means nothing for the AI, announced work keeps its method
                             <div className="flex flex-col items-end gap-1">

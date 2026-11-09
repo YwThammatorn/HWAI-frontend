@@ -7,6 +7,7 @@ import { useCourses } from "@/lib/courses";
 import { useStudents, type Student } from "@/lib/students";
 import { useCohortStudents } from "@/lib/cohort-students";
 import { useLanguage } from "@/context/LanguageContext";
+import { useCan } from "@/lib/useCan";
 import EnrollStudentModal from "@/components/EnrollStudentModal";
 import ImportCourseStudentsModal from "@/components/ImportCourseStudentsModal";
 import SearchInput from "@/components/SearchInput";
@@ -21,6 +22,7 @@ type RosterSort = { key: "id" | "name"; dir: "asc" | "desc" } | null;
 export default function StudentsRosterPage() {
   const { id } = useParams<{ id: string }>();
   const { t } = useLanguage();
+  const can = useCan();     // a TA sees the roster but does not change it (10/11/2569)
   const { getCourse } = useCourses();
   const { getStudentsByCourse, updateStudent, removeStudent } = useStudents();
   const { findByStudentId } = useCohortStudents();
@@ -128,7 +130,7 @@ export default function StudentsRosterPage() {
               )}
             </p>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
+          {can.manageRoster && <div className="flex items-center gap-2 shrink-0">
             <button
               type="button"
               onClick={() => setImportOpen(true)}
@@ -145,7 +147,7 @@ export default function StudentsRosterPage() {
               <Icon name="plus" />
               {t("เพิ่มนักศึกษา", "Add Student")}
             </button>
-          </div>
+          </div>}
         </div>
 
         {mismatched.length > 0 && section && (
@@ -182,10 +184,10 @@ export default function StudentsRosterPage() {
             <div className="p-12 flex flex-col items-center justify-center text-center">
               <IconTile icon="users" size="lg" tone="accent" className="mb-4" />
               <p className="text-sm font-medium text-[var(--text-secondary)] mb-1">{t("ยังไม่มีรายชื่อนักศึกษา", "No students yet")}</p>
-              <p className="text-xs text-[var(--text-secondary)] mb-5">
+              {can.manageRoster && <p className="text-xs text-[var(--text-secondary)] mb-5">
                 {t("เพิ่มทีละคนด้วยรหัสนักศึกษา หรือนำเข้าจากไฟล์ CSV — ระบบจะตรวจสอบกับรายชื่อนักศึกษาที่มีอยู่ในระบบก่อนเพิ่มเข้าวิชา", "Add a student by ID, or import a CSV file — the system checks each ID against the existing student database before enrolling")}
-              </p>
-              <div className="flex items-center gap-2">
+              </p>}
+              {can.manageRoster && <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => setAddOpen(true)}
@@ -200,7 +202,7 @@ export default function StudentsRosterPage() {
                 >
                   {t("นำเข้านักศึกษา", "Import Students")}
                 </button>
-              </div>
+              </div>}
             </div>
           ) : (
             <div>
@@ -221,7 +223,7 @@ export default function StudentsRosterPage() {
                       <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("อีเมล", "Email")}</th>
                       <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("สาขา", "Program")}</th>
                       <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("สถานะ", "Status")}</th>
-                      <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("จัดการ", "Actions")}</th>
+                      {can.manageRoster && <th scope="col" className="px-4 py-1 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("จัดการ", "Actions")}</th>}
                     </tr>
                   </thead>
                   <tbody>
@@ -264,7 +266,7 @@ export default function StudentsRosterPage() {
                               {statusLabel(status)}
                             </span>
                           </td>
-                          <td className="px-4 py-2">
+                          {can.manageRoster && <td className="px-4 py-2">
                             <div className="flex items-center gap-1">
                               {withdrawn ? (
                                 <IconButton icon="check" label={t(`ลงทะเบียนกลับ ${s.firstName} ${s.lastName}`, `Re-enroll ${s.firstName} ${s.lastName}`)} onClick={() => handleReEnroll(s)} />
@@ -273,7 +275,7 @@ export default function StudentsRosterPage() {
                               )}
                               <IconButton icon="trash" label={t(`ลบ ${s.firstName} ${s.lastName} ออกจากวิชา`, `Remove ${s.firstName} ${s.lastName} from the course`)} tone="danger" onClick={() => handleDelete(s)} />
                             </div>
-                          </td>
+                          </td>}
                         </tr>
                       );
                     })}

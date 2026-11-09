@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
+import { useAuth } from "@/context/AuthContext";
 import { useCourses } from "@/lib/courses";
 import { termLine } from "@/lib/academicTerm";
 import { SidebarNavItem, SidebarSectionLabel, SidebarCourseHeader, SIDEBAR_CLASS } from "@/components/SidebarParts";
@@ -87,6 +88,7 @@ const COURSE_SETTINGS_ICON = (
 export default function ProfileSidebar() {
   const pathname = usePathname();
   const { t } = useLanguage();
+  const { effectiveRole } = useAuth();
   const { getCourse } = useCourses();
 
   // Detect active course from teacher routes /teacher/courses/[id]/...
@@ -119,7 +121,7 @@ export default function ProfileSidebar() {
   ];
 
   // Per-course sub-navigation (only shown when inside /courses/[id]/...)
-  const COURSE_NAV = activeCourseId
+  const ALL_COURSE_NAV = activeCourseId
     ? [
         // Order: 1-2 checked daily, 3-5 grading workflow, 6-8 term-setup/planning,
         // 9-11 course administration (roster/staffing/settings) — proposed to and
@@ -149,6 +151,13 @@ export default function ProfileSidebar() {
         { label: t("ตั้งค่าวิชา", "Settings"),   href: `/teacher/courses/${activeCourseId}/settings`,      active: isAt(`/teacher/courses/${activeCourseId}/settings`),      icon: COURSE_SETTINGS_ICON},
       ]
     : [];
+
+  // A TA's course menu (10/11/2569, the user's list): Overview · Assignments · Grading · Score Book · Students
+  const isTa = effectiveRole === "ta";
+  const TA_NAV_HREFS = activeCourseId
+    ? [`/teacher/courses/${activeCourseId}`, `/teacher/courses/${activeCourseId}/assignments`, `/teacher/courses/${activeCourseId}/grading`, `/teacher/courses/${activeCourseId}/results`, `/teacher/courses/${activeCourseId}/students`]
+    : [];
+  const COURSE_NAV = isTa ? ALL_COURSE_NAV.filter((i) => TA_NAV_HREFS.includes(i.href)) : ALL_COURSE_NAV;
 
   return (
     <aside
