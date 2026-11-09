@@ -198,7 +198,7 @@ export default function EditAssignmentPage() {
       }));
       if (assignment!.gradingMode !== "manual") {
         if (regrade) {
-          gradeUnits(assignment!, unitsOf(assignment!, scoredSubs), { criteria: finalized, aiOffsets: linkedRubrics[0]?.aiOffsets });
+          gradeUnits(assignment!, unitsOf(assignment!, scoredSubs), { criteria: finalized });
           updateAssignment(assignmentId, { rubricRestartedAt: undefined });
         } else {
           // the work waits for the AI again: the course Grading page and this assignment's Grading page offer "Regrade with new rubric"

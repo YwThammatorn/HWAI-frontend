@@ -295,4 +295,11 @@ test.describe("Design rules (DESIGN.md)", () => {
     const css = fs.readFileSync(path.join(SRC, "app", "globals.css"), "utf8");
     expect((css.match(/--brand-bright:/g) ?? []).length).toBe(1);
   });
+
+  test("the AI offset is gone (removed 10/11/2569): no saved per-criterion correction of the AI's strictness comes back", () => {
+    // a correction stored on the rubric and stamped on each AI-graded submission was removed with its "AI correction" column, "Use these values" and the
+    // "AI strictness" section of the Grade-with-AI popup; Calibration compares and suggests rubric changes, it no longer tunes the AI
+    const bad = FILES.filter((f) => /aiOffsets|aiOffsetsUsed|suggestOffsets|offsetsFor/.test(code(f.text))).map((f) => f.rel);
+    expect(bad, "Do not bring the AI offset back without asking").toEqual([]);
+  });
 });

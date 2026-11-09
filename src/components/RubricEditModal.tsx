@@ -49,7 +49,7 @@ export default function RubricEditModal({ open, onClose, assignment, rubric, cou
     updateAssignment(assignment.id, { maxPoints: criteriaTotalPoints(criteria) });
     updateRubric(rubric.id, { criteria: finalizeCriteria(criteria, t("ไม่มีชื่อ", "Untitled")), ...(sourceRubricId ? { sourceRubricId } : {}) });
     if (restartTeacherWork) {
-      teacherScored.forEach((s) => updateSubmission(s.id, { aiScore: null, aiCriterionScores: undefined, aiOffsetsUsed: undefined, instructorScore: null, criterionScores: undefined, criterionComments: undefined, status: "not_graded" }));
+      teacherScored.forEach((s) => updateSubmission(s.id, { aiScore: null, aiCriterionScores: undefined, instructorScore: null, criterionScores: undefined, criterionComments: undefined, status: "not_graded" }));
     }
     onSaved();
     onClose();

@@ -185,7 +185,7 @@ export function describeLatePolicy(p: LatePolicy, t: (th: string, en: string) =>
 }
 /** What a resubmission clears: the earlier file's result must not stay on the new file. */
 export const CLEARED_RESULT = {
-  aiScore: null, instructorScore: null, instructorComment: "", criterionScores: undefined, aiCriterionScores: undefined, aiOffsetsUsed: undefined, criterionComments: undefined,
+  aiScore: null, instructorScore: null, instructorComment: "", criterionScores: undefined, aiCriterionScores: undefined, criterionComments: undefined,
 } as const;
 
 /** A submission the AI graded and the teacher has not scored by hand — what "switch to manual" sends back to not graded. */
@@ -218,9 +218,6 @@ export interface Submission {
   /** What the AI gave each criterion, keyed by RubricCriterion.id (12/10/2569) — set when the teacher sends the work to the AI, so the
    *  Grade screen can start from it and Calibration can compare it with the teacher's own levels. Never shown to students. */
   aiCriterionScores?: Record<string, number>;
-  /** The rubric's AI correction (`Rubric.aiOffsets`) that was in effect when the AI produced this work's marks (14/10/2569). Calibration
-   *  needs it to suggest a correction without adding it on top of one that is already inside the marks. Absent = none. */
-  aiOffsetsUsed?: Record<string, number>;
   // Security: student work must not leave faculty without explicit consent
   externalUseConsent: boolean;
   /** Handed in after the due date, inside the late window (15/10/2569). Absent/false = on time. Set again on every resubmission. */
@@ -302,11 +299,8 @@ export interface Rubric {
   assignmentId: string;
   name: string;
   criteria: RubricCriterion[];
-  /** How the AI is corrected on this rubric (12/10/2569, set by "Use these values" on the Calibration page): per criterion, levels to move
-   *  the AI's judgement toward stricter (+) or more generous (−). Applies to the next "Grade with AI"; absent = no correction. */
-  aiOffsets?: Record<string, number>;
-  /** The rubric this one was copied from ("Use a rubric from before", 14/10/2569) — how Calibration finds the other assignments that
-   *  share a rubric when it offers to re-grade them. Absent = written from scratch (or copied before this existed). */
+  /** The rubric this one was copied from ("Use a rubric from before", 14/10/2569) — which assignments a rubric came from
+   *  (rubric history). Absent = written from scratch (or copied before this existed). */
   sourceRubricId?: string;
   createdAt: string;
   updatedAt: string;
@@ -322,7 +316,7 @@ export interface AssignmentContextValue {
   getAssignment: (id: string) => Assignment | undefined;
   getAssignmentsByCourse: (courseId: string) => Assignment[];
   addSubmission: (data: Omit<Submission, "id" | "updatedAt">) => Submission;
-  updateSubmission: (id: string, data: Partial<Pick<Submission, "aiScore" | "instructorScore" | "instructorComment" | "criterionComments" | "criterionScores" | "aiCriterionScores" | "aiOffsetsUsed" | "status" | "fileUrl" | "attachments" | "submittedAt" | "late">>) => void;
+  updateSubmission: (id: string, data: Partial<Pick<Submission, "aiScore" | "instructorScore" | "instructorComment" | "criterionComments" | "criterionScores" | "aiCriterionScores" | "status" | "fileUrl" | "attachments" | "submittedAt" | "late">>) => void;
   getSubmissionsByAssignment: (assignmentId: string) => Submission[];
   addRubric: (data: Omit<Rubric, "id" | "createdAt" | "updatedAt">) => Rubric;
   updateRubric: (id: string, data: Partial<Omit<Rubric, "id" | "assignmentId" | "createdAt" | "updatedAt">>) => void;

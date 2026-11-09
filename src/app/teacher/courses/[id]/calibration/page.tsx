@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { useParams } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
 import { useCourses } from "@/lib/courses";
@@ -9,7 +9,7 @@ import { useAssignments, isManualGrading, submissionAttachments, gradingOpen, ty
 import { useNow } from "@/lib/clock";
 import { useStudents, withdrawnIds } from "@/lib/students";
 import { useStudentGroups } from "@/lib/studentGroups";
-import { useCalibrations, pickSample, compare, suggestOffsets, suggestRubricChanges, aiLevelsFor, aiGradedUnits, workUnitsOf, MAX_OFFSET, type CalibrationRun, type WorkUnit, type CriterionComparison } from "@/lib/calibration";
+import { useCalibrations, pickSample, compare, suggestRubricChanges, aiLevelsFor, aiGradedUnits, workUnitsOf, type CalibrationRun, type WorkUnit, type CriterionComparison } from "@/lib/calibration";
 import RubricEditModal from "@/components/RubricEditModal";
 import CalibrationRegrade from "@/components/CalibrationRegrade";
 import CriterionName from "@/components/CriterionName";
@@ -32,7 +32,7 @@ export default function CalibrationPage() {
   const { id } = useParams<{ id: string }>();
   const { t } = useLanguage();
   const { getCourse } = useCourses();
-  const { assignments, submissions, rubrics, updateRubric } = useAssignments();
+  const { assignments, submissions, rubrics } = useAssignments();
   const { getStudentsByCourse } = useStudents();
   const { getGroupsByAssignment } = useStudentGroups();
   const { runs, saveRun, removeRun } = useCalibrations();
@@ -56,7 +56,8 @@ export default function CalibrationPage() {
     const r = rubricOf(a);
     return a.courseId === id && !a.isExam && a.acceptsFiles !== false && !isManualGrading(a) && gradingOpen(a, now) && !!r && r.criteria.length > 0 && unitsOf(a).length >= MIN_SAMPLES;
   });
-  const [pickedId, setPickedId] = useState("");
+  // opened from an assignment's Grading page: start on that assignment (it is only used when it is one of the eligible ones)
+  const [pickedId, setPickedId] = useState(useSearchParams().get("assignment") ?? "");
   // which sample is open in the grading workspace, and the zoom of the work next to it
   const [cur, setCur] = useState(0);
   const [zoom, setZoom] = useState(100);
@@ -72,9 +73,13 @@ export default function CalibrationPage() {
     if (!assignment || !rubric) return null;
     return { id: crypto.randomUUID(), assignmentId: assignment.id, createdAt: new Date().toISOString(), sampleIds: pickSample(units, rubric, n).map((u) => u.key), teacherLevels: {}, blind: true };
   };
-  // the first time an assignment is opened here, start a sample for it
+  // the first time an assignment is opened here, start a sample for it — ONCE: in development React runs an effect twice, and two drafts
+  // made 1 ms apart left an empty second round behind, so pressing "Compare with the AI" on the first showed the second one instead of the result
+  const started = useRef(false);
   useEffect(() => {
-    if (!assignment || !rubric || draft || lastDone || units.length < MIN_SAMPLES) return;
+    if (draft || lastDone) { started.current = false; return; }
+    if (!assignment || !rubric || units.length < MIN_SAMPLES || started.current) return;
+    started.current = true;
     const d = newDraft(DEFAULT_SAMPLES);
     if (d) saveRun(d);
   }, [assignment?.id, !!draft, !!lastDone, units.length]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -106,7 +111,7 @@ export default function CalibrationPage() {
 
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">{t("ปรับเทียบ AI", "Calibration")}</h1>
-        <p className="text-sm text-[var(--text-secondary)] max-w-3xl">{t("ตรวจงานตัวอย่างเองไม่กี่ชิ้น แล้วดูว่า AI ตรวจต่างจากคุณตรงไหน ปรับความเข้มของ AI และดูว่า rubric ควรแก้อะไร — Blind test เปิดไว้ให้ตั้งแต่แรก ซ่อนระดับที่ AI ให้และชื่อนักศึกษา (ผลเทียบเชื่อถือได้กว่า) ปิดได้ถ้าอยากเห็น", "Score a few samples yourself, then see where the AI differs from you — tune how strict it is and see what the rubric itself may need. The Blind test starts on: it hides the AI's level and the students' names while you score (the comparison is then more trustworthy). Turn it off if you want to see them.")}</p>
+        <p className="text-sm text-[var(--text-secondary)] max-w-3xl">{t("ตรวจงานตัวอย่างเองไม่กี่ชิ้น แล้วดูว่า AI ตรวจต่างจากคุณตรงไหน และดูว่า rubric ควรแก้อะไร — Blind test เปิดไว้ให้ตั้งแต่แรก ซ่อนระดับที่ AI ให้และชื่อนักศึกษา (ผลเทียบเชื่อถือได้กว่า) ปิดได้ถ้าอยากเห็น", "Score a few samples yourself, then see where the AI differs from you and what the rubric itself may need. The Blind test starts on: it hides the AI's level and the students' names while you score (the comparison is then more trustworthy). Turn it off if you want to see them.")}</p>
       </div>
 
       {eligible.length === 0 || !assignment || !rubric ? (
@@ -128,8 +133,6 @@ export default function CalibrationPage() {
                   <h2 id="cal-1" className="text-base font-bold text-[var(--text-primary)]">{t("เลือกงาน", "Pick the assignment")}</h2>
                   <p className="mt-0.5 text-xs text-[var(--text-muted)]">
                     {t(`AI ตรวจแล้ว ${units.length} ชิ้น · ${rubric.criteria.length} เกณฑ์`, `${units.length} graded by the AI · ${rubric.criteria.length} ${rubric.criteria.length === 1 ? "criterion" : "criteria"}`)}
-                    {" · "}
-                    {rubric.aiOffsets && Object.values(rubric.aiOffsets).some((v) => v !== 0) ? t("AI ถูกปรับความเข้มแล้ว", "AI already tuned") : t("ยังไม่ได้ปรับ AI", "AI not tuned yet")}
                   </p>
                 </div>
               </div>
@@ -141,7 +144,7 @@ export default function CalibrationPage() {
               </div>
             </div>
             <p data-testid="cal-ai-note" className="mt-4 max-w-3xl rounded-xl bg-[var(--bg-app)] px-4 py-3 text-xs leading-relaxed text-[var(--text-secondary)]">
-              {t("ในรายการนี้มีเฉพาะงานที่ผ่านการตรวจโดย AI มาแล้ว (อย่างน้อย 3 ชิ้น) — ระบบเอาผลที่ AI ตรวจไว้จริงมาเทียบกับระดับที่คุณให้ แล้วบอกว่าควรปรับ rubric หรือความเข้มของ AI อย่างไร ปรับเสร็จแล้วสั่งให้ AI ตรวจใหม่ได้ (เฉพาะงานที่ยังไม่ประกาศผล)", "Only assignments the AI has already graded appear here (at least 3 pieces) — the system compares what the AI really gave with the levels you choose, then tells you how to adjust the rubric or the AI's strictness. After tuning you can have the AI grade again (only work whose results are not announced yet).")}
+              {t("ในรายการนี้มีเฉพาะงานที่ผ่านการตรวจโดย AI มาแล้ว (อย่างน้อย 3 ชิ้น) — ระบบเอาผลที่ AI ตรวจไว้จริงมาเทียบกับระดับที่คุณให้ แล้วบอกว่าควรปรับ rubric อย่างไร แก้เสร็จแล้วสั่งให้ AI ตรวจใหม่ได้ (เฉพาะงานที่ยังไม่ประกาศผล)", "Only assignments the AI has already graded appear here (at least 3 pieces) — the system compares what the AI really gave with the levels you choose, then tells you how to adjust the rubric. After editing it you can have the AI grade again (only work whose results are not announced yet).")}
             </p>
           </section>
 
@@ -312,8 +315,8 @@ export default function CalibrationPage() {
             </section>
           )}
 
-          {/* 3 — compare and apply */}
-          {!draft && lastDone && <ResultSection run={lastDone} units={units} assignment={assignment} rubric={rubric} locked={locked} courseId={id} onApply={(offsets) => { updateRubric(rubric.id, { aiOffsets: offsets }); saveRun({ ...lastDone, appliedAt: new Date().toISOString(), appliedOffsets: offsets }); }} onAgain={() => { const d = newDraft(lastDone.sampleIds.length); if (d) saveRun(d); }} graded={submissions.filter((s) => s.assignmentId === assignment.id && s.status === "graded")} />}
+          {/* 3 — compare, then what the rubric may need */}
+          {!draft && lastDone && <ResultSection run={lastDone} units={units} assignment={assignment} rubric={rubric} locked={locked} courseId={id} onAgain={() => { const d = newDraft(lastDone.sampleIds.length); if (d) saveRun(d); }} graded={submissions.filter((s) => s.assignmentId === assignment.id && s.status === "graded")} />}
 
           {/* earlier calibrations of this course */}
           {runs.some((r) => r.completedAt && assignments.some((a) => a.id === r.assignmentId && a.courseId === id)) && (
@@ -327,7 +330,6 @@ export default function CalibrationPage() {
                       <span className="ml-2 text-xs tabular-nums text-[var(--text-muted)]">{new Date(r.completedAt!).toLocaleDateString()} · {t(`${r.sampleIds.length} ตัวอย่าง`, `${r.sampleIds.length} samples`)}{r.sawAi && ` · ${t("เห็นผล AI ตอนตรวจ", "AI's level was visible")}`}</span>
                     </span>
                     <span className="flex items-center gap-3">
-                      <span className={`rounded-md border px-1.5 py-0.5 text-xs font-semibold ${r.appliedAt ? VERDICT_TONE.aligned : "border-[var(--border)] bg-[var(--bg-app)] text-[var(--text-secondary)]"}`}>{r.appliedAt ? t("ใช้ค่านี้แล้ว", "Applied") : t("ยังไม่ได้ใช้", "Not applied")}</span>
                       <button type="button" onClick={() => removeRun(r.id)} className={ghost} aria-label={t("ลบรายการนี้", "Delete this run")}>{t("ลบ", "Delete")}</button>
                     </span>
                   </li>
@@ -343,7 +345,7 @@ export default function CalibrationPage() {
 
 // ── step 3 ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-function ResultSection({ run, units, assignment, rubric, locked, courseId, graded, onApply, onAgain }: {
+function ResultSection({ run, units, assignment, rubric, locked, courseId, graded, onAgain }: {
   run: CalibrationRun;
   units: WorkUnit[];
   assignment: Assignment;
@@ -351,28 +353,22 @@ function ResultSection({ run, units, assignment, rubric, locked, courseId, grade
   locked: boolean;
   courseId: string;
   graded: ReturnType<typeof useAssignments>["submissions"];
-  onApply: (offsets: Record<string, number>) => void;
   onAgain: () => void;
 }) {
   const { t } = useLanguage();
-  // compared with the marks the AI really stored (14/10/2569); each carries the correction that was inside it, so the suggestion is that plus
-  // how far off the marks were — never the saved value plus the bias, which would count a correction twice
+  // compared with the marks the AI really stored (14/10/2569)
   const cmp = useMemo(() => compare(run, units, rubric), [run, units, rubric]);
-  const suggested = useMemo(() => suggestOffsets(cmp, rubric.aiOffsets), [cmp, rubric.aiOffsets]);
   const [editOpen, setEditOpen] = useState(false);
   const [afterEdit, setAfterEdit] = useState(false);
-  const [offsets, setOffsets] = useState<Record<string, number>>(run.appliedOffsets ?? suggested);
-  useEffect(() => { setOffsets(run.appliedOffsets ?? suggested); }, [run.id]); // eslint-disable-line react-hooks/exhaustive-deps
   const changes = suggestRubricChanges(rubric, graded, cmp);
   const suggestionText = (s: (typeof changes)[number]) =>
     s.kind === "ceiling" ? t(`${Math.round(s.value * 100)}% ของงานได้ระดับสูงสุด — เกณฑ์นี้แทบไม่แยกคน ลองยกมาตรฐานหรือเพิ่มระดับ`, `${Math.round(s.value * 100)}% of the work reaches the top level — this criterion barely separates anyone. Raise the bar or add a level.`)
     : s.kind === "floor" ? t(`ไม่มีใครถึงระดับสูงสุดเลย (${s.value} ชิ้น) — อาจสูงเกินไปหรือเขียนคำอธิบายแคบเกิน`, `Nobody reaches the top level (${s.value} items) — it may be out of reach or worded too tightly.`)
-    : s.kind === "disagree" ? t(`แม้ปรับความเข้มของ AI แล้ว คุณกับ AI ก็ยังต่างกันเฉลี่ย ${s.value.toFixed(1)} ระดับ — คำอธิบายระดับยังไม่ชัด ลองเขียนให้เห็นต่างกันมากขึ้น`, `Even after correcting how strict the AI is, you and it still differ by ${s.value.toFixed(1)} levels on average — the level wording is not clear enough. Make the levels easier to tell apart.`)
+    : s.kind === "disagree" ? t(`แม้ตัดแนวโน้มที่ AI เข้ม/ใจดีเสมอออกแล้ว คุณกับ AI ก็ยังต่างกันเฉลี่ย ${s.value.toFixed(1)} ระดับ — คำอธิบายระดับยังไม่ชัด ลองเขียนให้เห็นต่างกันมากขึ้น`, `Even with the AI's steady lean taken out, you and it still differ by ${s.value.toFixed(1)} levels on average — the level wording is not clear enough. Make the levels easier to tell apart.`)
     : t(`เกณฑ์นี้มีคะแนนครึ่งหนึ่งขึ้นไป แต่ ${Math.round(s.value * 100)}% ของงานอยู่ระดับเดียวกัน — ไม่ช่วยแยกคน ลองลดคะแนนหรือแยกเป็นหลายเกณฑ์`, `This criterion carries half the points or more, yet ${Math.round(s.value * 100)}% of the work sits on one level — it does not separate students. Lower its points or split it.`);
   const flagged = Object.fromEntries(changes.map((c) => [c.criterionId, suggestionText(c)]));
 
   const ghost = "inline-flex h-8 items-center whitespace-nowrap rounded-lg border border-[var(--border)] bg-[var(--bg-surface)] px-3 text-xs font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)] active:scale-[.97] disabled:opacity-50 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors";
-  const primary = "h-10 px-5 whitespace-nowrap rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-semibold active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors";
   const word = (c: CriterionComparison) => {
     const sign = `${c.bias > 0 ? "+" : ""}${c.bias.toFixed(1)}`;
     return c.verdict === "lenient" ? t(`AI ใจดีไป (${sign} ระดับ)`, `AI is generous (${sign} level)`)
@@ -389,7 +385,7 @@ function ResultSection({ run, units, assignment, rubric, locked, courseId, grade
         <div className="flex items-center gap-3">
           <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--accent-solid)] text-xs font-bold text-[var(--accent-solid-text)]">2</span>
           <div>
-            <h2 id="cal-3" className="text-base font-bold text-[var(--text-primary)]">{t("เทียบกับ AI แล้วปรับ", "Compare with the AI, then tune")}</h2>
+            <h2 id="cal-3" className="text-base font-bold text-[var(--text-primary)]">{t("เทียบกับ AI", "Compare with the AI")}</h2>
             <p className="mt-0.5 text-xs text-[var(--text-muted)]">{t(`จาก ${run.sampleIds.length} ตัวอย่างที่คุณตรวจเอง`, `From the ${run.sampleIds.length} samples you scored`)}</p>
           </div>
         </div>
@@ -397,7 +393,7 @@ function ResultSection({ run, units, assignment, rubric, locked, courseId, grade
       </div>
       {run.sawAi && (
         <p data-testid="cal-not-blind" className="mb-4 rounded-xl border border-[var(--s-info-bd)] bg-[var(--s-info-bg)] px-4 py-3 text-sm text-[var(--s-info-text)]">
-          {t("รอบนี้ไม่ใช่ blind — คุณเห็นระดับที่ AI ให้ระหว่างตรวจ ความตรงกันจึงอาจสูงกว่าความจริง ถ้าจะใช้ปรับความเข้มของ AI ให้เชื่อถือได้ ควรปรับเทียบใหม่โดยเปิด Blind test", "This round was not blind — you could see the AI's level while scoring, so agreement may read higher than it really is. To tune the AI's strictness with confidence, run it again with the Blind test on.")}
+          {t("รอบนี้ไม่ใช่ blind — คุณเห็นระดับที่ AI ให้ระหว่างตรวจ ความตรงกันจึงอาจสูงกว่าความจริง ถ้าจะให้เชื่อถือได้ ควรปรับเทียบใหม่โดยเปิด Blind test", "This round was not blind — you could see the AI's level while scoring, so agreement may read higher than it really is. To trust the comparison, run it again with the Blind test on.")}
         </p>
       )}
 
@@ -410,13 +406,11 @@ function ResultSection({ run, units, assignment, rubric, locked, courseId, grade
               <th scope="col" className="px-4 py-3">AI</th>
               <th scope="col" className="px-4 py-3">{t("ตรงกัน", "Same level")}</th>
               <th scope="col" className="px-4 py-3">{t("ผล", "Result")}</th>
-              <th scope="col" className="px-4 py-3">{t("ปรับ AI", "AI correction")}<span className="mt-0.5 block text-[11px] font-normal normal-case tracking-normal">{t("+ เข้มขึ้น · − ใจดีขึ้น (ระดับ)", "+ stricter · − more generous (levels)")}</span></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[var(--border-subtle)]">
             {cmp.map((c) => {
               const crit = rubric.criteria.find((x) => x.id === c.criterionId)!;
-              const off = offsets[c.criterionId] ?? 0;
               return (
                 <tr key={c.criterionId} data-testid={`cmp-${c.criterionId}`}>
                   <th scope="row" className="px-4 py-3 text-left align-top font-normal"><CriterionName name={crit.name} /></th>
@@ -424,13 +418,6 @@ function ResultSection({ run, units, assignment, rubric, locked, courseId, grade
                   <td className="px-4 py-3 align-top tabular-nums" data-testid={`ai-${c.criterionId}`}>{t("ระดับ", "Level")} {level(crit, c.aiMean)}</td>
                   <td className="px-4 py-3 align-top tabular-nums" data-testid={`agree-${c.criterionId}`}>{Math.round(c.agreement * 100)}%</td>
                   <td className="px-4 py-3 align-top"><span data-testid={`verdict-${c.criterionId}`} className={`inline-flex items-center whitespace-nowrap rounded-md border px-2 py-0.5 text-xs font-semibold ${VERDICT_TONE[c.verdict]}`}>{word(c)}</span></td>
-                  <td className="px-4 py-3 align-top">
-                    <div role="group" aria-label={t(`ปรับความเข้ม ${crit.name}`, `Strictness for ${crit.name}`)} className="inline-flex items-center gap-1">
-                      <button type="button" aria-label={t("เข้มน้อยลง", "Less strict")} disabled={off <= -MAX_OFFSET} onClick={() => setOffsets((o) => ({ ...o, [c.criterionId]: off - 1 }))} className={`${ghost} !h-8 !w-8 !px-0 justify-center`}>−</button>
-                      <output data-testid={`offset-${c.criterionId}`} className="w-9 text-center text-sm font-semibold tabular-nums text-[var(--text-primary)]">{off > 0 ? `+${off}` : off}</output>
-                      <button type="button" aria-label={t("เข้มขึ้น", "Stricter")} disabled={off >= MAX_OFFSET} onClick={() => setOffsets((o) => ({ ...o, [c.criterionId]: off + 1 }))} className={`${ghost} !h-8 !w-8 !px-0 justify-center`}>+</button>
-                    </div>
-                  </td>
                 </tr>
               );
             })}
@@ -438,16 +425,10 @@ function ResultSection({ run, units, assignment, rubric, locked, courseId, grade
         </table>
       </div>
 
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-        <p data-testid="cal-apply-note" className="text-sm text-[var(--text-secondary)] max-w-2xl">
-          {run.appliedAt
-            ? t("ใช้ค่านี้แล้ว — “ตรวจด้วย AI” ครั้งถัดไปของงานนี้จะใช้ค่าที่ปรับ ส่วนงานที่ AI ตรวจไปแล้วให้ตรวจใหม่ได้ที่ด้านล่าง", "Applied — the next “Grade with AI” on this assignment uses these corrections. Work the AI already graded can be graded again below.")
-            : locked
-              ? t("ประกาศผลแล้ว จึงไม่มี “ตรวจด้วย AI” อีก — ใช้ค่านี้ไม่ได้", "Results are announced, so there is no more AI grading on this assignment — the values cannot be used.")
-              : t("ค่านี้ยังไม่ถูกใช้ — กด “ใช้ค่านี้” เมื่อพอใจ", "Nothing is changed yet — press “Use these values” when you are happy with them.")}
-        </p>
-        <button type="button" disabled={locked || !!run.appliedAt} onClick={() => onApply(offsets)} className={primary}>{t("ใช้ค่านี้", "Use these values")}</button>
-      </div>
+      {/* what to do with a steady lean: there is no AI setting to turn any more (removed 10/11/2569) — the rubric's level wording is what can change */}
+      <p data-testid="cal-lean-note" className="mt-4 max-w-3xl text-sm text-[var(--text-secondary)]">
+        {t("ถ้า AI ใจดีหรือเข้มไปอย่างสม่ำเสมอ ให้ดูข้อเสนอแนะด้านล่างและปรับคำอธิบายระดับใน rubric แล้วให้ AI ตรวจใหม่", "If the AI is steadily generous or strict, use the suggestions below to make the level wording clearer, then have the AI grade again.")}
+      </p>
 
       <h3 className="mt-8 mb-3 text-sm font-bold text-[var(--text-primary)]">{t("ข้อเสนอแนะเรื่อง rubric", "What the rubric itself may need")}</h3>
       {changes.length === 0 ? (

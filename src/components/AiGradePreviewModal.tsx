@@ -7,7 +7,7 @@ import { useAiGrading } from "@/lib/useAiGrading";
 import RubricTable from "@/components/RubricTable";
 
 /**
- * "Grade with AI" asks first (22/10/2569): which work goes to the AI, with which rubric, how strict the AI is on it, and what a late
+ * "Grade with AI" asks first (22/10/2569): which work goes to the AI, with which rubric, and what a late
  * hand-in costs — so nobody starts a grading run on a rubric they have not looked at. Also the "Regrade with new rubric" step after
  * the rubric was changed while grading was under way (Assignment.rubricRestartedAt). Nothing is written until the teacher confirms.
  */
@@ -34,7 +34,6 @@ export default function AiGradePreviewModal({ assignment, open, onClose, onConfi
   const restarted = !!assignment.rubricRestartedAt;
   const total = criteria.reduce((s, c) => s + c.maxPoints, 0);
 
-  const offsets = Object.entries(rubric?.aiOffsets ?? {}).filter(([, v]) => v !== 0);
   const policy = activeLatePolicy(assignment);
   const lateUnits = units.filter((u) => u.subs.some((s) => latePenaltyOf(assignment, s) > 0)).length;
 
@@ -97,32 +96,6 @@ export default function AiGradePreviewModal({ assignment, open, onClose, onConfi
             </p>
           )}
         </section>
-
-        {hasRubric && (
-          <section aria-label={t("ความเข้มของ AI", "AI strictness")}>
-            <h3 className={sectionTitle}>{t("ความเข้มของ AI", "AI strictness")}</h3>
-            <div data-testid="ai-preview-strictness" className="mt-1.5 text-sm leading-relaxed text-[var(--text-primary)]">
-              {offsets.length === 0 ? (
-                <p>{t("ค่ามาตรฐาน — ยังไม่ได้ปรับเทียบกับการตรวจของคุณ", "Standard — not yet calibrated against your own grading.")}</p>
-              ) : (
-                <>
-                  <p>{t(`ใช้ค่าที่ปรับเทียบไว้ ${offsets.length} เกณฑ์`, `Using the calibration you saved on ${offsets.length} ${offsets.length === 1 ? "criterion" : "criteria"}:`)}</p>
-                  <ul className="mt-1 flex list-disc flex-col gap-0.5 pl-5 text-[var(--text-secondary)]">
-                    {offsets.map(([cid, v]) => (
-                      <li key={cid}>
-                        {criteria.find((c) => c.id === cid)?.name ?? cid}
-                        {" — "}
-                        {v > 0
-                          ? t(`เข้มขึ้น ${v} ระดับ`, `stricter by ${v} ${v === 1 ? "level" : "levels"}`)
-                          : t(`ผ่อนลง ${-v} ระดับ`, `more generous by ${-v} ${v === -1 ? "level" : "levels"}`)}
-                      </li>
-                    ))}
-                  </ul>
-                </>
-              )}
-            </div>
-          </section>
-        )}
 
         {policy && !nothingWaiting && (
           <section aria-label={t("งานส่งช้า", "Late work")}>
