@@ -333,7 +333,8 @@ export default function RubricCriteriaEditor({
     <>
       {/* Points total + tools */}
       <div className="flex items-stretch gap-3 mb-5 flex-wrap">
-        <div className={`flex-1 min-w-[280px] flex items-center justify-between px-5 py-3 rounded-xl text-sm font-medium ${
+        {/* min-w: the box takes a whole row rather than being squeezed beside the tools (it wrapped "100 pts / total" over two lines at 1600px, 11/11/2569) */}
+        <div className={`flex-1 min-w-[min(100%,34rem)] flex items-center justify-between gap-3 px-5 py-3 rounded-xl text-sm font-medium ${
           pointsOk ? "bg-[var(--accent-subtle)] text-[var(--accent)] border border-[var(--accent-bright)]" : "bg-[var(--s-warn-bg)] text-[var(--s-warn-text)] border border-[var(--s-warn-bd)]"
         }`}>
           <div className="flex items-center gap-2">
@@ -348,9 +349,9 @@ export default function RubricCriteriaEditor({
                 : t("ทุกเกณฑ์ต้องมีคะแนนมากกว่า 0", "Every criterion needs more than 0 points")}
             </span>
           </div>
-          <span className="font-mono text-base font-bold">{t(`รวม ${totalPoints} คะแนน`, `${totalPoints} pts total`)}</span>
+          <span className="shrink-0 whitespace-nowrap font-mono text-base font-bold">{t(`รวม ${totalPoints} คะแนน`, `${totalPoints} pts total`)}</span>
         </div>
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex flex-wrap items-center gap-3">
           <button
             type="button"
             onClick={openAiAssistant}
