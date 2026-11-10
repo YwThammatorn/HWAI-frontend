@@ -76,6 +76,7 @@ export default function ScoreBookPage() {
   const view = tab === "active" ? viewState : "matrix";
   const assignments = getAssignmentsByCourse(id);
   const categories = getCategoriesByCourse(id);
+  const totalWeight = categories.reduce((sum, c) => sum + c.weight, 0);
   const today = new Date().toISOString().split("T")[0];
 
   if (!course) {
@@ -346,6 +347,10 @@ export default function ScoreBookPage() {
             </ul>
           </div>
 
+          <p className="-mt-1 mb-3 text-xs text-[var(--text-muted)]">
+            {t("คะแนนรวมคิดจากหมวดที่ตรวจแล้วเท่านั้น (เช่น 37.3 / 50 = ตรวจแล้วครึ่งหนึ่งของน้ำหนักทั้งหมด) แถวที่ยังไม่ครบมีป้าย “บางส่วน”", "Total counts only the categories graded so far (e.g. 37.3 / 50 = half of the total weight is graded). Rows that are not complete are marked “partial”.")}
+          </p>
+
           {/* Matrix */}
           <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] overflow-hidden">
             <div className="overflow-auto max-h-[calc(100vh-380px)] min-h-[320px]">
@@ -454,6 +459,8 @@ export default function ScoreBookPage() {
                           <span title={t(`คิดจากหมวดที่มีงานตรวจแล้ว (น้ำหนักรวม ${r.gradedWeight}%)`, `Counts only categories with graded work (${r.gradedWeight}% of the total so far)`)}>
                             <span className="font-semibold text-[var(--text-primary)]">{r.total.toFixed(1)}</span>
                             <span className="text-[var(--text-muted)]"> / {r.gradedWeight}</span>
+                            {/* a total out of less than the full weight counts only what is graded so far: say so on the row (advisor, 10/11/2569: "some /100, some /50") */}
+                            {r.gradedWeight < totalWeight && <span data-testid="partial-total" className="ml-1.5 rounded-md bg-[var(--bg-app)] px-1.5 py-0.5 text-xs font-medium text-[var(--text-secondary)]">{t("บางส่วน", "partial")}</span>}
                           </span>
                         )}
                       </td>

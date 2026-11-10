@@ -178,6 +178,13 @@ test.describe("Score Book — cells", () => {
     await expect(cell(page, "69070101", "extra")).toHaveText("—");
   });
 
+  test("a total that counts only part of the weight says so (partial); a full one does not (10/11/2569)", async ({ page }) => {
+    await open(page);
+    await expect(rowOf(page, "69070103").getByTestId("partial-total")).toHaveText("partial");      // Chai: 15.0 / 30
+    await expect(rowOf(page, "69070101").getByTestId("partial-total")).toHaveCount(0);              // Somchai: 83.0 / 100
+    await expect(page.getByText("Total counts only the categories graded so far", { exact: false })).toBeVisible();
+  });
+
   test("rows are compact: a body row is well under the old 48px (15/10/2569)", async ({ page }) => {
     await open(page);
     const h = await rowOf(page, "69070101").evaluate((el) => el.getBoundingClientRect().height);
