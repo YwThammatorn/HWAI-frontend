@@ -106,8 +106,10 @@ export default function ProfileSidebar() {
   const seg = pathname.split("/");
   const section = activeCourseId ? seg[4] : undefined;
   const leaf = seg[6];
-  const onGrading = section === "grading" || (section === "assignments" && (leaf === "grading" || leaf === "recheck"));
-  const onScoreBook = section === "results" || (section === "assignments" && leaf === "results");
+  // An assignment's "Grading Result" page is reached from Grading (View Results) and is part of it; only the course matrix is the Score Book
+  // (advisor, 10/11/2569: the menu highlighted Score Book on the Grading Result page).
+  const onGrading = section === "grading" || (section === "assignments" && (leaf === "grading" || leaf === "recheck" || leaf === "results"));
+  const onScoreBook = section === "results";
   const onAssignments = section === "assignments" && !onGrading && !onScoreBook;
 
   const MAIN_NAV = [

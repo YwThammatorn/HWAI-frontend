@@ -111,7 +111,7 @@ test.describe("Sidebar", () => {
     ["/assignments/a-review/grading", "Grading"],
     ["/assignments/a-review/recheck?sub=s3", "Grading"],
     ["/results", "Score Book"],
-    ["/assignments/a-done/results", "Score Book"],
+    ["/assignments/a-done/results", "Grading"],   // the Grading Result page of one assignment belongs to Grading (10/11/2569); only /results is the Score Book
   ];
   for (const [url, expected] of CASES) {
     test(`${url} highlights only ${expected}`, async ({ page }) => {
