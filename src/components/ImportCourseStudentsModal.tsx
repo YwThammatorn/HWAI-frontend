@@ -45,6 +45,8 @@ export default function ImportCourseStudentsModal({ courseId, courseName, onClos
 
   const validRows = rows.filter((r) => !r.error);
   const errorRows = rows.filter((r) => r.error);
+  // problems first (advisor, 10/11/2569) — the file's own order is kept inside each group
+  const shownRows = [...errorRows, ...validRows];
 
   function translateError(code?: string) {
     if (!code) return "";
@@ -282,7 +284,7 @@ export default function ImportCourseStudentsModal({ courseId, courseName, onClos
                     </tr>
                   </thead>
                   <tbody>
-                    {rows.map((row) => (
+                    {shownRows.map((row) => (
                       <tr key={row.line} className={`border-t border-[var(--border-subtle)] ${row.error ? "bg-[var(--s-err-bg)]" : ""}`}>
                         <td className="px-3 py-1.5 text-[var(--text-muted)] tabular-nums">{row.line}</td>
                         <td className="px-3 py-1.5 text-[var(--text-primary)] tabular-nums">{row.studentId || "—"}</td>

@@ -49,6 +49,8 @@ export default function ImportExamScoresModal({ students, withdrawnIds, maxPoint
   const fillable = rows.filter((r) => r.status === "new" || r.status === "overwrite");
   const replaced = rows.filter((r) => r.status === "overwrite").length;
   const errors = rows.filter((r) => isError(r.status));
+  // The rows with a problem come first (advisor, 10/11/2569): in a long file the ones to fix were buried; ties keep the file's line order
+  const shownRows = [...rows].sort((a, b) => Number(isError(b.status)) - Number(isError(a.status)) || a.line - b.line);
   const skipped = rows.filter((r) => r.status === "same" || r.status === "empty").length;
   const inFile = new Set(rows.map((r) => r.studentId));
   const notInFile = students.filter((s) => !inFile.has(s.studentId)).length;
@@ -192,7 +194,7 @@ export default function ImportExamScoresModal({ students, withdrawnIds, maxPoint
                       <tr>{["#", t("รหัสนักศึกษา", "Student ID"), t("ชื่อ-นามสกุล", "Name"), t("คะแนนในไฟล์", "Score in file"), t("สถานะ", "Status")].map((h) => <th key={h} className="px-3 py-2 text-left font-semibold text-[var(--text-muted)]">{h}</th>)}</tr>
                     </thead>
                     <tbody>
-                      {rows.map((r) => (
+                      {shownRows.map((r) => (
                         <tr key={r.line} data-status={r.status} className={`border-t border-[var(--border-subtle)] ${isError(r.status) ? "bg-[var(--s-err-bg)]" : ""}`}>
                           <td className="px-3 py-1.5 text-[var(--text-muted)] tabular-nums">{r.line}</td>
                           <td className="px-3 py-1.5 text-[var(--text-primary)] tabular-nums">{r.rawId || "—"}</td>

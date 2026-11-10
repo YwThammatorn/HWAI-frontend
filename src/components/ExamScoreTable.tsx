@@ -79,14 +79,14 @@ export default function ExamScoreTable({ students, titleOf, scores, maxPoints, e
           </p>
         </div>
         {readOnly ? (
-          readOnlyReason && <span className="text-xs text-[var(--text-muted)]">{readOnlyReason}</span>
+          readOnlyReason && (
+            <span data-testid="scores-locked" className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--bg-app)] px-2.5 py-1 text-xs font-medium text-[var(--text-secondary)]">
+              <Icon name="lock" size="sm" />
+              {readOnlyReason}
+            </span>
+          )
         ) : (
           <div className="flex items-center gap-3">
-            {changed.length > 0 && (
-              <span className="text-xs text-[var(--text-muted)] tabular-nums" aria-live="polite">
-                {t(`แก้ไข ${changed.length} รายการ`, `${changed.length} changed`)}
-              </span>
-            )}
             <button
               type="button"
               onClick={() => setImportOpen(true)}
@@ -94,14 +94,6 @@ export default function ExamScoreTable({ students, titleOf, scores, maxPoints, e
             >
               <Icon name="download" />
               {t("นำเข้าด้วย CSV", "Import CSV")}
-            </button>
-            <button
-              type="button"
-              onClick={handleSave}
-              disabled={changed.length === 0 || anyBad}
-              className="h-9 px-4 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
-            >
-              {t("บันทึกคะแนน", "Save scores")}
             </button>
           </div>
         )}
@@ -156,6 +148,13 @@ export default function ExamScoreTable({ students, titleOf, scores, maxPoints, e
                     <td className="px-4 py-2 text-[var(--text-secondary)] tabular-nums">{s.studentId}</td>
                     <td className="px-4 py-2 font-medium text-[var(--text-primary)]">{title ? `${title} ` : ""}{s.firstName} {s.lastName}</td>
                     <td className="px-4 py-2">
+                      {readOnly ? (
+                        // locked (grading is finished / a withdrawn student): the score is read, not typed — a disabled box still looked editable (advisor, 10/11/2569)
+                        <div className="flex items-baseline gap-1.5" aria-label={t(`คะแนนของ ${s.firstName} ${s.lastName}`, `Score for ${s.firstName} ${s.lastName}`)}>
+                          <span className="text-sm font-semibold tabular-nums text-[var(--text-primary)]">{raw === "" ? "—" : raw}</span>
+                          <span className="text-xs text-[var(--text-muted)] tabular-nums">/ {maxPoints}</span>
+                        </div>
+                      ) : (
                       <div className="flex items-center gap-2">
                         <input
                           type="number"
@@ -175,6 +174,7 @@ export default function ExamScoreTable({ students, titleOf, scores, maxPoints, e
                         <span className="text-xs text-[var(--text-muted)] tabular-nums">/ {maxPoints}</span>
                         {bad && <span role="alert" className="text-xs text-[var(--s-err-text)]">{t(`0–${maxPoints} เท่านั้น`, `0–${maxPoints} only`)}</span>}
                       </div>
+                      )}
                     </td>
                     <td className="px-4 py-2">
                       {isSaved ? (
@@ -188,6 +188,22 @@ export default function ExamScoreTable({ students, titleOf, scores, maxPoints, e
               })}
             </tbody>
           </table>
+        </div>
+      )}
+      {!readOnly && students.length > 0 && (
+        <div className="sticky bottom-0 flex items-center justify-end gap-3 border-t border-[var(--border-subtle)] bg-[var(--bg-surface)] px-5 py-3">
+          <span className="text-xs text-[var(--text-muted)] tabular-nums" aria-live="polite">
+            {changed.length > 0 ? t(`แก้ไข ${changed.length} รายการ ยังไม่บันทึก`, `${changed.length} changed, not saved yet`) : t("ยังไม่มีการแก้ไข", "No changes yet")}
+          </span>
+          <button
+            type="button"
+            data-testid="save-scores-foot"
+            onClick={handleSave}
+            disabled={changed.length === 0 || anyBad}
+            className="h-9 px-4 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-all"
+          >
+            {t("บันทึกคะแนน", "Save scores")}
+          </button>
         </div>
       )}
       {importOpen && (
