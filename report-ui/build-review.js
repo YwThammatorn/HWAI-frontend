@@ -1,5 +1,5 @@
-// Review copy of the 3.4 chapter (NOT for the thesis): every figure with a status tag, new text in green, changed words in yellow, removed words in red strikethrough.
-// Compares report-ui/build-report.js (now) with the committed version (git HEAD = the 16/10 text), and each new shot with report-ui/shots-16-oct/.
+// Review copy of the UI chapter, 3.6 (3.4 in older drafts) (NOT for the thesis): every figure with a status tag, new text in green, changed words in yellow, removed words in red strikethrough.
+// Compares report-ui/build-report.js (now) with the committed version (git HEAD), and each new shot with the set taken before the advisor-comment work (report-ui/imgdiff.py → imgdiff.json).
 //   NODE_PATH=C:/Users/ASUS/report-tools/node_modules node report-ui/build-review.js <imgdiff.json> [out.docx]
 const fs = require("fs");
 const path = require("path");
@@ -24,7 +24,7 @@ function parse(src) {
   return items;
 }
 const newItems = parse(NEW_SRC), oldItems = parse(OLD_SRC);
-const ID_OLD = { "teacher-08b-grading-student-detail": "teacher-08b-grade-adjustment", "teacher-09-rubric-tab": "teacher-09-rubric-card", "teacher-20d-edit-rubric-popup": "teacher-20c-edit-rubric-popup" };
+const ID_OLD = {};   // the committed text already uses the current figure ids (older renames are gone)
 const OLD_ID_SHOT = (id) => ID_OLD[id] || id;
 const oldFig = new Map(oldItems.filter((x) => x.type === "figure").map((x) => [x.id, x]));
 const oldTexts = oldItems.filter((x) => x.type !== "figure").map((x) => x.text);
@@ -80,7 +80,7 @@ for (const it of newItems) {
   }
   // figure
   fig += 1;
-  const num = `รูปที่ 3.${fig - 1}`;
+  const num = `รูปที่ 3.${fig}`;                       // the first figure of the chapter is 3.2 (fig starts at 1), as in build-report.js
   const old = oldFig.get(OLD_ID_SHOT(it.id));
   const st = imgStatus(it.id);
   const head = [tr(`${num} · ${it.title}  `, { bold: true, size: 34 })];
@@ -88,7 +88,7 @@ for (const it of newItems) {
   if (!old) { head.push(tag("ข้อความ+ภาพ: ใหม่", "green")); textBlock = para([tr(it.text, { highlight: "green" })]); stats.newFig.push(`${num} ${it.title}`); }
   else if (old.text === it.text) { head.push(tag("ข้อความ: ไม่เปลี่ยน", null)); textBlock = para([tr(it.text, { color: "808080" })]); stats.textSame.push(it.id); }
   else { head.push(tag("ข้อความ: แก้ไข", "yellow")); textBlock = para(diffRuns(old.text, it.text)); stats.rewritten.push(`${num} ${it.title}`); }
-  if (old) (st.rank >= 3 ? stats.imgBig : st.rank >= 1 ? stats.imgSmall : stats.imgSame).push(`${num} ${it.title}`);
+  if (old) (st.rank >= 2 ? stats.imgBig : st.rank >= 1 ? stats.imgSmall : stats.imgSame).push(`${num} ${it.title}`);
   blocks.push(para(head, { keepNext: true, spacing: { before: 240, after: 80 } }));
   blocks.push(para([tag("ภาพ: " + st.label, st.hl)], { keepNext: true }));
   blocks.push(textBlock);
@@ -99,10 +99,10 @@ for (const it of newItems) {
 
 const li = (arr) => arr.map((x) => para([tr("• " + x)], { spacing: { after: 40 } }));
 const head = [
-  para([tr("ไฟล์ตรวจทานการเปลี่ยนแปลงของบท 3.4 (ไม่ใช่ฉบับวางในเล่ม)", { bold: true, size: 44 })]),
-  para([tr("เทียบกับฉบับ 16 ต.ค. 2569", { size: 32 })]),
+  para([tr("ไฟล์ตรวจทานการเปลี่ยนแปลงของบท 3.6 หน้า UI (ไม่ใช่ฉบับวางในเล่ม)", { bold: true, size: 44 })]),
+  para([tr("เทียบกับฉบับก่อนแก้ตามความเห็นอาจารย์ที่ปรึกษา (11/11/2569) · ข้อความ: ฉบับที่ commit ไว้ก่อนรอบนี้ · ภาพ: ชุดที่แคปก่อนเริ่มแก้", { size: 32 })]),
   para([tag("เขียว = ใหม่", "green"), tr("  "), tag("เหลือง = คำที่เพิ่ม/แก้", "yellow"), tr("  "), tr("คำที่ถูกลบ", { strike: true, color: "C00000" }), tr("  "), tr("ตัวอักษรเทา = ข้อความไม่เปลี่ยน", { color: "808080" })]),
-  para([tr("หมายเหตุเรื่องภาพ: ทุกภาพถูกแคปใหม่ทั้งหมด (ข้อมูลจำลอง ชื่อนักศึกษา วันที่ และ UI ที่ปรับหลัง 16 ต.ค.) ตัวเลขเปอร์เซ็นต์คือสัดส่วนพิกเซลที่ต่างจากภาพเดิมเทียบแบบหยาบ (วัดจากชุดที่แคปที่ความกว้างเดียวกับภาพเดิมเพื่อไม่ให้ขนาดหน้าจอทำให้เพี้ยน ส่วนภาพในไฟล์นี้เป็นชุดความละเอียดสูงที่ 1600px กว้าง 2 เท่า) ใช้ประกอบการตัดสินใจเท่านั้น ควรเปิดดูภาพจริงของรูปที่ติดป้ายเหลือง/แดง", { color: "595959" })]),
+  para([tr("หมายเหตุเรื่องภาพ: ทุกภาพถูกแคปใหม่ทั้งหมด (ข้อมูลจำลอง วันที่ และ UI ที่ปรับตามความเห็นอาจารย์) ตัวเลขเปอร์เซ็นต์คือสัดส่วนพิกเซลที่ต่างจากภาพชุดก่อนแก้เทียบแบบหยาบ (เทียบส่วนบนของภาพที่ทั้งสองชุดมีเหมือนกัน เพราะชุดใหม่แคปหน้าจอสูงขึ้นเพื่อให้เมนูซ้ายแสดงครบ ส่วนภาพในไฟล์นี้เป็นชุดความละเอียดสูงที่ 1280px กว้าง 2 เท่า) ใช้ประกอบการตัดสินใจเท่านั้น ควรเปิดดูภาพจริงของรูปที่ติดป้ายเหลือง/แดง", { color: "595959" })]),
   para([tr("สรุป", { bold: true, size: 38 })], { spacing: { before: 200 } }),
   para([tr(`รูปใหม่ ${stats.newFig.length} รูป`, { bold: true })]), ...li(stats.newFig),
   para([tr(`ข้อความที่เขียนใหม่/แก้ไข ${stats.rewritten.length} จุด`, { bold: true })], { spacing: { before: 120 } }), ...li(stats.rewritten),
@@ -110,7 +110,7 @@ const head = [
   para([tr(`ข้อความเดิม ภาพต่างเล็กน้อย ${stats.imgSmall.length} รูป · ภาพเกือบเหมือนเดิม ${stats.imgSame.length} รูป`, { bold: true })], { spacing: { before: 120 } }),
 ];
 const doc = new Document({
-  creator: "HWAI Agent", title: "ตรวจทานการเปลี่ยนแปลงบท 3.4",
+  creator: "HWAI Agent", title: "ตรวจทานการเปลี่ยนแปลงบท 3.6",
   styles: { default: { document: { run: { font: FONT, size: SZ, language: { value: "th-TH", eastAsia: "th-TH", bidirectional: "th-TH" } } } } },
   sections: [{ properties: { page: { size: { width: 11906, height: 16838 }, margin: { top: 1200, bottom: 1200, left: 1400, right: 1200 } } }, children: [...head, ...blocks] }],
 });

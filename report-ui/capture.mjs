@@ -106,6 +106,34 @@ const clock = (iso) => page.evaluate((v) => {
   else localStorage.setItem("hwai_clock_offset_min", String(Math.round((new Date(v).getTime() - Date.now()) / 60000)));
 }, iso);
 
+/**
+ * The "not open for grading yet" screens (advisor, 11/11/2569: they showed grades on work that was said not to be open). Moving the clock back leaves the data as it is
+ * after grading, so for the moment of the shot the work due on or after 28 Sep is put back as it would be then: only what was handed in before `iso`, nothing graded,
+ * nothing announced. Browser data only; `restoreData()` puts the real copy back.
+ */
+async function rewindData(iso) {
+  await page.evaluate((v) => {
+    const get = (k) => JSON.parse(localStorage.getItem(k) || "[]"), set = (k, x) => localStorage.setItem(k, JSON.stringify(x));
+    localStorage.setItem("__bk_asg", localStorage.getItem("hwai_assignments_v1") || "[]");
+    localStorage.setItem("__bk_sub", localStorage.getItem("hwai_submissions_v1") || "[]");
+    const cut = new Date(v).getTime();
+    const due = new Set(get("hwai_assignments_v1").filter((a) => (a.dueDate || "") >= "2026-09-28").map((a) => a.id));
+    set("hwai_assignments_v1", get("hwai_assignments_v1").map((a) => { if (!due.has(a.id)) return a; const { gradingFinalized, ...rest } = a; return rest; }));
+    set("hwai_submissions_v1", get("hwai_submissions_v1").filter((s) => !due.has(s.assignmentId) || new Date(s.submittedAt).getTime() <= cut).map((s) => {
+      if (!due.has(s.assignmentId)) return s;
+      const { criterionScores, aiCriterionScores, aiEvidence, criterionComments, ...rest } = s;
+      return { ...rest, status: "not_graded", aiScore: null, instructorScore: null, instructorComment: "" };
+    }));
+  }, iso);
+}
+async function restoreData() {
+  await page.evaluate(() => {
+    localStorage.setItem("hwai_assignments_v1", localStorage.getItem("__bk_asg") || "[]");
+    localStorage.setItem("hwai_submissions_v1", localStorage.getItem("__bk_sub") || "[]");
+    localStorage.removeItem("__bk_asg"); localStorage.removeItem("__bk_sub");
+  });
+}
+
 let count = 0;
 /** open `url` (already signed in), run `prep`, save shots/<name>.png */
 async function shot(name, url, prep, opts = {}) {
@@ -186,17 +214,27 @@ if (want("teacher")) {
   // grading opens only after submissions close (due date, or the close date of the late policy): the clock is moved to the evening of 28 Sep, before Reorder / Usability Testing
   // are due (23:59), so the not-yet-open state shows. Those assignments are not announced, so they are the ones that show the lock.
   await clock("2026-09-28T20:00:00+07:00");
+  await rewindData("2026-09-28T20:00:00+07:00");
   await shot("teacher-07b-grading-locked", U + "/grading", center("Reorder / Redesign UI"));
   await shot("teacher-08c-assignment-grading-locked", U + "/assignments/a-uxui-17/grading", undefined, { height: 1000 });
+  await restoreData();
   await clock(null);
 
   // one assignment's grading page (11/11/2569: one screen — summary strip, list on the left, details on the right). Usability Testing = an individual assignment, 30 students.
-  // The viewport is taller (1600x1000) so the two panels are not cut in the middle of a row.
+  // The viewport is taller (1000 for a 900 page) so the two panels are not cut in the middle of a row.
   const G = U + "/assignments/a-uxui-18/grading";
   await shot("teacher-08-assignment-grading", G, undefined, { height: 1000 });
   await shot("teacher-08b-grading-student-detail", G, async (p) => { await p.locator("[data-row-key]").nth(1).click(); await p.waitForTimeout(600); }, { height: 1000 });
   await shot("teacher-09-rubric-tab", G, async (p) => { await p.getByRole("tab", { name: "Rubric" }).click(); await p.waitForTimeout(600); }, { height: 1000 });
-  await shot("teacher-10-recheck", G, async (p) => { await p.locator("[data-row-key]").nth(1).getByRole("link", { name: /^Grade/ }).click(); await p.waitForLoadState("networkidle"); });
+  // Grading Review (11/11/2569): a piece of work with a Figma link — its frozen frames on the left, the AI's reason per criterion on the right; then a reference chip pressed
+  const G13 = U + "/assignments/a-uxui-13/grading";
+  await shot("teacher-10-recheck", G13, async (p) => { await p.locator("[data-row-key]").nth(1).getByRole("link", { name: /^Grade/ }).click(); await p.waitForLoadState("networkidle"); await p.getByTestId("frame-viewer").waitFor(); });
+  try {
+    await page.locator("[data-testid^=ref-]").first().click();
+    await page.waitForTimeout(500);
+    await page.screenshot({ path: path.join(OUT, "teacher-10b-recheck-reference-chip.png") });
+    count++; console.log("  ✓ teacher-10b-recheck-reference-chip");
+  } catch (e) { console.log("  ! reference chip shot failed —", String(e.message).slice(0, 120)); }
   await shot("teacher-22-grading-result", U + "/assignments/a-uxui-8/results");
 
   await shot("teacher-13-score-book", U + "/results");
@@ -227,7 +265,9 @@ if (want("teacher")) {
   });
   // Calibration (11/11/2569: no AI "strictness" offset any more). The button on a grading page opens it on that assignment; the teacher scores a blind sample,
   // compares with what the AI gave, reads what the rubric itself may need, and can let the AI grade again with the rubric as it is now.
-  await shot("teacher-20-calibration", G, async (p) => { await p.getByTestId("calibrate-ai").click(); await p.waitForLoadState("networkidle"); await p.waitForTimeout(1500); });
+  // Reorder / Redesign UI (a Figma group assignment, not announced): the samples show frames, and the regrade panel / Edit rubric popup are not locked
+  const G17 = U + "/assignments/a-uxui-17/grading";
+  await shot("teacher-20-calibration", G17, async (p) => { await p.getByTestId("calibrate-ai").click(); await p.waitForLoadState("networkidle"); await p.waitForTimeout(1500); });
   await page.waitForTimeout(500);
   try {
     // 5 samples: score each criterion of each one (a different level now and then, so the comparison has something to show)
@@ -313,6 +353,8 @@ if (want("ta")) {
   await trimTeacher();
   await as("teacher");
   await shot("ta-01-collaborators", U + "/collaborators");
+  await shot("ta-01b-assign-work", U + "/grading-split");
+  await shot("ta-01c-assign-work-popup", U + "/grading-split", async (p) => { await p.getByTestId("assign-open-" + USERS.ta.studentId).click(); await p.getByRole("dialog").waitFor(); await p.waitForTimeout(500); });
   await as("ta");
   await shot("ta-02-hat-switch", "/student", async (p) => { await p.getByTestId("hat-switch").click(); await p.waitForTimeout(500); });
   await page.goto(`${BASE}/student`);
@@ -323,8 +365,9 @@ if (want("ta")) {
   await shot("ta-03-my-courses", "/teacher/courses");
   await shot("ta-04-course-overview", U);
   await shot("ta-05-course-grading", U + "/grading");
-  await shot("ta-06-assignment-grading", U + "/assignments/a-uxui-18/grading", undefined, { height: 1000 });
-  await shot("ta-07-grade", U + "/assignments/a-uxui-18/grading", async (p) => { await p.locator("[data-row-key]").nth(1).getByRole("link", { name: /^Grade/ }).click(); await p.waitForLoadState("networkidle"); });
+  await shot("ta-06-assignment-grading", U + "/assignments/a-uxui-17/grading", undefined, { height: 1000 });
+  // the first row is a team the AI has graded and nobody has reviewed yet: the screen shows the AI's reason per criterion (a TA may read it)
+  await shot("ta-07-grade", U + "/assignments/a-uxui-17/grading", async (p) => { await p.locator("[data-row-key]").nth(0).getByRole("link", { name: /^Grade/ }).click(); await p.waitForLoadState("networkidle"); });
   await shot("ta-08-score-book", U + "/results");
   await shot("ta-09-students", U + "/students");
 }
