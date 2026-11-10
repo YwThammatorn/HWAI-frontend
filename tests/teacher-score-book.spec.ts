@@ -356,7 +356,7 @@ test.describe("Score Book — totals", () => {
     await seed(sp, { role: "student" });
     await sp.goto(`${BASE}/student/courses/c-sb/evaluation`);
     await sp.waitForLoadState("networkidle");
-    await expect(sp.getByText("Total so far").locator("xpath=following-sibling::p[1]")).toContainText("83.0%");
+    await expect(sp.getByText("Weighted score so far").locator("xpath=following-sibling::p[1]")).toContainText("83.0%");
     await ctx.close();
   });
 });

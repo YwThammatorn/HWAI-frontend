@@ -125,7 +125,7 @@ test.describe("Same titles as admin", () => {
 
   test("student evaluation total is a stat number (30px), not bigger", async ({ page }) => {
     await open(page, "student", "/student/courses/c-mock-1/evaluation");
-    expect(await size(page.getByText("Total so far").locator("xpath=following-sibling::p[1]"))).toBe(30);
+    expect(await size(page.getByText("Weighted score so far").locator("xpath=following-sibling::p[1]"))).toBe(30);
   });
 });
 

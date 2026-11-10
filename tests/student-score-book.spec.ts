@@ -93,7 +93,7 @@ test.describe("Student Evaluation — layout", () => {
     await expect(page.locator("h1")).toHaveText("Evaluation");
     await expect(page.getByText("Programming · 6 assignments")).toBeVisible();
     // 2 graded (hw1, hw2) + 1 excluded-but-graded (extra) = 3/6 = 50%; awaiting = hw3 missing + mid1 pending = 2
-    await expect(page.getByText("Graded", { exact: true })).toBeVisible();
+    await expect(page.getByText("Assignments graded", { exact: true })).toBeVisible();
     await expect(page.getByText("50%", { exact: true })).toBeVisible();
     await expect(page.getByText("Awaiting grading", { exact: true })).toBeVisible();
     await expect(page.getByText("2", { exact: true })).toBeVisible();
@@ -180,7 +180,7 @@ test.describe("Student Evaluation — rubric breakdown", () => {
 test.describe("Student Evaluation — total", () => {
   test("weighted total so far and what it is based on — no letter grade next to it (15/10/2569)", async ({ page }) => {
     await open(page);
-    await expect(page.getByText("Total so far")).toBeVisible();
+    await expect(page.getByText("Weighted score so far")).toBeVisible();
     await expect(page.getByText("40.0%")).toBeVisible();
     await expect(page.getByText(/Based on 1\/2 categories graded/i)).toBeVisible();
     await expect(page.getByText("A", { exact: true })).toHaveCount(0);
@@ -191,7 +191,7 @@ test.describe("Student Evaluation — fallback and empty states", () => {
   test("no categories configured falls back to a flat list, single un-grouped table", async ({ page }) => {
     await open(page, { empty: "noCategories" });
     await expect(page.getByText(/hasn't set up grade categories/i)).toBeVisible();
-    await expect(page.getByText("Total so far")).toHaveCount(0);
+    await expect(page.getByText("Weighted score so far")).toHaveCount(0);
     await expect(page.getByText("HW 1")).toBeVisible();
     const hw1 = scoreCell(page, "HW 1");
     await expect(hw1).toHaveText("90/100");
@@ -211,6 +211,6 @@ test.describe("Student Evaluation — Thai", () => {
     await expect(page.locator("h1")).toHaveText("ผลการประเมิน");
     await expect(page.getByText("รอตรวจ").first()).toBeVisible();
     await expect(page.getByText("ไม่ส่ง").first()).toBeVisible();
-    await expect(page.getByText("คะแนนรวมเท่าที่ตรวจแล้ว")).toBeVisible();
+    await expect(page.getByText("คะแนนรวมถ่วงน้ำหนักเท่าที่ตรวจแล้ว")).toBeVisible();
   });
 });

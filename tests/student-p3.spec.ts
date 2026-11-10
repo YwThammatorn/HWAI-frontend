@@ -261,7 +261,7 @@ test.describe("P3b — Course banner + grading categories on the classwork page"
     // read-only: no add / edit controls (those are teacher-only)
     await expect(page.getByRole("button", { name: /Add Category/i })).toHaveCount(0);
     // the old evaluation summary card is gone from this page
-    await expect(page.getByText("Total so far")).toHaveCount(0);
+    await expect(page.getByText("Weighted score so far")).toHaveCount(0);
     await expect(page.getByText(/categories graded/)).toHaveCount(0);
   });
 

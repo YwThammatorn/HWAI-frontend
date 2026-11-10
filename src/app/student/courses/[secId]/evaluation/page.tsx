@@ -148,23 +148,11 @@ export default function StudentEvaluationPage() {
             </p>
           )}
 
-          {/* Summary */}
-          <div className="grid grid-cols-2 gap-4 mb-4">
-            <StatCard
-              label={t("ตรวจแล้ว", "Graded")} value={gradedPct} suffix="%"
-              tone="ok" icon="check-circle"
-            />
-            <StatCard
-              label={t("รอตรวจ", "Awaiting grading")} value={awaitingCount}
-              tone="warn" icon="hourglass"
-            />
-          </div>
-
           {categories.length > 0 && (
             <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-5 mb-5 flex items-center justify-between gap-4">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)] mb-1">
-                  {t("คะแนนรวมเท่าที่ตรวจแล้ว", "Total so far")}
+                  {t("คะแนนรวมถ่วงน้ำหนักเท่าที่ตรวจแล้ว", "Weighted score so far")}
                 </p>
                 <p className="text-2xl font-bold text-[var(--text-primary)] tabular-nums">
                   {gradedCategoryRows.length > 0 ? `${totalSoFar.toFixed(1)}%` : "—"}
@@ -180,6 +168,18 @@ export default function StudentEvaluationPage() {
               </div>
             </div>
           )}
+
+          {/* Summary */}
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <StatCard
+              label={t("งานที่ตรวจแล้ว", "Assignments graded")} value={gradedPct} suffix="%"
+              tone="ok" icon="check-circle"
+            />
+            <StatCard
+              label={t("รอตรวจ", "Awaiting grading")} value={awaitingCount}
+              tone="warn" icon="hourglass"
+            />
+          </div>
 
           {/* Legend — same tokens as the cells they explain (DESIGN.md §6/§9b). */}
           <ul className="flex items-center gap-3 text-xs text-[var(--text-secondary)] mb-3 flex-wrap" aria-label={t("คำอธิบายสี", "Legend")}>

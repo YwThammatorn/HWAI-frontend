@@ -233,15 +233,12 @@ function ClassworkDetail() {
               <AttachmentList attachments={assignment.attachments} />
             </div>
 
-            {classStats && (
-              <ExamStatsCard
-                name={assignment.name}
-                maxPoints={assignment.maxPoints}
-                stats={classStats}
-                myScore={isGraded ? score : null}
-                comment={examStats && isGraded ? mySubmission?.instructorComment || undefined : undefined}
-                showName={false}
-              />
+            {/* What the student came for, first (advisor, 10/11/2569; R11, 3.3.3 step 8): the teacher's comment, then the points per criterion; the class figures come after */}
+            {isGraded && !examStats && mySubmission?.instructorComment && (
+              <section data-testid="teacher-comment" className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-5">
+                <h2 className="text-sm font-bold text-[var(--text-primary)] mb-2">{t("ความเห็นจากอาจารย์", "Teacher's comment")}</h2>
+                <p className="text-sm leading-relaxed text-[var(--text-primary)]">{mySubmission.instructorComment}</p>
+              </section>
             )}
 
             {/* Rubric — read-only, shows what the student will be graded on */}
@@ -256,6 +253,16 @@ function ClassworkDetail() {
                   ))}
                 </div>
               </div>
+            )}
+            {classStats && (
+              <ExamStatsCard
+                name={assignment.name}
+                maxPoints={assignment.maxPoints}
+                stats={classStats}
+                myScore={isGraded ? score : null}
+                comment={examStats && isGraded ? mySubmission?.instructorComment || undefined : undefined}
+                showName={false}
+              />
             )}
           </div>
 
@@ -335,9 +342,6 @@ function ClassworkDetail() {
                     <p data-testid="late-deduction" className="text-xs mt-1 tabular-nums">
                       {t(`คะแนนงาน ${score + penalty} − ส่งช้าหัก ${penalty}`, `Work scored ${score + penalty} − late deduction ${penalty}`)}
                     </p>
-                  )}
-                  {mySubmission?.instructorComment && (
-                    <p className="text-xs mt-2 leading-relaxed">{mySubmission.instructorComment}</p>
                   )}
                   <AttachmentList attachments={submissionAttachments(mySubmission)} title={t("งานที่ส่ง", "Submitted work")} />
                 </div>

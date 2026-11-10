@@ -1,5 +1,5 @@
 import { test, expect, Page } from "@playwright/test";
-import { pickSample, compare, suggestRubricChanges, storedAiFor, aiGradedUnits, type CalibrationRun, type WorkUnit } from "../src/lib/calibration";
+import { pickSample, compare, overallAgreement, kappaBandOf, suggestRubricChanges, storedAiFor, aiGradedUnits, type CalibrationRun, type WorkUnit } from "../src/lib/calibration";
 import { mockAiGradeCriteria, aiGradingUpdate } from "../src/lib/aiGrading";
 
 import { BASE } from "./base";
@@ -281,6 +281,52 @@ test.describe("Calibration", () => {
     await expect(page.getByText("AI's level was visible")).toHaveCount(0);
   });
 
+  test("the verdict comes from how often both chose the very same level — 40 % is not 'aligned' however small the mean difference (10/11/2569)", () => {
+    const units = aiUnits("a-cal");
+    const sample = pickSample(units, { criteria: CRITERIA }, 5);
+    const aiK1 = (u: WorkUnit) => mockAiGradeCriteria(u.key, CRITERIA).levels.k1;
+    const missBy1 = (l: number) => (l >= 3 ? l - 1 : l + 1);               // one level off, kept on the scale
+    const runWith = (misses: number): CalibrationRun => ({
+      id: "r", assignmentId: "a-cal", createdAt: NOW, completedAt: NOW, sampleIds: sample.map((u) => u.key),
+      teacherLevels: Object.fromEntries(sample.map((u, i) => [u.key, { k1: i < misses ? missBy1(aiK1(u)) : aiK1(u), k2: 0, k3: 0 }])),
+    });
+    const k1 = (misses: number) => compare(runWith(misses), units, { criteria: CRITERIA }).find((c) => c.criterionId === "k1")!;
+    expect(k1(0)).toMatchObject({ exact: 5, agreement: 1, verdict: "aligned" });
+    expect(k1(1)).toMatchObject({ exact: 4, verdict: "aligned" });         // 80 %
+    expect(k1(2)).toMatchObject({ exact: 3, verdict: "mostly" });          // 60 %
+    expect(k1(3)).toMatchObject({ exact: 2, verdict: "off" });             // 40 %: the case the advisor pointed at
+    expect(k1(5)).toMatchObject({ exact: 0, verdict: "off", within1: 1 });  // always one level off: far from aligned, yet never more than one level away
+    // the lean is its own field: five misses all one way leans, no miss does not
+    expect(k1(5).lean).not.toBeNull();
+    expect(k1(0).lean).toBeNull();
+  });
+
+  test("weighted kappa: 1 when the two always agree, below 1 when they differ, in Landis & Koch's bands; few pairs are flagged", () => {
+    const units = aiUnits("a-cal");
+    const sample = pickSample(units, { criteria: CRITERIA }, 5);
+    const run = (shift: number): CalibrationRun => ({
+      id: "r", assignmentId: "a-cal", createdAt: NOW, completedAt: NOW, sampleIds: sample.map((u) => u.key),
+      teacherLevels: Object.fromEntries(sample.map((u) => {
+        const ai = mockAiGradeCriteria(u.key, CRITERIA).levels;
+        const mv = (l: number) => Math.min(3, Math.max(0, l + shift));
+        return [u.key, { k1: mv(ai.k1), k2: mv(ai.k2), k3: mv(ai.k3) }];
+      })),
+    });
+    const same = overallAgreement(run(0), units, { criteria: CRITERIA });
+    expect(same).toMatchObject({ pairs: 15, exact: 15, within1: 15, fewPairs: true });
+    expect(same.kappa === 1 || same.kappa === null).toBe(true);           // null only if every mark sits on one level (kappa is undefined there)
+    const off = overallAgreement(run(1), units, { criteria: CRITERIA });
+    expect(off.within1).toBe(15);
+    expect(off.exact).toBeLessThan(15);
+    if (same.kappa === 1 && off.kappa !== null) expect(off.kappa).toBeLessThan(1);
+    expect(kappaBandOf(-0.1)).toBe("poor");
+    expect(kappaBandOf(0.1)).toBe("slight");
+    expect(kappaBandOf(0.3)).toBe("fair");
+    expect(kappaBandOf(0.5)).toBe("moderate");
+    expect(kappaBandOf(0.7)).toBe("substantial");
+    expect(kappaBandOf(0.9)).toBe("almost-perfect");
+  });
+
   test("a steady lean of the AI is not a 'level wording unclear' suggestion — scattered disagreement still is", () => {
     const units = aiUnits("a-cal");
     const sample = pickSample(units, { criteria: CRITERIA }, 5);
@@ -344,17 +390,31 @@ test.describe("Calibration", () => {
     const cmp = compare(runFor(picked), aiUnits("a-cal"), { criteria: CRITERIA });
     for (const c of cmp) {
       const row = page.getByTestId(`cmp-${c.criterionId}`);
-      await expect(row.getByTestId(`agree-${c.criterionId}`)).toHaveText(`${Math.round(c.agreement * 100)}%`);
-      await expect(row.getByTestId(`you-${c.criterionId}`)).toHaveText(`Level ${(3 - c.teacherMean).toFixed(1)}`);
-      await expect(row.getByTestId(`ai-${c.criterionId}`)).toHaveText(`Level ${(3 - c.aiMean).toFixed(1)}`);
+      // "2 of 5" (and the share), never a mean level (advisor, 10/11/2569: "Level 2.6" read badly and "Aligned" showed at 40 %)
+      await expect(row.getByTestId(`agree-${c.criterionId}`)).toContainText(`${c.exact} of ${c.n}`);
+      await expect(row.getByTestId(`agree-${c.criterionId}`)).toContainText(`${Math.round(c.agreement * 100)}%`);
+      await expect(row.getByTestId(`within1-${c.criterionId}`)).toHaveText(`${Math.round(c.within1 * c.n)} of ${c.n}`);
+      await expect(row.getByTestId(`you-${c.criterionId}`)).toHaveCount(0);
+      await expect(row.getByTestId(`ai-${c.criterionId}`)).toHaveCount(0);
       const verdict = row.getByTestId(`verdict-${c.criterionId}`);
-      if (c.verdict === "lenient") await expect(verdict).toContainText("AI is generous");
-      if (c.verdict === "strict") await expect(verdict).toContainText("AI is strict");
       if (c.verdict === "aligned") await expect(verdict).toHaveText("Aligned");
-      if (c.verdict === "inconsistent") await expect(verdict).toHaveText("Inconsistent");
+      if (c.verdict === "mostly") await expect(verdict).toHaveText("Mostly aligned");
+      if (c.verdict === "off") await expect(verdict).toHaveText("Not aligned yet");
+      const lean = row.getByTestId(`lean-${c.criterionId}`);
+      if (c.lean === "lenient") await expect(lean).toContainText("AI is generous");
+      else if (c.lean === "strict") await expect(lean).toContainText("AI is strict");
+      else await expect(lean).toHaveCount(0);
     }
-    // C2 was scored exactly as the AI would: full agreement
-    expect(cmp.find((c) => c.criterionId === "k2")).toMatchObject({ agreement: 1, bias: 0, verdict: "aligned" });
+    const overall = overallAgreement(runFor(picked), aiUnits("a-cal"), { criteria: CRITERIA });
+    await expect(page.getByTestId("overall-exact")).toContainText(`${Math.round((overall.exact / overall.pairs) * 100)}% (${overall.exact}/${overall.pairs})`);
+    await expect(page.getByTestId("overall-within1")).toContainText(`(${overall.within1}/${overall.pairs})`);
+    await expect(page.getByTestId("overall-kappa")).toContainText(overall.kappa === null ? "—" : overall.kappa.toFixed(2));
+    await expect(page.getByTestId("cal-few-pairs")).toContainText(`Only ${overall.pairs} pairs`);          // 15 pairs: a trend, not a measurement
+    await expect(page.getByTestId("cal-thresholds")).toContainText("at least 80%");
+    // C2 was scored exactly as the AI would: full agreement. C1 and C3 always differ by one level: 0 % same level, so NOT aligned, though the mean difference is only one level
+    expect(cmp.find((c) => c.criterionId === "k2")).toMatchObject({ agreement: 1, bias: 0, verdict: "aligned", lean: null });
+    expect(cmp.find((c) => c.criterionId === "k1")).toMatchObject({ verdict: "off", within1: 1 });
+    expect(cmp.find((c) => c.criterionId === "k1")!.agreement).toBeLessThan(0.6);
     // there is no AI offset any more (removed 10/11/2569): no "AI correction" column, no steppers, no "Use these values"
     await expect(page.getByRole("columnheader", { name: /AI correction/ })).toHaveCount(0);
     await expect(page.getByTestId("offset-k2")).toHaveCount(0);

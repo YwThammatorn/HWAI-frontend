@@ -25,7 +25,7 @@ const submission = (criterionScores?: Record<string, number>) => ({
 const LEVELS = [{ label: "Excellent", description: "Top" }, { label: "Good", description: "Mid" }, { label: "Needs Improvement", description: "Low" }];
 const RUBRIC_WITH_LEVELS = { ...RUBRIC, criteria: RUBRIC.criteria.map((c) => ({ ...c, levels: LEVELS })) };
 
-async function open(page: Page, opts: { finalized?: boolean; criterionScores?: Record<string, number>; lang?: "en" | "th"; withLevels?: boolean } = {}) {
+async function open(page: Page, opts: { finalized?: boolean; criterionScores?: Record<string, number>; lang?: "en" | "th"; withLevels?: boolean; others?: number } = {}) {
   await page.addInitScript(([lang, a, sub]) => {
     if (sessionStorage.getItem("rp")) return;
     sessionStorage.setItem("rp", "1");
@@ -34,8 +34,8 @@ async function open(page: Page, opts: { finalized?: boolean; criterionScores?: R
     localStorage.setItem("hwai_courses_v2", JSON.stringify([{ id: "c-rp", name: "Python", description: "", status: "active", source: "manual", coverColor: "#0F766E", iconColor: "#0F766E", createdAt: "2026-01-01T00:00:00.000Z", updatedAt: "2026-01-01T00:00:00.000Z" }]));
     localStorage.setItem("hwai_students_v1", JSON.stringify([{ id: "r1", courseId: "c-rp", studentId: "69070401", firstName: "Ann", lastName: "S", email: "69070401@kmitl.ac.th", sequenceNumber: 1, enrollmentStatus: "enrolled" }]));
     localStorage.setItem("hwai_assignments_v1", JSON.stringify([a]));
-    localStorage.setItem("hwai_submissions_v1", JSON.stringify([sub]));
-  }, [opts.lang ?? "en", assignment(opts.finalized ?? true), submission(opts.criterionScores)] as const);
+    localStorage.setItem("hwai_submissions_v1", JSON.stringify(sub));
+  }, [opts.lang ?? "en", assignment(opts.finalized ?? true), [submission(opts.criterionScores), ...Array.from({ length: opts.others ?? 0 }, (_, i) => ({ ...submission(), id: `o-${i}`, studentId: `6907050${i}`, studentName: `Other ${i}`, email: `6907050${i}@kmitl.ac.th`, instructorScore: 60 + i * 5 }))]] as const);
   await page.addInitScript((r) => { if (!localStorage.getItem("hwai_rubrics_v1")) localStorage.setItem("hwai_rubrics_v1", JSON.stringify([r])); }, opts.withLevels ? RUBRIC_WITH_LEVELS : RUBRIC);
   await page.goto(`${BASE}/student/courses/c-rp/classwork/a-1`);
   await page.waitForLoadState("networkidle");
@@ -138,4 +138,24 @@ test("the student-flow mock: every graded submission has criterion scores that a
   for (const n of ["student-flow-mockup.json", "student-flow-mockup-en.json"]) {
     expect(fs.readFileSync(`public/mock-data/${n}`, "utf8")).toBe(fs.readFileSync(`test-data/${n}`, "utf8"));
   }
+});
+
+test("the result comes first: the teacher's comment, then the points per criterion, and the class figures last (10/11/2569; R11, 3.3.3 step 8)", async ({ page }) => {
+  await open(page, { criterionScores: { k1: 56, k2: 34 }, others: 5 });
+  const y = async (loc: ReturnType<Page["locator"]>) => (await loc.first().boundingBox())!.y;
+  const comment = page.getByTestId("teacher-comment");
+  await expect(comment).toContainText("Nice");
+  const rubric = page.getByRole("heading", { name: "Grading Rubric — your points" });
+  const stats = page.getByText("Class statistics", { exact: false });
+  await expect(stats.first()).toBeVisible();
+  expect(await y(comment), "comment above the rubric").toBeLessThan(await y(rubric));
+  expect(await y(rubric), "rubric above the class figures").toBeLessThan(await y(stats));
+  // the comment is said once (it used to sit in the small My Work box)
+  await expect(page.getByText("Nice", { exact: true })).toHaveCount(1);
+});
+
+test("no 'Better than N% of your classmates' anywhere on the result (10/11/2569)", async ({ page }) => {
+  await open(page, { criterionScores: { k1: 56, k2: 34 }, others: 5 });
+  await expect(page.getByText(/Better than \d+%/)).toHaveCount(0);
+  await expect(page.getByText("above the class average", { exact: false }).locator("visible=true")).toHaveCount(1);   // the distance to the average stays
 });

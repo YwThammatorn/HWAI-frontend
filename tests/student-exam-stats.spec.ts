@@ -198,10 +198,11 @@ test("Thai UI", async ({ page }) => {
 
 // ── bar chart: information + motion ──────────────────────────────────────────
 
-test("it still says how many classmates I scored higher than — the real share", async ({ page }) => {
+test("it no longer ranks me against classmates (advisor, 10/11/2569): no \"Better than N%\", the chart and the distance to the average stay", async ({ page }) => {
   await open(page, "/student/courses/c-es/classwork/a-mid", { assignments: [exam("a-mid", "Midterm", true)], submissions: midtermSubs });
-  // me 37.5; the others scored 27, 36, 38, 40 → two of the four are below me
-  await expect(page.getByText("Better than 50% of your classmates").locator("visible=true")).toHaveCount(1);
+  await expect(page.getByText(/Better than \d+%/)).toHaveCount(0);
+  await expect(page.getByTestId("hist-you")).toBeVisible();
+  await expect(page.getByText("points above the class average", { exact: false }).first()).toBeVisible();
 });
 
 test("the bars animate in, staggered; reduced motion shows the finished chart with no animation", async ({ page }) => {
@@ -219,7 +220,7 @@ test("the bars animate in, staggered; reduced motion shows the finished chart wi
   await expect(page.getByTestId("hist-you")).toBeVisible();
 });
 
-test("Thai UI: the classmates line is Thai", async ({ page }) => {
+test("Thai UI: no ranking against classmates in Thai either (10/11/2569)", async ({ page }) => {
   await open(page, "/student/courses/c-es/classwork/a-mid", { assignments: [exam("a-mid", "Midterm", true)], submissions: midtermSubs, lang: "th" });
-  await expect(page.getByText("ดีกว่าเพื่อนร่วมห้อง 50%").locator("visible=true")).toHaveCount(1);
+  await expect(page.getByText("ดีกว่าเพื่อนร่วมห้อง", { exact: false })).toHaveCount(0);
 });

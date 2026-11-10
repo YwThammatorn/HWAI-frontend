@@ -106,12 +106,24 @@ export interface CriterionComparison {
   /** what is left of the difference once the steady lean is taken out (shifted by the nearest whole level): a steady
    *  "the AI is one level too generous" leaves 0; scattered disagreement stays — only clearer level wording helps that */
   residual: number;
-  /** share of samples where both chose the same level, 0..1 */
+  /** share of samples where both chose the same level, 0..1 — the measure the verdict is built on (10/11/2569) */
   agreement: number;
+  /** how many samples that is, and the share where the two are at most ONE level apart */
+  exact: number;
+  within1: number;
   teacherMean: number;
   aiMean: number;
-  verdict: "lenient" | "strict" | "aligned" | "inconsistent";
+  /** from `agreement` alone (see ALIGNED_AT / MOSTLY_AT): the mean difference used to say "aligned" at 40 % exact agreement */
+  verdict: "aligned" | "mostly" | "off";
+  /** which way the AI leans, kept apart from the verdict: + = generous, − = strict; null when the mean difference is under half a level */
+  lean: "lenient" | "strict" | null;
 }
+
+/** Exact agreement at or above this is "aligned"; at or above MOSTLY_AT "mostly aligned"; below it the level wording is not doing its job yet. */
+export const ALIGNED_AT = 0.8;
+export const MOSTLY_AT = 0.6;
+/** Fewer pairs than this and a kappa (or any share) is a trend, not a measurement — the screen says so. */
+export const MIN_PAIRS_FOR_A_MEASURE = 20;
 
 /** Teacher vs AI on every criterion of the run. Samples missing a teacher level for a criterion are left out of that criterion. */
 export function compare(run: CalibrationRun, units: WorkUnit[], rubric: Pick<Rubric, "criteria">): CriterionComparison[] {
@@ -133,10 +145,58 @@ export function compare(run: CalibrationRun, units: WorkUnit[], rubric: Pick<Rub
     return {
       criterionId: c.id, n, bias, meanAbs, residual,
       agreement: n ? diffs.filter((d) => d === 0).length / n : 0,
+      exact: diffs.filter((d) => d === 0).length,
+      within1: n ? diffs.filter((d) => Math.abs(d) <= 1).length / n : 0,
       teacherMean: mean(t), aiMean: mean(a),
-      verdict: bias >= 0.5 ? "lenient" : bias <= -0.5 ? "strict" : meanAbs >= 1 ? "inconsistent" : "aligned",
+      verdict: n === 0 ? "off" : diffs.filter((d) => d === 0).length / n >= ALIGNED_AT ? "aligned" : diffs.filter((d) => d === 0).length / n >= MOSTLY_AT ? "mostly" : "off",
+      lean: bias >= 0.5 ? "lenient" : bias <= -0.5 ? "strict" : null,
     };
   });
+}
+
+export interface OverallAgreement {
+  /** teacher/AI pairs over every criterion of every sample */
+  pairs: number;
+  exact: number;
+  within1: number;
+  /** quadratic-weighted Cohen's kappa over all the pairs (a one-level miss costs little, a three-level miss a lot); null when it is undefined (everything on one level) */
+  kappa: number | null;
+  /** Landis & Koch's bands */
+  kappaBand: "poor" | "slight" | "fair" | "moderate" | "substantial" | "almost-perfect" | null;
+  /** under MIN_PAIRS_FOR_A_MEASURE: read it as a trend */
+  fewPairs: boolean;
+}
+
+export function kappaBandOf(k: number): NonNullable<OverallAgreement["kappaBand"]> {
+  return k < 0 ? "poor" : k <= 0.2 ? "slight" : k <= 0.4 ? "fair" : k <= 0.6 ? "moderate" : k <= 0.8 ? "substantial" : "almost-perfect";
+}
+
+/** Pooled agreement of one run: exact, within one level, and weighted kappa (levels are ordered, so the weights are quadratic). */
+export function overallAgreement(run: CalibrationRun, units: WorkUnit[], rubric: Pick<Rubric, "criteria">): OverallAgreement {
+  const pairs: [number, number][] = [];
+  for (const c of rubric.criteria) {
+    for (const key of run.sampleIds) {
+      const unit = units.find((u) => u.key === key);
+      const tl = run.teacherLevels[key]?.[c.id];
+      if (!unit || tl === undefined) continue;
+      pairs.push([tl, aiLevelsFor(unit, rubric).levels[c.id]]);
+    }
+  }
+  const n = pairs.length;
+  const K = Math.max(2, ...rubric.criteria.map((c) => c.levels.length));
+  const exact = pairs.filter(([a, b]) => a === b).length;
+  const within1 = pairs.filter(([a, b]) => Math.abs(a - b) <= 1).length;
+  let kappa: number | null = null;
+  if (n > 0) {
+    const w = (i: number, j: number) => ((i - j) / (K - 1)) ** 2;           // disagreement weight
+    const rowT = new Array(K).fill(0), rowA = new Array(K).fill(0);
+    for (const [a, b] of pairs) { rowT[Math.min(a, K - 1)]++; rowA[Math.min(b, K - 1)]++; }
+    const observed = pairs.reduce((sum, [a, b]) => sum + w(Math.min(a, K - 1), Math.min(b, K - 1)), 0) / n;
+    let expected = 0;
+    for (let i = 0; i < K; i++) for (let j = 0; j < K; j++) expected += w(i, j) * (rowT[i] / n) * (rowA[j] / n);
+    kappa = expected === 0 ? null : 1 - observed / expected;                 // expected 0 = both always on the same single level: undefined
+  }
+  return { pairs: n, exact, within1, kappa, kappaBand: kappa === null ? null : kappaBandOf(kappa), fewPairs: n < MIN_PAIRS_FOR_A_MEASURE };
 }
 
 export type RubricSuggestionKind = "ceiling" | "floor" | "disagree" | "heavy-flat";

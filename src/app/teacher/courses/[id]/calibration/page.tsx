@@ -9,7 +9,7 @@ import { useAssignments, isManualGrading, submissionAttachments, gradingOpen, ty
 import { useNow } from "@/lib/clock";
 import { useStudents, withdrawnIds } from "@/lib/students";
 import { useStudentGroups } from "@/lib/studentGroups";
-import { useCalibrations, pickSample, compare, suggestRubricChanges, aiLevelsFor, aiGradedUnits, workUnitsOf, type CalibrationRun, type WorkUnit, type CriterionComparison } from "@/lib/calibration";
+import { useCalibrations, pickSample, compare, overallAgreement, suggestRubricChanges, aiLevelsFor, aiGradedUnits, workUnitsOf, ALIGNED_AT, MOSTLY_AT, type CalibrationRun, type WorkUnit, type CriterionComparison } from "@/lib/calibration";
 import RubricEditModal from "@/components/RubricEditModal";
 import CalibrationRegrade from "@/components/CalibrationRegrade";
 import CriterionName from "@/components/CriterionName";
@@ -21,12 +21,14 @@ import Icon from "@/components/Icon";
 import IconButton from "@/components/IconButton";
 const MIN_SAMPLES = 3, MAX_SAMPLES = 10, DEFAULT_SAMPLES = 5;
 
+// The verdict is how often teacher and AI chose the very same level (10/11/2569, advisor: "Aligned" was shown at 40 % exact agreement because the
+// mean difference was small). Which way the AI leans is a second, separate chip.
 const VERDICT_TONE: Record<CriterionComparison["verdict"], string> = {
   aligned: "bg-[var(--s-ok-bg)] text-[var(--s-ok-text)] border-[var(--s-ok-bd)]",
-  lenient: "bg-[var(--s-info-bg)] text-[var(--s-info-text)] border-[var(--s-info-bd)]",
-  strict: "bg-[var(--s-info-bg)] text-[var(--s-info-text)] border-[var(--s-info-bd)]",
-  inconsistent: "bg-[var(--s-err-bg)] text-[var(--s-err-text)] border-[var(--s-err-bd)]",
+  mostly: "bg-[var(--s-info-bg)] text-[var(--s-info-text)] border-[var(--s-info-bd)]",
+  off: "bg-[var(--s-warn-bg)] text-[var(--s-warn-text)] border-[var(--s-warn-bd)]",
 };
+const LEAN_TONE = "bg-[var(--bg-app)] text-[var(--text-secondary)] border-[var(--border)]";
 
 export default function CalibrationPage() {
   const { id } = useParams<{ id: string }>();
@@ -358,6 +360,7 @@ function ResultSection({ run, units, assignment, rubric, locked, courseId, grade
   const { t } = useLanguage();
   // compared with the marks the AI really stored (14/10/2569)
   const cmp = useMemo(() => compare(run, units, rubric), [run, units, rubric]);
+  const overall = useMemo(() => overallAgreement(run, units, rubric), [run, units, rubric]);
   const [editOpen, setEditOpen] = useState(false);
   const [afterEdit, setAfterEdit] = useState(false);
   const changes = suggestRubricChanges(rubric, graded, cmp);
@@ -369,15 +372,18 @@ function ResultSection({ run, units, assignment, rubric, locked, courseId, grade
   const flagged = Object.fromEntries(changes.map((c) => [c.criterionId, suggestionText(c)]));
 
   const ghost = "inline-flex h-8 items-center whitespace-nowrap rounded-lg border border-[var(--border)] bg-[var(--bg-surface)] px-3 text-xs font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)] active:scale-[.97] disabled:opacity-50 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors";
-  const word = (c: CriterionComparison) => {
+  const verdictWord = (c: CriterionComparison) =>
+    c.verdict === "aligned" ? t("ตรงกัน", "Aligned") : c.verdict === "mostly" ? t("ค่อนข้างตรง", "Mostly aligned") : t("ยังไม่ตรง", "Not aligned yet");
+  const leanWord = (c: CriterionComparison) => {
     const sign = `${c.bias > 0 ? "+" : ""}${c.bias.toFixed(1)}`;
-    return c.verdict === "lenient" ? t(`AI ใจดีไป (${sign} ระดับ)`, `AI is generous (${sign} level)`)
-      : c.verdict === "strict" ? t(`AI เข้มไป (${sign} ระดับ)`, `AI is strict (${sign} level)`)
-      : c.verdict === "inconsistent" ? t("ไม่สม่ำเสมอ", "Inconsistent")
-      : t("ตรงกัน", "Aligned");
+    return c.lean === "lenient" ? t(`AI ใจดีไป (${sign} ระดับ)`, `AI is generous (${sign} level)`) : c.lean === "strict" ? t(`AI เข้มไป (${sign} ระดับ)`, `AI is strict (${sign} level)`) : "";
+  };
+  const pct = (a: number, b: number) => (b > 0 ? Math.round((a / b) * 100) : 0);
+  const kappaWord: Record<NonNullable<typeof overall.kappaBand>, string> = {
+    poor: t("แย่กว่าสุ่ม", "poor"), slight: t("เล็กน้อย", "slight"), fair: t("พอใช้", "fair"), moderate: t("ปานกลาง", "moderate"),
+    substantial: t("มาก", "substantial"), "almost-perfect": t("เกือบสมบูรณ์", "almost perfect"),
   };
   const nameOf = (cid: string) => rubric.criteria.find((c) => c.id === cid)?.name ?? cid;
-  const level = (c: { levels: unknown[] }, idx: number) => (c.levels.length - 1 - idx).toFixed(1);
 
   return (
     <section aria-labelledby="cal-3" className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-6">
@@ -397,14 +403,37 @@ function ResultSection({ run, units, assignment, rubric, locked, courseId, grade
         </p>
       )}
 
+      {/* One picture of the whole run before the criteria: how often the two chose the very same level, within one level, and weighted kappa */}
+      <dl data-testid="cal-overall" className="mb-5 grid gap-3 sm:grid-cols-3">
+        <div className="rounded-xl bg-[var(--bg-app)] px-4 py-3">
+          <dt className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">{t("ตรงระดับพอดี", "Same level")}</dt>
+          <dd data-testid="overall-exact" className="mt-1 text-xl font-bold tabular-nums text-[var(--text-primary)]">{pct(overall.exact, overall.pairs)}% <span className="text-sm font-medium text-[var(--text-muted)]">({overall.exact}/{overall.pairs})</span></dd>
+        </div>
+        <div className="rounded-xl bg-[var(--bg-app)] px-4 py-3">
+          <dt className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">{t("ห่างไม่เกิน 1 ระดับ", "Within one level")}</dt>
+          <dd data-testid="overall-within1" className="mt-1 text-xl font-bold tabular-nums text-[var(--text-primary)]">{pct(overall.within1, overall.pairs)}% <span className="text-sm font-medium text-[var(--text-muted)]">({overall.within1}/{overall.pairs})</span></dd>
+        </div>
+        <div className="rounded-xl bg-[var(--bg-app)] px-4 py-3">
+          <dt className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]" title={t("Weighted kappa: ความตรงกันที่หักส่วนที่บังเอิญตรงออกแล้ว ผิด 1 ระดับเสียน้อย ผิดหลายระดับเสียมาก", "Weighted kappa: agreement beyond chance; a one-level miss costs little, a big miss a lot")}>{t("Weighted kappa", "Weighted kappa")}</dt>
+          <dd data-testid="overall-kappa" className="mt-1 text-xl font-bold tabular-nums text-[var(--text-primary)]">
+            {overall.kappa === null ? "—" : overall.kappa.toFixed(2)}
+            {overall.kappaBand && <span className="ml-2 text-sm font-medium text-[var(--text-muted)]">{kappaWord[overall.kappaBand]}</span>}
+          </dd>
+        </div>
+      </dl>
+      {overall.fewPairs && (
+        <p data-testid="cal-few-pairs" className="-mt-2 mb-5 text-xs text-[var(--text-muted)]">
+          {t(`มีแค่ ${overall.pairs} คู่ — อ่านเป็นแนวโน้ม ไม่ใช่ค่าวัดที่แน่นอน (ควรมีอย่างน้อย 20 คู่)`, `Only ${overall.pairs} pairs — read this as a trend, not a measurement (20 or more is a fair base)`)}
+        </p>
+      )}
+
       <div className="overflow-x-auto rounded-xl border border-[var(--border-subtle)]">
         <table data-testid="cal-table" className="w-full min-w-[720px] text-sm">
           <thead>
             <tr className="bg-[var(--bg-app)] text-left text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">
               <th scope="col" className="px-4 py-3">{t("เกณฑ์", "Criterion")}</th>
-              <th scope="col" className="px-4 py-3">{t("คุณ", "You")}</th>
-              <th scope="col" className="px-4 py-3">AI</th>
-              <th scope="col" className="px-4 py-3">{t("ตรงกัน", "Same level")}</th>
+              <th scope="col" className="px-4 py-3">{t("ตรงระดับพอดี", "Same level")}</th>
+              <th scope="col" className="px-4 py-3">{t("ห่างไม่เกิน 1 ระดับ", "Within one level")}</th>
               <th scope="col" className="px-4 py-3">{t("ผล", "Result")}</th>
             </tr>
           </thead>
@@ -414,16 +443,30 @@ function ResultSection({ run, units, assignment, rubric, locked, courseId, grade
               return (
                 <tr key={c.criterionId} data-testid={`cmp-${c.criterionId}`}>
                   <th scope="row" className="px-4 py-3 text-left align-top font-normal"><CriterionName name={crit.name} /></th>
-                  <td className="px-4 py-3 align-top tabular-nums" data-testid={`you-${c.criterionId}`}>{t("ระดับ", "Level")} {level(crit, c.teacherMean)}</td>
-                  <td className="px-4 py-3 align-top tabular-nums" data-testid={`ai-${c.criterionId}`}>{t("ระดับ", "Level")} {level(crit, c.aiMean)}</td>
-                  <td className="px-4 py-3 align-top tabular-nums" data-testid={`agree-${c.criterionId}`}>{Math.round(c.agreement * 100)}%</td>
-                  <td className="px-4 py-3 align-top"><span data-testid={`verdict-${c.criterionId}`} className={`inline-flex items-center whitespace-nowrap rounded-md border px-2 py-0.5 text-xs font-semibold ${VERDICT_TONE[c.verdict]}`}>{word(c)}</span></td>
+                  <td className="px-4 py-3 align-top tabular-nums" data-testid={`agree-${c.criterionId}`}>
+                    <span className="font-semibold text-[var(--text-primary)]">{t(`ตรง ${c.exact} ใน ${c.n} ชิ้น`, `${c.exact} of ${c.n}`)}</span>
+                    <span className="ml-2 text-xs text-[var(--text-muted)]">{Math.round(c.agreement * 100)}%</span>
+                  </td>
+                  <td className="px-4 py-3 align-top tabular-nums text-[var(--text-secondary)]" data-testid={`within1-${c.criterionId}`}>{t(`${Math.round(c.within1 * c.n)} ใน ${c.n} ชิ้น`, `${Math.round(c.within1 * c.n)} of ${c.n}`)}</td>
+                  <td className="px-4 py-3 align-top">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <span data-testid={`verdict-${c.criterionId}`} className={`inline-flex items-center whitespace-nowrap rounded-md border px-2 py-0.5 text-xs font-semibold ${VERDICT_TONE[c.verdict]}`}>{verdictWord(c)}</span>
+                      {c.lean && <span data-testid={`lean-${c.criterionId}`} className={`inline-flex items-center whitespace-nowrap rounded-md border px-2 py-0.5 text-xs font-medium ${LEAN_TONE}`}>{leanWord(c)}</span>}
+                    </div>
+                  </td>
                 </tr>
               );
             })}
           </tbody>
         </table>
       </div>
+
+      <p data-testid="cal-thresholds" className="mt-3 text-xs text-[var(--text-muted)]">
+        {t(
+          `ตรงกัน = เลือกระดับเดียวกันอย่างน้อย ${Math.round(ALIGNED_AT * 100)}% ของตัวอย่าง · ค่อนข้างตรง = ${Math.round(MOSTLY_AT * 100)}–${Math.round(ALIGNED_AT * 100) - 1}% · ต่ำกว่านั้น = ยังไม่ตรง (ป้าย “AI ใจดี/เข้ม” บอกทิศทางที่ AI เอนไป แยกจากผลนี้)`,
+          `Aligned = the very same level on at least ${Math.round(ALIGNED_AT * 100)}% of the samples · Mostly aligned = ${Math.round(MOSTLY_AT * 100)}–${Math.round(ALIGNED_AT * 100) - 1}% · below that = Not aligned yet. The “AI is generous / strict” chip says which way the AI leans and is separate from this result.`,
+        )}
+      </p>
 
       {/* what to do with a steady lean: there is no AI setting to turn any more (removed 10/11/2569) — the rubric's level wording is what can change */}
       <p data-testid="cal-lean-note" className="mt-4 max-w-3xl text-sm text-[var(--text-secondary)]">
