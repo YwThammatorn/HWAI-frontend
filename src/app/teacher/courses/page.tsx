@@ -14,6 +14,7 @@ import Pagination from "@/components/Pagination";
 import CourseBanner from "@/components/CourseBanner";
 
 import Icon from "@/components/Icon";
+import { toGradeCount } from "@/lib/gradingStage";
 export default function CoursesPage() {
   const { t } = useLanguage();
   const { courses: allCourses, updateCourse } = useCourses();
@@ -51,7 +52,7 @@ export default function CoursesPage() {
   const paginated = visible.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const courseStats = useMemo(() => {
-    return courses.reduce<Record<string, { studentCount: number; allGraded: boolean; activeAssignments: number }>>((acc, c) => {
+    return courses.reduce<Record<string, { studentCount: number; allGraded: boolean; toGrade: number }>>((acc, c) => {
       const assignments = getAssignmentsByCourse(c.id);
       // Withdrawn students are out of the card's numbers (24/9/2569).
       const roster = getStudentsByCourse(c.id);
@@ -63,9 +64,8 @@ export default function CoursesPage() {
           const subs = liveSubs(a.id);
           return subs.length > 0 && subs.every((s) => s.status === "graded");
         }),
-        activeAssignments: assignments.filter((a) =>
-          liveSubs(a.id).some((s) => s.status !== "graded")
-        ).length,
+        // what is left to do, in pieces of work (10/11/2569: "2 Active" counted assignments and did not say what to do)
+        toGrade: assignments.reduce((sum, a) => sum + toGradeCount(liveSubs(a.id)), 0),
       };
       return acc;
     }, {});
@@ -137,14 +137,14 @@ export default function CoursesPage() {
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {paginated.map((course) => {
-                const stats = courseStats[course.id] ?? { studentCount: 0, allGraded: false, activeAssignments: 0 };
+                const stats = courseStats[course.id] ?? { studentCount: 0, allGraded: false, toGrade: 0 };
                 return (
                   <CourseCard
                     key={course.id}
                     course={course}
                     studentCount={stats.studentCount}
                     allGraded={stats.allGraded}
-                    activeAssignments={stats.activeAssignments}
+                    toGrade={stats.toGrade}
                     isArchived={tab === "archived"}
                     onRestore={() => updateCourse(course.id, { status: "active" })}
                   />
@@ -186,11 +186,11 @@ function EmptyState() {
   );
 }
 
-function CourseCard({ course, studentCount, allGraded, activeAssignments, isArchived, onRestore }: {
+function CourseCard({ course, studentCount, allGraded, toGrade, isArchived, onRestore }: {
   course: Course;
   studentCount: number;
   allGraded: boolean;
-  activeAssignments: number;
+  toGrade: number;
   isArchived: boolean;
   onRestore: () => void;
 }) {
@@ -272,7 +272,7 @@ function CourseCard({ course, studentCount, allGraded, activeAssignments, isArch
             ) : (
               <span className="flex items-center gap-1 text-[var(--st-todo-text)]">
                 <Icon name="calendar" size="xs" />
-                {activeAssignments} {t("งานรอตรวจ", "Active")}
+                {toGrade} {t("ชิ้นรอตรวจ", "to grade")}
               </span>
             )}
           </div>

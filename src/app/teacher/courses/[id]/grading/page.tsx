@@ -7,6 +7,8 @@ import { useCourses } from "@/lib/courses";
 import { useStudents, isWithdrawn, withdrawnIds } from "@/lib/students";
 import { useAssignments, isManualGrading, isAiOnlyGraded, gradingOpen, gradingOpensAt, finalScoreOf, type Assignment, type Submission } from "@/lib/assignments";
 import { appNow, useNow } from "@/lib/clock";
+import { gradingStageOf } from "@/lib/gradingStage";
+import GradingStageChip from "@/components/GradingStageChip";
 import { useGradingCategories } from "@/lib/gradingCategories";
 import { useAiGrading } from "@/lib/useAiGrading";
 import { useCan } from "@/lib/useCan";
@@ -38,7 +40,7 @@ function opensText(a: Assignment, lang: string) {
 }
 
 /** What still needs doing on one assignment — the numbers every row and stat card is built from. */
-function progressOf(a: Assignment, subs: Submission[], today: string, enrolled: number) {
+function progressOf(a: Assignment, subs: Submission[], today: string, enrolled: number, now: number) {
   const graded = subs.filter((s) => s.status === "graded");
   const needReview = subs.filter((s) => s.status === "need_review").length;
   const notGraded = subs.filter((s) => s.status === "not_graded").length;
@@ -54,7 +56,7 @@ function progressOf(a: Assignment, subs: Submission[], today: string, enrolled: 
     : null;
   // Sort weight: needs review first, then overdue, then anything still open, then waiting on students, then done.
   const rank = needReview > 0 ? 0 : overdue ? 1 : notGraded > 0 ? 2 : subs.length === 0 ? 3 : complete ? 4 : 2;
-  return { gradedCount: graded.length, needReview, notGraded, complete, overdue, avgPct, rank };
+  return { gradedCount: graded.length, needReview, notGraded, complete, overdue, avgPct, rank, stage: gradingStageOf(a, subs, enrolled, now) };
 }
 
 export default function CourseGradingPage() {
@@ -99,7 +101,7 @@ export default function CourseGradingPage() {
 
   const items = assignments.map((a) => {
     const subs = getSubmissionsByAssignment(a.id).filter((s) => !withdrawn.has(s.studentId));
-    return { a, subs, p: progressOf(a, subs, today, students.length) };
+    return { a, subs, p: progressOf(a, subs, today, students.length, now) };
   });
 
   // Stat cards — three only (11/10/2569): how many assignments there are, how many are fully graded, how many announced.
@@ -266,11 +268,7 @@ export default function CourseGradingPage() {
                       meta={
                         <>
                           <span>{a.dueDate ? <>{t("กำหนดส่ง", "Due")} {fmtDate(a.dueDate, lang)}</> : t("สอบ · ไม่มีกำหนดส่ง", "Exam · no due date")}</span>
-                          {p.overdue && (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-[var(--s-err-bg)] text-[var(--s-err-text)] font-semibold">
-                            {t("เลยกำหนด", "Overdue")}
-                          </span>
-                          )}
+                          <GradingStageChip stage={p.stage} />
                           <AssignmentTypeBadge type={a.submissionType} />
                           {category && (
                           <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-[var(--accent-subtle)] text-[var(--accent)] font-medium tabular-nums">

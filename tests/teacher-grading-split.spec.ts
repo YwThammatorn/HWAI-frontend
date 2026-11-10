@@ -136,7 +136,8 @@ test.describe("Assignments page is planning only", () => {
     await open(page, "/assignments");
     const done = planRow(page, "Done Quiz");
     await expect(done).toContainText("Due Jan 10, 2026");
-    await expect(done).toContainText("Past due");
+    await expect(done).not.toContainText("Past due");          // no red "Past due" on the teacher side (10/11/2569)
+    await expect(done.getByTestId("submission-window")).toHaveText("Closed");
     await expect(done).toContainText("PDF");
     await expect(done).toContainText("Homework (40%)");
     await expect(done).toContainText("Rubric · 1 criteria");
@@ -278,9 +279,25 @@ test.describe("Course Grading page", () => {
   test("meta line: overdue chip, type badge, category weight", async ({ page }) => {
     await open(page, "/grading");
     const late = page.locator("main li", { hasText: "Late One" });
-    await expect(late).toContainText("Overdue");
+    await expect(late).not.toContainText("Overdue");
+    await expect(late.getByTestId("grading-stage")).toHaveText("To grade");   // what the teacher has to do, not that the students were late (10/11/2569)
     await expect(late).toContainText("Homework (40%)");
     await expect(page.locator("main li", { hasText: "Waiting Project" })).toContainText("Group");
+  });
+
+  test("every card carries the stage of its assignment — what the teacher has to do — and nothing is red (10/11/2569)", async ({ page }) => {
+    await open(page, "/grading");
+    const stage = (name: string) => page.locator("main li", { hasText: name }).getByTestId("grading-stage");
+    await expect(stage("Done Quiz")).toHaveText("Announced");
+    await expect(stage("Review Me")).toHaveText("To grade");
+    await expect(stage("Waiting Project")).toHaveText("No submissions");
+    await expect(page.getByText("Overdue")).toHaveCount(0);
+  });
+
+  test("the course Overview says how many pieces of work are waiting for a grader, not how many assignments are \"Active\"", async ({ page }) => {
+    await open(page, "");
+    await expect(page.getByText("3 to grade", { exact: true })).toBeVisible();      // s3 (needs review), s5 and s6 (not graded)
+    await expect(page.getByText("Active", { exact: true })).toHaveCount(0);
   });
 
   test("bridge to the Score Book", async ({ page }) => {
@@ -317,7 +334,9 @@ test.describe("Assignment detail is planning only", () => {
     await expect(details).toContainText("Homework (40%)");
     await expect(details).toContainText("Individual");
     await expect(details).toContainText("PDF");
-    await expect(page.getByText("Past due — Due Jan 10, 2026")).toBeVisible();
+    await expect(page.getByText("Due Jan 10, 2026").first()).toBeVisible();
+    await expect(page.getByText("Past due")).toHaveCount(0);
+    await expect(page.getByTestId("submission-window")).toHaveText("Closed");
     // gone: stat cards, submissions table, search, status filter
     for (const gone of ["Submissions", "Average Grade", "Search students...", "Filter: All Status", "Student Name"]) {
       await expect(page.getByText(gone, { exact: false })).toHaveCount(0);

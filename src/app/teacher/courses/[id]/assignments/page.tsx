@@ -16,6 +16,7 @@ import AssignmentTypeBadge from "@/components/AssignmentTypeBadge";
 import Icon from "@/components/Icon";
 import IconTile from "@/components/IconTile";
 import IconButton from "@/components/IconButton";
+import { SubmissionWindowChip } from "@/components/GradingStageChip";
 function fmtDate(dateStr: string, lang: string) {
   return new Date(dateStr + "T00:00:00").toLocaleDateString(dateLocale(lang), {
     month: "short", day: "numeric", year: "numeric",
@@ -52,7 +53,6 @@ export default function AssignmentsPage() {
   const students = getStudentsByCourse(id).filter((s) => !isWithdrawn(s));
   const assignments = getAssignmentsByCourse(id);
   const categories = getCategoriesByCourse(id);
-  const today = new Date().toISOString().split("T")[0];
 
   if (!course) {
     return (
@@ -145,7 +145,6 @@ export default function AssignmentsPage() {
         ) : (
           <>
             {visible.map((a) => {
-              const isPastDue = !!a.dueDate && a.dueDate < today;
               const category = a.categoryId ? categories.find((c) => c.id === a.categoryId) : undefined;
               const rubric = getRubricsByAssignment(a.id)[0];
               const criteriaCount = rubric?.criteria.length ?? 0;
@@ -170,13 +169,15 @@ export default function AssignmentsPage() {
                         <p className="text-xs text-[var(--text-secondary)] mt-0.5 line-clamp-1">{a.description}</p>
                       )}
                       <div className="flex items-center gap-1.5 mt-1">
-                        <Icon name="calendar" size="xs" className={isPastDue ? "text-[var(--s-err-text)]" : "text-[var(--text-muted)]"} />
-                        <span className={`text-xs ${isPastDue ? "text-[var(--s-err-text)]" : "text-[var(--text-secondary)]"}`}>
+                        <Icon name="calendar" size="xs" className="text-[var(--text-muted)]" />
+                        {/* no red "Past due" on the teacher side (10/11/2569): a late deadline is not the teacher's problem — the chip says whether submissions are still open */}
+                        <span className="text-xs text-[var(--text-secondary)]">
                           {a.dueDate
-                            ? <>{isPastDue ? `${t("เลยกำหนด", "Past due")} — ` : ""}{t("กำหนดส่ง", "Due")} {fmtDate(a.dueDate, lang)}</>
+                            ? <>{t("กำหนดส่ง", "Due")} {fmtDate(a.dueDate, lang)}</>
                             : t("สอบ · ไม่มีกำหนดส่ง", "Exam · no due date")}
                           <span className="text-[var(--text-muted)]"> · {a.maxPoints} {t("คะแนน", "pts")}</span>
                         </span>
+                        <SubmissionWindowChip assignment={a} />
                       </div>
                       <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
                         <AssignmentTypeBadge type={a.submissionType} />

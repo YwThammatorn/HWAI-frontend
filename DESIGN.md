@@ -200,6 +200,8 @@ Input radius: `9px` everywhere. Button radius: `10px` everywhere except `sm` siz
 .badge-dot  { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
 ```
 
+**Assignment stage on the teacher side (10/11/2569)** — `GradingStageChip` (`lib/gradingStage.ts` decides the stage). A teacher's card says what there is to DO, in the words of the workflow: *Accepting work* (info) → *To grade* (warn) → *Ready to announce* (accent) → *Announced* (ok); *No submissions* is neutral. **Nothing on the teacher side is red for a late deadline** — a late student is not the teacher's error, so "Overdue" / "Past due" belong to the student's own pages only. The planning pages (Assignments list and detail) carry no grading word: `SubmissionWindowChip` only says *Accepting work* or *Closed*. A course's "what is left" is a count of pieces of work (`toGradeCount`), written "5 to grade", never "2 Active".
+
 **The score card of a submission (10/11/2569)** — the three blocks on the grading detail and on Grading Review are *Counts as* (the score in force: the grader's once saved, else the AI's), *AI suggested* and *You gave*; the words live in `lib/scoreBlockLabels.ts`, so the two screens cannot drift apart again.
 
 Pill shape (`radius:99px`), always with a `background:currentColor` dot before the label — color alone never carries the meaning (WCAG: don't rely on color-only indicators). A generic teal count/tag badge (not a status) uses `--accent-subtle` background + `--accent-text-onlight` text — **never** `--accent` directly as the text color (see §3).

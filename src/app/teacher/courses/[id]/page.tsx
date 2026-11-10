@@ -16,6 +16,7 @@ import { CourseIcon } from "@/components/CourseIcon";
 import Icon from "@/components/Icon";
 import IconTile from "@/components/IconTile";
 import IconButton from "@/components/IconButton";
+import { toGradeCount } from "@/lib/gradingStage";
 export default function CourseDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { t } = useLanguage();
@@ -126,10 +127,8 @@ export default function CourseDetailPage() {
     removeCategory(cat.id);
   }
 
-  const activeAssignments = assignments.filter((a) => {
-    const subs = getSubmissionsByAssignment(a.id).filter((s) => !withdrawn.has(s.studentId));
-    return subs.length > 0 && subs.some((s) => s.status !== "graded");
-  }).length;
+  // pieces of work still waiting for a grader — says what to do, where "2 Active" counted assignments (10/11/2569)
+  const toGrade = assignments.reduce((sum, a) => sum + toGradeCount(getSubmissionsByAssignment(a.id).filter((s) => !withdrawn.has(s.studentId))), 0);
   const allGraded =
     assignments.length > 0 &&
     assignments.every((a) => {
@@ -228,7 +227,7 @@ export default function CourseDetailPage() {
             },
             {
               label: t("สถานะการตรวจ", "Grading Status"),
-              value: allGraded ? t("ตรวจครบแล้ว", "All Graded") : `${activeAssignments} ${t("กำลังดำเนินการ", "Active")}`,
+              value: allGraded ? t("ตรวจครบแล้ว", "All Graded") : `${toGrade} ${t("ชิ้นรอตรวจ", "to grade")}`,
               icon: allGraded ? ("check" as const) : ("calendar" as const),
             },
           ].map((s) => (

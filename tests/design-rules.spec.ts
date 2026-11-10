@@ -142,6 +142,13 @@ test.describe("Design rules (DESIGN.md)", () => {
     expect(bad.slice(0, 30)).toEqual([]);
   });
 
+  test("the teacher side has no red \"Overdue\" / \"Past due\": a stage chip says what there is to do (DESIGN.md §6, 10/11/2569)", () => {
+    // lines only (not code()): a "/*" inside a path string can swallow the rest of a file there; comment-only lines are skipped by hand
+    const live = (text: string) => text.split("\n").filter((l) => !/^\s*(\/\/|\/\*|\*|\{\/\*)/.test(l)).join("\n");
+    const bad = FILES.filter((f) => f.rel.startsWith("app/teacher/") && /["'`](Overdue|Past due)\b/.test(live(f.text))).map((f) => f.rel);
+    expect(bad).toEqual([]);
+  });
+
   test("the score card of a submission uses one set of words on both grading screens (scoreBlockLabels, 10/11/2569)", () => {
     for (const rel of ["components/GradingStudentDetail.tsx", "app/teacher/courses/[id]/assignments/[assignmentId]/recheck/page.tsx"]) {
       const f = FILES.find((x) => x.rel === rel)!;

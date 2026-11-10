@@ -15,6 +15,7 @@ import { useCLOs } from "@/lib/clo";
 
 import Icon from "@/components/Icon";
 import IconButton from "@/components/IconButton";
+import { SubmissionWindowChip } from "@/components/GradingStageChip";
 function fmtDate(dateStr: string, lang: string) {
   return new Date(dateStr + "T00:00:00").toLocaleDateString(dateLocale(lang), {
     month: "short", day: "numeric", year: "numeric",
@@ -44,8 +45,6 @@ export default function ViewAssignmentPage() {
     );
   }
 
-  const today = new Date().toISOString().split("T")[0];
-  const isPastDue = !!assignment.dueDate && assignment.dueDate < today;
   const category = assignment.categoryId
     ? getCategoriesByCourse(id).find((c) => c.id === assignment.categoryId)
     : undefined;
@@ -60,7 +59,7 @@ export default function ViewAssignmentPage() {
       ? {
           label: t("กำหนดส่ง", "Due date"),
           value: (
-            <span className={isPastDue ? "text-[var(--s-err-text)]" : undefined}>
+            <span>
               {fmtDate(assignment.dueDate, lang)} {t("เวลา 23:59 น.", "at 11:59 PM")}
             </span>
           ),
@@ -135,11 +134,12 @@ export default function ViewAssignmentPage() {
         <div className="min-w-0">
           <h1 className="text-2xl font-bold text-[var(--text-primary)]">{assignment.name}</h1>
           <div className="flex items-center gap-2 mt-1.5 text-sm flex-wrap">
-            <span className={isPastDue ? "text-[var(--s-err-text)]" : "text-[var(--text-secondary)]"}>
+            <span className="text-[var(--text-secondary)]">
               {assignment.dueDate
-                ? <>{isPastDue ? `${t("เลยกำหนด", "Past due")} — ` : ""}{t("กำหนดส่ง", "Due")} {fmtDate(assignment.dueDate, lang)}</>
+                ? <>{t("กำหนดส่ง", "Due")} {fmtDate(assignment.dueDate, lang)}</>
                 : t("สอบ · ไม่มีกำหนดส่ง", "Exam · no due date")}
             </span>
+            <SubmissionWindowChip assignment={assignment} />
             {category && (
               <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-[var(--accent-subtle)] text-[var(--accent)] text-xs font-medium tabular-nums">
                 {category.name} ({category.weight}%)
