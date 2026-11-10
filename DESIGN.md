@@ -431,6 +431,14 @@ The Grading Review screen and Calibration show a linked design as what it was **
 | Who sees it | teacher and TA see the reasons and chips; a student never does; "Feedback to AI" stays teacher-only |
 The picture of a frame is data (a stored image), so it keeps its own colours; everything around it uses tokens. Frames without a snapshot fall back to `SubmissionViewer` (files / link card).
 
+## 9g. TA assigned work — the TA's queue and the teacher's "Assign work to TAs" page (10/11/2569)
+| Piece | Rule |
+|---|---|
+| `components/TaQueuePanel.tsx` | a TA's course home. Three `StatCard`s (Waiting to grade `warn` / `clock`, Graded `ok` / `check-circle`, Assigned work `ta` / `file-text`), then one card "My queue" — a row per assigned assignment: name (link to its Grading page), `GradingStageChip`, "N waiting", "M graded" — and one primary "Grade next" button (`arrow-right`) to the first assignment that still has work waiting. Empty: `EmptyState` ("No work assigned to you yet"). Never the teacher's dashboard |
+| My Courses card (TA) | footer shows "N waiting · M graded" in `--st-todo-text` (the same colour as the teacher's "N to grade"); "No work assigned yet" in `--text-muted` when nothing is given |
+| Assign work to TAs (teacher, `/grading-split`) | a table §9b, one row per TA: `Avatar` (`--role-ta-text`), assigned assignments as chips (`--role-ta-bg` / `-text` / `-border`), Waiting and Graded figures, an Edit / "Assign work" outline button that opens a `Modal` `md` with a Select-all row and one checkbox row per assignment (`accent-[var(--accent)]`), Cancel + Save. Empty: `EmptyState` `users` with a link to Collaborators. Sidebar item: `check-square` ("Grading, to-do check" in §9c) |
+| What a TA sees of the Score Book | only the columns of the work given to them; no Total, no "partial" chip, no class average, no Class summary tab (a total of part of the work would mislead) |
+
 ## 10. Migration — old KB patterns → new tokens
 
 | KB Pattern | What it hardcodes today | Maps to |

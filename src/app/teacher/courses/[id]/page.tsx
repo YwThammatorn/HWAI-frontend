@@ -17,13 +17,15 @@ import Icon from "@/components/Icon";
 import IconTile from "@/components/IconTile";
 import IconButton from "@/components/IconButton";
 import { toGradeCount } from "@/lib/gradingStage";
+import { useGradableAssignments } from "@/lib/useGradableAssignments";
+import TaQueuePanel from "@/components/TaQueuePanel";
 export default function CourseDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { t } = useLanguage();
   const can = useCan();     // a TA reads the course overview; the course's text, details and grading categories are the teacher's (10/11/2569)
   const { getCourse, updateCourse } = useCourses();
   const { getStudentsByCourse } = useStudents();
-  const { getAssignmentsByCourse, getSubmissionsByAssignment } = useAssignments();
+  const { getSubmissionsByAssignment } = useAssignments();
   const { getTeachersByCourse } = useManagedTeachers();
   const { getCategoriesByCourse, addCategory, updateCategory, removeCategory } = useGradingCategories();
   const course = getCourse(id);
@@ -31,7 +33,7 @@ export default function CourseDetailPage() {
   // Withdrawn students don't count toward the class numbers (24/9/2569).
   const students = roster.filter((s) => !isWithdrawn(s));
   const withdrawn = withdrawnIds(roster);
-  const assignments = getAssignmentsByCourse(id);
+  const assignments = useGradableAssignments(id);      // a TA's overview is their own queue: only the work a teacher gave them (10/11/2569)
   const instructor = course ? getTeachersByCourse(course.id)[0] : undefined;
   const categories = course ? getCategoriesByCourse(course.id) : [];
   const totalWeight = categories.reduce((sum, c) => sum + c.weight, 0);
@@ -145,25 +147,51 @@ export default function CourseDetailPage() {
     );
   }
 
+  const breadcrumb = (
+    <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)] mb-6">
+      <Link href="/teacher/courses" className="hover:text-[var(--accent)] transition-colors">{t("รายวิชาทั้งหมด", "All Courses")}</Link>
+      <span>/</span>
+      <span className="text-[var(--text-primary)] font-medium">{course.name}</span>
+    </div>
+  );
+  const bannerTitle = (
+    <div className="absolute bottom-4 left-5 flex items-center gap-3">
+      <IconTile course={course.icon} size="md" tone="onDark" />
+      <div className="min-w-0">
+        {course.code && <p className="text-white/80 text-xs font-semibold tracking-wide tabular-nums truncate">{course.code}</p>}
+        <h1 className="text-xl font-bold text-white truncate">{course.name}</h1>
+      </div>
+    </div>
+  );
+
+  // A TA's home is their queue, not the teacher's dashboard (10/11/2569, advisor R28)
+  if (can.isTa) {
+    return (
+      <main className="w-full px-8 py-8">
+        {breadcrumb}
+        <div className="relative h-36 rounded-2xl mb-6 overflow-hidden" style={{ background: course.coverColor }}>
+          <div className="absolute inset-0 bg-black/10" />
+          {bannerTitle}
+        </div>
+        <TaQueuePanel
+          courseId={id}
+          assignments={assignments}
+          subsOf={(aid) => getSubmissionsByAssignment(aid).filter((s) => !withdrawn.has(s.studentId))}
+          enrolled={students.length}
+        />
+      </main>
+    );
+  }
+
   return (
       <main className="w-full px-8 py-8">
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)] mb-6">
-          <Link href="/teacher/courses" className="hover:text-[var(--accent)] transition-colors">{t("รายวิชาทั้งหมด", "All Courses")}</Link>
-          <span>/</span>
-          <span className="text-[var(--text-primary)] font-medium">{course.name}</span>
-        </div>
+        {breadcrumb}
 
         {/* Course header banner */}
         <div className="relative h-36 rounded-2xl mb-6 overflow-hidden" style={{ background: course.coverColor }}>
           <div className="absolute inset-0 bg-black/10" />
-          <div className="absolute bottom-4 left-5 flex items-center gap-3">
-            <IconTile course={course.icon} size="md" tone="onDark" />
-            <div className="min-w-0">
-              {course.code && <p className="text-white/80 text-xs font-semibold tracking-wide tabular-nums truncate">{course.code}</p>}
-              <h1 className="text-xl font-bold text-white truncate">{course.name}</h1>
-            </div>
-          </div>
+          {bannerTitle}
           {can.editAssignment && <Link
             href={`/teacher/courses/${id}/settings`}
             className="absolute bottom-4 right-4 flex items-center gap-1.5 px-3 py-1.5 bg-white/15 hover:bg-white/25 backdrop-blur-sm text-white text-xs font-medium rounded-lg transition-colors"

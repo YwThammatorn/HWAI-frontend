@@ -11,6 +11,7 @@ import { useGradingCategories } from "@/lib/gradingCategories";
 import { buildScoreBook, scoreBookToCsv, scoreCellFill, PRESSABLE_SCORE_CLASSES, SCORE_FILL_CLASSES, PENDING_FILL_CLASSES, MISSING_FILL_CLASSES, type ScoreCell, type ScoreBookRow } from "@/lib/scoreBook";
 import { useLanguage } from "@/context/LanguageContext";
 import { useCan } from "@/lib/useCan";
+import { useGradableAssignments } from "@/lib/useGradableAssignments";
 import SearchInput from "@/components/SearchInput";
 import FilterSelect from "@/components/FilterSelect";
 import SortableTh from "@/components/SortableTh";
@@ -44,7 +45,7 @@ export default function ScoreBookPage() {
   const { getCourse } = useCourses();
   const { getStudentsByCourse } = useStudents();
   const { findByStudentId } = useCohortStudents();
-  const { getAssignmentsByCourse, getSubmissionsByAssignment, getRubricsByAssignment } = useAssignments();
+  const { getSubmissionsByAssignment, getRubricsByAssignment } = useAssignments();
   const { getCategoriesByCourse } = useGradingCategories();
 
   const [search, setSearch] = useState("");
@@ -73,8 +74,9 @@ export default function ScoreBookPage() {
   const tab: WithdrawnTab = withdrawnRoster.length === 0 ? "active" : tabState;
   const roster = tab === "active" ? activeRoster : withdrawnRoster;
   // Class-level numbers only make sense for the enrolled group, so the withdrawn tab is always the matrix.
-  const view = tab === "active" ? viewState : "matrix";
-  const assignments = getAssignmentsByCourse(id);
+  // A TA sees only the columns of the work given to them (10/11/2569, advisor R30), so a total, a class average or a class summary would mislead: matrix only
+  const view = tab === "active" && can.seeTotals ? viewState : "matrix";
+  const assignments = useGradableAssignments(id);
   const categories = getCategoriesByCourse(id);
   const totalWeight = categories.reduce((sum, c) => sum + c.weight, 0);
   const today = new Date().toISOString().split("T")[0];
@@ -251,7 +253,7 @@ export default function ScoreBookPage() {
         </button>}
       </div>
 
-      {assignments.length > 0 && roster.length > 0 && tab === "active" && (
+      {assignments.length > 0 && roster.length > 0 && tab === "active" && can.seeTotals && (
         <div className="mb-4">
           <PillTabBar
             ariaLabel={t("มุมมองสมุดคะแนน", "Score Book view")}
@@ -270,11 +272,12 @@ export default function ScoreBookPage() {
       {assignments.length === 0 || roster.length === 0 ? (
         <EmptyState
           icon="bar-chart"
-          title={roster.length === 0 ? t("ยังไม่มีนักศึกษาในวิชานี้", "No students in this course yet") : t("ยังไม่มีชิ้นงาน", "No assignments yet")}
+          title={roster.length === 0 ? t("ยังไม่มีนักศึกษาในวิชานี้", "No students in this course yet") : can.isTa ? t("ยังไม่ได้รับมอบหมายงาน", "No work assigned to you yet") : t("ยังไม่มีชิ้นงาน", "No assignments yet")}
           description={roster.length === 0
             ? t("เพิ่มนักศึกษาก่อน คะแนนจะขึ้นที่นี่", "Add students first — their scores will appear here")
+            : can.isTa ? t("คะแนนของงานที่อาจารย์มอบหมายให้คุณจะขึ้นที่นี่", "Scores of the work your teacher gave you will appear here")
             : t("สร้างชิ้นงานก่อน คะแนนจะขึ้นที่นี่", "Create an assignment first — scores will appear here")}
-          action={
+          action={can.isTa ? undefined :
             <Link
               href={roster.length === 0 ? `/teacher/courses/${id}/students` : `/teacher/courses/${id}/assignments/new`}
               className="inline-flex items-center h-9 px-4 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[.97] transition-colors"
@@ -286,7 +289,7 @@ export default function ScoreBookPage() {
       ) : (
         <>
           {/* Summary — class numbers, so not shown for the withdrawn group, nor on the Class summary view (16/10/2569: the chart there gets the room instead) */}
-          {tab === "active" && view !== "summary" && <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          {tab === "active" && view !== "summary" && <div className={`grid grid-cols-2 gap-4 mb-6 ${can.seeTotals ? "lg:grid-cols-4" : "lg:grid-cols-3"}`}>
             <StatCard
               label={t("นักศึกษา", "Students")} value={roster.length}
               tone="info" icon="users"
@@ -295,10 +298,10 @@ export default function ScoreBookPage() {
               label={t("ตรวจแล้ว", "Graded")} value={gradedPct} suffix="%"
               tone="ok" icon="check-circle"
             />
-            <StatCard
+            {can.seeTotals && <StatCard
               label={t("เฉลี่ยทั้งห้อง", "Class average")} value={book.classAverage === null ? 0 : Math.round(book.classAverage)} suffix={book.classAverage === null ? "—" : "%"}
               tone="accent" icon="bar-chart"
-            />
+            />}
             <StatCard
               label={t("รอตรวจ", "Awaiting grading")} value={book.pendingCells}
               onClick={() => router.push(`/teacher/courses/${id}/grading`)}
@@ -347,9 +350,9 @@ export default function ScoreBookPage() {
             </ul>
           </div>
 
-          <p className="-mt-1 mb-3 text-xs text-[var(--text-muted)]">
+          {can.seeTotals && <p className="-mt-1 mb-3 text-xs text-[var(--text-muted)]">
             {t("คะแนนรวมคิดจากหมวดที่ตรวจแล้วเท่านั้น (เช่น 37.3 / 50 = ตรวจแล้วครึ่งหนึ่งของน้ำหนักทั้งหมด) แถวที่ยังไม่ครบมีป้าย “บางส่วน”", "Total counts only the categories graded so far (e.g. 37.3 / 50 = half of the total weight is graded). Rows that are not complete are marked “partial”.")}
-          </p>
+          </p>}
 
           {/* Matrix */}
           <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] overflow-hidden">
@@ -368,9 +371,9 @@ export default function ScoreBookPage() {
                         {g.category ? `${g.category.name} · ${g.category.weight}%` : t("ไม่มีหมวด", "No category")}
                       </th>
                     ))}
-                    <th scope="colgroup" className={`${stickyHead} top-0 right-0 px-4 text-left ${headBase} ${headCaps}`}>
+                    {can.seeTotals && <th scope="colgroup" className={`${stickyHead} top-0 right-0 px-4 text-left ${headBase} ${headCaps}`}>
                       {t("สรุป", "Summary")}
-                    </th>
+                    </th>}
                   </tr>
                   <tr>
                     <SortableTh
@@ -408,14 +411,14 @@ export default function ScoreBookPage() {
                         </span>
                       </th>
                     ))}
-                    <SortableTh
+                    {can.seeTotals && <SortableTh
                       label={t("รวม", "Total")}
                       dir={sort?.key === "total" ? sort.dir : undefined}
                       onClick={() => cycleSort("total")}
                       hint={t("คลิกเพื่อเรียงตามคะแนนรวม (มาก→น้อย → น้อย→มาก → ลำดับเดิม)", "Click to sort by total (high → low → low → high → roster order)")}
                       className={`${stickyHead} border-b border-l border-[var(--border-subtle)]`}
                       style={{ top: HEAD1_H, right: 0, width: TOTAL_W, minWidth: TOTAL_W }}
-                    />
+                    />}
                   </tr>
                 </thead>
                 {/* the last row has no bottom line: the footer's top line (or the card's own border) closes it — before, the two stacked into a double line */}
@@ -449,7 +452,7 @@ export default function ScoreBookPage() {
                           {renderCell(r.cells[a.id], a, r)}
                         </td>
                       ))}
-                      <td
+                      {can.seeTotals && <td
                         className="sticky z-10 px-4 py-1 tabular-nums bg-[var(--bg-surface)] group-hover:bg-[var(--bg-subtle)] border-b border-l border-[var(--border-subtle)]"
                         style={{ right: 0, width: TOTAL_W, minWidth: TOTAL_W }}
                       >
@@ -463,12 +466,12 @@ export default function ScoreBookPage() {
                             {r.gradedWeight < totalWeight && <span data-testid="partial-total" className="ml-1.5 rounded-md bg-[var(--bg-app)] px-1.5 py-0.5 text-xs font-medium text-[var(--text-secondary)]">{t("บางส่วน", "partial")}</span>}
                           </span>
                         )}
-                      </td>
+                      </td>}
                     </tr>
                   ))}
                 </tbody>
-                {/* class averages only make sense for the enrolled group */}
-                {tab === "active" && <tfoot>
+                {/* class averages only make sense for the enrolled group, and not for a TA, who sees only part of the work */}
+                {tab === "active" && can.seeTotals && <tfoot>
                   <tr>
                     <td colSpan={2} className="sticky left-0 bottom-0 z-20 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] bg-[var(--bg-surface)] border-t border-[var(--border-subtle)]">
                       {t("เฉลี่ยทั้งห้อง", "Class average")}
@@ -490,7 +493,7 @@ export default function ScoreBookPage() {
             </div>
           </div>
           <p className="mt-3 text-xs text-[var(--text-muted)]" aria-live="polite">
-            {q
+            {q || !can.seeTotals
               ? t(`พบ ${rows.length} จาก ${roster.length} คน`, `${rows.length} of ${roster.length} students`)
               : t("“รวม” นับเฉพาะหมวดที่มีงานตรวจแล้ว — ค่าเดียวกับที่นักศึกษาเห็นในหน้าผลการประเมิน", "“Total” counts only categories with graded work — the same number students see on their Evaluation page")}
           </p>

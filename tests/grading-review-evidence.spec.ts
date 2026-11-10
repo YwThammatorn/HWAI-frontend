@@ -69,6 +69,7 @@ async function seed(page: Page, opts: { lang?: "en" | "th"; ta?: boolean } = {})
     localStorage.setItem("hwai_rubrics_v1", JSON.stringify(d.rubrics));
     localStorage.setItem("hwai_submissions_v1", JSON.stringify(d.subs));
     localStorage.setItem("hwai_section_roles_v1", JSON.stringify([{ id: "sr-1", accountId: "cs-66000099", courseId: "c-ev", role: "ta" }]));
+    localStorage.setItem("hwai_grading_assignments_v1", JSON.stringify([{ id: "ga-ev", courseId: "c-ev", taAccountId: "cs-66000099", scope: { type: "assignments", assignmentIds: ["a-ev", "a-hand"] } }]));
   }, { lang: opts.lang ?? "en", ta: !!opts.ta, course: COURSE, teacher: TEACHER, assignments: ASSIGNMENTS, subs: SUBS, rubrics: ASSIGNMENTS.map((a) => rubric(a.id)) });
 }
 const grade = async (page: Page, aid: string, sid: string) => { await page.goto(`${BASE}/teacher/courses/c-ev/assignments/${aid}/recheck?sub=${sid}`); await page.waitForLoadState("networkidle"); };

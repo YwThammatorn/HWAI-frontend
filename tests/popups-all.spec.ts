@@ -129,9 +129,8 @@ const CASES: PopupCase[] = [
     name: "teacher · Add Collaborator", role: "teacher", path: "/teacher/courses/c-po/collaborators", title: "Add Collaborator",
     open: async (page) => { const b = page.getByRole("button", { name: "Add Collaborator" }).first(); await b.click(); return b; },
   },
-  // Not listed: teacher · New Grading Split. The Grading Split page is switched off (GRADING_SPLIT_DISABLED in
-  // src/lib/featureFlags.ts — it redirects to the course overview), so its popup cannot be reached from the UI.
-  // It was converted with the others (Modal, same footer) and checked by flipping the flag once.
+  // Not listed here: teacher · Assign work to TAs (10/11/2569; the old Grading Split page came back under that name). It needs an appointed TA, so its
+  // popup is opened and checked in tests/ta-role.spec.ts ("Assign work to TAs (the teacher's page)"); it is a Modal with the same Cancel / Save footer.
   {
     name: "student · Form a team", role: "student", path: "/student/courses/c-po/classwork/a-po", title: "Form a team",
     extra: { hwai_assignments_v1: [GROUP_ASSIGNMENT], hwai_submissions_v1: [], hwai_student_groups_v1: [] },

@@ -7,6 +7,7 @@ import ProfileSidebar from "./ProfileSidebar";
 import { useMyCourseIds } from "@/lib/useMyCourseIds";
 import { useSectionRoles } from "@/lib/section-roles";
 import { taPathAllowed } from "@/lib/taPaths";
+import { useTaScope } from "@/lib/useGradableAssignments";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const { user, effectiveRole, viewAs, wearHat } = useAuth();
@@ -14,6 +15,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const { ready } = useSectionRoles();
   const router = useRouter();
   const pathname = usePathname();
+  const verdictNow = taPathAllowed(pathname);
+  const taScope = useTaScope(verdictNow.courseId ?? "");
 
   useEffect(() => {
     if (!user) { router.replace("/login"); return; }
@@ -27,8 +30,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     const verdict = taPathAllowed(pathname);
     if (!verdict.allowed) { router.replace("/teacher/courses"); return; }
     if (!ready) return;                                              // the stored roles are not read yet: do not judge the course
-    if (verdict.courseId && !myCourseIds.has(verdict.courseId)) router.replace("/teacher/courses");
-  }, [effectiveRole, pathname, router, ready, myCourseIds]);
+    if (verdict.courseId && !myCourseIds.has(verdict.courseId)) { router.replace("/teacher/courses"); return; }
+    // a real TA opens only the assignments a teacher gave them (10/11/2569); the course's Grading list is where their queue is
+    if (verdict.courseId && verdict.assignmentId && taScope.scoped && taScope.ready && !taScope.ids.has(verdict.assignmentId)) router.replace(`/teacher/courses/${verdict.courseId}/grading`);
+  }, [effectiveRole, pathname, router, ready, myCourseIds, taScope.scoped, taScope.ready, taScope.ids]);
 
   // A student whose TA appointments are gone (role removed, or now enrolled that term) is put back on the student hat
   useEffect(() => {

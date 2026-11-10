@@ -10,6 +10,8 @@ import { useStudents } from "@/lib/students";
 import { isEnrolledInSubjectThatTerm } from "@/lib/taAccess";
 import { useManagedTeachers } from "@/lib/managed-teachers";
 import { useCurrentAccountId } from "@/lib/current-account";
+import { useGradingAssignments } from "@/lib/grading-assignments";
+import { assignedAssignmentIds } from "@/lib/taWork";
 import { useLanguage } from "@/context/LanguageContext";
 import SearchInput from "@/components/SearchInput";
 import Modal from "@/components/Modal";
@@ -30,6 +32,8 @@ interface TeamRow {
   permissionSummary: string;
   removable: boolean;
   onRemove?: () => void;
+  /** a TA row: the TA's account id, to show how much work they were given (10/11/2569) */
+  taAccountId?: string;
 }
 
 function initialsOf(name: string) {
@@ -239,6 +243,7 @@ export default function CollaboratorsPage() {
   const { t } = useLanguage();
   const { getCourse } = useCourses();
   const { sectionRoles, removeSectionRole, hasPermission } = useSectionRoles();
+  const { gradingAssignments, removeAssignmentsByTaInCourse } = useGradingAssignments();
   const { cohortStudents } = useCohortStudents();
   const { teachers, getTeachersByCourse } = useManagedTeachers();
   const { courses: allCourses } = useCourses();
@@ -308,7 +313,9 @@ export default function CollaboratorsPage() {
             // enrolled in this subject this term: the appointment stays on record but gives no TA access
             permissionSummary: enrolled ? t("ลงเรียนวิชานี้ในเทอมนี้ — ใช้สิทธิ์ผู้ช่วยสอนไม่ได้", "Enrolled in this subject this term — no TA access") : permissionSummary,
             removable: true,
-            onRemove: () => removeSectionRole(r.id),
+            // removing the TA takes the work they were given back with them (10/11/2569)
+            onRemove: () => { removeSectionRole(r.id); removeAssignmentsByTaInCourse(r.accountId, r.courseId); },
+            taAccountId: r.accountId,
           };
         }
         // co-teacher — accountId points to a ManagedTeacher (not necessarily one
@@ -331,7 +338,7 @@ export default function CollaboratorsPage() {
       .filter((r): r is TeamRow => r !== null);
 
     return [...primary, ...roleRows];
-  }, [course, sectionRoles, cohortStudents, teachers, getTeachersByCourse, removeSectionRole, t]);
+  }, [course, sectionRoles, cohortStudents, teachers, getTeachersByCourse, removeSectionRole, removeAssignmentsByTaInCourse, t]);
 
   const filtered = rows.filter(
     (r) => r.name.toLowerCase().includes(search.toLowerCase()) || r.email.toLowerCase().includes(search.toLowerCase())
@@ -429,7 +436,14 @@ export default function CollaboratorsPage() {
                     <td className="px-4 py-3.5">
                       <span className="text-sm font-semibold whitespace-nowrap" style={{ color: row.roleBadgeColor }}>{row.roleLabel}</span>
                     </td>
-                    <td className="px-4 py-3.5 text-xs text-[var(--text-muted)] max-w-[260px]">{row.permissionSummary}</td>
+                    <td className="px-4 py-3.5 text-xs text-[var(--text-muted)] max-w-[260px]">
+                      {row.permissionSummary}
+                      {row.taAccountId && (
+                        <Link data-testid="ta-assigned-link" href={`/teacher/courses/${id}/grading-split`} className="mt-1 block font-semibold text-[var(--accent)] hover:underline">
+                          {t(`งานที่มอบหมาย ${assignedAssignmentIds(gradingAssignments, id, row.taAccountId).size} ชิ้น`, `Assigned work: ${assignedAssignmentIds(gradingAssignments, id, row.taAccountId).size}`)}
+                        </Link>
+                      )}
+                    </td>
                     <td className="px-4 py-3.5 text-right">
                       {row.removable && canManage ? (
                         <IconButton icon="trash" label={t("ลบออกจากรายวิชา", "Remove from course")} tone="danger" onClick={() => remove(row)} />

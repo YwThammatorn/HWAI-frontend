@@ -9,6 +9,7 @@ import { useAssignments } from "@/lib/assignments";
 import { useGradingCategories } from "@/lib/gradingCategories";
 import { useLanguage } from "@/context/LanguageContext";
 import { useCan } from "@/lib/useCan";
+import { useGradableAssignments } from "@/lib/useGradableAssignments";
 import { dateLocale } from "@/lib/dateLocale";
 import SearchInput from "@/components/SearchInput";
 import AssignmentTypeBadge from "@/components/AssignmentTypeBadge";
@@ -32,7 +33,7 @@ export default function AssignmentsPage() {
   const can = useCan();     // a TA reads the list (10/11/2569)
   const { getCourse } = useCourses();
   const { getStudentsByCourse } = useStudents();
-  const { getAssignmentsByCourse, getRubricsByAssignment, removeAssignment } = useAssignments();
+  const { getRubricsByAssignment, removeAssignment } = useAssignments();
   const { getCategoriesByCourse } = useGradingCategories();
 
   const [search, setSearch] = useState("");
@@ -51,7 +52,7 @@ export default function AssignmentsPage() {
 
   const course = getCourse(id);
   const students = getStudentsByCourse(id).filter((s) => !isWithdrawn(s));
-  const assignments = getAssignmentsByCourse(id);
+  const assignments = useGradableAssignments(id);     // a TA reads only the work a teacher gave them (10/11/2569)
   const categories = getCategoriesByCourse(id);
 
   if (!course) {

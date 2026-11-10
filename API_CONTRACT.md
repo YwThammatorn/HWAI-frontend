@@ -209,6 +209,10 @@ fan-out server-side — either way `getAnnouncements`'s signature doesn't need t
 | `updateGradingAssignment` | `PATCH /api/grading-assignments/:id` | `Partial<Omit<GradingAssignment, "id"\|"courseId">>` | `GradingAssignment` |
 | `removeGradingAssignment` | `DELETE /api/grading-assignments/:id` | — | `void` |
 | `removeGradingAssignmentsByTa` | `DELETE /api/grading-assignments?taAccountId=:id` | — | `void` |
+| `removeGradingAssignmentsByTaInCourse` | `DELETE /api/courses/:courseId/grading-assignments?taAccountId=:id` | — | `void` — called when the TA's role on that course is removed |
+| `removeAssignmentFromScopes` | server-side side effect of `DELETE /api/assignments/:id` | — | — — the deleted assignment's id is dropped from every scope |
+
+**Assigned work (10/11/2569, advisor R28–R30).** The only scope the front end writes is `{ type: "assignments"; assignmentIds: string[] }` — one record per TA per course, whole assignments (the `week` / `group` / `all` / `custom` scopes belong to the archived first Grading Split page and are not read). `taAccountId` is the TA's `CohortStudent.id` (the id their `SectionRole` is keyed on). **The server must enforce it**, the UI only hides: a TA (a `ta` section role whose holder is not enrolled in that subject that term) may list, read, grade and see the Score Book columns of **only** the assignments in their scope — every `GET /api/assignments/:id`, `/submissions`, `PATCH /api/submissions/:id` outside it is `403`; a course's assignment list, "to grade" counts and Score Book for a TA are computed over the same set. Only the primary teacher or a role with `canEditSettings` may write these records. A TA's queue figures are `waiting = submissions not graded (incl. need_review)` and `graded = submissions graded` over that set, withdrawn students left out — the same definitions as the teacher's "N to grade" (`lib/taWork.ts` `queueFigures`). The TA never gets Total / class average / Class summary (`useCan().seeTotals`). Console command [30] seeds a TA together with their work.
 
 ## Open follow-ups (deliberately not done in this pass)
 

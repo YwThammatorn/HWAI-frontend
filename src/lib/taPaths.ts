@@ -1,7 +1,7 @@
 // Which teacher pages the TA hat may open (10/11/2569, the user's list): My Courses, and inside a course Overview, Assignments (list + one
 // assignment, read-only), Grading (the queue, an assignment's Grading page, the Grade / recheck screen), Score Book (the course's and an
 // assignment's) and Students (read-only). Everything else — creating or editing a course or an assignment, Rubrics, Calibration, CLO,
-// Collaborators, Settings, Announcements, Materials, Teaching Plan, Grading Split, Notifications — is not a TA's. Pure, so it can be tested.
+// Collaborators, Settings, Announcements, Materials, Teaching Plan, Assign work to TAs (grading-split), Notifications — is not a TA's. Pure, so it can be tested.
 
 const COURSE = "/teacher/courses/([^/]+)";
 const ALLOWED: RegExp[] = [
@@ -19,12 +19,18 @@ const BLOCKED: RegExp[] = [
   new RegExp(`^${COURSE}/assignments/[^/]+/edit$`),
 ];
 
-export function taPathAllowed(pathname: string): { allowed: boolean; courseId?: string } {
+// a page of one assignment: the TA may open it only when a teacher gave them that assignment (lib/taWork.ts), so the id is part of the verdict
+const ASSIGNMENT_PAGE = new RegExp(`^${COURSE}/assignments/([^/]+)(?:/(?:grading|recheck|results))?$`);
+
+export function taPathAllowed(pathname: string): { allowed: boolean; courseId?: string; assignmentId?: string } {
   const path = pathname.replace(/\/+$/, "") || "/";
   if (BLOCKED.some((re) => re.test(path))) return { allowed: false };
   for (const re of ALLOWED) {
     const m = path.match(re);
-    if (m) return { allowed: true, courseId: m[1] };
+    if (m) {
+      const a = path.match(ASSIGNMENT_PAGE);
+      return a ? { allowed: true, courseId: m[1], assignmentId: a[2] } : { allowed: true, courseId: m[1] };
+    }
   }
   return { allowed: false };
 }

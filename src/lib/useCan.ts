@@ -26,6 +26,8 @@ export interface Can {
   announce: boolean;
   /** CSV export of scores */
   exportScores: boolean;
+  /** the course Score Book's Total, class average and Summary — a TA sees only the columns of the work given to them, so a total would mislead (10/11/2569) */
+  seeTotals: boolean;
   /** add, import, remove and withdraw students */
   manageRoster: boolean;
 }
@@ -43,6 +45,7 @@ export function useCan(): Can {
     editAssignment: p.canEditSettings,
     announce: p.canPublishScores,
     exportScores: !isTa,
+    seeTotals: !isTa,
     manageRoster: p.canManageRoster,
   };
 }

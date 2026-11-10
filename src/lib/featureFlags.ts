@@ -11,12 +11,8 @@ export const WEEKLY_PLAN_DISABLED = true;
 export const MATERIALS_DISABLED = true;
 export const ANNOUNCEMENTS_DISABLED = true;
 
-/**
- * Grading Split (teacher, per-course) hidden at the user's request
- * (16/9/2569, "เก็บไว้ก่อน" — temporary). Same "flag it off, don't delete"
- * pattern as the flags above: flip to false to restore the nav entry and page.
- */
-export const GRADING_SPLIT_DISABLED = true;
+// Grading Split's flag (GRADING_SPLIT_DISABLED, 16/9/2569) is gone: the page came back on 10/11/2569 as "Assign work to TAs" (advisor R28);
+// the first version of the page is kept in archive/grading-split/.
 
 /**
  * Teacher "History" + "Dashboard" nav entries, and Admin "Dashboard" nav

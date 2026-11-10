@@ -6,7 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useCourses } from "@/lib/courses";
 import { termLine } from "@/lib/academicTerm";
 import { SidebarNavItem, SidebarSectionLabel, SidebarCourseHeader, SIDEBAR_CLASS } from "@/components/SidebarParts";
-import { WEEKLY_PLAN_DISABLED, MATERIALS_DISABLED, ANNOUNCEMENTS_DISABLED, GRADING_SPLIT_DISABLED, TEACHER_HISTORY_DISABLED, TEACHER_DASHBOARD_DISABLED } from "@/lib/featureFlags";
+import { WEEKLY_PLAN_DISABLED, MATERIALS_DISABLED, ANNOUNCEMENTS_DISABLED, TEACHER_HISTORY_DISABLED, TEACHER_DASHBOARD_DISABLED } from "@/lib/featureFlags";
 
 import Icon from "@/components/Icon";
 const DASHBOARD_ICON = (
@@ -138,9 +138,6 @@ export default function ProfileSidebar() {
         { label: t("สมุดคะแนน", "Score Book"),    href: `/teacher/courses/${activeCourseId}/results`,       active: onScoreBook,   icon: RESULTS_ICON        },
         { label: t("เกณฑ์การให้คะแนน", "Rubrics"), href: `/teacher/courses/${activeCourseId}/rubrics`,       active: isAt(`/teacher/courses/${activeCourseId}/rubrics`),     icon: RUBRICS_ICON        },
         { label: t("ปรับเทียบ AI", "Calibration"), href: `/teacher/courses/${activeCourseId}/calibration`, active: isAt(`/teacher/courses/${activeCourseId}/calibration`), icon: CALIBRATION_ICON    },
-        ...(GRADING_SPLIT_DISABLED ? [] : [
-          { label: t("แบ่งงานตรวจ", "Grading Split"), href: `/teacher/courses/${activeCourseId}/grading-split`, active: isAt(`/teacher/courses/${activeCourseId}/grading-split`), icon: GRADING_SPLIT_ICON },
-        ]),
         ...(WEEKLY_PLAN_DISABLED ? [] : [
           { label: t("แผนการสอน", "Teaching Plan"), href: `/teacher/courses/${activeCourseId}/weekly-plan`,       active: isAt(`/teacher/courses/${activeCourseId}/weekly-plan`),   icon: WEEKLY_PLAN_ICON    },
         ]),
@@ -150,6 +147,8 @@ export default function ProfileSidebar() {
         { label: "CLO", href: `/teacher/courses/${activeCourseId}/clo`,       active: isAt(`/teacher/courses/${activeCourseId}/clo`),           icon: CLO_ICON            },
         { label: t("นักศึกษา", "Students"), href: `/teacher/courses/${activeCourseId}/students`,           active: isAt(`/teacher/courses/${activeCourseId}/students`),      icon: STUDENTS_ICON       },
         { label: t("ผู้ร่วมสอน", "Collaborators"), href: `/teacher/courses/${activeCourseId}/collaborators`, active: isAt(`/teacher/courses/${activeCourseId}/collaborators`), icon: COLLABORATORS_ICON  },
+        // 10/11/2569 (advisor R28): the teacher gives a TA the assignments to grade
+        { label: t("มอบหมายงานให้ TA", "Assign work to TAs"), href: `/teacher/courses/${activeCourseId}/grading-split`, active: isAt(`/teacher/courses/${activeCourseId}/grading-split`), icon: GRADING_SPLIT_ICON },
         { label: t("ตั้งค่าวิชา", "Settings"),   href: `/teacher/courses/${activeCourseId}/settings`,      active: isAt(`/teacher/courses/${activeCourseId}/settings`),      icon: COURSE_SETTINGS_ICON},
       ]
     : [];

@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from "react";
 import { buildCriteria, UX_RESEARCH } from "@/lib/rubricTemplates";
 import { AssignmentContext, Assignment, Submission, Rubric, DEFAULT_LEVELS } from "@/lib/assignments";
 import { removeFile } from "@/lib/fileStorage";
+import { useGradingAssignments } from "@/lib/grading-assignments";
 
 const LS_ASSIGNMENTS = "hwai_assignments_v1";
 const LS_SUBMISSIONS = "hwai_submissions_v1";
@@ -108,6 +109,7 @@ const ASSIGNMENT_DEFAULTS = {
 };
 
 export default function AssignmentProvider({ children }: { children: React.ReactNode }) {
+  const { removeAssignmentFromScopes } = useGradingAssignments();   // GradingAssignmentProvider sits above this one (app/layout.tsx)
   // Starts empty on both server and the client's first hydration render —
   // see CourseProvider.tsx for why (hydration-mismatch fix, [[project-hwai-meeting-20260826]]).
   // This was the data behind the "content keeps shifting" bug specifically:
@@ -175,7 +177,8 @@ export default function AssignmentProvider({ children }: { children: React.React
     persistA(prev => prev.filter(a => a.id !== id));
     persistS(prev => prev.filter(s => s.assignmentId !== id)); // cascade
     persistR(prev => prev.filter(r => r.assignmentId !== id)); // cascade
-  }, [assignments, persistA, persistS, persistR]);
+    removeAssignmentFromScopes(id); // a TA is no longer given it (10/11/2569)
+  }, [assignments, persistA, persistS, persistR, removeAssignmentFromScopes]);
 
   const getAssignment= useCallback((id: string) => assignments.find(a => a.id === id), [assignments]);
 

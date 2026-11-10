@@ -12,6 +12,7 @@ import GradingStageChip from "@/components/GradingStageChip";
 import { useGradingCategories } from "@/lib/gradingCategories";
 import { useAiGrading } from "@/lib/useAiGrading";
 import { useCan } from "@/lib/useCan";
+import { useGradableAssignments } from "@/lib/useGradableAssignments";
 import { useLanguage } from "@/context/LanguageContext";
 import { dateLocale } from "@/lib/dateLocale";
 import SearchInput from "@/components/SearchInput";
@@ -65,7 +66,7 @@ export default function CourseGradingPage() {
   const { t, lang } = useLanguage();
   const { getCourse } = useCourses();
   const { getStudentsByCourse } = useStudents();
-  const { getAssignmentsByCourse, getSubmissionsByAssignment, updateAssignment, updateSubmission } = useAssignments();
+  const { getSubmissionsByAssignment, updateAssignment, updateSubmission } = useAssignments();
   const { getCategoriesByCourse } = useGradingCategories();
   const { waitingUnits, sendWaiting } = useAiGrading();
   const can = useCan();
@@ -86,7 +87,7 @@ export default function CourseGradingPage() {
   // Withdrawn students are out of every class-level number here (24/9/2569) — see lib/students.ts withdrawnIds.
   const students = roster.filter((s) => !isWithdrawn(s));
   const withdrawn = withdrawnIds(roster);
-  const assignments = getAssignmentsByCourse(id);
+  const assignments = useGradableAssignments(id);     // a TA lists only the work a teacher gave them (10/11/2569)
   const categories = getCategoriesByCourse(id);
   const today = new Date().toISOString().split("T")[0];
 
@@ -217,9 +218,9 @@ export default function CourseGradingPage() {
       {items.length === 0 ? (
         <EmptyState
           icon="check-square"
-          title={t("ยังไม่มีงานให้ตรวจ", "Nothing to grade yet")}
-          description={t("สร้างงานก่อน แล้วงานที่นักศึกษาส่งจะมาอยู่ที่นี่", "Create an assignment first — student submissions will queue up here")}
-          action={
+          title={can.isTa ? t("ยังไม่ได้รับมอบหมายงาน", "No work assigned to you yet") : t("ยังไม่มีงานให้ตรวจ", "Nothing to grade yet")}
+          description={can.isTa ? t("งานที่อาจารย์มอบหมายให้คุณตรวจจะขึ้นที่นี่", "The work your teacher gives you to grade will appear here") : t("สร้างงานก่อน แล้วงานที่นักศึกษาส่งจะมาอยู่ที่นี่", "Create an assignment first — student submissions will queue up here")}
+          action={can.isTa ? undefined :
             <Link
               href={`/teacher/courses/${id}/assignments/new`}
               className="inline-flex items-center gap-2 h-9 px-4 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[.97] transition-colors"
