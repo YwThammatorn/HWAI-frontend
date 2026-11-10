@@ -1,0 +1,8 @@
+{
+  "teacher-10-recheck": "Grading Review (Phase 2): ฝั่งซ้ายแสดงงานจริงที่นักศึกษาส่ง (เฟรมที่บันทึกไว้ตอนส่ง + เวลา + ปุ่มเปิดไฟล์สด) แทนการ์ดลิงก์ Figma; เหตุผลของ AI รายเกณฑ์อยู่ในการ์ดเกณฑ์ที่ขวา",
+  "teacher-20a-calibration-sample": "Calibration ขั้นให้คะแนนตัวอย่าง (Phase 2): ตัวอย่างงานออกแบบแสดงเฟรมของงาน (Blind = Frame 1..., ไม่มีปุ่มเปิดไฟล์สด) แทนข้อความ 'ไม่มีไฟล์แนบ'",
+  "teacher-20b-calibration-result": "ผล Calibration (Phase 1): สรุปรวม Same level / Within one level / Weighted kappa + ตารางต่อเกณฑ์ (ตรงกันเป๊ะ, ±1) + คำอธิบายเกณฑ์ตัดสิน แทนคอลัมน์ You / AI ระดับเฉลี่ย",
+  "student-04-assignment-graded": "หน้างานของนักศึกษา (Phase 1): เกณฑ์รูบริกพร้อมคะแนนที่ได้ขึ้นก่อน สถิติชั้นเรียนอยู่ถัดลงไป; กล่องคอมเมนต์อาจารย์ขึ้นก่อนเมื่อมี; ตัดบรรทัด 'Better than N% of your classmates' ออก",
+  "student-06-exam-result": "ผลสอบของนักศึกษา (Phase 1): การ์ดสถิติสอบตัดบรรทัด 'Better than N% of your classmates' ออก",
+  "student-07-evaluation": "Evaluation ของนักศึกษา (Phase 1): กล่องคะแนนรวม (Weighted score so far) ขึ้นก่อน ตามด้วย Assignments graded / Awaiting grading (เดิมสลับลำดับ + ชื่อ Graded / Total so far)"
+}

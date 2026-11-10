@@ -1,0 +1,8 @@
+{
+  "teacher-collaborators": "Collaborators (Phase 3): แถว TA มีลิงก์ 'Assigned work: N' ไปหน้ามอบหมายงาน; เมนูซ้ายมีรายการใหม่ 'Assign work to TAs'",
+  "ta-03-my-courses": "My Courses ของ TA (Phase 3): การ์ดบอกคิวของตัวเอง '19 waiting · 100 graded' (เฉพาะงานที่ได้รับมอบหมาย) แทน 'N to grade' ของทั้งวิชา",
+  "ta-04-course-overview": "หน้าแรกของ TA ในวิชา (Phase 3): เป็นคิวงานของตัวเอง — Waiting / Graded / Assigned work + รายการงานที่ได้รับมอบหมาย + ปุ่ม Grade next แทนหน้าภาพรวมแบบอาจารย์",
+  "ta-05-course-grading": "Grading ของ TA (Phase 3): แสดงเฉพาะ 4 ชิ้นงานที่ได้รับมอบหมาย (เดิมเห็นทั้ง 21 ชิ้น)",
+  "ta-08-score-book": "Score Book ของ TA (Phase 3): เหลือเฉพาะคอลัมน์ของงานที่ได้รับมอบหมาย ไม่มีคอลัมน์รวม / เฉลี่ยทั้งห้อง / แท็บสรุปผลทั้งห้อง",
+  "ta-10-not-mine-redirect": "TA เปิดลิงก์ของงานที่ไม่ได้รับมอบหมาย (Phase 3): ถูกส่งกลับไปหน้า Grading ของวิชา (เดิมเปิดตรวจงานนั้นได้)"
+}
