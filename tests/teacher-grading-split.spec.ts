@@ -495,7 +495,7 @@ test.describe("Per-assignment grading page: a summary strip, the list on the lef
     const detail = page.getByTestId("grading-detail");
     await expect(detail.getByRole("heading", { name: "Student 64070702" })).toBeVisible();
     await expect(detail.getByTestId("detail-grade")).toHaveAttribute("href", "/teacher/courses/c-gs/assignments/a-review/recheck?sub=s4");
-    for (const part of ["Now", "AI", "Saved"]) await expect(detail.getByText(part, { exact: true })).toBeVisible();
+    for (const part of ["Counts as", "AI suggested", "You gave"]) await expect(detail.getByText(part, { exact: true })).toBeVisible();
     await expect(rows(page).filter({ hasText: "Student 64070702" })).toHaveAttribute("aria-current", "true");
     await page.reload();                                                    // the choice survives a reload
     await expect(page.getByTestId("grading-detail").getByRole("heading", { name: "Student 64070702" })).toBeVisible();

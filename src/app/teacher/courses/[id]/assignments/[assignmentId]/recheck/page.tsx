@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useCourses } from "@/lib/courses";
 import { useAssignments, RubricCriterion, submissionAttachments, isManualGrading, levelShare, gradingOpen, gradingOpensAt, latePenaltyOf, daysLate } from "@/lib/assignments";
 import { useNow } from "@/lib/clock";
+import { scoreBlockLabels } from "@/lib/scoreBlockLabels";
 import SubmissionViewer from "@/components/SubmissionViewer";
 import MetricCard from "@/components/MetricCard";
 import AiGradePreviewModal from "@/components/AiGradePreviewModal";
@@ -58,6 +59,7 @@ export default function RecheckPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { t, lang } = useLanguage();
+  const scoreLabels = scoreBlockLabels(t);
   const subId = searchParams.get("sub") ?? "";
 
   const { getCourse } = useCourses();
@@ -269,9 +271,9 @@ export default function RecheckPage() {
         <MetricCard
           label={t(`คะแนน (เต็ม ${assignment.maxPoints})`, `Score (of ${assignment.maxPoints})`)}
           parts={[
-            { label: t("ตอนนี้", "Now"), value: totalScore },
-            ...(handGraded ? [] : [{ label: "AI", value: submission.aiScore ?? "—" }]),
-            { label: t("ของคุณ", "Yours"), value: submission.instructorScore ?? "—" },
+            { label: scoreLabels.counts, value: totalScore },
+            ...(handGraded ? [] : [{ label: scoreLabels.ai, value: submission.aiScore ?? "—" }]),
+            { label: scoreLabels.mine, value: submission.instructorScore ?? "—" },
           ]}
           tone="rating"
           icon="star"

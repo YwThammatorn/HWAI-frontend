@@ -18,6 +18,7 @@ import IconButton from "@/components/IconButton";
 import MetricCard from "@/components/MetricCard";
 import Modal from "@/components/Modal";
 import { Thumb } from "@/components/SubmissionViewer";
+import { scoreBlockLabels } from "@/lib/scoreBlockLabels";
 
 /**
  * The right pane of the Grading page (10/11/2569): everything about ONE student (or team) without leaving the page — who, the status, what the
@@ -49,6 +50,7 @@ export default function GradingStudentDetail({
   onBack: () => void;
 }) {
   const { t, lang } = useLanguage();
+  const scoreLabels = scoreBlockLabels(t);
   const f = rowFigures(assignment, row, aiGraded);
   const rep = f.rep;
   const isTeam = !!row.teamName;
@@ -144,9 +146,9 @@ export default function GradingStudentDetail({
       <MetricCard
         label={t(`คะแนน (เต็ม ${assignment.maxPoints})`, `Score (of ${assignment.maxPoints})`)}
         parts={[
-          { label: t("ตอนนี้", "Now"), value: f.score ?? "—" },
-          ...(aiGraded ? [{ label: "AI", value: rep.aiScore ?? "—" }] : []),
-          { label: t("บันทึกแล้ว", "Saved"), value: rep.instructorScore ?? "—" },
+          { label: scoreLabels.counts, value: f.score ?? "—" },
+          ...(aiGraded ? [{ label: scoreLabels.ai, value: rep.aiScore ?? "—" }] : []),
+          { label: scoreLabels.mine, value: rep.instructorScore ?? "—" },
         ]}
         tone="rating"
         icon="star"

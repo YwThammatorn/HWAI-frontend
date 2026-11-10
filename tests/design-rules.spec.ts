@@ -142,6 +142,14 @@ test.describe("Design rules (DESIGN.md)", () => {
     expect(bad.slice(0, 30)).toEqual([]);
   });
 
+  test("the score card of a submission uses one set of words on both grading screens (scoreBlockLabels, 10/11/2569)", () => {
+    for (const rel of ["components/GradingStudentDetail.tsx", "app/teacher/courses/[id]/assignments/[assignmentId]/recheck/page.tsx"]) {
+      const f = FILES.find((x) => x.rel === rel)!;
+      expect(f.text, rel).toContain("scoreBlockLabels(t)");
+      expect(code(f.text), rel + " must not spell its own block labels").not.toMatch(/label: t\("(ตอนนี้|บันทึกแล้ว|ของคุณ)"/);
+    }
+  });
+
   test("the segmented-control tray uses --bg-track, defined in both themes (the tray vanished on --bg-app pages when it was --bg-app, 6/11)", () => {
     const pill = FILES.find((f) => f.rel.endsWith("components/PillTabBar.tsx"))!;
     expect(code(pill.text)).toMatch(/inline-flex gap-1 p-1 rounded-xl bg-\[var\(--bg-track\)\]/);

@@ -229,7 +229,7 @@ test.describe("Rubric changed while grading — regrade with the new rubric", ()
     await seed(page);
     await go(page, `${BASE}/teacher/courses/c-rs/assignments/as1/recheck?sub=sub-69071101`);
     const card = page.getByText("Score (of 100)").locator("xpath=ancestor::div[contains(@class,'rounded-xl')][1]");
-    for (const part of ["Now", "AI", "Yours"]) await expect(card.getByText(part, { exact: true })).toBeVisible();
+    for (const part of ["Counts as", "AI suggested", "You gave"]) await expect(card.getByText(part, { exact: true })).toBeVisible();
     await expect(page.getByTestId("grade-status")).toHaveText("Graded");
     await expect(page.getByTestId("grade-status")).toHaveClass(/s-ok-bg/);
     await go(page, `${BASE}/teacher/courses/c-rs/assignments/as1/recheck?sub=sub-69071105`);

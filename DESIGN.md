@@ -200,6 +200,8 @@ Input radius: `9px` everywhere. Button radius: `10px` everywhere except `sm` siz
 .badge-dot  { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
 ```
 
+**The score card of a submission (10/11/2569)** — the three blocks on the grading detail and on Grading Review are *Counts as* (the score in force: the grader's once saved, else the AI's), *AI suggested* and *You gave*; the words live in `lib/scoreBlockLabels.ts`, so the two screens cannot drift apart again.
+
 Pill shape (`radius:99px`), always with a `background:currentColor` dot before the label — color alone never carries the meaning (WCAG: don't rely on color-only indicators). A generic teal count/tag badge (not a status) uses `--accent-subtle` background + `--accent-text-onlight` text — **never** `--accent` directly as the text color (see §3).
 
 ## 7. Cards & Lists
