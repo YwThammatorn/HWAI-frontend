@@ -153,7 +153,8 @@ export default function GradingWorkspace({
             <p className="py-12 text-center text-sm text-[var(--text-muted)]">{t("ยังไม่มีการส่งงาน", "No submissions yet")}</p>
           ) : (
             <table className="w-full table-fixed">
-              <colgroup><col /><col className="w-20" /><col className="w-20" /></colgroup>
+              {/* the action column is wider for a team: "Grade team" / "ตรวจทั้งทีม" is longer than "Grade" and was cut off by the panel edge (11/11/2569) */}
+              <colgroup><col /><col className="w-24" /><col className={isGroup ? "w-28" : "w-20"} /></colgroup>
               <thead className="sr-only text-xs">
                 <tr>
                   <th scope="col">{t("นักศึกษา", "Student")}</th>

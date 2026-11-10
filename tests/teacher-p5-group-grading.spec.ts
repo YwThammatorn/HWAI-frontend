@@ -110,6 +110,24 @@ test.describe("P5 — Teacher submissions table: group assignments merge into te
     await expect(page.getByText(/Showing 1–2 of 2 team\(s\)/i)).toBeVisible();
   });
 
+  // 11/11/2569: the action column was 5rem wide, so "Grade team" / "ตรวจทั้งทีม" was cut off by the panel edge (seen in a 1600px report capture)
+  for (const lang of ["en", "th"] as const) {
+    for (const width of [1280, 1600]) {
+      test(`the Grade team button is not cut off by the list panel (${lang}, ${width}px)`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 900 });
+        await seedTeacher(page);
+        await page.addInitScript((l) => localStorage.setItem("hwai_lang", l), lang);   // after the seed, which sets "en"
+        await page.goto(`${BASE}/teacher/courses/c-tp5/assignments/a-tp5-1/grading`);
+        await page.waitForLoadState("networkidle");
+        const btn = page.getByRole("link", { name: lang === "en" ? /^Grade team$/i : /ตรวจทั้งทีม/ }).first();
+        await expect(btn).toBeVisible();
+        const list = page.getByTestId("grading-workspace").locator("section").first();
+        const [b, l] = await Promise.all([btn.boundingBox(), list.boundingBox()]);
+        expect(b!.x + b!.width).toBeLessThanOrEqual(l!.x + l!.width);          // the button's right edge is inside the panel
+      });
+    }
+  }
+
   test("a non-group assignment is unaffected — still one row per student", async ({ page }) => {
     await seedTeacher(page, { submissions: [INDIVIDUAL_SUBMISSION] });
     await page.goto(`${BASE}/teacher/courses/c-tp5/assignments/a-tp5-2/grading`);
