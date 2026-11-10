@@ -12,6 +12,8 @@
 
 import fs from "node:fs";
 import { ASSIGNMENTS, FINAL, CLOS, LEVEL_LABELS, type AsgSpec, type CritSpec } from "./uxui-assignments.ts";
+import { FRAMES, frameImage } from "./build-frames.ts";
+import { aiEvidenceFor } from "../src/lib/aiEvidence.ts";
 
 export const COURSE_ID = "c-mock-4";
 export const TEAM_SIZE = 5;
@@ -111,6 +113,14 @@ export function buildUxuiClass(existing: ExistingClass) {
     const pts = (levels: number[]) => Object.fromEntries(a.criteria.map((c, k) => [critId(a, k), levelPoints(c.points, levels[k])]));
     const sum = (levels: number[]) => a.criteria.reduce((n, c, k) => n + levelPoints(c.points, levels[k]), 0);
     const graded = o.status === "graded", reviewed = o.status !== "not_graded";
+    // a design link: the work as it was when handed in (3–6 frames, the same for a whole team) and the AI's reason + places per criterion (10/11/2569)
+    const snapshot = o.link ? {
+      takenAt: o.submittedAt, sourceUrl: o.link,
+      frames: shuffle(FRAMES, mulberry32(hash("frames:" + o.link))).slice(0, 3 + (hash("n:" + o.link) % 4)).map((f) => ({ id: f.id, name: f.name, image: frameImage(f) })),
+    } : undefined;
+    const aiEvidence = snapshot && reviewed
+      ? aiEvidenceFor(o.link!, a.criteria.map((c, k) => ({ id: critId(a, k), name: c.name, levels: c.levels.map((d, li) => ({ label: LEVEL_LABELS[li], description: d })) })), Object.fromEntries(a.criteria.map((_, k) => [critId(a, k), o.ai[k]])), snapshot)
+      : undefined;
     return {
       id: o.id, assignmentId: a.id, studentId, studentName: nameOf(studentId), email: byId.get(studentId)!.email, submittedAt: o.submittedAt,
       fileUrl: o.link ?? null,
@@ -119,6 +129,8 @@ export function buildUxuiClass(existing: ExistingClass) {
       status: o.status, updatedAt: new Date(Date.parse(o.submittedAt) + (1 + Math.floor(hash(o.id) % 3)) * 86_400_000).toISOString(),
       ...(graded ? { criterionScores: pts(o.lv) } : {}),
       ...(reviewed ? { aiCriterionScores: pts(o.ai) } : {}),
+      ...(snapshot ? { snapshot } : {}),
+      ...(aiEvidence ? { aiEvidence } : {}),
       ...(o.groupId ? { groupId: o.groupId } : {}),
       ...(o.late ? { late: true } : {}),
     };

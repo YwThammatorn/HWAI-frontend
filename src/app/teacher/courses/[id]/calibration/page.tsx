@@ -16,6 +16,7 @@ import CriterionName from "@/components/CriterionName";
 import { RubricLevelPicker } from "@/components/RubricLevels";
 import EmptyState from "@/components/EmptyState";
 import SubmissionViewer from "@/components/SubmissionViewer";
+import FrameViewer from "@/components/FrameViewer";
 
 import Icon from "@/components/Icon";
 import IconButton from "@/components/IconButton";
@@ -245,6 +246,10 @@ export default function CalibrationPage() {
                               </div>
                               <button type="button" onClick={() => swap(u.key)} className={ghost}>{t("สลับชิ้นอื่น", "Swap for another")}</button>
                             </div>
+                            {u.subs[0]?.snapshot && u.subs[0].snapshot.frames.length > 0 ? (
+                              // a design link: its frozen frames (blind: "Frame 1…", no live-file address, no AI marks — the AI's reasons never show here)
+                              <FrameViewer key={u.key} snapshot={u.subs[0].snapshot} zoom={zoom} caption={blind ? undefined : u.name} anonymous={blind} />
+                            ) : (
                             <SubmissionViewer
                               key={u.key}
                               attachments={attachments}
@@ -260,6 +265,7 @@ export default function CalibrationPage() {
                                 </div>
                               }
                             />
+                            )}
                           </div>
 
                           {/* right — the marking */}

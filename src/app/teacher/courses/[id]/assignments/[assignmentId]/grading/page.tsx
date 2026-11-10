@@ -213,7 +213,7 @@ export default function GradingProgressPage() {
   // Re-grade one row: the stand-in AI scores it again against the rubric as it is NOW (criterion by criterion), and what the teacher had put on top of the earlier AI result is cleared — they pressed Re-grade on this row on purpose.
   function handleRegradeRow(row: SubmissionRow) {
     if (!gradingOpen(assignment!, appNow())) return;
-    const update = aiGradingUpdate(row.key, assignment!.maxPoints, getRubricsByAssignment(assignmentId)[0]);
+    const update = aiGradingUpdate(row.key, assignment!.maxPoints, getRubricsByAssignment(assignmentId)[0], row.subs[0]?.snapshot);
     row.subs.forEach((s) => updateSubmission(s.id, update));
   }
 

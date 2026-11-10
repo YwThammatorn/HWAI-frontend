@@ -336,6 +336,7 @@ One component draws every icon: `components/Icon.tsx`. A page never contains an 
 | Meaning | Icon | Rule |
 |---|---|---|
 | Delete, or remove a record, file or row you added | `trash` | `<IconButton tone="danger">` — the only red icon button |
+| A frame of a submitted design, and the chip that points at one (§9f) | `image` | `target` is the CLO icon — do not reuse it for "a place in the work" |
 | Calibration (compare the AI with your own marks) — the sidebar item and the "Calibrate AI" buttons on the Grading page | `sliders` | one icon for it everywhere |
 | Close, cancel, dismiss, clear a chip | `x` | neutral, **never** `tone="danger"` (the Modal close, Cancel on an inline edit, "remove from comparison") |
 | Export (CSV, results, a rubric) — data leaves the app | `upload` (the arrow out of the tray) | the Windows / Microsoft Import / Export pair; picked by the user 9/11/2569 |
@@ -418,6 +419,17 @@ Rules (all of them are in `lib/rubricLevels.ts` and the pieces above):
 | `{lv.label} · {points}` | `levelText(i, n, max, t)` (inside the pieces) |
 | `{weight}% · {max} pts` for a criterion | `<CriterionPoints maxPoints weight earned? />` |
 | a table of criteria in a popup | `<RubricTable columns={["levels","points"]} />` |
+
+## 9f. The student's work as frozen frames (`FrameViewer`) and the AI's reason chips (10/11/2569)
+The Grading Review screen and Calibration show a linked design as what it was **when it was handed in**, not a live embed (a live file can change after the deadline, so a grade would rest on moving evidence).
+| Piece | Rule |
+|---|---|
+| `components/FrameViewer.tsx` | header: `lock` icon + "Snapshot at submission · date", and a ghost button "Open live file" (`external-link` icon, `title` says it may have changed) — hidden while blind; below it a strip of frame thumbnails (`aria-current` on the open one, 2px teal border + `--accent-subtle`), then the frame image at the toolbar's zoom (`zoom × 8` px wide) on `--bg-app` |
+| Frame box | the place the AI points at: 2px `--accent` border, `--accent` 10% fill, numbered round badge `--accent-solid` / `--accent-solid-text`; drawn only for the pressed chip, only on the frame it names; never shown in Calibration |
+| Reference chip | on a criterion card under "AI's reason": `h-7` outline button, `image` icon + the frame's name; pressed = `--accent` border + `--accent-subtle`; pressing it opens that frame and draws its box |
+| Blind (Calibration) | frames read "Frame 1…" (a name can carry a student's name), no live-file button, no AI text |
+| Who sees it | teacher and TA see the reasons and chips; a student never does; "Feedback to AI" stays teacher-only |
+The picture of a frame is data (a stored image), so it keeps its own colours; everything around it uses tokens. Frames without a snapshot fall back to `SubmissionViewer` (files / link card).
 
 ## 10. Migration — old KB patterns → new tokens
 

@@ -123,7 +123,7 @@ export default function CourseGradingPage() {
     setManualFor(null);
     if (mode !== (isManualGrading(a) ? "manual" : "ai")) {
       if (mode === "manual") {
-        aiOnlyOf(a).forEach((sub) => updateSubmission(sub.id, { aiScore: null, aiCriterionScores: undefined, instructorScore: null, status: "not_graded", criterionScores: undefined, criterionComments: undefined }));
+        aiOnlyOf(a).forEach((sub) => updateSubmission(sub.id, { aiScore: null, aiCriterionScores: undefined, aiEvidence: undefined, instructorScore: null, status: "not_graded", criterionScores: undefined, criterionComments: undefined }));
       }
       updateAssignment(a.id, { gradingMode: mode });
     }

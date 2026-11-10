@@ -7,6 +7,7 @@ import { useCourses } from "@/lib/courses";
 import { useAssignments, RubricCriterion, submissionAttachments, isManualGrading, levelShare, gradingOpen, gradingOpensAt, latePenaltyOf, daysLate } from "@/lib/assignments";
 import { useNow } from "@/lib/clock";
 import { scoreBlockLabels } from "@/lib/scoreBlockLabels";
+import FrameViewer, { type FrameMark } from "@/components/FrameViewer";
 import SubmissionViewer from "@/components/SubmissionViewer";
 import MetricCard from "@/components/MetricCard";
 import AiGradePreviewModal from "@/components/AiGradePreviewModal";
@@ -83,6 +84,9 @@ export default function RecheckPage() {
   const [regradeOpen, setRegradeOpen] = useState(false);
   const [regrading, setRegrading] = useState(false);
   const [zoom, setZoom] = useState(100);
+  // Where the AI's reason points (10/11/2569): pressing a reference chip on a criterion selects that frame and draws its box on the frozen copy of the work
+  const [activeRef, setActiveRef] = useState<{ criterionId: string; index: number } | null>(null);
+  const [frameId, setFrameId] = useState<string | undefined>(undefined);
   // The grading part in its own small window (14/10/2569): for a submitted link, which opens in another tab, so the teacher can grade
   // while looking at it. The state stays in this page; the small window just shows the same panel.
   const [floatWin, setFloatWin] = useState<Window | null>(null);
@@ -94,6 +98,14 @@ export default function RecheckPage() {
   // Exam-type assignments have no rubric (23/9/2569) — the whole score is typed in directly here.
   const [manualScore, setManualScore] = useState(0);
   const [saved, setSaved] = useState(false);
+  // the boxes of the pressed chip that sit on the frame being shown
+  const shownFrameId = frameId ?? submission?.snapshot?.frames[0]?.id;
+  const frameMarks: FrameMark[] = activeRef && submission?.aiEvidence?.[activeRef.criterionId]
+    ? submission.aiEvidence[activeRef.criterionId].refs
+        .map((r, i) => ({ r, n: i + 1 }))
+        .filter(({ r }) => r.frameId === shownFrameId && !!r.box)
+        .map(({ r, n }) => ({ n, box: r.box! }))
+    : [];
   const [comment, setComment] = useState(submission?.instructorComment ?? "");
   // Per-criterion notes ("why I changed this score"), keyed by criterion id
   const [criterionComments, setCriterionComments] = useState<Record<string, string>>(submission?.criterionComments ?? {});
@@ -398,9 +410,32 @@ export default function RecheckPage() {
               {!handGraded && (
               <div className="mt-2">
                 <p className="text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-1">
-                  {t("ความคิดเห็น AI", "AI Feedback")}
+                  {submission.aiEvidence?.[s.criterionId] ? t("เหตุผลของ AI", "AI's reason") : t("ความคิดเห็น AI", "AI Feedback")}
                 </p>
-                <p className="text-xs text-[var(--text-secondary)] leading-relaxed">{s.aiFeedback}</p>
+                <p data-testid={`ai-reason-${s.criterionId}`} className="text-xs text-[var(--text-secondary)] leading-relaxed">{submission.aiEvidence?.[s.criterionId]?.reason ?? s.aiFeedback}</p>
+                {/* where in the work the AI looked: each chip selects its frame and draws its box (frames of the frozen snapshot) */}
+                {submission.snapshot && (submission.aiEvidence?.[s.criterionId]?.refs.length ?? 0) > 0 && (
+                  <ul className="mt-2 flex flex-wrap gap-1.5" aria-label={t("จุดที่ AI อ้างอิง", "Where the AI looked")}>
+                    {submission.aiEvidence![s.criterionId].refs.map((r, i) => {
+                      const on = activeRef?.criterionId === s.criterionId && activeRef.index === i;
+                      const frame = submission.snapshot!.frames.find((f) => f.id === r.frameId);
+                      return (
+                        <li key={i}>
+                          <button
+                            type="button"
+                            data-testid={`ref-${s.criterionId}-${i}`}
+                            aria-pressed={on}
+                            onClick={() => { setActiveRef({ criterionId: s.criterionId, index: i }); setFrameId(r.frameId); }}
+                            className={`inline-flex h-7 items-center gap-1.5 whitespace-nowrap rounded-lg border px-2 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] ${on ? "border-[var(--accent)] bg-[var(--accent-subtle)] text-[var(--accent)]" : "border-[var(--border)] bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)]"}`}
+                          >
+                            <Icon name="image" size="sm" />
+                            {frame?.name ?? r.label ?? t("เฟรม", "Frame")}
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
               </div>
               )}
 
@@ -531,7 +566,20 @@ export default function RecheckPage() {
             )}
           </div>
 
-          {/* What the student submitted; the sandbox placeholder when nothing was attached */}
+          {/* What the student submitted: the frozen frames of a design with the AI's boxes on them, or the files/links; the sandbox placeholder when nothing was attached */}
+          {submission.snapshot && submission.snapshot.frames.length > 0 ? (
+            <FrameViewer
+              snapshot={submission.snapshot}
+              zoom={zoom}
+              frameId={frameId}
+              onFrameChange={setFrameId}
+              marks={frameMarks}
+              caption={[
+                submission.studentName,
+                team ? t(`ทีม ${team.name}`, `Team ${team.name}`) : null,
+              ].filter(Boolean).join(" · ")}
+            />
+          ) : (
           <SubmissionViewer
             attachments={submissionAttachments(submission)}
             zoom={zoom}
@@ -571,6 +619,7 @@ export default function RecheckPage() {
           </div>
             }
           />
+          )}
         </div>
 
         {floatWin ? (

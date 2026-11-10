@@ -66,7 +66,7 @@ export default function CalibrationRegrade({ assignment, rubric, courseId, empha
     chosen.forEach((r) => {
       const using = { criteria: r.rubric.criteria };
       r.regrade.forEach((u) => {
-        const update = aiGradingUpdate(u.key, r.assignment.maxPoints, using);
+        const update = aiGradingUpdate(u.key, r.assignment.maxPoints, using, u.subs[0]?.snapshot);
         u.subs.filter((s) => s.aiScore !== null && isAiOnlyGraded(s)).forEach((s) => updateSubmission(s.id, update));
       });
     });

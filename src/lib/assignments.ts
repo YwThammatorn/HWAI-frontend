@@ -185,7 +185,7 @@ export function describeLatePolicy(p: LatePolicy, t: (th: string, en: string) =>
 }
 /** What a resubmission clears: the earlier file's result must not stay on the new file. */
 export const CLEARED_RESULT = {
-  aiScore: null, instructorScore: null, instructorComment: "", criterionScores: undefined, aiCriterionScores: undefined, criterionComments: undefined,
+  aiScore: null, instructorScore: null, instructorComment: "", criterionScores: undefined, aiCriterionScores: undefined, criterionComments: undefined, aiEvidence: undefined,
 } as const;
 
 /** A submission the AI graded and the teacher has not scored by hand — what "switch to manual" sends back to not graded. */
@@ -218,6 +218,11 @@ export interface Submission {
   /** What the AI gave each criterion, keyed by RubricCriterion.id (12/10/2569) — set when the teacher sends the work to the AI, so the
    *  Grade screen can start from it and Calibration can compare it with the teacher's own levels. Never shown to students. */
   aiCriterionScores?: Record<string, number>;
+  /** The AI's reason for each criterion, with where in the work it looked (10/11/2569; R22 "reasons and evidence"). Written together with
+   *  `aiCriterionScores`; cleared with them. Teacher/TA only — `studentVisibleSubmission` removes it, announced or not (R38). */
+  aiEvidence?: Record<string, CriterionEvidence>;
+  /** The work as it was when it was submitted — frozen frames of a design link (R35: the evidence must not change after the deadline). */
+  snapshot?: WorkSnapshot;
   // Security: student work must not leave faculty without explicit consent
   externalUseConsent: boolean;
   /** Handed in after the due date, inside the late window (15/10/2569). Absent/false = on time. Set again on every resubmission. */
@@ -230,6 +235,14 @@ export interface Submission {
   groupId?: string;
   updatedAt: string;
 }
+
+/** One frame of a design file, saved as an image (a path under /mock-data/frames/ in the demo; a stored file in a real deployment). */
+export interface SnapshotFrame { id: string; name: string; image: string }
+/** Frozen copy of a linked design: when it was taken, the live file's address (it may have changed since), and the frames. */
+export interface WorkSnapshot { takenAt: string; sourceUrl?: string; frames: SnapshotFrame[] }
+/** A place in the work the AI points at: a frame, optionally a box on it (all four numbers are fractions of the frame, 0..1). */
+export interface EvidenceRef { frameId: string; label?: string; box?: { x: number; y: number; w: number; h: number } }
+export interface CriterionEvidence { reason: string; refs: EvidenceRef[] }
 
 /** Everything a submission holds, including ones saved before multi-file support. */
 export function submissionAttachments(sub: Submission | undefined): AssignmentAttachment[] {
@@ -251,8 +264,10 @@ export const URGENT_HOURS = 48;
  *  announce" (gradingFinalized) — until then a graded submission reads as plain "submitted, awaiting
  *  grade": no score, no comment, no breakdown. Teacher-side code keeps using the raw submission. */
 export function studentVisibleSubmission(assignment: Assignment | undefined, sub: Submission): Submission {
-  if (sub.status !== "graded" || assignment?.gradingFinalized) return sub;
-  return { ...sub, status: "not_graded", aiScore: null, instructorScore: null, instructorComment: "", criterionScores: undefined, aiCriterionScores: undefined, criterionComments: undefined };
+  // The AI's reasons are the teacher's working material, never a student's: removed before AND after the announcement (R38, 10/11/2569)
+  const visible: Submission = { ...sub, aiEvidence: undefined };
+  if (sub.status !== "graded" || assignment?.gradingFinalized) return visible;
+  return { ...visible, status: "not_graded", aiScore: null, instructorScore: null, instructorComment: "", criterionScores: undefined, aiCriterionScores: undefined, criterionComments: undefined };
 }
 
 export interface CriterionLevel {
@@ -316,7 +331,7 @@ export interface AssignmentContextValue {
   getAssignment: (id: string) => Assignment | undefined;
   getAssignmentsByCourse: (courseId: string) => Assignment[];
   addSubmission: (data: Omit<Submission, "id" | "updatedAt">) => Submission;
-  updateSubmission: (id: string, data: Partial<Pick<Submission, "aiScore" | "instructorScore" | "instructorComment" | "criterionComments" | "criterionScores" | "aiCriterionScores" | "status" | "fileUrl" | "attachments" | "submittedAt" | "late">>) => void;
+  updateSubmission: (id: string, data: Partial<Pick<Submission, "aiScore" | "instructorScore" | "instructorComment" | "criterionComments" | "criterionScores" | "aiCriterionScores" | "aiEvidence" | "snapshot" | "status" | "fileUrl" | "attachments" | "submittedAt" | "late">>) => void;
   getSubmissionsByAssignment: (assignmentId: string) => Submission[];
   addRubric: (data: Omit<Rubric, "id" | "createdAt" | "updatedAt">) => Rubric;
   updateRubric: (id: string, data: Partial<Omit<Rubric, "id" | "assignmentId" | "createdAt" | "updatedAt">>) => void;

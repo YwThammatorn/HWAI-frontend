@@ -29,7 +29,7 @@ export function useAiGrading() {
   /** The AI scores these units against `rubric`. What the teacher put on top of an earlier AI result is cleared. */
   function gradeUnits(a: Assignment, units: SubmissionRow[], rubric: RubricForAi | undefined) {
     units.forEach((u) => {
-      const update = aiGradingUpdate(u.key, a.maxPoints, rubric);
+      const update = aiGradingUpdate(u.key, a.maxPoints, rubric, u.subs[0]?.snapshot);
       u.subs.forEach((s) => updateSubmission(s.id, update));
     });
   }
