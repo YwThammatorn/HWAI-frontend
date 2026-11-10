@@ -51,6 +51,15 @@ const COMMENTS = [
   "ผลงานประณีต ใช้ Component ได้สม่ำเสมอ", "ลองทดสอบกับผู้ใช้เพิ่มอีกสักคนแล้วสรุปให้ชัดขึ้น",
 ];
 
+/** Comments the chapter's screens must show (11/11/2569): the main demo student's work on the pages the report captures carries a teacher comment, whatever the random draw gave.
+ *  Applied after the draw, so the random stream (and every mark) is unchanged. Key: "<assignment id>:<student id>"; a team's comment goes to all its members. */
+const FORCED: Record<string, string> = {
+  "a-uxui-13:69070101": "จัดวางลำดับความสำคัญได้ชัดเจน ลองเพิ่มความสม่ำเสมอของสีและขนาดตัวอักษรใน Component ปุ่มอีกเล็กน้อย",
+  "a-uxui-8:69070101": "คำถาม How Might We ครอบคลุมปัญหาหลักของผู้ใช้ ลองทำให้แคบลงเพื่อให้ออกแบบวิธีแก้ได้ตรงจุดขึ้น",
+  "a-mock-10:69070101": "โปรเจกต์ครบทุกขั้นตอนและมีเหตุผลรองรับการตัดสินใจ ควรเพิ่มผลทดสอบกับผู้ใช้จริงและสรุปสิ่งที่ปรับหลังทดสอบให้ชัดขึ้น",
+};
+const forced = (assignmentId: string, studentId: string, drawn: string) => FORCED[`${assignmentId}:${studentId}`] ?? drawn;
+
 const id22 = (rnd: () => number) => Array.from({ length: 22 }, () => "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[Math.floor(rnd() * 62)]).join("");
 
 // ── the build ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -65,7 +74,7 @@ export function buildUxuiClass(existing: ExistingClass) {
   if (finalSubmitters.size === 0) throw new Error("the existing file has no Final project submissions to take the submitters from");
   const byId = new Map(students.map((s) => [s.studentId, s]));
   const ability = new Map(students.map((s) => [s.studentId, randn(mulberry32(hash("ability:" + s.studentId)))]));
-  ability.set("69070101", 0.8);   // the main demo login does well, as before (87/100 on the Final project)
+  ability.set("69070101", 0.8);   // the main demo login does well, as before (58/75 on the Final project, 77 %)
   const nameOf = (id: string) => { const s = byId.get(id)!; return `${s.firstName} ${s.lastName}`; };
 
   // teams: the same six for the group work, re-mixed for the two ideation workshops
@@ -156,7 +165,7 @@ export function buildUxuiClass(existing: ExistingClass) {
         // Usability Testing (not announced): some work still waits for the teacher
         const q = queue.get(s.studentId)!;
         const status = a.id === "a-uxui-18" ? (q < 5 ? "need_review" : q < 9 ? "not_graded" : "graded") : "graded";
-        submissions.push(mkRow(a, s.studentId, { id: a.id === FINAL.id ? `sub-uxui-${s.studentId}` : `sub-${a.id}-${s.studentId}`, submittedAt: onTime(), status, lv, ai: aiLevels(rnd, lv), link: link(), comment: comment() }));
+        submissions.push(mkRow(a, s.studentId, { id: a.id === FINAL.id ? `sub-uxui-${s.studentId}` : `sub-${a.id}-${s.studentId}`, submittedAt: onTime(), status, lv, ai: aiLevels(rnd, lv), link: link(), comment: forced(a.id, s.studentId, comment()) }));
       }
     } else {
       const teams = REMIX.has(a.id) ? REMIXED : TEAMS;
@@ -171,7 +180,8 @@ export function buildUxuiClass(existing: ExistingClass) {
         const isLate = (LATE[a.id] ?? []).includes(t);
         const lnk = link();
         const status = a.id === "a-uxui-17" ? (t === 4 ? "need_review" : t === 5 ? "not_graded" : "graded") : "graded";
-        const cmt = comment();
+        const drawn = comment();
+        const cmt = members.reduce((c, id) => forced(a.id, id, c), drawn);
         for (const studentId of members) submissions.push(mkRow(a, studentId, { id: `sub-${a.id}-${studentId}`, submittedAt, status, lv, ai, groupId: gid, late: isLate, link: lnk, comment: cmt }));
       });
     }
