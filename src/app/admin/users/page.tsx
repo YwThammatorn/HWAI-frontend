@@ -860,12 +860,14 @@ function TeachersTab() {
                       ) : (
                         <>
                           <IconButton icon="edit" label={t(`แก้ไข ${teacher.name}`, `Edit ${teacher.name}`)} onClick={() => startEdit(teacher)} />
-                          <IconButton icon="trash" label={t(`ลบ ${teacher.name}`, `Delete ${teacher.name}`)} tone="danger" onClick={() => setDeletingId(teacher.id)} />
                           {teacher.status === "inactive" ? (
                             <IconButton icon="check" label={t(`เปิดใช้งาน ${teacher.name}`, `Activate ${teacher.name}`)} onClick={() => activateTeacher(teacher.id)} />
                           ) : (
                             <IconButton icon="ban" label={t(`ปิดใช้งาน ${teacher.name}`, `Deactivate ${teacher.name}`)} tone="warn" onClick={() => setDeactivatingId(teacher.id)} />
                           )}
+                          {/* Delete is permanent: last, and set apart from the reversible Deactivate so the two cannot be mixed up (advisor, 10/11/2569) */}
+                          <span aria-hidden="true" className="mx-1.5 h-5 w-px bg-[var(--border)]" />
+                          <IconButton icon="trash" label={t(`ลบ ${teacher.name}`, `Delete ${teacher.name}`)} tone="danger" onClick={() => setDeletingId(teacher.id)} />
                         </>
                       )}
                     </div>
@@ -1630,12 +1632,13 @@ function StudentsTab({ statusTabsSlot }: { statusTabsSlot: HTMLDivElement | null
                             ) : (
                               <>
                             <IconButton icon="edit" label={t(`แก้ไข ${student.firstName} ${student.lastName}`, `Edit ${student.firstName} ${student.lastName}`)} onClick={() => startEdit(student)} />
-                            <IconButton icon="trash" label={t(`ลบ ${student.firstName} ${student.lastName}`, `Delete ${student.firstName} ${student.lastName}`)} tone="danger" onClick={() => setDeletingId(student.id)} />
                             {isInactive ? (
                               <IconButton icon="check" label={t(`เปิดใช้งาน ${student.firstName} ${student.lastName}`, `Activate ${student.firstName} ${student.lastName}`)} onClick={() => activateStudent(student.id)} />
                             ) : (
                               <IconButton icon="ban" label={t(`ปิดใช้งาน ${student.firstName} ${student.lastName}`, `Deactivate ${student.firstName} ${student.lastName}`)} tone="warn" onClick={() => setDeactivatingId(student.id)} />
                             )}
+                            <span aria-hidden="true" className="mx-1.5 h-5 w-px bg-[var(--border)]" />
+                            <IconButton icon="trash" label={t(`ลบ ${student.firstName} ${student.lastName}`, `Delete ${student.firstName} ${student.lastName}`)} tone="danger" onClick={() => setDeletingId(student.id)} />
                               </>
                             )}
                           </div>

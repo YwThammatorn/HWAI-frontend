@@ -102,6 +102,8 @@ function CourseModal({
   // sectionNumber is deliberately NOT seeded from duplicateFrom — that's the one field the admin
   // must always fill in fresh for a new section (see the prop doc above).
   const [sectionNumber, setSectionNumber] = useState(course?.sectionNumber ?? "");
+  // The subject code (10/11/2569, advisor: "pick the curriculum / template first and add a course-code field"): filled from the template, typed by hand without one.
+  const [codeValue, setCodeValue] = useState(seed?.code ?? "");
 
   function handleCurriculumChange(id: string) {
     setCurriculumVersionId(id);
@@ -113,7 +115,8 @@ function CourseModal({
     // Auto-fill the name from the curriculum book so admin doesn't have to
     // retype it — still editable after, in case they want to customize it.
     const selected = courseTemplateOptions.find((ct) => ct.id === id);
-    if (selected) setName(selected.name);
+    if (selected) { setName(selected.name); setCodeValue(selected.code); }
+    else setCodeValue("");   // the old template's code does not stay behind
   }
 
   useEffect(() => { nameRef.current?.focus(); }, []);
@@ -146,7 +149,8 @@ function CourseModal({
     const trimmed = name.trim();
     if (!canSave) return;
     const sectionFields = {
-      ...(selectedTemplate && { courseTemplateId: selectedTemplate.id, code: selectedTemplate.code }),
+      ...(selectedTemplate && { courseTemplateId: selectedTemplate.id }),
+      ...(codeValue.trim() !== "" && { code: codeValue.trim() }),
       ...(year !== undefined && !isNaN(year) && { academicYear: year }),
       ...(term !== "" && { term }),
     };
@@ -185,33 +189,6 @@ function CourseModal({
       }
     >
       <div className="flex flex-col gap-5">
-        {/* Name */}
-        <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-semibold text-[var(--text-muted)]">
-            {t("ชื่อรายวิชา", "Course Name")} <span className="text-[var(--s-err-text)]">*</span>
-          </label>
-          <input
-            ref={nameRef}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSave()}
-            placeholder="เช่น UX/UI Design"
-            className="h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
-          />
-        </div>
-
-        {/* Description */}
-        <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-semibold text-[var(--text-muted)]">{t("คำอธิบาย", "Description")}</label>
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            rows={3}
-            placeholder="อธิบายรายวิชาโดยย่อ (ไม่บังคับ)"
-            className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
-          />
-        </div>
-
         {/* Curriculum / Section linking — optional, only useful once curricula exist */}
         {activeCurriculumVersions.length > 0 && (
           <div className="flex flex-col gap-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-3.5">
@@ -272,6 +249,48 @@ function CourseModal({
             </div>
           </div>
         )}
+
+        {/* Name */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-semibold text-[var(--text-muted)]">
+            {t("ชื่อรายวิชา", "Course Name")} <span className="text-[var(--s-err-text)]">*</span>
+          </label>
+          <input
+            ref={nameRef}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSave()}
+            placeholder="เช่น UX/UI Design"
+            className="h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
+          />
+        </div>
+
+        {/* Course code — read from the template when one is picked, typed otherwise */}
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="course-code" className="text-xs font-semibold text-[var(--text-muted)]">{t("รหัสวิชา", "Course Code")}</label>
+          <input
+            id="course-code"
+            value={codeValue}
+            onChange={(e) => setCodeValue(e.target.value)}
+            readOnly={!!selectedTemplate}
+            aria-readonly={!!selectedTemplate}
+            placeholder={selectedTemplate ? "" : t("เช่น 01076355", "e.g. 01076355")}
+            className={`h-10 rounded-xl border border-[var(--border-subtle)] px-3 text-sm tabular-nums text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)] ${selectedTemplate ? "bg-[var(--bg-app)] cursor-default" : "bg-[var(--bg-card)]"}`}
+          />
+          {selectedTemplate && <p className="text-[11px] text-[var(--text-muted)]">{t("ตามแม่แบบรายวิชาของหลักสูตร", "From the curriculum's course template")}</p>}
+        </div>
+
+        {/* Description */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-semibold text-[var(--text-muted)]">{t("คำอธิบาย", "Description")}</label>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={3}
+            placeholder="อธิบายรายวิชาโดยย่อ (ไม่บังคับ)"
+            className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
+          />
+        </div>
 
         {/* Primary teacher — required at creation; reassign later via the course row's expand panel.
             Shared by every section below unless "same teacher for all" is switched off. */}
@@ -902,7 +921,7 @@ export default function AdminCoursesPage() {
       {/* Stat cards */}
       <div className="flex gap-4 mb-6">
         <StatCard
-          label={t("รายวิชาทั้งหมด", "Total Courses")}
+          label={t("กลุ่มเรียนทั้งหมด", "Total Sections")}   // what is counted is sections (a subject has several), not subjects
           value={courses.length}
           tone="accent" icon="book"
         />

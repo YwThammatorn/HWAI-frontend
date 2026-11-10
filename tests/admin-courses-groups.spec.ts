@@ -32,6 +32,45 @@ const curriculumHeadings = (page: Page) => page.getByRole("heading", { level: 2 
 const ce2569Db = (page: Page) => page.getByRole("region", { name: /วิศวกรรมคอมพิวเตอร์ \(หลักสูตรปรับปรุง 2569\)/ }).getByRole("region", { name: "ระบบฐานข้อมูล", exact: true });
 const subjectCard = (page: Page, name: string) => page.getByRole("region", { name, exact: true });
 
+test.describe("Admin Courses — advisor fixes (10/11/2569)", () => {
+  test("the first stat card says Total Sections: what it counts is sections, not subjects", async ({ page }) => {
+    await open(page);
+    await expect(page.getByText("Total Sections", { exact: true })).toBeVisible();
+    await expect(page.getByText("Total Courses", { exact: true })).toHaveCount(0);
+  });
+
+  test("New Course asks for the curriculum and template first; the template fills the course code (read-only), and the code can be typed without one", async ({ page }) => {
+    await open(page);
+    await page.getByRole("button", { name: "New Course" }).first().click();
+    const dialog = page.getByRole("dialog", { name: "New Course" });
+    const yCurriculum = (await dialog.getByText("Curriculum & Term").boundingBox())!.y;
+    const yName = (await dialog.locator("label", { hasText: "Course Name" }).boundingBox())!.y;
+    expect(yCurriculum, "the curriculum block sits above the course name").toBeLessThan(yName);
+    const code = dialog.getByLabel("Course Code");
+    await expect(code).toBeEditable();                               // no template yet: typed by hand
+    await code.fill("01099999");
+    await dialog.locator("select").first().selectOption({ index: 1 });
+    await dialog.locator("select").nth(1).selectOption({ index: 1 });
+    await expect(code).toHaveValue(/^\d{8}$/);                       // the template's own code replaces what was typed
+    await expect(code).not.toHaveValue("01099999");
+    await expect(code).not.toBeEditable();
+  });
+
+  test("the Delete icon of a user row is set apart from, and after, Deactivate", async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem("hwai_lang", "en");
+      localStorage.setItem("hwai_user", JSON.stringify({ name: "Admin", email: "admin@kmitl.ac.th", role: "admin" }));
+      localStorage.setItem("hwai_managed_teachers_v1", JSON.stringify([{ id: "t-x", title: "Dr.", name: "Ada Lovelace", email: "ada@kmitl.ac.th", role: "teacher", status: "active", courseIds: [] }]));
+    });
+    await page.goto(`${BASE}/admin`);
+    await page.waitForLoadState("networkidle");
+    const deactivate = await page.getByRole("button", { name: "Deactivate Ada Lovelace" }).boundingBox();
+    const del = await page.getByRole("button", { name: "Delete Ada Lovelace" }).boundingBox();
+    expect(del!.x, "Delete comes after Deactivate").toBeGreaterThan(deactivate!.x);
+    expect(del!.x - (deactivate!.x + deactivate!.width), "with a clear gap between them").toBeGreaterThanOrEqual(10);
+  });
+});
+
 test.describe("Admin Courses — grouped by curriculum, then subject", () => {
   // 30/9/2569: names now follow the entity's own "home language", not the page's language toggle —
   // Thai-track curricula (CE/CECS) and their subjects/students are always Thai; the international
