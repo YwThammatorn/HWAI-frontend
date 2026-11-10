@@ -142,6 +142,14 @@ test.describe("Design rules (DESIGN.md)", () => {
     expect(bad.slice(0, 30)).toEqual([]);
   });
 
+  test("the segmented-control tray uses --bg-track, defined in both themes (the tray vanished on --bg-app pages when it was --bg-app, 6/11)", () => {
+    const pill = FILES.find((f) => f.rel.endsWith("components/PillTabBar.tsx"))!;
+    expect(code(pill.text)).toMatch(/inline-flex gap-1 p-1 rounded-xl bg-\[var\(--bg-track\)\]/);
+    expect(code(pill.text)).not.toMatch(/inline-flex gap-1 p-1 rounded-xl bg-\[var\(--bg-app\)\]/);
+    const css = fs.readFileSync(path.join(SRC, "app", "globals.css"), "utf8");
+    expect(css.match(/--bg-track:/g)?.length, "defined once in :root and once for dark").toBe(2);
+  });
+
   test("--bg-subtle is a hover colour, never a static fill (DESIGN.md §9b)", () => {
     const bad: string[] = [];
     for (const f of FILES) for (const m of code(f.text).matchAll(/(?<![\w:-])bg-\[var\(--bg-subtle\)\]/g)) bad.push(`${f.rel}: ${m[0]}`);

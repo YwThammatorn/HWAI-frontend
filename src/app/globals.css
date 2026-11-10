@@ -67,6 +67,10 @@
   /* Aliases used by shell/card components */
   --bg-surface:    #FFFFFF;
   --bg-subtle:     #E4ECF3;
+  /* The track a segmented control (PillTabBar) sits in — the grey tray behind the white active tab. It has to show on BOTH the page (--bg-app) and a white
+     card, so it cannot be --bg-app (the tray vanished on pages, 6/11) and it may not be --bg-subtle (hover only, DESIGN.md §9b). Same value as the
+     old tray, its own name (11/11/2569). */
+  --bg-track:      #E4ECF3;
   --border-subtle: #E0E8F0;   /* was identical to --border (no hierarchy) — now visually distinct */
   /* Table zebra-stripe (10/9/2569, round 2): --bg-app on white was only a
      17/13/8 RGB delta — too weak to read as a stripe (user: "สีมันกลืนกัน").
@@ -195,6 +199,7 @@
   /* Aliases used by shell/card components */
   --bg-surface:    #162232;
   --bg-subtle:     #1E2E40;
+  --bg-track:      #1E2E40;   /* segmented-control tray (see the light value) */
   --border-subtle: #1C2938;
   --bg-subtle-hover: #27394E;
   --bg-stripe:       #1E2E40;

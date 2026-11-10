@@ -25,6 +25,7 @@ HWAI is an academic tool (AI-assisted grading, course/CLO management) — not a 
   --bg-app:         #EEF2F7;
   --bg-card:        #FFFFFF;
   --bg-subtle:      #E4ECF3;
+  --bg-track:       #E4ECF3;   /* tray of a segmented control (PillTabBar) — visible on the page and on a card */
   --bg-nav:         #1A2D45;   /* same in both themes — sidebar doesn't flip */
   --border:         #C8D6E0;
   --border-subtle:  #E0E8F0;
@@ -79,6 +80,7 @@ HWAI is an academic tool (AI-assisted grading, course/CLO management) — not a 
   --bg-app:         #0D1820;
   --bg-card:        #162232;
   --bg-subtle:      #1E2E40;
+  --bg-track:       #1E2E40;
   --bg-nav:         #0A1218;
   --border:         #2A3F54;
   --border-subtle:  #1C2938;
@@ -371,6 +373,7 @@ Every colour in a component is a token from `globals.css` (`var(--…)`). That i
 | `text-gray-400 / 300`, `placeholder-gray-400` | `text-[var(--text-muted)]`, `placeholder:text-[var(--text-muted)]` |
 | `bg-white` | `bg-[var(--bg-surface)]` |
 | `bg-gray-50 / 100` (a static fill) | `bg-[var(--bg-app)]` — never `--bg-subtle` as a static fill (§9b) |
+| the grey tray behind a segmented control (the Score matrix / Class summary switch, `PillTabBar` pill) | `bg-[var(--bg-track)]` — not `--bg-app` (it disappears on a page) and not `--bg-subtle` (hover only) |
 | `hover:bg-gray-50`, `hover:bg-white` | `hover:bg-[var(--bg-subtle)]` |
 | `border-gray-100 / 50` | `border-[var(--border-subtle)]` |
 | `border-gray-200 / 300` | `border-[var(--border)]` |
