@@ -19,7 +19,7 @@ async function seed(page: Page, o: { exam: boolean; announced?: boolean }) {
     localStorage.setItem("hwai_courses_v2", JSON.stringify([{ id: "c-ar", name: "Announce Redirect", description: "", status: "active", coverColor: "#0F766E", sectionNumber: "1", code: "01076777", academicYear: 2569, term: 1, createdAt: NOW, updatedAt: NOW }]));
     localStorage.setItem("hwai_managed_teachers_v1", JSON.stringify([{ id: "t-ar", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", status: "active", courseIds: ["c-ar"] }]));
     localStorage.setItem("hwai_cohort_students_v1", JSON.stringify(ppl.map(([id, f], i) => ({ id: `cs-${i}`, studentId: id, name: `${f} Test`, email: `${id}@kmitl.ac.th`, program: "CE", status: "active" }))));
-    localStorage.setItem("hwai_students_v1", JSON.stringify(ppl.map(([id, f], i) => ({ id: `r-${i}`, courseId: "c-ar", studentId: id, name: `${f} Test`, email: `${id}@kmitl.ac.th`, sequenceNumber: i + 1, enrollmentStatus: "enrolled" }))));
+    localStorage.setItem("hwai_students_v1", JSON.stringify(ppl.map(([id, f], i) => ({ id: `r-${i}`, courseId: "c-ar", studentId: id, name: `${f} Test`, email: `${id}@kmitl.ac.th`, enrollmentStatus: "enrolled" }))));
     localStorage.setItem("hwai_grading_categories_v1", JSON.stringify([]));
     localStorage.setItem("hwai_rubrics_v1", JSON.stringify([]));
     localStorage.setItem("hwai_assignments_v1", JSON.stringify([{
@@ -29,7 +29,7 @@ async function seed(page: Page, o: { exam: boolean; announced?: boolean }) {
     }]));
     localStorage.setItem("hwai_submissions_v1", JSON.stringify(ppl.map(([id, f, score]) => ({
       id: `s-${id}`, assignmentId: "as1", studentId: id, studentName: `${f} Test`, email: `${id}@kmitl.ac.th`, submittedAt: NOW, 
-      aiScore: null, instructorScore: score, instructorComment: "", externalUseConsent: false, status: "graded", updatedAt: NOW,
+      aiScore: null, instructorScore: score, instructorComment: "", status: "graded", updatedAt: NOW,
     }))));
   }, [o.exam, !!o.announced, PEOPLE] as const);
 }

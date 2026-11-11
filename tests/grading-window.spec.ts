@@ -32,7 +32,7 @@ const rubric = (id: string) => ({
 });
 const sub = (aid: string, n: number, extra: Record<string, unknown> = {}) => ({
   id: `${aid}-s${n}`, assignmentId: aid, studentId: `640705${n}`, studentName: `Student ${n}`, email: `s${n}@kmitl.ac.th`, submittedAt: "2026-03-09T10:00:00.000Z", 
-  aiScore: null, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "not_graded", updatedAt: NOW, ...extra,
+  aiScore: null, instructorScore: null, instructorComment: "", status: "not_graded", updatedAt: NOW, ...extra,
 });
 
 interface Seed { assignments: unknown[]; subs: unknown[]; role?: "teacher" | "student" }

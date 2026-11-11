@@ -21,11 +21,11 @@ async function open(page: Page, o: Seed = {}) {
     localStorage.setItem("hwai_managed_teachers_v1", JSON.stringify([{ id: "t-gs", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", status: "active", courseIds: ["c-gs"] }]));
     const people = [["69070501", "Ann"], ["69070502", "Ben"], ["69070503", "Cat"]];
     localStorage.setItem("hwai_cohort_students_v1", JSON.stringify(people.map(([id, f], i) => ({ id: `cs-${i}`, studentId: id, name: `${f} Test`, email: `${id}@kmitl.ac.th`, program: "CE", status: "active" }))));
-    localStorage.setItem("hwai_students_v1", JSON.stringify(people.map(([id, f], i) => ({ id: `r-${i}`, courseId: "c-gs", studentId: id, name: `${f} Test`, email: `${id}@kmitl.ac.th`, sequenceNumber: i + 1, enrollmentStatus: "enrolled" }))));
+    localStorage.setItem("hwai_students_v1", JSON.stringify(people.map(([id, f], i) => ({ id: `r-${i}`, courseId: "c-gs", studentId: id, name: `${f} Test`, email: `${id}@kmitl.ac.th`, enrollmentStatus: "enrolled" }))));
     localStorage.setItem("hwai_grading_categories_v1", JSON.stringify([]));
     localStorage.setItem("hwai_rubrics_v1", JSON.stringify([]));
     localStorage.setItem("hwai_assignments_v1", JSON.stringify([{ id: "hw", courseId: "c-gs", name: "Homework", description: "", dueDate: "2026-01-10", maxPoints: 10, acceptsFiles: true, fileTypes: ["pdf"], submissionType: "individual", maxGroupSize: null, rubricIds: [], gradingFinalized: d.finalized, createdAt: NOW, updatedAt: NOW }]));
-    const mk = (i: number, status: string, ai: number | null, instr: number | null) => ({ id: `s-${i}`, assignmentId: "hw", studentId: people[i][0], studentName: `${people[i][1]} Test`, email: `${people[i][0]}@kmitl.ac.th`, submittedAt: "2026-01-05T10:00:00.000Z", aiScore: ai, instructorScore: instr, instructorComment: "", externalUseConsent: true, status, updatedAt: NOW });
+    const mk = (i: number, status: string, ai: number | null, instr: number | null) => ({ id: `s-${i}`, assignmentId: "hw", studentId: people[i][0], studentName: `${people[i][1]} Test`, email: `${people[i][0]}@kmitl.ac.th`, submittedAt: "2026-01-05T10:00:00.000Z", aiScore: ai, instructorScore: instr, instructorComment: "", status, updatedAt: NOW });
     localStorage.setItem("hwai_submissions_v1", JSON.stringify(d.all
       ? [mk(0, "graded", 8, 9), mk(1, "graded", 6, 6), mk(2, "graded", 4, 4)]
       : [mk(0, "graded", 8, 9), mk(1, "need_review", 6, null), mk(2, "not_graded", null, null)]));

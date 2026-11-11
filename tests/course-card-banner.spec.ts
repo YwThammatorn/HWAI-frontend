@@ -25,7 +25,7 @@ const TEACHER = {
 };
 const ROSTER = COURSES.map((c, i) => ({
   id: `s-ccb-${i}`, courseId: c.id, studentId: "69070101", name: "Somchai Jaidee",
-  email: "69070101@kmitl.ac.th", cohort: "CE69", sequenceNumber: 1, enrollmentStatus: "enrolled",
+  email: "69070101@kmitl.ac.th", cohort: "CE69", enrollmentStatus: "enrolled",
 }));
 
 async function seed(page: Page, role: "teacher" | "student") {

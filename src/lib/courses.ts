@@ -4,7 +4,7 @@ import { createContext, useContext } from "react";
 import type { CourseIconKey } from "@/components/CourseIcon";
 
 export type CourseStatus = "active" | "archived";
-export type Term = 1 | 2 | 3 | "summer";
+export type Term = 1 | 2 | 3; // no summer term (7/11/2569): the third term is term 3
 
 /**
  * `Course` is, in practice, section-shaped: it represents one offering of a

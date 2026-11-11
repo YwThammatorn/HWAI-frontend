@@ -52,7 +52,7 @@ export default function ScoreBookPage() {
   const [categoryFilter, setCategoryFilter] = useState("all");
   // Which cell's rubric breakdown popup is open (null = closed).
   const [breakdown, setBreakdown] = useState<{ row: ScoreBookRow; assignment: Assignment } | null>(null);
-  // Click a header to sort; a third click returns to roster order (the default).
+  // Click a header to sort; a third click returns to roster order (the default: by student ID).
   const [sort, setSort] = useState<{ key: SortKey; dir: "asc" | "desc" } | null>(null);
   const firstDir = (key: SortKey) => (key === "total" ? "desc" : "asc");
   function cycleSort(key: SortKey) {

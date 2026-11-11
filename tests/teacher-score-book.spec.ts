@@ -43,7 +43,7 @@ const STUDENTS = [
 ] as const;
 const ROSTER = STUDENTS.map(([studentId, firstName, lastName], i) => ({
   id: `r-${i}`, courseId: "c-sb", studentId, name: `${firstName} ${lastName}`, email: `${studentId}@kmitl.ac.th`,
-  cohort: "CE69", sequenceNumber: i + 1, enrollmentStatus: "enrolled",
+  cohort: "CE69", enrollmentStatus: "enrolled",
 }));
 const COHORT = STUDENTS.map(([studentId, firstName, lastName, title], i) => ({
   id: `cs-${i}`, studentId, title, name: `${firstName} ${lastName}`, email: `${studentId}@kmitl.ac.th`, cohort: "CE69", program: "CE", status: "active",
@@ -51,7 +51,7 @@ const COHORT = STUDENTS.map(([studentId, firstName, lastName, title], i) => ({
 const sub = (id: string, assignmentId: string, studentId: string, status: "graded" | "need_review" | "not_graded", score: number | null, extra: Record<string, unknown> = {}) => ({
   id, assignmentId, studentId, studentName: `Student ${studentId}`, email: `${studentId}@kmitl.ac.th`,
   submittedAt: "2026-01-05T10:00:00.000Z", aiScore: score, instructorScore: status === "graded" ? score : null,
-  instructorComment: "", externalUseConsent: false, status, updatedAt: "2026-01-05T10:00:00.000Z", ...extra,
+  instructorComment: "", status, updatedAt: "2026-01-05T10:00:00.000Z", ...extra,
 });
 // HW 1 has a rubric (Correctness 70%/70pts, Style 30%/30pts). s-1-1 has real per-criterion scores
 // (65 + 25 = 90, matching its total) — the "exact" case; s-1-2 was graded before criterionScores
@@ -406,11 +406,11 @@ test.describe("Score Book — export", () => {
     expect(text.charCodeAt(0)).toBe(0xfeff); // BOM so Thai opens correctly in Excel
     const lines = text.slice(1).split("\r\n");
     expect(lines[0]).toBe("Student ID,Title,Name,HW 1 (/100),HW 2 (/50),Team Project (/100),Extra (/10),Homework 30% (%),Project 70% (%),Total so far");
-    expect(lines[1]).toBe("69070101,Mr.,Somchai,Jaidee,90,45,80,,90.0,80.0,83.0");
-    expect(lines[2]).toBe("69070102,Miss,Malee,Suksan,70,25,80,,63.3,80.0,75.0");
-    expect(lines[3]).toBe("69070103,,Chai,Notitle,50,pending,pending,,50.0,,15.0");
-    expect(lines[4]).toBe("69070104,,Dao,Pending,pending,missing,,,,,");
-    expect(lines[5]).toBe("69070105,,Ek,Missing,missing,missing,,,,,");
+    expect(lines[1]).toBe("69070101,Mr.,Somchai Jaidee,90,45,80,,90.0,80.0,83.0");
+    expect(lines[2]).toBe("69070102,Miss,Malee Suksan,70,25,80,,63.3,80.0,75.0");
+    expect(lines[3]).toBe("69070103,,Chai Notitle,50,pending,pending,,50.0,,15.0");
+    expect(lines[4]).toBe("69070104,,Dao Pending,pending,missing,,,,,");
+    expect(lines[5]).toBe("69070105,,Ek Missing,missing,missing,,,,,");
   });
 });
 
@@ -494,11 +494,11 @@ test.describe("Score Book — a finalized assignment is view-only", () => {
     submissionType: "individual", maxGroupSize: null, rubricIds: [], createdAt: NOW2, updatedAt: NOW2, gradingFinalized: finalized,
   });
   const ASSIGNMENTS2 = [asg2("open1", "Open Assignment", false), asg2("done1", "Finalized Assignment", true)];
-  const ROSTER2 = [{ id: "r-fz-1", courseId: "c-fz", studentId: "69070101", name: "Somchai Jaidee", email: "69070101@kmitl.ac.th", cohort: "CE69", sequenceNumber: 1, enrollmentStatus: "enrolled" }];
+  const ROSTER2 = [{ id: "r-fz-1", courseId: "c-fz", studentId: "69070101", name: "Somchai Jaidee", email: "69070101@kmitl.ac.th", cohort: "CE69", enrollmentStatus: "enrolled" }];
   const sub2 = (id: string, assignmentId: string) => ({
     id, assignmentId, studentId: "69070101", studentName: "Somchai Jaidee", email: "69070101@kmitl.ac.th",
     submittedAt: "2026-01-05T10:00:00.000Z", aiScore: 90, instructorScore: 90, instructorComment: "",
-    externalUseConsent: false, status: "graded", updatedAt: "2026-01-05T10:00:00.000Z",
+    status: "graded", updatedAt: "2026-01-05T10:00:00.000Z",
   });
   const SUBMISSIONS2 = [sub2("s-open1", "open1"), sub2("s-done1", "done1")];
 

@@ -24,7 +24,6 @@ interface SubmissionSeed {
   studentName: string; email: string; submittedAt: string;
   aiScore: number | null;
   instructorScore: number | null; instructorComment: string;
-  externalUseConsent: boolean;
   status: "not_graded" | "need_review" | "graded";
 }
 
@@ -46,7 +45,7 @@ const SUBMISSION_A: SubmissionSeed = {
   studentName: "สมชาย ใจดี", email: "s1@kmitl.ac.th",
   submittedAt: "2026-08-20T10:00:00.000Z", 
   aiScore: 72, instructorScore: null, instructorComment: "",
-  externalUseConsent: false, status: "not_graded",
+  status: "not_graded",
 };
 
 const SUBMISSION_B: SubmissionSeed = {
@@ -54,7 +53,7 @@ const SUBMISSION_B: SubmissionSeed = {
   studentName: "สมหญิง ดีมาก", email: "s2@kmitl.ac.th",
   submittedAt: "2026-08-20T11:00:00.000Z", 
   aiScore: 55, instructorScore: null, instructorComment: "",
-  externalUseConsent: false, status: "not_graded",
+  status: "not_graded",
 };
 
 async function seedGrading(page: Page) {

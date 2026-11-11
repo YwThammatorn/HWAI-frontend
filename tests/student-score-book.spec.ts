@@ -23,7 +23,7 @@ const COURSE = {
   coverColor: "#0F766E", courseTemplateId: "ct-sesb", term: 1, academicYear: 2569,
   sectionNumber: "1", code: "01076112", schedule: "Mon", room: "811", createdAt: NOW, updatedAt: NOW,
 };
-const STUDENT_RECORD = { id: "r-sesb-1", courseId: "c-sesb", studentId: "69070101", name: "Somchai Jaidee", email: "69070101@kmitl.ac.th", cohort: "CE69", sequenceNumber: 1, enrollmentStatus: "enrolled" };
+const STUDENT_RECORD = { id: "r-sesb-1", courseId: "c-sesb", studentId: "69070101", name: "Somchai Jaidee", email: "69070101@kmitl.ac.th", cohort: "CE69", enrollmentStatus: "enrolled" };
 const CATS = [
   { id: "cat-hw", courseId: "c-sesb", name: "Homework", weight: 50, createdAt: NOW, updatedAt: NOW },
   { id: "cat-mid", courseId: "c-sesb", name: "Midterm", weight: 50, createdAt: NOW, updatedAt: NOW },
@@ -54,7 +54,7 @@ const RUBRICS = [
 const sub = (id: string, assignmentId: string, status: "graded" | "need_review" | "not_graded", score: number | null, extra: Record<string, unknown> = {}) => ({
   id, assignmentId, studentId: "69070101", studentName: "Somchai Jaidee", email: "69070101@kmitl.ac.th",
   submittedAt: "2026-01-05T10:00:00.000Z", aiScore: score, instructorScore: status === "graded" ? score : null,
-  instructorComment: "", externalUseConsent: false, status, updatedAt: "2026-01-05T10:00:00.000Z", ...extra,
+  instructorComment: "", status, updatedAt: "2026-01-05T10:00:00.000Z", ...extra,
 });
 const SUBMISSIONS = [
   sub("s-hw1", "hw1", "graded", 90, { criterionScores: { "crit-1a": 65, "crit-1b": 25 } }),

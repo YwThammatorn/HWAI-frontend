@@ -536,8 +536,7 @@ export default function GradingProgressPage() {
         aiScore: null,
         instructorScore: score,
         instructorComment: "",
-        externalUseConsent: false,
-        status: "graded",
+                status: "graded",
       });
     });
   }

@@ -143,7 +143,7 @@ async function seed(page: Page, o: { code?: string; section?: string; lang?: "en
     localStorage.setItem("hwai_courses_v2", JSON.stringify([{ id: "c-rs", name: "Project 1", code, description: "", status: "active", coverColor: "#0F766E", academicYear: 2569, term: 1, sectionNumber: section, createdAt: NOW, updatedAt: NOW }]));
     localStorage.setItem("hwai_managed_teachers_v1", JSON.stringify([{ id: "t1", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", status: "active", courseIds: ["c-rs"] }]));
     localStorage.setItem("hwai_cohort_students_v1", JSON.stringify((cohort as string[]).map((id, i) => ({ id: `cs-${i}`, studentId: id, name: `First${id.slice(-3)} Last${id.slice(-3)}`, email: `${id}@kmitl.ac.th`, program: "CE", status: "active" }))));
-    localStorage.setItem("hwai_students_v1", JSON.stringify((enrolled as string[]).map((id, i) => ({ id: `r-${i}`, courseId: "c-rs", studentId: id, name: "x y", email: `${id}@kmitl.ac.th`, sequenceNumber: i + 1, enrollmentStatus: "enrolled" }))));
+    localStorage.setItem("hwai_students_v1", JSON.stringify((enrolled as string[]).map((id, i) => ({ id: `r-${i}`, courseId: "c-rs", studentId: id, name: "x y", email: `${id}@kmitl.ac.th`, enrollmentStatus: "enrolled" }))));
     for (const k of ["hwai_grading_categories_v1", "hwai_assignments_v1", "hwai_rubrics_v1", "hwai_submissions_v1"]) localStorage.setItem(k, "[]");
   }, [o.code ?? "01076311", o.section ?? "1", o.lang ?? "en", o.cohort ?? [...G1, "99020001", "99020002"], o.enrolled ?? []] as const);
 }

@@ -82,7 +82,7 @@ async function seed(page: Page, o: { roster?: string[]; lang?: "en" | "th" } = {
     localStorage.setItem("hwai_cohort_students_v1", JSON.stringify(ppl.map(([id, f, program], i) => ({ id: `cs-${i}`, studentId: id, name: `${f} Test`, email: `${id}@kmitl.ac.th`, program, status: "active" }))));
     localStorage.setItem("hwai_students_v1", JSON.stringify((roster as string[]).map((id, i) => {
       const [, f] = ppl.find((p) => p[0] === id)!;
-      return { id: `r-${i}`, courseId: "c-ce", studentId: id, name: `${f} Test`, email: `${id}@kmitl.ac.th`, sequenceNumber: i + 1, enrollmentStatus: "enrolled" };
+      return { id: `r-${i}`, courseId: "c-ce", studentId: id, name: `${f} Test`, email: `${id}@kmitl.ac.th`, enrollmentStatus: "enrolled" };
     })));
     localStorage.setItem("hwai_grading_categories_v1", "[]");
     localStorage.setItem("hwai_assignments_v1", "[]");

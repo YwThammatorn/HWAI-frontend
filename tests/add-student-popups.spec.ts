@@ -16,7 +16,7 @@ const COHORT = [
   { id: "cs-1", studentId: "64070501", title: "Mr.", name: "Fah Test", email: "64070501@kmitl.ac.th", cohort: "CE64", program: "CE", status: "active" },
   { id: "cs-2", studentId: "64070502", name: "Beam Suk", email: "64070502@kmitl.ac.th", cohort: "CE64", program: "CE", status: "active" },
 ];
-const ENROLLED_BEAM = { id: "s-beam", courseId: "c-as", studentId: "64070502", name: "Beam Suk", email: "64070502@kmitl.ac.th", cohort: "CE64", sequenceNumber: 1, enrollmentStatus: "enrolled" };
+const ENROLLED_BEAM = { id: "s-beam", courseId: "c-as", studentId: "64070502", name: "Beam Suk", email: "64070502@kmitl.ac.th", cohort: "CE64", enrollmentStatus: "enrolled" };
 
 async function seedTeacher(page: Page, roster: unknown[] = [ENROLLED_BEAM]) {
   await page.addInitScript((data) => {
@@ -73,7 +73,7 @@ test.describe("Teacher — Add Student (by ID) popup", () => {
     expect(roster).toHaveLength(2);
     expect(roster[1]).toMatchObject({
       courseId: "c-as", studentId: "64070501", name: "Fah Test",
-      email: "64070501@kmitl.ac.th", sequenceNumber: 2, enrollmentStatus: "added-midterm",
+      email: "64070501@kmitl.ac.th", enrollmentStatus: "enrolled",   // no "added mid-term" mark any more (7/11/2569)
     });
   });
 
@@ -173,7 +173,7 @@ test.describe("Admin — Add Student is a centred popup now", () => {
     await expect(dialog.getByRole("alert").first()).toBeVisible();
 
     await dialog.getByLabel("Student ID").fill("69070199");
-    await dialog.getByLabel("Name", { exact: true }).fill("Nok Sai");
+    await dialog.getByRole("textbox", { name: "Name", exact: true }).fill("Nok Sai");
     await dialog.getByLabel("Email").fill("69070199@kmitl.ac.th");
     await dialog.getByLabel("Program").selectOption("CE");
     await dialog.getByRole("button", { name: "Add Student" }).click();

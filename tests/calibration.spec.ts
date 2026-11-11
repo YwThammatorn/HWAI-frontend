@@ -1,5 +1,5 @@
 import { test, expect, Page } from "@playwright/test";
-import { pickSample, compare, suggestOffsets, suggestRubricChanges, storedAiFor, aiGradedUnits, rubricLineage, rubricsLookAlike, offsetsFor, type CalibrationRun, type WorkUnit } from "../src/lib/calibration";
+import { pickSample, compare, suggestRubricChanges, storedAiFor, aiGradedUnits, rubricLineage, rubricsLookAlike, type CalibrationRun, type WorkUnit } from "../src/lib/calibration";
 import { mockAiGradeCriteria, aiGradingUpdate } from "../src/lib/aiGrading";
 
 import { BASE } from "./base";
@@ -48,11 +48,11 @@ const RUBRIC_EXTRA: Record<string, Record<string, unknown>> = { "a-copy": { sour
 
 const sub = (aid: string, n: number, extra: Record<string, unknown> = {}) => ({
   id: `${aid}-s${n}`, assignmentId: aid, studentId: `6407${String(n).padStart(4, "0")}`, studentName: `Student ${n}`, email: `s${n}@kmitl.ac.th`, submittedAt: "2026-01-05T10:00:00.000Z",
-  aiScore: null, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "not_graded", updatedAt: NOW, ...extra,
+  aiScore: null, instructorScore: null, instructorComment: "", status: "not_graded", updatedAt: NOW, ...extra,
 });
 /** A submission the AI has graded (what "Grade with AI" stores). */
-const aiSub = (aid: string, n: number, extra: Record<string, unknown> = {}, offsets?: Record<string, number>) =>
-  sub(aid, n, { ...aiGradingUpdate(`${aid}-s${n}`, 15, { criteria: CRITERIA, aiOffsets: offsets }), ...extra });
+const aiSub = (aid: string, n: number, extra: Record<string, unknown> = {}) =>
+  sub(aid, n, { ...aiGradingUpdate(`${aid}-s${n}`, 15, { criteria: CRITERIA }), ...extra });
 const topAi = { aiScore: 15, aiCriterionScores: { k1: 9, k2: 3, k3: 3 }, criterionScores: { k1: 9, k2: 3, k3: 3 }, instructorScore: 15, status: "graded" };   // everything on the top level
 const teacherScored = { instructorScore: 10, criterionScores: { k1: 6, k2: 2, k3: 2 }, status: "graded" };
 const SUBMISSIONS = [
@@ -265,7 +265,7 @@ test.describe("Calibration", () => {
     await expect(page.getByText("AI's level was visible")).toHaveCount(0);
   });
 
-  test("a steady lean of the AI is the strictness setting's job, not a 'level wording unclear' suggestion — scattered disagreement still is", () => {
+  test("a gap of a level or more between teacher and AI is a 'level wording unclear' suggestion — there is no strictness setting to absorb it; matching levels are not", () => {
     const units = aiUnits("a-cal");
     const sample = pickSample(units, { criteria: CRITERIA }, 5);
     const aiK1 = (u: WorkUnit) => mockAiGradeCriteria(u.key, CRITERIA).levels.k1;
@@ -276,35 +276,32 @@ test.describe("Calibration", () => {
     const k1 = (run: CalibrationRun) => compare(run, units, { criteria: CRITERIA }).find((c) => c.criterionId === "k1")!;
     const disagree = (run: CalibrationRun) => suggestRubricChanges({ criteria: CRITERIA }, [], compare(run, units, { criteria: CRITERIA })).filter((s) => s.kind === "disagree" && s.criterionId === "k1");
 
-    // always one level worse than the AI (kept inside the scale): the AI is steadily generous
-    const steady = runWith((u) => Math.min(3, aiK1(u) + 1));
-    expect(k1(steady).meanAbs).toBeGreaterThan(0.5);
-    expect(k1(steady).residual).toBeLessThan(1);                       // …and a correction of one level removes almost all of it
-    expect(disagree(steady)).toHaveLength(0);
+    // always exactly one level away from the AI (8/11/2569: a steady lean used to be left to the strictness setting, which is gone)
+    const steady = runWith((u) => (aiK1(u) === 3 ? 2 : aiK1(u) + 1));
+    expect(k1(steady).meanAbs).toBe(1);
+    expect(disagree(steady)).toEqual([{ kind: "disagree", criterionId: "k1", value: 1 }]);
 
-    // the teacher mirrors the AI (best ↔ worst): no single correction can fix that
-    const scattered = runWith((u) => 3 - aiK1(u));
-    expect(k1(scattered).residual).toBeGreaterThanOrEqual(1);
-    expect(disagree(scattered)).toHaveLength(1);
+    // the teacher picks the AI's level every time: nothing to suggest
+    const same = runWith(aiK1);
+    expect(k1(same)).toMatchObject({ meanAbs: 0, agreement: 1, verdict: "aligned" });
+    expect(disagree(same)).toHaveLength(0);
   });
 
-  test("the comparison uses what the AI really stored — per-criterion marks as saved, a total-only result split by share — and never adds a correction twice", () => {
+  test("the comparison uses what the AI really stored — per-criterion marks as saved, a total-only result split by share", () => {
     const rubricOnly = { criteria: CRITERIA };
     const stored = { ...sub("x", 1), aiScore: 9, aiCriterionScores: { k1: 3, k2: 3, k3: 0 }, status: "graded" };   // C1 level 2 (3 of 9), C2 top, C3 worst
-    expect(storedAiFor({ key: "x-s1", name: "n", subs: [stored as never] }, rubricOnly)).toMatchObject({ levels: { k1: 2, k2: 0, k3: 3 }, score: 9 });
+    expect(storedAiFor({ key: "x-s1", name: "n", subs: [stored as never] }, rubricOnly)).toEqual({ levels: { k1: 2, k2: 0, k3: 3 }, score: 9 });
     const totalOnly = { ...sub("y", 1), aiScore: 15, status: "graded" };                                      // 15 of 15 → every criterion on its top level
     expect(storedAiFor({ key: "y-s1", name: "n", subs: [totalOnly as never] }, rubricOnly)?.levels).toEqual({ k1: 0, k2: 0, k3: 0 });
     expect(storedAiFor({ key: "z-s1", name: "n", subs: [sub("z", 1) as never] }, rubricOnly)).toBeNull();      // not graded by the AI
 
-    // five samples where the AI sat one level better than the teacher on C1 (bias +1)…
-    const mk = (n: number, used: Record<string, number>) => ({ key: `u${n}`, name: `n${n}`, subs: [{ ...sub("u", n), aiScore: 15, aiCriterionScores: { k1: 9, k2: 3, k3: 3 }, aiOffsetsUsed: used, status: "graded" } as never] });
-    const run = (units: WorkUnit[]): CalibrationRun => ({ id: "r", assignmentId: "u", createdAt: NOW, completedAt: NOW, sampleIds: units.map((u) => u.key), teacherLevels: Object.fromEntries(units.map((u) => [u.key, { k1: 1, k2: 0, k3: 0 }])) });
-    // …marks made with no correction: suggest +1
-    const plain = [1, 2, 3, 4, 5].map((n) => mk(n, {}));
-    expect(suggestOffsets(compare(run(plain), plain, rubricOnly), { k1: 5 }).k1).toBe(1);
-    // …marks that already had +1 inside them: the bias is what is LEFT, so the suggestion is 1 + 1 = 2 — not "saved value (whatever it is now) + 1"
-    const corrected = [1, 2, 3, 4, 5].map((n) => mk(n, { k1: 1 }));
-    expect(suggestOffsets(compare(run(corrected), corrected, rubricOnly), { k1: 0 }).k1).toBe(2);
+    // five samples where the stored marks put C1 on the top level and the teacher one level lower: the AI is generous by exactly one level
+    const mk = (n: number) => ({ key: `u${n}`, name: `n${n}`, subs: [{ ...sub("u", n), aiScore: 15, aiCriterionScores: { k1: 9, k2: 3, k3: 3 }, status: "graded" } as never] });
+    const units = [1, 2, 3, 4, 5].map(mk);
+    const run: CalibrationRun = { id: "r", assignmentId: "u", createdAt: NOW, completedAt: NOW, sampleIds: units.map((u) => u.key), teacherLevels: Object.fromEntries(units.map((u) => [u.key, { k1: 1, k2: 0, k3: 0 }])) };
+    const k1 = compare(run, units, rubricOnly).find((c) => c.criterionId === "k1")!;
+    expect(k1).toMatchObject({ n: 5, bias: 1, meanAbs: 1, agreement: 0, aiMean: 0, teacherMean: 1, verdict: "lenient" });
+    expect(k1).not.toHaveProperty("usedOffset");
   });
 
   test("lineage and look-alike: a copy points at its source (both ways, through copies of copies); a rubric with no link needs the same level count and 80% of the names", () => {
@@ -315,8 +312,6 @@ test.describe("Calibration", () => {
     expect(rubricsLookAlike({ criteria: CRITERIA }, { criteria: CRITERIA })).toEqual({ same: 3, of: 3 });
     expect(rubricsLookAlike({ criteria: CRITERIA }, { criteria: [CRITERIA[0], crit("z", "C2 · Style / สไตล์", 3), crit("w", "C3 · Tests / ทดสอบ", 3)] })).toBeNull();
     expect(rubricsLookAlike({ criteria: CRITERIA }, { criteria: CRITERIA.map((c) => ({ ...c, levels: c.levels.slice(0, 3) })) })).toBeNull();       // another level count
-    // the correction travels by name, or by position when the names differ but the counts agree
-    expect(offsetsFor({ criteria: CRITERIA, aiOffsets: { k1: 1, k3: -1 } }, { criteria: [crit("n3", "C3 · Error handling / การจัดการ Error", 3), crit("n1", "Program correctness", 9)] })).toEqual({ n3: -1, n1: 1 });
   });
 
   test("the AI feedback on the Grade screen names the criterion without its code or second-language name", async ({ page }) => {
@@ -358,71 +353,54 @@ test.describe("Calibration", () => {
       if (c.verdict === "aligned") await expect(verdict).toHaveText("Aligned");
       if (c.verdict === "inconsistent") await expect(verdict).toHaveText("Inconsistent");
     }
-    // C2 was scored exactly as the AI would: full agreement, nothing to correct
+    // C2 was scored exactly as the AI would: full agreement
     expect(cmp.find((c) => c.criterionId === "k2")).toMatchObject({ agreement: 1, bias: 0, verdict: "aligned" });
-    await expect(page.getByTestId("offset-k2")).toHaveText("0");
-    // the suggested corrections are what suggestOffsets says, shown signed
-    const sug = suggestOffsets(cmp);
-    for (const [cid, v] of Object.entries(sug)) await expect(page.getByTestId(`offset-${cid}`)).toHaveText(v > 0 ? `+${v}` : String(v));
-    // nothing has been changed yet
+    // nothing to tune any more (8/11/2569): no strictness controls, no "Use these values"
+    await expect(page.getByTestId("offset-k2")).toHaveCount(0);
+    await expect(page.getByRole("columnheader", { name: /AI correction/ })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Use these values" })).toHaveCount(0);
+    await expect(page.getByTestId("cal-apply-note")).toHaveCount(0);
     expect((await rubricOf(page, "a-cal"))?.aiOffsets).toBeUndefined();
-    await expect(page.getByTestId("cal-apply-note")).toContainText("Nothing is changed yet");
   });
 
-  test("Use these values saves the correction on the rubric; the AI then grades again with it and stamps the marks with the correction it used", async ({ page }) => {
+  test("after comparing there is nothing to apply; the regrade panel grades the AI's work again with the rubric as it is, and stores no correction", async ({ page }) => {
     await open(page);
-    const picked = await scoreAll(page);
+    await scoreAll(page);
     await page.getByRole("button", { name: "Compare with the AI" }).click();
-    const offsets = suggestOffsets(compare(runFor(picked), aiUnits("a-cal"), { criteria: CRITERIA }));
-    // the teacher can still adjust one before applying
-    await page.getByLabel("Strictness for C2 · Code readability / ความอ่านง่าย").getByRole("button", { name: "Stricter" }).click();
-    offsets.k2 = 1;
-    await page.getByRole("button", { name: "Use these values" }).click();
-    await expect(page.getByRole("button", { name: "Use these values" })).toBeDisabled();
-    await expect(page.getByTestId("cal-apply-note")).toContainText("the next “Grade with AI” on this assignment uses these corrections");
-    await expect(page.getByTestId("cal-apply-note")).toContainText("can be graded again below");
-    expect((await rubricOf(page, "a-cal"))?.aiOffsets).toEqual(offsets);
+    await expect(page.getByTestId("cal-table")).toBeVisible();
     const saved = (await runs(page))[0];
-    expect(saved.appliedOffsets).toEqual(offsets);
-    expect(saved.appliedAt).toBeTruthy();
-
-    // nothing has moved yet: the AI's marks are still the ones made without a correction
-    const before = (await storedSubs(page)).find((s) => s.id === "a-cal-s1")!;
-    expect(before.aiCriterionScores).toEqual(mockAiGradeCriteria("a-cal-s1", CRITERIA).criterionScores);
+    expect(saved.completedAt).toBeTruthy();
+    expect(saved).not.toHaveProperty("appliedAt");
+    expect(saved).not.toHaveProperty("appliedOffsets");
 
     // "Let the AI grade again": this assignment is ticked, 12 pieces
+    await expect(page.getByTestId("cal-regrade")).toContainText("Let the AI grade again with the rubric as it is now");
     await expect(page.getByTestId("regrade-count-a-cal")).toContainText("12 to grade again");
     await page.getByTestId("regrade-run").click();
     await page.getByTestId("regrade-confirm").click();
     await expect(page.getByTestId("regrade-done")).toContainText("The AI graded 12 pieces again, in 1 assignment");
-    const after = await storedSubs(page);
-    for (const s of after.filter((x) => x.assignmentId === "a-cal")) {
-      expect(s.aiCriterionScores).toEqual(mockAiGradeCriteria(s.id, CRITERIA, offsets).criterionScores);
-      expect(s.aiOffsetsUsed).toEqual(offsets);
+    for (const s of (await storedSubs(page)).filter((x) => x.assignmentId === "a-cal")) {
+      expect(s.aiCriterionScores).toEqual(mockAiGradeCriteria(s.id, CRITERIA).criterionScores);
+      expect(s).not.toHaveProperty("aiOffsetsUsed");
     }
-    const anyDiffers = after.filter((x) => x.assignmentId === "a-cal").some((s) => JSON.stringify(s.aiCriterionScores) !== JSON.stringify(mockAiGradeCriteria(s.id, CRITERIA).criterionScores));
-    expect(anyDiffers).toBe(true);                                             // the correction really changes the AI's marks somewhere
-    // grading again on the already-corrected marks suggests nothing new to add: the bias that is left is what is left
-    const units = aiGradedUnits(unitsOf("a-cal", after as never), { criteria: CRITERIA });
-    const again = suggestOffsets(compare(runFor(picked), units, { criteria: CRITERIA }));
-    for (const c of CRITERIA) expect(Math.abs((again[c.id] ?? 0) - (offsets[c.id] ?? 0))).toBeLessThanOrEqual(2);
+    expect((await rubricOf(page, "a-cal"))?.aiOffsets).toBeUndefined();
   });
 
-  test("the course Grading list's Grade with AI still works for work not graded yet, and now stamps the correction it used", async ({ page }) => {
-    const offsets = { k1: 1, k2: 0, k3: -1 };
+  test("the course Grading list's Grade with AI still works for work not graded yet, and ignores an old correction left on the rubric", async ({ page }) => {
     await open(page, { subs: [...SUBMISSIONS.filter((s) => s.assignmentId !== "a-new"), ...Array.from({ length: 4 }, (_, i) => sub("a-new", i + 1))] });
-    await page.evaluate((o) => {
+    await page.evaluate(() => {
+      // a rubric saved before 8/11/2569 may still carry aiOffsets — nothing reads them any more
       const r = JSON.parse(localStorage.getItem("hwai_rubrics_v1")!) as { assignmentId: string; aiOffsets?: Record<string, number> }[];
-      r.find((x) => x.assignmentId === "a-new")!.aiOffsets = o;
+      r.find((x) => x.assignmentId === "a-new")!.aiOffsets = { k1: 1, k2: 0, k3: -1 };
       localStorage.setItem("hwai_rubrics_v1", JSON.stringify(r));
-    }, offsets);
+    });
     await page.goto(`${BASE}/teacher/courses/c-cal/grading`);
     await page.locator("main li", { hasText: "Not graded by the AI yet" }).getByRole("button", { name: /Grade with AI/ }).click();
     await page.getByTestId("ai-preview-confirm").click();
     await expect(page).toHaveURL(/assignments\/a-new\/grading$/);
     const s1 = (await storedSubs(page)).find((s) => s.id === "a-new-s1")!;
-    expect(s1.aiCriterionScores).toEqual(mockAiGradeCriteria("a-new-s1", CRITERIA, offsets).criterionScores);
-    expect(s1.aiOffsetsUsed).toEqual(offsets);
+    expect(s1.aiCriterionScores).toEqual(mockAiGradeCriteria("a-new-s1", CRITERIA).criterionScores);
+    expect(s1).not.toHaveProperty("aiOffsetsUsed");
   });
 
   test("rubric suggestions come from the results, each with Edit rubric; once announced the values, the edit button and the regrade panel are locked away", async ({ page }) => {
@@ -441,8 +419,7 @@ test.describe("Calibration", () => {
     expect(expected.filter((s) => s.kind === "ceiling")).toHaveLength(3);
     await expect(page.getByTestId("suggest-ceiling-k1")).toContainText("100% of the work reaches the top level");
     // announced: locked
-    await expect(page.getByRole("button", { name: "Use these values" })).toBeDisabled();
-    await expect(page.getByTestId("cal-apply-note")).toContainText("Results are announced");
+    await expect(page.getByRole("button", { name: "Use these values" })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Edit rubric" })).toHaveCount(0);
     await expect(page.getByTestId("suggest-ceiling-k1")).toContainText("Locked once announced");
     await expect(page.getByTestId("cal-regrade")).toHaveCount(0);
@@ -534,37 +511,36 @@ test.describe("Calibration", () => {
     await expect(page.getByTestId("regrade-run")).toHaveText("Grade again (14)");
   });
 
-  test("regrading a second assignment copies the correction onto its rubric, re-grades only AI-only work, and leaves announced and teacher-scored work alone", async ({ page }) => {
-    const picked = await (async () => { await open(page, { lineage: true }); return scoreAll(page); })();
+  test("regrading a second assignment uses that assignment's own rubric, re-grades only AI-only work, and leaves announced and teacher-scored work alone", async ({ page }) => {
+    // the copy's two AI-only pieces start with stale AI marks, so a re-grade shows
+    const stale = { aiScore: 3, aiCriterionScores: { k1: 1, k2: 1, k3: 1 }, status: "need_review" };
+    const lineage = LINEAGE_SUBMISSIONS.map((x) => (x.id === "a-copy-s1" || x.id === "a-copy-s2" ? { ...x, ...stale } : x));
+    await open(page, { lineage: true, subs: [...SUBMISSIONS, ...lineage] });
+    await scoreAll(page);
     await page.getByRole("button", { name: "Compare with the AI" }).click();
-    await page.getByRole("button", { name: "Use these values" }).click();
-    const offsets = (await rubricOf(page, "a-cal"))!.aiOffsets!;
-    expect(Object.values(offsets).some((v) => v !== 0)).toBe(true);
-    void picked;
+    await expect(page.getByRole("button", { name: "Use these values" })).toHaveCount(0);
 
     await page.getByTestId("regrade-row-a-copy").getByRole("checkbox").check();
     await page.getByTestId("regrade-run").click();
     const ask = page.getByRole("dialog", { name: "Let the AI grade again?" });
     await expect(ask).toContainText("14 pieces in 2 assignments");
     await expect(ask).toContainText("Scores you gave yourself do not change.");
-    await expect(ask).toContainText("The other assignments get the same strictness on their own rubric.");
+    await expect(ask).not.toContainText("strictness");
     await ask.getByTestId("regrade-confirm").click();
     await expect(page.getByTestId("regrade-done")).toContainText("The AI graded 14 pieces again, in 2 assignments");
 
     const subs = await storedSubs(page);
     const get = (id: string) => subs.find((s) => s.id === id)!;
-    // the copy: its rubric got the correction, its AI-only work was graded again with it
-    const carried = Object.fromEntries(Object.entries(offsets).filter(([, v]) => v !== 0));
-    expect((await rubricOf(page, "a-copy"))?.aiOffsets).toEqual(carried);
+    // the copy: graded again with its own rubric — no correction copied onto it
+    expect((await rubricOf(page, "a-copy"))?.aiOffsets).toBeUndefined();
     for (const id of ["a-copy-s1", "a-copy-s2"]) {
-      expect(get(id).aiCriterionScores).toEqual(mockAiGradeCriteria(id, CRITERIA, offsets).criterionScores);
-      expect(get(id).aiOffsetsUsed).toEqual(carried);
+      expect(get(id).aiCriterionScores).toEqual(mockAiGradeCriteria(id, CRITERIA).criterionScores);
+      expect(get(id)).not.toHaveProperty("aiOffsetsUsed");
     }
     expect(get("a-copy-s3")).toMatchObject({ instructorScore: 10, status: "graded", criterionScores: { k1: 6, k2: 2, k3: 2 } });   // the teacher's own score is untouched
     expect(get("a-copy-s4").status).toBe("not_graded");                                                                              // not graded work is not this panel's job
     // the announced copy was not touched
-    for (const id of ["a-ann-s1", "a-ann-s2", "a-ann-s3"]) expect(get(id).aiOffsetsUsed).toEqual({});
-    expect((await rubricOf(page, "a-ann"))?.aiOffsets).toBeUndefined();
+    for (const id of ["a-ann-s1", "a-ann-s2", "a-ann-s3"]) expect(get(id).aiCriterionScores).toEqual(mockAiGradeCriteria(id, CRITERIA).criterionScores);
   });
 
   test("a finished comparison stays on the page until you start a new one; the history lists it and can delete it", async ({ page }) => {
@@ -576,7 +552,8 @@ test.describe("Calibration", () => {
     await expect(page.getByTestId("cal-table")).toBeVisible();               // still the result, not a fresh sample
     const [done] = await runs(page);
     await expect(page.getByTestId(`history-${done.id}`)).toContainText("AI-assisted work");
-    await expect(page.getByTestId(`history-${done.id}`)).toContainText("Not applied");
+    await expect(page.getByTestId(`history-${done.id}`)).toContainText("5 samples");
+    await expect(page.getByTestId(`history-${done.id}`)).not.toContainText("applied");   // nothing to apply any more (8/11/2569)
 
     await page.getByRole("button", { name: "Start a new calibration" }).click();
     await expect(page.getByTestId("cal-table")).toHaveCount(0);

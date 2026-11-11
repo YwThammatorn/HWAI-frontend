@@ -14,7 +14,8 @@ import RubricCriteriaEditor, { CriterionDraft, newCriterionDraft, toDraft, crite
 import { useCLOs } from "@/lib/clo";
 import { appNow } from "@/lib/clock";
 import { useAiGrading } from "@/lib/useAiGrading";
-
+
+
 import Icon from "@/components/Icon";
 import IconButton from "@/components/IconButton";
 export default function EditAssignmentPage() {
@@ -199,7 +200,7 @@ export default function EditAssignmentPage() {
       }));
       if (assignment!.gradingMode !== "manual") {
         if (regrade) {
-          gradeUnits(assignment!, unitsOf(assignment!, scoredSubs), { criteria: finalized, aiOffsets: linkedRubrics[0]?.aiOffsets });
+          gradeUnits(assignment!, unitsOf(assignment!, scoredSubs), { criteria: finalized });
           updateAssignment(assignmentId, { rubricRestartedAt: undefined });
         } else {
           // the work waits for the AI again: the course Grading page and this assignment's Grading page offer "Regrade with new rubric"

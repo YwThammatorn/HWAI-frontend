@@ -17,7 +17,7 @@ const COHORT = PEOPLE.map(([studentId, firstName, lastName], i) => ({
   id: `cs-${i}`, studentId, name: `${firstName} ${lastName}`, email: `${studentId}@kmitl.ac.th`, program: "CE", status: "active",
 }));
 const ROSTER = PEOPLE.map(([studentId, firstName, lastName], i) => ({
-  id: `r-${i}`, courseId: "c-an", studentId, name: `${firstName} ${lastName}`, email: `${studentId}@kmitl.ac.th`, sequenceNumber: i + 1, enrollmentStatus: "enrolled",
+  id: `r-${i}`, courseId: "c-an", studentId, name: `${firstName} ${lastName}`, email: `${studentId}@kmitl.ac.th`, enrollmentStatus: "enrolled",
 }));
 const assignment = (finalized: boolean) => ({
   id: "hw", courseId: "c-an", name: "Homework", description: "", dueDate: "2026-01-10", maxPoints: 10, acceptsFiles: true, fileTypes: ["pdf"],
@@ -26,7 +26,7 @@ const assignment = (finalized: boolean) => ({
 const sub = (studentId: string) => ({
   id: `s-${studentId}`, assignmentId: "hw", studentId, studentName: `Student ${studentId}`, email: `${studentId}@kmitl.ac.th`,
   submittedAt: "2026-01-05T10:00:00.000Z", aiScore: 9, instructorScore: 9, instructorComment: "Nice work",
-  externalUseConsent: false, status: "graded", updatedAt: NOW,
+  status: "graded", updatedAt: NOW,
 });
 
 async function seed(page: Page, role: "teacher" | "student", finalized: boolean) {

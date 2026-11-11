@@ -30,7 +30,7 @@ function submission(over: Record<string, unknown> = {}) {
   return {
     id: "sub-sv", assignmentId: "a-sv", studentId: "64070701", studentName: "Fah Test", email: "64070701@kmitl.ac.th",
     submittedAt: "2026-01-05T10:00:00.000Z", aiScore: 80, instructorScore: null, instructorComment: "",
-    externalUseConsent: false, status: "need_review", updatedAt: NOW, ...over,
+    status: "need_review", updatedAt: NOW, ...over,
   };
 }
 

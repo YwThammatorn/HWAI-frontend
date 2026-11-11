@@ -26,7 +26,7 @@ async function seed(page: Page, o: { finalized?: boolean; ungraded?: boolean } =
     localStorage.setItem("hwai_courses_v2", JSON.stringify([{ id: "c-rs", name: "Restart Course", description: "", status: "active", coverColor: "#2DD4BF", courseTemplateId: "ct-rs", term: 1, academicYear: 2569, sectionNumber: "1", code: "01076555", schedule: "-", room: "-", createdAt: NOW, updatedAt: NOW }]));
     localStorage.setItem("hwai_managed_teachers_v1", JSON.stringify([{ id: "t1", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", status: "active", courseIds: ["c-rs"] }]));
     localStorage.setItem("hwai_cohort_students_v1", JSON.stringify(ppl.map(([id, f], i) => ({ id: `cs-${i}`, studentId: id, name: `${f} Test`, email: `${id}@kmitl.ac.th`, program: "CE", status: "active" }))));
-    localStorage.setItem("hwai_students_v1", JSON.stringify(ppl.map(([id, f], i) => ({ id: `r-${i}`, courseId: "c-rs", studentId: id, name: `${f} Test`, email: `${id}@kmitl.ac.th`, sequenceNumber: i + 1, enrollmentStatus: "enrolled" }))));
+    localStorage.setItem("hwai_students_v1", JSON.stringify(ppl.map(([id, f], i) => ({ id: `r-${i}`, courseId: "c-rs", studentId: id, name: `${f} Test`, email: `${id}@kmitl.ac.th`, enrollmentStatus: "enrolled" }))));
     localStorage.setItem("hwai_grading_categories_v1", "[]");
     localStorage.setItem("hwai_assignments_v1", JSON.stringify([{
       id: "as1", courseId: "c-rs", name: "Landing page", description: "", dueDate: "2026-01-10", maxPoints: 100, acceptsFiles: true, fileTypes: ["pdf"],
@@ -34,7 +34,7 @@ async function seed(page: Page, o: { finalized?: boolean; ungraded?: boolean } =
     }]));
     localStorage.setItem("hwai_rubrics_v1", JSON.stringify([rubric]));
     localStorage.setItem("hwai_submissions_v1", JSON.stringify(ppl.map(([id, f], i) => {
-      const base = { id: `sub-${id}`, assignmentId: "as1", studentId: id, studentName: `${f} Test`, email: `${id}@kmitl.ac.th`, submittedAt: "2026-01-05T10:00:00.000Z", externalUseConsent: false, instructorComment: "kept note", updatedAt: NOW };
+      const base = { id: `sub-${id}`, assignmentId: "as1", studentId: id, studentName: `${f} Test`, email: `${id}@kmitl.ac.th`, submittedAt: "2026-01-05T10:00:00.000Z", instructorComment: "kept note", updatedAt: NOW };
       return i < 4 && !ungraded
         ? { ...base, aiScore: 50 + i, instructorScore: 50 + i, status: "graded", criterionScores: { k1: 30, k2: 20 + i }, criterionComments: { k1: "why" } }
         : { ...base, aiScore: null, instructorScore: null, status: "not_graded" };

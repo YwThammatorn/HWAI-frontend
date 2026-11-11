@@ -204,7 +204,7 @@ test.describe("console command [28]", () => {
     await page.evaluate(({ courses, demo }) => {
       localStorage.setItem("hwai_courses_v2", JSON.stringify(courses.map((id) => ({ id, name: id }))));
       localStorage.setItem("hwai_cohort_students_v1", JSON.stringify([{ id: "cs-mine", studentId: "99000001", name: "ของ ฉัน", email: "99000001@kmitl.ac.th", program: "CE", status: "active" }]));
-      localStorage.setItem("hwai_students_v1", JSON.stringify([{ id: "r-mine", courseId: "c-mock-1", studentId: "99000001", name: "ของ ฉัน", email: "99000001@kmitl.ac.th", sequenceNumber: 99, enrollmentStatus: "enrolled" }]));
+      localStorage.setItem("hwai_students_v1", JSON.stringify([{ id: "r-mine", courseId: "c-mock-1", studentId: "99000001", name: "ของ ฉัน", email: "99000001@kmitl.ac.th", enrollmentStatus: "enrolled" }]));
       localStorage.setItem("hwai_assignments_v1", JSON.stringify([{ id: "a-keep", courseId: "c-mock-1", name: "Stays" }]));
       if (demo) localStorage.setItem("hwai_demo_student", JSON.stringify({ studentId: demo }));
     }, { courses, demo });

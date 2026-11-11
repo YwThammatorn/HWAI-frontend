@@ -86,16 +86,16 @@ test.describe("the demo student swap", () => {
     g.localStorage = { getItem: (k: string) => (k === "hwai_demo_student" ? value : null) };
     try { run(); } finally { g.localStorage = before; }
   };
-  test("without the key the multi-role account acts as the mock student; with it, as the swapped one", async () => {
+  test("the swap never gives the multi-role account a student persona (it holds admin + teacher only, 8/11/2569)", async () => {
     const { findMultiRoleAccount, identityEmail } = await import("../src/lib/accounts");
-    await withStorage(null, () => expect(findMultiRoleAccount("kiatnarong.to@kmitl.ac.th")?.studentId).toBe("69070101"));
+    await withStorage(null, () => expect(findMultiRoleAccount("kiatnarong.to@kmitl.ac.th")?.studentId).toBeUndefined());
     await withStorage(JSON.stringify({ studentId: "99000003", name: "ปลอม สาม" }), () => {
       const a = findMultiRoleAccount("kiatnarong.to@kmitl.ac.th")!;
-      expect(a.studentId).toBe("99000003");
-      expect(identityEmail(a, "student")).toBe("99000003@kmitl.ac.th");
+      expect(a.studentId).toBeUndefined();
+      expect(identityEmail(a, "admin")).toBe("kiatnarong.to@kmitl.ac.th");
       expect(identityEmail(a, "teacher")).toBe("kiatnarong.to@kmitl.ac.th");
     });
-    await withStorage("not json", () => expect(findMultiRoleAccount("kiatnarong.to@kmitl.ac.th")?.studentId).toBe("69070101"));
+    await withStorage("not json", () => expect(findMultiRoleAccount("kiatnarong.to@kmitl.ac.th")?.studentId).toBeUndefined());
   });
 });
 

@@ -48,7 +48,7 @@ function teamSubmission(studentId: string, name: string, email: string, status: 
     id: `sub-tp5-${studentId}`, assignmentId: "a-tp5-1", studentId, studentName: name, email,
     submittedAt: "2026-01-05T10:00:00.000Z", 
     aiScore: 88, instructorScore: null, instructorComment: "",
-    externalUseConsent: false, status, groupId: "sg-tp5-1",
+    status, groupId: "sg-tp5-1",
     updatedAt: "2026-01-05T10:00:00.000Z",
   };
 }
@@ -57,7 +57,7 @@ const SOLO_SUBMISSION = {
   id: "sub-tp5-solo", assignmentId: "a-tp5-1", studentId: "64070703", studentName: "Solo Student", email: "64070703@kmitl.ac.th",
   submittedAt: "2026-01-06T10:00:00.000Z", 
   aiScore: null, instructorScore: null, instructorComment: "",
-  externalUseConsent: false, status: "not_graded",
+  status: "not_graded",
   updatedAt: "2026-01-06T10:00:00.000Z",
 };
 
@@ -65,7 +65,7 @@ const INDIVIDUAL_SUBMISSION = {
   id: "sub-tp5-ind", assignmentId: "a-tp5-2", studentId: "64070701", studentName: "Fah Test", email: "64070701@kmitl.ac.th",
   submittedAt: "2026-01-06T10:00:00.000Z", 
   aiScore: 90, instructorScore: null, instructorComment: "",
-  externalUseConsent: false, status: "need_review",
+  status: "need_review",
   updatedAt: "2026-01-06T10:00:00.000Z",
 };
 
@@ -146,7 +146,7 @@ function gradedTeamSubmission(studentId: string, name: string, email: string, sc
     id: `sub-tp5-${studentId}`, assignmentId: "a-tp5-1", studentId, studentName: name, email,
     submittedAt: "2026-01-05T10:00:00.000Z", 
     aiScore: score, instructorScore: score, instructorComment: "",
-    externalUseConsent: false, status: "graded", groupId: "sg-tp5-1",
+    status: "graded", groupId: "sg-tp5-1",
     updatedAt: "2026-01-05T10:00:00.000Z",
   };
 }

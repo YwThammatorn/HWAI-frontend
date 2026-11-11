@@ -30,7 +30,7 @@ export default function StudentsRosterPage() {
   const [addOpen, setAddOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [search, setSearch] = useState("");
-  // Click a header to sort: ascending → descending → back to roster order (the default).
+  // Click a header to sort: ascending → descending → back to roster order (the default: by student ID).
   const [sort, setSort] = useState<RosterSort>(null);
   function cycleSort(key: "id" | "name") {
     setSort((s) => (!s || s.key !== key ? { key, dir: "asc" } : s.dir === "asc" ? { key, dir: "desc" } : null));
@@ -52,18 +52,14 @@ export default function StudentsRosterPage() {
 
   // Status (22-23/9/2569): per-section enrollment status, NOT CohortStudent.status (account-level
   // active/inactive — a different field, see lib/students.ts's own comment on enrollmentStatus). The
-  // teacher toggles between "enrolled" and "withdrawn"; "added-midterm" is a historical marker
-  // addStudents() already sets on its own (roster non-empty at add time) and isn't a toggle target —
-  // re-enrolling from withdrawn always lands on plain "enrolled".
+  // teacher toggles between "enrolled" and "withdrawn" (there is no "added mid-term" mark any more, 7/11/2569).
   function statusLabel(status: Student["enrollmentStatus"]) {
     if (status === "withdrawn") return t("ถอนแล้ว", "Withdrawn");
-    if (status === "added-midterm") return t("เพิ่มกลางเทอม", "Added mid-term");
     return t("ลงทะเบียน", "Enrolled");
   }
   // Status is a read-only fact, so it is a dot + coloured text; a filled, bordered pill read as a button here
   function statusToneClasses(status: Student["enrollmentStatus"]) {
     if (status === "withdrawn") return { text: "text-[var(--s-err-text)]", dot: "bg-[var(--s-err-text)]" };
-    if (status === "added-midterm") return { text: "text-[var(--s-info-text)]", dot: "bg-[var(--s-info-text)]" };
     return { text: "text-[var(--s-ok-text)]", dot: "bg-[var(--s-ok-text)]" };
   }
   function handleWithdraw(s: Student) {

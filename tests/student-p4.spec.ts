@@ -172,7 +172,7 @@ const EVAL_ASSIGNMENTS = [
 const EVAL_SUBMISSION_GRADED = {
   id: "sub-sp5-1", assignmentId: "a-sp5-1", studentId: "64070501", studentName: "Somchai Jaidee", email: "s1@kmitl.ac.th",
   submittedAt: "2026-01-09T10:00:00.000Z", aiScore: 75, instructorScore: 80, instructorComment: "",
-  externalUseConsent: false, status: "graded", updatedAt: "2026-01-10T00:00:00.000Z",
+  status: "graded", updatedAt: "2026-01-10T00:00:00.000Z",
 };
 
 async function seedEvaluation(page: Page, opts: { categories?: unknown[]; submissions?: unknown[] } = {}) {

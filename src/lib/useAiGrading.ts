@@ -9,7 +9,7 @@ import { groupSubmissionsByTeam, type SubmissionRow } from "./groupSubmissions";
 import { useStudentGroups } from "./studentGroups";
 import { useStudents, withdrawnIds } from "./students";
 
-type RubricForAi = Pick<Rubric, "criteria" | "aiOffsets">;
+type RubricForAi = Pick<Rubric, "criteria">;
 
 export function useAiGrading() {
   const { getSubmissionsByAssignment, getRubricsByAssignment, updateAssignment, updateSubmission } = useAssignments();

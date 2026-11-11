@@ -175,7 +175,7 @@ const asg = (extra: Partial<Assignment> = {}): Assignment => ({
 });
 const sub = (studentId: string, submittedAt: string, instructorScore: number | null): Submission => ({
   id: `s-${studentId}`, assignmentId: "a1", studentId, studentName: studentId, email: "", submittedAt, aiScore: null, instructorScore,
-  instructorComment: "", externalUseConsent: false, status: instructorScore === null ? "not_graded" : "graded", updatedAt: NOW,
+  instructorComment: "", status: instructorScore === null ? "not_graded" : "graded", updatedAt: NOW,
 } as Submission);
 const CATEGORY = { id: "cat1", courseId: "c1", name: "Work", weight: 100, createdAt: NOW, updatedAt: NOW };
 const LATE: LatePolicy = { closeDate: "2026-03-14", mode: "perDay", unit: "points", amount: 2 };

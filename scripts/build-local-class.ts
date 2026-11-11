@@ -18,7 +18,7 @@ import fs from "node:fs";
 export interface RealStudent { studentId: string; title: string; name: string; group: number }
 export interface Roster { code: string; students: RealStudent[] }
 
-interface FlowStudent { id: string; courseId: string; studentId: string; name: string; email: string; sequenceNumber: number; enrollmentStatus: string }
+interface FlowStudent { id: string; courseId: string; studentId: string; name: string; email: string; enrollmentStatus: string }
 interface FlowSubmission { id: string; assignmentId: string; studentId: string; studentName: string; email: string; [k: string]: unknown }
 export interface Flow { courseStudents: FlowStudent[]; submissions: FlowSubmission[]; assignments: { id: string }[] }
 
@@ -82,7 +82,7 @@ export function buildClass(roster: Roster, flow: Flow, o: BuildOptions) {
   const email = (id: string) => `${id}@kmitl.ac.th`;
   const nameOf = (s: RealStudent) => s.name;
   const cohortStudents = roster.students.map((s) => ({ id: `cs-real-${s.studentId}`, studentId: s.studentId, title: s.title, name: s.name, email: email(s.studentId), program: "CE", status: "active" }));
-  const roll = (list: RealStudent[], courseId: string) => list.map((s, i) => ({ id: `s-real-${courseId}-${s.studentId}`, courseId, studentId: s.studentId, name: s.name, email: email(s.studentId), sequenceNumber: i + 1, enrollmentStatus: "enrolled" }));
+  const roll = (list: RealStudent[], courseId: string) => list.map((s) => ({ id: `s-real-${courseId}-${s.studentId}`, courseId, studentId: s.studentId, name: s.name, email: email(s.studentId), enrollmentStatus: "enrolled" }));
   const courseStudents = [...roll(sectionOne, primary), ...roll(others, second)];
 
   const byStudent = new Map<string, FlowSubmission[]>();

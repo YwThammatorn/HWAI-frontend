@@ -13,7 +13,8 @@ import { splitCriterionName } from "@/lib/rubricName";
 import { useStudentGroups } from "@/lib/studentGroups";
 import { useLanguage } from "@/context/LanguageContext";
 import { dateLocale } from "@/lib/dateLocale";
-
+
+
 import Icon from "@/components/Icon";
 import IconTile from "@/components/IconTile";
 import IconButton from "@/components/IconButton";
@@ -101,7 +102,8 @@ export default function RecheckPage() {
         level: levelOfPts(c, score),
         aiPts,
         maxPoints: c.maxPoints,
-        aiFeedback: genFeedback(c.name, (score ?? 0) / c.maxPoints >= 0.7 ? "high" : "low"),
+        // the AI's own reason for this criterion; work graded before reasons were kept gets the old stand-in sentence
+        aiFeedback: submission.aiCriterionReasons?.[c.id] ?? genFeedback(c.name, (score ?? 0) / c.maxPoints >= 0.7 ? "high" : "low"),
         edited: false,
       };
     });

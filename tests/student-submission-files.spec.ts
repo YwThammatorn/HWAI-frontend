@@ -154,7 +154,7 @@ test.describe("Student submission — attach several files, remove any of them",
         { id: "att-1", kind: "file", name: "saved-report.pdf", source: "upload", ref: "hwai_file_seed1" },
         { id: "att-2", kind: "link", name: "https://github.com/fah/x", source: "url", ref: "https://github.com/fah/x" },
       ],
-      aiScore: null, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "not_graded", updatedAt: NOW,
+      aiScore: null, instructorScore: null, instructorComment: "", status: "not_graded", updatedAt: NOW,
     }], { hwai_file_seed1: "data:application/pdf;base64,JVBERi0xLjQ=" });
     const list = page.getByRole("list", { name: "Selected files" });
     await expect(list.getByText("saved-report.pdf")).toBeVisible();
@@ -167,7 +167,7 @@ test.describe("Student submission — attach several files, remove any of them",
       id: "sub-1", assignmentId: "a-sf", studentId: "64070501", studentName: "Fah Test", email: "s@kmitl.ac.th",
       submittedAt: NOW, 
       attachments: [{ id: "att-1", kind: "file", name: "saved-report.pdf", source: "upload", ref: "hwai_file_seed1" }],
-      aiScore: null, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "not_graded", updatedAt: NOW,
+      aiScore: null, instructorScore: null, instructorComment: "", status: "not_graded", updatedAt: NOW,
     }], { hwai_file_seed1: "data:application/pdf;base64,JVBERi0xLjQ=" });
     await fileInput(page).setInputFiles(pdf("extra.pdf"));
     expect(await storedFiles(page)).toBe(2);
@@ -181,7 +181,7 @@ test.describe("Student submission — attach several files, remove any of them",
       id: "sub-1", assignmentId: "a-sf", studentId: "64070501", studentName: "Fah Test", email: "s@kmitl.ac.th",
       submittedAt: NOW, 
       attachments: [{ id: "att-1", kind: "file", name: "saved-report.pdf", source: "upload", ref: "hwai_file_seed1" }],
-      aiScore: null, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "not_graded", updatedAt: NOW,
+      aiScore: null, instructorScore: null, instructorComment: "", status: "not_graded", updatedAt: NOW,
     }], { hwai_file_seed1: "data:application/pdf;base64,JVBERi0xLjQ=" });
     await page.getByRole("button", { name: "Remove saved-report.pdf" }).click();
     await expect(page.getByRole("button", { name: "Resubmit" })).toBeDisabled();
@@ -209,7 +209,7 @@ test.describe("Student submission — attach several files, remove any of them",
     await open(page, [{
       id: "sub-legacy", assignmentId: "a-sf", studentId: "64070501", studentName: "Fah Test", email: "s@kmitl.ac.th",
       submittedAt: NOW, fileUrl: "https://github.com/fah/old", aiScore: null, instructorScore: null, instructorComment: "",
-      externalUseConsent: false, status: "not_graded", updatedAt: NOW,
+      status: "not_graded", updatedAt: NOW,
     }]);
     await expect(page.getByText("Submitted work (1)")).toBeVisible();
     await expect(page.getByRole("button", { name: /github\.com\/fah\/old/ })).toBeVisible();

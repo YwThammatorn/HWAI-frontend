@@ -10,6 +10,7 @@ import type { StudentGroup } from "./studentGroups";
 
 // Calibration (12/10/2569): the teacher scores a few sample submissions by hand, blind to the AI; the same work is then put through the
 // AI and the two are compared criterion by criterion. Levels are positions on the criterion's scale, 0 = best.
+// It no longer tunes the AI (8/11/2569: no per-criterion offsets, no "Use these values") — the comparison points at the rubric instead.
 
 export interface CalibrationRun {
   id: string;
@@ -21,9 +22,6 @@ export interface CalibrationRun {
   teacherLevels: Record<string, Record<string, number>>;
   /** every sample scored on every criterion */
   completedAt?: string;
-  /** "Use these values" was pressed: the offsets that were saved on the rubric */
-  appliedAt?: string;
-  appliedOffsets?: Record<string, number>;
   /** the blind-test switch: on = the AI's levels stay hidden while the teacher scores. Off by default (13/10), so a run without the field is "not blind" — only
    *  runs finished before that day were always blind, and they carry no `sawAi` either. */
   blind?: boolean;
@@ -74,20 +72,9 @@ export function rubricsLookAlike(a: Pick<Rubric, "criteria">, b: Pick<Rubric, "c
   return same / of >= 0.8 ? { same, of } : null;
 }
 
-/** The correction `from` carries, laid onto the criteria of `to`: matched by name, or by position when both have as many criteria. */
-export function offsetsFor(from: Pick<Rubric, "criteria" | "aiOffsets">, to: Pick<Rubric, "criteria">): Record<string, number> {
-  const out: Record<string, number> = {};
-  to.criteria.forEach((c, i) => {
-    const m = from.criteria.find((x) => criterionKey(x.name) === criterionKey(c.name)) ?? (from.criteria.length === to.criteria.length ? from.criteria[i] : undefined);
-    const v = m ? from.aiOffsets?.[m.id] ?? 0 : 0;
-    if (v !== 0) out[c.id] = v;
-  });
-  return out;
-}
-
-/** What the AI actually gave one unit (14/10/2569): the levels it put on each criterion, the total it gave, and the correction that was
- *  inside those marks. Calibration compares the teacher with THIS, not with a fresh simulation. */
-export interface StoredAi { levels: Record<string, number>; score: number; used: Record<string, number> }
+/** What the AI actually gave one unit (14/10/2569): the levels it put on each criterion and the total it gave. Calibration compares the
+ *  teacher with THIS, not with a fresh simulation. */
+export interface StoredAi { levels: Record<string, number>; score: number }
 
 /**
  * The AI's stored result for a unit, or null when the AI has not graded it. Per-criterion marks are read as they were saved
@@ -103,15 +90,15 @@ export function storedAiFor(unit: WorkUnit, rubric: Pick<Rubric, "criteria">): S
     const pts = sub.aiCriterionScores?.[c.id] ?? (maxTotal > 0 ? (sub.aiScore * c.maxPoints) / maxTotal : 0);
     levels[c.id] = achievedLevelIndex(pts, c.maxPoints, c.levels.length) ?? 0;
   }
-  return { levels, score: sub.aiScore, used: sub.aiOffsetsUsed ?? {} };
+  return { levels, score: sub.aiScore };
 }
 
 /** The units the AI has graded — the only ones Calibration can compare the teacher with. */
 export const aiGradedUnits = (units: WorkUnit[], rubric: Pick<Rubric, "criteria">) => units.filter((u) => storedAiFor(u, rubric) !== null);
 
-/** The AI's levels for a unit: its stored result; for a unit it has not graded, what the stand-in would give with the saved correction. */
-export function aiLevelsFor(unit: WorkUnit, rubric: Pick<Rubric, "criteria" | "aiOffsets">): StoredAi {
-  return storedAiFor(unit, rubric) ?? (() => { const r = mockAiGradeCriteria(unit.key, rubric.criteria, rubric.aiOffsets); return { levels: r.levels, score: r.score, used: rubric.aiOffsets ?? {} }; })();
+/** The AI's levels for a unit: its stored result; for a unit it has not graded, what the stand-in would give. */
+export function aiLevelsFor(unit: WorkUnit, rubric: Pick<Rubric, "criteria">): StoredAi {
+  return storedAiFor(unit, rubric) ?? (() => { const r = mockAiGradeCriteria(unit.key, rubric.criteria); return { levels: r.levels, score: r.score }; })();
 }
 
 /**
@@ -119,7 +106,7 @@ export function aiLevelsFor(unit: WorkUnit, rubric: Pick<Rubric, "criteria" | "a
  * the whole range, not just on the work that is easy to judge. Always includes the best and the worst of the AI's ranking.
  * `skip` = keys to leave out (used by "swap").
  */
-export function pickSample(units: WorkUnit[], rubric: Pick<Rubric, "criteria" | "aiOffsets">, n: number, skip: string[] = []): WorkUnit[] {
+export function pickSample(units: WorkUnit[], rubric: Pick<Rubric, "criteria">, n: number, skip: string[] = []): WorkUnit[] {
   const pool = units.filter((u) => !skip.includes(u.key))
     .map((u) => ({ u, score: aiLevelsFor(u, rubric).score }))
     .sort((a, b) => b.score - a.score || a.u.key.localeCompare(b.u.key));
@@ -138,52 +125,35 @@ export interface CriterionComparison {
   bias: number;
   /** mean absolute difference in levels */
   meanAbs: number;
-  /** what is left of the difference once the AI's strictness is shifted by the suggested whole-level correction: a steady
-   *  "the AI is one level too generous" leaves 0; scattered disagreement stays — and no strictness setting can fix that */
-  residual: number;
   /** share of samples where both chose the same level, 0..1 */
   agreement: number;
   teacherMean: number;
   aiMean: number;
-  /** mean of the correction that was inside the AI's marks on these samples (what `suggestOffsets` adds the bias to) */
-  usedOffset: number;
   verdict: "lenient" | "strict" | "aligned" | "inconsistent";
 }
 
 /** Teacher vs AI on every criterion of the run. Samples missing a teacher level for a criterion are left out of that criterion. */
-export function compare(run: CalibrationRun, units: WorkUnit[], rubric: Pick<Rubric, "criteria" | "aiOffsets">): CriterionComparison[] {
+export function compare(run: CalibrationRun, units: WorkUnit[], rubric: Pick<Rubric, "criteria">): CriterionComparison[] {
   return rubric.criteria.map((c) => {
-    const diffs: number[] = [], t: number[] = [], a: number[] = [], used: number[] = [];
+    const diffs: number[] = [], t: number[] = [], a: number[] = [];
     for (const key of run.sampleIds) {
       const unit = units.find((u) => u.key === key);
       const tl = run.teacherLevels[key]?.[c.id];
       if (!unit || tl === undefined) continue;
       const ai = aiLevelsFor(unit, rubric);
       const al = ai.levels[c.id];
-      diffs.push(tl - al); t.push(tl); a.push(al); used.push(ai.used[c.id] ?? 0);
+      diffs.push(tl - al); t.push(tl); a.push(al);
     }
     const n = diffs.length;
     const mean = (xs: number[]) => (xs.length ? xs.reduce((x, y) => x + y, 0) / xs.length : 0);
     const bias = mean(diffs), meanAbs = mean(diffs.map(Math.abs));
-    const shift = Math.max(-MAX_OFFSET, Math.min(MAX_OFFSET, Math.round(bias)));
-    const residual = mean(diffs.map((d) => Math.abs(d - shift)));
     return {
-      criterionId: c.id, n, bias, meanAbs, residual,
+      criterionId: c.id, n, bias, meanAbs,
       agreement: n ? diffs.filter((d) => d === 0).length / n : 0,
-      teacherMean: mean(t), aiMean: mean(a), usedOffset: mean(used),
+      teacherMean: mean(t), aiMean: mean(a),
       verdict: bias >= 0.5 ? "lenient" : bias <= -0.5 ? "strict" : meanAbs >= 1 ? "inconsistent" : "aligned",
     };
   });
-}
-
-export const MAX_OFFSET = 2;
-/**
- * The correction the comparison suggests: the correction that was inside the AI's marks plus how far off those marks were, never more
- * than ±2 levels. (Not "what is saved now": the saved value may have been set after the marks were made, and adding the bias to it would
- * count the same correction twice.) `fallback` is used for a criterion with no sample.
- */
-export function suggestOffsets(cmp: CriterionComparison[], fallback: Record<string, number> = {}): Record<string, number> {
-  return Object.fromEntries(cmp.map((c) => [c.criterionId, Math.max(-MAX_OFFSET, Math.min(MAX_OFFSET, c.n > 0 ? Math.round(c.usedOffset + c.bias) : (fallback[c.criterionId] ?? 0)))]));
 }
 
 export type RubricSuggestionKind = "ceiling" | "floor" | "disagree" | "heavy-flat";
@@ -194,7 +164,8 @@ export interface RubricSuggestion { kind: RubricSuggestionKind; criterionId: str
  * from the teacher (criterionScores) or the AI (aiCriterionScores).
  *   ceiling    — at least 80 % of the work sits on the top level: the criterion does not separate anyone (value = share)
  *   floor      — nobody reaches the top level: it may be out of reach or worded too tightly (value = number of work items)
- *   disagree   — teacher and AI still differ by a level or more on average AFTER the AI's strictness is corrected (a steady lean is the strictness setting's job, not the wording's): the level wording is not clear enough (value = the remaining mean difference)
+ *   disagree   — teacher and AI differ by a level or more on average (8/11/2569: there is no strictness setting to absorb a steady lean any more,
+ *                so any such gap is the wording's to fix): the level wording is not clear enough (value = the mean difference)
  *   heavy-flat — worth half of the points or more yet almost everyone is on the same level (value = share on the commonest level)
  */
 export function suggestRubricChanges(rubric: Pick<Rubric, "criteria">, graded: Submission[], cmp: CriterionComparison[]): RubricSuggestion[] {
@@ -216,7 +187,7 @@ export function suggestRubricChanges(rubric: Pick<Rubric, "criteria">, graded: S
       if (total > 0 && c.maxPoints / total >= 0.5 && common >= 0.8 && top < 0.8) out.push({ kind: "heavy-flat", criterionId: c.id, value: common });
     }
     const k = cmp.find((x) => x.criterionId === c.id);
-    if (k && k.n >= 3 && k.residual >= 1) out.push({ kind: "disagree", criterionId: c.id, value: k.residual });
+    if (k && k.n >= 3 && k.meanAbs >= 1) out.push({ kind: "disagree", criterionId: c.id, value: k.meanAbs });
   }
   return out;
 }

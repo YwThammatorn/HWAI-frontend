@@ -158,8 +158,7 @@ function ClassworkDetail() {
         aiScore: null,
         instructorScore: null,
         instructorComment: "",
-        externalUseConsent: false,
-        status: "not_graded",
+                status: "not_graded",
         ...(myGroup ? { groupId: myGroup.id } : {}),
       });
     });

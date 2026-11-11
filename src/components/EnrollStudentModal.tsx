@@ -49,7 +49,7 @@ export default function EnrollStudentModal({ courseId, courseName, onClose }: {
     if (!match) { setError(t("ไม่พบรหัสนี้ในระบบ — ให้แอดมินเพิ่มนักศึกษาเข้าระบบก่อน", "This ID isn't in the system — ask an admin to add the student first")); return; }
     if (alreadyEnrolled) { setError(t("นักศึกษาคนนี้ลงทะเบียนในวิชานี้แล้ว", "This student is already enrolled in this course")); return; }
     if (wrongProgram) { setError(wrongProgramText); return; }
-    // No enrollmentStatus: the provider marks a newcomer to a non-empty roster "added-midterm" (meeting 4/9/2569)
+    // No enrollmentStatus: the provider adds everyone as "enrolled"
     addStudents(courseId, [{
       studentId: match.studentId,
       name: match.name,

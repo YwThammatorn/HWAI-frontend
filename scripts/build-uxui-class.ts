@@ -17,7 +17,7 @@ export const COURSE_ID = "c-mock-4";
 export const TEAM_SIZE = 5;
 const T0 = "2026-08-12T09:00:00.000Z";
 
-interface Student { id: string; courseId: string; studentId: string; name: string; email: string; sequenceNumber: number; enrollmentStatus: string }
+interface Student { id: string; courseId: string; studentId: string; name: string; email: string; enrollmentStatus: string }
 export interface ExistingClass { courseStudents: Student[]; submissions: { assignmentId: string; studentId: string }[] }
 
 // ── seeded randomness ───────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -114,8 +114,7 @@ export function buildUxuiClass(existing: ExistingClass) {
     return {
       id: o.id, assignmentId: a.id, studentId, studentName: nameOf(studentId), email: byId.get(studentId)!.email, submittedAt: o.submittedAt,
       ...(o.link ? { attachments: [{ id: `att-${o.id}`, kind: "link", name: "Figma", source: "url", ref: o.link }] } : {}),
-      aiScore: reviewed ? sum(o.ai) : null, instructorScore: graded ? sum(o.lv) : null, instructorComment: o.comment ?? "", externalUseConsent: true,
-      status: o.status, updatedAt: new Date(Date.parse(o.submittedAt) + (1 + Math.floor(hash(o.id) % 3)) * 86_400_000).toISOString(),
+      aiScore: reviewed ? sum(o.ai) : null, instructorScore: graded ? sum(o.lv) : null, instructorComment: o.comment ?? "",       status: o.status, updatedAt: new Date(Date.parse(o.submittedAt) + (1 + Math.floor(hash(o.id) % 3)) * 86_400_000).toISOString(),
       ...(graded ? { criterionScores: pts(o.lv) } : {}),
       ...(reviewed ? { aiCriterionScores: pts(o.ai) } : {}),
       ...(o.groupId ? { groupId: o.groupId } : {}),

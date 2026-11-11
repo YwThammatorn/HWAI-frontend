@@ -19,11 +19,11 @@ async function seedTeacher(page: Page) {
     localStorage.setItem("hwai_user", JSON.stringify({ name: "Somsak", email: "somsak@kmitl.ac.th", role: "teacher" }));
     localStorage.setItem("hwai_courses_v2", JSON.stringify([{ id: "c-ic", name: "Icon Course", description: "", status: "active", source: "manual", coverColor: "#2DD4BF", iconColor: "#2DD4BF", icon: "flask", courseTemplateId: "ct-ic", term: 1, academicYear: 2569, sectionNumber: "1", code: "01076555", schedule: "-", room: "-", createdAt: NOW, updatedAt: NOW }]));
     localStorage.setItem("hwai_managed_teachers_v1", JSON.stringify([{ id: "t1", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", status: "active", courseIds: ["c-ic"] }]));
-    localStorage.setItem("hwai_students_v1", JSON.stringify([{ id: "r-0", courseId: "c-ic", studentId: "69071101", name: "Ann Test", email: "69071101@kmitl.ac.th", sequenceNumber: 1, enrollmentStatus: "enrolled" }]));
+    localStorage.setItem("hwai_students_v1", JSON.stringify([{ id: "r-0", courseId: "c-ic", studentId: "69071101", name: "Ann Test", email: "69071101@kmitl.ac.th", enrollmentStatus: "enrolled" }]));
     localStorage.setItem("hwai_grading_categories_v1", "[]");
     localStorage.setItem("hwai_assignments_v1", JSON.stringify([{ id: "as1", courseId: "c-ic", name: "Landing page", description: "", dueDate: "2026-01-10", maxPoints: 100, acceptsFiles: true, fileTypes: ["pdf"], submissionType: "individual", maxGroupSize: null, rubricIds: ["r1"], createdAt: NOW, updatedAt: NOW }]));
     localStorage.setItem("hwai_rubrics_v1", JSON.stringify([{ id: "r1", assignmentId: "as1", name: "Rubric", createdAt: NOW, updatedAt: NOW, criteria: [{ id: "k1", name: "Layout", description: "", maxPoints: 100, weight: 100, levels }] }]));
-    localStorage.setItem("hwai_submissions_v1", JSON.stringify([{ id: "s1", assignmentId: "as1", studentId: "69071101", studentName: "Ann Test", email: "69071101@kmitl.ac.th", submittedAt: "2026-01-05T10:00:00.000Z", externalUseConsent: false, instructorComment: "", updatedAt: NOW, aiScore: null, instructorScore: null, status: "not_graded" }]));
+    localStorage.setItem("hwai_submissions_v1", JSON.stringify([{ id: "s1", assignmentId: "as1", studentId: "69071101", studentName: "Ann Test", email: "69071101@kmitl.ac.th", submittedAt: "2026-01-05T10:00:00.000Z", instructorComment: "", updatedAt: NOW, aiScore: null, instructorScore: null, status: "not_graded" }]));
   });
 }
 

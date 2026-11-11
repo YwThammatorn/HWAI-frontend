@@ -27,7 +27,7 @@ export const NO_CURRICULUM_KEY = "none";
 
 const PROGRAM_ORDER: Program[] = ["CE", "CECS", "CEI"];
 
-const termRank = (c: Course) => (c.term === "summer" ? 4 : c.term ?? 9);
+const termRank = (c: Course) => c.term ?? 9;
 
 /** Newest offering first (year ↓, term ↑ within the year), then section number 1, 2, 3… */
 export function compareOfferings(a: Course, b: Course): number {

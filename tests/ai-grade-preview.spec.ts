@@ -1,8 +1,9 @@
 import { test, expect, Page } from "@playwright/test";
 
 import { BASE } from "./base";
+import { mockAiGradeCriteria } from "../src/lib/aiGrading";
 
-// 22/10/2569 — "Grade with AI" shows what is about to happen first (work, rubric, AI strictness, late work), and a rubric changed
+// 22/10/2569 — "Grade with AI" shows what is about to happen first (work, rubric, late work), and a rubric changed
 // while grading is under way can be graded again with the new rubric: from the Edit popup, or later from the Grading pages.
 
 const NOW = "2026-01-01T00:00:00.000Z";
@@ -31,7 +32,7 @@ async function seed(page: Page, o: Opt = {}) {
     localStorage.setItem("hwai_courses_v2", JSON.stringify([{ id: "c-rs", name: "Restart Course", description: "", status: "active", source: "manual", coverColor: "#2DD4BF", iconColor: "#2DD4BF", courseTemplateId: "ct-rs", term: 1, academicYear: 2569, sectionNumber: "1", code: "01076555", schedule: "-", room: "-", createdAt: NOW, updatedAt: NOW }]));
     localStorage.setItem("hwai_managed_teachers_v1", JSON.stringify([{ id: "t1", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", status: "active", courseIds: ["c-rs"] }]));
     localStorage.setItem("hwai_cohort_students_v1", JSON.stringify(ppl.map(([id, f], i) => ({ id: `cs-${i}`, studentId: id, name: `${f} Test`, email: `${id}@kmitl.ac.th`, program: "CE", status: "active" }))));
-    localStorage.setItem("hwai_students_v1", JSON.stringify(ppl.map(([id, f], i) => ({ id: `r-${i}`, courseId: "c-rs", studentId: id, name: `${f} Test`, email: `${id}@kmitl.ac.th`, sequenceNumber: i + 1, enrollmentStatus: "enrolled" }))));
+    localStorage.setItem("hwai_students_v1", JSON.stringify(ppl.map(([id, f], i) => ({ id: `r-${i}`, courseId: "c-rs", studentId: id, name: `${f} Test`, email: `${id}@kmitl.ac.th`, enrollmentStatus: "enrolled" }))));
     localStorage.setItem("hwai_grading_categories_v1", "[]");
     localStorage.setItem("hwai_assignments_v1", JSON.stringify([{
       id: "as1", courseId: "c-rs", name: "Landing page", description: "", dueDate: "2026-01-10", maxPoints: 100, acceptsFiles: true, fileTypes: ["pdf"],
@@ -40,7 +41,7 @@ async function seed(page: Page, o: Opt = {}) {
     }]));
     localStorage.setItem("hwai_rubrics_v1", JSON.stringify(op.noRubric ? [] : [{ ...(rubric as object), ...(op.offsets ? { aiOffsets: op.offsets } : {}) }]));
     localStorage.setItem("hwai_submissions_v1", JSON.stringify(ppl.map(([id, f], i) => {
-      const base = { id: `sub-${id}`, assignmentId: "as1", studentId: id, studentName: `${f} Test`, email: `${id}@kmitl.ac.th`, submittedAt: "2026-01-05T10:00:00.000Z", externalUseConsent: false, instructorComment: "", updatedAt: NOW };
+      const base = { id: `sub-${id}`, assignmentId: "as1", studentId: id, studentName: `${f} Test`, email: `${id}@kmitl.ac.th`, submittedAt: "2026-01-05T10:00:00.000Z", instructorComment: "", updatedAt: NOW };
       return i < 4
         ? { ...base, aiScore: 50 + i, instructorScore: 50 + i, status: "graded", criterionScores: { k1: 30, k2: 20 + i } }
         : { ...base, submittedAt: op.eveLate ? "2026-01-12T10:00:00.000Z" : base.submittedAt, late: op.eveLate || undefined, aiScore: null, instructorScore: null, status: "not_graded" };
@@ -73,7 +74,7 @@ test.describe("Grade with AI — look before it starts", () => {
     await expect(rubric).toContainText("Accessibility");
     await expect(rubric).toContainText("Excellent › Good › Needs Improvement");
     await expect(page.getByTestId("ai-preview").getByRole("link")).toHaveCount(0);        // no way out to Edit rubric / Calibration from here: that lives on the assignment's Grading page
-    await expect(page.getByTestId("ai-preview-strictness")).toContainText("Standard");
+    await expect(page.getByTestId("ai-preview-strictness")).toHaveCount(0);           // no AI strictness any more (8/11/2569)
     await expect(page.getByTestId("ai-preview-late")).toHaveCount(0);
 
     await dlg.getByRole("button", { name: "Not yet" }).click();
@@ -115,14 +116,19 @@ test.describe("Grade with AI — look before it starts", () => {
     expect((await stored(page)).subs.find((s) => s.id === "sub-69071105")).toMatchObject({ status: "need_review", aiScore: 55 });      // nothing was touched
   });
 
-  test("the preview names the strictness the AI will use once Calibration saved a correction", async ({ page }) => {
+  test("an old AI correction left on a rubric is ignored: no strictness in the preview, and the AI marks the work as it would without it", async ({ page }) => {
+    // 8/11/2569: Calibration no longer tunes the AI — a rubric saved before that may still carry aiOffsets, which nothing reads
     await seed(page, { offsets: { k1: 1, k2: -1 } });
     await go(page, QUEUE);
     await aiButton(page, "Grade with AI (1)").click();
-    const box = page.getByTestId("ai-preview-strictness");
-    await expect(box).toContainText("calibration you saved on 2 criteria");
-    await expect(box).toContainText("Layout — stricter by 1 level");
-    await expect(box).toContainText("Accessibility — more generous by 1 level");
+    await expect(page.getByTestId("ai-preview")).toBeVisible();
+    await expect(page.getByTestId("ai-preview-strictness")).toHaveCount(0);
+    await expect(page.getByTestId("ai-preview")).not.toContainText("stricter");
+    await page.getByTestId("ai-preview-confirm").click();
+    await expect(page).toHaveURL(/assignments\/as1\/grading$/);
+    const eve = (await stored(page)).subs.find((s) => s.id === "sub-69071105")!;
+    expect(eve.aiCriterionScores).toEqual(mockAiGradeCriteria("sub-69071105", RUBRIC.criteria).criterionScores);
+    expect(eve).not.toHaveProperty("aiOffsetsUsed");
   });
 
   test("an assignment with a late policy says what late work costs and how many are late", async ({ page }) => {

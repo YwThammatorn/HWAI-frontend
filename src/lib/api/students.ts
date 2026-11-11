@@ -16,8 +16,7 @@ export type RejectedEnrollment =
   | { studentId: string; program: string; sectionProgram: string; reason: "wrong_program" }
   | { studentId: string; reason: "not_in_system" };
 
-/** The server numbers new rows after the current roster and marks late additions "added-midterm",
- *  unless sequenceNumber / enrollmentStatus are given (StudentProvider always gives them).
+/** New rows are "enrolled" unless enrollmentStatus says otherwise; the roster comes back ordered by student ID.
  *
  *  One section = one program (see lib/sectionProgram.ts), and only students with an account: the server enrols
  *  the matching students and refuses the rest (422 when nobody fits). The UI already blocks those, so a refusal

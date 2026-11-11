@@ -18,7 +18,7 @@ const RUBRIC = {
 const assignment = (finalized: boolean) => ({ id: "a-1", courseId: "c-rp", name: "Exercise", description: "", dueDate: "2026-01-05", maxPoints: 100, acceptsFiles: true, fileTypes: ["pdf"], submissionType: "individual", maxGroupSize: null, rubricIds: ["r-1"], gradingFinalized: finalized, createdAt: NOW });
 const submission = (criterionScores?: Record<string, number>) => ({
   id: "s-1", assignmentId: "a-1", studentId: "69070401", studentName: "Ann S", email: "69070401@kmitl.ac.th", submittedAt: "2026-01-03T10:00:00.000Z",
-  aiScore: 80, instructorScore: 90, instructorComment: "Nice", externalUseConsent: true, status: "graded", updatedAt: NOW,
+  aiScore: 80, instructorScore: 90, instructorComment: "Nice", status: "graded", updatedAt: NOW,
   ...(criterionScores ? { criterionScores } : {}),
 });
 
@@ -32,7 +32,7 @@ async function open(page: Page, opts: { finalized?: boolean; criterionScores?: R
     localStorage.setItem("hwai_lang", lang as string);
     localStorage.setItem("hwai_user", JSON.stringify({ name: "Ann", email: "69070401@kmitl.ac.th", role: "student", studentId: "69070401" }));
     localStorage.setItem("hwai_courses_v2", JSON.stringify([{ id: "c-rp", name: "Python", description: "", status: "active", coverColor: "#0F766E", createdAt: "2026-01-01T00:00:00.000Z", updatedAt: "2026-01-01T00:00:00.000Z" }]));
-    localStorage.setItem("hwai_students_v1", JSON.stringify([{ id: "r1", courseId: "c-rp", studentId: "69070401", name: "Ann S", email: "69070401@kmitl.ac.th", sequenceNumber: 1, enrollmentStatus: "enrolled" }]));
+    localStorage.setItem("hwai_students_v1", JSON.stringify([{ id: "r1", courseId: "c-rp", studentId: "69070401", name: "Ann S", email: "69070401@kmitl.ac.th", enrollmentStatus: "enrolled" }]));
     localStorage.setItem("hwai_assignments_v1", JSON.stringify([a]));
     localStorage.setItem("hwai_submissions_v1", JSON.stringify([sub]));
   }, [opts.lang ?? "en", assignment(opts.finalized ?? true), submission(opts.criterionScores)] as const);

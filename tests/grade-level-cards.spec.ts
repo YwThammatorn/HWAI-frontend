@@ -28,7 +28,7 @@ const RUBRIC = {
 const sub = (id: string, extra: Record<string, unknown>) => ({
   id, assignmentId: "a-glc", studentId: id, studentName: `Student ${id}`, email: `${id}@kmitl.ac.th`,
   submittedAt: "2026-01-05T10:00:00.000Z", aiScore: null, instructorScore: null, instructorComment: "",
-  externalUseConsent: false, status: "not_graded", updatedAt: "2026-01-05T10:00:00.000Z", ...extra,
+  status: "not_graded", updatedAt: "2026-01-05T10:00:00.000Z", ...extra,
 });
 const SUBS = [
   // the AI scored it through the rubric: C1 level 2 (6 pts), C2 level 1 (3 pts)

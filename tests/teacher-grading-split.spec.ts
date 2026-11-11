@@ -24,7 +24,7 @@ const assignment = (id: string, name: string, dueDate: string, extra: Record<str
 const sub = (id: string, assignmentId: string, studentId: string, status: string, score: number | null) => ({
   id, assignmentId, studentId, studentName: `Student ${studentId}`, email: `${studentId}@kmitl.ac.th`,
   submittedAt: "2026-01-05T10:00:00.000Z", aiScore: score, instructorScore: status === "graded" ? score : null,
-  instructorComment: "", externalUseConsent: false, status, updatedAt: "2026-01-05T10:00:00.000Z",
+  instructorComment: "", status, updatedAt: "2026-01-05T10:00:00.000Z",
 });
 
 const ASSIGNMENTS = [
@@ -44,7 +44,7 @@ const SUBMISSIONS = [
 ];
 const ROSTER = ["64070701", "64070702", "64070703", "64070704"].map((studentId, i) => ({
   id: `r-${i}`, courseId: "c-gs", studentId, name: `Student ${studentId}`, email: `${studentId}@kmitl.ac.th`,
-  cohort: "CE64", sequenceNumber: i + 1, enrollmentStatus: "enrolled",
+  cohort: "CE64", enrollmentStatus: "enrolled",
 }));
 
 async function seed(page: Page, opts: { lang?: "en" | "th"; empty?: boolean } = {}) {

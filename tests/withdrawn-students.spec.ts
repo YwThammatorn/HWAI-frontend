@@ -24,7 +24,7 @@ const cohort = PEOPLE.map(([studentId, firstName, lastName], i) => ({
 }));
 const roster = (withdrawn: boolean) => PEOPLE.map(([studentId, firstName, lastName], i) => ({
   id: `r-${i}`, courseId: "c-wd", studentId, name: `${firstName} ${lastName}`, email: `${studentId}@kmitl.ac.th`,
-  sequenceNumber: i + 1, enrollmentStatus: withdrawn && i === 2 ? "withdrawn" : "enrolled",
+  enrollmentStatus: withdrawn && i === 2 ? "withdrawn" : "enrolled",
 }));
 const ASSIGNMENT = {
   id: "hw1", courseId: "c-wd", name: "HW 1", description: "", dueDate: "2026-01-10", maxPoints: 100,
@@ -33,7 +33,7 @@ const ASSIGNMENT = {
 const sub = (id: string, studentId: string, status: "graded" | "need_review", score: number) => ({
   id, assignmentId: "hw1", studentId, studentName: `Student ${studentId}`, email: `${studentId}@kmitl.ac.th`,
   submittedAt: "2026-01-05T10:00:00.000Z", aiScore: score, instructorScore: status === "graded" ? score : null,
-  instructorComment: "", externalUseConsent: false, status, updatedAt: "2026-01-05T10:00:00.000Z",
+  instructorComment: "", status, updatedAt: "2026-01-05T10:00:00.000Z",
 });
 const SUBMISSIONS = [sub("s1", "69070201", "graded", 80), sub("s2", "69070202", "graded", 60), sub("s3", "69070203", "need_review", 20)];
 

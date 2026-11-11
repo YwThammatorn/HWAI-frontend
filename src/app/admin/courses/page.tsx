@@ -550,7 +550,6 @@ type RowAction = { type: "archive" | "restore" | "delete"; course: Course } | nu
 
 function termLabel(c: Course, t: (th: string, en: string) => string): string | null {
   if (!c.academicYear) return null;
-  if (c.term === "summer") return t(`${c.academicYear} · ภาคฤดูร้อน`, `${c.academicYear} · Summer`);
   if (c.term) return t(`${c.academicYear} · เทอม ${c.term}`, `${c.academicYear} · Term ${c.term}`);
   return String(c.academicYear);
 }
@@ -804,7 +803,7 @@ export default function AdminCoursesPage() {
   // Year filter also narrows to the chosen curriculum (30/9/2569), same cascade: a curriculum
   // whose courses only ever ran in one year (or whose archived offerings span a few years)
   // shouldn't leave every other academic year sitting in the dropdown as a dead end.
-  const TERM_ORDER = ["1", "2", "3", "summer"];
+  const TERM_ORDER = ["1", "2", "3"];
   const yearOptions = [...new Set(courses.filter((c) => c.academicYear && matchesCurriculum(c)).map((c) => c.academicYear as number))].sort((a, b) => b - a);
   // a year picked earlier that the curriculum filter has since hidden counts as "all"
   const effectiveYear = yearOptions.map(String).includes(yearFilter) ? yearFilter : "all";
@@ -813,7 +812,7 @@ export default function AdminCoursesPage() {
   )].sort((a, b) => TERM_ORDER.indexOf(a) - TERM_ORDER.indexOf(b));
   // a term picked earlier that the year filter has since hidden counts as "all"
   const effectiveTerm = termOptions.includes(termFilter) ? termFilter : "all";
-  const termLabelOf = (v: string) => (v === "summer" ? t("ภาคฤดูร้อน", "Summer") : t(`เทอม ${v}`, `Term ${v}`));
+  const termLabelOf = (v: string) => t(`เทอม ${v}`, `Term ${v}`);
 
   const q = search.trim().toLowerCase();
   const filtersActive = q !== "" || effectiveCurriculum !== "all" || effectiveYear !== "all" || effectiveTerm !== "all" || statusFilter !== "all";

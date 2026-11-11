@@ -31,9 +31,10 @@ export const MULTI_ROLE_ACCOUNTS: MultiRoleAccount[] = [
     // Teacher names are always Thai regardless of the language toggle (30/9/2569) — this is the
     // same person as teachers-mockup.json's t-mock-1, so the name must match exactly.
     name: "เกียรติณรงค์ ทองประเสริฐ",
-    roles: ["admin", "teacher", "student"],
+    // Admin + teacher only (8/11/2569), as HWAI-backend gives it: one account is one email, and a
+    // staff email can't also be a student (a student role needs that student's own id and email).
+    roles: ["admin", "teacher"],
     defaultRole: "teacher",
-    studentId: "69070101",
   },
 ];
 

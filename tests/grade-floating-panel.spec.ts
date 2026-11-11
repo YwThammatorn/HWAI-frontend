@@ -28,7 +28,7 @@ const RUBRIC = {
 };
 const sub = (id: string, attachments: unknown[]) => ({
   id, assignmentId: "a-fp", studentId: id, studentName: `Student ${id}`, email: `${id}@kmitl.ac.th`, submittedAt: "2026-01-05T10:00:00.000Z",
-  attachments, aiScore: null, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "not_graded", updatedAt: NOW,
+  attachments, aiScore: null, instructorScore: null, instructorComment: "", status: "not_graded", updatedAt: NOW,
 });
 const LINK = (to: string) => ({ id: "l1", kind: "link", name: to, source: "url", ref: to });
 const SUBS = (to: string) => [sub("with-link", [LINK(to)]), sub("no-link", [])];

@@ -8,7 +8,8 @@ import { useCurriculum } from "@/lib/curriculum";
 import { useLanguage } from "@/context/LanguageContext";
 import { CourseIcon, COURSE_ICON_KEYS, type CourseIconKey } from "@/components/CourseIcon";
 import CourseBanner from "@/components/CourseBanner";
-
+
+
 import Icon from "@/components/Icon";
 export default function CourseSettingsPage() {
   const { id } = useParams<{ id: string }>();
@@ -20,7 +21,7 @@ export default function CourseSettingsPage() {
   const course = getCourse(id);
   const linkedTemplate = course?.courseTemplateId ? courseTemplates.find((ct) => ct.id === course.courseTemplateId) : undefined;
   const linkedCurriculum = linkedTemplate ? curriculumVersions.find((v) => v.id === linkedTemplate.curriculumVersionId) : undefined;
-  const TERM_LABEL: Record<string, string> = { "1": t("เทอม 1", "Term 1"), "2": t("เทอม 2", "Term 2"), summer: t("ภาคฤดูร้อน", "Summer") };
+  const TERM_LABEL: Record<string, string> = { "1": t("เทอม 1", "Term 1"), "2": t("เทอม 2", "Term 2"), "3": t("เทอม 3", "Term 3") };
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");

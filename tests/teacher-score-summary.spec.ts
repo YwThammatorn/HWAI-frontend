@@ -29,7 +29,7 @@ async function open(page: Page, lang: "en" | "th" = "en") {
     localStorage.setItem("hwai_managed_teachers_v1", JSON.stringify([{ id: "t-ss", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", status: "active", courseIds: ["c-ss"] }]));
     const ppl = people as string[][];
     localStorage.setItem("hwai_cohort_students_v1", JSON.stringify(ppl.map(([id, f], i) => ({ id: `cs-${i}`, studentId: id, name: `${f} Test`, email: `${id}@kmitl.ac.th`, program: "CE", status: "active" }))));
-    localStorage.setItem("hwai_students_v1", JSON.stringify(ppl.map(([id, f], i) => ({ id: `r-${i}`, courseId: "c-ss", studentId: id, name: `${f} Test`, email: `${id}@kmitl.ac.th`, sequenceNumber: i + 1, enrollmentStatus: "enrolled" }))));
+    localStorage.setItem("hwai_students_v1", JSON.stringify(ppl.map(([id, f], i) => ({ id: `r-${i}`, courseId: "c-ss", studentId: id, name: `${f} Test`, email: `${id}@kmitl.ac.th`, enrollmentStatus: "enrolled" }))));
     localStorage.setItem("hwai_grading_categories_v1", JSON.stringify([
       { id: "cat-hw", courseId: "c-ss", name: "Homework", weight: 40, createdAt: NOW, updatedAt: NOW },
       { id: "cat-ex", courseId: "c-ss", name: "Exams", weight: 60, createdAt: NOW, updatedAt: NOW },
@@ -40,7 +40,7 @@ async function open(page: Page, lang: "en" | "th" = "en") {
       asg("hw1", "HW 1", "2026-01-10", 10, { categoryId: "cat-hw" }),
       asg("mid", "Midterm", undefined, 50, { categoryId: "cat-ex", isExam: true, gradingFinalized: true }),
     ]));
-    const sub = (id: string, a: string, i: number, status: string, score: number | null) => ({ id, assignmentId: a, studentId: ppl[i][0], studentName: `${ppl[i][1]} Test`, email: `${ppl[i][0]}@kmitl.ac.th`, submittedAt: "2026-01-05T10:00:00.000Z", aiScore: score, instructorScore: status === "graded" ? score : null, instructorComment: "", externalUseConsent: true, status, updatedAt: NOW });
+    const sub = (id: string, a: string, i: number, status: string, score: number | null) => ({ id, assignmentId: a, studentId: ppl[i][0], studentName: `${ppl[i][1]} Test`, email: `${ppl[i][0]}@kmitl.ac.th`, submittedAt: "2026-01-05T10:00:00.000Z", aiScore: score, instructorScore: status === "graded" ? score : null, instructorComment: "", status, updatedAt: NOW });
     localStorage.setItem("hwai_submissions_v1", JSON.stringify([
       sub("h1", "hw1", 0, "graded", 9), sub("h2", "hw1", 1, "graded", 5), sub("h3", "hw1", 2, "need_review", 6),
       sub("m1", "mid", 0, "graded", 45), sub("m2", "mid", 1, "graded", 20), sub("m3", "mid", 2, "graded", 35), sub("m4", "mid", 3, "graded", 30),

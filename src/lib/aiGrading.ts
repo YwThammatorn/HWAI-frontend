@@ -5,6 +5,7 @@
 
 import { levelShare, type Submission, type RubricCriterion } from "./assignments";
 import { criterionKey } from "./rubricHistory";
+import { splitCriterionName } from "./rubricName";
 
 const hash = (str: string) => { let h = 2166136261; for (const c of str) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; };
 
@@ -33,42 +34,51 @@ const clampInt = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo
 /** Points for a level position (0 = best) on a criterion — the rubric file's level scale (100 / 66.67 / 33.33 / 0 % with four levels). */
 export const levelPointsOf = (c: Pick<RubricCriterion, "maxPoints" | "levels">, levelIndex: number) => Math.round(c.maxPoints * levelShare(levelIndex, c.levels.length));
 
-export interface AiCriteriaResult { levels: Record<string, number>; criterionScores: Record<string, number>; score: number; status: AiResult["status"] }
+export interface AiCriteriaResult { levels: Record<string, number>; criterionScores: Record<string, number>; reasons: Record<string, string>; score: number; status: AiResult["status"] }
+
+/** The AI's reason for its mark on one criterion (7/11/2569: the real AI must explain every criterion it scores). A stand-in sentence
+ *  from the share of the criterion's points it gave; the real call returns its own text in the same place. */
+export function mockAiReason(criterionName: string, share: number): string {
+  const name = splitCriterionName(criterionName).main.toLowerCase();
+  if (share >= 0.7) return `Good demonstration of ${name}. The work clearly meets expectations and shows solid understanding of the required concepts.`;
+  return `Minor issues found in ${name}. Consider revising the final section for clarity and accuracy.`;
+}
 
 /**
  * The AI scoring one piece of work against a rubric, criterion by criterion. `seed` makes it repeatable. The work has a quality of its
- * own (the seed), a little different on every criterion; the AI sees it through its habit on that criterion (aiLeniency) — and
- * through `offsets`, the correction Calibration saved (+ = stricter by that many levels).
+ * own (the seed), a little different on every criterion; the AI sees it through its habit on that criterion (aiLeniency). There is no
+ * correction to add (8/11/2569: Calibration no longer tunes the AI — it compares, and points at the rubric).
  */
-export function mockAiGradeCriteria(seed: string, criteria: Pick<RubricCriterion, "id" | "name" | "maxPoints" | "levels">[], offsets: Record<string, number> = {}): AiCriteriaResult {
+export function mockAiGradeCriteria(seed: string, criteria: Pick<RubricCriterion, "id" | "name" | "maxPoints" | "levels">[]): AiCriteriaResult {
   const quality = 0.25 + 0.7 * ((hash(seed) % 1000) / 1000);                    // 0.25 … 0.95
-  const levels: Record<string, number> = {}, criterionScores: Record<string, number> = {};
+  const levels: Record<string, number> = {}, criterionScores: Record<string, number> = {}, reasons: Record<string, string> = {};
   let score = 0, max = 0;
   for (const c of criteria) {
     const n = Math.max(1, c.levels.length);
     const q = Math.min(1, Math.max(0, quality + (((hash(seed + c.id) % 100) / 100) - 0.5) * 0.35));
     const truePos = (1 - q) * (n - 1);                                         // where a careful grader would put it (0 = best level)
-    const idx = clampInt(truePos - aiLeniency(c.name) + (offsets[c.id] ?? 0), 0, n - 1);
+    const idx = clampInt(truePos - aiLeniency(c.name), 0, n - 1);
     levels[c.id] = idx;
     criterionScores[c.id] = levelPointsOf(c, idx);
+    reasons[c.id] = mockAiReason(c.name, c.maxPoints > 0 ? criterionScores[c.id] / c.maxPoints : 0);
     score += criterionScores[c.id];
     max += c.maxPoints;
   }
-  return { levels, criterionScores, score, status: max > 0 && score / max < 0.65 ? "need_review" : "graded" };
+  return { levels, criterionScores, reasons, score, status: max > 0 && score / max < 0.65 ? "need_review" : "graded" };
 }
 
 // ── one place that writes the AI's marks (14/10/2569) ───────────────────────────────────────────────────────────────────────
 
-/** The fields that change on a submission when the AI (re)grades it: the AI's marks, the offsets those marks used, and everything the
+/** The fields that change on a submission when the AI (re)grades it: the AI's marks and reasons, and everything the
  *  teacher had put on top of an earlier AI result cleared. Used by "Grade with AI", the per-row Re-grade and Calibration's re-grade. */
-export function aiGradingUpdate(seed: string, maxPoints: number, rubric?: { criteria: Pick<RubricCriterion, "id" | "name" | "maxPoints" | "levels">[]; aiOffsets?: Record<string, number> }):
-  Pick<Submission, "aiScore" | "aiCriterionScores" | "aiOffsetsUsed" | "instructorScore" | "status" | "criterionScores" | "criterionComments"> {
+export function aiGradingUpdate(seed: string, maxPoints: number, rubric?: { criteria: Pick<RubricCriterion, "id" | "name" | "maxPoints" | "levels">[] }):
+  Pick<Submission, "aiScore" | "aiCriterionScores" | "aiCriterionReasons" | "instructorScore" | "status" | "criterionScores" | "criterionComments"> {
   const withRubric = !!rubric && rubric.criteria.length > 0;
-  const res = withRubric ? mockAiGradeCriteria(seed, rubric!.criteria, rubric!.aiOffsets) : { ...mockAiGrade(seed, maxPoints), criterionScores: undefined };
+  const res = withRubric ? mockAiGradeCriteria(seed, rubric!.criteria) : { ...mockAiGrade(seed, maxPoints), criterionScores: undefined, reasons: undefined };
   return {
     aiScore: res.score,
     aiCriterionScores: res.criterionScores,
-    aiOffsetsUsed: withRubric ? { ...(rubric!.aiOffsets ?? {}) } : undefined,
+    aiCriterionReasons: res.reasons,
     instructorScore: null,
     status: res.status,
     criterionScores: undefined,

@@ -49,7 +49,7 @@ const RUBRICS = [
 ];
 const sub = (id: string, studentId: string, p1: number, p2: number, p3: number) => ({
   id, assignmentId: "a-prev", studentId, studentName: studentId, email: `${studentId}@kmitl.ac.th`, submittedAt: "2025-01-05T10:00:00.000Z", 
-  aiScore: null, instructorScore: p1 + p2 + p3, instructorComment: "", externalUseConsent: false, status: "graded", updatedAt: NOW, criterionScores: { p1, p2, p3 },
+  aiScore: null, instructorScore: p1 + p2 + p3, instructorComment: "", status: "graded", updatedAt: NOW, criterionScores: { p1, p2, p3 },
 });
 const SUBS = [sub("s1", "64070701", 10, 4, 2), sub("s2", "64070702", 7, 2, 2)];   // p1 avg 85%, p2 50%, p3 50%
 const CLOS = [{ id: "clo-keep", courseId: "c-now", code: "CLO1", text: "keep", createdAt: NOW, updatedAt: NOW }];

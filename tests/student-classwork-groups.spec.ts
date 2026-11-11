@@ -22,7 +22,7 @@ const ASSIGNMENTS = [
 ];
 const mine = (assignmentId: string, extra: Record<string, unknown> = {}) => ({
   id: `sub-${assignmentId}`, assignmentId, studentId: "64070501", studentName: "S", email: "s1@kmitl.ac.th", submittedAt: "2026-01-10T10:00:00.000Z", 
-  aiScore: null, instructorScore: null, instructorComment: "", externalUseConsent: false, status: "need_review", updatedAt: NOW, ...extra,
+  aiScore: null, instructorScore: null, instructorComment: "", status: "need_review", updatedAt: NOW, ...extra,
 });
 
 async function open(page: Page, opts: { lang?: "en" | "th"; extra?: Record<string, string> } = {}) {

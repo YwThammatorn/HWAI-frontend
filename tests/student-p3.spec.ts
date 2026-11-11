@@ -38,7 +38,7 @@ const SUBMISSION_GRADED = {
   studentName: "สมชาย ใจดี", email: "s1@kmitl.ac.th",
   submittedAt: "2026-01-10T10:00:00.000Z", 
   aiScore: 9, instructorScore: 10, instructorComment: "งานดีมาก ส่งทัน",
-  externalUseConsent: false, status: "graded",
+  status: "graded",
 };
 
 const COHORT_STUDENT = {

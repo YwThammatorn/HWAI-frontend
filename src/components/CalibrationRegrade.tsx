@@ -10,7 +10,7 @@ import { useStudents, withdrawnIds } from "@/lib/students";
 import { useStudentGroups } from "@/lib/studentGroups";
 import { useMyCourseIds } from "@/lib/useMyCourseIds";
 import { aiGradingUpdate } from "@/lib/aiGrading";
-import { rubricLineage, rubricsLookAlike, offsetsFor, workUnitsOf, type WorkUnit } from "@/lib/calibration";
+import { rubricLineage, rubricsLookAlike, workUnitsOf, type WorkUnit } from "@/lib/calibration";
 import { termHeading } from "@/lib/academicTerm";
 
 interface Row {
@@ -30,10 +30,10 @@ interface Row {
 }
 
 /**
- * "Let the AI grade again" (14/10/2569) — after Calibration's correction is used, or the rubric was edited, send the work the AI had
- * scored back to the AI with the rubric as it is now. Lists this assignment and the other assignments that share the rubric (copied
- * from it or from the same one); an assignment whose results are already announced cannot be changed. Work the teacher scored is
- * never touched; for another assignment the correction is copied onto its own rubric first.
+ * "Let the AI grade again" (14/10/2569) — after the rubric was edited from Calibration's suggestions, send the work the AI had scored
+ * back to the AI with the rubric as it is now. Lists this assignment and the other assignments that share the rubric (copied from it
+ * or from the same one); an assignment whose results are already announced cannot be changed. Work the teacher scored is never touched.
+ * Each assignment is graded with its own rubric (8/11/2569: no AI correction to carry across any more).
  */
 export default function CalibrationRegrade({ assignment, rubric, courseId, emphasise }: {
   assignment: Assignment;
@@ -44,7 +44,7 @@ export default function CalibrationRegrade({ assignment, rubric, courseId, empha
 }) {
   const { t } = useLanguage();
   const { courses } = useCourses();
-  const { assignments, rubrics, submissions, updateRubric, updateSubmission } = useAssignments();
+  const { assignments, rubrics, submissions, updateSubmission } = useAssignments();
   const { getStudentsByCourse } = useStudents();
   const { getGroupsByAssignment } = useStudentGroups();
   const myCourseIds = useMyCourseIds();
@@ -83,10 +83,7 @@ export default function CalibrationRegrade({ assignment, rubric, courseId, empha
   function run() {
     setConfirmOpen(false);
     chosen.forEach((r) => {
-      // another assignment gets the correction on its own rubric first, so what it is graded with and what it stores agree
-      const offsets = r.why === "this" ? rubric.aiOffsets : offsetsFor(rubric, r.rubric);
-      if (r.why !== "this") updateRubric(r.rubric.id, { aiOffsets: offsets });
-      const using = { criteria: r.rubric.criteria, aiOffsets: offsets };
+      const using = { criteria: r.rubric.criteria };
       r.regrade.forEach((u) => {
         const update = aiGradingUpdate(u.key, r.assignment.maxPoints, using);
         u.subs.filter((s) => s.aiScore !== null && isAiOnlyGraded(s)).forEach((s) => updateSubmission(s.id, update));
@@ -104,11 +101,11 @@ export default function CalibrationRegrade({ assignment, rubric, courseId, empha
       data-testid="cal-regrade"
       className={`mt-8 rounded-xl border p-5 ${emphasise ? "border-[var(--accent)] bg-[var(--accent-subtle)]" : "border-[var(--border-subtle)] bg-[var(--bg-app)]"}`}
     >
-      <h3 id="cal-regrade" className="text-sm font-bold text-[var(--text-primary)]">{t("ให้ AI ตรวจใหม่ด้วยค่าที่ปรับ", "Let the AI grade again with the new settings")}</h3>
+      <h3 id="cal-regrade" className="text-sm font-bold text-[var(--text-primary)]">{t("ให้ AI ตรวจใหม่ด้วย rubric ปัจจุบัน", "Let the AI grade again with the rubric as it is now")}</h3>
       <p className="mt-1 max-w-3xl text-sm leading-relaxed text-[var(--text-secondary)]">
         {emphasise
           ? t("แก้ rubric แล้ว — ให้ AI ตรวจงานที่มันเคยให้คะแนนไว้ใหม่ด้วยเกณฑ์ที่แก้", "The rubric was changed — let the AI grade again the work it had scored, with the new criteria.")
-          : t("ส่งงานที่ AI เคยให้คะแนนไว้ (และคุณยังไม่ได้ให้คะแนนเอง) กลับไปให้ AI ตรวจอีกรอบ ด้วย rubric และความเข้มปัจจุบัน — เฉพาะงานที่ยังไม่ประกาศผล คะแนนที่คุณให้เองไม่ถูกแตะ", "Send the work the AI scored (and you have not scored yourself) back to the AI, with the rubric and strictness as they are now — only work whose results are not announced yet. Scores you gave yourself are never touched.")}
+          : t("ส่งงานที่ AI เคยให้คะแนนไว้ (และคุณยังไม่ได้ให้คะแนนเอง) กลับไปให้ AI ตรวจอีกรอบ ด้วย rubric ปัจจุบัน — เฉพาะงานที่ยังไม่ประกาศผล คะแนนที่คุณให้เองไม่ถูกแตะ", "Send the work the AI scored (and you have not scored yourself) back to the AI, with the rubric as it is now — only work whose results are not announced yet. Scores you gave yourself are never touched.")}
       </p>
 
       <ul className="mt-4 flex flex-col gap-2.5">
@@ -188,7 +185,6 @@ export default function CalibrationRegrade({ assignment, rubric, courseId, empha
         <ul className="mt-3 flex list-disc flex-col gap-1.5 pl-5 text-sm text-[var(--text-secondary)]">
           <li>{t("คะแนนที่คุณให้เองไม่เปลี่ยน", "Scores you gave yourself do not change.")}</li>
           <li>{t("งานที่ประกาศผลแล้วไม่ถูกแตะ", "Announced assignments are not touched.")}</li>
-          {chosen.some((r) => r.why !== "this") && <li>{t("งานอื่นจะได้ค่าความเข้มเดียวกันนี้ใน rubric ของตัวเองด้วย", "The other assignments get the same strictness on their own rubric.")}</li>}
         </ul>
       </Modal>
     </section>

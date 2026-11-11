@@ -30,9 +30,9 @@ for (const role of ["student", "teacher"] as const) {
       await expect(sidebar(page).getByText("Academic year 2569 · Term 1")).toBeVisible();
     });
 
-    test("Thai UI; a summer term has no number", async ({ page }) => {
-      await open(page, role, "th", course({ academicYear: 2569, term: "summer" }));
-      await expect(sidebar(page).getByText("ปีการศึกษา 2569 · ภาคฤดูร้อน")).toBeVisible();
+    test("Thai UI; the third term is term 3 (there is no summer term)", async ({ page }) => {
+      await open(page, role, "th", course({ academicYear: 2569, term: 3 }));
+      await expect(sidebar(page).getByText("ปีการศึกษา 2569 · เทอม 3")).toBeVisible();
     });
 
     test("a course with no year/term shows no term line", async ({ page }) => {

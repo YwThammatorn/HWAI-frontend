@@ -30,7 +30,7 @@ const RUBRIC = { id: "r-tb3", assignmentId: "a-tb3", name: "Landing page rubric"
 const SUBMISSION = {
   id: "sub-tb3", assignmentId: "a-tb3", studentId: "64070701", studentName: "Fah Test", email: "64070701@kmitl.ac.th",
   submittedAt: "2026-01-05T10:00:00.000Z", aiScore: 80, instructorScore: null, instructorComment: "",
-  externalUseConsent: false, status: "need_review", updatedAt: "2026-01-05T10:00:00.000Z",
+  status: "need_review", updatedAt: "2026-01-05T10:00:00.000Z",
 };
 
 async function seedTeacher(page: Page, opts: { withAssignment?: boolean } = {}) {

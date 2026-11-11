@@ -6,7 +6,8 @@ import { useCourses, PRESET_COLORS, Term } from "@/lib/courses";
 import { useCurriculum } from "@/lib/curriculum";
 import { useLanguage } from "@/context/LanguageContext";
 import { CourseIcon, COURSE_ICON_KEYS, type CourseIconKey } from "@/components/CourseIcon";
-
+
+
 import Icon from "@/components/Icon";
 import IconTile from "@/components/IconTile";
 // Teachers can't create their own courses for now (10/9/2569) — only admin
@@ -177,13 +178,13 @@ export default function NewCoursePage() {
                   <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">{t("ภาคเรียน", "Term")}</label>
                   <select
                     value={term}
-                    onChange={(e) => setTerm(e.target.value === "" ? "" : e.target.value === "summer" ? "summer" : (Number(e.target.value) as 1 | 2))}
+                    onChange={(e) => setTerm(e.target.value === "" ? "" : (Number(e.target.value) as 1 | 2 | 3))}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] text-sm bg-[var(--bg-surface)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
                   >
                     <option value="">{t("ไม่ระบุ", "None")}</option>
                     <option value="1">{t("ภาคเรียนที่ 1", "Term 1")}</option>
                     <option value="2">{t("ภาคเรียนที่ 2", "Term 2")}</option>
-                    <option value="summer">{t("ภาคฤดูร้อน", "Summer")}</option>
+                    <option value="3">{t("ภาคเรียนที่ 3", "Term 3")}</option>
                   </select>
                 </div>
                 <div>

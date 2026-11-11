@@ -18,15 +18,15 @@ const COHORT = [
   { id: "cs-2", studentId: "69070102", title: "Miss", name: "Malee Suksan", email: "69070102@kmitl.ac.th", cohort: "CE69", program: "CE", status: "active" },
   { id: "cs-3", studentId: "69070103", name: "Chai Notitle", email: "69070103@kmitl.ac.th", cohort: "CE69", program: "CE", status: "active" },
 ];
-const roster = (id: string, studentId: string, firstName: string, lastName: string, seq: number, email = `${studentId}@kmitl.ac.th`) => ({
-  id, courseId: "c-rt", studentId, name: `${firstName} ${lastName}`, email, cohort: "CE69", sequenceNumber: seq, enrollmentStatus: "enrolled",
+const roster = (id: string, studentId: string, firstName: string, lastName: string, email = `${studentId}@kmitl.ac.th`) => ({
+  id, courseId: "c-rt", studentId, name: `${firstName} ${lastName}`, email, cohort: "CE69", enrollmentStatus: "enrolled",
 });
-// Deliberately NOT in ID or name order, so "roster order" differs from both sorts.
+// Stored deliberately NOT in ID or name order: the roster still lists by student ID (7/11/2569), and the name sort differs from it.
 const ROSTER = [
-  roster("s-2", "69070102", "Malee", "Suksan", 1),
-  roster("s-1", "69070101", "Somchai", "Jaidee", 2),
-  roster("s-4", "69079999", "Ghost", "Record", 3), // enrolled but not in the central list
-  roster("s-3", "69070103", "Chai", "Notitle", 4),
+  roster("s-2", "69070102", "Malee", "Suksan"),
+  roster("s-1", "69070101", "Somchai", "Jaidee"),
+  roster("s-4", "69079999", "Ghost", "Record"), // enrolled but not in the central list
+  roster("s-3", "69070103", "Chai", "Notitle"),
 ];
 
 async function open(page: Page, lang: "en" | "th" = "en") {
@@ -161,9 +161,9 @@ test.describe("Teacher roster — search", () => {
 });
 
 test.describe("Teacher roster — sort", () => {
-  test("starts in roster order, with no active sort column", async ({ page }) => {
+  test("starts in roster order — by student ID, whatever order the roster was stored in — with no active sort column", async ({ page }) => {
     await open(page);
-    expect(await ids(page)).toEqual(["69070102", "69070101", "69079999", "69070103"]);
+    expect(await ids(page)).toEqual(["69070101", "69070102", "69070103", "69079999"]);
     expect(await nums(page)).toEqual(["1", "2", "3", "4"]);
     await expect(header(page, "Student ID")).toHaveAttribute("aria-sort", "none");
     await expect(header(page, "Name")).toHaveAttribute("aria-sort", "none");
@@ -178,7 +178,7 @@ test.describe("Teacher roster — sort", () => {
     expect(await ids(page)).toEqual(["69079999", "69070103", "69070102", "69070101"]);
     await expect(header(page, "Student ID")).toHaveAttribute("aria-sort", "descending");
     await header(page, "Student ID").getByRole("button").click();
-    expect(await ids(page)).toEqual(["69070102", "69070101", "69079999", "69070103"]);
+    expect(await ids(page)).toEqual(["69070101", "69070102", "69070103", "69079999"]);   // roster order is ID order
     await expect(header(page, "Student ID")).toHaveAttribute("aria-sort", "none");
   });
 
@@ -193,16 +193,16 @@ test.describe("Teacher roster — sort", () => {
     await header(page, "Name").getByRole("button").click();
     expect(await ids(page)).toEqual(["69070101", "69070102", "69079999", "69070103"]);
     await header(page, "Name").getByRole("button").click();
-    expect(await ids(page)).toEqual(["69070102", "69070101", "69079999", "69070103"]);
+    expect(await ids(page)).toEqual(["69070101", "69070102", "69070103", "69079999"]);
   });
 
   test("the # column belongs to the student, not the row position", async ({ page }) => {
     await open(page);
-    await header(page, "Student ID").getByRole("button").click(); // 101, 102, 103, 9999
-    expect(await nums(page)).toEqual(["2", "1", "4", "3"]);
-    await search(page).fill("chai"); // still sorted, filtered to 101 (#2) and 103 (#4)
-    await expect.poll(() => ids(page)).toEqual(["69070101", "69070103"]);
-    expect(await nums(page)).toEqual(["2", "4"]);
+    await header(page, "Name").getByRole("button").click(); // Chai 103, Ghost 9999, Malee 102, Somchai 101
+    expect(await nums(page)).toEqual(["3", "4", "2", "1"]);
+    await search(page).fill("chai"); // still sorted, filtered to Chai 103 (#3) and Somchai 101 (#1)
+    await expect.poll(() => ids(page)).toEqual(["69070103", "69070101"]);
+    expect(await nums(page)).toEqual(["3", "1"]);
   });
 
   test("Thai UI: sort hints are in Thai", async ({ page }) => {

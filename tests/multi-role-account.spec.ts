@@ -2,8 +2,9 @@ import { test, expect, Page } from "@playwright/test";
 
 import { BASE } from "./base";
 
-// One sign-in, three roles (20/9/2569): kiatnarong.to@kmitl.ac.th holds admin + teacher +
-// student(69070101) and switches between them — see src/lib/accounts.ts.
+// One sign-in, two roles (8/11/2569): kiatnarong.to@kmitl.ac.th holds admin + teacher and switches
+// between them — see src/lib/accounts.ts. No student role: in HWAI-backend a staff email can't also be
+// a student (that needs the student's own id and email), so the earlier student persona is gone.
 
 const NOW = "2026-01-01T00:00:00.000Z";
 const COURSE = {
@@ -23,7 +24,7 @@ const COHORT = [{
 }];
 const ROSTER = [{
   id: "s-mr", courseId: "c-mr", studentId: "69070101", name: "Somchai Jaidee",
-  email: "69070101@kmitl.ac.th", cohort: "CE69", sequenceNumber: 1, enrollmentStatus: "enrolled",
+  email: "69070101@kmitl.ac.th", cohort: "CE69", enrollmentStatus: "enrolled",
 }];
 
 async function seedData(page: Page, opts: { legacyUser?: boolean } = {}) {
@@ -51,47 +52,41 @@ async function signIn(page: Page, email: string, password = "password123") {
 const switcher = (page: Page) => page.getByRole("button", { name: "Switch role", exact: true });
 const storedUser = (page: Page) => page.evaluate(() => JSON.parse(localStorage.getItem("hwai_user") ?? "null"));
 
-async function switchTo(page: Page, role: "Admin" | "Teacher" | "Student") {
+async function switchTo(page: Page, role: "Admin" | "Teacher") {
   await switcher(page).click();
   await page.getByRole("menuitemradio", { name: new RegExp(role) }).click();
 }
 
-test.describe("Multi-role account — kiatnarong.to holds admin, teacher and student", () => {
+test.describe("Multi-role account — kiatnarong.to holds admin and teacher", () => {
   test.beforeEach(async ({ page }) => { await seedData(page); });
 
-  test("signing in lands on the default role (teacher) and the menu lists exactly the three held roles", async ({ page }) => {
+  test("signing in lands on the default role (teacher) and the menu lists exactly the two held roles", async ({ page }) => {
     await signIn(page, "kiatnarong.to@kmitl.ac.th");
     await expect(page).toHaveURL(/\/teacher\/courses/, { timeout: 20_000 });
     await expect(page.getByText("เกียรติณรงค์ ทองประเสริฐ").first()).toBeVisible();
 
     await switcher(page).click();
     const items = page.getByRole("menuitemradio");
-    await expect(items).toHaveCount(3);
+    await expect(items).toHaveCount(2);
     await expect(items.nth(0)).toContainText("Admin");
     await expect(items.nth(1)).toContainText("Teacher");
-    await expect(items.nth(2)).toContainText("Student");
     await expect(items.nth(1)).toHaveAttribute("aria-checked", "true");
-    // each role shows the identity it acts as
-    await expect(items.nth(2)).toContainText("69070101@kmitl.ac.th");
+    await expect(page.getByRole("menuitemradio", { name: /Student/ })).toHaveCount(0);
+    // both roles act as the account's own email
+    await expect(items.nth(0)).toContainText("kiatnarong.to@kmitl.ac.th");
     await expect(items.nth(1)).toContainText("kiatnarong.to@kmitl.ac.th");
   });
 
-  test("Student acts as 69070101 (own courses + name), Admin opens user management, Teacher restores kiatnarong.to", async ({ page }) => {
+  test("Admin opens user management, Teacher brings back the teacher's own courses", async ({ page }) => {
     await signIn(page, "kiatnarong.to@kmitl.ac.th");
     await expect(page).toHaveURL(/\/teacher\/courses/, { timeout: 20_000 });
 
-    await switchTo(page, "Student");
-    await expect(page).toHaveURL(/\/student/, { timeout: 20_000 });
-    await expect(page.getByText("Somchai Jaidee").first()).toBeVisible();
-    await expect(page.getByText("Programming").first()).toBeVisible();
-    expect(await storedUser(page)).toMatchObject({
-      role: "student", studentId: "69070101", email: "69070101@kmitl.ac.th",
-      accountEmail: "kiatnarong.to@kmitl.ac.th", roles: ["admin", "teacher", "student"],
-    });
-
     await switchTo(page, "Admin");
     await expect(page).toHaveURL(/\/admin\/users/, { timeout: 20_000 });
-    expect(await storedUser(page)).toMatchObject({ role: "admin", email: "kiatnarong.to@kmitl.ac.th", name: "เกียรติณรงค์ ทองประเสริฐ" });
+    expect(await storedUser(page)).toMatchObject({
+      role: "admin", email: "kiatnarong.to@kmitl.ac.th", name: "เกียรติณรงค์ ทองประเสริฐ",
+      accountEmail: "kiatnarong.to@kmitl.ac.th", roles: ["admin", "teacher"],
+    });
     expect((await storedUser(page)).studentId).toBeUndefined();
 
     await switchTo(page, "Teacher");
@@ -103,16 +98,16 @@ test.describe("Multi-role account — kiatnarong.to holds admin, teacher and stu
   test("the active role survives a reload", async ({ page }) => {
     await signIn(page, "kiatnarong.to@kmitl.ac.th");
     await expect(page).toHaveURL(/\/teacher\/courses/, { timeout: 20_000 });
-    await switchTo(page, "Student");
-    await expect(page).toHaveURL(/\/student/, { timeout: 20_000 });
+    await switchTo(page, "Admin");
+    await expect(page).toHaveURL(/\/admin\/users/, { timeout: 20_000 });
 
     await page.reload();
     await page.waitForLoadState("networkidle");
-    await expect(page).toHaveURL(/\/student/);
+    await expect(page).toHaveURL(/\/admin\/users/);
     await expect(switcher(page)).toBeVisible();
     await switcher(page).click();
-    await expect(page.getByRole("menuitemradio", { name: /Student/ })).toHaveAttribute("aria-checked", "true");
-    await expect(page.getByRole("menuitemradio")).toHaveCount(3);
+    await expect(page.getByRole("menuitemradio", { name: /Admin/ })).toHaveAttribute("aria-checked", "true");
+    await expect(page.getByRole("menuitemradio")).toHaveCount(2);
   });
 
   test("signing in directly as the student 69070101 stays a plain student (no role menu)", async ({ page }) => {
@@ -139,9 +134,9 @@ test.describe("Multi-role account — sessions saved before the feature", () => 
     await page.goto(`${BASE}/teacher/courses`);
     await page.waitForLoadState("networkidle");
     await switcher(page).click();
-    await expect(page.getByRole("menuitemradio")).toHaveCount(3);
-    await page.getByRole("menuitemradio", { name: /Student/ }).click(); // menu is already open
-    await expect(page).toHaveURL(/\/student/, { timeout: 20_000 });
-    expect(await storedUser(page)).toMatchObject({ role: "student", studentId: "69070101" });
+    await expect(page.getByRole("menuitemradio")).toHaveCount(2);
+    await page.getByRole("menuitemradio", { name: /Admin/ }).click(); // menu is already open
+    await expect(page).toHaveURL(/\/admin\/users/, { timeout: 20_000 });
+    expect(await storedUser(page)).toMatchObject({ role: "admin", email: "kiatnarong.to@kmitl.ac.th" });
   });
 });

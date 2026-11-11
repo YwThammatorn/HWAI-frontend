@@ -2,7 +2,7 @@
 
 import { createContext, useContext } from "react";
 
-export type EnrollmentStatus = "enrolled" | "withdrawn" | "added-midterm";
+export type EnrollmentStatus = "enrolled" | "withdrawn";
 
 export interface Student {
   id: string;
@@ -11,11 +11,9 @@ export interface Student {
   /** the student's name from their account (CohortStudent.name), without the title */
   name: string;
   email: string;
-  /** ลำดับนักศึกษาในวิชานี้ (มติที่ประชุม 4/9/2569) — คนใหม่ที่เพิ่มกลางเทอมได้เลขต่อท้าย
-   *  ไม่ recompute ของเดิมเมื่อมีคนออก. Optional เพราะ record เก่ายังไม่มีค่านี้. */
-  sequenceNumber?: number;
   /** สถานะการลงทะเบียนต่อวิชา — แยกจาก CohortStudent.status ซึ่งเป็น account-level
-   *  (มติที่ประชุม 4/9/2569 decision #1) */
+   *  (มติที่ประชุม 4/9/2569 decision #1). Absent = enrolled. A roster is listed by student ID; there is no
+   *  per-course number or "added mid-term" mark any more (7/11/2569). */
   enrollmentStatus?: EnrollmentStatus;
 }
 
@@ -51,4 +49,15 @@ export function withName<T extends { name: string }>(record: T): T {
   if (typeof r.name === "string") return record;
   const { firstName, lastName, ...rest } = r;
   return { ...rest, name: `${firstName ?? ""} ${lastName ?? ""}`.trim() } as unknown as T;
+}
+
+/** Roster order everywhere (7/11/2569): by course, then by student ID — the registrar's order. */
+export const byRosterOrder = (a: Pick<Student, "courseId" | "studentId">, b: Pick<Student, "courseId" | "studentId">) =>
+  a.courseId.localeCompare(b.courseId) || a.studentId.localeCompare(b.studentId, undefined, { numeric: true });
+
+/** A roster record from before 7/11/2569 (localStorage mock) may carry sequenceNumber / "added-midterm": drop the number, read the mark as enrolled. */
+export function withoutMidterm(record: Student): Student {
+  const { sequenceNumber: _n, ...rest } = record as Student & { sequenceNumber?: number; enrollmentStatus?: string };
+  void _n;
+  return (rest as { enrollmentStatus?: string }).enrollmentStatus === "added-midterm" ? { ...rest, enrollmentStatus: "enrolled" } : (rest as Student);
 }

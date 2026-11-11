@@ -22,11 +22,11 @@ async function seed(page: Page, o: { finalized?: boolean; lang?: "en" | "th" } =
     localStorage.setItem("hwai_courses_v2", JSON.stringify([{ id: "c-ci", name: "CSV Import Course", description: "", status: "active", coverColor: "#0F766E", sectionNumber: "1", code: "01076333", academicYear: 2569, term: 1, createdAt: NOW, updatedAt: NOW }]));
     localStorage.setItem("hwai_managed_teachers_v1", JSON.stringify([{ id: "t1", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", status: "active", courseIds: ["c-ci"] }]));
     localStorage.setItem("hwai_cohort_students_v1", JSON.stringify(ppl.map(([id, f], i) => ({ id: `cs-${i}`, studentId: id, name: `${f} Test`, email: `${id}@kmitl.ac.th`, program: "CE", status: "active" }))));
-    localStorage.setItem("hwai_students_v1", JSON.stringify(ppl.map(([id, f], i) => ({ id: `r-${i}`, courseId: "c-ci", studentId: id, name: `${f} Test`, email: `${id}@kmitl.ac.th`, sequenceNumber: i + 1, enrollmentStatus: id === "69072005" ? "withdrawn" : "enrolled" }))));
+    localStorage.setItem("hwai_students_v1", JSON.stringify(ppl.map(([id, f], i) => ({ id: `r-${i}`, courseId: "c-ci", studentId: id, name: `${f} Test`, email: `${id}@kmitl.ac.th`, enrollmentStatus: id === "69072005" ? "withdrawn" : "enrolled" }))));
     localStorage.setItem("hwai_grading_categories_v1", "[]");
     localStorage.setItem("hwai_rubrics_v1", "[]");
     localStorage.setItem("hwai_assignments_v1", JSON.stringify([{ id: "ex1", courseId: "c-ci", name: "Midterm", description: "", maxPoints: 50, acceptsFiles: false, fileTypes: [], submissionType: "individual", maxGroupSize: null, rubricIds: [], isExam: true, gradingFinalized: finalized || undefined, createdAt: NOW, updatedAt: NOW }]));
-    localStorage.setItem("hwai_submissions_v1", JSON.stringify([{ id: "s-ann", assignmentId: "ex1", studentId: "69072001", studentName: "Ann Test", email: "69072001@kmitl.ac.th", submittedAt: NOW, aiScore: null, instructorScore: 30, instructorComment: "", externalUseConsent: false, status: "graded", updatedAt: NOW }]));
+    localStorage.setItem("hwai_submissions_v1", JSON.stringify([{ id: "s-ann", assignmentId: "ex1", studentId: "69072001", studentName: "Ann Test", email: "69072001@kmitl.ac.th", submittedAt: NOW, aiScore: null, instructorScore: 30, instructorComment: "", status: "graded", updatedAt: NOW }]));
   }, [PEOPLE, !!o.finalized, o.lang ?? "en"] as const);
   await page.goto(`${BASE}/teacher/courses/c-ci/assignments/ex1/grading`);
   await page.waitForLoadState("networkidle");

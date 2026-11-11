@@ -7,7 +7,7 @@ const rd = (f: string) => JSON.parse(fs.readFileSync(`public/mock-data/${f}`, "u
 // 3/10/2569 — the c-mock-1 class ("การเขียนโปรแกรมคอมพิวเตอร์", 01076112 sec 1) grew from 3 to 42 students with
 // realistic scores (console command [15] in test-data/seed-commands.txt). These guard the data, not the screens.
 
-type Roster = { id: string; courseId: string; studentId: string; sequenceNumber: number; enrollmentStatus: string };
+type Roster = { id: string; courseId: string; studentId: string; enrollmentStatus: string };
 type Sub = { id: string; assignmentId: string; studentId: string; status: string; aiScore: number | null; instructorScore: number | null; instructorComment: string };
 type Cohort = { id: string; studentId: string; program: string; status: string };
 
@@ -18,11 +18,10 @@ for (const sfx of ["", "-en"]) {
     const subs = flow.submissions as Sub[];
     const maxOf = new Map<string, number>(flow.assignments.map((a: { id: string; maxPoints: number }) => [a.id, a.maxPoints]));
 
-    test("42 enrolled students, numbered 1–42 in student-id order, every one in the cohort", () => {
+    test("42 enrolled students in student-id order, every one in the cohort", () => {
       expect(roster).toHaveLength(42);
       expect(new Set(roster.map((r) => r.studentId)).size).toBe(42);
       expect(new Set(roster.map((r) => r.id)).size).toBe(42);
-      expect(roster.map((r) => r.sequenceNumber)).toEqual(Array.from({ length: 42 }, (_, i) => i + 1));
       expect(roster.map((r) => r.studentId)).toEqual([...roster.map((r) => r.studentId)].sort());
       expect(roster.every((r) => r.courseId === "c-mock-1" && r.enrollmentStatus === "enrolled")).toBe(true);
       const cohort = flow.cohortStudents as Cohort[];

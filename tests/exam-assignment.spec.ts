@@ -17,7 +17,7 @@ const COHORT = PEOPLE.map(([studentId, firstName, lastName], i) => ({
   id: `cs-${i}`, studentId, name: `${firstName} ${lastName}`, email: `${studentId}@kmitl.ac.th`, program: "CE", status: "active",
 }));
 const ROSTER = PEOPLE.map(([studentId, firstName, lastName], i) => ({
-  id: `r-${i}`, courseId: "c-ex", studentId, name: `${firstName} ${lastName}`, email: `${studentId}@kmitl.ac.th`, sequenceNumber: i + 1, enrollmentStatus: "enrolled",
+  id: `r-${i}`, courseId: "c-ex", studentId, name: `${firstName} ${lastName}`, email: `${studentId}@kmitl.ac.th`, enrollmentStatus: "enrolled",
 }));
 const EXAM = {
   id: "ex1", courseId: "c-ex", name: "Midterm exam", description: "Chapters 1-5", maxPoints: 50, acceptsFiles: false, fileTypes: [],
@@ -49,7 +49,7 @@ async function seed(page: Page, role: "teacher" | "student", extra: { submission
 
 const graded = (studentId: string, score: number) => ({
   id: `s-${studentId}`, assignmentId: "ex1", studentId, studentName: `Student ${studentId}`, email: `${studentId}@kmitl.ac.th`,
-  submittedAt: NOW, aiScore: null, instructorScore: score, instructorComment: "", externalUseConsent: false, status: "graded", updatedAt: NOW,
+  submittedAt: NOW, aiScore: null, instructorScore: score, instructorComment: "", status: "graded", updatedAt: NOW,
 });
 
 const stored = (page: Page) => page.evaluate(() => JSON.parse(localStorage.getItem("hwai_submissions_v1") ?? "[]"));

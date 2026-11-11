@@ -54,9 +54,9 @@ test("what the department's Moodle shows holds: Programming, Computer Programmin
   expect(Object.keys(KNOWN).sort()).toEqual(["01076112", "01076232", "01076341", "01078112"]);
 });
 
-test("the demo account (admin + teacher + student) is the teacher of the demo class, and t-mock-1 in the mock", () => {
+test("the demo account (admin + teacher) is the teacher of the demo class, and t-mock-1 in the mock", () => {
   const account = findMultiRoleAccount("kiatnarong.to@kmitl.ac.th")!;
-  expect(account.roles).toEqual(["admin", "teacher", "student"]);
+  expect(account.roles).toEqual(["admin", "teacher"]);
   expect(account.name).toBe(TEACHERS[0].name);
   expect(TEACHERS[0]).toMatchObject({ id: "t-mock-1", email: account.email });
   expect(REAL_TEACHERS.find((t) => t.key === DEMO_TEACHER)!.email).toBe(account.email);

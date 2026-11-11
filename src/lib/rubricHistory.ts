@@ -13,7 +13,7 @@ export function criterionKey(name: string): string {
   return splitCriterionName(name).main.trim().toLowerCase().replace(/\s+/g, " ");
 }
 
-const termNumber = (t: Course["term"]) => (t === "summer" ? 3.5 : (t ?? 0));
+const termNumber = (t: Course["term"]) => t ?? 0;
 /** one number that orders terms: 2568 term 1 < 2568 term 2 < 2569 term 1 */
 export const termOrder = (c: Pick<Course, "academicYear" | "term">) => (c.academicYear ?? 0) * 10 + termNumber(c.term);
 

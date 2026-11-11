@@ -27,7 +27,8 @@ test("Import Teachers: a role=ta row is an error, teacher rows import as teacher
   await expect(dialog.getByText("Added 2 teacher(s) (skipped 1)")).toBeVisible();
 
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("hwai_managed_teachers_v1") ?? "[]"));
-  expect(saved.map((t: { name: string; role: string }) => [t.name, t.role])).toEqual([["Ann Lee", "teacher"], ["Cy Kim", "teacher"]]);
+  expect(saved.map((t: { name: string }) => t.name)).toEqual(["Ann Lee", "Cy Kim"]);
+  expect(saved.every((t: Record<string, unknown>) => !("role" in t))).toBe(true); // a teacher account carries no role (7/11/2569)
 });
 
 test("the CSV template has no role column", async ({ request }) => {

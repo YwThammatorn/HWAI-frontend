@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
-import { StudentContext, Student, withName } from "@/lib/students";
+import { useState, useCallback, useEffect, useMemo } from "react";
+import { StudentContext, Student, withName, withoutMidterm, byRosterOrder } from "@/lib/students";
 import { API_ENABLED } from "@/lib/api/client";
 import { enqueueWrite, loadFailed } from "@/lib/api/sync";
 import * as api from "@/lib/api/students";
@@ -25,7 +25,7 @@ export default function StudentProvider({ children }: { children: React.ReactNod
     }
     try {
       const raw = localStorage.getItem(LS_KEY);
-      if (raw) setStudents((JSON.parse(raw) as Student[]).map(withName));
+      if (raw) setStudents((JSON.parse(raw) as Student[]).map(withName).map(withoutMidterm));
     } catch {}
   }, [resync]);
 
@@ -41,18 +41,13 @@ export default function StudentProvider({ children }: { children: React.ReactNod
 
   const addStudents = useCallback(
     (courseId: string, incoming: Omit<Student, "id" | "courseId">[]) => {
-      // Append to the existing roster for this section — do not replace it.
-      // sequenceNumber continues after the highest number on the roster (มติที่ประชุม
-      // 4/9/2569: คนใหม่ที่เพิ่มกลางเทอมได้เลขต่อท้าย ไม่ renumber ของเดิม). Not roster size + 1:
-      // after a removal that would hand out a number someone still holds.
-      const existingInCourse = students.filter((s) => s.courseId === courseId);
-      let nextSeq = existingInCourse.reduce((max, s) => Math.max(max, s.sequenceNumber ?? 0), 0) + 1;
+      // Append to the existing roster for this section — do not replace it. Everyone added is "enrolled";
+      // the roster lists by student ID, so where someone joined makes no difference (7/11/2569).
       const next: Student[] = incoming.map((s) => ({
         ...s,
         id: crypto.randomUUID(),
         courseId,
-        sequenceNumber: s.sequenceNumber ?? nextSeq++,
-        enrollmentStatus: s.enrollmentStatus ?? (existingInCourse.length > 0 ? "added-midterm" : "enrolled"),
+        enrollmentStatus: s.enrollmentStatus ?? "enrolled",
       }));
       persist([...students, ...next]);
       sync(() => api.addStudents(courseId, next.map(({ courseId: _c, ...s }) => { void _c; return s; })));
@@ -76,13 +71,15 @@ export default function StudentProvider({ children }: { children: React.ReactNod
     [students, persist, sync]
   );
 
+  // Every screen sees a roster by student ID (the server sends that order too; the localStorage mock keeps insertion order).
+  const ordered = useMemo(() => [...students].sort(byRosterOrder), [students]);
   const getStudentsByCourse = useCallback(
-    (courseId: string) => students.filter((s) => s.courseId === courseId),
-    [students]
+    (courseId: string) => ordered.filter((s) => s.courseId === courseId),
+    [ordered]
   );
 
   return (
-    <StudentContext.Provider value={{ students, addStudents, updateStudent, removeStudent, getStudentsByCourse }}>
+    <StudentContext.Provider value={{ students: ordered, addStudents, updateStudent, removeStudent, getStudentsByCourse }}>
       {children}
     </StudentContext.Provider>
   );
