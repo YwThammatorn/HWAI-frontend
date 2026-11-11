@@ -16,7 +16,8 @@ export default function SectionRoleProvider({ children }: { children: React.Reac
 
   // API mode: reload from the server — on mount, and after a failed write (see api/sync.ts).
   const resync = useCallback(() => {
-    api.getSectionRoles().then(setSectionRoles, loadFailed("section roles"));
+    // `ready` too: guards (useGradableAssignments, taPaths) wait for it before judging an empty list
+    api.getSectionRoles().then((roles) => { setSectionRoles(roles); setReady(true); }, (err) => { setReady(true); loadFailed("section roles")(err); });
   }, []);
 
   useEffect(() => {

@@ -56,9 +56,12 @@ client-generated id (the backend accepts `id` on create), then push the write th
 tick (create course → assign teacher; create assignment → add rubric → set its rubricIds) reach the
 server in order. A failed write shows an alert and reloads that domain from the server.
 
-Still localStorage-only, all currently hidden by `lib/featureFlags.ts`: grading assignments (Grading
-Split), notifications, announcements, weekly plan and teaching materials — their backend gets built when
-they come back.
+Grading assignments (which assignments a TA is given, `GradingAssignmentProvider`) go through the backend too
+(11/11/2569); the server removes them with the course, the assignment, the TA's section role or the account, and a TA
+who has a record may only write scores on the assignments in it (`403` otherwise).
+
+Still localStorage-only, all currently hidden by `lib/featureFlags.ts`: notifications, announcements, weekly plan and
+teaching materials — their backend gets built when they come back.
 
 ## Auth
 
