@@ -52,7 +52,7 @@ const SUBS = [
   aiSub("a-hand", 1),
 ];
 
-async function seed(page: Page, opts: { lang?: "en" | "th"; ta?: boolean } = {}) {
+async function seed(page: Page, opts: { lang?: "en" | "th"; ta?: boolean; subs?: unknown[] } = {}) {
   await page.addInitScript((d) => {
     if (sessionStorage.getItem("ev_seeded")) return;
     sessionStorage.setItem("ev_seeded", "1");
@@ -70,7 +70,7 @@ async function seed(page: Page, opts: { lang?: "en" | "th"; ta?: boolean } = {})
     localStorage.setItem("hwai_submissions_v1", JSON.stringify(d.subs));
     localStorage.setItem("hwai_section_roles_v1", JSON.stringify([{ id: "sr-1", accountId: "cs-66000099", courseId: "c-ev", role: "ta" }]));
     localStorage.setItem("hwai_grading_assignments_v1", JSON.stringify([{ id: "ga-ev", courseId: "c-ev", taAccountId: "cs-66000099", scope: { type: "assignments", assignmentIds: ["a-ev", "a-hand"] } }]));
-  }, { lang: opts.lang ?? "en", ta: !!opts.ta, course: COURSE, teacher: TEACHER, assignments: ASSIGNMENTS, subs: SUBS, rubrics: ASSIGNMENTS.map((a) => rubric(a.id)) });
+  }, { lang: opts.lang ?? "en", ta: !!opts.ta, course: COURSE, teacher: TEACHER, assignments: ASSIGNMENTS, subs: opts.subs ?? SUBS, rubrics: ASSIGNMENTS.map((a) => rubric(a.id)) });
 }
 const grade = async (page: Page, aid: string, sid: string) => { await page.goto(`${BASE}/teacher/courses/c-ev/assignments/${aid}/recheck?sub=${sid}`); await page.waitForLoadState("networkidle"); };
 
@@ -150,6 +150,26 @@ test.describe("Grading Review", () => {
     expect(await live.getAttribute("title")).toMatch(/may have changed/);
     await expect(page.getByTestId("frame-image")).toBeVisible();
     expect(await page.getByTestId("frame-image").evaluate((el) => (el as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);   // the picture really loads
+  });
+
+  test("a snapshot kept as the Figma file's JSON (no pictures, 11/11/2569) shows each frame as an outline at its size, and the AI's boxes still land on it", async ({ page }) => {
+    const json: WorkSnapshot = {
+      takenAt: SNAPSHOT.takenAt, sourceUrl: LIVE, document: "/api/files/doc-1", figmaFileKey: "AbCdEf123456", figmaVersion: "4711",
+      frames: SNAPSHOT.frames.map((f, i) => ({ id: f.id, name: f.name, width: 1440, height: 900 + i * 100 })),
+    };
+    const sub = aiSub("a-ev", 1, { snapshot: json, ...aiGradingUpdate("a-ev-s1", 10, { criteria: CRITERIA }, json) });
+    await seed(page, { subs: [sub, ...SUBS.slice(1)] });
+    await grade(page, "a-ev", "a-ev-s1");
+    await expect(page.getByTestId("frame-viewer")).toBeVisible();
+    await expect(page.getByTestId("frame-image")).toHaveCount(0);
+    const outline = page.getByTestId("frame-outline");
+    await expect(outline).toBeVisible();
+    await expect(outline).toContainText("open the Figma file");
+    expect(await outline.evaluate((el) => getComputedStyle(el).aspectRatio)).toBe("1440 / 900");
+    for (const f of json.frames) await expect(page.getByTestId(`frame-thumb-${f.id}`)).toBeVisible();
+    await page.getByTestId("ref-k1-0").click();
+    await expect(page.getByTestId("frame-box-1")).toBeVisible();
+    await expect(page.getByTestId("open-live-file")).toHaveAttribute("href", LIVE);
   });
 
   test("each criterion shows the AI's reason; its reference chips pick the frame and draw the numbered box on it", async ({ page }) => {

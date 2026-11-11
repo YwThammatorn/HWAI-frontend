@@ -259,10 +259,13 @@ export interface Submission {
   updatedAt: string;
 }
 
-/** One frame of a design file, saved as an image (a path under /mock-data/frames/ in the demo; a stored file in a real deployment). */
-export interface SnapshotFrame { id: string; name: string; image: string }
-/** Frozen copy of a linked design: when it was taken, the live file's address (it may have changed since), and the frames. */
-export interface WorkSnapshot { takenAt: string; sourceUrl?: string; frames: SnapshotFrame[] }
+/** One top-level frame of the design: its Figma node id, name and size. `image` is a preview picture — only the demo data has one
+ *  (/mock-data/frames/); a real snapshot keeps the design as JSON, not pictures (11/11/2569), so the viewer works without it. */
+export interface SnapshotFrame { id: string; name: string; width?: number; height?: number; image?: string }
+/** Frozen copy of a linked design: when it was taken, the live file's address (it may have changed since), the frames, and — in a real
+ *  deployment — `document`, the Figma file's JSON as it was at that moment (a stored file, `/api/files/<id>`; HWAI-backend keeps it in the
+ *  bucket) with the Figma file key and version it came from. */
+export interface WorkSnapshot { takenAt: string; sourceUrl?: string; document?: string; figmaFileKey?: string; figmaVersion?: string; frames: SnapshotFrame[] }
 /** A place in the work the AI points at: a frame, optionally a box on it (all four numbers are fractions of the frame, 0..1). */
 export interface EvidenceRef { frameId: string; label?: string; box?: { x: number; y: number; w: number; h: number } }
 export interface CriterionEvidence { reason: string; refs: EvidenceRef[] }

@@ -72,8 +72,10 @@ export default function FrameViewer({ snapshot, zoom, caption, anonymous = false
                 onClick={() => pick(f.id)}
                 className={`flex w-28 flex-col overflow-hidden rounded-lg border-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] ${on ? "border-[var(--accent)] bg-[var(--accent-subtle)]" : "border-[var(--border)] bg-[var(--bg-surface)] hover:border-[var(--accent-bright)]"}`}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={f.image} alt="" className="h-14 w-full bg-[var(--bg-app)] object-cover object-top" />
+                {f.image
+                  // eslint-disable-next-line @next/next/no-img-element
+                  ? <img src={f.image} alt="" className="h-14 w-full bg-[var(--bg-app)] object-cover object-top" />
+                  : <span aria-hidden="true" className="flex h-14 w-full items-center justify-center bg-[var(--bg-app)] text-[var(--text-muted)]"><Icon name="image" size="sm" /></span>}
                 <span className="truncate px-2 py-1 text-xs font-medium text-[var(--text-primary)]" title={nameOf(f.id)}>{nameOf(f.id)}</span>
               </button>
             </li>
@@ -83,8 +85,21 @@ export default function FrameViewer({ snapshot, zoom, caption, anonymous = false
 
       <div className="min-h-0 flex-1 overflow-auto bg-[var(--bg-app)] p-6">
         <div className="relative mx-auto inline-block" style={{ width: `${zoom * 8}px`, maxWidth: "none" }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img data-testid="frame-image" src={current.image} alt={nameOf(current.id)} className="block w-full rounded-lg border border-[var(--border)] bg-[var(--bg-surface)] shadow-sm" />
+          {current.image ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img data-testid="frame-image" src={current.image} alt={nameOf(current.id)} className="block w-full rounded-lg border border-[var(--border)] bg-[var(--bg-surface)] shadow-sm" />
+          ) : (
+            // the snapshot keeps the design as JSON, not pictures (11/11/2569): the frame's outline at its own proportions, with the AI's boxes on it
+            <div
+              data-testid="frame-outline"
+              role="img"
+              aria-label={t(`เฟรม ${nameOf(current.id)} (ไม่มีภาพตัวอย่าง — เปิดไฟล์ Figma เพื่อดู)`, `Frame ${nameOf(current.id)} (no preview picture — open the Figma file to see it)`)}
+              className="flex w-full items-center justify-center rounded-lg border border-dashed border-[var(--border)] bg-[var(--bg-surface)] text-xs text-[var(--text-muted)]"
+              style={{ aspectRatio: current.width && current.height ? `${current.width} / ${current.height}` : "16 / 10" }}
+            >
+              {t("ไม่มีภาพตัวอย่าง — เปิดไฟล์ Figma เพื่อดู", "No preview picture — open the Figma file to see it")}
+            </div>
+          )}
           {!anonymous && marks.map((m) => (
             <div
               key={m.n}
