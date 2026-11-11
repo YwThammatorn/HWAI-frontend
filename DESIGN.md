@@ -25,6 +25,7 @@ HWAI is an academic tool (AI-assisted grading, course/CLO management) — not a 
   --bg-app:         #EEF2F7;
   --bg-card:        #FFFFFF;
   --bg-subtle:      #E4ECF3;
+  --bg-track:       #E4ECF3;   /* tray of a segmented control (PillTabBar) — visible on the page and on a card */
   --bg-nav:         #1A2D45;   /* same in both themes — sidebar doesn't flip */
   --border:         #C8D6E0;
   --border-subtle:  #E0E8F0;
@@ -79,6 +80,7 @@ HWAI is an academic tool (AI-assisted grading, course/CLO management) — not a 
   --bg-app:         #0D1820;
   --bg-card:        #162232;
   --bg-subtle:      #1E2E40;
+  --bg-track:       #1E2E40;
   --bg-nav:         #0A1218;
   --border:         #2A3F54;
   --border-subtle:  #1C2938;
@@ -198,6 +200,10 @@ Input radius: `9px` everywhere. Button radius: `10px` everywhere except `sm` siz
 .badge-dot  { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
 ```
 
+**Assignment stage on the teacher side (10/11/2569)** — `GradingStageChip` (`lib/gradingStage.ts` decides the stage). A teacher's card says what there is to DO, in the words of the workflow: *Accepting work* (info) → *To grade* (warn) → *Ready to announce* (accent) → *Announced* (ok); *No submissions* is neutral. **Nothing on the teacher side is red for a late deadline** — a late student is not the teacher's error, so "Overdue" / "Past due" belong to the student's own pages only. The planning pages (Assignments list and detail) carry no grading word: `SubmissionWindowChip` only says *Accepting work* or *Closed*. A course's "what is left" is a count of pieces of work (`toGradeCount`), written "5 to grade", never "2 Active".
+
+**The score card of a submission (10/11/2569)** — the three blocks on the grading detail and on Grading Review are *Counts as* (the score in force: the grader's once saved, else the AI's), *AI suggested* and *You gave*; the words live in `lib/scoreBlockLabels.ts`, so the two screens cannot drift apart again.
+
 Pill shape (`radius:99px`), always with a `background:currentColor` dot before the label — color alone never carries the meaning (WCAG: don't rely on color-only indicators). A generic teal count/tag badge (not a status) uses `--accent-subtle` background + `--accent-text-onlight` text — **never** `--accent` directly as the text color (see §3).
 
 ## 7. Cards & Lists
@@ -281,6 +287,7 @@ Settled 21/9/2569 while building the Score Book; the roster and admin Students t
 - **Rows**: cells 16px, `border-b --border-subtle`, hover `--bg-subtle`, **no bottom border on the last row** (it doubles up with the card edge). IDs and numbers are `tabular-nums`. Nothing found → one full-width "No results found" row.
 - **Wide matrices** (Score Book): pin the identifying columns left (ID, Name) and the result columns right (Total, Grade) with `sticky` and an *opaque* background (`--bg-surface` for header, `--bg-subtle` only on hover) so scrolled cells never show through; category groups get their own first header row showing the weight; the class-average footer row is pinned to the bottom. A **single-row** table (e.g. the student's own Evaluation page, which reuses this same pattern — 22/9/2569) needs none of this: rows and columns swap (rows = assignments, grouped by category header rows instead of column groups) and there's no sticky/matrix machinery at that scale.
 - **Score cells**: graded ≥ 80% `--s-ok-*`, 60–79% `--s-info-*`, < 60% `--s-err-*`; *awaiting grading* is `--s-warn-*` with a dot and the word "Pending"; *missing* (past due, nothing handed in) is `--s-err-*` with a dot and the word "Missing"; *not submitted yet* is a muted "—". Colour is never the only signal (text or shape too) and a legend sits above the table, using the exact same tokens as the cells it explains. `--s-warn-*` is reserved for "awaiting grading" so a warning colour always means "needs you".
+- **Score Book cells (9/11/2569)**: the status of a score is the **background of the cell** (`--s-ok-bg` ≥ 80%, `--s-info-bg` 60–79%, `--s-err-bg` < 60%, `--accent-subtle` pending — the primary colour, because amber next to the red of "missing" read as one family (10/11/2569) —, `--s-err-bg` missing — `SCORE_FILL_CLASSES` etc. in `lib/scoreBook.ts`), the number stays in `--text-primary`, no border (the one exception to the border rule right below: a whole-cell fill is framed by the table's own lines); the legend swatches are those same fills. The same on the student Evaluation page (one helper, `scoreCellFill()` in `lib/scoreBook.ts`, and one underline class, `PRESSABLE_SCORE_CLASSES`). A number you can press (it opens the criteria popup, or the recheck page) is **underlined** — never a chevron / dropdown arrow, which reads as a menu. The criteria popup carries an "Open / recheck" link until the grading is finished.
 - **Every tinted cell/pill gets its `--s-*-bd` border** (§6's `.badge` pattern applies here too, not just to status pills) — the pale `-bg` tints are calibrated against `--bg-card`; on a plain white/dark `--bg-surface` table they wash out (read as "kind of the same colour as the page") without the border. Real regression, caught by the user on the Score Book (21/9/2569): a `bg`-only chip and a `border-dashed` outline-only chip both blended into the surface; fixed by adding a solid border in the matching `-bd` token (e.g. `border-[var(--s-ok-bd)]`) to every one, including the legend swatches and any inline notice box built from the same tokens.
 - **Totals** say what they are out of ("15.0 / 30"): the weighted total counts only categories that already have graded work, and it is the same figure the student sees on the Evaluation page.
 
@@ -298,7 +305,7 @@ One component draws every icon: `components/Icon.tsx`. A page never contains an 
 | Stroke | **2**, always — never passed in, never overridden | 355 inline icons used five widths (1.5 / 1.8 / 2 / 2.5 / 3) so no two screens drew the same glyph the same way |
 | Size | `xs` 12 · `sm` 14 · `md` 16 (default) · `lg` 20 · `xl` 24 — a token, never a number | eight different pixel sizes were in use |
 | Colour | `currentColor`: set the text colour with a token class (`text-[var(--accent)]`) | no hex in an icon; the icon follows the theme |
-| Fill | `filled` fills the glyph with the same colour (rating star, play) | the only exception to "outline" |
+| Fill | none — **an icon is always an outline**; there is no `filled` prop (a rating star and a play button are drawn like every other glyph) | one visual language: a solid star next to outline icons in the same row of cards read as a different set (9/11/2569) |
 | Accessibility | decorative (`aria-hidden`) by default; pass `label="…"` only when the icon stands alone | the text next to an icon names it |
 
 **Which size where:** `xs` inside a small chip or badge (10–12px text) · `sm` next to 14px text, in table cells and row actions, sidebar sub-items · `md` in buttons, form fields, top-level sidebar items · `lg` in stat cards and section headers · `xl` in empty states.
@@ -313,9 +320,44 @@ One component draws every icon: `components/Icon.tsx`. A page never contains an 
 | `<IconButton>` | a button that is only an icon (edit, delete, close, show/hide, ⋮, page arrows): 36px, icon `sm`, always visible, **label required** (it is the accessible name and the tooltip) | tones `default · danger · warn · onDark`; `round` only for pagination; `dense` (27px) only inside a dense table cell such as the Score Book; `href` makes it a link |
 | `<Avatar>` | a person's initials circle | `sm` 36px · `md` 45px; tones `accent` (people in a list) · `solid` + `bg` (a person's own colour / role) · `muted` · `brand` (the signed-in user in the top bar) |
 | `<StatCard>` / `<MetricCard>` | a number with its icon. StatCard: icon left (admin, queue, results). MetricCard: icon top-right with a unit line (assignment Grading and Results). Both draw the icon in the same tile and take the same tones, so a "graded" card is the same green everywhere; every card in a row has the same icon tile, the same header height and the number on the same line | tones `ok · warn · info · accent · neutral · rating` |
+| `<MetricCard parts>` | the score card: two or three small blocks, each a number with its caption under it (Average · Highest · Lowest on the assignment Grading / Results pages; Now · AI · Yours on the grading screen). The numbers sit on the same line as the other cards' numbers | same tones |
+| `<AssignmentGradingCard>` | one assignment on the course Grading page: name (plain text — the card is NOT a link, only its buttons are), chips, three numbers (Graded · Needs review · Not graded), submitted / average, the segmented bar (`GradingProgressBar`), then the actions of its state. Never stretch a link over it: a click on the body must not skip the grading steps the buttons stand for | one column, full width (a list is scanned top to bottom) |
+| `<AttentionChips>` | "who needs a second look": one chip per non-zero signal — Needs review (AI unsure, warn), Low score (< 60% of max, err), Edited (teacher ≠ AI, info), Late (neutral). A toggle button on the assignment's Grading page (`aria-pressed`); the page also opens narrowed from `?filter=`. Numbers come from `lib/gradingInsights.ts`, the one place both pages read, so they cannot disagree | assignment Grading page |
+| `<GradingProgressBar>` | graded · needs review · not graded as one segmented bar; replaced the assignment page's progress circle (which carried an invented time estimate) so progress looks the same everywhere | course Grading card, assignment Grading page |
+| `<GradingWorkspace>` | the assignment Grading page's body (10/11/2569): the list of students / teams on the left (search, **Show** filter with counts, **Sort**; a row is a `<tr>` with the score chip + bar, status, a visible **Grade** link), and on the right the class overview (score chart, lowest-scoring criteria, Rubric tab) or `GradingStudentDetail` of the picked row. **Master–detail rule:** on a desktop screen the page itself does not scroll — the two panes scroll inside their own frames; picking a row only *shows* it (the Grade button is what opens the grading screen); the up / down arrow keys move the selection; the pick lives in the URL (`?sub=`), the filter can come from `?filter=`; nothing is hover-only. Below `lg` the panes stack | assignment Grading page |
+| `<GradingStudentDetail>` | everything about one student / team without leaving the page: Grade + Re-grade (and previous / next through the list) at the top, status / late / edited chips, the Now · AI · Saved score card, points per criterion next to the AI's mark and the class average, the submitted work as thumbnails (an image opens larger, a link opens in a new tab), the teacher's comment | right pane of `GradingWorkspace` |
+| `SubmissionViewer` strip | each submitted item is a card with a picture: the image itself, a file glyph with its extension, or the link's provider glyph (`lib/linkProvider.ts`); a link opens as a preview card (provider, address) — a real screenshot of a link needs a server, so none is faked | selected = accent border |
 | `<EmptyState icon="…">` | the empty panel; its icon is an `IconTile lg accent`. Empty states inside a card use the same tile | |
 | `<Pagination>` | page arrows + numbers (… for long lists); the only pagination | |
 | `<BrandLogo>` / `<CourseIcon>` | the HWAI mark; a course's icon (a glyph of the set) | |
+
+**Which icon means what** (9/11/2569). The glyph set is uniform; what drifted was its use (a bin on one screen and a cross on another for "delete", a red Cancel, two icons for "export"). One meaning, one icon, everywhere — `tests/design-rules.spec.ts` checks the ones a machine can see.
+
+| Meaning | Icon | Rule |
+|---|---|---|
+| Delete, or remove a record, file or row you added | `trash` | `<IconButton tone="danger">` — the only red icon button |
+| A frame of a submitted design, and the chip that points at one (§9f) | `image` | `target` is the CLO icon — do not reuse it for "a place in the work" |
+| Calibration (compare the AI with your own marks) — the sidebar item and the "Calibrate AI" buttons on the Grading page | `sliders` | one icon for it everywhere |
+| Close, cancel, dismiss, clear a chip | `x` | neutral, **never** `tone="danger"` (the Modal close, Cancel on an inline edit, "remove from comparison") |
+| Export (CSV, results, a rubric) — data leaves the app | `upload` (the arrow out of the tray) | the Windows / Microsoft Import / Export pair; picked by the user 9/11/2569 |
+| Import (CSV, Excel, a rubric) — data comes into the app; also "fill this form from …" | `download` (the arrow into the tray) | import buttons and the drop area of an import popup |
+| A template file, a file | `file-text` | the "Download Template" row — the tray arrow would repeat the Import arrow right above it |
+| A cover image · attached / submitted files | `image` · `paperclip` | words say "upload", but these are not Import / Export, so they never use the tray arrows |
+| An assignment, a piece of work | `file-text` | `document-list` is a description or a list of items (a rubric, the Description header), not an assignment |
+| Grading, to-do check | `check-square` | |
+| Done, saved, sent, OK | `check` (`check-circle` on a status card) | never the character ✓ — `<Icon name="check" size="sm" />` before the word |
+| Trend up, "used" | `trending-up` | never ↗ or ↑ |
+| A teal glyph | `text-[var(--accent)]` | never `--accent-bright` (2.79:1 as a glyph) |
+| An empty or drop area | `<IconTile icon=… size="lg" tone="accent" />` or `<EmptyState>` | never a bare `xl` `<Icon>` with `mx-auto` |
+| A symbol or emoji as an icon (✓ ✕ ↑ ↗ ▲ ▼ ★ 👋) | not used | an arrow inside a sentence (A → B) is punctuation and stays |
+
+| You wrote | Write instead |
+|---|---|
+| `<IconButton icon="x" tone="danger">` to delete | `icon="trash"` (a cross is only close / cancel, and neutral) |
+| `<Icon name="file-plus">`, or `upload` on an import button | `<Icon name="download">` (Import = arrow INTO the tray); Export = `upload`; a template = `file-text` |
+| `✓ Saved!` in a string | `<Icon name="check" size="sm" />` + the word, inside an `inline-flex items-center gap-1.5` button |
+| `<Icon … className="text-[var(--accent-bright)]">` | `text-[var(--accent)]` |
+| `<Icon name="file" size="xl" className="mx-auto mb-3 …">` in a drop area | `<div className="mb-3 flex justify-center"><IconTile icon="upload" size="lg" tone="accent" /></div>` |
 
 **A glyph that is missing:** add one entry to `ICONS` in `Icon.tsx` (24-grid outline shapes only — no stroke or fill attributes on the shapes), then use it by name. Do not paste an SVG into a page. The names are typed, so a typo fails `tsc`.
 
@@ -336,6 +378,7 @@ Every colour in a component is a token from `globals.css` (`var(--…)`). That i
 | `text-gray-400 / 300`, `placeholder-gray-400` | `text-[var(--text-muted)]`, `placeholder:text-[var(--text-muted)]` |
 | `bg-white` | `bg-[var(--bg-surface)]` |
 | `bg-gray-50 / 100` (a static fill) | `bg-[var(--bg-app)]` — never `--bg-subtle` as a static fill (§9b) |
+| the grey tray behind a segmented control (the Score matrix / Class summary switch, `PillTabBar` pill) | `bg-[var(--bg-track)]` — not `--bg-app` (it disappears on a page) and not `--bg-subtle` (hover only) |
 | `hover:bg-gray-50`, `hover:bg-white` | `hover:bg-[var(--bg-subtle)]` |
 | `border-gray-100 / 50` | `border-[var(--border-subtle)]` |
 | `border-gray-200 / 300` | `border-[var(--border)]` |
@@ -348,8 +391,53 @@ Every colour in a component is a token from `globals.css` (`var(--…)`). That i
 | teal tint | `--accent-subtle` |
 | the bright logo teal `#2DD4BF` | `--brand-bright` (logo tile, avatar fill, accent words on the dark brand panel); text on it: `--brand-ink` |
 | a 5-step good→bad scale (rubric levels, password strength) | `--level-1` … `--level-5` |
-| a filled rating star | `--rating-fill` |
 | a person's avatar hue | `--cat-1` … `--cat-8` |
+
+## 9e. Rubric — four forms, one level cell (8/11/2569)
+
+A rubric is shown in a few ways, but a **level** always looks the same. Use the shared pieces; never draw a criterion's levels in a page.
+
+| Job | Piece | Where |
+|---|---|---|
+| **Read** — a criterion with its levels | `<RubricCriterionCard>` (`<RubricLevelGrid>` inside) | assignment page, the student's classwork, the expanded row of the grading rubric panel |
+| **Pick** — choose the level that fits the work | `<RubricLevelPicker>` | grading / recheck panel, Calibration (narrow panels beside a piece of work, so the options stack) |
+| **Edit** | `RubricCriteriaEditor` | New / Edit assignment — its level cells are inputs, in the same order, colour and wording |
+| **Compact** — rubric in a popup | `<RubricTable columns=[…]>` | Grade-with-AI preview (levels, points), Score Book breakdown (weight, earned) |
+
+Rules (all of them are in `lib/rubricLevels.ts` and the pieces above):
+- **Level text** is "Level 3 · 4 pts" / "ระดับ 3 · 4 คะแนน" — `levelText()`. Never "Excellent · 4" or a bare label.
+- **What a criterion is worth**: "4 pts · 40%" while only reading or editing (`criterionWorth()`); "Earned 3 / 4" with its weight under it once there is a score (`<CriterionPoints>`). No "4 / 4" on its own, no "100% 3 / 3".
+- **Colour**: a level's only colours are its dot and its name, from `levelTone(i, total)` (the `--level-1…5` ramp). The cell is neutral (`--bg-app`); only the cell the reader should look at — your level, the picked level, the level the AI gave — takes the accent border + `--accent-subtle`. No green / blue / red tinted cards.
+- **Layout**: 4 levels sit 2 × 2 and go 4 across only when the card is wide (container query), never 3 + 1; other counts flow by width.
+- Counts per level ("3 students") are text inside the cell, not a fill.
+
+`tests/design-rules.spec.ts` fails if a page maps a criterion's `levels` into its own markup, or uses a `--level-N` class outside `lib/rubricLevels.ts`.
+
+| You wrote | Write instead |
+|---|---|
+| `c.levels.map(lv => <div>…{lv.label}…</div>)` in a page | `<RubricLevelGrid criterion={c} />` / `<RubricLevelPicker …>` |
+| `{lv.label} · {points}` | `levelText(i, n, max, t)` (inside the pieces) |
+| `{weight}% · {max} pts` for a criterion | `<CriterionPoints maxPoints weight earned? />` |
+| a table of criteria in a popup | `<RubricTable columns={["levels","points"]} />` |
+
+## 9f. The student's work as frozen frames (`FrameViewer`) and the AI's reason chips (10/11/2569)
+The Grading Review screen and Calibration show a linked design as what it was **when it was handed in**, not a live embed (a live file can change after the deadline, so a grade would rest on moving evidence).
+| Piece | Rule |
+|---|---|
+| `components/FrameViewer.tsx` | header: `lock` icon + "Snapshot at submission · date", and a ghost button "Open live file" (`external-link` icon, `title` says it may have changed) — hidden while blind; below it a strip of frame thumbnails (`aria-current` on the open one, 2px teal border + `--accent-subtle`), then the frame image at the toolbar's zoom (`zoom × 8` px wide) on `--bg-app` |
+| Frame box | the place the AI points at: 2px `--accent` border, `--accent` 10% fill, numbered round badge `--accent-solid` / `--accent-solid-text`; drawn only for the pressed chip, only on the frame it names; never shown in Calibration |
+| Reference chip | on a criterion card under "AI's reason": `h-7` outline button, `image` icon + the frame's name; pressed = `--accent` border + `--accent-subtle`; pressing it opens that frame and draws its box |
+| Blind (Calibration) | frames read "Frame 1…" (a name can carry a student's name), no live-file button, no AI text |
+| Who sees it | teacher and TA see the reasons and chips; a student never does; "Feedback to AI" stays teacher-only |
+The picture of a frame is data (a stored image), so it keeps its own colours; everything around it uses tokens. Frames without a snapshot fall back to `SubmissionViewer` (files / link card).
+
+## 9g. TA assigned work — the TA's queue and the teacher's "Assign work to TAs" page (10/11/2569)
+| Piece | Rule |
+|---|---|
+| `components/TaQueuePanel.tsx` | a TA's course home. Three `StatCard`s (Waiting to grade `warn` / `clock`, Graded `ok` / `check-circle`, Assigned work `ta` / `file-text`), then one card "My queue" — a row per assigned assignment: name (link to its Grading page), `GradingStageChip`, "N waiting", "M graded" — and one primary "Grade next" button (`arrow-right`) to the first assignment that still has work waiting. Empty: `EmptyState` ("No work assigned to you yet"). Never the teacher's dashboard |
+| My Courses card (TA) | footer shows "N waiting · M graded" in `--st-todo-text` (the same colour as the teacher's "N to grade"); "No work assigned yet" in `--text-muted` when nothing is given |
+| Assign work to TAs (teacher, `/grading-split`) | a table §9b, one row per TA: `Avatar` (`--role-ta-text`), assigned assignments as chips (`--role-ta-bg` / `-text` / `-border`), Waiting and Graded figures, an Edit / "Assign work" outline button that opens a `Modal` `md` with a Select-all row and one checkbox row per assignment (`accent-[var(--accent)]`), Cancel + Save. Empty: `EmptyState` `users` with a link to Collaborators. Sidebar item: `check-square` ("Grading, to-do check" in §9c) |
+| What a TA sees of the Score Book | only the columns of the work given to them; no Total, no "partial" chip, no class average, no Class summary tab (a total of part of the work would mislead) |
 
 ## 10. Migration — old KB patterns → new tokens
 
@@ -379,11 +467,12 @@ Unchanged from the existing stack — no new font introduced.
 
 ## 13. Before you ship UI — the checklist (every UI change, new page or small tweak)
 
-1. **Icons** from `<Icon>` only, a size token, colour from a token class. Missing glyph → add it to `Icon.tsx`.
+0. **Adding something new?** Look for the piece that already does the job and use it; a new card / tile / tone / button style / colour is written into this file first (and the token into `globals.css`, both themes). The same fact on two screens looks identical. Full routine: `.claude/rules/ui-design.md` → "When you ADD something new".
+1. **Icons** from `<Icon>` only, a size token, colour from a token class, **always an outline**, glyph chosen from "Which icon means what" (§9c) — never a ✓ ↑ ↗ • or emoji. Missing glyph → add it to `Icon.tsx`.
 2. **Colours** from tokens only (§9d). No gray / palette class, no hex. Missing colour → add a token in both themes first.
 3. **Look at both themes** (light and dark) and at the teal chrome — a screen that only works in one is not done.
 4. **Contrast**: text on a tint uses that tint's `-text` pair; teal as text is `--accent`, never `--accent-bright` (§3).
-5. **Buttons / badges / modals / tables / empty states** follow §4, §6, §9a, §9b and `EmptyState`; no hover-only actions.
+5. **Buttons / badges / modals / tables / empty states** follow §4, §6, §9a, §9b and `EmptyState`; no hover-only actions. **A rubric** is shown with the pieces of §9e (`RubricCriterionCard`, `RubricLevelPicker`, `RubricTable`) — never your own level cells.
 6. **Words**: every visible string goes through `t("ไทย", "English")` (CLAUDE.md i18n rule); wording follows the terminology notes in `docs/design-stability-audit.md`.
 7. **Run** `npx playwright test -c playwright.rules.config.ts` (the rules above, 1 second) — and the normal suite before calling it done. `tests/design-rules.spec.ts` fails the build on an inline icon, a palette class or a hex colour.
 

@@ -10,18 +10,23 @@ import { useManagedTeachers } from "@/lib/managed-teachers";
 import { useGradingCategories, GradingCategory } from "@/lib/gradingCategories";
 import { DAY_OPTIONS, SLOT_OPTIONS, parseSchedule } from "@/lib/schedule";
 import { useLanguage } from "@/context/LanguageContext";
+import { useCan } from "@/lib/useCan";
 import { CourseIcon } from "@/components/CourseIcon";
 
 
 import Icon from "@/components/Icon";
 import IconTile from "@/components/IconTile";
 import IconButton from "@/components/IconButton";
+import { toGradeCount } from "@/lib/gradingStage";
+import { useGradableAssignments } from "@/lib/useGradableAssignments";
+import TaQueuePanel from "@/components/TaQueuePanel";
 export default function CourseDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { t } = useLanguage();
+  const can = useCan();     // a TA reads the course overview; the course's text, details and grading categories are the teacher's (10/11/2569)
   const { getCourse, updateCourse } = useCourses();
   const { getStudentsByCourse } = useStudents();
-  const { getAssignmentsByCourse, getSubmissionsByAssignment } = useAssignments();
+  const { getSubmissionsByAssignment } = useAssignments();
   const { getTeachersByCourse } = useManagedTeachers();
   const { getCategoriesByCourse, addCategory, updateCategory, removeCategory } = useGradingCategories();
   const course = getCourse(id);
@@ -29,7 +34,7 @@ export default function CourseDetailPage() {
   // Withdrawn students don't count toward the class numbers (24/9/2569).
   const students = roster.filter((s) => !isWithdrawn(s));
   const withdrawn = withdrawnIds(roster);
-  const assignments = getAssignmentsByCourse(id);
+  const assignments = useGradableAssignments(id);      // a TA's overview is their own queue: only the work a teacher gave them (10/11/2569)
   const instructor = course ? getTeachersByCourse(course.id)[0] : undefined;
   const categories = course ? getCategoriesByCourse(course.id) : [];
   const totalWeight = categories.reduce((sum, c) => sum + c.weight, 0);
@@ -126,10 +131,8 @@ export default function CourseDetailPage() {
     removeCategory(cat.id);
   }
 
-  const activeAssignments = assignments.filter((a) => {
-    const subs = getSubmissionsByAssignment(a.id).filter((s) => !withdrawn.has(s.studentId));
-    return subs.length > 0 && subs.some((s) => s.status !== "graded");
-  }).length;
+  // pieces of work still waiting for a grader — says what to do, where "2 Active" counted assignments (10/11/2569)
+  const toGrade = assignments.reduce((sum, a) => sum + toGradeCount(getSubmissionsByAssignment(a.id).filter((s) => !withdrawn.has(s.studentId))), 0);
   const allGraded =
     assignments.length > 0 &&
     assignments.every((a) => {
@@ -146,39 +149,65 @@ export default function CourseDetailPage() {
     );
   }
 
+  const breadcrumb = (
+    <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)] mb-6">
+      <Link href="/teacher/courses" className="hover:text-[var(--accent)] transition-colors">{t("รายวิชาทั้งหมด", "All Courses")}</Link>
+      <span>/</span>
+      <span className="text-[var(--text-primary)] font-medium">{course.name}</span>
+    </div>
+  );
+  const bannerTitle = (
+    <div className="absolute bottom-4 left-5 flex items-center gap-3">
+      <IconTile course={course.icon} size="md" tone="onDark" />
+      <div className="min-w-0">
+        {course.code && <p className="text-white/80 text-xs font-semibold tracking-wide tabular-nums truncate">{course.code}</p>}
+        <h1 className="text-xl font-bold text-white truncate">{course.name}</h1>
+      </div>
+    </div>
+  );
+
+  // A TA's home is their queue, not the teacher's dashboard (10/11/2569, advisor R28)
+  if (can.isTa) {
+    return (
+      <main className="w-full px-8 py-8">
+        {breadcrumb}
+        <div className="relative h-36 rounded-2xl mb-6 overflow-hidden" style={{ background: course.coverColor }}>
+          <div className="absolute inset-0 bg-black/10" />
+          {bannerTitle}
+        </div>
+        <TaQueuePanel
+          courseId={id}
+          assignments={assignments}
+          subsOf={(aid) => getSubmissionsByAssignment(aid).filter((s) => !withdrawn.has(s.studentId))}
+          enrolled={students.length}
+        />
+      </main>
+    );
+  }
+
   return (
       <main className="w-full px-8 py-8">
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)] mb-6">
-          <Link href="/teacher/courses" className="hover:text-[var(--accent)] transition-colors">{t("รายวิชาทั้งหมด", "All Courses")}</Link>
-          <span>/</span>
-          <span className="text-[var(--text-primary)] font-medium">{course.name}</span>
-        </div>
+        {breadcrumb}
 
         {/* Course header banner */}
         <div className="relative h-36 rounded-2xl mb-6 overflow-hidden" style={{ background: course.coverColor }}>
           <div className="absolute inset-0 bg-black/10" />
-          <div className="absolute bottom-4 left-5 flex items-center gap-3">
-            <IconTile course={course.icon} size="md" tone="onDark" />
-            <div className="min-w-0">
-              {course.code && <p className="text-white/80 text-xs font-semibold tracking-wide tabular-nums truncate">{course.code}</p>}
-              <h1 className="text-xl font-bold text-white truncate">{course.name}</h1>
-            </div>
-          </div>
-          <Link
+          {bannerTitle}
+          {can.editAssignment && <Link
             href={`/teacher/courses/${id}/settings`}
             className="absolute bottom-4 right-4 flex items-center gap-1.5 px-3 py-1.5 bg-white/15 hover:bg-white/25 backdrop-blur-sm text-white text-xs font-medium rounded-lg transition-colors"
           >
             <Icon name="settings" size="sm" />
             {t("ตั้งค่า", "Settings")}
-          </Link>
+          </Link>}
         </div>
 
         {/* Description — its own card, separate from the banner (30/9/2569), with inline edit */}
         <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-subtle)] shadow-sm p-6 mb-6">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-base font-bold text-[var(--text-primary)]">{t("คำอธิบายรายวิชา", "Description")}</h2>
-            {!descEditing && (
+            {!descEditing && can.editAssignment && (
               <IconButton icon="edit" label={t("แก้ไข", "Edit")} onClick={openEditDesc} />
             )}
           </div>
@@ -228,7 +257,7 @@ export default function CourseDetailPage() {
             },
             {
               label: t("สถานะการตรวจ", "Grading Status"),
-              value: allGraded ? t("ตรวจครบแล้ว", "All Graded") : `${activeAssignments} ${t("กำลังดำเนินการ", "Active")}`,
+              value: allGraded ? t("ตรวจครบแล้ว", "All Graded") : `${toGrade} ${t("ชิ้นรอตรวจ", "to grade")}`,
               icon: allGraded ? ("check" as const) : ("calendar" as const),
             },
           ].map((s) => (
@@ -247,7 +276,7 @@ export default function CourseDetailPage() {
           <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-subtle)] shadow-sm p-6">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-base font-bold text-[var(--text-primary)]">{t("รายละเอียด", "Details")}</h2>
-              {!detailsEditing && (
+              {!detailsEditing && can.editAssignment && (
                 <IconButton icon="edit" label={t("แก้ไข", "Edit")} onClick={openEditDetails} />
               )}
             </div>
@@ -352,14 +381,14 @@ export default function CourseDetailPage() {
           <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-subtle)] shadow-sm p-6">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-base font-bold text-[var(--text-primary)]">{t("สัดส่วนคะแนน", "Grading Categories")}</h2>
-              <button
+              {can.editAssignment && <button
                 onClick={openAddCategory}
                 disabled={catFormOpen}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-xs font-medium transition-colors shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Icon name="plus" size="sm" />
                 {t("เพิ่มเกณฑ์คะแนน", "Add Category")}
-              </button>
+              </button>}
             </div>
 
             {categories.length === 0 && !catFormOpen ? (
@@ -416,8 +445,8 @@ export default function CourseDetailPage() {
                       <div className="px-3 text-sm text-[var(--text-primary)]">{cat.name}</div>
                       <div className="px-3 text-sm font-semibold text-[var(--accent)] tabular-nums">{cat.weight}%</div>
                       <div className="px-3 flex items-center gap-1">
-                        <IconButton icon="edit" label={t("แก้ไข", "Edit")} onClick={() => openEditCategory(cat)} disabled={catFormOpen} />
-                        <IconButton icon="trash" label={t("ลบ", "Delete")} tone="danger" onClick={() => handleDeleteCategory(cat)} disabled={catFormOpen} />
+                        {can.editAssignment && <IconButton icon="edit" label={t("แก้ไข", "Edit")} onClick={() => openEditCategory(cat)} disabled={catFormOpen} />}
+                        {can.editAssignment && <IconButton icon="trash" label={t("ลบ", "Delete")} tone="danger" onClick={() => handleDeleteCategory(cat)} disabled={catFormOpen} />}
                       </div>
                     </div>
                   );

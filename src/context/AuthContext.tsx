@@ -35,6 +35,8 @@ interface AuthContextValue {
   /** Multi-role accounts only: act as another role the account holds. `displayName`
    *  is the name to show for the student persona (looked up by the caller). */
   switchRole: (role: UserRole, displayName?: string) => void;
+  /** A student account with a TA appointment: put the TA hat on ("ta") or take it off ("student"). Same person, same email and student id. */
+  wearHat: (hat: "student" | "ta") => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -173,10 +175,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setViewAs(null);
   }
 
+  function wearHat(hat: "student" | "ta") {
+    if (!user?.studentId || (user.role !== "student" && user.role !== "ta")) return;
+    persist({ ...user, role: hat });
+    setViewAs(null);
+  }
+
   if (!loaded) return null;
 
   return (
-    <AuthContext.Provider value={{ user, viewAs, effectiveRole, setViewAs, login, logout, switchRole }}>
+    <AuthContext.Provider value={{ user, viewAs, effectiveRole, setViewAs, login, logout, switchRole, wearHat }}>
       {/* API mode: the data Providers below load once, on mount — remount them whenever a different
           account signs in (or out) so they load what this account may see. */}
       <Fragment key={API_ENABLED ? (user?.accountEmail ?? "signed-out") : "local"}>{children}</Fragment>

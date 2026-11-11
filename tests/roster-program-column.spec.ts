@@ -2,8 +2,9 @@ import { test, expect, Page } from "@playwright/test";
 
 import { BASE } from "./base";
 
-// 15/10/2569 — the teacher's Student Roster keeps every row on ONE line even when the program has a long name (CECS "วิศวกรรมคอมพิวเตอร์และความมั่นคง
-// ปลอดภัยไซเบอร์"): the Program cell is cut with "…" and shows the whole name on hover, the "Not CECS" tag never wraps, and Status / Name don't get squeezed.
+// 15/10/2569 — the teacher's Student Roster keeps every row on ONE line even when the program has a long name (CECS "วิศวกรรมคอมพิวเตอร์และความมั่นคงปลอดภัยไซเบอร์").
+// 9/11/2569 (reversed on request): the table's Program column shows the SHORT code (CE / CECS / CEI) so nothing is ever cut with "…"; the FULL name is in the page header
+// (and in the cell's tooltip). The "Not CECS" tag never wraps, and Status / Name don't get squeezed.
 
 async function seed(page: Page, lang: "th" | "en") {
   await page.setViewportSize({ width: 1280, height: 720 });
@@ -28,7 +29,7 @@ const FULL = {
 } as const;
 
 for (const lang of ["en", "th"] as const) {
-  test(`a long program name stays on one line, cut with … and complete on hover (${lang})`, async ({ page }) => {
+  test(`a long program name: the table shows the short code, the header carries the full name, rows stay on one line (${lang})`, async ({ page }) => {
     await seed(page, lang);
     const rows = page.locator("main tbody tr");
     await expect(rows).toHaveCount(3);
@@ -36,19 +37,20 @@ for (const lang of ["en", "th"] as const) {
       const h = await rows.nth(i).evaluate((el) => el.getBoundingClientRect().height);
       expect(h, `row ${i + 1}`).toBeLessThan(60);                         // was ~160px with the name wrapped over 5 lines
     }
-    const cell = rows.nth(0).locator("td").nth(5).locator("span.truncate");
-    await expect(cell).toHaveAttribute("title", FULL[lang].CECS);          // the whole name is one hover away
-    await expect(cell).toHaveText(FULL[lang].CECS);                        // …and still in the DOM for screen readers and search
-    expect(await cell.evaluate((el) => getComputedStyle(el).textOverflow)).toBe("ellipsis");
-    expect(await cell.evaluate((el) => el.scrollWidth > el.clientWidth)).toBe(true);   // it really is cut on screen
+    const cell = rows.nth(0).locator("td").nth(5).locator("span.whitespace-nowrap").first();
+    await expect(cell).toHaveText("CECS");                                  // the short code, never cut
+    await expect(cell).toHaveAttribute("title", FULL[lang].CECS);          // the whole name is still one hover away
+    expect(await cell.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);   // nothing is cut on screen
+    await expect(page.getByRole("heading", { level: 1 }).locator("xpath=following-sibling::p")).toContainText(FULL[lang].CECS);   // the full name is in the page header
   });
 }
 
-test("the 'Not CECS' tag of an out-of-program student stays whole next to the cut name, and Status does not wrap", async ({ page }) => {
+test("the 'Not CECS' tag of an out-of-program student stays whole next to the short code, and Status does not wrap", async ({ page }) => {
   await seed(page, "en");
   const cei = page.locator("main tbody tr", { hasText: "69070303" });
   await expect(cei.getByText("Not CECS")).toBeVisible();
   expect(await cei.getByText("Not CECS").evaluate((el) => el.getBoundingClientRect().height)).toBeLessThan(30);   // one line is 24px; wrapped would be 40+
-  await expect(cei.locator("td").nth(5).locator("span.truncate")).toHaveAttribute("title", FULL.en.CEI);
+  await expect(cei.locator("td").nth(5).locator("span.whitespace-nowrap").first()).toHaveText("CEI");
+  await expect(cei.locator("td").nth(5).locator("span.whitespace-nowrap").first()).toHaveAttribute("title", FULL.en.CEI);
   expect(await cei.getByText("Enrolled").evaluate((el) => el.getBoundingClientRect().height)).toBeLessThan(30);   // one line is 24px; wrapped would be 40+
 });

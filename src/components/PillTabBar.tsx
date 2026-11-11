@@ -79,7 +79,7 @@ export default function PillTabBar({ tabs, activeKey, onChange, ariaLabel, varia
 
   return (
     <div
-      className="inline-flex gap-1 p-1 rounded-xl bg-[var(--bg-app)]"
+      className="inline-flex gap-1 p-1 rounded-xl bg-[var(--bg-track)]"
       role="tablist"
       aria-label={ariaLabel}
     >

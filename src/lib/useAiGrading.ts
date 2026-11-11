@@ -26,10 +26,10 @@ export function useAiGrading() {
   /** The units that still wait for the AI: nothing has scored them yet. */
   const waitingUnits = (a: Assignment) => unitsOf(a, getSubmissionsByAssignment(a.id)).filter((u) => u.subs.some(waitingForAi));
 
-  /** The AI scores these units against `rubric` (the correction Calibration saved is inside it). What the teacher put on top of an earlier AI result is cleared. */
+  /** The AI scores these units against `rubric`. What the teacher put on top of an earlier AI result is cleared. */
   function gradeUnits(a: Assignment, units: SubmissionRow[], rubric: RubricForAi | undefined) {
     units.forEach((u) => {
-      const update = aiGradingUpdate(u.key, a.maxPoints, rubric);
+      const update = aiGradingUpdate(u.key, a.maxPoints, rubric, u.subs[0]?.snapshot);
       u.subs.forEach((s) => updateSubmission(s.id, update));
     });
   }

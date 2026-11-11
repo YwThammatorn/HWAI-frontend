@@ -52,7 +52,7 @@ async function open(page: Page, subId: string, opts: { lang?: "en" | "th"; block
   await page.waitForLoadState("networkidle");
 }
 
-const level = (p: Page, criterion: string, label: string) => p.getByRole("radiogroup", { name: `Level for ${criterion}` }).getByRole("radio", { name: new RegExp(`^${label}`) });
+const level = (p: Page, criterion: string, label: string) => p.getByRole("radiogroup", { name: `Level for ${criterion}` }).getByRole("radio", { name: new RegExp("\\b" + label + "\\b") });
 const stored = (p: Page, id: string) => p.evaluate((sid) => (JSON.parse(localStorage.getItem("hwai_submissions_v1") ?? "[]") as { id: string; status: string; instructorScore: number | null; criterionScores?: Record<string, number> }[]).find((s) => s.id === sid)!, id);
 
 /** The small window: the page opened under the name the Grade screen gives it. */

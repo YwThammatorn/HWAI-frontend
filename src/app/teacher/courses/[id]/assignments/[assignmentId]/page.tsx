@@ -6,15 +6,16 @@ import { useCourses } from "@/lib/courses";
 import { useAssignments, submissionClosesAt, gradingOpensAt, activeLatePolicy, describeLatePolicy } from "@/lib/assignments";
 import { useGradingCategories } from "@/lib/gradingCategories";
 import { useLanguage } from "@/context/LanguageContext";
+import { useCan } from "@/lib/useCan";
 import { dateLocale } from "@/lib/dateLocale";
 import AssignmentTypeBadge from "@/components/AssignmentTypeBadge";
 import { AttachmentList } from "@/components/AssignmentAttachments";
-import CloChips from "@/components/CloChips";
-import CriterionName from "@/components/CriterionName";
+import RubricCriterionCard from "@/components/RubricCriterionCard";
 import { useCLOs } from "@/lib/clo";
-
+
 import Icon from "@/components/Icon";
 import IconButton from "@/components/IconButton";
+import { SubmissionWindowChip } from "@/components/GradingStageChip";
 function fmtDate(dateStr: string, lang: string) {
   return new Date(dateStr + "T00:00:00").toLocaleDateString(dateLocale(lang), {
     month: "short", day: "numeric", year: "numeric",
@@ -26,6 +27,7 @@ function fmtDate(dateStr: string, lang: string) {
 export default function ViewAssignmentPage() {
   const { id, assignmentId } = useParams<{ id: string; assignmentId: string }>();
   const { t, lang } = useLanguage();
+  const can = useCan();
   const { getCourse } = useCourses();
   const { getAssignment, getSubmissionsByAssignment, getRubricsByAssignment } = useAssignments();
   const { getCategoriesByCourse } = useGradingCategories();
@@ -43,8 +45,6 @@ export default function ViewAssignmentPage() {
     );
   }
 
-  const today = new Date().toISOString().split("T")[0];
-  const isPastDue = !!assignment.dueDate && assignment.dueDate < today;
   const category = assignment.categoryId
     ? getCategoriesByCourse(id).find((c) => c.id === assignment.categoryId)
     : undefined;
@@ -59,7 +59,7 @@ export default function ViewAssignmentPage() {
       ? {
           label: t("กำหนดส่ง", "Due date"),
           value: (
-            <span className={isPastDue ? "text-[var(--s-err-text)]" : undefined}>
+            <span>
               {fmtDate(assignment.dueDate, lang)} {t("เวลา 23:59 น.", "at 11:59 PM")}
             </span>
           ),
@@ -134,11 +134,12 @@ export default function ViewAssignmentPage() {
         <div className="min-w-0">
           <h1 className="text-2xl font-bold text-[var(--text-primary)]">{assignment.name}</h1>
           <div className="flex items-center gap-2 mt-1.5 text-sm flex-wrap">
-            <span className={isPastDue ? "text-[var(--s-err-text)]" : "text-[var(--text-secondary)]"}>
+            <span className="text-[var(--text-secondary)]">
               {assignment.dueDate
-                ? <>{isPastDue ? `${t("เลยกำหนด", "Past due")} — ` : ""}{t("กำหนดส่ง", "Due")} {fmtDate(assignment.dueDate, lang)}</>
+                ? <>{t("กำหนดส่ง", "Due")} {fmtDate(assignment.dueDate, lang)}</>
                 : t("สอบ · ไม่มีกำหนดส่ง", "Exam · no due date")}
             </span>
+            <SubmissionWindowChip assignment={assignment} />
             {category && (
               <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-[var(--accent-subtle)] text-[var(--accent)] text-xs font-medium tabular-nums">
                 {category.name} ({category.weight}%)
@@ -148,13 +149,13 @@ export default function ViewAssignmentPage() {
           </div>
         </div>
         <div className="flex items-center gap-3 shrink-0">
-          <Link
+          {can.editAssignment && <Link
             href={editHref}
             className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)] active:scale-[.97] transition-colors"
           >
             <Icon name="edit" />
             {t("แก้ไขงาน", "Edit Assignment")}
-          </Link>
+          </Link>}
           <Link
             href={`/teacher/courses/${id}/assignments/${assignmentId}/grading`}
             className="flex items-center gap-2 px-4 py-2 bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-semibold rounded-xl active:scale-[.97] transition-colors"
@@ -179,7 +180,7 @@ export default function ViewAssignmentPage() {
           <section className="bg-[var(--bg-surface)] rounded-xl border border-[var(--border-subtle)] p-5" aria-labelledby="brief-heading">
             <div className="flex items-start justify-between gap-4 mb-2">
               <h2 id="brief-heading" className="text-base font-bold text-[var(--text-primary)]">{t("คำอธิบายงาน", "Assignment brief")}</h2>
-              <Link href={editHref} className="text-[var(--accent)] text-sm hover:underline shrink-0">{t("แก้ไข", "Edit")}</Link>
+              {can.editAssignment && <Link href={editHref} className="text-[var(--accent)] text-sm hover:underline shrink-0">{t("แก้ไข", "Edit")}</Link>}
             </div>
             {assignment.description ? (
               <p className="text-sm text-[var(--text-primary)] leading-relaxed whitespace-pre-line">{assignment.description}</p>
@@ -199,7 +200,7 @@ export default function ViewAssignmentPage() {
                   </p>
                 )}
               </div>
-              {!assignment.isExam && (
+              {!assignment.isExam && can.editRubric && (
                 <Link href={editHref} className="text-sm font-medium text-[var(--accent)] hover:underline shrink-0">
                   {rubric ? t("แก้ไข Rubric", "Edit Rubric") : t("เพิ่ม Rubric", "Add Rubric")}
                 </Link>
@@ -218,32 +219,7 @@ export default function ViewAssignmentPage() {
                     a compact weight/level-count table. */}
                 <div className="flex flex-col gap-3">
                   {rubric.criteria.map((c) => (
-                    <div key={c.id} className="rounded-xl border border-[var(--border-subtle)] p-3">
-                      <div className="flex items-start justify-between gap-3 mb-1">
-                        <div className="min-w-0">
-                          <CriterionName name={c.name} />
-                          <CloChips cloIds={c.cloIds} clos={getCLOsByCourse(id)} />
-                        </div>
-                        <span className="shrink-0 text-xs font-semibold text-[var(--accent)] tabular-nums">
-                          {c.weight}% · {c.maxPoints} {t("คะแนน", "pts")}
-                        </span>
-                      </div>
-                      {c.description && (
-                        <p className="text-xs text-[var(--text-muted)] mb-2">{c.description}</p>
-                      )}
-                      {c.levels.length > 0 && (
-                        <div className="grid gap-2 mt-2 [grid-template-columns:repeat(auto-fit,minmax(140px,1fr))]">
-                          {c.levels.map((lvl, i) => (
-                            <div key={i} className="rounded-lg bg-[var(--bg-app)] p-2">
-                              <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">{lvl.label}</p>
-                              {lvl.description && (
-                                <p className="text-[11px] text-[var(--text-secondary)] mt-0.5 leading-snug">{lvl.description}</p>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+                    <RubricCriterionCard key={c.id} criterion={c} clos={getCLOsByCourse(id)} />
                   ))}
                 </div>
                 {/* Teacher-only: the weight-total sanity check students don't need to see. */}

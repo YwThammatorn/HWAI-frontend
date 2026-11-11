@@ -4,13 +4,11 @@ import { createContext, useContext } from "react";
 import type { Assignment, Rubric, RubricCriterion, Submission } from "./assignments";
 import { achievedLevelIndex } from "./assignments";
 import { mockAiGradeCriteria } from "./aiGrading";
-import { criterionKey } from "./rubricHistory";
 import { groupSubmissionsByTeam } from "./groupSubmissions";
 import type { StudentGroup } from "./studentGroups";
 
 // Calibration (12/10/2569): the teacher scores a few sample submissions by hand, blind to the AI; the same work is then put through the
 // AI and the two are compared criterion by criterion. Levels are positions on the criterion's scale, 0 = best.
-// It no longer tunes the AI (8/11/2569: no per-criterion offsets, no "Use these values") — the comparison points at the rubric instead.
 
 export interface CalibrationRun {
   id: string;
@@ -50,26 +48,6 @@ export function workUnitsOf(a: Assignment, submissions: Submission[], groups: St
   const subs = submissions.filter((s) => s.assignmentId === a.id && !withdrawn.has(s.studentId));
   if (a.submissionType === "group") return groupSubmissionsByTeam(subs, groups, teamLabel).map((r) => ({ key: r.key, name: r.teamName ?? r.subs[0].studentName, subs: r.subs }));
   return subs.map((s) => ({ key: s.id, name: s.studentName, subs: [s] }));
-}
-
-/** Rubrics that descend from the same one (`sourceRubricId` links, followed both ways) — the assignments that share a rubric. Includes `rubric` itself. */
-export function rubricLineage(rubric: Pick<Rubric, "id">, rubrics: Pick<Rubric, "id" | "sourceRubricId">[]): Set<string> {
-  const near = new Map<string, Set<string>>();
-  const link = (a: string, b: string) => { (near.get(a) ?? near.set(a, new Set()).get(a)!).add(b); (near.get(b) ?? near.set(b, new Set()).get(b)!).add(a); };
-  rubrics.forEach((r) => { if (r.sourceRubricId) link(r.id, r.sourceRubricId); });
-  const seen = new Set([rubric.id]);
-  const todo = [rubric.id];
-  while (todo.length) for (const n of near.get(todo.pop()!) ?? []) if (!seen.has(n)) { seen.add(n); todo.push(n); }
-  return seen;
-}
-
-/** For rubrics with no recorded link (copied before the link existed): the same number of levels and at least 80 % of the criteria named alike. */
-export function rubricsLookAlike(a: Pick<Rubric, "criteria">, b: Pick<Rubric, "criteria">): { same: number; of: number } | null {
-  if (a.criteria.length === 0 || b.criteria.length === 0 || a.criteria[0].levels.length !== b.criteria[0].levels.length) return null;
-  const keys = new Set(a.criteria.map((c) => criterionKey(c.name)));
-  const same = b.criteria.filter((c) => keys.has(criterionKey(c.name))).length;
-  const of = Math.max(a.criteria.length, b.criteria.length);
-  return same / of >= 0.8 ? { same, of } : null;
 }
 
 /** What the AI actually gave one unit (14/10/2569): the levels it put on each criterion and the total it gave. Calibration compares the
@@ -125,12 +103,27 @@ export interface CriterionComparison {
   bias: number;
   /** mean absolute difference in levels */
   meanAbs: number;
-  /** share of samples where both chose the same level, 0..1 */
+  /** what is left of the difference once the steady lean is taken out (shifted by the nearest whole level): a steady
+   *  "the AI is one level too generous" leaves 0; scattered disagreement stays — only clearer level wording helps that */
+  residual: number;
+  /** share of samples where both chose the same level, 0..1 — the measure the verdict is built on (10/11/2569) */
   agreement: number;
+  /** how many samples that is, and the share where the two are at most ONE level apart */
+  exact: number;
+  within1: number;
   teacherMean: number;
   aiMean: number;
-  verdict: "lenient" | "strict" | "aligned" | "inconsistent";
+  /** from `agreement` alone (see ALIGNED_AT / MOSTLY_AT): the mean difference used to say "aligned" at 40 % exact agreement */
+  verdict: "aligned" | "mostly" | "off";
+  /** which way the AI leans, kept apart from the verdict: + = generous, − = strict; null when the mean difference is under half a level */
+  lean: "lenient" | "strict" | null;
 }
+
+/** Exact agreement at or above this is "aligned"; at or above MOSTLY_AT "mostly aligned"; below it the level wording is not doing its job yet. */
+export const ALIGNED_AT = 0.8;
+export const MOSTLY_AT = 0.6;
+/** Fewer pairs than this and a kappa (or any share) is a trend, not a measurement — the screen says so. */
+export const MIN_PAIRS_FOR_A_MEASURE = 20;
 
 /** Teacher vs AI on every criterion of the run. Samples missing a teacher level for a criterion are left out of that criterion. */
 export function compare(run: CalibrationRun, units: WorkUnit[], rubric: Pick<Rubric, "criteria">): CriterionComparison[] {
@@ -147,13 +140,63 @@ export function compare(run: CalibrationRun, units: WorkUnit[], rubric: Pick<Rub
     const n = diffs.length;
     const mean = (xs: number[]) => (xs.length ? xs.reduce((x, y) => x + y, 0) / xs.length : 0);
     const bias = mean(diffs), meanAbs = mean(diffs.map(Math.abs));
+    const shift = Math.round(bias);
+    const residual = mean(diffs.map((d) => Math.abs(d - shift)));
     return {
-      criterionId: c.id, n, bias, meanAbs,
+      criterionId: c.id, n, bias, meanAbs, residual,
       agreement: n ? diffs.filter((d) => d === 0).length / n : 0,
+      exact: diffs.filter((d) => d === 0).length,
+      within1: n ? diffs.filter((d) => Math.abs(d) <= 1).length / n : 0,
       teacherMean: mean(t), aiMean: mean(a),
-      verdict: bias >= 0.5 ? "lenient" : bias <= -0.5 ? "strict" : meanAbs >= 1 ? "inconsistent" : "aligned",
+      verdict: n === 0 ? "off" : diffs.filter((d) => d === 0).length / n >= ALIGNED_AT ? "aligned" : diffs.filter((d) => d === 0).length / n >= MOSTLY_AT ? "mostly" : "off",
+      lean: bias >= 0.5 ? "lenient" : bias <= -0.5 ? "strict" : null,
     };
   });
+}
+
+export interface OverallAgreement {
+  /** teacher/AI pairs over every criterion of every sample */
+  pairs: number;
+  exact: number;
+  within1: number;
+  /** quadratic-weighted Cohen's kappa over all the pairs (a one-level miss costs little, a three-level miss a lot); null when it is undefined (everything on one level) */
+  kappa: number | null;
+  /** Landis & Koch's bands */
+  kappaBand: "poor" | "slight" | "fair" | "moderate" | "substantial" | "almost-perfect" | null;
+  /** under MIN_PAIRS_FOR_A_MEASURE: read it as a trend */
+  fewPairs: boolean;
+}
+
+export function kappaBandOf(k: number): NonNullable<OverallAgreement["kappaBand"]> {
+  return k < 0 ? "poor" : k <= 0.2 ? "slight" : k <= 0.4 ? "fair" : k <= 0.6 ? "moderate" : k <= 0.8 ? "substantial" : "almost-perfect";
+}
+
+/** Pooled agreement of one run: exact, within one level, and weighted kappa (levels are ordered, so the weights are quadratic). */
+export function overallAgreement(run: CalibrationRun, units: WorkUnit[], rubric: Pick<Rubric, "criteria">): OverallAgreement {
+  const pairs: [number, number][] = [];
+  for (const c of rubric.criteria) {
+    for (const key of run.sampleIds) {
+      const unit = units.find((u) => u.key === key);
+      const tl = run.teacherLevels[key]?.[c.id];
+      if (!unit || tl === undefined) continue;
+      pairs.push([tl, aiLevelsFor(unit, rubric).levels[c.id]]);
+    }
+  }
+  const n = pairs.length;
+  const K = Math.max(2, ...rubric.criteria.map((c) => c.levels.length));
+  const exact = pairs.filter(([a, b]) => a === b).length;
+  const within1 = pairs.filter(([a, b]) => Math.abs(a - b) <= 1).length;
+  let kappa: number | null = null;
+  if (n > 0) {
+    const w = (i: number, j: number) => ((i - j) / (K - 1)) ** 2;           // disagreement weight
+    const rowT = new Array(K).fill(0), rowA = new Array(K).fill(0);
+    for (const [a, b] of pairs) { rowT[Math.min(a, K - 1)]++; rowA[Math.min(b, K - 1)]++; }
+    const observed = pairs.reduce((sum, [a, b]) => sum + w(Math.min(a, K - 1), Math.min(b, K - 1)), 0) / n;
+    let expected = 0;
+    for (let i = 0; i < K; i++) for (let j = 0; j < K; j++) expected += w(i, j) * (rowT[i] / n) * (rowA[j] / n);
+    kappa = expected === 0 ? null : 1 - observed / expected;                 // expected 0 = both always on the same single level: undefined
+  }
+  return { pairs: n, exact, within1, kappa, kappaBand: kappa === null ? null : kappaBandOf(kappa), fewPairs: n < MIN_PAIRS_FOR_A_MEASURE };
 }
 
 export type RubricSuggestionKind = "ceiling" | "floor" | "disagree" | "heavy-flat";
@@ -164,8 +207,7 @@ export interface RubricSuggestion { kind: RubricSuggestionKind; criterionId: str
  * from the teacher (criterionScores) or the AI (aiCriterionScores).
  *   ceiling    — at least 80 % of the work sits on the top level: the criterion does not separate anyone (value = share)
  *   floor      — nobody reaches the top level: it may be out of reach or worded too tightly (value = number of work items)
- *   disagree   — teacher and AI differ by a level or more on average (8/11/2569: there is no strictness setting to absorb a steady lean any more,
- *                so any such gap is the wording's to fix): the level wording is not clear enough (value = the mean difference)
+ *   disagree   — teacher and AI still differ by a level or more on average even once their steady lean is taken out: the level wording is not clear enough (value = the remaining mean difference)
  *   heavy-flat — worth half of the points or more yet almost everyone is on the same level (value = share on the commonest level)
  */
 export function suggestRubricChanges(rubric: Pick<Rubric, "criteria">, graded: Submission[], cmp: CriterionComparison[]): RubricSuggestion[] {
@@ -187,7 +229,7 @@ export function suggestRubricChanges(rubric: Pick<Rubric, "criteria">, graded: S
       if (total > 0 && c.maxPoints / total >= 0.5 && common >= 0.8 && top < 0.8) out.push({ kind: "heavy-flat", criterionId: c.id, value: common });
     }
     const k = cmp.find((x) => x.criterionId === c.id);
-    if (k && k.n >= 3 && k.meanAbs >= 1) out.push({ kind: "disagree", criterionId: c.id, value: k.meanAbs });
+    if (k && k.n >= 3 && k.residual >= 1) out.push({ kind: "disagree", criterionId: c.id, value: k.residual });
   }
   return out;
 }

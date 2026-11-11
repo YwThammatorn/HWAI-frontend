@@ -11,13 +11,12 @@ import { useAssignments, studentVisibleSubmission, type Assignment } from "@/lib
 import { useGradingCategories, computeCategoryGradeRows, computeTotalSoFar, scoreForAssignment, type CategoryGradeRow } from "@/lib/gradingCategories";
 import { computeExamStats } from "@/lib/examStats";
 import ExamStatsCard from "@/components/ExamStatsCard";
-import { buildScoreBook, toneForPct, SCORE_TONE_CLASSES, PENDING_CHIP_CLASSES, MISSING_CHIP_CLASSES, type ScoreCell } from "@/lib/scoreBook";
+import { buildScoreBook, scoreCellFill, PRESSABLE_SCORE_CLASSES, SCORE_FILL_CLASSES, PENDING_FILL_CLASSES, MISSING_FILL_CLASSES, type ScoreCell } from "@/lib/scoreBook";
 import EmptyState from "@/components/EmptyState";
 import StatCard from "@/components/StatCard";
 import RubricBreakdownModal from "@/components/RubricBreakdownModal";
 
 import Icon from "@/components/Icon";
-import IconButton from "@/components/IconButton";
 // Adapted from the teacher Score Book (src/app/teacher/courses/[id]/results/page.tsx) — same cell
 // states/tones/legend/rubric-breakdown, transposed to a single row (rows = assignments instead of
 // columns, since there's only one student here). See DESIGN.md §9b. `computeCategoryGradeRows` /
@@ -26,7 +25,9 @@ import IconButton from "@/components/IconButton";
 // cross-checks against); `buildScoreBook` is only used here for its per-assignment cell states
 // (graded/pending/missing/none) and category grouping, called with a single-element `students` array.
 
-const chip = "inline-flex items-center justify-center gap-1 min-w-[3.5rem] h-8 px-2 rounded-lg text-sm font-semibold tabular-nums whitespace-nowrap";
+// 9/11/2569, the same as the teacher Score Book: the status is the colour of the CELL (scoreCellFill), the number is in the primary text colour,
+// and a number that opens the criteria is underlined (no chevron).
+const chip = "inline-flex items-center justify-center gap-1.5 text-sm font-semibold tabular-nums whitespace-nowrap text-[var(--text-primary)]";
 
 export default function StudentEvaluationPage() {
   const { secId } = useParams<{ secId: string }>();
@@ -88,27 +89,30 @@ export default function StudentEvaluationPage() {
     const rubric = rubricsByAssignment.get(assignment.id);
     const hasRubric = !!rubric && rubric.criteria.length > 0;
     switch (cell.kind) {
-      case "graded":
-        return (
-          <div className="inline-flex items-center gap-1">
-            <span className={`${chip} ${SCORE_TONE_CLASSES[toneForPct(cell.pct)]}`}>
-              {Number.isInteger(cell.score) ? cell.score : cell.score.toFixed(1)}/{cell.max}
-            </span>
-            {hasRubric && (
-              <IconButton icon="chevron-down" label={t(`ดูคะแนนรายเกณฑ์ — ${assignment.name}`, `See the rubric breakdown for ${assignment.name}`)} onClick={() => setBreakdown(assignment)} />
-            )}
-          </div>
+      case "graded": {
+        const shown = `${Number.isInteger(cell.score) ? cell.score : cell.score.toFixed(1)}/${cell.max}`;
+        return hasRubric ? (
+          <button
+            type="button"
+            onClick={() => setBreakdown(assignment)}
+            aria-label={t(`ดูคะแนนรายเกณฑ์ — ${assignment.name}`, `See the rubric breakdown for ${assignment.name}`)}
+            title={t("ดูคะแนนรายเกณฑ์", "See the criteria")}
+            className={`${chip} ${PRESSABLE_SCORE_CLASSES}`}
+          >{shown}</button>
+        ) : (
+          <span className={chip}>{shown}</span>
         );
+      }
       case "pending":
         return (
-          <span className={`${chip} ${PENDING_CHIP_CLASSES}`}>
+          <span className={chip}>
             <span className="w-1.5 h-1.5 rounded-full bg-current" aria-hidden="true" />
             {t("รอตรวจ", "Pending")}
           </span>
         );
       case "missing":
         return (
-          <span className={`${chip} ${MISSING_CHIP_CLASSES} font-medium`}>
+          <span className={`${chip} font-medium`}>
             <span className="w-1.5 h-1.5 rounded-full bg-current" aria-hidden="true" />
             {t("ไม่ส่ง", "Missing")}
           </span>
@@ -144,23 +148,11 @@ export default function StudentEvaluationPage() {
             </p>
           )}
 
-          {/* Summary */}
-          <div className="grid grid-cols-2 gap-4 mb-4">
-            <StatCard
-              label={t("ตรวจแล้ว", "Graded")} value={gradedPct} suffix="%"
-              tone="ok" icon="check-circle"
-            />
-            <StatCard
-              label={t("รอตรวจ", "Awaiting grading")} value={awaitingCount}
-              tone="warn" icon="hourglass"
-            />
-          </div>
-
           {categories.length > 0 && (
             <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-5 mb-5 flex items-center justify-between gap-4">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)] mb-1">
-                  {t("คะแนนรวมเท่าที่ตรวจแล้ว", "Total so far")}
+                  {t("คะแนนรวมถ่วงน้ำหนักเท่าที่ตรวจแล้ว", "Weighted score so far")}
                 </p>
                 <p className="text-2xl font-bold text-[var(--text-primary)] tabular-nums">
                   {gradedCategoryRows.length > 0 ? `${totalSoFar.toFixed(1)}%` : "—"}
@@ -177,13 +169,25 @@ export default function StudentEvaluationPage() {
             </div>
           )}
 
+          {/* Summary */}
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <StatCard
+              label={t("งานที่ตรวจแล้ว", "Assignments graded")} value={gradedPct} suffix="%"
+              tone="ok" icon="check-circle"
+            />
+            <StatCard
+              label={t("รอตรวจ", "Awaiting grading")} value={awaitingCount}
+              tone="warn" icon="hourglass"
+            />
+          </div>
+
           {/* Legend — same tokens as the cells they explain (DESIGN.md §6/§9b). */}
           <ul className="flex items-center gap-3 text-xs text-[var(--text-secondary)] mb-3 flex-wrap" aria-label={t("คำอธิบายสี", "Legend")}>
-            <li className="inline-flex items-center gap-1.5"><span className={`w-4 h-4 rounded ${SCORE_TONE_CLASSES.ok}`} aria-hidden="true" />≥ 80%</li>
-            <li className="inline-flex items-center gap-1.5"><span className={`w-4 h-4 rounded ${SCORE_TONE_CLASSES.info}`} aria-hidden="true" />60–79%</li>
-            <li className="inline-flex items-center gap-1.5"><span className={`w-4 h-4 rounded ${SCORE_TONE_CLASSES.err}`} aria-hidden="true" />&lt; 60%</li>
-            <li className="inline-flex items-center gap-1.5"><span className={`w-4 h-4 rounded ${PENDING_CHIP_CLASSES}`} aria-hidden="true" />{t("รอตรวจ", "Pending")}</li>
-            <li className="inline-flex items-center gap-1.5"><span className={`w-4 h-4 rounded ${MISSING_CHIP_CLASSES}`} aria-hidden="true" />{t("ไม่ส่ง", "Missing")}</li>
+            <li className="inline-flex items-center gap-1.5"><span className={`w-4 h-4 rounded border border-[var(--border-subtle)] ${SCORE_FILL_CLASSES.ok}`} aria-hidden="true" />≥ 80%</li>
+            <li className="inline-flex items-center gap-1.5"><span className={`w-4 h-4 rounded border border-[var(--border-subtle)] ${SCORE_FILL_CLASSES.info}`} aria-hidden="true" />60–79%</li>
+            <li className="inline-flex items-center gap-1.5"><span className={`w-4 h-4 rounded border border-[var(--border-subtle)] ${SCORE_FILL_CLASSES.err}`} aria-hidden="true" />&lt; 60%</li>
+            <li className="inline-flex items-center gap-1.5"><span className={`w-4 h-4 rounded border border-[var(--border-subtle)] ${PENDING_FILL_CLASSES}`} aria-hidden="true" />{t("รอตรวจ", "Pending")}</li>
+            <li className="inline-flex items-center gap-1.5"><span className={`w-4 h-4 rounded border border-[var(--border-subtle)] ${MISSING_FILL_CLASSES}`} aria-hidden="true" />{t("ไม่ส่ง", "Missing")}</li>
           </ul>
 
           {/* Table — one row per assignment, grouped by category (DESIGN.md §9b, scaled down: no
@@ -195,7 +199,7 @@ export default function StudentEvaluationPage() {
                   <th scope="col" className="px-4 py-2 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider border-b border-[var(--border-subtle)]">
                     {t("ชิ้นงาน", "Assignment")}
                   </th>
-                  <th scope="col" className="px-4 py-2 text-right text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider border-b border-[var(--border-subtle)]">
+                  <th scope="col" className="w-44 px-4 py-2 text-center text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider border-b border-l border-[var(--border-subtle)]">
                     {t("คะแนน", "Score")}
                   </th>
                 </tr>
@@ -249,7 +253,7 @@ export default function StudentEvaluationPage() {
                                 : t("สอบ", "Exam")}
                             </span>
                           </td>
-                          <td className={`px-4 py-2.5 text-right ${isLastRow ? "" : "border-b border-[var(--border-subtle)]"}`}>
+                          <td className={`w-44 px-4 py-2.5 text-center border-l border-[var(--border-subtle)] ${scoreCellFill(myRow.cells[a.id]) ?? ""} ${isLastRow ? "" : "border-b"}`}>
                             {renderCell(myRow.cells[a.id], a)}
                           </td>
                         </tr>

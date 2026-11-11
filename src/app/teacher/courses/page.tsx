@@ -5,9 +5,8 @@ import Link from "next/link";
 import { useCourses } from "@/lib/courses";
 import { useStudents, isWithdrawn, withdrawnIds } from "@/lib/students";
 import { useAssignments } from "@/lib/assignments";
-import { useManagedTeachers } from "@/lib/managed-teachers";
-import { useSectionRoles } from "@/lib/section-roles";
-import { useCurrentAccountId } from "@/lib/current-account";
+import { useMyCourseIds } from "@/lib/useMyCourseIds";
+import { useAuth } from "@/context/AuthContext";
 import type { Course } from "@/lib/courses";
 import { useLanguage } from "@/context/LanguageContext";
 import SearchInput from "@/components/SearchInput";
@@ -16,26 +15,25 @@ import CourseBanner from "@/components/CourseBanner";
 
 
 import Icon from "@/components/Icon";
+import { toGradeCount } from "@/lib/gradingStage";
+import { useGradableAssignmentsOf } from "@/lib/useGradableAssignments";
+import { queueFigures } from "@/lib/taWork";
 export default function CoursesPage() {
   const { t } = useLanguage();
   const { courses: allCourses, updateCourse } = useCourses();
   const { getStudentsByCourse } = useStudents();
-  const { getAssignmentsByCourse, getSubmissionsByAssignment } = useAssignments();
-  const { teachers } = useManagedTeachers();
-  const { getRolesByAccount } = useSectionRoles();
-  const currentAccountId = useCurrentAccountId();
+  const { getSubmissionsByAssignment } = useAssignments();
+  const gradableOf = useGradableAssignmentsOf();   // a TA's cards count only the work given to them (10/11/2569)
+  const { effectiveRole } = useAuth();
   const [tab, setTab] = useState<"active" | "archived">("active");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 6;
 
-  // Only courses this teacher/TA is actually assigned to — either via the
-  // admin-managed courseIds list or a per-section SectionRole (collaborators).
-  // No matching ManagedTeacher for the session (e.g. an unlinked dev-bypass
-  // account) → empty list, not "show everything".
-  const myTeacher = currentAccountId ? teachers.find((tc) => tc.id === currentAccountId) : undefined;
-  const roleCourseIds = currentAccountId ? getRolesByAccount(currentAccountId).map((r) => r.courseId) : [];
-  const myCourseIds = new Set([...(myTeacher?.courseIds ?? []), ...roleCourseIds]);
+  // Only courses this teacher is assigned to (the admin-managed list or a per-section role); for a TA, only the courses they assist (useMyCourseIds).
+  // No matching account (e.g. an unlinked dev-bypass session) → empty list, not "show everything".
+  const myCourseIds = useMyCourseIds();
+  const isTa = effectiveRole === "ta";
   const courses = allCourses.filter((c) => myCourseIds.has(c.id));
 
   const active = courses.filter((c) => c.status !== "archived");
@@ -58,8 +56,8 @@ export default function CoursesPage() {
   const paginated = visible.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const courseStats = useMemo(() => {
-    return courses.reduce<Record<string, { studentCount: number; allGraded: boolean; activeAssignments: number }>>((acc, c) => {
-      const assignments = getAssignmentsByCourse(c.id);
+    return courses.reduce<Record<string, { studentCount: number; allGraded: boolean; toGrade: number; graded: number; assigned: number }>>((acc, c) => {
+      const assignments = gradableOf(c.id);
       // Withdrawn students are out of the card's numbers (24/9/2569).
       const roster = getStudentsByCourse(c.id);
       const withdrawn = withdrawnIds(roster);
@@ -70,13 +68,14 @@ export default function CoursesPage() {
           const subs = liveSubs(a.id);
           return subs.length > 0 && subs.every((s) => s.status === "graded");
         }),
-        activeAssignments: assignments.filter((a) =>
-          liveSubs(a.id).some((s) => s.status !== "graded")
-        ).length,
+        // what is left to do, in pieces of work (10/11/2569: "2 Active" counted assignments and did not say what to do)
+        toGrade: assignments.reduce((sum, a) => sum + toGradeCount(liveSubs(a.id)), 0),
+        graded: queueFigures(assignments, liveSubs).graded,
+        assigned: assignments.length,
       };
       return acc;
     }, {});
-  }, [courses, getStudentsByCourse, getAssignmentsByCourse, getSubmissionsByAssignment]);
+  }, [courses, getStudentsByCourse, gradableOf, getSubmissionsByAssignment]);
 
   return (
       <main className="w-full px-8 py-8">
@@ -84,9 +83,15 @@ export default function CoursesPage() {
         <div className="flex items-end justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold text-[var(--text-primary)]">{t("รายวิชาของฉัน", "My Courses")}</h1>
-            <p className="mt-1 text-sm text-[var(--text-secondary)]">
+            {isTa && (
+              <p data-testid="ta-note" className="mt-1 flex items-center gap-2 text-sm text-[var(--text-secondary)]">
+                <span className="inline-flex h-6 items-center rounded-md border border-[var(--role-ta-border)] bg-[var(--role-ta-bg)] px-2 text-xs font-semibold text-[var(--role-ta-text)]">TA</span>
+                {t("วิชาที่คุณเป็นผู้ช่วยสอน — ตรวจงานและดูคะแนนได้", "Courses you assist as a TA — you can grade work and see the scores")}
+              </p>
+            )}
+            {!isTa && <p className="mt-1 text-sm text-[var(--text-secondary)]">
               {t("จัดการรายวิชา งาน และความคืบหน้าของนักศึกษาจากที่นี่", "Manage your classes, assignments, and student progress from here.")}
-            </p>
+            </p>}
           </div>
 
           {active.length > 0 && (
@@ -138,14 +143,17 @@ export default function CoursesPage() {
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {paginated.map((course) => {
-                const stats = courseStats[course.id] ?? { studentCount: 0, allGraded: false, activeAssignments: 0 };
+                const stats = courseStats[course.id] ?? { studentCount: 0, allGraded: false, toGrade: 0, graded: 0, assigned: 0 };
                 return (
                   <CourseCard
                     key={course.id}
                     course={course}
                     studentCount={stats.studentCount}
                     allGraded={stats.allGraded}
-                    activeAssignments={stats.activeAssignments}
+                    toGrade={stats.toGrade}
+                    graded={stats.graded}
+                    assigned={stats.assigned}
+                    isTa={isTa}
                     isArchived={tab === "archived"}
                     onRestore={() => updateCourse(course.id, { status: "active" })}
                   />
@@ -187,11 +195,15 @@ function EmptyState() {
   );
 }
 
-function CourseCard({ course, studentCount, allGraded, activeAssignments, isArchived, onRestore }: {
+function CourseCard({ course, studentCount, allGraded, toGrade, graded, assigned, isTa, isArchived, onRestore }: {
   course: Course;
   studentCount: number;
   allGraded: boolean;
-  activeAssignments: number;
+  toGrade: number;
+  /** a TA's card: pieces graded, and how many assignments they were given */
+  graded: number;
+  assigned: number;
+  isTa: boolean;
   isArchived: boolean;
   onRestore: () => void;
 }) {
@@ -258,7 +270,19 @@ function CourseCard({ course, studentCount, allGraded, activeAssignments, isArch
               <Icon name="users" size="xs" />
               {studentCount} {t("นักศึกษา", "Students")}
             </span>
-            {allGraded ? (
+            {isTa ? (
+              assigned === 0 ? (
+                <span data-testid="ta-queue-empty" className="flex items-center gap-1 text-[var(--text-muted)]">
+                  <Icon name="clock" size="xs" />
+                  {t("ยังไม่ได้รับมอบหมายงาน", "No work assigned yet")}
+                </span>
+              ) : (
+                <span data-testid="ta-queue" className="flex items-center gap-1 font-medium text-[var(--st-todo-text)]">
+                  <Icon name="calendar" size="xs" />
+                  {t(`รอตรวจ ${toGrade} · ตรวจแล้ว ${graded}`, `${toGrade} waiting · ${graded} graded`)}
+                </span>
+              )
+            ) : allGraded ? (
               <span className="flex items-center gap-1 text-[var(--accent)] font-medium">
                 <Icon name="check" size="xs" />
                 {t("ตรวจแล้วทั้งหมด", "All Graded")}
@@ -266,7 +290,7 @@ function CourseCard({ course, studentCount, allGraded, activeAssignments, isArch
             ) : (
               <span className="flex items-center gap-1 text-[var(--st-todo-text)]">
                 <Icon name="calendar" size="xs" />
-                {activeAssignments} {t("งานรอตรวจ", "Active")}
+                {toGrade} {t("ชิ้นรอตรวจ", "to grade")}
               </span>
             )}
           </div>

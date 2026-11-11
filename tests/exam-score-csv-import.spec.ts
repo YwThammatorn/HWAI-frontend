@@ -64,16 +64,27 @@ test.describe("Import exam scores from CSV", () => {
     await expect(dialog.getByRole("status")).toContainText("5 with errors");
     const status = async (id: string, nth = 0) => (await dialog.locator("tr[data-status]").filter({ hasText: id }).nth(nth).locator("td").last().innerText()).trim();
     expect(await status("69072001")).toBe("Replaces 30");
-    expect(await status("69072002")).toBe("Will fill");
+    // problems are listed first (10/11/2569), so of the two rows for 69072002 the repeated one comes before the one that is used
+    expect(await status("69072002", 1)).toBe("Will fill");
     expect(await status("69072003")).toBe("No score — skipped");
     expect(await status("69072004")).toBe("Score must be a number from 0 to 50");
     expect(await status("69072005")).toBe("Withdrawn from this course");
     expect(await status("69079999")).toBe("Not enrolled in this course");
-    expect(await status("69072002", 1)).toBe("ID repeated in the file (first row used)");
+    expect(await status("69072002", 0)).toBe("ID repeated in the file (first row used)");
     expect(await status("69072006")).toBe("Score must be a number from 0 to 50");
     await expect(dialog.getByText("Ann Test")).toBeVisible();   // the roster's name for the matched row
     await expect(dialog).toContainText("1 other student on this course isn't in the file");   // Gus
     await expect(dialog.getByRole("button", { name: "Fill 2 scores" })).toBeEnabled();
+  });
+
+  test("rows with a problem are listed first, so the ones to fix are not buried in a long file (10/11/2569)", async ({ page }) => {
+    await seed(page);
+    const dialog = await openImport(page);
+    await upload(dialog, CSV);
+    const statuses = await dialog.locator("tbody tr").evaluateAll((trs) => trs.map((tr) => tr.getAttribute("data-status") ?? ""));
+    const firstOk = statuses.findIndex((x) => x === "new" || x === "overwrite" || x === "same" || x === "empty");
+    const lastBad = statuses.map((x, i) => [x, i] as const).filter(([x]) => !["new", "overwrite", "same", "empty"].includes(x)).map(([, i]) => i).pop() ?? -1;
+    expect(lastBad, "no row with a problem sits below a row that is fine").toBeLessThan(firstOk);
   });
 
   test("Fill puts the scores in the boxes (highlighted, unsaved); Save keeps them; the rest is untouched", async ({ page }) => {

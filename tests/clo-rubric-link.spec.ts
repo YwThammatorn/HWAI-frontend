@@ -242,6 +242,7 @@ test("the Grading page's rubric card shows the same tags", async ({ page }) => {
   await seed(page);
   await page.goto(`${C}/assignments/as1/grading`);
   await page.waitForLoadState("networkidle");
+  await page.getByTestId("class-overview").getByRole("tab").nth(1).click();           // the rubric is the second tab of the right pane
   await expect(page.getByTestId("rubric-row-k2").getByTestId("clo-chips")).toHaveText("CLO1CLO2");
   await expect(page.getByTestId("rubric-row-k3").getByTestId("clo-chips")).toHaveCount(0);
 });

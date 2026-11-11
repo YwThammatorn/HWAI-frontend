@@ -85,7 +85,8 @@ test.describe("Withdrawn students — Grading", () => {
   test("their open review doesn't block Announce results, and the counts skip them", async ({ page }) => {
     await open(page, "/teacher/courses/c-wd/assignments/hw1/grading");
     await expect(page.getByRole("button", { name: "Announce results" }).first()).toBeVisible();
-    await expect(page.getByText("/ 2 · 0 pending")).toBeVisible();
+    await expect(page.getByTestId("grading-strip")).toContainText("2 / 2 graded");       // the withdrawn student's open review is not counted
+    await expect(page.getByTestId("grading-strip").getByRole("button", { name: /Needs review/ })).toHaveCount(0);
   });
 
   test("the Withdrawn tab lists their submission", async ({ page }) => {

@@ -1,0 +1,9 @@
+{
+  "student-04-assignment-graded": "ผลงานที่ประกาศแล้ว: คะแนนรายเกณฑ์ (Grading Rubric — your points) ขึ้นก่อน ส่วนสถิติห้องย้ายลงล่าง และตัดข้อความ \"Better than N%\" ออก",
+  "student-05-group-assignment": "งานกลุ่มที่ประกาศแล้ว: คะแนนรายเกณฑ์ขึ้นก่อน สถิติห้องอยู่ล่าง ไม่มี \"Better than N%\"",
+  "student-06-exam-result": "ผลสอบ: ตัดข้อความ \"Better than N%\" ออก (กราฟและระยะห่างจากค่าเฉลี่ยยังอยู่)",
+  "student-07-evaluation": "Evaluation: คะแนนรวมถ่วงน้ำหนักขึ้นก่อน; 81% สองค่าแยกชื่อ — Weighted score so far กับ Assignments graded",
+  "teacher-20b-calibration-result": "Calibration: ผลมาจาก exact agreement (ตรง 2 ใน 5 ชิ้น) + แผงสรุป Same level / Within one level / Weighted kappa + หมายเหตุตัวอย่างน้อย ไม่มี Level 2.6 และไม่ขึ้น Aligned ที่ 40%",
+  "teacher-20c-calibration-regrade": "Calibration (ส่วนล่าง): ตารางและคำอธิบายเกณฑ์ตัดสินใหม่ ตามตัววัด agreement",
+  "teacher-20d-edit-rubric-popup": "แก้ Rubric จาก Calibration: พื้นหลังเป็นตารางผลแบบใหม่"
+}

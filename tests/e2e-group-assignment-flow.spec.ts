@@ -107,11 +107,13 @@ test("cold start: a student forms a team, submits, the teacher grades once, and 
   await page.goto(GRADING_URL);
   await page.waitForLoadState("networkidle");
   await expect(page.getByText("Poster Squad")).toBeVisible();
-  const regrade = page.getByRole("button", { name: /Re-grade team Poster Squad/i });
+  // Picking the team row opens its detail on the right (10/11/2569): Re-grade and Grade are there
+  await page.locator("main tbody tr", { hasText: "Poster Squad" }).click();
+  const regrade = page.getByTestId("detail-regrade");
   await regrade.click();
   await expect(regrade).toBeDisabled(); // the mock re-grade takes 1.5s: wait for it to start, then to finish
   await expect(regrade).toBeEnabled();
-  await page.getByRole("link", { name: /Grade team/i }).click();
+  await page.getByTestId("detail-grade").click();
   await page.waitForLoadState("networkidle");
   await page.getByLabel(/Total score/i).fill("88");
   await page.getByRole("button", { name: /Save Changes/i }).click();

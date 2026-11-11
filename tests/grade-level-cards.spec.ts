@@ -56,7 +56,7 @@ async function open(page: Page, subId: string, opts: { manual?: boolean; lang?: 
 }
 
 const group = (page: Page, criterion: string) => page.getByRole("radiogroup", { name: `Level for ${criterion}` });
-const level = (page: Page, criterion: string, label: string) => group(page, criterion).getByRole("radio", { name: new RegExp(`^${label}`) });
+const level = (page: Page, criterion: string, label: string) => group(page, criterion).getByRole("radio", { name: new RegExp("\\b" + label + "\\b") });
 const total = (page: Page) => page.locator("div", { has: page.getByText("Total Score", { exact: true }) }).last();
 type Stored = { criterionScores: Record<string, number>; instructorScore: number; status: string };
 const stored = (page: Page, id: string) => page.evaluate((sid) => (JSON.parse(localStorage.getItem("hwai_submissions_v1") ?? "[]") as (Stored & { id: string })[]).find((s) => s.id === sid)!, id);
@@ -64,8 +64,8 @@ const stored = (page: Page, id: string) => page.evaluate((sid) => (JSON.parse(lo
 test("each criterion shows its levels as cards worth their points; no number box", async ({ page }) => {
   await open(page, "ai-levels");
   await expect(page.locator('input[type="number"]')).toHaveCount(0);
-  await expect(group(page, "Correctness").getByRole("radio")).toHaveText([/Excellent · 9/, /Fair · 6/, /Needs work · 3/, /Fail · 0/]);
-  await expect(group(page, "Style").getByRole("radio")).toHaveText([/Excellent · 3/, /Fair · 2/, /Needs work · 1/, /Fail · 0/]);
+  await expect(group(page, "Correctness").getByRole("radio")).toHaveText([/Level 3 · 9 pts.*Excellent/, /Level 2 · 6 pts.*Fair/, /Level 1 · 3 pts.*Needs work/, /Level 0 · 0 pts.*Fail/]);
+  await expect(group(page, "Style").getByRole("radio")).toHaveText([/Level 3 · 3 pts.*Excellent/, /Level 2 · 2 pts.*Fair/, /Level 1 · 1 pts.*Needs work/, /Level 0 · 0 pts.*Fail/]);
   await expect(level(page, "Correctness", "Fair")).toContainText("Fair wording");
 });
 

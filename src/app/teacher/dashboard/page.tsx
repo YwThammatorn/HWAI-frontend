@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
 import { TEACHER_DASHBOARD_DISABLED } from "@/lib/featureFlags";
-
+
 import Icon from "@/components/Icon";
 import IconTile from "@/components/IconTile";
 // ─── Mock data ────────────────────────────────────────────────────────────────
@@ -194,7 +194,7 @@ export default function DashboardPage() {
           <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-subtle)] shadow-sm p-5">
             <div className="flex items-start justify-between mb-3">
               <p className="text-xs text-[var(--text-secondary)]">{t("รอตรวจ", "Pending Grades")}</p>
-              <IconTile icon="file-plus" size="sm" tone="err" />
+              <IconTile icon="file-text" size="sm" tone="err" />
             </div>
             <p className="text-2xl font-extrabold text-[var(--text-primary)]">48</p>
             <p className="text-xs text-[var(--s-err-text)] mt-1.5 font-medium">{t("! ต้องดำเนินการด่วน", "! Urgent needs attention")}</p>
@@ -333,7 +333,7 @@ export default function DashboardPage() {
             {/* Sync Platforms */}
             <div className="bg-[var(--bg-nav)] rounded-2xl p-5">
               <h2 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
-                <Icon name="maximize" size="sm" className="text-[var(--accent-bright)]" />
+                <Icon name="maximize" size="sm" className="text-[var(--accent)]" />
                 {t("เชื่อมต่อแพลตฟอร์ม", "Sync Platforms")}
               </h2>
               {["Google Classroom", "Microsoft Teams"].map((p) => (
@@ -357,7 +357,7 @@ export default function DashboardPage() {
               <p className="text-xs text-[var(--text-secondary)]">{t("เครดิตที่ใช้ทั้งหมด", "Total Credits Used")}</p>
             </div>
             <p className="text-2xl font-extrabold text-[var(--text-primary)]">3,750 <span className="text-base font-normal text-[var(--text-muted)]">/ 5,000</span></p>
-            <p className="text-xs text-[var(--s-ok-text)] mt-2">{t("↗ 12% มากกว่าเดือนที่แล้ว", "↗ 12% more than last month")}</p>
+            <p className="mt-2 inline-flex items-center gap-1.5 text-xs text-[var(--s-ok-text)]"><Icon name="trending-up" size="sm" />{t("12% มากกว่าเดือนที่แล้ว", "12% more than last month")}</p>
           </div>
           <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-subtle)] shadow-sm p-6">
             <div className="flex items-center gap-2 mb-2">

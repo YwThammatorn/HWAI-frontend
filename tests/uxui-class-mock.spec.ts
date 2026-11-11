@@ -10,7 +10,7 @@ type Level = { label: string; description: string };
 type Crit = { id: string; name: string; description: string; maxPoints: number; weight: number; levels: Level[]; cloIds?: string[] };
 type Rubric = { id: string; assignmentId: string; name: string; criteria: Crit[] };
 type Asg = { id: string; courseId: string; name: string; maxPoints: number; dueDate: string; categoryId: string; submissionType: string; maxGroupSize: number | null; rubricIds: string[]; gradingFinalized?: boolean };
-type Sub = { id: string; assignmentId: string; studentId: string; status: string; submittedAt: string; instructorScore: number | null; aiScore: number | null; criterionScores?: Record<string, number>; groupId?: string; late?: boolean };
+type Sub = { id: string; assignmentId: string; studentId: string; status: string; submittedAt: string; instructorScore: number | null; aiScore: number | null; criterionScores?: Record<string, number>; groupId?: string; late?: boolean; instructorComment?: string };
 type Group = { id: string; assignmentId: string; courseId: string; name: string; memberStudentIds: string[] };
 type Clo = { id: string; courseId: string; code: string; text: string };
 
@@ -167,6 +167,19 @@ test.describe("the UX/UI class mock", () => {
       expect(st.has("need_review") && st.has("not_graded") && st.has("graded"), id).toBe(true);
     }
     for (const a of asg.filter((x) => x.gradingFinalized)) expect(rows(a.id).every((x) => x.status === "graded"), a.id).toBe(true);
+  });
+
+  test("the main demo student's work shown in the report carries a teacher comment (11/11/2569): UI design, his team's How Might We, and the Final project — and the marks did not move", () => {
+    const mine = (id: string) => subs.find((s) => s.assignmentId === id && s.studentId === "69070101")!;
+    for (const id of ["a-uxui-13", "a-uxui-8", "a-mock-10"]) {
+      expect(mine(id).status, id).toBe("graded");
+      expect((mine(id).instructorComment ?? "").length, id).toBeGreaterThan(20);
+    }
+    expect([mine("a-uxui-13").instructorScore, mine("a-uxui-8").instructorScore, mine("a-mock-10").instructorScore]).toEqual([9, 12, 58]);
+    // a team's comment is one comment: every member of his How Might We team has it
+    const team = subs.filter((s) => s.assignmentId === "a-uxui-8" && s.groupId === mine("a-uxui-8").groupId);
+    expect(team).toHaveLength(5);
+    for (const m of team) expect(m.instructorComment).toBe(mine("a-uxui-8").instructorComment);
   });
 
   test("the main demo student (69070101) did well on the Final project, as before", () => {

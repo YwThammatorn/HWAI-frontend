@@ -3,7 +3,8 @@
 // and a status — a score the AI is less sure about (< 65 % of the maximum) comes back as "need_review" for the teacher.
 // Replace this one function with the real call when the backend exists; nothing else knows how the score is produced.
 
-import { levelShare, type Submission, type RubricCriterion } from "./assignments";
+import { levelShare, type Submission, type RubricCriterion, type WorkSnapshot, type CriterionEvidence } from "./assignments";
+import { aiEvidenceFor } from "./aiEvidence";
 import { criterionKey } from "./rubricHistory";
 import { splitCriterionName } from "./rubricName";
 
@@ -46,8 +47,8 @@ export function mockAiReason(criterionName: string, share: number): string {
 
 /**
  * The AI scoring one piece of work against a rubric, criterion by criterion. `seed` makes it repeatable. The work has a quality of its
- * own (the seed), a little different on every criterion; the AI sees it through its habit on that criterion (aiLeniency). There is no
- * correction to add (8/11/2569: Calibration no longer tunes the AI — it compares, and points at the rubric).
+ * own (the seed), a little different on every criterion; the AI sees it through its habit on that criterion (aiLeniency).
+ * (There used to be a saved per-criterion correction on top of that — "AI offset", removed 10/11/2569.)
  */
 export function mockAiGradeCriteria(seed: string, criteria: Pick<RubricCriterion, "id" | "name" | "maxPoints" | "levels">[]): AiCriteriaResult {
   const quality = 0.25 + 0.7 * ((hash(seed) % 1000) / 1000);                    // 0.25 … 0.95
@@ -69,16 +70,26 @@ export function mockAiGradeCriteria(seed: string, criteria: Pick<RubricCriterion
 
 // ── one place that writes the AI's marks (14/10/2569) ───────────────────────────────────────────────────────────────────────
 
-/** The fields that change on a submission when the AI (re)grades it: the AI's marks and reasons, and everything the
+/** The AI's evidence for its marks: on a design with frozen frames, the reason plus where it looked (`aiEvidenceFor`); otherwise the reason
+ *  alone, with no references (10/11/2569 — one field, `aiEvidence`, for both). */
+export function aiEvidenceOf(seed: string, criteria: Pick<RubricCriterion, "id" | "name" | "maxPoints" | "levels">[], crit: AiCriteriaResult, snapshot?: WorkSnapshot): Record<string, CriterionEvidence> {
+  if (snapshot && snapshot.frames.length > 0) return aiEvidenceFor(seed, criteria, crit.levels, snapshot);
+  return Object.fromEntries(criteria.map((c) => [c.id, { reason: crit.reasons[c.id] ?? "", refs: [] }]));
+}
+
+/** The fields that change on a submission when the AI (re)grades it: the AI's marks with its reason per criterion, and everything the
  *  teacher had put on top of an earlier AI result cleared. Used by "Grade with AI", the per-row Re-grade and Calibration's re-grade. */
-export function aiGradingUpdate(seed: string, maxPoints: number, rubric?: { criteria: Pick<RubricCriterion, "id" | "name" | "maxPoints" | "levels">[] }):
-  Pick<Submission, "aiScore" | "aiCriterionScores" | "aiCriterionReasons" | "instructorScore" | "status" | "criterionScores" | "criterionComments"> {
+export function aiGradingUpdate(seed: string, maxPoints: number, rubric?: { criteria: Pick<RubricCriterion, "id" | "name" | "maxPoints" | "levels">[] }, snapshot?: WorkSnapshot):
+  Pick<Submission, "aiScore" | "aiCriterionScores" | "aiEvidence" | "instructorScore" | "status" | "criterionScores" | "criterionComments"> {
   const withRubric = !!rubric && rubric.criteria.length > 0;
-  const res = withRubric ? mockAiGradeCriteria(seed, rubric!.criteria) : { ...mockAiGrade(seed, maxPoints), criterionScores: undefined, reasons: undefined };
+  const crit = withRubric ? mockAiGradeCriteria(seed, rubric!.criteria) : undefined;
+  const res = crit ?? { ...mockAiGrade(seed, maxPoints), criterionScores: undefined };
   return {
     aiScore: res.score,
     aiCriterionScores: res.criterionScores,
-    aiCriterionReasons: res.reasons,
+    // a reason on every criterion (the AI must always say why, 7/11/2569); where it looked only when there is a frozen copy of the design to
+    // point into (an earlier result's evidence never survives a regrade)
+    aiEvidence: crit ? aiEvidenceOf(seed, rubric!.criteria, crit, snapshot) : undefined,
     instructorScore: null,
     status: res.status,
     criterionScores: undefined,

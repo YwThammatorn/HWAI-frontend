@@ -21,7 +21,7 @@ const TONE: Record<IconButtonTone, string> = {
   onDark: "text-white/70 hover:text-white hover:bg-white/10",
 };
 
-export default function IconButton({ icon, label, tone = "default", dense, round, filled, iconClassName, onClick, href, disabled, type = "button", className = "", ...rest }: {
+export default function IconButton({ icon, label, tone = "default", dense, round, iconClassName, onClick, href, disabled, type = "button", className = "", ...rest }: {
   icon: IconName;
   label: string;
   tone?: IconButtonTone;
@@ -29,7 +29,6 @@ export default function IconButton({ icon, label, tone = "default", dense, round
   dense?: boolean;
   /** a circle instead of rounded corners — only for pagination, whose numbered buttons are circles */
   round?: boolean;
-  filled?: boolean;
   /** for a chevron that turns (rotate-180) */
   iconClassName?: string;
   onClick?: MouseEventHandler<HTMLButtonElement>;
@@ -46,13 +45,13 @@ export default function IconButton({ icon, label, tone = "default", dense, round
   if (href) {
     return (
       <Link href={href} aria-label={label} title={label} className={cls} {...rest}>
-        <Icon name={icon} size={dense ? "xs" : "sm"} filled={filled} className={iconClassName} />
+        <Icon name={icon} size={dense ? "xs" : "sm"} className={iconClassName} />
       </Link>
     );
   }
   return (
     <button type={type} onClick={onClick} disabled={disabled} aria-label={label} title={label} className={cls} {...rest}>
-      <Icon name={icon} size={dense ? "xs" : "sm"} filled={filled} className={iconClassName} />
+      <Icon name={icon} size={dense ? "xs" : "sm"} className={iconClassName} />
     </button>
   );
 }

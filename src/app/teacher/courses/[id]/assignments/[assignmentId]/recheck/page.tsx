@@ -6,9 +6,18 @@ import Link from "next/link";
 import { useCourses } from "@/lib/courses";
 import { useAssignments, RubricCriterion, submissionAttachments, isManualGrading, levelShare, gradingOpen, gradingOpensAt, latePenaltyOf, daysLate } from "@/lib/assignments";
 import { useNow } from "@/lib/clock";
+import { scoreBlockLabels } from "@/lib/scoreBlockLabels";
+import FrameViewer, { type FrameMark } from "@/components/FrameViewer";
 import SubmissionViewer from "@/components/SubmissionViewer";
+import MetricCard from "@/components/MetricCard";
+import AiGradePreviewModal from "@/components/AiGradePreviewModal";
+import { useAiGrading } from "@/lib/useAiGrading";
+import { useCan } from "@/lib/useCan";
+import { SCORE_TONE_CLASSES, PENDING_CHIP_CLASSES } from "@/lib/scoreBook";
 import FloatingPanel, { openFloatingWindow } from "@/components/FloatingPanel";
 import CriterionName from "@/components/CriterionName";
+import { CriterionPoints } from "@/components/RubricCriterionCard";
+import { RubricLevelPicker } from "@/components/RubricLevels";
 import { splitCriterionName } from "@/lib/rubricName";
 import { useStudentGroups } from "@/lib/studentGroups";
 import { useLanguage } from "@/context/LanguageContext";
@@ -52,6 +61,7 @@ export default function RecheckPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { t, lang } = useLanguage();
+  const scoreLabels = scoreBlockLabels(t);
   const subId = searchParams.get("sub") ?? "";
 
   const { getCourse } = useCourses();
@@ -69,7 +79,15 @@ export default function RecheckPage() {
     ? getGroupsByAssignment(assignmentId).find((g) => g.id === submission.groupId)
     : undefined;
 
+  const { waitingUnits, sendWaiting } = useAiGrading();
+  const can = useCan();          // a TA gives and changes scores; the AI (regrade, notes to it) is the teacher's (10/11/2569)
+  // "Regrade with the new rubric" right here (9/11/2569): when the rubric changed after grading started, the work waits for the AI again
+  const [regradeOpen, setRegradeOpen] = useState(false);
+  const [regrading, setRegrading] = useState(false);
   const [zoom, setZoom] = useState(100);
+  // Where the AI's reason points (10/11/2569): pressing a reference chip on a criterion selects that frame and draws its box on the frozen copy of the work
+  const [activeRef, setActiveRef] = useState<{ criterionId: string; index: number } | null>(null);
+  const [frameId, setFrameId] = useState<string | undefined>(undefined);
   // The grading part in its own small window (14/10/2569): for a submitted link, which opens in another tab, so the teacher can grade
   // while looking at it. The state stays in this page; the small window just shows the same panel.
   const [floatWin, setFloatWin] = useState<Window | null>(null);
@@ -81,6 +99,14 @@ export default function RecheckPage() {
   // Exam-type assignments have no rubric (23/9/2569) — the whole score is typed in directly here.
   const [manualScore, setManualScore] = useState(0);
   const [saved, setSaved] = useState(false);
+  // the boxes of the pressed chip that sit on the frame being shown
+  const shownFrameId = frameId ?? submission?.snapshot?.frames[0]?.id;
+  const frameMarks: FrameMark[] = activeRef && submission?.aiEvidence?.[activeRef.criterionId]
+    ? submission.aiEvidence[activeRef.criterionId].refs
+        .map((r, i) => ({ r, n: i + 1 }))
+        .filter(({ r }) => r.frameId === shownFrameId && !!r.box)
+        .map(({ r, n }) => ({ n, box: r.box! }))
+    : [];
   const [comment, setComment] = useState(submission?.instructorComment ?? "");
   // Per-criterion notes ("why I changed this score"), keyed by criterion id
   const [criterionComments, setCriterionComments] = useState<Record<string, string>>(submission?.criterionComments ?? {});
@@ -103,7 +129,7 @@ export default function RecheckPage() {
         aiPts,
         maxPoints: c.maxPoints,
         // the AI's own reason for this criterion; work graded before reasons were kept gets the old stand-in sentence
-        aiFeedback: submission.aiCriterionReasons?.[c.id] ?? genFeedback(c.name, (score ?? 0) / c.maxPoints >= 0.7 ? "high" : "low"),
+        aiFeedback: submission.aiEvidence?.[c.id]?.reason || genFeedback(c.name, (score ?? 0) / c.maxPoints >= 0.7 ? "high" : "low"),
         edited: false,
       };
     });
@@ -249,9 +275,37 @@ export default function RecheckPage() {
     <div className={floating ? "flex-1 min-h-0 flex flex-col bg-[var(--bg-surface)] overflow-y-auto" : "w-[26rem] shrink-0 flex flex-col border-l border-[var(--border-subtle)] bg-[var(--bg-surface)] overflow-y-auto"}>
       <div className="px-5 py-5 border-b border-[var(--border-subtle)]">
         {/* No "AI confidence" any more (15/10/2569, user's request): only a note when there is no AI result behind this submission. */}
-        <h2 className="text-base font-bold text-[var(--text-primary)]">
-          {t("ตรวจสอบการให้คะแนน", "Grading Review")}
-        </h2>
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h2 className="text-base font-bold text-[var(--text-primary)]">
+            {t("ตรวจสอบการให้คะแนน", "Grading Review")}
+          </h2>
+          <span data-testid="grade-status" className={`inline-flex h-7 items-center rounded-lg px-2.5 text-xs font-semibold ${submission.status === "graded" ? SCORE_TONE_CLASSES.ok : PENDING_CHIP_CLASSES}`}>{submission.status === "graded" ? t("ตรวจแล้ว", "Graded") : t("รอตรวจ", "Pending")}</span>
+        </div>
+        {/* The same three-block score card as the assignment's Grading page (9/11/2569): what this submission is worth now, what the AI gave, what is saved */}
+        <MetricCard
+          label={t(`คะแนน (เต็ม ${assignment.maxPoints})`, `Score (of ${assignment.maxPoints})`)}
+          parts={[
+            { label: scoreLabels.counts, value: totalScore },
+            ...(handGraded ? [] : [{ label: scoreLabels.ai, value: submission.aiScore ?? "—" }]),
+            { label: scoreLabels.mine, value: submission.instructorScore ?? "—" },
+          ]}
+          tone="rating"
+          icon="star"
+        />
+        {can.useAi && !handGraded && !assignment.gradingFinalized && assignment.rubricRestartedAt && waitingUnits(assignment).length > 0 && (
+          <div data-testid="regrade-banner" role="note" className="mt-4 flex flex-col gap-3 rounded-xl border border-[var(--s-info-bd)] bg-[var(--s-info-bg)] px-4 py-3 text-xs leading-relaxed text-[var(--s-info-text)]">
+            <p>{t(`แก้ rubric หลังเริ่มตรวจ — เหลือ ${waitingUnits(assignment).length} งานที่รอตรวจด้วย rubric ใหม่`, `The rubric changed after grading started — ${waitingUnits(assignment).length} submission(s) wait to be graded under the new one.`)}</p>
+            <button
+              type="button"
+              data-testid="regrade-new-rubric"
+              disabled={regrading}
+              onClick={() => setRegradeOpen(true)}
+              className="inline-flex h-9 items-center justify-center whitespace-nowrap rounded-xl bg-[var(--accent-solid)] px-4 text-sm font-semibold text-[var(--accent-solid-text)] transition-colors hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {regrading ? t("AI กำลังตรวจ…", "AI grading…") : t("Regrade ด้วย rubric ใหม่", "Regrade with new rubric")}
+            </button>
+          </div>
+        )}
         {handGraded ? (
           <p className="mt-3 text-xs text-[var(--text-secondary)]">
             {t("ตรวจเอง — ไม่ใช้ AI ในงานนี้", "Graded by hand — no AI on this assignment")}
@@ -324,9 +378,11 @@ export default function RecheckPage() {
                     <span className="text-xs text-[var(--text-muted)]">/ {s.maxPoints}</span>
                   </span>
                 ) : (
-                  <span data-testid={`crit-score-${s.criterionId}`} className="shrink-0 text-sm tabular-nums text-[var(--text-muted)]">
-                    <span className="font-bold text-[var(--text-primary)]">{s.score ?? "—"}</span> / {s.maxPoints}
-                  </span>
+                  s.score !== null ? (
+                    <CriterionPoints maxPoints={s.maxPoints} weight={c.weight} earned={s.score} testId={`crit-score-${s.criterionId}`} />
+                  ) : (
+                    <span data-testid={`crit-score-${s.criterionId}`} className="shrink-0 text-sm tabular-nums text-[var(--text-muted)]">— / {s.maxPoints}</span>
+                  )
                 )}
               </div>
 
@@ -337,31 +393,15 @@ export default function RecheckPage() {
                 </p>
               )}
 
-              {/* Click the level that fits the work — the same cards as Calibration */}
-              <div
-                role="radiogroup"
-                aria-label={t(`ระดับของ ${splitCriterionName(c.name).main}`, `Level for ${splitCriterionName(c.name).main}`)}
-                className={c.levels.length === 0 ? "hidden" : "flex flex-col gap-1.5"}
-              >
-                {c.levels.map((lv, li) => (
-                  <button
-                    key={li}
-                    type="button"
-                    role="radio"
-                    aria-checked={s.level === li}
-                    onClick={() => pickLevel(s.criterionId, li)}
-                    className={`rounded-lg border px-3 py-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] ${s.level === li ? "border-[var(--accent)] bg-[var(--accent-subtle)]" : "border-[var(--border)] hover:bg-[var(--bg-subtle)]"}`}
-                  >
-                    <span className="flex items-center gap-2 text-xs font-semibold tabular-nums text-[var(--text-primary)]">
-                      {lv.label} · {levelPts(c, li)}
-                      {!handGraded && s.aiPts !== null && levelOfPts(c, s.aiPts) === li && (
-                        <span data-testid={`mark-ai-${s.criterionId}`} className="rounded-md border border-[var(--s-info-bd)] bg-[var(--s-info-bg)] px-1.5 py-0.5 text-[10px] font-semibold text-[var(--s-info-text)]">AI</span>
-                      )}
-                    </span>
-                    {lv.description && <span className="mt-0.5 block text-xs leading-snug text-[var(--text-secondary)]">{lv.description}</span>}
-                  </button>
-                ))}
-              </div>
+              {/* Click the level that fits the work — the same cells as Calibration (RubricLevelPicker) */}
+              <RubricLevelPicker
+                criterion={c}
+                label={t(`ระดับของ ${splitCriterionName(c.name).main}`, `Level for ${splitCriterionName(c.name).main}`)}
+                value={s.level}
+                onPick={(li) => pickLevel(s.criterionId, li)}
+                aiLevel={!handGraded && s.aiPts !== null ? levelOfPts(c, s.aiPts) : null}
+                aiTestId={`mark-ai-${s.criterionId}`}
+              />
 
               {s.edited && !handGraded && (
                 <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-[var(--s-warn-text)] bg-[var(--s-warn-bg)] px-1.5 py-0.5 rounded mt-3 mb-1">
@@ -372,14 +412,37 @@ export default function RecheckPage() {
               {!handGraded && (
               <div className="mt-2">
                 <p className="text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-1">
-                  {t("ความคิดเห็น AI", "AI Feedback")}
+                  {submission.aiEvidence?.[s.criterionId] ? t("เหตุผลของ AI", "AI's reason") : t("ความคิดเห็น AI", "AI Feedback")}
                 </p>
-                <p className="text-xs text-[var(--text-secondary)] leading-relaxed">{s.aiFeedback}</p>
+                <p data-testid={`ai-reason-${s.criterionId}`} className="text-xs text-[var(--text-secondary)] leading-relaxed">{submission.aiEvidence?.[s.criterionId]?.reason ?? s.aiFeedback}</p>
+                {/* where in the work the AI looked: each chip selects its frame and draws its box (frames of the frozen snapshot) */}
+                {submission.snapshot && (submission.aiEvidence?.[s.criterionId]?.refs.length ?? 0) > 0 && (
+                  <ul className="mt-2 flex flex-wrap gap-1.5" aria-label={t("จุดที่ AI อ้างอิง", "Where the AI looked")}>
+                    {submission.aiEvidence![s.criterionId].refs.map((r, i) => {
+                      const on = activeRef?.criterionId === s.criterionId && activeRef.index === i;
+                      const frame = submission.snapshot!.frames.find((f) => f.id === r.frameId);
+                      return (
+                        <li key={i}>
+                          <button
+                            type="button"
+                            data-testid={`ref-${s.criterionId}-${i}`}
+                            aria-pressed={on}
+                            onClick={() => { setActiveRef({ criterionId: s.criterionId, index: i }); setFrameId(r.frameId); }}
+                            className={`inline-flex h-7 items-center gap-1.5 whitespace-nowrap rounded-lg border px-2 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] ${on ? "border-[var(--accent)] bg-[var(--accent-subtle)] text-[var(--accent)]" : "border-[var(--border)] bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)]"}`}
+                          >
+                            <Icon name="image" size="sm" />
+                            {frame?.name ?? r.label ?? t("เฟรม", "Frame")}
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
               </div>
               )}
 
               {/* Shown once the instructor overrides the score (or a note already exists) */}
-              {!handGraded && (s.edited || criterionComments[s.criterionId]) && (
+              {can.useAi && !handGraded && (s.edited || criterionComments[s.criterionId]) && (
                 <div className="mt-3">
                   <label
                     htmlFor={`criterion-note-${s.criterionId}`}
@@ -467,9 +530,9 @@ export default function RecheckPage() {
         <button
           onClick={handleSave}
           disabled={unmarked > 0}
-          className="flex-1 py-2.5 rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-xs font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[var(--accent-solid)]"
+          className="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-xs font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[var(--accent-solid)]"
         >
-          {saved ? `✓ ${t("บันทึกแล้ว!", "Saved!")}` : t("บันทึกการเปลี่ยนแปลง", "Save Changes")}
+          {saved ? <><Icon name="check" size="sm" />{t("บันทึกแล้ว!", "Saved!")}</> : t("บันทึกการเปลี่ยนแปลง", "Save Changes")}
         </button>
       </div>
     </div>
@@ -484,19 +547,9 @@ export default function RecheckPage() {
             <span className="text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-widest">
               {t("มุมมอง", "View")}:
             </span>
-            <button
-              onClick={() => setZoom((z) => Math.max(25, z - 25))}
-              className="w-6 h-6 flex items-center justify-center rounded hover:bg-[var(--bg-subtle)] text-[var(--text-secondary)] text-sm font-bold transition-colors"
-            >
-              −
-            </button>
+            <IconButton icon="minus" dense label={t("ซูมออก", "Zoom out")} onClick={() => setZoom((z) => Math.max(25, z - 25))} />
             <span className="text-sm font-medium text-[var(--text-primary)] w-12 text-center">{zoom}%</span>
-            <button
-              onClick={() => setZoom((z) => Math.min(200, z + 25))}
-              className="w-6 h-6 flex items-center justify-center rounded hover:bg-[var(--bg-subtle)] text-[var(--text-secondary)] text-sm font-bold transition-colors"
-            >
-              +
-            </button>
+            <IconButton icon="plus" dense label={t("ซูมเข้า", "Zoom in")} onClick={() => setZoom((z) => Math.min(200, z + 25))} />
             <div className="w-px h-4 bg-[var(--border)] mx-1" />
             <IconButton icon="refresh" label={t("รีเซ็ตการซูม", "Reset zoom")} onClick={() => setZoom(100)} />
             {hasLink && (
@@ -515,7 +568,20 @@ export default function RecheckPage() {
             )}
           </div>
 
-          {/* What the student submitted; the sandbox placeholder when nothing was attached */}
+          {/* What the student submitted: the frozen frames of a design with the AI's boxes on them, or the files/links; the sandbox placeholder when nothing was attached */}
+          {submission.snapshot && submission.snapshot.frames.length > 0 ? (
+            <FrameViewer
+              snapshot={submission.snapshot}
+              zoom={zoom}
+              frameId={frameId}
+              onFrameChange={setFrameId}
+              marks={frameMarks}
+              caption={[
+                submission.studentName,
+                team ? t(`ทีม ${team.name}`, `Team ${team.name}`) : null,
+              ].filter(Boolean).join(" · ")}
+            />
+          ) : (
           <SubmissionViewer
             attachments={submissionAttachments(submission)}
             zoom={zoom}
@@ -555,6 +621,7 @@ export default function RecheckPage() {
           </div>
             }
           />
+          )}
         </div>
 
         {floatWin ? (
@@ -567,6 +634,14 @@ export default function RecheckPage() {
             <FloatingPanel target={floatWin} title={`${t("ตรวจงาน", "Grade")} — ${submission.studentName}`} onClosed={() => setFloatWin(null)}>{gradePanel(true)}</FloatingPanel>
           </>
         ) : gradePanel(false)}
+        {regradeOpen && (
+          <AiGradePreviewModal
+            assignment={assignment}
+            open
+            onClose={() => setRegradeOpen(false)}
+            onConfirm={async () => { setRegradeOpen(false); setRegrading(true); await sendWaiting(assignment); setRegrading(false); }}
+          />
+        )}
       </div>
   );
 }

@@ -8,13 +8,16 @@ import { useStudents, isWithdrawn } from "@/lib/students";
 import { useAssignments } from "@/lib/assignments";
 import { useGradingCategories } from "@/lib/gradingCategories";
 import { useLanguage } from "@/context/LanguageContext";
+import { useCan } from "@/lib/useCan";
+import { useGradableAssignments } from "@/lib/useGradableAssignments";
 import { dateLocale } from "@/lib/dateLocale";
 import SearchInput from "@/components/SearchInput";
 import AssignmentTypeBadge from "@/components/AssignmentTypeBadge";
-
+
 import Icon from "@/components/Icon";
 import IconTile from "@/components/IconTile";
 import IconButton from "@/components/IconButton";
+import { SubmissionWindowChip } from "@/components/GradingStageChip";
 function fmtDate(dateStr: string, lang: string) {
   return new Date(dateStr + "T00:00:00").toLocaleDateString(dateLocale(lang), {
     month: "short", day: "numeric", year: "numeric",
@@ -27,9 +30,10 @@ export default function AssignmentsPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const { t, lang } = useLanguage();
+  const can = useCan();     // a TA reads the list (10/11/2569)
   const { getCourse } = useCourses();
   const { getStudentsByCourse } = useStudents();
-  const { getAssignmentsByCourse, getRubricsByAssignment, removeAssignment } = useAssignments();
+  const { getRubricsByAssignment, removeAssignment } = useAssignments();
   const { getCategoriesByCourse } = useGradingCategories();
 
   const [search, setSearch] = useState("");
@@ -48,9 +52,8 @@ export default function AssignmentsPage() {
 
   const course = getCourse(id);
   const students = getStudentsByCourse(id).filter((s) => !isWithdrawn(s));
-  const assignments = getAssignmentsByCourse(id);
+  const assignments = useGradableAssignments(id);     // a TA reads only the work a teacher gave them (10/11/2569)
   const categories = getCategoriesByCourse(id);
-  const today = new Date().toISOString().split("T")[0];
 
   if (!course) {
     return (
@@ -85,7 +88,7 @@ export default function AssignmentsPage() {
             {course.name} · {students.length} {t("นักศึกษา", "students")}
           </p>
         </div>
-        <div className="flex items-center gap-3 shrink-0">
+        {can.editAssignment && <div className="flex items-center gap-3 shrink-0">
           <Link
             href={`/teacher/courses/${id}/assignments/new`}
             className="flex items-center gap-2 px-4 py-2 bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] font-medium rounded-xl text-sm active:scale-[.97] transition-colors"
@@ -93,7 +96,7 @@ export default function AssignmentsPage() {
             <Icon name="plus" />
             {t("สร้างชิ้นงาน", "Create Assignment")}
           </Link>
-        </div>
+        </div>}
       </div>
 
       {/* Course description */}
@@ -102,7 +105,7 @@ export default function AssignmentsPage() {
           <p className="text-xs text-[var(--text-secondary)] mb-1.5">{t("คำอธิบายรายวิชา", "Course Description")}</p>
           <div className="flex items-start justify-between gap-4">
             <p className="text-sm text-[var(--text-primary)] leading-relaxed">{course.description}</p>
-            <Link href={`/teacher/courses/${id}/settings`} className="text-[var(--accent)] text-sm hover:underline shrink-0">{t("แก้ไข", "Edit")}</Link>
+            {can.editAssignment && <Link href={`/teacher/courses/${id}/settings`} className="text-[var(--accent)] text-sm hover:underline shrink-0">{t("แก้ไข", "Edit")}</Link>}
           </div>
         </div>
       )}
@@ -127,23 +130,22 @@ export default function AssignmentsPage() {
               <p className="text-[var(--text-secondary)] text-sm">{t(`ไม่พบชิ้นงานที่ตรงกับ "${search}"`, `No results for "${search}"`)}</p>
             ) : (
               <>
-                <IconTile icon="document-list" size="lg" tone="accent" className="mb-3" />
+                <IconTile icon="file-text" size="lg" tone="accent" className="mb-3" />
                 <p className="text-sm font-medium text-[var(--text-secondary)] mb-1">{t("ยังไม่มีชิ้นงาน", "No assignments yet")}</p>
-                <p className="text-xs text-[var(--text-muted)] mb-4">{t("กด Create Assignment เพื่อเพิ่มชิ้นงานแรก", "Click Create Assignment to add your first one")}</p>
-                <Link
+                {can.editAssignment && <p className="text-xs text-[var(--text-muted)] mb-4">{t("กด Create Assignment เพื่อเพิ่มชิ้นงานแรก", "Click Create Assignment to add your first one")}</p>}
+                {can.editAssignment && <Link
                   href={`/teacher/courses/${id}/assignments/new`}
                   className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-medium rounded-xl active:scale-[.97] transition-colors"
                 >
                   <Icon name="plus" />
                   {t("สร้างชิ้นงาน", "Create Assignment")}
-                </Link>
+                </Link>}
               </>
             )}
           </div>
         ) : (
           <>
             {visible.map((a) => {
-              const isPastDue = !!a.dueDate && a.dueDate < today;
               const category = a.categoryId ? categories.find((c) => c.id === a.categoryId) : undefined;
               const rubric = getRubricsByAssignment(a.id)[0];
               const criteriaCount = rubric?.criteria.length ?? 0;
@@ -168,13 +170,15 @@ export default function AssignmentsPage() {
                         <p className="text-xs text-[var(--text-secondary)] mt-0.5 line-clamp-1">{a.description}</p>
                       )}
                       <div className="flex items-center gap-1.5 mt-1">
-                        <Icon name="calendar" size="xs" className={isPastDue ? "text-[var(--s-err-text)]" : "text-[var(--text-muted)]"} />
-                        <span className={`text-xs ${isPastDue ? "text-[var(--s-err-text)]" : "text-[var(--text-secondary)]"}`}>
+                        <Icon name="calendar" size="xs" className="text-[var(--text-muted)]" />
+                        {/* no red "Past due" on the teacher side (10/11/2569): a late deadline is not the teacher's problem — the chip says whether submissions are still open */}
+                        <span className="text-xs text-[var(--text-secondary)]">
                           {a.dueDate
-                            ? <>{isPastDue ? `${t("เลยกำหนด", "Past due")} — ` : ""}{t("กำหนดส่ง", "Due")} {fmtDate(a.dueDate, lang)}</>
+                            ? <>{t("กำหนดส่ง", "Due")} {fmtDate(a.dueDate, lang)}</>
                             : t("สอบ · ไม่มีกำหนดส่ง", "Exam · no due date")}
                           <span className="text-[var(--text-muted)]"> · {a.maxPoints} {t("คะแนน", "pts")}</span>
                         </span>
+                        <SubmissionWindowChip assignment={a} />
                       </div>
                       <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
                         <AssignmentTypeBadge type={a.submissionType} />
@@ -210,10 +214,10 @@ export default function AssignmentsPage() {
                         click-through to the detail page above. "Grade →" removed 22/9/2569 — it was a
                         plain text link, not a prominent action, and is now redundant with the row
                         itself being clickable through to detail (which has its own "Go to grading"). */}
-                    <div className="flex items-center gap-3 shrink-0 ml-4" onClick={(e) => e.stopPropagation()}>
+                    {can.editAssignment && <div className="flex items-center gap-3 shrink-0 ml-4" onClick={(e) => e.stopPropagation()}>
                       {/* ▼ dropdown menu */}
                       <div className="relative" ref={openMenu === a.id ? menuRef : undefined}>
-                        <IconButton icon="more-vertical" filled label={t(`เมนูของ ${a.name}`, `Actions for ${a.name}`)} onClick={(e) => { e.stopPropagation(); setOpenMenu(openMenu === a.id ? null : a.id); }} aria-haspopup="menu" aria-expanded={openMenu === a.id} />
+                        <IconButton icon="more-vertical" label={t(`เมนูของ ${a.name}`, `Actions for ${a.name}`)} onClick={(e) => { e.stopPropagation(); setOpenMenu(openMenu === a.id ? null : a.id); }} aria-haspopup="menu" aria-expanded={openMenu === a.id} />
                         {openMenu === a.id && (
                           <div role="menu" className="absolute right-0 top-9 z-20 bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-xl shadow-lg py-1 w-36 text-sm">
                             <Link
@@ -241,7 +245,7 @@ export default function AssignmentsPage() {
                           </div>
                         )}
                       </div>
-                    </div>
+                    </div>}
                   </div>
                 </div>
               );

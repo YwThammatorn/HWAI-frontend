@@ -9,12 +9,14 @@ export default function GradingAssignmentProvider({ children }: { children: Reac
   // See CourseProvider.tsx for why this starts empty and loads in an effect
   // instead of during the initial render (hydration-mismatch fix, [[project-hwai-meeting-20260826]]).
   const [gradingAssignments, setGradingAssignments] = useState<GradingAssignment[]>([]);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     try {
       const raw = localStorage.getItem(LS_KEY);
       if (raw) setGradingAssignments(JSON.parse(raw) as GradingAssignment[]);
     } catch {}
+    setReady(true);
   }, []);
 
   const persist = useCallback((next: GradingAssignment[]) => {
@@ -40,6 +42,17 @@ export default function GradingAssignmentProvider({ children }: { children: Reac
     persist(gradingAssignments.filter(g => g.taAccountId !== taAccountId));
   }, [gradingAssignments, persist]);
 
+  const removeAssignmentsByTaInCourse = useCallback((taAccountId: string, courseId: string) => {
+    persist(gradingAssignments.filter(g => !(g.taAccountId === taAccountId && g.courseId === courseId)));
+  }, [gradingAssignments, persist]);
+
+  const removeAssignmentFromScopes = useCallback((assignmentId: string) => {
+    if (!gradingAssignments.some(g => g.scope.type === "assignments" && g.scope.assignmentIds.includes(assignmentId))) return;
+    persist(gradingAssignments.map(g => g.scope.type === "assignments" && g.scope.assignmentIds.includes(assignmentId)
+      ? { ...g, scope: { type: "assignments" as const, assignmentIds: g.scope.assignmentIds.filter(i => i !== assignmentId) } }
+      : g));
+  }, [gradingAssignments, persist]);
+
   const getAssignmentsBySection = useCallback((courseId: string) =>
     gradingAssignments.filter(g => g.courseId === courseId), [gradingAssignments]);
 
@@ -48,8 +61,8 @@ export default function GradingAssignmentProvider({ children }: { children: Reac
 
   return (
     <GradingAssignmentContext.Provider value={{
-      gradingAssignments, addGradingAssignment, updateGradingAssignment, removeGradingAssignment, removeAssignmentsByTa,
-      getAssignmentsBySection, getAssignmentsByTa,
+      gradingAssignments, ready, addGradingAssignment, updateGradingAssignment, removeGradingAssignment, removeAssignmentsByTa,
+      removeAssignmentsByTaInCourse, removeAssignmentFromScopes, getAssignmentsBySection, getAssignmentsByTa,
     }}>
       {children}
     </GradingAssignmentContext.Provider>

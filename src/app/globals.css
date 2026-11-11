@@ -67,6 +67,10 @@
   /* Aliases used by shell/card components */
   --bg-surface:    #FFFFFF;
   --bg-subtle:     #E4ECF3;
+  /* The track a segmented control (PillTabBar) sits in — the grey tray behind the white active tab. It has to show on BOTH the page (--bg-app) and a white
+     card, so it cannot be --bg-app (the tray vanished on pages, 6/11) and it may not be --bg-subtle (hover only, DESIGN.md §9b). Same value as the
+     old tray, its own name (11/11/2569). */
+  --bg-track:      #E4ECF3;
   --border-subtle: #E0E8F0;   /* was identical to --border (no hierarchy) — now visually distinct */
   /* Table zebra-stripe (10/9/2569, round 2): --bg-app on white was only a
      17/13/8 RGB delta — too weak to read as a stripe (user: "สีมันกลืนกัน").
@@ -110,10 +114,9 @@
   /* Warning, solid (a confirm button for a risky-but-reversible action such as Suspend) — white text on it is 5.0:1 */
   --warn-solid:        #B45309;
   --warn-solid-hover:  #92400E;
-  /* Filled rating star — decorative, never text */
-  --rating-fill:       #F59E0B;
-  /* Rubric level scale, best → worst (a level's colour comes from its place in the scale). All pass 4.5:1 as text on their surface */
-  --level-1: #1A6645; --level-2: #4D7C0F; --level-3: #9A6700; --level-4: #C2410C; --level-5: #8C2535;
+  /* Rubric level scale, best → worst (a level's colour comes from its place in the scale). Each passes 4.5:1 as text on the page, on a card and on
+     the highlighted (accent-subtle) rubric cell, because the level NAME is drawn in it (8/11/2569: 2, 3 and 4 were darkened a notch to pass) */
+  --level-1: #1A6645; --level-2: #48750E; --level-3: #906000; --level-4: #BC3F0C; --level-5: #8C2535;
 
   /* Shared portal-sidebar theme (9/9/2569) — NOT --bg-nav. --bg-nav turned out
      to be reused as a general-purpose "navy" accent across ~15 other places
@@ -196,6 +199,7 @@
   /* Aliases used by shell/card components */
   --bg-surface:    #162232;
   --bg-subtle:     #1E2E40;
+  --bg-track:      #1E2E40;   /* segmented-control tray (see the light value) */
   --border-subtle: #1C2938;
   --bg-subtle-hover: #27394E;
   --bg-stripe:       #1E2E40;
@@ -206,8 +210,7 @@
   --navbar-bg:     #052E2B;
   --warn-solid:        #B45309;
   --warn-solid-hover:  #C2610F;
-  --rating-fill:       #FBBF24;
-  --level-1: #5CC490; --level-2: #A3C94A; --level-3: #D4A04A; --level-4: #FDBA74; --level-5: #E07080;
+  --level-1: #5CC490; --level-2: #A3C94A; --level-3: #D4A04A; --level-4: #FDBA74; --level-5: #E4818F;
   --sidebar-bg:        #0A4640;
   --nav-active-text:   #FFFFFF;
   --text-primary:  #D4E4F0;

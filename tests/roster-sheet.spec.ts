@@ -170,6 +170,15 @@ test.describe("Import Students popup takes the registrar's Excel sheet", () => {
     expect((await enrolledIds(page)).sort()).toEqual(G1);
   });
 
+  test("the rows with a problem are listed first in the preview (10/11/2569)", async ({ page }) => {
+    await seed(page);
+    const dialog = await open(page);
+    await dialog.locator("input[type=file]").setInputFiles(SAMPLE);
+    await expect(dialog).toContainText("2 with errors");
+    const firstTwo = await dialog.locator("tbody tr").evaluateAll((trs) => trs.slice(0, 2).map((tr) => tr.textContent ?? ""));
+    expect(firstTwo.join(" ")).toContain("In group 2, not this section's group");
+  });
+
   test("the system's own record wins: names come from the student database, an unknown id is skipped, an enrolled one too", async ({ page }) => {
     await seed(page, { cohort: G1.filter((id) => id !== "99010005"), enrolled: ["99010001"] });
     const dialog = await open(page);

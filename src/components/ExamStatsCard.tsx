@@ -2,7 +2,7 @@
 
 import { useLanguage } from "@/context/LanguageContext";
 import { toneForPct, SCORE_TONE_CLASSES } from "@/lib/scoreBook";
-import { percentBetterThan, type ExamStats } from "@/lib/examStats";
+import { type ExamStats } from "@/lib/examStats";
 import ScoreHistogram from "@/components/ScoreHistogram";
 
 const one = (n: number) => n.toFixed(1);
@@ -43,10 +43,8 @@ export default function ExamStatsCard({ name, maxPoints, stats, myScore, comment
     { label: "SD", value: stats.sd === null ? "—" : one(stats.sd), title: t("ส่วนเบี่ยงเบนมาตรฐาน", "Standard deviation") },
   ];
 
-  const better = myScore !== null ? percentBetterThan(stats, myScore) : null;
-
-  const betterText = better === null ? null : t(`ดีกว่าเพื่อนร่วมห้อง ${better}%`, `Better than ${better}% of your classmates`);
-
+  // No "better than N% of your classmates" (advisor, 10/11/2569): a ranking against friends is pressure the system has no ground for;
+  // the student still sees where their own score sits in the chart and against the average.
   const diffText = diff === null ? null
     : Math.abs(diff) < 0.05
       ? t("เท่ากับค่าเฉลี่ยของห้อง", "Right at the class average")
@@ -89,7 +87,6 @@ export default function ExamStatsCard({ name, maxPoints, stats, myScore, comment
                 <span className={`mt-1 inline-flex h-6 items-center rounded-lg px-2 text-xs font-semibold tabular-nums @2xl:mt-2 @2xl:h-7 @2xl:px-3 @2xl:text-sm ${SCORE_TONE_CLASSES[toneForPct(myPct)]}`}>{myPct}%</span>
               )}
               {diffText && <p className="mt-3 hidden text-sm text-[var(--text-secondary)] @2xl:block">{diffText}</p>}
-              {betterText && <p className="mt-1 hidden text-sm font-semibold text-[var(--accent)] @2xl:block">{betterText}</p>}
             </div>
           )}
         </div>
@@ -112,7 +109,6 @@ export default function ExamStatsCard({ name, maxPoints, stats, myScore, comment
       </div>
 
       {diffText && <p className="mt-3 text-xs text-[var(--text-secondary)] tabular-nums @2xl:hidden">{diffText}</p>}
-      {betterText && <p className="mt-1 text-xs font-semibold text-[var(--accent)] @2xl:hidden">{betterText}</p>}
       {comment && (
         <div className="mt-5 rounded-xl border border-[var(--border-subtle)] px-4 py-3">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">{t("ความเห็นจากอาจารย์", "Teacher's comment")}</p>

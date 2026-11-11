@@ -12,6 +12,7 @@ import { resizeLevels, rubricLevelCount } from "@/lib/rubricTemplates";
 import { rubricCandidates, criterionStats, proposeReplacement, type RubricCandidate, type CandidateSource } from "@/lib/rubricHistory";
 import { toneForPct, SCORE_TONE_CLASSES } from "@/lib/scoreBook";
 import { termHeading } from "@/lib/academicTerm";
+import { criterionWorth } from "@/lib/rubricLevels";
 
 /** What the picker hands back: one entry per criterion the teacher wants. `levels` absent = the editor's own default levels. */
 export interface PickedCriterion { name: string; description: string; points: number; levels?: CriterionLevel[]; cloIds: string[] }
@@ -202,8 +203,8 @@ export default function RubricPickerModal({ open, onClose, courseId, assignmentI
               <p className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">{t("เกณฑ์ใน rubric นี้", "Criteria in this rubric")}</p>
               <p data-testid="picker-preview-help" className="mb-3 mt-1 text-xs leading-relaxed text-[var(--text-secondary)]">
                 {stats
-                  ? t("ตัวเลข % สี คือคะแนนเฉลี่ยที่นักศึกษาได้ในแต่ละเกณฑ์ตอนที่ใช้ rubric นี้ (คะแนนที่ได้ ÷ คะแนนเต็มของเกณฑ์ จากงานที่ตรวจแล้ว) — เขียว 80% ขึ้นไป · น้ำเงิน 60–79% · แดงต่ำกว่า 60% ใช้ดูว่าเกณฑ์ไหนง่ายหรือยากไป ส่วนตัวเลขหลัง “เต็ม” คือคะแนนเต็มของเกณฑ์นั้น", "The coloured % is how the class did on each criterion when this rubric was used (points earned ÷ the criterion's points, over graded work) — green 80% and up · blue 60–79% · red under 60%. Use it to spot criteria that were too easy or too hard. “Max” is the criterion's own total.")
-                  : t("rubric นี้ยังไม่มีผลตรวจให้ดู จึงไม่มีตัวเลขเฉลี่ย — ตัวเลขหลัง “เต็ม” คือคะแนนเต็มของแต่ละเกณฑ์", "There are no graded results for this rubric, so no averages are shown. “Max” is each criterion's own total.")}
+                  ? t("ตัวเลข % สี คือคะแนนเฉลี่ยที่นักศึกษาได้ในแต่ละเกณฑ์ตอนที่ใช้ rubric นี้ (คะแนนที่ได้ ÷ คะแนนเต็มของเกณฑ์ จากงานที่ตรวจแล้ว) — เขียว 80% ขึ้นไป · น้ำเงิน 60–79% · แดงต่ำกว่า 60% ใช้ดูว่าเกณฑ์ไหนง่ายหรือยากไป ส่วน “คะแนน · %” คือคะแนนเต็มของเกณฑ์นั้นและสัดส่วนในทั้ง rubric", "The coloured % is how the class did on each criterion when this rubric was used (points earned ÷ the criterion's points, over graded work) — green 80% and up · blue 60–79% · red under 60%. Use it to spot criteria that were too easy or too hard. “pts · %” is the criterion's own total and its share of the whole rubric.")
+                  : t("rubric นี้ยังไม่มีผลตรวจให้ดู จึงไม่มีตัวเลขเฉลี่ย — “คะแนน · %” คือคะแนนเต็มของแต่ละเกณฑ์และสัดส่วนในทั้ง rubric", "There are no graded results for this rubric, so no averages are shown. “pts · %” is each criterion's own total and its share of the whole rubric.")}
               </p>
               <ul className="flex flex-col gap-2.5">
                 {chosen.criteria.map((c) => {
@@ -215,7 +216,7 @@ export default function RubricPickerModal({ open, onClose, courseId, assignmentI
                         {st && st.avgPct !== null && (
                           <span title={t("คะแนนเฉลี่ยของนักศึกษาในเกณฑ์นี้ตอนนั้น", "Class average on this criterion then")} aria-label={t(`คะแนนเฉลี่ยของนักศึกษา ${Math.round(st.avgPct)}%`, `Class average ${Math.round(st.avgPct)}%`)} className={`inline-flex h-6 items-center rounded-md px-2 font-semibold ${SCORE_TONE_CLASSES[toneForPct(st.avgPct)]}`}>{Math.round(st.avgPct)}%</span>
                         )}
-                        {t("เต็ม", "max")} {c.maxPoints}
+                        {criterionWorth(c.maxPoints, c.weight, t)}
                       </span>
                     </li>
                   );

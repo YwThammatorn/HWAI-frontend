@@ -138,7 +138,7 @@ function AttachmentChip({ a, onRemove, removeLabel }: { a: AssignmentAttachment;
         </span>
       </button>
       {onRemove && (
-        <IconButton icon="x" label={removeLabel ?? "Remove"} tone="danger" onClick={onRemove} />
+        <IconButton icon="trash" label={removeLabel ?? "Remove"} tone="danger" onClick={onRemove} />
       )}
     </li>
   );

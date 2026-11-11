@@ -134,7 +134,7 @@ export default function StudentHome() {
     <div className="p-6 w-full">
         <div className="flex items-center gap-3 flex-wrap">
           <h1 className="text-2xl font-bold text-[var(--text-primary)]">
-            {t(`สวัสดี, ${firstName}`, `Hi, ${firstName}`)} 👋
+            {t(`สวัสดี, ${firstName}`, `Hi, ${firstName}`)}
           </h1>
           {myProgramName && (
             <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-[var(--accent-bright)]/15 text-[var(--accent)]">

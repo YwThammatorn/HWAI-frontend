@@ -9,6 +9,7 @@ import { useAssignments } from "@/lib/assignments";
 import { useRubricLibrary } from "@/lib/rubricLibrary";
 import { rubricCandidates, compareOptions, compareColumn, criterionOnRow, compareCell, NO_CRITERION, type YearCell, type CompareColumn, type CompareOption } from "@/lib/rubricHistory";
 import { splitCriterionName } from "@/lib/rubricName";
+import { levelTone } from "@/lib/rubricLevels";
 import { useMyCourseIds } from "@/lib/useMyCourseIds";
 import { toneForPct, SCORE_TONE_CLASSES } from "@/lib/scoreBook";
 import { termHeading } from "@/lib/academicTerm";
@@ -20,16 +21,13 @@ import Modal from "@/components/Modal";
 
 import Icon from "@/components/Icon";
 import IconButton from "@/components/IconButton";
-// colours of a level on a bar, best → worst (same as the Grading rubric card; warn is never used for a level)
-const FILL = ["bg-[var(--s-ok-text)]", "bg-[var(--s-info-text)]", "bg-[var(--text-muted)]", "bg-[var(--s-err-text)]"];
-const toneOf = (i: number, n: number) => (n <= 1 ? 0 : Math.round((i / (n - 1)) * 3));
-
+// a level's colour on a bar, best → worst: the one level ramp (lib/rubricLevels.ts), the same as the Grading rubric panel
 function LevelBar({ cell }: { cell: YearCell }) {
   const total = cell.counts.reduce((a, b) => a + b, 0);
   if (total === 0) return null;
   return (
     <div role="img" aria-label={cell.counts.map((k, i) => `${i}: ${k}`).join(", ")} className="flex h-1.5 w-full overflow-hidden rounded-full border border-[var(--border-subtle)] bg-[var(--bg-app)]">
-      {cell.counts.map((k, i) => k > 0 && <div key={i} className={FILL[toneOf(i, cell.counts.length)]} style={{ width: `${(k / total) * 100}%` }} />)}
+      {cell.counts.map((k, i) => k > 0 && <div key={i} className={levelTone(i, cell.counts.length).dot} style={{ width: `${(k / total) * 100}%` }} />)}
     </div>
   );
 }

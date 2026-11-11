@@ -217,7 +217,10 @@ test.describe("teacher — one assignment", () => {
     await expect(note).toContainText("Mar 14, 12:00 AM");
     await expect(page.getByTestId("grade-locked")).toHaveCount(2);
     await expect(page.getByRole("link", { name: "Grade", exact: true })).toHaveCount(0);
-    await expect(page.getByRole("button", { name: /^Re-grade/ }).first()).toBeDisabled();
+    await page.locator("main tbody tr").first().click();                                  // Re-grade lives in the detail of a picked row now
+    await expect(page.getByTestId("detail-regrade")).toBeDisabled();
+    await expect(page.getByTestId("detail-grade-locked")).toBeVisible();
+    await expect(page.getByTestId("grade-next-locked")).toBeVisible();
     await expect(page.getByRole("button", { name: "Announce results" })).toBeDisabled();
     await expect(page.getByTestId("late-chip")).toHaveCount(1);
   });
@@ -228,7 +231,8 @@ test.describe("teacher — one assignment", () => {
     await expect(page.getByTestId("grading-window-note")).toHaveCount(0);
     await expect(page.getByTestId("grade-locked")).toHaveCount(0);
     await expect(page.getByRole("link", { name: "Grade", exact: true })).toHaveCount(2);
-    await expect(page.getByRole("button", { name: /^Re-grade/ }).first()).toBeEnabled();
+    await page.locator("main tbody tr").first().click();
+    await expect(page.getByTestId("detail-regrade")).toBeEnabled();
   });
 
   test("with no late work accepted the Grade link is there the day after the deadline", async ({ page }) => {

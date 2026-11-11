@@ -42,12 +42,17 @@ const SUBMISSIONS = [
   sub("s3", "a-review", "64070701", "need_review", 80), sub("s4", "a-review", "64070702", "graded", 60), sub("s5", "a-review", "64070703", "not_graded", null),
   sub("s6", "a-late", "64070701", "not_graded", null),
 ];
+// Done Quiz with the marks the "how it went" tests read (10/11/2569): s2 is low (40 of 100) and edited (the AI said 60); both carry per-criterion marks
+const WITH_MARKS = SUBMISSIONS.map((x) =>
+  x.id === "s1" ? { ...x, criterionScores: { c1: 90 } }
+  : x.id === "s2" ? { ...x, aiScore: 60, instructorScore: 40, criterionScores: { c1: 40 } }
+  : x);
 const ROSTER = ["64070701", "64070702", "64070703", "64070704"].map((studentId, i) => ({
   id: `r-${i}`, courseId: "c-gs", studentId, name: `Student ${studentId}`, email: `${studentId}@kmitl.ac.th`,
   cohort: "CE64", enrollmentStatus: "enrolled",
 }));
 
-async function seed(page: Page, opts: { lang?: "en" | "th"; empty?: boolean } = {}) {
+async function seed(page: Page, opts: { lang?: "en" | "th"; empty?: boolean; submissions?: unknown[]; assignments?: unknown[] } = {}) {
   await page.addInitScript((d) => {
     // addInitScript re-runs on every navigation — seed once so in-test changes survive
     if (sessionStorage.getItem("gs_seeded")) return;
@@ -61,10 +66,10 @@ async function seed(page: Page, opts: { lang?: "en" | "th"; empty?: boolean } = 
     localStorage.setItem("hwai_assignments_v1", JSON.stringify(d.empty ? [] : d.assignments));
     localStorage.setItem("hwai_rubrics_v1", JSON.stringify(d.empty ? [] : d.rubrics));
     localStorage.setItem("hwai_submissions_v1", JSON.stringify(d.empty ? [] : d.submissions));
-  }, { lang: opts.lang ?? "en", empty: !!opts.empty, course: COURSE, teacher: TEACHER, category: CATEGORY, assignments: ASSIGNMENTS, rubrics: RUBRICS, submissions: SUBMISSIONS, roster: ROSTER });
+  }, { lang: opts.lang ?? "en", empty: !!opts.empty, course: COURSE, teacher: TEACHER, category: CATEGORY, assignments: opts.assignments ?? ASSIGNMENTS, rubrics: RUBRICS, submissions: opts.submissions ?? SUBMISSIONS, roster: ROSTER });
 }
 
-async function open(page: Page, url: string, opts: { lang?: "en" | "th"; empty?: boolean } = {}) {
+async function open(page: Page, url: string, opts: { lang?: "en" | "th"; empty?: boolean; submissions?: unknown[]; assignments?: unknown[] } = {}) {
   await seed(page, opts);
   await page.goto(`${BASE}/teacher/courses/c-gs${url}`);
   await page.waitForLoadState("networkidle");
@@ -72,7 +77,7 @@ async function open(page: Page, url: string, opts: { lang?: "en" | "th"; empty?:
 
 const statValue = (page: Page, label: string) => page.getByText(label, { exact: true }).locator("xpath=following-sibling::p[1]");
 const courseNav = (page: Page) => page.getByRole("navigation", { name: "Programming" });
-const rowNames = (page: Page) => page.locator("main li .min-w-0.flex-1 > a").allTextContents();
+const rowNames = (page: Page) => page.locator("main li .min-w-0.flex-1 > h3").allTextContents();
 // one planning row on the Assignments page (the list's own header and the search dropdown also carry a border-b)
 const planRow = (page: Page, name: string) => page.locator("main div[class*='last:border-b-0']", { hasText: name }).first();
 
@@ -106,7 +111,7 @@ test.describe("Sidebar", () => {
     ["/assignments/a-review/grading", "Grading"],
     ["/assignments/a-review/recheck?sub=s3", "Grading"],
     ["/results", "Score Book"],
-    ["/assignments/a-done/results", "Score Book"],
+    ["/assignments/a-done/results", "Grading"],   // the Grading Result page of one assignment belongs to Grading (10/11/2569); only /results is the Score Book
   ];
   for (const [url, expected] of CASES) {
     test(`${url} highlights only ${expected}`, async ({ page }) => {
@@ -131,7 +136,8 @@ test.describe("Assignments page is planning only", () => {
     await open(page, "/assignments");
     const done = planRow(page, "Done Quiz");
     await expect(done).toContainText("Due Jan 10, 2026");
-    await expect(done).toContainText("Past due");
+    await expect(done).not.toContainText("Past due");          // no red "Past due" on the teacher side (10/11/2569)
+    await expect(done.getByTestId("submission-window")).toHaveText("Closed");
     await expect(done).toContainText("PDF");
     await expect(done).toContainText("Homework (40%)");
     await expect(done).toContainText("Rubric · 1 criteria");
@@ -179,6 +185,26 @@ test.describe("Course Grading page", () => {
     await expect(statValue(page, "Announced")).toHaveText("1");       // …and it is the one whose results were announced
     await expect(page.getByText("Pending Review", { exact: true })).toHaveCount(0);   // ("Overdue" still tags the late row below)
     await expect(page.locator("main p", { hasText: /^(Total Assignments|Graded|Announced)$/ })).toHaveCount(3);
+  });
+
+  test("a grading card is not a link: only its buttons are pressable, so a click on the body cannot skip the grading steps (10/11/2569)", async ({ page }) => {
+    await open(page, "/grading");
+    const li = page.locator("main li", { hasText: "Review Me" });
+    await expect(li.getByRole("heading", { name: "Review Me" })).toBeVisible();      // the name is text, not a link
+    await expect(li.getByRole("link", { name: "Review Me" })).toHaveCount(0);
+    await expect(li.locator("a[class*=\"after:\"]")).toHaveCount(0);                    // nothing stretched over the card
+    const before = page.url();
+    const box = (await li.getByRole("heading", { name: "Review Me" }).boundingBox())!;
+    await page.mouse.click(box.x + box.width + 200, box.y + 4);                       // empty body of the card
+    await page.mouse.click(box.x + 20, box.y + 90);                                   // on the numbers
+    await expect(page).toHaveURL(before);
+  });
+
+  test("a grading card is not a link: the card body cannot be pressed, only its buttons (10/11/2569)", async ({ page }) => {
+    await open(page, "/grading");
+    const card = page.locator("main li", { hasText: "Review Me" });
+    await expect(card.getByRole("link", { name: "Review Me" })).toHaveCount(0);       // the name is text, not a link
+    await expect(card.locator("a[class*=\"after:\"]")).toHaveCount(0);                    // nothing stretched over the card
   });
 
   test("queue order: needs review → overdue → waiting → completed", async ({ page }) => {
@@ -253,9 +279,25 @@ test.describe("Course Grading page", () => {
   test("meta line: overdue chip, type badge, category weight", async ({ page }) => {
     await open(page, "/grading");
     const late = page.locator("main li", { hasText: "Late One" });
-    await expect(late).toContainText("Overdue");
+    await expect(late).not.toContainText("Overdue");
+    await expect(late.getByTestId("grading-stage")).toHaveText("To grade");   // what the teacher has to do, not that the students were late (10/11/2569)
     await expect(late).toContainText("Homework (40%)");
     await expect(page.locator("main li", { hasText: "Waiting Project" })).toContainText("Group");
+  });
+
+  test("every card carries the stage of its assignment — what the teacher has to do — and nothing is red (10/11/2569)", async ({ page }) => {
+    await open(page, "/grading");
+    const stage = (name: string) => page.locator("main li", { hasText: name }).getByTestId("grading-stage");
+    await expect(stage("Done Quiz")).toHaveText("Announced");
+    await expect(stage("Review Me")).toHaveText("To grade");
+    await expect(stage("Waiting Project")).toHaveText("No submissions");
+    await expect(page.getByText("Overdue")).toHaveCount(0);
+  });
+
+  test("the course Overview says how many pieces of work are waiting for a grader, not how many assignments are \"Active\"", async ({ page }) => {
+    await open(page, "");
+    await expect(page.getByText("3 to grade", { exact: true })).toBeVisible();      // s3 (needs review), s5 and s6 (not graded)
+    await expect(page.getByText("Active", { exact: true })).toHaveCount(0);
   });
 
   test("bridge to the Score Book", async ({ page }) => {
@@ -292,7 +334,9 @@ test.describe("Assignment detail is planning only", () => {
     await expect(details).toContainText("Homework (40%)");
     await expect(details).toContainText("Individual");
     await expect(details).toContainText("PDF");
-    await expect(page.getByText("Past due — Due Jan 10, 2026")).toBeVisible();
+    await expect(page.getByText("Due Jan 10, 2026").first()).toBeVisible();
+    await expect(page.getByText("Past due")).toHaveCount(0);
+    await expect(page.getByTestId("submission-window")).toHaveText("Closed");
     // gone: stat cards, submissions table, search, status filter
     for (const gone of ["Submissions", "Average Grade", "Search students...", "Filter: All Status", "Student Name"]) {
       await expect(page.getByText(gone, { exact: false })).toHaveCount(0);
@@ -343,48 +387,52 @@ test.describe("Assignment detail is planning only", () => {
   });
 });
 
-test.describe("Per-assignment grading page took over the stats and the submissions list", () => {
-  // the four cards sit in the grid above the table ("Submitted" is also a column header, so scope to the grid)
-  const statCard = (page: Page, label: string) => page.locator("main div.grid > div").filter({ has: page.getByText(label, { exact: true }) });
+test.describe("Per-assignment grading page: a summary strip, the list on the left, the details on the right (10/11/2569)", () => {
+  const rows = (page: Page) => page.locator("main tbody tr");
+  const strip = (page: Page) => page.getByTestId("grading-strip");
+  const statusFilter = (page: Page) => page.getByRole("combobox", { name: "Filter by status" });
 
-  test("stat cards: processed, submitted x / enrolled, needs review, average", async ({ page }) => {
+  test("the strip: how far, the scores in three numbers, the chips and the next button", async ({ page }) => {
     await open(page, "/assignments/a-review/grading");
-    await expect(statCard(page, "Processed")).toContainText("1");
-    await expect(statCard(page, "Submitted")).toContainText("3");
-    await expect(statCard(page, "Submitted")).toContainText("/ 4 · 1 pending");
-    await expect(statCard(page, "Needs Review")).toContainText("1");
-    await expect(statCard(page, "Avg. Score")).toBeVisible();
+    await expect(strip(page)).toContainText("1 / 3 graded");
+    await expect(strip(page)).toContainText("3 / 4 submitted");                       // only said while somebody has not handed in
+    await expect(strip(page).getByRole("img", { name: /graded/ })).toBeVisible();     // the segmented progress bar
+    const scores = page.getByTestId("grading-strip-scores");
+    await expect(scores.locator("dd")).toHaveCount(3);
+    for (const part of ["Avg", "High", "Low"]) await expect(scores.getByText(part, { exact: true })).toBeVisible();
+    await expect(scores.locator("dd").first()).toHaveText("60.0");                      // the one graded score
+    await expect(strip(page).getByRole("button", { name: /Needs review 1/ })).toBeVisible();
   });
 
-  test("the Avg. Score card is just the average with the highest and lowest score (21/10/2569)", async ({ page }) => {
+  test("the old stat cards are gone: the page is one screen and does not scroll at 1480x900", async ({ page }) => {
+    await page.setViewportSize({ width: 1480, height: 900 });
     await open(page, "/assignments/a-review/grading");
-    const card = statCard(page, "Avg. Score");
-    await expect(card).toContainText(/of \d+ · Max \d+(\.\d+)? · Min \d+(\.\d+)?/);
-    await expect(card).not.toContainText("pts");
-    await expect(card).not.toContainText("submitted");
+    await expect(page.getByText("Processed", { exact: true })).toHaveCount(0);
+    const fits = await page.evaluate(() => { const box = document.querySelector("main")!.parentElement!; return box.scrollHeight <= box.clientHeight + 1; });
+    expect(fits).toBe(true);
   });
 
   test("lists every submission with a Grade link to the recheck page, including not-yet-graded rows", async ({ page }) => {
     // (23/9/2569 round 3) The link is one consistent label shown on every row regardless of status —
     // was gated on need_review/graded, hidden until an AI score existed.
     await open(page, "/assignments/a-review/grading");
-    await expect(page.locator("main tbody tr")).toHaveCount(3);
+    await expect(rows(page)).toHaveCount(3);
     await expect(page.getByRole("link", { name: "Grade", exact: true }).first()).toHaveAttribute("href", "/teacher/courses/c-gs/assignments/a-review/recheck?sub=s3");
-    const notGraded = page.locator("main tbody tr", { hasText: "Student 64070703" });
+    const notGraded = rows(page).filter({ hasText: "Student 64070703" });
     await expect(notGraded.getByRole("link", { name: "Grade", exact: true })).toHaveAttribute("href", "/teacher/courses/c-gs/assignments/a-review/recheck?sub=s5");
     await expect(page.getByText("Showing 1–3 of 3 submissions")).toBeVisible();
   });
 
-  test("status filter carries counts and narrows the table", async ({ page }) => {
+  test("the status filter carries counts and narrows the list", async ({ page }) => {
     await open(page, "/assignments/a-review/grading");
-    await expect(page.getByRole("tab", { name: /^All\s*3$/ })).toBeVisible();
-    await page.getByRole("tab", { name: /Needs review/ }).click();
-    await expect(page.locator("main tbody tr")).toHaveCount(1);
+    await expect(statusFilter(page).locator("option")).toHaveText(["All (3)", "Needs review (1)", "Not graded (1)", "Graded (1)"]);
+    await statusFilter(page).selectOption({ label: "Needs review (1)" });
+    await expect(rows(page)).toHaveCount(1);
     await expect(page.getByText("Student 64070701")).toBeVisible();
-    await page.getByRole("tab", { name: /Not graded/ }).click();
+    await statusFilter(page).selectOption({ label: "Not graded (1)" });
     await expect(page.getByText("Student 64070703")).toBeVisible();
     await expect(page.getByText("Showing 1–1 of 1 submissions")).toBeVisible();
-    await page.getByRole("tab", { name: /^Graded\s*1$/ }).click();
+    await statusFilter(page).selectOption({ label: "Graded (1)" });
     await expect(page.getByText("Student 64070702")).toBeVisible();
   });
 
@@ -392,22 +440,168 @@ test.describe("Per-assignment grading page took over the stats and the submissio
     await open(page, "/assignments/a-review/grading");
     const box = page.getByRole("combobox", { name: "Search students" });
     await box.fill("64070702");
-    await expect(page.locator("main tbody tr")).toHaveCount(1);
+    await expect(rows(page)).toHaveCount(1);
     await box.fill("zzzz");
     await expect(page.getByText("No results found")).toBeVisible();
     await box.fill("");
-    await expect(page.locator("main tbody tr")).toHaveCount(3);
+    await expect(rows(page)).toHaveCount(3);
+  });
+
+  test("the filter and sort selects fill their own box, so the chevron sits inside it (a fixed-width wrapper left the arrow outside)", async ({ page }) => {
+    await open(page, "/assignments/a-review/grading");
+    const sizes = await page.locator("main section[aria-label='Students'] select").evaluateAll((els) =>
+      els.map((e) => ({ select: Math.round(e.getBoundingClientRect().width), box: Math.round(e.parentElement!.getBoundingClientRect().width) })));
+    expect(sizes).toHaveLength(2);
+    for (const s of sizes) expect(s.select).toBe(s.box);
+  });
+
+  test("sorting: attention first by default, then by name or by score either way", async ({ page }) => {
+    await open(page, "/assignments/a-done/grading", { submissions: WITH_MARKS });
+    const sort = page.getByRole("combobox", { name: "Sort" });
+    await sort.selectOption("score_asc");
+    await expect(rows(page).first()).toContainText("Student 64070702");     // 40
+    await sort.selectOption("score_desc");
+    await expect(rows(page).first()).toContainText("Student 64070701");     // 90
+    await sort.selectOption("name");
+    await expect(rows(page).first()).toContainText("Student 64070701");
   });
 
   test("filtering by status and back doesn't change the row count", async ({ page }) => {
-    // Score is read-only in this table (23/9/2569) — this used to check that a live-typed instructor
-    // score survived a filter round trip; there's no more live editing to lose, so this now just
-    // guards the filter tabs themselves against losing rows on the way back to "All".
     await open(page, "/assignments/a-review/grading");
-    await expect(page.locator("main tbody tr")).toHaveCount(3);
-    await page.getByRole("tab", { name: /Graded/ }).click();
-    await page.getByRole("tab", { name: /^All/ }).click();
-    await expect(page.locator("main tbody tr")).toHaveCount(3);
+    await expect(rows(page)).toHaveCount(3);
+    await statusFilter(page).selectOption({ label: "Graded (1)" });
+    await statusFilter(page).selectOption({ label: "All (3)" });
+    await expect(rows(page)).toHaveCount(3);
+  });
+
+  test("with nothing picked the right side is the class overview: the score chart, the lowest criteria and the rubric tab", async ({ page }) => {
+    await open(page, "/assignments/a-done/grading", { submissions: WITH_MARKS });
+    const overview = page.getByTestId("class-overview");
+    await expect(overview.getByTestId("score-histogram")).toBeVisible();
+    await expect(overview.getByTestId("weakest-criteria")).toContainText("Quality");
+    await expect(overview.getByTestId("weakest-criteria")).toContainText("65%");              // (90 + 40) / 2 of 100
+    await overview.getByRole("tab", { name: "Rubric" }).click();
+    await expect(page.getByTestId("rubric-row-c1").getByTestId("weakest-tag")).toHaveText("Lowest");
+  });
+
+  test("a chip narrows the list to that signal, pressing it again shows everyone; the same filter comes from ?filter= in a link", async ({ page }) => {
+    await open(page, "/assignments/a-done/grading", { submissions: WITH_MARKS });
+    await expect(rows(page)).toHaveCount(2);
+    await strip(page).getByRole("button", { name: "Low score 1" }).click();
+    await expect(rows(page)).toHaveCount(1);
+    await expect(rows(page)).toContainText("Student 64070702");
+    await expect(statusFilter(page)).toHaveValue("low");
+    await strip(page).getByRole("button", { name: "Low score 1" }).click();
+    await expect(rows(page)).toHaveCount(2);
+    await page.goto(`${BASE}/teacher/courses/c-gs/assignments/a-done/grading?filter=edited`);
+    await expect(rows(page)).toHaveCount(1);
+    await expect(rows(page)).toContainText("Student 64070702");
+  });
+
+  test("the list puts what needs the teacher first (AI unsure → not graded → graded), and each score is also a bar", async ({ page }) => {
+    await open(page, "/assignments/a-review/grading");
+    await expect(rows(page).nth(0)).toContainText("Student 64070701");     // needs review
+    await expect(rows(page).nth(1)).toContainText("Student 64070703");     // not graded
+    await expect(rows(page).nth(2)).toContainText("Student 64070702");     // graded
+    await expect(rows(page).nth(0).getByTestId("score-bar")).toHaveCount(1);
+    await expect(rows(page).nth(1).getByTestId("score-bar")).toHaveCount(0);   // nothing to draw without a score
+  });
+
+  test("picking a row shows that person on the right (and in the URL) without leaving; the way back is a button at the top", async ({ page }) => {
+    await open(page, "/assignments/a-review/grading");
+    await rows(page).filter({ hasText: "Student 64070702" }).click();
+    await expect(page).toHaveURL(/[?&]sub=s4\b/);
+    const detail = page.getByTestId("grading-detail");
+    await expect(detail.getByRole("heading", { name: "Student 64070702" })).toBeVisible();
+    await expect(detail.getByTestId("detail-grade")).toHaveAttribute("href", "/teacher/courses/c-gs/assignments/a-review/recheck?sub=s4");
+    for (const part of ["Counts as", "AI suggested", "You gave"]) await expect(detail.getByText(part, { exact: true })).toBeVisible();
+    await expect(rows(page).filter({ hasText: "Student 64070702" })).toHaveAttribute("aria-current", "true");
+    await page.reload();                                                    // the choice survives a reload
+    await expect(page.getByTestId("grading-detail").getByRole("heading", { name: "Student 64070702" })).toBeVisible();
+    await page.getByTestId("detail-back").click();
+    await expect(page.getByTestId("class-overview")).toBeVisible();
+    await expect(page).not.toHaveURL(/sub=/);
+  });
+
+  test("the Grade link in a row opens the grading screen and does not just pick the row", async ({ page }) => {
+    await open(page, "/assignments/a-review/grading");
+    await rows(page).first().getByRole("link", { name: "Grade", exact: true }).click();
+    await expect(page).toHaveURL(/\/assignments\/a-review\/recheck\?sub=s3/);
+  });
+
+  test("the arrow keys move the selection down and up the list", async ({ page }) => {
+    await open(page, "/assignments/a-review/grading");
+    await rows(page).first().focus();
+    await page.keyboard.press("ArrowDown");
+    await expect(page).toHaveURL(/sub=s5/);                                 // the second row: not graded
+    await page.keyboard.press("ArrowDown");
+    await expect(page).toHaveURL(/sub=s4/);
+    await page.keyboard.press("ArrowUp");
+    await expect(page).toHaveURL(/sub=s5/);
+  });
+
+  test("the detail has previous / next arrows that follow the list as it is filtered", async ({ page }) => {
+    await open(page, "/assignments/a-review/grading");
+    await rows(page).first().click();
+    const detail = page.getByTestId("grading-detail");
+    await expect(detail).toContainText("1 / 3");
+    await detail.getByRole("button", { name: "Next" }).click();
+    await expect(page).toHaveURL(/sub=s5/);
+    await expect(page.getByTestId("grading-detail")).toContainText("2 / 3");
+    await expect(page.getByTestId("grading-detail").getByRole("button", { name: "Previous" })).toBeEnabled();
+  });
+
+  test("the detail shows the points on each criterion with the class average", async ({ page }) => {
+    await open(page, "/assignments/a-done/grading", { submissions: WITH_MARKS });
+    await rows(page).filter({ hasText: "Student 64070702" }).click();
+    const crit = page.getByTestId("detail-criteria");
+    await expect(crit).toContainText("Quality");
+    await expect(crit).toContainText("40");
+    await expect(crit).toContainText("Class average 65%");
+  });
+
+  test("a person with no per-criterion points yet is told so, with the way to add them", async ({ page }) => {
+    await open(page, "/assignments/a-done/grading");
+    await rows(page).filter({ hasText: "Student 64070702" }).click();
+    await expect(page.getByTestId("detail-no-marks")).toBeVisible();
+  });
+
+  test("Re-grade is in the detail of a picked row (AI-assisted work only), not repeated on every row", async ({ page }) => {
+    await open(page, "/assignments/a-review/grading");
+    await expect(page.getByRole("button", { name: /Re-grade/ })).toHaveCount(0);
+    await rows(page).first().click();
+    await expect(page.getByTestId("detail-regrade")).toBeEnabled();
+  });
+
+  test("Calibrate AI is one click away: a button in the header and a card in the class overview, both to the Calibration page of THIS assignment", async ({ page }) => {
+    await open(page, "/assignments/a-done/grading");              // has a rubric and files, graded with the AI
+    const href = "/teacher/courses/c-gs/calibration?assignment=a-done";
+    await expect(page.getByTestId("calibrate-ai")).toHaveAttribute("href", href);
+    await expect(page.getByTestId("calibrate-card").getByRole("link", { name: "Calibrate AI" })).toHaveAttribute("href", href);
+  });
+
+  test("graded by hand: Calibrate AI is still there but greyed, and the class overview says why and where to change it", async ({ page }) => {
+    const manual = ASSIGNMENTS.map((a) => (a.id === "a-done" ? { ...a, gradingFinalized: false, gradingMode: "manual" } : a));
+    await open(page, "/assignments/a-done/grading", { assignments: manual });
+    await expect(page.getByTestId("calibrate-ai")).toHaveCount(0);                        // no link: nothing of the AI's to compare
+    await expect(page.getByTestId("calibrate-ai-off")).toBeVisible();
+    await expect(page.getByTestId("calibrate-why")).toContainText("graded by hand");
+    await expect(page.getByTestId("calibrate-why").getByRole("link", { name: "Change it on the Grading list" })).toHaveAttribute("href", "/teacher/courses/c-gs/grading");
+  });
+
+  test("Calibrate AI is not shown where it does not apply at all: an exam, no files, or an assignment with no rubric", async ({ page }) => {
+    await open(page, "/assignments/a-review/grading");                     // no rubric
+    await expect(page.getByTestId("calibrate-ai")).toHaveCount(0);
+    await expect(page.getByTestId("calibrate-card")).toHaveCount(0);
+  });
+
+  test("Grade next opens the first piece of work that is not graded yet, with how many are left", async ({ page }) => {
+    await open(page, "/assignments/a-review/grading");
+    const next = page.getByTestId("grade-next");
+    await expect(next).toContainText("Grade next (2 left)");
+    await expect(next).toHaveAttribute("href", "/teacher/courses/c-gs/assignments/a-review/recheck?sub=s3");
+    await open(page, "/assignments/a-done/grading");
+    await expect(page.getByTestId("grade-next")).toHaveCount(0);       // everything graded: nothing to press
   });
 
   test("breadcrumb goes Courses / course / Grading / assignment", async ({ page }) => {

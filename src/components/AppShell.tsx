@@ -4,33 +4,19 @@ import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import Navbar from "./Navbar";
 import ProfileSidebar from "./ProfileSidebar";
-
-// Preview-as-TA is scoped to grading-related pages only (meeting 26/8/2569,
-// [[project-hwai-meeting-20260826]]). Course list/overview/assignment-list are
-// included too — without them there's no way to navigate to a specific
-// assignment's grading page at all.
-const TA_PREVIEW_ALLOWED: RegExp[] = [
-  /^\/teacher\/courses$/,
-  /^\/teacher\/courses\/[^/]+$/,
-  /^\/teacher\/courses\/[^/]+\/assignments$/,
-  /^\/teacher\/courses\/[^/]+\/assignments\/[^/]+$/,
-  /^\/teacher\/courses\/[^/]+\/assignments\/[^/]+\/grading$/,
-  /^\/teacher\/courses\/[^/]+\/assignments\/[^/]+\/results$/,
-  /^\/teacher\/courses\/[^/]+\/assignments\/[^/]+\/recheck$/,
-  /^\/teacher\/courses\/[^/]+\/assignments\/[^/]+\/rubrics\/[^/]+$/,
-];
-// Checked before TA_PREVIEW_ALLOWED — "new"/"[assignmentId]/edit" would
-// otherwise false-match the generic [^/]+ id-segment patterns above.
-const TA_PREVIEW_BLOCKED: RegExp[] = [
-  /^\/teacher\/courses\/new$/,
-  /^\/teacher\/courses\/[^/]+\/assignments\/new$/,
-  /^\/teacher\/courses\/[^/]+\/assignments\/[^/]+\/edit$/,
-];
+import { useMyCourseIds } from "@/lib/useMyCourseIds";
+import { useSectionRoles } from "@/lib/section-roles";
+import { taPathAllowed } from "@/lib/taPaths";
+import { useTaScope } from "@/lib/useGradableAssignments";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
-  const { user, effectiveRole, viewAs } = useAuth();
+  const { user, effectiveRole, viewAs, wearHat } = useAuth();
+  const myCourseIds = useMyCourseIds();
+  const { ready } = useSectionRoles();
   const router = useRouter();
   const pathname = usePathname();
+  const verdictNow = taPathAllowed(pathname);
+  const taScope = useTaScope(verdictNow.courseId ?? "");
 
   useEffect(() => {
     if (!user) { router.replace("/login"); return; }
@@ -38,12 +24,22 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     else if (effectiveRole === "student") router.replace("/student");
   }, [user, effectiveRole, router]);
 
+  // The TA hat (a real TA, or a teacher previewing as one): only the TA pages, and only of the courses it assists (lib/taPaths.ts)
   useEffect(() => {
-    if (viewAs !== "ta") return;
-    const blocked = TA_PREVIEW_BLOCKED.some((re) => re.test(pathname));
-    const allowed = !blocked && TA_PREVIEW_ALLOWED.some((re) => re.test(pathname));
-    if (!allowed) router.replace("/teacher/courses");
-  }, [viewAs, pathname, router]);
+    if (effectiveRole !== "ta") return;
+    const verdict = taPathAllowed(pathname);
+    if (!verdict.allowed) { router.replace("/teacher/courses"); return; }
+    if (!ready) return;                                              // the stored roles are not read yet: do not judge the course
+    if (verdict.courseId && !myCourseIds.has(verdict.courseId)) { router.replace("/teacher/courses"); return; }
+    // a real TA opens only the assignments a teacher gave them (10/11/2569); the course's Grading list is where their queue is
+    if (verdict.courseId && verdict.assignmentId && taScope.scoped && taScope.ready && !taScope.ids.has(verdict.assignmentId)) router.replace(`/teacher/courses/${verdict.courseId}/grading`);
+  }, [effectiveRole, pathname, router, ready, myCourseIds, taScope.scoped, taScope.ready, taScope.ids]);
+
+  // A student whose TA appointments are gone (role removed, or now enrolled that term) is put back on the student hat
+  useEffect(() => {
+    if (!ready || user?.role !== "ta" || viewAs) return;
+    if (myCourseIds.size === 0) { wearHat("student"); router.replace("/student"); }
+  }, [ready, user?.role, viewAs, myCourseIds, wearHat, router]);
 
   if (!user || !effectiveRole || effectiveRole === "admin" || effectiveRole === "student") return null;
 

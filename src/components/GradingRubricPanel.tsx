@@ -3,43 +3,38 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
-import { achievedLevelIndex, levelShare, type Rubric, type Submission } from "@/lib/assignments";
+import { achievedLevelIndex, type Rubric, type Submission } from "@/lib/assignments";
+import { criterionWorth, levelTone } from "@/lib/rubricLevels";
 import { toneForPct, SCORE_TONE_CLASSES } from "@/lib/scoreBook";
 import CloChips from "@/components/CloChips";
+import { RubricLevelGrid } from "@/components/RubricLevels";
 import { splitCriterionName } from "@/lib/rubricName";
 import type { CLO } from "@/lib/clo";
 
 import Icon from "@/components/Icon";
 import IconButton from "@/components/IconButton";
-// How a level looks on a distribution bar: best → worst. warn is not used — it means "awaiting grading" everywhere else.
-const FILL = ["bg-[var(--s-ok-text)]", "bg-[var(--s-info-text)]", "bg-[var(--text-muted)]", "bg-[var(--s-err-text)]"];
-const TEXT = ["text-[var(--s-ok-text)]", "text-[var(--s-info-text)]", "text-[var(--text-secondary)]", "text-[var(--s-err-text)]"];
-const BOX = [
-  "border-[var(--s-ok-bd)] bg-[var(--s-ok-bg)]",
-  "border-[var(--s-info-bd)] bg-[var(--s-info-bg)]",
-  "border-[var(--border)] bg-[var(--bg-app)]",
-  "border-[var(--s-err-bd)] bg-[var(--s-err-bg)]",
-];
-/** position on the scale → one of the four looks (3 levels: green / grey / red; 4: green / blue / grey / red) */
-const toneOf = (i: number, n: number) => (n <= 1 ? 0 : Math.round((i / (n - 1)) * 3));
-
 /**
  * The teacher's view of the assignment's rubric on the grading screen: every criterion with its points, how the
  * graded work so far is spread across its levels (a segmented bar + counts) and its class average; each row opens to
  * the wording of every level with the number of students who reached it. So the rubric sits next to the grading
  * instead of behind the Edit page, and shows where the class is strong or weak at a glance.
  */
-export default function GradingRubricPanel({ rubric, graded, editHref, locked = false, unit = "student", clos = [] }: {
+export default function GradingRubricPanel({ rubric, graded, editHref, locked = false, unit = "student", clos = [], weakestId, flush = false }: {
   rubric: Rubric;
   /** the course's CLOs, to tag each criterion with the outcomes it measures */
   clos?: CLO[];
   /** the graded work to count (one per student, or one per team) */
   graded: Submission[];
-  editHref: string;
+  /** where "Edit rubric" goes; absent = this person cannot edit the rubric (a TA), so no link and no lock chip */
+  editHref?: string;
   /** results are announced: the rubric can't be changed any more, so no Edit link */
   locked?: boolean;
   /** what one counted item is — a group assignment counts teams */
   unit?: "student" | "team";
+  /** the criterion people scored lowest on (lib/gradingInsights) — gets a "Lowest" tag so it can be found at a glance */
+  weakestId?: string;
+  /** no top margin — for inside a pane that already has its own spacing (the Grading page workspace) */
+  flush?: boolean;
 }) {
   const { t } = useLanguage();
   const [open, setOpen] = useState<Set<string>>(new Set());
@@ -66,7 +61,7 @@ export default function GradingRubricPanel({ rubric, graded, editHref, locked = 
   const card = "rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)]";
 
   return (
-    <section className={`${card} mt-6`} aria-labelledby="grading-rubric-h" data-testid="grading-rubric">
+    <section id="rubric" className={`@container ${card} ${flush ? "" : "mt-6"} scroll-mt-6`} aria-labelledby="grading-rubric-h" data-testid="grading-rubric">
       <div className="flex flex-wrap items-center justify-between gap-3 px-6 pt-5 pb-4">
         <div className="min-w-0">
           <h2 id="grading-rubric-h" className="text-base font-bold text-[var(--text-primary)]">{t("เกณฑ์การให้คะแนน", "Grading rubric")}</h2>
@@ -91,14 +86,14 @@ export default function GradingRubricPanel({ rubric, graded, editHref, locked = 
               <Icon name="lock" size="xs" />
               {t("ล็อกแล้ว — ประกาศผลแล้ว", "Locked once announced")}
             </span>
-          ) : (
+          ) : editHref ? (
           <Link
             href={editHref}
             className="inline-flex h-9 items-center rounded-lg border border-[var(--border)] bg-[var(--bg-surface)] px-3 text-xs font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)] active:scale-[.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
           >
             {t("แก้ไขเกณฑ์", "Edit rubric")}
           </Link>
-          )}
+          ) : null}
         </div>
       </div>
 
@@ -109,7 +104,7 @@ export default function GradingRubricPanel({ rubric, graded, editHref, locked = 
           const avgPct = avg !== null && c.maxPoints > 0 ? (avg / c.maxPoints) * 100 : null;
           return (
             <li key={c.id} data-testid={`rubric-row-${c.id}`}>
-              <div className="grid items-center gap-x-6 gap-y-3 px-6 py-4 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1.4fr)_9.5rem_2rem]">
+              <div className="grid items-center gap-x-6 gap-y-3 px-6 py-4 @3xl:grid-cols-[minmax(0,1.25fr)_minmax(0,1.4fr)_9.5rem_2rem]">
                 <div className="flex min-w-0 items-start gap-3">
                   {(() => {
                     const nm = splitCriterionName(c.name);
@@ -119,7 +114,7 @@ export default function GradingRubricPanel({ rubric, graded, editHref, locked = 
                           <span className="mt-0.5 inline-flex h-6 min-w-8 shrink-0 items-center justify-center rounded-md border border-[var(--border)] bg-[var(--bg-app)] px-1.5 text-xs font-bold tabular-nums text-[var(--text-secondary)]">{nm.code}</span>
                         )}
                         <div className="min-w-0">
-                          <p className="text-sm font-semibold leading-snug text-[var(--text-primary)]">{nm.main}</p>
+                          <p className="text-sm font-semibold leading-snug text-[var(--text-primary)]">{nm.main}{c.id === weakestId && <span data-testid="weakest-tag" className="ml-2 inline-flex h-5 items-center rounded-md border border-[var(--s-err-bd)] bg-[var(--s-err-bg)] px-1.5 align-middle text-xs font-semibold text-[var(--s-err-text)]">{t("ต่ำสุด", "Lowest")}</span>}</p>
                           {nm.second && <p className="mt-0.5 text-xs leading-snug text-[var(--text-secondary)]">{nm.second}</p>}
                           <CloChips cloIds={c.cloIds} clos={clos} />
                         </div>
@@ -136,12 +131,12 @@ export default function GradingRubricPanel({ rubric, graded, editHref, locked = 
                         aria-label={c.levels.map((lv, i) => `${lv.label}: ${counts[i]}`).join(", ")}
                         className="flex h-3 w-full overflow-hidden rounded-full border border-[var(--border-subtle)] bg-[var(--bg-app)]"
                       >
-                        {counts.map((k, i) => k > 0 && <div key={i} className={`${FILL[toneOf(i, n)]} hwai-bar-grow`} style={{ width: `${(k / scored) * 100}%` }} />)}
+                        {counts.map((k, i) => k > 0 && <div key={i} className={`${levelTone(i, n).dot} hwai-bar-grow`} style={{ width: `${(k / scored) * 100}%` }} />)}
                       </div>
                       <ul className="mt-1.5 flex flex-wrap gap-x-3 gap-y-0.5 text-xs tabular-nums" aria-hidden="true">
                         {c.levels.map((lv, i) => (
-                          <li key={i} className={`inline-flex items-center gap-1 ${counts[i] > 0 ? TEXT[toneOf(i, n)] : "text-[var(--text-muted)]"}`}>
-                            <span className={`h-2 w-2 rounded-full ${FILL[toneOf(i, n)]} ${counts[i] > 0 ? "" : "opacity-40"}`} />
+                          <li key={i} className={`inline-flex items-center gap-1 ${counts[i] > 0 ? "text-[var(--text-primary)]" : "text-[var(--text-muted)]"}`}>
+                            <span className={`h-2 w-2 rounded-full ${levelTone(i, n).dot} ${counts[i] > 0 ? "" : "opacity-40"}`} />
                             {lv.label} <span className="font-semibold">{counts[i]}</span>
                           </li>
                         ))}
@@ -153,7 +148,7 @@ export default function GradingRubricPanel({ rubric, graded, editHref, locked = 
                 </div>
 
                 {/* the class average as the one coloured fact, the criterion's full marks under it as plain text */}
-                <div className="flex flex-col gap-1 lg:items-end">
+                <div className="flex flex-col gap-1 @3xl:items-end">
                   {avgPct !== null && avg !== null ? (
                     <span
                       className={`inline-flex h-7 items-center whitespace-nowrap rounded-lg px-2.5 text-xs font-semibold tabular-nums ${SCORE_TONE_CLASSES[toneForPct(avgPct)]}`}
@@ -164,7 +159,7 @@ export default function GradingRubricPanel({ rubric, graded, editHref, locked = 
                   ) : (
                     <span className="inline-flex h-7 items-center px-2.5 text-xs text-[var(--text-muted)]">—</span>
                   )}
-                  <span className="text-xs tabular-nums text-[var(--text-muted)]">{t(`เต็ม ${c.maxPoints} คะแนน`, `of ${c.maxPoints} pts`)}</span>
+                  <span className="text-xs tabular-nums text-[var(--text-muted)]">{criterionWorth(c.maxPoints, c.weight, t)}</span>
                 </div>
 
                 <IconButton icon="chevron-down" label={t(`คำอธิบายระดับของ ${c.name}`, `Level descriptions for ${c.name}`)} onClick={() => toggle(c.id)} aria-expanded={isOpen} iconClassName={`transition-transform ${isOpen ? "rotate-180" : ""}`} className="justify-self-end" />
@@ -173,18 +168,7 @@ export default function GradingRubricPanel({ rubric, graded, editHref, locked = 
               {isOpen && (
                 <div className="px-6 pb-5">
                   {c.description && <p className="mb-3 text-xs leading-relaxed text-[var(--text-secondary)]">{c.description}</p>}
-                  <div className="grid gap-2.5 sm:grid-cols-2 xl:grid-cols-4" style={n > 4 ? { gridTemplateColumns: `repeat(${Math.min(n, 6)}, minmax(0, 1fr))` } : undefined}>
-                    {c.levels.map((lv, i) => (
-                      <div key={i} className={`rounded-xl border p-3.5 ${BOX[toneOf(i, n)]}`}>
-                        <p className="flex items-baseline justify-between gap-2 text-[11px] tabular-nums text-[var(--text-secondary)]">
-                          <span>{t("ระดับ", "Level")} {n - 1 - i} · {Math.round(c.maxPoints * levelShare(i, n))} {t("คะแนน", "pts")}</span>
-                          <span><span className="font-semibold text-[var(--text-primary)]">{counts[i]}</span> {unit === "team" ? t("ทีม", counts[i] === 1 ? "team" : "teams") : t("คน", counts[i] === 1 ? "student" : "students")}</span>
-                        </p>
-                        <p className={`mt-1 text-xs font-bold uppercase tracking-wider ${TEXT[toneOf(i, n)]}`}>{lv.label}</p>
-                        <p className="mt-1.5 text-xs leading-relaxed text-[var(--text-primary)]">{lv.description || <span className="text-[var(--text-muted)]">{t("ไม่มีคำอธิบาย", "No description")}</span>}</p>
-                      </div>
-                    ))}
-                  </div>
+                  <RubricLevelGrid criterion={c} counts={counts} unit={unit} />
                 </div>
               )}
             </li>

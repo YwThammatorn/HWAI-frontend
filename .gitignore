@@ -53,3 +53,9 @@ next-env.d.ts
 # real class data stays on this machine (public repo): see scripts/build-local-class.ts
 /local-data/
 /public/local-data/
+grading-one-col-10-nov/
+grading-insights-10-nov/
+grading-workspace-10-nov/
+ta-steps-10-nov/
+calibrate-steps-10-nov/
+shots-sample/

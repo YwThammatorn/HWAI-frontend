@@ -1,7 +1,6 @@
 import { test, expect, Page } from "@playwright/test";
 
 import { BASE } from "./base";
-import { mockAiGradeCriteria } from "../src/lib/aiGrading";
 
 // 22/10/2569 — "Grade with AI" shows what is about to happen first (work, rubric, late work), and a rubric changed
 // while grading is under way can be graded again with the new rubric: from the Edit popup, or later from the Grading pages.
@@ -17,7 +16,7 @@ const RUBRIC = {
   ],
 };
 
-interface Opt { offsets?: Record<string, number>; latePolicy?: object; eveLate?: boolean; noRubric?: boolean; manual?: boolean }
+interface Opt { latePolicy?: object; eveLate?: boolean; noRubric?: boolean; manual?: boolean }
 
 /** Ann–Dan are graded and Eve has only handed in. Seeded once per tab so changes made during the test survive navigation. */
 async function seed(page: Page, o: Opt = {}) {
@@ -26,22 +25,22 @@ async function seed(page: Page, o: Opt = {}) {
     sessionStorage.setItem("ap_seeded", "1");
     const NOW = "2026-01-01T00:00:00.000Z";
     const ppl = people as string[][];
-    const op = opt as { offsets?: Record<string, number>; latePolicy?: object; eveLate?: boolean; noRubric?: boolean; manual?: boolean };
+    const op = opt as { latePolicy?: object; eveLate?: boolean; noRubric?: boolean; manual?: boolean };
     localStorage.setItem("hwai_lang", "en");
     localStorage.setItem("hwai_user", JSON.stringify({ name: "Somsak", email: "somsak@kmitl.ac.th", role: "teacher" }));
     localStorage.setItem("hwai_courses_v2", JSON.stringify([{ id: "c-rs", name: "Restart Course", description: "", status: "active", source: "manual", coverColor: "#2DD4BF", iconColor: "#2DD4BF", courseTemplateId: "ct-rs", term: 1, academicYear: 2569, sectionNumber: "1", code: "01076555", schedule: "-", room: "-", createdAt: NOW, updatedAt: NOW }]));
-    localStorage.setItem("hwai_managed_teachers_v1", JSON.stringify([{ id: "t1", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", status: "active", courseIds: ["c-rs"] }]));
-    localStorage.setItem("hwai_cohort_students_v1", JSON.stringify(ppl.map(([id, f], i) => ({ id: `cs-${i}`, studentId: id, name: `${f} Test`, email: `${id}@kmitl.ac.th`, program: "CE", status: "active" }))));
-    localStorage.setItem("hwai_students_v1", JSON.stringify(ppl.map(([id, f], i) => ({ id: `r-${i}`, courseId: "c-rs", studentId: id, name: `${f} Test`, email: `${id}@kmitl.ac.th`, enrollmentStatus: "enrolled" }))));
+    localStorage.setItem("hwai_managed_teachers_v1", JSON.stringify([{ id: "t1", title: "Dr.", name: "Somsak", email: "somsak@kmitl.ac.th", role: "teacher", status: "active", courseIds: ["c-rs"] }]));
+    localStorage.setItem("hwai_cohort_students_v1", JSON.stringify(ppl.map(([id, f], i) => ({ id: `cs-${i}`, studentId: id, firstName: f, lastName: "Test", email: `${id}@kmitl.ac.th`, program: "CE", status: "active" }))));
+    localStorage.setItem("hwai_students_v1", JSON.stringify(ppl.map(([id, f], i) => ({ id: `r-${i}`, courseId: "c-rs", studentId: id, firstName: f, lastName: "Test", email: `${id}@kmitl.ac.th`, sequenceNumber: i + 1, enrollmentStatus: "enrolled" }))));
     localStorage.setItem("hwai_grading_categories_v1", "[]");
     localStorage.setItem("hwai_assignments_v1", JSON.stringify([{
       id: "as1", courseId: "c-rs", name: "Landing page", description: "", dueDate: "2026-01-10", maxPoints: 100, acceptsFiles: true, fileTypes: ["pdf"],
       submissionType: "individual", maxGroupSize: null, rubricIds: ["r1"], createdAt: NOW, updatedAt: NOW,
       ...(op.manual ? { gradingMode: "manual" } : {}), ...(op.latePolicy ? { latePolicy: op.latePolicy } : {}),
     }]));
-    localStorage.setItem("hwai_rubrics_v1", JSON.stringify(op.noRubric ? [] : [{ ...(rubric as object), ...(op.offsets ? { aiOffsets: op.offsets } : {}) }]));
+    localStorage.setItem("hwai_rubrics_v1", JSON.stringify(op.noRubric ? [] : [rubric]));
     localStorage.setItem("hwai_submissions_v1", JSON.stringify(ppl.map(([id, f], i) => {
-      const base = { id: `sub-${id}`, assignmentId: "as1", studentId: id, studentName: `${f} Test`, email: `${id}@kmitl.ac.th`, submittedAt: "2026-01-05T10:00:00.000Z", instructorComment: "", updatedAt: NOW };
+      const base = { id: `sub-${id}`, assignmentId: "as1", studentId: id, studentName: `${f} Test`, email: `${id}@kmitl.ac.th`, submittedAt: "2026-01-05T10:00:00.000Z", fileUrl: null, externalUseConsent: false, instructorComment: "", updatedAt: NOW };
       return i < 4
         ? { ...base, aiScore: 50 + i, instructorScore: 50 + i, status: "graded", criterionScores: { k1: 30, k2: 20 + i } }
         : { ...base, submittedAt: op.eveLate ? "2026-01-12T10:00:00.000Z" : base.submittedAt, late: op.eveLate || undefined, aiScore: null, instructorScore: null, status: "not_graded" };
@@ -72,9 +71,10 @@ test.describe("Grade with AI — look before it starts", () => {
     const rubric = page.getByTestId("ai-preview-rubric");
     await expect(rubric).toContainText("Layout");
     await expect(rubric).toContainText("Accessibility");
-    await expect(rubric).toContainText("Excellent › Good › Needs Improvement");
+    for (const level of ["Excellent", "Good", "Needs Improvement"]) await expect(rubric).toContainText(level);      // every level name, in the shared table
     await expect(page.getByTestId("ai-preview").getByRole("link")).toHaveCount(0);        // no way out to Edit rubric / Calibration from here: that lives on the assignment's Grading page
-    await expect(page.getByTestId("ai-preview-strictness")).toHaveCount(0);           // no AI strictness any more (8/11/2569)
+    await expect(page.getByTestId("ai-preview-strictness")).toHaveCount(0);               // the AI strictness (AI offset) was removed 10/11/2569
+    await expect(dlg.getByText("AI strictness")).toHaveCount(0);
     await expect(page.getByTestId("ai-preview-late")).toHaveCount(0);
 
     await dlg.getByRole("button", { name: "Not yet" }).click();
@@ -114,21 +114,6 @@ test.describe("Grade with AI — look before it starts", () => {
     await page.getByTestId("ai-preview-confirm").click();
     await expect(page).toHaveURL(/assignments\/as1\/grading$/);
     expect((await stored(page)).subs.find((s) => s.id === "sub-69071105")).toMatchObject({ status: "need_review", aiScore: 55 });      // nothing was touched
-  });
-
-  test("an old AI correction left on a rubric is ignored: no strictness in the preview, and the AI marks the work as it would without it", async ({ page }) => {
-    // 8/11/2569: Calibration no longer tunes the AI — a rubric saved before that may still carry aiOffsets, which nothing reads
-    await seed(page, { offsets: { k1: 1, k2: -1 } });
-    await go(page, QUEUE);
-    await aiButton(page, "Grade with AI (1)").click();
-    await expect(page.getByTestId("ai-preview")).toBeVisible();
-    await expect(page.getByTestId("ai-preview-strictness")).toHaveCount(0);
-    await expect(page.getByTestId("ai-preview")).not.toContainText("stricter");
-    await page.getByTestId("ai-preview-confirm").click();
-    await expect(page).toHaveURL(/assignments\/as1\/grading$/);
-    const eve = (await stored(page)).subs.find((s) => s.id === "sub-69071105")!;
-    expect(eve.aiCriterionScores).toEqual(mockAiGradeCriteria("sub-69071105", RUBRIC.criteria).criterionScores);
-    expect(eve).not.toHaveProperty("aiOffsetsUsed");
   });
 
   test("an assignment with a late policy says what late work costs and how many are late", async ({ page }) => {
@@ -221,6 +206,35 @@ test.describe("Rubric changed while grading — regrade with the new rubric", ()
     await expect(banner).toHaveCount(0);
     await expect.poll(async () => (await stored(page)).subs.filter((x) => x.aiScore !== null).length).toBe(5);
     expect((await stored(page)).asg.rubricRestartedAt).toBeUndefined();
+  });
+
+  test("the grading screen itself carries the banner too (9/11/2569): the rubric changed while a submission is open, regrade from there", async ({ page }) => {
+    await seed(page);
+    await changeRubricAndSave(page);
+    await page.getByTestId("confirm-restart").click();
+    await expect.poll(async () => (await stored(page)).asg.rubricRestartedAt).toBeTruthy();
+
+    await go(page, `${BASE}/teacher/courses/c-rs/assignments/as1/recheck?sub=sub-69071105`);
+    const banner = page.getByTestId("regrade-banner");
+    await expect(banner).toContainText("wait to be graded under the new one");
+    await page.getByTestId("regrade-new-rubric").click();
+    await expect(page.getByRole("dialog", { name: "Regrade with the new rubric?" })).toBeVisible();
+    await page.getByTestId("ai-preview-confirm").click();
+    await expect(banner).toHaveCount(0);
+    await expect.poll(async () => (await stored(page)).subs.filter((x) => x.aiScore !== null).length).toBe(5);
+    expect((await stored(page)).asg.rubricRestartedAt).toBeUndefined();
+  });
+
+  test("the grading screen shows the score as three blocks and the status chip, like the Score Book (9/11/2569)", async ({ page }) => {
+    await seed(page);
+    await go(page, `${BASE}/teacher/courses/c-rs/assignments/as1/recheck?sub=sub-69071101`);
+    const card = page.getByText("Score (of 100)").locator("xpath=ancestor::div[contains(@class,'rounded-xl')][1]");
+    for (const part of ["Counts as", "AI suggested", "You gave"]) await expect(card.getByText(part, { exact: true })).toBeVisible();
+    await expect(page.getByTestId("grade-status")).toHaveText("Graded");
+    await expect(page.getByTestId("grade-status")).toHaveClass(/s-ok-bg/);
+    await go(page, `${BASE}/teacher/courses/c-rs/assignments/as1/recheck?sub=sub-69071105`);
+    await expect(page.getByTestId("grade-status")).toHaveText("Pending");
+    await expect(page.getByTestId("grade-status")).toHaveClass(/accent-subtle/);   // pending = the primary colour
   });
 
   test("without the marker there is no banner (nothing was restarted)", async ({ page }) => {

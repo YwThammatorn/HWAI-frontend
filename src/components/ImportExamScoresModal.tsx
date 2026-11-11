@@ -6,6 +6,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { parseExamScoreCsv, scoreCsvTemplate, type ScoreCsvRow, type ScoreRowStatus } from "@/lib/examScoreCsv";
 
 import Icon from "@/components/Icon";
+import IconTile from "@/components/IconTile";
 type Person = { studentId: string; name: string };
 
 const NEUTRAL = "border-[var(--border)] bg-[var(--bg-app)] text-[var(--text-secondary)]";
@@ -48,6 +49,8 @@ export default function ImportExamScoresModal({ students, withdrawnIds, maxPoint
   const fillable = rows.filter((r) => r.status === "new" || r.status === "overwrite");
   const replaced = rows.filter((r) => r.status === "overwrite").length;
   const errors = rows.filter((r) => isError(r.status));
+  // The rows with a problem come first (advisor, 10/11/2569): in a long file the ones to fix were buried; ties keep the file's line order
+  const shownRows = [...rows].sort((a, b) => Number(isError(b.status)) - Number(isError(a.status)) || a.line - b.line);
   const skipped = rows.filter((r) => r.status === "same" || r.status === "empty").length;
   const inFile = new Set(rows.map((r) => r.studentId));
   const notInFile = students.filter((s) => !inFile.has(s.studentId)).length;
@@ -144,7 +147,7 @@ export default function ImportExamScoresModal({ students, withdrawnIds, maxPoint
               className={`border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition-colors ${isDragging ? "border-[var(--accent-bright)] bg-[var(--accent-bright)]/5" : "border-[var(--border-subtle)] hover:border-[var(--accent-bright)]/50"}`}
             >
               <input ref={fileRef} type="file" accept=".csv,text/csv" aria-label={t("ไฟล์ CSV คะแนนสอบ", "Exam scores CSV file")} className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
-              <Icon name="file-plus" size="xl" className="mx-auto mb-3 text-[var(--accent-bright)]" />
+              <div className="mb-3 flex justify-center"><IconTile icon="download" size="lg" tone="accent" /></div>
               <p className="text-sm font-semibold text-[var(--text-primary)]">{t("ลากไฟล์ CSV มาวาง หรือคลิกเลือก", "Drag CSV here or click to browse")}</p>
               <p className="text-xs text-[var(--text-muted)] mt-1">{t("รองรับ .csv • UTF-8 (คั่นด้วย , ; หรือ Tab)", "Supports .csv • UTF-8 (separated by , ; or Tab)")}</p>
             </div>
@@ -191,7 +194,7 @@ export default function ImportExamScoresModal({ students, withdrawnIds, maxPoint
                       <tr>{["#", t("รหัสนักศึกษา", "Student ID"), t("ชื่อ-นามสกุล", "Name"), t("คะแนนในไฟล์", "Score in file"), t("สถานะ", "Status")].map((h) => <th key={h} className="px-3 py-2 text-left font-semibold text-[var(--text-muted)]">{h}</th>)}</tr>
                     </thead>
                     <tbody>
-                      {rows.map((r) => (
+                      {shownRows.map((r) => (
                         <tr key={r.line} data-status={r.status} className={`border-t border-[var(--border-subtle)] ${isError(r.status) ? "bg-[var(--s-err-bg)]" : ""}`}>
                           <td className="px-3 py-1.5 text-[var(--text-muted)] tabular-nums">{r.line}</td>
                           <td className="px-3 py-1.5 text-[var(--text-primary)] tabular-nums">{r.rawId || "—"}</td>

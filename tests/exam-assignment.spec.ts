@@ -99,6 +99,28 @@ test.describe("Exam — teacher form", () => {
 });
 
 test.describe("Exam — teacher enters the scores", () => {
+  test("the Save button sits under the table, where the typing happens, with how many changes are waiting (10/11/2569)", async ({ page }) => {
+    await seed(page, "teacher");
+    await page.goto(`${BASE}/teacher/courses/c-ex/assignments/ex1/grading`);
+    await page.waitForLoadState("networkidle");
+    const foot = page.getByTestId("save-scores-foot");
+    await expect(foot).toBeVisible();
+    await expect(page.getByText("No changes yet")).toBeVisible();
+    await page.getByLabel("Score for Nok Exam").fill("30");
+    await expect(page.getByText("1 changed, not saved yet")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Save scores" })).toHaveCount(1);          // one button, not one at the top as well
+  });
+
+  test("once the results are announced the scores are locked: figures and a lock note, not boxes that look editable (10/11/2569)", async ({ page }) => {
+    await seed(page, "teacher", { submissions: [graded("69070301", 42)], announced: true });
+    await page.goto(`${BASE}/teacher/courses/c-ex/assignments/ex1/grading`);
+    await page.waitForLoadState("networkidle");
+    await expect(page.getByTestId("scores-locked")).toBeVisible();
+    await expect(page.locator("main input[type='number']")).toHaveCount(0);
+    await expect(page.getByLabel("Score for Nok Exam")).toContainText("42");
+    await expect(page.getByRole("button", { name: "Save scores" })).toHaveCount(0);
+  });
+
   test("every enrolled student has a row, and saving creates their score without any submission", async ({ page }) => {
     await seed(page, "teacher");
     await page.goto(`${BASE}/teacher/courses/c-ex/assignments/ex1/grading`);

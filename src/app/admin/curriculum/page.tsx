@@ -138,7 +138,7 @@ function CourseTemplateImportModal({
             className={`border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition-colors ${dragOver ? "border-[var(--accent-bright)] bg-[var(--accent-bright)]/5" : "border-[var(--border-subtle)] hover:border-[var(--accent-bright)]/50"}`}
           >
             <input ref={fileRef} type="file" accept=".csv" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
-            <Icon name="file" size="xl" className="mx-auto mb-3 text-[var(--accent-bright)]" />
+            <div className="mb-3 flex justify-center"><IconTile icon="download" size="lg" tone="accent" /></div>
             <p className="text-sm font-semibold text-[var(--text-primary)]">{t("ลากไฟล์ CSV มาวาง หรือคลิกเลือก", "Drag CSV here or click to browse")}</p>
             <p className="text-xs text-[var(--text-muted)] mt-1">{t("คอลัมน์: code, name, description", "Columns: code, name, description")}</p>
           </div>
@@ -146,7 +146,7 @@ function CourseTemplateImportModal({
         {!rows && !done && (
           <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-app)] p-3.5 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5 min-w-0">
-              <IconTile icon="file-download" size="sm" tone="accent" />
+              <IconTile icon="file-text" size="sm" tone="accent" />
               <div className="min-w-0">
                 <p className="text-xs font-medium text-[var(--text-primary)]">{t("ดาวน์โหลด Template", "Download Template")}</p>
                 <p className="text-[11px] text-[var(--text-muted)] truncate">course-templates-template.csv</p>
@@ -517,6 +517,7 @@ function CourseTemplateRow({
   onEdit: () => void;
   onDelete: () => void;
 }) {
+  const { t } = useLanguage();
   return (
     <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[var(--bg-subtle)] transition-colors">
       <div className="w-8 h-8 rounded-lg bg-[var(--accent-bright)]/20 text-[var(--accent)] text-[10px] font-bold flex items-center justify-center shrink-0 select-none tabular-nums" aria-hidden="true">
@@ -527,8 +528,8 @@ function CourseTemplateRow({
         <p className="text-[11px] text-[var(--text-muted)] tabular-nums truncate">{template.code}</p>
       </div>
       <div className="flex items-center gap-1 shrink-0">
-        <IconButton icon="edit" label="Edit" onClick={onEdit} />
-        <IconButton icon="x" label="Delete" tone="danger" onClick={onDelete} />
+        <IconButton icon="edit" label={t("แก้ไข", "Edit")} onClick={onEdit} />
+        <IconButton icon="trash" label={t("ลบ", "Delete")} tone="danger" onClick={onDelete} />
       </div>
     </div>
   );
@@ -612,7 +613,7 @@ function CurriculumRow({
                   onClick={() => setImportOpen(true)}
                   className="h-7 px-2.5 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-[var(--text-secondary)] text-xs font-semibold hover:bg-[var(--bg-subtle)] hover:border-[var(--accent-bright)] hover:text-[var(--text-primary)] transition-colors inline-flex items-center gap-1.5"
                 >
-                  <Icon name="file-plus" size="sm" />
+                  <Icon name="download" size="sm" />
                   {t("นำเข้า CSV", "Import CSV")}
                 </button>
                 <button

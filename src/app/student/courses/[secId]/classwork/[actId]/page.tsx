@@ -7,8 +7,8 @@ import { useLanguage } from "@/context/LanguageContext";
 import { dateLocale } from "@/lib/dateLocale";
 import { useAuth } from "@/context/AuthContext";
 import { useCourses } from "@/lib/courses";
-import CriterionName from "@/components/CriterionName";
-import { useAssignments, submissionAttachments, studentVisibleSubmission, achievedLevelIndex, AssignmentAttachment, dueAt, isLate, submissionOpen, submissionClosesAt, activeLatePolicy, describeLatePolicy, daysLate, latePenaltyFor, latePenaltyOf, finalScoreOf } from "@/lib/assignments";
+import RubricCriterionCard from "@/components/RubricCriterionCard";
+import { useAssignments, submissionAttachments, studentVisibleSubmission, AssignmentAttachment, dueAt, isLate, submissionOpen, submissionClosesAt, CLEARED_RESULT, activeLatePolicy, describeLatePolicy, daysLate, latePenaltyFor, latePenaltyOf, finalScoreOf } from "@/lib/assignments";
 import { appNow, useNow } from "@/lib/clock";
 import { computeExamStats, computeAssignmentStats } from "@/lib/examStats";
 import ExamStatsCard from "@/components/ExamStatsCard";
@@ -230,15 +230,12 @@ function ClassworkDetail() {
               <AttachmentList attachments={assignment.attachments} />
             </div>
 
-            {classStats && (
-              <ExamStatsCard
-                name={assignment.name}
-                maxPoints={assignment.maxPoints}
-                stats={classStats}
-                myScore={isGraded ? score : null}
-                comment={examStats && isGraded ? mySubmission?.instructorComment || undefined : undefined}
-                showName={false}
-              />
+            {/* What the student came for, first (advisor, 10/11/2569; R11, 3.3.3 step 8): the teacher's comment, then the points per criterion; the class figures come after */}
+            {isGraded && !examStats && mySubmission?.instructorComment && (
+              <section data-testid="teacher-comment" className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-5">
+                <h2 className="text-sm font-bold text-[var(--text-primary)] mb-2">{t("ความเห็นจากอาจารย์", "Teacher's comment")}</h2>
+                <p className="text-sm leading-relaxed text-[var(--text-primary)]">{mySubmission.instructorComment}</p>
+              </section>
             )}
 
             {/* Rubric — read-only, shows what the student will be graded on */}
@@ -249,59 +246,20 @@ function ClassworkDetail() {
                 </h2>
                 <div className="flex flex-col gap-3">
                   {rubrics.flatMap((rubric) => rubric.criteria).map((c) => (
-                    <div key={c.id} className="rounded-xl border border-[var(--border-subtle)] p-3">
-                      <div className="flex items-start justify-between gap-3 mb-1">
-                        <CriterionName name={c.name} />
-                        {earnedByCriterion?.[c.id] !== undefined ? (
-                          <span className="shrink-0 text-right leading-tight">
-                            <span className="block text-sm font-bold text-[var(--text-primary)] tabular-nums">
-                              {earnedByCriterion[c.id]}<span className="text-xs font-semibold text-[var(--text-muted)]"> / {c.maxPoints}</span>
-                            </span>
-                            <span className="block text-[10px] text-[var(--text-muted)] tabular-nums">{c.weight}%</span>
-                          </span>
-                        ) : (
-                          <span className="shrink-0 text-xs font-semibold text-[var(--accent)] tabular-nums">
-                            {c.weight}% · {c.maxPoints} {t("คะแนน", "pts")}
-                          </span>
-                        )}
-                      </div>
-                      {earnedByCriterion?.[c.id] !== undefined && c.maxPoints > 0 && (
-                        <div
-                          role="progressbar"
-                          aria-label={t(`${c.name}: ได้ ${earnedByCriterion[c.id]} จาก ${c.maxPoints}`, `${c.name}: ${earnedByCriterion[c.id]} of ${c.maxPoints}`)}
-                          aria-valuemin={0}
-                          aria-valuemax={c.maxPoints}
-                          aria-valuenow={earnedByCriterion[c.id]}
-                          className="h-1.5 rounded-full bg-[var(--border-subtle)] mb-2 overflow-hidden"
-                        >
-                          <div className="h-full rounded-full bg-[var(--accent-solid)]" style={{ width: `${Math.min(100, (earnedByCriterion[c.id] / c.maxPoints) * 100)}%` }} />
-                        </div>
-                      )}
-                      {c.description && (
-                        <p className="text-xs text-[var(--text-muted)] mb-2">{c.description}</p>
-                      )}
-                      {c.levels.length > 0 && (
-                        <div className="grid gap-2 mt-2" style={{ gridTemplateColumns: c.levels.length === 4 ? "repeat(2, minmax(0, 1fr))" : "repeat(auto-fit, minmax(140px, 1fr))" }}>   {/* 4 levels sit 2 x 2, never 3 + 1 */}
-                          {c.levels.map((lvl, i) => {
-                            const earned = earnedByCriterion?.[c.id];
-                            const mine = earned !== undefined && achievedLevelIndex(earned, c.maxPoints, c.levels.length) === i;
-                            return (
-                            <div key={i} aria-current={mine ? "true" : undefined}
-                              className={`rounded-lg p-2 ${mine ? "bg-[var(--accent-bright)]/10 border border-[var(--accent)]" : "bg-[var(--bg-app)] border border-transparent"}`}>
-                              {mine && <span className="mb-1 inline-block rounded-full bg-[var(--accent-solid)] px-2 py-0.5 text-[10px] font-semibold text-[var(--accent-solid-text)]">{t("ระดับของคุณ", "Your level")}</span>}
-                              <p className={`text-[10px] font-semibold uppercase tracking-wide ${mine ? "text-[var(--accent)]" : "text-[var(--text-muted)]"}`}>{lvl.label}</p>
-                              {lvl.description && (
-                                <p className="text-[11px] text-[var(--text-secondary)] mt-0.5 leading-snug">{lvl.description}</p>
-                              )}
-                            </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
+                    <RubricCriterionCard key={c.id} criterion={c} earned={earnedByCriterion?.[c.id]} />
                   ))}
                 </div>
               </div>
+            )}
+            {classStats && (
+              <ExamStatsCard
+                name={assignment.name}
+                maxPoints={assignment.maxPoints}
+                stats={classStats}
+                myScore={isGraded ? score : null}
+                comment={examStats && isGraded ? mySubmission?.instructorComment || undefined : undefined}
+                showName={false}
+              />
             )}
           </div>
 
@@ -381,9 +339,6 @@ function ClassworkDetail() {
                     <p data-testid="late-deduction" className="text-xs mt-1 tabular-nums">
                       {t(`คะแนนงาน ${score + penalty} − ส่งช้าหัก ${penalty}`, `Work scored ${score + penalty} − late deduction ${penalty}`)}
                     </p>
-                  )}
-                  {mySubmission?.instructorComment && (
-                    <p className="text-xs mt-2 leading-relaxed">{mySubmission.instructorComment}</p>
                   )}
                   <AttachmentList attachments={submissionAttachments(mySubmission)} title={t("งานที่ส่ง", "Submitted work")} />
                 </div>

@@ -63,6 +63,13 @@ async function seed(page: Page, o: { rubric?: boolean; group?: boolean; exam?: b
   }, [PEOPLE, o.ungraded ? {} : SCORES, RUBRIC, o.rubric ?? true, !!o.group, !!o.exam, o.lang ?? "en"] as const);
   await page.goto(`${BASE}/teacher/courses/c-gr/assignments/as1/grading`);
   await page.waitForLoadState("networkidle");
+  await openRubricTab(page);
+}
+
+// the rubric is the second tab of the right pane (the first is the class overview); an exam has no workspace, so no tab
+async function openRubricTab(page: Page) {
+  const tab = page.getByTestId("class-overview").getByRole("tab").nth(1);
+  if (await tab.count()) await tab.click();
 }
 
 const row = (page: Page, id: string) => page.getByTestId(`rubric-row-${id}`);
@@ -80,13 +87,13 @@ test.describe("Grading page — rubric panel", () => {
     await expect(c1.getByText("C1", { exact: true })).toBeVisible();
     await expect(c1.getByText("Content", { exact: true })).toBeVisible();
     await expect(c1.getByText("Is the content complete")).toHaveCount(0);
-    await expect(c1).toContainText("of 15 pts");
+    await expect(c1).toContainText("15 pts · ");
     await expect(c1.getByRole("img")).toHaveAttribute("aria-label", "ดีมาก: 1, พอใช้: 2, ต้องปรับปรุง: 1, ไม่ผ่าน: 0");
     await expect(c1).toContainText("Avg 10 · 67%");
 
     await expect(row(page, "k2").getByRole("img")).toHaveAttribute("aria-label", "ดีมาก: 1, พอใช้: 1, ต้องปรับปรุง: 1, ไม่ผ่าน: 1");
     await expect(row(page, "k2")).toContainText("Avg 5 · 50%");
-    await expect(row(page, "k2")).toContainText("of 10 pts");
+    await expect(row(page, "k2")).toContainText("10 pts · ");
     await expect(row(page, "k3")).toContainText("Avg 7.5 · 50%");
   });
 
@@ -140,7 +147,7 @@ test.describe("Grading page — rubric panel", () => {
   test("no rubric on the assignment → no panel", async ({ page }) => {
     await seed(page, { rubric: false });
     await expect(page.getByTestId("grading-rubric")).toHaveCount(0);
-    await expect(page.getByRole("heading", { name: "Grade Adjustment" })).toBeVisible();
+    await expect(page.getByText("This assignment has no rubric yet.")).toBeVisible();      // the Rubric tab says so instead of showing a panel
   });
 
   test("nothing graded yet → the criteria are listed, with a note instead of bars", async ({ page }) => {
@@ -149,7 +156,7 @@ test.describe("Grading page — rubric panel", () => {
     await expect(panel).toContainText("nothing graded yet");
     await expect(panel.getByRole("img")).toHaveCount(0);
     await expect(row(page, "k1")).toContainText("No per-criterion scores to summarise yet");
-    await expect(row(page, "k1")).toContainText("of 15 pts");
+    await expect(row(page, "k1")).toContainText("15 pts · ");
   });
 
   test("a bilingual name shows the code, the main name and the second-language name apart", async ({ page }) => {
@@ -160,6 +167,7 @@ test.describe("Grading page — rubric panel", () => {
       if (r[0]) { r[0].criteria[0].name = "C1 · Program correctness / ความถูกต้องของโปรแกรม"; localStorage.setItem("hwai_rubrics_v1", JSON.stringify(r)); }
     });
     await page.reload();
+    await openRubricTab(page);
     const c1 = row(page, "k1");
     await expect(c1.getByText("C1", { exact: true })).toBeVisible();
     await expect(c1.getByText("Program correctness", { exact: true })).toBeVisible();

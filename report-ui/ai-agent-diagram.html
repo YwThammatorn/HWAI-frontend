@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>AI Agent flow</title>
+<style>
+  html, body { margin: 0; background: #ffffff; }
+  svg { display: block; font-family: Tahoma, "Leelawadee UI", "Segoe UI", sans-serif; }
+  .lane-a { fill: #f4f7f8; } .lane-b { fill: #ffffff; }
+  .lane-label { fill: #0f3f3a; font-size: 24px; font-weight: 700; }
+  .lane-sub { fill: #5b6b72; font-size: 17px; }
+  .box { fill: #ffffff; stroke: #0f766e; stroke-width: 2.5; }
+  .box-ai { fill: #e6f4f1; stroke: #0f766e; stroke-width: 2.5; }
+  .box-warn { fill: #fdf3e3; stroke: #b7791f; stroke-width: 2.5; }
+  .dia { fill: #eef2fb; stroke: #3b4f8f; stroke-width: 2.5; }
+  .t { fill: #14232a; font-size: 20px; }
+  .tb { fill: #14232a; font-size: 18px; font-weight: 700; }
+  .ts { fill: #3a4a52; font-size: 17px; }
+  .n { fill: #0f766e; } .nt { fill: #ffffff; font-size: 18px; font-weight: 700; }
+  .arrow { stroke: #33474f; stroke-width: 2.5; fill: none; marker-end: url(#ah); }
+  .lbl { fill: #33474f; font-size: 17px; font-weight: 700; }
+</style>
+</head>
+<body>
+<svg id="diagram" xmlns="http://www.w3.org/2000/svg" width="2000" height="720" viewBox="0 0 2000 720" role="img" aria-label="ขั้นตอนการทำงานของ AI Agent ตั้งแต่ผู้สอนสั่งตรวจจนถึงประกาศผล">
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#33474f"/></marker>
+  </defs>
+
+  <!-- lanes -->
+  <rect class="lane-a" x="0" y="0" width="2000" height="190"/>
+  <rect class="lane-b" x="0" y="190" width="2000" height="330"/>
+  <rect class="lane-a" x="0" y="520" width="2000" height="200"/>
+  <line x1="0" y1="190" x2="2000" y2="190" stroke="#cfd8dc" stroke-width="1.5"/>
+  <line x1="0" y1="520" x2="2000" y2="520" stroke="#cfd8dc" stroke-width="1.5"/>
+  <text class="lane-label" x="20" y="60">ผู้สอน / TA</text>
+  <text class="lane-sub" x="20" y="88">ผู้ใช้ที่ตรวจงาน</text>
+  <text class="lane-label" x="20" y="262">ระบบ HWAI</text>
+  <text class="lane-sub" x="20" y="290">ส่วนหน้าเว็บ + ข้อมูล</text>
+  <text class="lane-label" x="20" y="582">AI Agent</text>
+  <text class="lane-sub" x="20" y="610">ตัวตรวจ (ปัจจุบันเป็นส่วนจำลอง)</text>
+
+  <!-- 1 teacher starts -->
+  <rect class="box" x="170" y="45" width="220" height="100" rx="12"/>
+  <circle class="n" cx="170" cy="45" r="15"/><text class="nt" x="170" y="51" text-anchor="middle">1</text>
+  <text class="tb" x="280" y="84" text-anchor="middle">ผู้สอนสั่งตรวจด้วย AI</text>
+  <text class="ts" x="280" y="110" text-anchor="middle">หลังพ้นเวลาปิดรับงาน</text>
+  <text class="ts" x="280" y="130" text-anchor="middle">ของชิ้นงานนั้น</text>
+
+  <!-- 2 system checks -->
+  <rect class="box" x="430" y="250" width="220" height="100" rx="12"/>
+  <circle class="n" cx="430" cy="250" r="15"/><text class="nt" x="430" y="256" text-anchor="middle">2</text>
+  <text class="tb" x="540" y="284" text-anchor="middle">ตรวจเงื่อนไข + สรุป</text>
+  <text class="ts" x="540" y="310" text-anchor="middle">มี Rubric และงานรอตรวจ</text>
+  <text class="ts" x="540" y="330" text-anchor="middle">แสดงจำนวนงานให้ยืนยัน</text>
+
+  <!-- 3 prepare -->
+  <rect class="box" x="690" y="250" width="220" height="100" rx="12"/>
+  <circle class="n" cx="690" cy="250" r="15"/><text class="nt" x="690" y="256" text-anchor="middle">3</text>
+  <text class="tb" x="800" y="284" text-anchor="middle">เตรียมข้อมูลต่อชิ้น</text>
+  <text class="ts" x="800" y="310" text-anchor="middle">Rubric + คำอธิบายระดับ</text>
+  <text class="ts" x="800" y="330" text-anchor="middle">ไฟล์ / เฟรมที่บันทึกไว้ตอนส่ง</text>
+
+  <!-- 4 AI -->
+  <rect class="box-ai" x="930" y="555" width="220" height="100" rx="12"/>
+  <circle class="n" cx="930" cy="555" r="15"/><text class="nt" x="930" y="561" text-anchor="middle">4</text>
+  <text class="tb" x="1040" y="594" text-anchor="middle">ให้ระดับรายเกณฑ์</text>
+  <text class="ts" x="1040" y="620" text-anchor="middle">พร้อมเหตุผล และ</text>
+  <text class="ts" x="1040" y="640" text-anchor="middle">จุดอ้างอิงในงาน</text>
+
+  <!-- 5 validate (diamond) -->
+  <polygon class="dia" points="1300,235 1420,300 1300,365 1180,300"/>
+  <circle class="n" cx="1198" cy="258" r="15"/><text class="nt" x="1198" y="264" text-anchor="middle">5</text>
+  <text class="tb" x="1300" y="293" text-anchor="middle">ตรวจผลลัพธ์</text>
+  <text class="ts" x="1300" y="316" text-anchor="middle">ระดับ/เกณฑ์ครบ?</text>
+  <text class="ts" x="1300" y="336" text-anchor="middle">อ้างอิงมีจริง?</text>
+
+  <!-- fail -->
+  <rect class="box-warn" x="1190" y="410" width="220" height="90" rx="12"/>
+  <text class="tb" x="1300" y="443" text-anchor="middle">ไม่ผ่าน</text>
+  <text class="ts" x="1300" y="468" text-anchor="middle">คงสถานะ “ยังไม่ตรวจ”</text>
+  <text class="ts" x="1300" y="488" text-anchor="middle">ผู้สอนตรวจเอง / สั่งตรวจใหม่</text>
+
+  <!-- 6 save -->
+  <rect class="box" x="1470" y="250" width="220" height="100" rx="12"/>
+  <circle class="n" cx="1470" cy="250" r="15"/><text class="nt" x="1470" y="256" text-anchor="middle">6</text>
+  <text class="tb" x="1580" y="284" text-anchor="middle">บันทึกที่ AI เสนอ</text>
+  <text class="ts" x="1580" y="310" text-anchor="middle">ระดับ + เหตุผล + อ้างอิง</text>
+  <text class="ts" x="1580" y="330" text-anchor="middle">สถานะ = รอตรวจทาน</text>
+
+  <!-- 7 review -->
+  <rect class="box" x="1730" y="45" width="220" height="100" rx="12"/>
+  <circle class="n" cx="1730" cy="45" r="15"/><text class="nt" x="1730" y="51" text-anchor="middle">7</text>
+  <text class="tb" x="1840" y="80" text-anchor="middle">ตรวจทานทีละชิ้น</text>
+  <text class="ts" x="1840" y="106" text-anchor="middle">ยืนยันหรือเปลี่ยนระดับ</text>
+  <text class="ts" x="1840" y="126" text-anchor="middle">+ ความเห็น แล้วบันทึก</text>
+
+  <!-- 8 announce -->
+  <rect class="box" x="1730" y="250" width="220" height="100" rx="12"/>
+  <circle class="n" cx="1730" cy="250" r="15"/><text class="nt" x="1730" y="256" text-anchor="middle">8</text>
+  <text class="tb" x="1840" y="284" text-anchor="middle">คำนวณและประกาศผล</text>
+  <text class="ts" x="1840" y="310" text-anchor="middle">ล็อก Rubric ของงานนั้น</text>
+  <text class="ts" x="1840" y="330" text-anchor="middle">นักศึกษาไม่เห็นผลของ AI</text>
+
+  <!-- arrows -->
+  <path class="arrow" d="M280,145 V300 H430"/>
+  <path class="arrow" d="M650,300 H690"/>
+  <path class="arrow" d="M800,350 V605 H930"/>
+  <path class="arrow" d="M1150,605 H1165 V300 H1178"/>
+  <path class="arrow" d="M1420,300 H1470"/>
+  <path class="arrow" d="M1300,365 V410"/>
+  <path class="arrow" d="M1580,250 V95 H1730"/>
+  <path class="arrow" d="M1840,145 V250"/>
+  <text class="lbl" x="1424" y="288" style="font-size:15px">ผ่าน</text>
+  <text class="lbl" x="1312" y="392">ไม่ผ่าน</text>
+
+  <text class="ts" x="150" y="708">ระดับที่ AI เสนอไม่เขียนทับคะแนนที่ผู้สอนหรือ TA ให้ไว้ · ผู้สอนและ TA เห็นเหตุผลของ AI นักศึกษาไม่เห็น</text>
+</svg>
+</body>
+</html>

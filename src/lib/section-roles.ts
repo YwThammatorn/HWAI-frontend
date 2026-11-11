@@ -31,6 +31,8 @@ export interface SectionRole {
 
 export interface SectionRoleContextValue {
   sectionRoles: SectionRole[];
+  /** the stored roles have been read (providers load in an effect, so the first render is always empty) */
+  ready: boolean;
   addSectionRole: (data: Omit<SectionRole, "id">) => SectionRole;
   removeSectionRole: (id: string) => void;
   removeRolesByAccount: (accountId: string) => void;

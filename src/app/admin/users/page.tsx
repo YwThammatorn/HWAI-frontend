@@ -151,7 +151,7 @@ function ImportTeacherModal({ open, onClose }: { open: boolean; onClose: () => v
             className={`border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition-colors ${dragOver ? "border-[var(--accent-bright)] bg-[var(--accent-bright)]/5" : "border-[var(--border-subtle)] hover:border-[var(--accent-bright)]/50"}`}
           >
             <input ref={fileRef} type="file" accept=".csv" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
-            <Icon name="file" size="xl" className="mx-auto mb-3 text-[var(--accent-bright)]" />
+            <div className="mb-3 flex justify-center"><IconTile icon="download" size="lg" tone="accent" /></div>
             <p className="text-sm font-semibold text-[var(--text-primary)]">{t("ลากไฟล์ CSV มาวาง หรือคลิกเลือก", "Drag CSV here or click to browse")}</p>
             <p className="text-xs text-[var(--text-muted)] mt-1">{t("คอลัมน์: name, email (title ไม่บังคับ)", "Columns: name, email (title optional)")}</p>
           </div>
@@ -159,7 +159,7 @@ function ImportTeacherModal({ open, onClose }: { open: boolean; onClose: () => v
         {!parseResult && !done && (
           <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-app)] p-3.5 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5 min-w-0">
-              <IconTile icon="file-download" size="sm" tone="accent" />
+              <IconTile icon="file-text" size="sm" tone="accent" />
               <div className="min-w-0">
                 <p className="text-xs font-medium text-[var(--text-primary)]">{t("ดาวน์โหลด Template", "Download Template")}</p>
                 <p className="text-[11px] text-[var(--text-muted)] truncate">teachers-template.csv</p>
@@ -601,7 +601,7 @@ function ImportStudentModal({ open, onClose }: { open: boolean; onClose: () => v
             onClick={() => fileRef.current?.click()}
             className={`border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition-colors ${dragOver ? "border-[var(--accent-bright)] bg-[var(--accent-bright)]/5" : "border-[var(--border-subtle)] hover:border-[var(--accent-bright)]/50"}`}>
             <input ref={fileRef} type="file" accept=".csv" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
-            <Icon name="file-plus" size="xl" className="mx-auto mb-3 text-[var(--accent-bright)]" />
+            <div className="mb-3 flex justify-center"><IconTile icon="download" size="lg" tone="accent" /></div>
             <p className="text-sm font-semibold text-[var(--text-primary)]">{t("ลากไฟล์ CSV มาวาง หรือคลิกเลือก", "Drag CSV here or click to browse")}</p>
             <p className="text-xs text-[var(--text-muted)] mt-1">{t("คอลัมน์: studentId, title, name, email, program (title ไม่บังคับ)", "Columns: studentId, title, name, email, program (title is optional)")}</p>
           </div>
@@ -609,7 +609,7 @@ function ImportStudentModal({ open, onClose }: { open: boolean; onClose: () => v
         {!parseResult && !done && (
           <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-app)] p-3.5 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5 min-w-0">
-              <IconTile icon="file-download" size="sm" tone="accent" />
+              <IconTile icon="file-text" size="sm" tone="accent" />
               <div className="min-w-0">
                 <p className="text-xs font-medium text-[var(--text-primary)]">{t("ดาวน์โหลด Template", "Download Template")}</p>
                 <p className="text-[11px] text-[var(--text-muted)] truncate">cohort-students-template.csv</p>
@@ -650,7 +650,7 @@ function ImportStudentModal({ open, onClose }: { open: boolean; onClose: () => v
                           {row.error ? (
                             <span className="text-[var(--s-err-text)] font-medium">{studentRowErrorLabel(row.error)}</span>
                           ) : (
-                            <span className="text-[var(--s-ok-text)]">✓</span>
+                            <Icon name="check" size="sm" className="text-[var(--s-ok-text)]" />
                           )}
                         </td>
                       </tr>
@@ -772,7 +772,7 @@ function TeachersTab() {
         <div className="flex items-center gap-2 shrink-0">
           <button onClick={() => setImportOpen(true)}
             className="flex items-center gap-2 h-9 px-4 rounded-full border border-[var(--border)] bg-[var(--bg-surface)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:border-[var(--accent-bright)] hover:text-[var(--text-primary)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors shrink-0">
-            <Icon name="file-plus" />
+            <Icon name="download" />
             {t("นำเข้า CSV", "Import CSV")}
           </button>
           <button onClick={() => setAddOpen(true)}
@@ -861,17 +861,19 @@ function TeachersTab() {
                       {isEditing ? (
                         <>
                           <IconButton icon="check" label={t("บันทึก", "Save")} onClick={saveEdit} />
-                          <IconButton icon="x" label={t("ยกเลิก", "Cancel")} tone="danger" onClick={cancelEdit} />
+                          <IconButton icon="x" label={t("ยกเลิก", "Cancel")} onClick={cancelEdit} />
                         </>
                       ) : (
                         <>
                           <IconButton icon="edit" label={t(`แก้ไข ${teacher.name}`, `Edit ${teacher.name}`)} onClick={() => startEdit(teacher)} />
-                          <IconButton icon="trash" label={t(`ลบ ${teacher.name}`, `Delete ${teacher.name}`)} tone="danger" onClick={() => setDeletingId(teacher.id)} />
                           {teacher.status === "inactive" ? (
                             <IconButton icon="check" label={t(`เปิดใช้งาน ${teacher.name}`, `Activate ${teacher.name}`)} onClick={() => activateTeacher(teacher.id)} />
                           ) : (
                             <IconButton icon="ban" label={t(`ปิดใช้งาน ${teacher.name}`, `Deactivate ${teacher.name}`)} tone="warn" onClick={() => setDeactivatingId(teacher.id)} />
                           )}
+                          {/* Delete is permanent: last, and set apart from the reversible Deactivate so the two cannot be mixed up (advisor, 10/11/2569) */}
+                          <span aria-hidden="true" className="mx-1.5 h-5 w-px bg-[var(--border)]" />
+                          <IconButton icon="trash" label={t(`ลบ ${teacher.name}`, `Delete ${teacher.name}`)} tone="danger" onClick={() => setDeletingId(teacher.id)} />
                         </>
                       )}
                     </div>
@@ -1469,7 +1471,7 @@ function StudentsTab({ statusTabsSlot }: { statusTabsSlot: HTMLDivElement | null
         <div className="flex items-center gap-2 shrink-0">
           <button onClick={() => setImportOpen(true)}
             className="flex items-center gap-2 h-9 px-4 rounded-full border border-[var(--border)] bg-[var(--bg-surface)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:border-[var(--accent-bright)] hover:text-[var(--text-primary)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors shrink-0">
-            <Icon name="file-plus" />
+            <Icon name="download" />
             {t("นำเข้า CSV", "Import CSV")}
           </button>
           <button onClick={() => setAddOpen(true)}
@@ -1614,17 +1616,18 @@ function StudentsTab({ statusTabsSlot }: { statusTabsSlot: HTMLDivElement | null
                             {isEditing ? (
                               <>
                                 <IconButton icon="check" label={t("บันทึก", "Save")} onClick={saveEdit} />
-                                <IconButton icon="x" label={t("ยกเลิก", "Cancel")} tone="danger" onClick={cancelEdit} />
+                                <IconButton icon="x" label={t("ยกเลิก", "Cancel")} onClick={cancelEdit} />
                               </>
                             ) : (
                               <>
                             <IconButton icon="edit" label={t(`แก้ไข ${student.name}`, `Edit ${student.name}`)} onClick={() => startEdit(student)} />
-                            <IconButton icon="trash" label={t(`ลบ ${student.name}`, `Delete ${student.name}`)} tone="danger" onClick={() => setDeletingId(student.id)} />
                             {isInactive ? (
                               <IconButton icon="check" label={t(`เปิดใช้งาน ${student.name}`, `Activate ${student.name}`)} onClick={() => activateStudent(student.id)} />
                             ) : (
                               <IconButton icon="ban" label={t(`ปิดใช้งาน ${student.name}`, `Deactivate ${student.name}`)} tone="warn" onClick={() => setDeactivatingId(student.id)} />
                             )}
+                            <span aria-hidden="true" className="mx-1.5 h-5 w-px bg-[var(--border)]" />
+                            <IconButton icon="trash" label={t(`ลบ ${student.name}`, `Delete ${student.name}`)} tone="danger" onClick={() => setDeletingId(student.id)} />
                               </>
                             )}
                           </div>

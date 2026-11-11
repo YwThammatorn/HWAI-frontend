@@ -74,31 +74,23 @@ test.describe("Finish & announce", () => {
   });
 });
 
-test.describe("Status filter as separate boxes", () => {
-  test("four separate bordered boxes with gaps, all the same size, no tick icon, and clicking filters", async ({ page }) => {
+test.describe("Status filter and the chips", () => {
+  test("the list is filtered from a select that carries the counts, and picking one narrows it", async ({ page }) => {
     await open(page);
-    const tabs = page.getByRole("tab");
-    await expect(tabs).toHaveCount(4);
-    const boxes = await tabs.evaluateAll((els) => els.map((e) => { const r = e.getBoundingClientRect(); const s = getComputedStyle(e); return { left: r.left, right: r.right, width: Math.round(r.width), height: Math.round(r.height), border: s.borderTopWidth, radius: s.borderTopLeftRadius }; }));
-    for (const b of boxes) { expect(b.border).toBe("2px"); expect(parseFloat(b.radius)).toBeGreaterThanOrEqual(10); }
-    for (let i = 1; i < boxes.length; i++) expect(boxes[i].left - boxes[i - 1].right).toBeGreaterThanOrEqual(6);   // a gap, not one fused bar
-    expect(new Set(boxes.map((b) => b.width)).size).toBe(1);                                // every box the same width…
-    expect(new Set(boxes.map((b) => b.height)).size).toBe(1);                               // …and height
-    await expect(page.getByRole("tab", { selected: true })).toContainText("All");
-    await expect(page.locator("[role=tab] svg")).toHaveCount(0);                            // no tick on the selected box (or any icon)
-    await page.getByRole("tab", { name: /Needs review/ }).click();
-    await expect(page.getByRole("tab", { selected: true })).toContainText("Needs review");
-    expect(await tabs.evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().width)))).toEqual(boxes.map((b) => b.width));   // selecting doesn't resize
+    const filter = page.getByRole("combobox", { name: "Filter by status" });
+    // All · Needs review · Not graded · Graded + Edited (Ann's score differs from the AI's) — Low score / Edited / Late are only offered when someone has them (10/11/2569)
+    await expect(filter.locator("option")).toHaveText(["All (3)", "Needs review (1)", "Not graded (1)", "Graded (1)", "Edited (1)"]);
+    await expect(filter).toHaveValue("all");
+    await filter.selectOption({ label: "Needs review (1)" });
     await expect(page.getByRole("row", { name: /Ben Test/ })).toBeVisible();
     await expect(page.getByRole("row", { name: /Ann Test/ })).toHaveCount(0);
   });
 
-  test("each count chip carries its status colour (Needs review = warn, Graded = ok)", async ({ page }) => {
+  test("the chips in the summary strip carry their signal's colour (Needs review = warn, Edited = info) and are real buttons", async ({ page }) => {
     await open(page);
-    const chipClass = (name: RegExp) => page.getByRole("tab", { name }).locator("span").last().getAttribute("class");
-    expect(await chipClass(/Needs review/)).toContain("--s-warn-bg");
-    expect(await chipClass(/Graded/)).toContain("--s-ok-bg");
-    expect(await chipClass(/All/)).toContain("--s-info-bg");
+    const strip = page.getByTestId("grading-strip");
+    await expect(strip.getByRole("button", { name: /Needs review 1/ })).toHaveClass(/--s-warn-bg/);
+    await expect(strip.getByRole("button", { name: /Edited 1/ })).toHaveClass(/--s-info-bg/);
   });
 });
 
@@ -118,20 +110,19 @@ const contrastInPage = (page: Page, selector: string, bgSelector = selector) => 
 // dark mode is switched off since 15/10/2569 (no button; a stored "dark" is ignored) — add "dark" back here when it returns
 for (const theme of ["light"] as const) {
   test.describe(`Score cell contrast (${theme})`, () => {
-    test("the score, its /max, the AI figure and the Edited chip all pass 4.5:1", async ({ page }) => {
+    test("the score, its /max and the Edited chip all pass 4.5:1", async ({ page }) => {
       await open(page, { theme, all: true });
-      // Ann's row: instructor 9 vs AI 8 → "Edited" + "AI: 8"; score chip is tone-coloured with a visible /10
+      // Ann's row: instructor 9 vs AI 8 → "Edited"; score chip is tone-coloured with a visible /10 (the AI's 8 is in the detail on the right now)
       const row = page.getByRole("row", { name: /Ann Test/ });
       await expect(row.getByText("/10")).toBeVisible();
       await expect(row.getByText("Edited")).toBeVisible();
-      await expect(row.getByText("AI: 8")).toBeVisible();
       await row.evaluate((r) => { r.setAttribute("data-t", "row"); });
       const marks = await page.evaluate(() => {
         const row = document.querySelector("[data-t=row]")!;
         const mark = (txt: string, name: string) => { const el = [...row.querySelectorAll("span")].find((s) => s.children.length === 0 && s.textContent?.trim() === txt); el?.setAttribute("data-t", name); return !!el; };
-        return [mark("/10", "max"), mark("9", "num"), mark("Edited", "edited"), mark("AI: 8", "ai")];
+        return [mark("/10", "max"), mark("9", "num"), mark("Edited", "edited")];
       });
-      expect(marks).toEqual([true, true, true, true]);
+      expect(marks).toEqual([true, true, true]);
       for (const name of ["max", "num", "edited"]) expect(await contrastInPage(page, `[data-t=${name}]`), `${theme} ${name}`).toBeGreaterThanOrEqual(4.5);
     });
 

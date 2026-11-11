@@ -7,7 +7,8 @@ import RubricPickerModal, { type PickedCriterion } from "@/components/RubricPick
 import { useRubricLibrary } from "@/lib/rubricLibrary";
 import { useCourses } from "@/lib/courses";
 import Modal from "@/components/Modal";
-import { buildCriteria, pickAiTemplate, briefLanguage, blankLevels, resizeLevels, levelRatio, levelDescription, levelsUniform, rubricLevelCount } from "@/lib/rubricTemplates";
+import { buildCriteria, pickAiTemplate, briefLanguage, blankLevels, resizeLevels, levelDescription, levelsUniform, rubricLevelCount } from "@/lib/rubricTemplates";
+import { levelTone } from "@/lib/rubricLevels";
 
 import Icon from "@/components/Icon";
 import IconTile from "@/components/IconTile";
@@ -104,20 +105,6 @@ export interface CloOption { id: string; code: string; text: string }
 // A rubric scale runs best → worst; teachers can use anywhere from 2 to 6 levels.
 const MIN_LEVELS = 2;
 const MAX_LEVELS = 6;
-
-// Green → red ramp. A level's colour comes from its position in the scale, so
-// 3 levels still read green / amber / red and 4–6 fill in lime and orange.
-const LEVEL_TONES = [
-  { label: "text-[var(--level-1)]", dot: "bg-[var(--level-1)]" },
-  { label: "text-[var(--level-2)]", dot: "bg-[var(--level-2)]" },
-  { label: "text-[var(--level-3)]", dot: "bg-[var(--level-3)]" },
-  { label: "text-[var(--level-4)]", dot: "bg-[var(--level-4)]" },
-  { label: "text-[var(--level-5)]", dot: "bg-[var(--level-5)]" },
-];
-
-function levelTone(i: number, total: number) {
-  return LEVEL_TONES[Math.round(levelRatio(i, total) * (LEVEL_TONES.length - 1))];
-}
 
 interface AiSuggestion { name: string; description: string; points: number; levels: CriterionLevel[] }
 
@@ -346,7 +333,8 @@ export default function RubricCriteriaEditor({
     <>
       {/* Points total + tools */}
       <div className="flex items-stretch gap-3 mb-5 flex-wrap">
-        <div className={`flex-1 min-w-[280px] flex items-center justify-between px-5 py-3 rounded-xl text-sm font-medium ${
+        {/* min-w: the box takes a whole row rather than being squeezed beside the tools (it wrapped "100 pts / total" over two lines at 1600px, 11/11/2569) */}
+        <div className={`flex-1 min-w-[min(100%,34rem)] flex items-center justify-between gap-3 px-5 py-3 rounded-xl text-sm font-medium ${
           pointsOk ? "bg-[var(--accent-subtle)] text-[var(--accent)] border border-[var(--accent-bright)]" : "bg-[var(--s-warn-bg)] text-[var(--s-warn-text)] border border-[var(--s-warn-bd)]"
         }`}>
           <div className="flex items-center gap-2">
@@ -361,15 +349,15 @@ export default function RubricCriteriaEditor({
                 : t("ทุกเกณฑ์ต้องมีคะแนนมากกว่า 0", "Every criterion needs more than 0 points")}
             </span>
           </div>
-          <span className="font-mono text-base font-bold">{t(`รวม ${totalPoints} คะแนน`, `${totalPoints} pts total`)}</span>
+          <span className="shrink-0 whitespace-nowrap font-mono text-base font-bold">{t(`รวม ${totalPoints} คะแนน`, `${totalPoints} pts total`)}</span>
         </div>
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex flex-wrap items-center gap-3">
           <button
             type="button"
             onClick={openAiAssistant}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[var(--accent)] text-xs text-[var(--accent)] hover:bg-[var(--accent-subtle)] transition-colors font-medium"
           >
-            <Icon name="star" size="sm" filled />
+            <Icon name="star" size="sm" />
             {t("AI ช่วยสร้างเกณฑ์", "AI Rubric Assistant")}
           </button>
           {courseId && (
@@ -510,7 +498,7 @@ export default function RubricCriteriaEditor({
                     {generating[c.id] ? (
                       <Icon name="spinner" size="sm" className="animate-spin" />
                     ) : (
-                      <Icon name="star" size="sm" filled />
+                      <Icon name="star" size="sm" />
                     )}
                     {t("สร้าง", "Generate")}
                   </button>

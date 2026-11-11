@@ -255,7 +255,7 @@ export default function NewCoursePage() {
               <div>
                 <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">{t("อัปโหลดภาพปก", "Upload Cover Image")}</label>
                 <div className="border-2 border-dashed border-[var(--border)] rounded-xl h-32 flex flex-col items-center justify-center gap-2 text-[var(--text-secondary)] hover:border-[var(--accent)] hover:text-[var(--accent)] cursor-pointer transition-colors">
-                  <Icon name="upload" size="xl" />
+                  <Icon name="image" size="xl" />
                   <span className="text-xs">{t("คลิกเพื่ออัปโหลด", "Click to upload")}</span>
                 </div>
               </div>

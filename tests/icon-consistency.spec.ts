@@ -32,7 +32,7 @@ const readIcons = (page: Page) => page.evaluate(() =>
   [...document.querySelectorAll("svg[focusable='false']")].map((el) => {
     const r = el.getBoundingClientRect();
     const cs = getComputedStyle(el);
-    return { w: Math.round(r.width), h: Math.round(r.height), stroke: cs.strokeWidth, view: el.getAttribute("viewBox"), cap: cs.strokeLinecap, hidden: el.closest("[hidden]") !== null || cs.display === "none" };
+    return { w: Math.round(r.width), h: Math.round(r.height), stroke: cs.strokeWidth, view: el.getAttribute("viewBox"), cap: cs.strokeLinecap, fill: cs.fill, hidden: el.closest("[hidden]") !== null || cs.display === "none" };
   }).filter((i) => !i.hidden));
 
 async function check(page: Page, url: string, minIcons: number) {
@@ -44,6 +44,7 @@ async function check(page: Page, url: string, minIcons: number) {
     expect(i.view).toBe("0 0 24 24");
     expect(i.stroke).toBe("2px");
     expect(i.cap).toBe("round");
+    expect(i.fill, `${url}: an icon is always an outline (fill none)`).toBe("none");
     expect(i.w).toBe(i.h);
     expect(SIZES, `${url}: icon size ${i.w}px is not on the scale`).toContain(i.w);
   }
@@ -82,7 +83,8 @@ test.describe("Icons on screen", () => {
 
 test.describe("Summary cards (MetricCard)", () => {
   // 23/10/2569 — the four cards used a different icon shape and size each, and the ones with the taller icon pushed their number lower.
-  for (const [name, url] of [["assignment Grading page", "/teacher/courses/c-ic/assignments/as1/grading"], ["Results page", "/teacher/courses/c-ic/assignments/as1/results"]] as const) {
+  // (10/11/2569: the assignment Grading page no longer has four cards — it is a summary strip + a list and a detail — so only the Results page keeps them)
+  for (const [name, url] of [["Results page", "/teacher/courses/c-ic/assignments/as1/results"]] as const) {
     test(`${name}: same icon tile, same icon size, and every number on the same line`, async ({ page }) => {
       await seedTeacher(page);
       await page.goto(`${BASE}${url}`);
@@ -90,7 +92,7 @@ test.describe("Summary cards (MetricCard)", () => {
       const cards = await page.evaluate(() => [...document.querySelectorAll("main .grid.grid-cols-4 > div")].map((c) => {
         const svg = c.querySelector("svg[focusable='false']")!;
         const tile = svg.parentElement!.getBoundingClientRect();
-        const value = c.querySelector("p.text-2xl")!.getBoundingClientRect();
+        const value = c.querySelector("p.text-2xl, dd.text-2xl")!.getBoundingClientRect();
         return { top: Math.round(c.getBoundingClientRect().top), valueTop: Math.round(value.top), icon: Math.round(svg.getBoundingClientRect().width), tileW: Math.round(tile.width), tileH: Math.round(tile.height), radius: getComputedStyle(svg.parentElement!).borderTopLeftRadius };
       }));
       expect(cards).toHaveLength(4);

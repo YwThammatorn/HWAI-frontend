@@ -30,6 +30,22 @@ async function fillBasics(page: Page) {
 test.describe("New assignment — rubric on the same page", () => {
   test.beforeEach(async ({ page }) => { await seedTeacher(page); });
 
+  // 11/11/2569: at 1600px the green status box was squeezed beside the tool buttons and "100 pts total" broke over two lines
+  for (const width of [1280, 1600, 1920]) {
+    test(`the points status box keeps "pts total" on one line (${width}px)`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto(`${BASE}/teacher/courses/c-rub/assignments/new`);
+      await page.waitForLoadState("networkidle");
+      const total = page.getByText("100 pts total");
+      await expect(total).toBeVisible();
+      const box = await total.boundingBox();
+      expect(box!.height).toBeLessThan(32);                                   // one line of text-base, not two
+      const status = page.getByText("Every criterion has points — ready to save");
+      const sb = await status.boundingBox();
+      expect(sb!.height).toBeLessThan(28);                                    // the sentence is on one line too
+    });
+  }
+
   test("shows the rubric editor with one 100pt criterion, and Create is enabled", async ({ page }) => {
     await page.goto(`${BASE}/teacher/courses/c-rub/assignments/new`);
     await page.waitForLoadState("networkidle");

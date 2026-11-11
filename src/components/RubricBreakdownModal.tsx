@@ -1,10 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
+import Icon from "./Icon";
 import type { Rubric } from "@/lib/assignments";
-import { PENDING_CHIP_CLASSES } from "@/lib/scoreBook";
+import { NOTICE_CHIP_CLASSES } from "@/lib/scoreBook";
 import Modal from "./Modal";
-import CriterionName from "./CriterionName";
+import RubricTable from "./RubricTable";
 
 // Shared by the teacher Score Book and the student Evaluation page — what each rubric criterion
 // earned toward a graded score, not just the total. Extracted (22/9) so both screens stay identical
@@ -20,53 +22,43 @@ export interface RubricBreakdownModalProps {
   cell: { score: number; max: number };
   /** The submission's saved per-criterion scores, if any — falls back to an estimate split by weight. */
   storedCriterionScores: Record<string, number> | undefined;
+  /** Teacher Score Book only: where to open / recheck this submission (left out once the grading is finished — view only). */
+  recheckHref?: string;
 }
 
 export default function RubricBreakdownModal({
-  open, onClose, assignmentName, subtitle, rubric, cell, storedCriterionScores,
+  open, onClose, assignmentName, subtitle, rubric, cell, storedCriterionScores, recheckHref,
 }: RubricBreakdownModalProps) {
   const { t } = useLanguage();
 
   return (
-    <Modal open={open} onClose={onClose} title={assignmentName} description={subtitle} size="sm">
+    <Modal
+      open={open}
+      onClose={onClose}
+      title={assignmentName}
+      description={subtitle}
+      size="md"
+      footer={recheckHref ? (
+        <Link href={recheckHref} className="inline-flex h-9 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] px-4 text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors">
+          <Icon name="edit" />
+          {t("เปิดดู/ตรวจใหม่", "Open / recheck")}
+        </Link>
+      ) : undefined}
+    >
       {!storedCriterionScores && (
-        <p className={`text-xs rounded-lg px-3 py-2 mb-4 leading-relaxed ${PENDING_CHIP_CLASSES}`}>
+        <p className={`text-xs rounded-lg px-3 py-2 mb-4 leading-relaxed ${NOTICE_CHIP_CLASSES}`}>
           {t(
             "ประมาณจากน้ำหนักของเกณฑ์ — งานนี้ยังไม่มีคะแนนรายเกณฑ์ที่บันทึกไว้",
             "Estimated from the criteria weights — this submission has no per-criterion scores saved yet",
           )}
         </p>
       )}
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b border-[var(--border-subtle)]">
-            <th scope="col" className="pb-2 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("เกณฑ์", "Criterion")}</th>
-            <th scope="col" className="pb-2 text-right text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("น้ำหนัก", "Weight")}</th>
-            <th scope="col" className="pb-2 text-right text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("คะแนน", "Points")}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rubric.criteria.map((c) => {
-            const earned = storedCriterionScores?.[c.id] ?? Math.round((c.weight / 100) * cell.score);
-            return (
-              <tr key={c.id} className="border-b border-[var(--border-subtle)] last:border-b-0">
-                <td className="py-2.5 pr-2 text-[var(--text-primary)]"><CriterionName name={c.name} /></td>
-                <td className="py-2.5 text-right tabular-nums text-[var(--text-secondary)]">{c.weight}%</td>
-                <td className="py-2.5 text-right tabular-nums font-medium text-[var(--text-primary)]">{earned} / {c.maxPoints}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-        <tfoot>
-          <tr>
-            <td className="pt-2.5 text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">{t("รวม", "Total")}</td>
-            <td />
-            <td className="pt-2.5 text-right tabular-nums font-bold text-[var(--text-primary)]">
-              {Number.isInteger(cell.score) ? cell.score : cell.score.toFixed(1)} / {cell.max}
-            </td>
-          </tr>
-        </tfoot>
-      </table>
+      <RubricTable
+        criteria={rubric.criteria}
+        columns={["weight", "earned"]}
+        earned={Object.fromEntries(rubric.criteria.map((c) => [c.id, storedCriterionScores?.[c.id] ?? Math.round((c.weight / 100) * cell.score)]))}
+        footer={{ label: t("รวม", "Total"), value: <>{Number.isInteger(cell.score) ? cell.score : cell.score.toFixed(1)} / {cell.max}</> }}
+      />
     </Modal>
   );
 }

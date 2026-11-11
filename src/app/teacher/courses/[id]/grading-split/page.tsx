@@ -1,460 +1,151 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+// Assign work to TAs (10/11/2569, advisor R28): the teacher gives each TA of the course whole assignments to grade. The TA then works only with those
+// (lib/useGradableAssignments.ts); this page also shows each TA's progress — pieces waiting and graded. The first version of this route, a split by
+// week / team / hand-picked submissions, is kept in archive/grading-split/.
+
+import { useState, useMemo } from "react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
-import { GRADING_SPLIT_DISABLED } from "@/lib/featureFlags";
+import { useParams } from "next/navigation";
 import { useCourses } from "@/lib/courses";
 import { useSectionRoles } from "@/lib/section-roles";
 import { useCohortStudents } from "@/lib/cohort-students";
 import { useManagedTeachers } from "@/lib/managed-teachers";
 import { useCurrentAccountId } from "@/lib/current-account";
-import { useAssignments } from "@/lib/assignments";
-import {
-  useGradingAssignments,
-  GradingAssignment,
-  GradingAssignmentScope,
-} from "@/lib/grading-assignments";
+import { useAssignments, type Assignment } from "@/lib/assignments";
+import { useStudents, withdrawnIds } from "@/lib/students";
+import { useGradingAssignments } from "@/lib/grading-assignments";
+import { isEnrolledInSubjectThatTerm } from "@/lib/taAccess";
+import { assignedAssignmentIds, queueFigures } from "@/lib/taWork";
 import { useLanguage } from "@/context/LanguageContext";
 import Modal from "@/components/Modal";
-
+import EmptyState from "@/components/EmptyState";
 import Icon from "@/components/Icon";
 import IconButton from "@/components/IconButton";
 import Avatar from "@/components/Avatar";
+
 function initialsOf(name: string) {
   const parts = name.trim().split(/\s+/);
   return ((parts[0]?.[0] ?? "") + (parts[1]?.[0] ?? "")).toUpperCase() || "?";
 }
 
-interface TaCandidate { id: string; name: string; subtitle: string; }
+interface TaRow { accountId: string; name: string; studentId: string }
 
-/** A TA SectionRole's accountId can point to a CohortStudent OR a ManagedTeacher
- *  (see the FK comment on GradingAssignment.taAccountId in lib/grading-assignments.ts)
- *  — resolve against both, never just one. */
-function resolveTaCandidates(
-  taRoles: { accountId: string }[],
-  cohortStudents: { id: string; name: string; studentId: string }[],
-  teachers: { id: string; name: string; email: string }[]
-): TaCandidate[] {
-  return taRoles
-    .map((r): TaCandidate | null => {
-      const student = cohortStudents.find((s) => s.id === r.accountId);
-      if (student) return { id: student.id, name: student.name, subtitle: student.studentId };
-      const teacher = teachers.find((tc) => tc.id === r.accountId);
-      if (teacher) return { id: teacher.id, name: teacher.name, subtitle: teacher.email };
-      return null;
-    })
-    .filter((c): c is TaCandidate => c !== null);
-}
+// ─── Pick the assignments of one TA (centred popup) ──────────────────────────────────────
 
-function resolveTaName(
-  accountId: string,
-  cohortStudents: { id: string; name: string }[],
-  teachers: { id: string; name: string }[]
-): string {
-  const student = cohortStudents.find((s) => s.id === accountId);
-  if (student) return student.name;
-  const teacher = teachers.find((tc) => tc.id === accountId);
-  if (teacher) return teacher.name;
-  return accountId;
-}
-
-// ─── Create/edit (centred popup) ─────────────────────────────────────────────────────────
-
-function GradingAssignmentModal({
-  mode,
-  courseId,
-  existing,
-  onClose,
-}: {
-  mode: "create" | "edit";
-  courseId: string;
-  existing?: GradingAssignment;
+function AssignWorkModal({ ta, assignments, selected, onSave, onClose }: {
+  ta: TaRow;
+  assignments: Assignment[];
+  selected: string[];
+  onSave: (ids: string[]) => void;
   onClose: () => void;
 }) {
   const { t } = useLanguage();
-  const { cohortStudents } = useCohortStudents();
-  const { teachers } = useManagedTeachers();
-  const { getRolesBySection } = useSectionRoles();
-  const { getAssignmentsByCourse, getSubmissionsByAssignment } = useAssignments();
-  const { addGradingAssignment, updateGradingAssignment, getAssignmentsBySection } = useGradingAssignments();
-
-  const taRoles = getRolesBySection(courseId).filter((r) => r.role === "ta");
-  const taCandidates = resolveTaCandidates(taRoles, cohortStudents, teachers);
-
-  const [taAccountId, setTaAccountId] = useState(existing?.taAccountId ?? taCandidates[0]?.id ?? "");
-  const [scopeType, setScopeType] = useState<GradingAssignmentScope["type"]>(existing?.scope.type ?? "week");
-  const [weekNumbers, setWeekNumbers] = useState<number[]>(
-    existing?.scope.type === "week" ? existing.scope.weekNumbers : []
-  );
-  const [weekInput, setWeekInput] = useState("");
-  const [weekError, setWeekError] = useState("");
-
-  // Phase 1 validation S5: two TAs' week-scoped splits must not overlap —
-  // this was flagged as a gap in the model check (docs/phase1-model-validation.md)
-  // to fix as a form-level rule once this screen existed. Build the
-  // week → owning-TA-name map from every OTHER week-scoped split on this
-  // course (excluding the one currently being edited).
-  const otherWeekClaims = new Map<number, string>();
-  for (const ga of getAssignmentsBySection(courseId)) {
-    if (ga.id === existing?.id) continue;
-    if (ga.scope.type !== "week") continue;
-    const ownerName = resolveTaName(ga.taAccountId, cohortStudents, teachers);
-    for (const w of ga.scope.weekNumbers) otherWeekClaims.set(w, ownerName);
-  }
-  const courseAssignments = getAssignmentsByCourse(courseId);
-  const [pickerAssignmentId, setPickerAssignmentId] = useState(courseAssignments[0]?.id ?? "");
-  const [selectedSubmissionIds, setSelectedSubmissionIds] = useState<Set<string>>(
-    new Set(existing?.scope.type === "custom" ? existing.scope.submissionIds : [])
-  );
-
-  function addWeek() {
-    const n = parseInt(weekInput, 10);
-    if (isNaN(n) || n <= 0 || weekNumbers.includes(n)) { setWeekInput(""); return; }
-    const conflictOwner = otherWeekClaims.get(n);
-    if (conflictOwner) {
-      setWeekError(t(`สัปดาห์ ${n} ถูกมอบให้ ${conflictOwner} ไปแล้ว — เลือกสัปดาห์อื่น`, `Week ${n} is already assigned to ${conflictOwner} — pick a different week`));
-      return;
-    }
-    setWeekError("");
-    setWeekNumbers([...weekNumbers, n].sort((a, b) => a - b));
-    setWeekInput("");
-  }
-
-  function removeWeek(n: number) {
-    setWeekNumbers(weekNumbers.filter((w) => w !== n));
-  }
-
-  function toggleSubmission(subId: string) {
-    setSelectedSubmissionIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(subId)) next.delete(subId); else next.add(subId);
-      return next;
-    });
-  }
-
-  const isValid =
-    taAccountId !== "" &&
-    (scopeType === "all" ||
-      (scopeType === "week" && weekNumbers.length > 0) ||
-      (scopeType === "custom" && selectedSubmissionIds.size > 0));
-
-  function handleSave() {
-    if (!isValid) return;
-    let scope: GradingAssignmentScope;
-    if (scopeType === "week") scope = { type: "week", weekNumbers };
-    else if (scopeType === "custom") scope = { type: "custom", submissionIds: [...selectedSubmissionIds] };
-    else scope = { type: "all" };
-
-    if (mode === "create") {
-      addGradingAssignment({ courseId, taAccountId, scope });
-    } else if (existing) {
-      updateGradingAssignment(existing.id, { taAccountId, scope });
-    }
-    onClose();
-  }
-
-  const pickerSubmissions = pickerAssignmentId ? getSubmissionsByAssignment(pickerAssignmentId) : [];
-
+  const [picked, setPicked] = useState<Set<string>>(new Set(selected));
+  const toggle = (id: string) => setPicked((p) => { const n = new Set(p); if (n.has(id)) n.delete(id); else n.add(id); return n; });
+  const allOn = assignments.length > 0 && assignments.every((a) => picked.has(a.id));
   return (
-    <Modal open onClose={onClose} size="md" title={mode === "create" ? t("เพิ่มการแบ่งงานตรวจ", "New Grading Split") : t("แก้ไขการแบ่งงานตรวจ", "Edit Grading Split")}
+    <Modal
+      open
+      onClose={onClose}
+      size="md"
+      title={t(`มอบหมายงานให้ ${ta.name}`, `Assign work to ${ta.name}`)}
+      description={t("ผู้ช่วยสอนจะเห็นและตรวจได้เฉพาะงานที่เลือกไว้ที่นี่", "The TA sees and grades only the assignments ticked here")}
       footer={
         <>
-          <button onClick={onClose} className="h-10 px-5 rounded-xl border border-[var(--border)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors">
+          <button type="button" onClick={onClose} className="h-10 px-5 rounded-xl border border-[var(--border)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors">
             {t("ยกเลิก", "Cancel")}
           </button>
           <button
-            onClick={handleSave}
-            disabled={!isValid}
-            className="h-10 px-5 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] disabled:opacity-50 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
+            type="button"
+            data-testid="assign-save"
+            onClick={() => onSave([...picked])}
+            className="h-10 px-5 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
           >
-            {mode === "create" ? t("เพิ่มการแบ่งงาน", "Add Split") : t("บันทึก", "Save")}
+            {t("บันทึก", "Save")}
           </button>
         </>
       }
     >
-      <div className="flex flex-col gap-5">
-        {taCandidates.length === 0 ? (
-          <p className="text-sm text-[var(--text-muted)]">
-            {t("วิชานี้ยังไม่มีผู้ช่วยสอน — เพิ่มที่หน้า", "This course has no TAs yet — add one on the")}{" "}
-            <Link href={`/teacher/courses/${courseId}/collaborators`} className="text-[var(--accent)] hover:underline">
-              {t("ผู้ร่วมสอน", "Collaborators")}
-            </Link>
-          </p>
-        ) : (
-          <>
-            {/* TA picker */}
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-[var(--text-muted)]">
-                {t("ผู้ช่วยสอน", "Teaching Assistant")} <span className="text-[var(--s-err-text)]">*</span>
-              </label>
-              <div className="flex flex-col gap-1.5">
-                {taCandidates.map((s) => (
-                  <button
-                    key={s.id}
-                    type="button"
-                    onClick={() => setTaAccountId(s.id)}
-                    aria-pressed={taAccountId === s.id}
-                    className={`flex items-center gap-3 px-3 py-2 rounded-xl border text-left transition-colors ${
-                      taAccountId === s.id ? "border-[var(--role-ta-border)] bg-[var(--role-ta-bg)]" : "border-[var(--border-subtle)] hover:bg-[var(--bg-subtle)]"
-                    }`}
-                  >
-                    <Avatar initials={initialsOf(s.name)} bg="var(--role-ta-text)" />
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-[var(--text-primary)] truncate">{s.name}</p>
-                      <p className="text-[11px] text-[var(--text-muted)] font-mono truncate">{s.subtitle}</p>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Scope type */}
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-[var(--text-muted)]">{t("รูปแบบการแบ่งงาน", "Split Mode")}</label>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => { setScopeType("week"); setWeekError(""); }}
-                  aria-pressed={scopeType === "week"}
-                  className={`h-10 rounded-xl border text-sm font-semibold transition-colors ${
-                    scopeType === "week" ? "border-[var(--accent-bright)] bg-[var(--accent-bright)]/10 text-[var(--accent)]" : "border-[var(--border-subtle)] text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)]"
-                  }`}
-                >
-                  {t("แบ่งตามสัปดาห์", "By Week")}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setScopeType("all"); setWeekError(""); }}
-                  aria-pressed={scopeType === "all"}
-                  className={`h-10 rounded-xl border text-sm font-semibold transition-colors ${
-                    scopeType === "all" ? "border-[var(--accent-bright)] bg-[var(--accent-bright)]/10 text-[var(--accent)]" : "border-[var(--border-subtle)] text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)]"
-                  }`}
-                >
-                  {t("ตรวจทั้งหมด", "Grade Everything")}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setScopeType("custom"); setWeekError(""); }}
-                  aria-pressed={scopeType === "custom"}
-                  className={`h-10 rounded-xl border text-sm font-semibold transition-colors ${
-                    scopeType === "custom" ? "border-[var(--accent-bright)] bg-[var(--accent-bright)]/10 text-[var(--accent)]" : "border-[var(--border-subtle)] text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)]"
-                  }`}
-                >
-                  {t("เลือกเอง", "Custom")}
-                </button>
-                <button
-                  type="button"
-                  disabled
-                  title={t("รอสรุปโมเดลกลุ่มนักศึกษา (Q1) — ยังใช้ไม่ได้", "Pending the student-group data model decision (Q1) — not available yet")}
-                  className="h-10 rounded-xl border border-dashed border-[var(--border-subtle)] text-sm font-semibold text-[var(--text-muted)] opacity-50 cursor-not-allowed"
-                >
-                  {t("แบ่งตามกลุ่ม", "By Group")}
-                </button>
-              </div>
-            </div>
-
-            {/* Scope-specific fields */}
-            {scopeType === "week" && (
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-[var(--text-muted)]">
-                  {t("สัปดาห์ที่รับผิดชอบ", "Weeks Responsible For")} <span className="text-[var(--s-err-text)]">*</span>
+      {assignments.length === 0 ? (
+        <p className="text-sm text-[var(--text-muted)]">{t("วิชานี้ยังไม่มีงาน", "This course has no assignments yet")}</p>
+      ) : (
+        <div className="flex flex-col gap-3">
+          <label className="flex items-center gap-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-app)] px-4 py-2.5 text-sm font-semibold text-[var(--text-primary)]">
+            <input
+              type="checkbox"
+              data-testid="assign-all"
+              checked={allOn}
+              onChange={() => setPicked(allOn ? new Set() : new Set(assignments.map((a) => a.id)))}
+              className="h-4 w-4 accent-[var(--accent)]"
+            />
+            {t("เลือกทั้งหมด", "Select all")}
+            <span className="ml-auto text-xs font-medium tabular-nums text-[var(--text-muted)]">{t(`เลือกแล้ว ${picked.size} จาก ${assignments.length}`, `${picked.size} of ${assignments.length} ticked`)}</span>
+          </label>
+          <ul className="flex flex-col divide-y divide-[var(--border-subtle)] rounded-xl border border-[var(--border-subtle)]">
+            {assignments.map((a) => (
+              <li key={a.id}>
+                <label className="flex cursor-pointer items-center gap-3 px-4 py-3 text-sm hover:bg-[var(--bg-subtle)] transition-colors">
+                  <input type="checkbox" data-testid={`assign-${a.id}`} checked={picked.has(a.id)} onChange={() => toggle(a.id)} className="h-4 w-4 shrink-0 accent-[var(--accent)]" />
+                  <span className="min-w-0 flex-1 truncate font-medium text-[var(--text-primary)]">{a.name}</span>
+                  <span className="shrink-0 text-xs tabular-nums text-[var(--text-muted)]">{a.maxPoints} {t("คะแนน", "pts")}</span>
                 </label>
-                {otherWeekClaims.size > 0 && (
-                  <p className="text-[11px] text-[var(--text-muted)]">
-                    {t("สัปดาห์ที่มีคนตรวจแล้ว: ", "Already assigned: ")}
-                    {[...otherWeekClaims.entries()].sort(([a], [b]) => a - b).map(([w, name]) => `${w} (${name})`).join(", ")}
-                  </p>
-                )}
-                <div className="flex gap-2">
-                  <input
-                    type="number"
-                    value={weekInput}
-                    onChange={(e) => { setWeekInput(e.target.value); setWeekError(""); }}
-                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addWeek(); } }}
-                    placeholder="เช่น 3"
-                    aria-invalid={weekError !== ""}
-                    className={`h-10 px-5 rounded-xl border bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] tabular-nums focus:outline-none focus:ring-2 ${weekError ? "border-[var(--s-err-bd)] focus:ring-[var(--s-err-bd)]" : "border-[var(--border-subtle)] focus:ring-[var(--accent-bright)]"}`}
-                  />
-                  <button type="button" onClick={addWeek} className="h-10 px-4 rounded-xl border border-[var(--border-subtle)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] transition-colors">
-                    {t("เพิ่ม", "Add")}
-                  </button>
-                </div>
-                {weekError && (
-                  <p role="alert" className="text-xs text-[var(--s-err-text)]">{weekError}</p>
-                )}
-                {weekNumbers.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 mt-1">
-                    {weekNumbers.map((n) => (
-                      <span key={n} className="inline-flex items-center gap-1 pl-2.5 pr-1.5 py-1 rounded-full bg-[var(--accent-bright)]/10 text-[var(--accent)] text-xs font-semibold">
-                        {t(`สัปดาห์ ${n}`, `Week ${n}`)}
-                        <IconButton icon="x" label={t("ลบ", "Remove")} onClick={() => removeWeek(n)} />
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {scopeType === "all" && (
-              <p className="text-xs text-[var(--text-muted)] px-3 py-2 rounded-xl bg-[var(--bg-app)]">
-                {t("ผู้ช่วยสอนคนนี้จะตรวจงานทุกชิ้นในวิชานี้", "This TA will grade every submission in this course")}
-              </p>
-            )}
-
-            {scopeType === "custom" && (
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-[var(--text-muted)]">
-                  {t("เลือกงานที่ต้องการมอบหมาย", "Pick Submissions to Assign")} <span className="text-[var(--s-err-text)]">*</span>
-                </label>
-                {courseAssignments.length === 0 ? (
-                  <p className="text-xs text-[var(--text-muted)]">{t("วิชานี้ยังไม่มีงาน/การบ้าน", "This course has no assignments yet")}</p>
-                ) : (
-                  <>
-                    <select
-                      value={pickerAssignmentId}
-                      onChange={(e) => setPickerAssignmentId(e.target.value)}
-                      className="h-10 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] px-3 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-bright)]"
-                    >
-                      {courseAssignments.map((a) => (
-                        <option key={a.id} value={a.id}>{a.name}</option>
-                      ))}
-                    </select>
-                    <div className="flex flex-col gap-1 max-h-48 overflow-y-auto rounded-xl border border-[var(--border-subtle)] p-1 mt-1">
-                      {pickerSubmissions.length === 0 ? (
-                        <p className="text-xs text-[var(--text-muted)] px-2 py-3 text-center">{t("ยังไม่มีนักศึกษาส่งงานชิ้นนี้", "No submissions for this assignment yet")}</p>
-                      ) : (
-                        pickerSubmissions.map((sub) => (
-                          <label key={sub.id} className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-[var(--bg-subtle)] cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={selectedSubmissionIds.has(sub.id)}
-                              onChange={() => toggleSubmission(sub.id)}
-                              className="accent-[var(--accent)]"
-                            />
-                            <span className="text-sm text-[var(--text-primary)]">{sub.studentName}</span>
-                          </label>
-                        ))
-                      )}
-                    </div>
-                    {selectedSubmissionIds.size > 0 && (
-                      <p className="text-[11px] text-[var(--text-muted)]">
-                        {t(`เลือกแล้ว ${selectedSubmissionIds.size} ชิ้น (จากทุกงานที่เปิดไว้)`, `${selectedSubmissionIds.size} submission(s) selected (across all assignments browsed)`)}
-                      </p>
-                    )}
-                  </>
-                )}
-              </div>
-            )}
-          </>
-        )}
-      </div>
-
-    </Modal>
-  );
-}
-
-// ─── Row ────────────────────────────────────────────────────────────────────────
-
-function scopeDescription(scope: GradingAssignmentScope, t: (th: string, en: string) => string): string {
-  if (scope.type === "all") return t("ตรวจทั้งหมด", "Grades everything");
-  if (scope.type === "week") return t(`สัปดาห์ ${scope.weekNumbers.join(", ")}`, `Week(s) ${scope.weekNumbers.join(", ")}`);
-  if (scope.type === "custom") return t(`เลือกเอง — ${scope.submissionIds.length} ชิ้น`, `Custom — ${scope.submissionIds.length} submission(s)`);
-  return t(`กลุ่ม — ${scope.studentGroupIds.length} กลุ่ม`, `Group — ${scope.studentGroupIds.length} group(s)`);
-}
-
-function GradingAssignmentRow({
-  assignment,
-  taName,
-  canManage,
-  onEdit,
-  onRemove,
-}: {
-  assignment: GradingAssignment;
-  taName: string;
-  canManage: boolean;
-  onEdit: () => void;
-  onRemove: () => void;
-}) {
-  const { t } = useLanguage();
-  // "By Group" scope can't be created or edited from this UI yet — the
-  // student-group data model is still an open question (Phase 1 Q1). A
-  // group-scoped row can only exist from data created outside this screen;
-  // opening the edit form for one would show no selected mode and a Save
-  // button that can never enable, so block Edit here instead of the app
-  // silently doing nothing useful.
-  const isGroupScoped = assignment.scope.type === "group";
-  if (!canManage) {
-    return (
-      <div className="flex items-center gap-4 px-6 py-4">
-        <Avatar size="md" initials={initialsOf(taName)} bg="var(--role-ta-text)" />
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-[var(--text-primary)] truncate">{taName}</p>
-          <p className="text-xs text-[var(--text-muted)]">{scopeDescription(assignment.scope, t)}</p>
+              </li>
+            ))}
+          </ul>
         </div>
-      </div>
-    );
-  }
-  return (
-    <div className="flex items-center gap-4 px-6 py-4 hover:bg-[var(--bg-subtle)]/50 transition-colors">
-      <Avatar size="md" initials={initialsOf(taName)} bg="var(--role-ta-text)" />
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-[var(--text-primary)] truncate">{taName}</p>
-        <p className="text-xs text-[var(--text-muted)]">{scopeDescription(assignment.scope, t)}</p>
-      </div>
-      <div className="flex items-center gap-1 shrink-0">
-        <IconButton icon="edit" label={isGroupScoped ? t("แก้ไขแบบกลุ่มยังไม่รองรับในหน้านี้", "Group-scoped splits can't be edited here yet") : t("แก้ไข", "Edit")} onClick={onEdit} disabled={isGroupScoped} />
-        <IconButton icon="trash" label={t("ลบ", "Remove")} tone="danger" onClick={onRemove} />
-      </div>
-    </div>
+      )}
+    </Modal>
   );
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export default function GradingSplitPage() {
+export default function AssignWorkPage() {
   const { id } = useParams<{ id: string }>();
-  const router = useRouter();
   const { t } = useLanguage();
-  const { getCourse } = useCourses();
-
-  useEffect(() => {
-    if (GRADING_SPLIT_DISABLED) router.replace(`/teacher/courses/${id}`);
-  }, [router, id]);
+  const { getCourse, courses: allCourses } = useCourses();
   const { cohortStudents } = useCohortStudents();
-  const { teachers, getTeachersByCourse } = useManagedTeachers();
+  const { getTeachersByCourse } = useManagedTeachers();
   const { getRolesBySection, hasPermission } = useSectionRoles();
-  const { gradingAssignments, removeGradingAssignment, getAssignmentsBySection } = useGradingAssignments();
+  const { gradingAssignments, addGradingAssignment, updateGradingAssignment, removeGradingAssignment } = useGradingAssignments();
+  const { getAssignmentsByCourse, getSubmissionsByAssignment } = useAssignments();
+  const { students: allEnrollments, getStudentsByCourse } = useStudents();
   const currentAccountId = useCurrentAccountId();
   const course = getCourse(id);
-  // The primary teacher's access comes from ManagedTeacher.courseIds
-  // (admin-assigned), not a SectionRole row — hasPermission only looks at
-  // SectionRole, so it always returns false for them (see the same fix on
-  // collaborators/page.tsx).
+  // Same rule as the Collaborators page: the primary teacher (admin-assigned) or a role with the right to edit settings; fail open for an unresolved session.
   const isPrimaryTeacher = course ? getTeachersByCourse(course.id).some((tc) => tc.id === currentAccountId) : false;
-  // Fail open when unresolvable — see the comment on useCurrentAccountId().
-  // Grading-split configuration reads as course-settings-adjacent, so it's
-  // gated on canEditSettings rather than canManageRoster.
-  const canManage = course
-    ? (currentAccountId === null || isPrimaryTeacher || hasPermission(currentAccountId, course.id, "canEditSettings"))
-    : true;
+  const canManage = course ? (currentAccountId === null || isPrimaryTeacher || hasPermission(currentAccountId, course.id, "canEditSettings")) : true;
 
-  const [modalMode, setModalMode] = useState<"create" | "edit" | null>(null);
-  const [editTarget, setEditTarget] = useState<GradingAssignment | undefined>(undefined);
+  const [editing, setEditing] = useState<TaRow | null>(null);
 
-  const taRoles = course ? getRolesBySection(course.id).filter((r) => r.role === "ta") : [];
-  const rows = useMemo(() => {
+  const assignments = useMemo(() => (course ? [...getAssignmentsByCourse(course.id)].sort((a, b) => (a.dueDate ?? "").localeCompare(b.dueDate ?? "")) : []), [course, getAssignmentsByCourse]);
+
+  // the course's TAs: appointed on Collaborators and not enrolled in this subject this term (the same rule that gives them the TA hat)
+  const tas = useMemo<TaRow[]>(() => {
     if (!course) return [];
-    return getAssignmentsBySection(course.id).map((ga) => ({
-      assignment: ga,
-      taName: resolveTaName(ga.taAccountId, cohortStudents, teachers),
-    }));
-  }, [course, getAssignmentsBySection, gradingAssignments, cohortStudents, teachers]);
+    return getRolesBySection(course.id)
+      .filter((r) => r.role === "ta")
+      .map((r): TaRow | null => {
+        const s = cohortStudents.find((c) => c.id === r.accountId);
+        if (!s || isEnrolledInSubjectThatTerm(s.studentId, course, allCourses, allEnrollments)) return null;
+        return { accountId: s.id, name: s.name, studentId: s.studentId };
+      })
+      .filter((x): x is TaRow => x !== null);
+  }, [course, getRolesBySection, cohortStudents, allCourses, allEnrollments]);
 
-  function remove(ga: GradingAssignment, taName: string) {
-    const msg = t(`ลบการแบ่งงานของ "${taName}"?`, `Remove this split for "${taName}"?`);
-    if (!window.confirm(msg)) return;
-    removeGradingAssignment(ga.id);
+  const withdrawn = useMemo(() => (course ? withdrawnIds(getStudentsByCourse(course.id)) : new Set<string>()), [course, getStudentsByCourse]);
+  const liveSubs = (assignmentId: string) => getSubmissionsByAssignment(assignmentId).filter((s) => !withdrawn.has(s.studentId));
+
+  function save(ta: TaRow, ids: string[]) {
+    if (!course) return;
+    const mine = gradingAssignments.filter((g) => g.courseId === course.id && g.taAccountId === ta.accountId && g.scope.type === "assignments");
+    if (ids.length === 0) mine.forEach((g) => removeGradingAssignment(g.id));
+    else if (mine.length > 0) {
+      updateGradingAssignment(mine[0].id, { scope: { type: "assignments", assignmentIds: ids } });
+      mine.slice(1).forEach((g) => removeGradingAssignment(g.id));
+    } else addGradingAssignment({ courseId: course.id, taAccountId: ta.accountId, scope: { type: "assignments", assignmentIds: ids } });
+    setEditing(null);
   }
 
   if (!course) {
@@ -466,79 +157,102 @@ export default function GradingSplitPage() {
     );
   }
 
-  if (GRADING_SPLIT_DISABLED) return null;
-
   return (
     <main className="w-full px-8 py-8">
-      {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-[var(--text-muted)] mb-6">
         <IconButton icon="home" label={t("รายวิชาทั้งหมด", "All courses")} href="/teacher/courses" />
         <span>/</span>
         <Link href={`/teacher/courses/${id}`} className="hover:text-[var(--accent)] transition-colors">{course.name}</Link>
         <span>/</span>
-        <span className="text-[var(--accent)] font-medium">{t("แบ่งงานตรวจ", "Grading Split")}</span>
+        <span className="text-[var(--accent)] font-medium">{t("มอบหมายงานให้ TA", "Assign work to TAs")}</span>
       </div>
 
-      {/* Title */}
-      <div className="flex items-start justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">{t("แบ่งงานตรวจ", "Grading Split")}</h1>
-          <p className="text-sm text-[var(--text-muted)]">
-            {t("กำหนดว่าผู้ช่วยสอนแต่ละคนตรวจงานส่วนไหนใน", "Set which part of the work each TA is responsible for grading in")} <strong className="text-[var(--text-primary)]">{course.name}</strong>
-          </p>
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-1">{t("มอบหมายงานให้ TA", "Assign work to TAs")}</h1>
+        <p className="text-sm text-[var(--text-muted)]">
+          {t("เลือกงานที่ผู้ช่วยสอนแต่ละคนต้องตรวจใน", "Choose the assignments each TA grades in")} <strong className="text-[var(--text-primary)]">{course.name}</strong>
+          {" — "}{t("ผู้ช่วยสอนจะเห็นเฉพาะงานเหล่านั้นในคิวของตัวเอง", "a TA sees only those in their own queue")}
+        </p>
+      </div>
+
+      {tas.length === 0 ? (
+        <EmptyState
+          icon="users"
+          title={t("วิชานี้ยังไม่มีผู้ช่วยสอน", "This course has no TAs yet")}
+          description={t("แต่งตั้งนักศึกษาเป็นผู้ช่วยสอนที่หน้าผู้ร่วมสอนก่อน", "Appoint a student as a TA on the Collaborators page first")}
+          action={<Link href={`/teacher/courses/${id}/collaborators`} className="inline-flex h-10 items-center rounded-xl bg-[var(--accent-solid)] px-4 text-sm font-semibold text-[var(--accent-solid-text)] hover:bg-[var(--accent-solid-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors">{t("ไปหน้าผู้ร่วมสอน", "Go to Collaborators")}</Link>}
+        />
+      ) : (
+        <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-subtle)] shadow-sm overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-[var(--border-subtle)] bg-[var(--bg-app)]">
+                <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("ผู้ช่วยสอน", "TA")}</th>
+                <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("งานที่มอบหมาย", "Assigned work")}</th>
+                <th scope="col" className="px-4 py-3 text-right text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("รอตรวจ", "Waiting")}</th>
+                <th scope="col" className="px-4 py-3 text-right text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("ตรวจแล้ว", "Graded")}</th>
+                <th scope="col" className="px-4 py-3 text-right whitespace-nowrap text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{t("การดำเนินการ", "Action")}</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[var(--border-subtle)]">
+              {tas.map((ta) => {
+                const ids = assignedAssignmentIds(gradingAssignments, course.id, ta.accountId);
+                const mine = assignments.filter((a) => ids.has(a.id));
+                const q = queueFigures(mine, liveSubs);
+                return (
+                  <tr key={ta.accountId} data-testid={`ta-row-${ta.studentId}`}>
+                    <td className="px-6 py-3.5">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <Avatar size="md" initials={initialsOf(ta.name)} bg="var(--role-ta-text)" />
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-[var(--text-primary)] truncate">{ta.name}</p>
+                          <p className="text-xs text-[var(--text-muted)]">{ta.studentId}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3.5 max-w-[420px]">
+                      {mine.length === 0 ? (
+                        <span data-testid="no-work" className="text-xs text-[var(--text-muted)]">{t("ยังไม่ได้มอบหมายงาน", "No work assigned yet")}</span>
+                      ) : (
+                        <ul className="flex flex-wrap gap-1.5" aria-label={t("งานที่มอบหมาย", "Assigned work")}>
+                          {mine.map((a) => (
+                            <li key={a.id} className="inline-flex h-6 max-w-[180px] items-center truncate rounded-md border border-[var(--role-ta-border)] bg-[var(--role-ta-bg)] px-2 text-xs font-semibold text-[var(--role-ta-text)]">{a.name}</li>
+                          ))}
+                        </ul>
+                      )}
+                    </td>
+                    <td data-testid="ta-waiting" className="px-4 py-3.5 text-right font-semibold tabular-nums text-[var(--text-primary)]">{q.waiting}</td>
+                    <td data-testid="ta-graded" className="px-4 py-3.5 text-right font-semibold tabular-nums text-[var(--text-primary)]">{q.graded}</td>
+                    <td className="px-4 py-3.5 text-right">
+                      {canManage ? (
+                        <button
+                          type="button"
+                          data-testid={`assign-open-${ta.studentId}`}
+                          onClick={() => setEditing(ta)}
+                          className="inline-flex h-9 items-center gap-2 rounded-xl border border-[var(--border)] px-3 text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors"
+                        >
+                          <Icon name="edit" />
+                          {mine.length === 0 ? t("มอบหมายงาน", "Assign work") : t("แก้ไข", "Edit")}
+                        </button>
+                      ) : (
+                        <span className="text-xs text-[var(--text-muted)]">—</span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
-        {canManage && (
-          <button
-            onClick={() => { setEditTarget(undefined); setModalMode("create"); }}
-            className="flex items-center gap-2 h-10 px-4 rounded-xl bg-[var(--accent-solid)] text-[var(--accent-solid-text)] text-sm font-semibold hover:bg-[var(--accent-solid-hover)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] transition-colors shrink-0"
-          >
-            <Icon name="plus" />
-            {t("เพิ่มการแบ่งงาน", "Add Split")}
-          </button>
-        )}
-      </div>
+      )}
 
-      <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-subtle)] shadow-sm">
-        <div className="px-6 pt-5 pb-4 border-b border-[var(--border-subtle)]">
-          <h2 className="text-base font-bold text-[var(--text-primary)]">{t("กติกาการแบ่งงาน", "Split Rules")}</h2>
-          <p className="text-sm text-[var(--text-muted)] mt-0.5">
-            {t("ค่าเริ่มต้นคือแบ่งตามสัปดาห์ — เปลี่ยนเป็นตรวจทั้งหมดหรือเลือกเองได้ต่อผู้ช่วยสอน", "Default mode is by-week — switch to grade-everything or custom per TA")}
-          </p>
-        </div>
-
-        {taRoles.length === 0 ? (
-          <div className="px-6 py-10 text-center text-sm text-[var(--text-muted)]">
-            {t("วิชานี้ยังไม่มีผู้ช่วยสอน", "This course has no TAs yet")} —{" "}
-            <Link href={`/teacher/courses/${id}/collaborators`} className="text-[var(--accent)] hover:underline">
-              {t("เพิ่มผู้ช่วยสอนก่อน", "Add a TA first")}
-            </Link>
-          </div>
-        ) : rows.length === 0 ? (
-          <div className="px-6 py-10 text-center text-sm text-[var(--text-muted)]">
-            {t("ยังไม่มีการแบ่งงาน — ค่าเริ่มต้นคือทุกคนช่วยตรวจทั้งหมด", "No split configured yet — by default all TAs can grade everything")}
-          </div>
-        ) : (
-          <div className="divide-y divide-[var(--border-subtle)]">
-            {rows.map(({ assignment, taName }) => (
-              <GradingAssignmentRow
-                key={assignment.id}
-                assignment={assignment}
-                taName={taName}
-                canManage={canManage}
-                onEdit={() => { setEditTarget(assignment); setModalMode("edit"); }}
-                onRemove={() => remove(assignment, taName)}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-
-      {modalMode && (
-        <GradingAssignmentModal
-          mode={modalMode}
-          courseId={course.id}
-          existing={editTarget}
-          onClose={() => setModalMode(null)}
+      {editing && (
+        <AssignWorkModal
+          ta={editing}
+          assignments={assignments}
+          selected={[...assignedAssignmentIds(gradingAssignments, course.id, editing.accountId)]}
+          onSave={(ids) => save(editing, ids)}
+          onClose={() => setEditing(null)}
         />
       )}
     </main>

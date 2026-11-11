@@ -45,6 +45,8 @@ export default function ImportCourseStudentsModal({ courseId, courseName, onClos
 
   const validRows = rows.filter((r) => !r.error);
   const errorRows = rows.filter((r) => r.error);
+  // problems first (advisor, 10/11/2569) — the file's own order is kept inside each group
+  const shownRows = [...errorRows, ...validRows];
 
   function translateError(code?: string) {
     if (!code) return "";
@@ -177,7 +179,7 @@ export default function ImportCourseStudentsModal({ courseId, courseName, onClos
                 className="hidden"
                 onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
               />
-              <Icon name="file-plus" size="xl" className="mx-auto mb-3 text-[var(--accent-bright)]" />
+              <div className="mb-3 flex justify-center"><IconTile icon="download" size="lg" tone="accent" /></div>
               <p className="text-sm font-semibold text-[var(--text-primary)]">{t("ลากไฟล์มาวาง หรือคลิกเลือก", "Drag a file here or click to browse")}</p>
               <p className="text-xs text-[var(--text-muted)] mt-1">{t("รองรับ Excel (.xls / .xlsx — ใบคะแนนสอบจากทะเบียน) และ .csv (UTF-8)", "Supports Excel (.xls / .xlsx — the registrar's exam sheet) and .csv (UTF-8)")}</p>
             </div>
@@ -201,7 +203,7 @@ export default function ImportCourseStudentsModal({ courseId, courseName, onClos
 
             <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-app)] p-3.5 flex items-center justify-between gap-3">
               <div className="flex items-center gap-2.5 min-w-0">
-                <IconTile icon="file-download" size="sm" tone="accent" />
+                <IconTile icon="file-text" size="sm" tone="accent" />
                 <div className="min-w-0">
                   <p className="text-xs font-medium text-[var(--text-primary)]">{t("ดาวน์โหลด Template", "Download Template")}</p>
                   <p className="text-[11px] text-[var(--text-muted)] truncate">students-template.csv — {t("รูปแบบที่ระบบรองรับ", "supported format")}</p>
@@ -280,7 +282,7 @@ export default function ImportCourseStudentsModal({ courseId, courseName, onClos
                     </tr>
                   </thead>
                   <tbody>
-                    {rows.map((row) => (
+                    {shownRows.map((row) => (
                       <tr key={row.line} className={`border-t border-[var(--border-subtle)] ${row.error ? "bg-[var(--s-err-bg)]" : ""}`}>
                         <td className="px-3 py-1.5 text-[var(--text-muted)] tabular-nums">{row.line}</td>
                         <td className="px-3 py-1.5 text-[var(--text-primary)] tabular-nums">{row.studentId || "—"}</td>

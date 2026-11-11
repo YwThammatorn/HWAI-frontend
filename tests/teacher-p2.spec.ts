@@ -98,7 +98,8 @@ test.describe("P2 — Teacher Grade Adjustment", () => {
     const row = page.getByRole("row", { name: /สมชาย ใจดี/i });
     await expect(row).toContainText("85");
     await expect(row.getByText(/แก้ไขแล้ว|Edited/i)).toBeVisible();
-    await expect(row.getByText("AI: 72")).toBeVisible();
+    await row.click();                                                  // the AI's original score is in the detail on the right now
+    await expect(page.getByTestId("grading-detail")).toContainText("72");
   });
 
   test("Grade link is the only way to edit a score, and shows on every row regardless of status", async ({ page }) => {
@@ -117,7 +118,8 @@ test.describe("P2 — Teacher Grade Adjustment", () => {
     await seedGrading(page);
     await page.goto(`${BASE}/teacher/courses/c-p2/assignments/a-p2/grading`);
     await page.waitForLoadState("networkidle");
-    // Find re-grade button in first row
+    // Re-grade is in the detail of the picked row (10/11/2569)
+    await page.locator("main tbody tr").first().click();
     const regradeBtn = page.getByRole("button", { name: /re.grade|ตรวจใหม่/i }).first();
     await regradeBtn.click();
     // Spinner visible during processing (1500ms)

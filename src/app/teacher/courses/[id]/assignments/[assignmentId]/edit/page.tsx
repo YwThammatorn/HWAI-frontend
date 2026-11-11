@@ -323,7 +323,7 @@ export default function EditAssignmentPage() {
 
           {/* Submission Settings */}
           <section className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-subtle)] shadow-sm p-6">
-            <SectionHeader icon="upload" label={t("การรับและรูปแบบงาน", "Submission Settings")} />
+            <SectionHeader icon="files" label={t("การรับและรูปแบบงาน", "Submission Settings")} />
 
             <div className="flex items-center justify-between mb-4">
               <div>
@@ -481,7 +481,7 @@ export default function EditAssignmentPage() {
           {!needsManualScore && (
             <section className="mt-8" aria-labelledby="rubric-heading">
               <div className="flex items-center gap-2 mb-1.5">
-                <Icon name="check-square" size="sm" className="text-[var(--accent-bright)]" />
+                <Icon name="check-square" size="sm" className="text-[var(--accent)]" />
                 <h2 id="rubric-heading" className="text-base font-semibold text-[var(--text-primary)]">{t("เกณฑ์การให้คะแนน (Rubric)", "Grading Rubric")}</h2>
               </div>
               <p className="text-sm text-[var(--text-secondary)] mb-5">
@@ -594,20 +594,20 @@ export default function EditAssignmentPage() {
   );
 }
 
-function SectionHeader({ icon, label }: { icon: "info" | "doc" | "cal" | "upload"; label: string }) {
+function SectionHeader({ icon, label }: { icon: "info" | "doc" | "cal" | "files"; label: string }) {
   return (
     <div className="flex items-center gap-2 mb-5">
       {icon === "info" && (
-        <Icon name="alert-circle" size="sm" className="text-[var(--accent-bright)]" />
+        <Icon name="alert-circle" size="sm" className="text-[var(--accent)]" />
       )}
       {icon === "doc" && (
-        <Icon name="document-list" size="sm" className="text-[var(--accent-bright)]" />
+        <Icon name="document-list" size="sm" className="text-[var(--accent)]" />
       )}
       {icon === "cal" && (
-        <Icon name="calendar" size="sm" className="text-[var(--accent-bright)]" />
+        <Icon name="calendar" size="sm" className="text-[var(--accent)]" />
       )}
-      {icon === "upload" && (
-        <Icon name="upload" size="sm" className="text-[var(--accent-bright)]" />
+      {icon === "files" && (
+        <Icon name="paperclip" size="sm" className="text-[var(--accent)]" />
       )}
       <h2 className="text-sm font-semibold text-[var(--text-primary)]">{label}</h2>
     </div>

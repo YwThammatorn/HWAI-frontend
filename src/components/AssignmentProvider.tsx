@@ -7,6 +7,7 @@ import { removeFile } from "@/lib/fileStorage";
 import { API_ENABLED } from "@/lib/api/client";
 import { enqueueWrite, loadFailed } from "@/lib/api/sync";
 import * as api from "@/lib/api/assignments";
+import { useGradingAssignments } from "@/lib/grading-assignments";
 
 const LS_ASSIGNMENTS = "hwai_assignments_v1";
 const LS_SUBMISSIONS = "hwai_submissions_v1";
@@ -111,6 +112,7 @@ const ASSIGNMENT_DEFAULTS = {
 };
 
 export default function AssignmentProvider({ children }: { children: React.ReactNode }) {
+  const { removeAssignmentFromScopes } = useGradingAssignments();   // GradingAssignmentProvider sits above this one (app/layout.tsx)
   // Starts empty on both server and the client's first hydration render —
   // see CourseProvider.tsx for why (hydration-mismatch fix, [[project-hwai-meeting-20260826]]).
   // This was the data behind the "content keeps shifting" bug specifically:
@@ -203,7 +205,8 @@ export default function AssignmentProvider({ children }: { children: React.React
     persistS(prev => prev.filter(s => s.assignmentId !== id)); // cascade (the server cascades too)
     persistR(prev => prev.filter(r => r.assignmentId !== id)); // cascade
     sync(() => api.deleteAssignment(id));
-  }, [assignments, persistA, persistS, persistR, sync]);
+    removeAssignmentFromScopes(id); // a TA is no longer given it (10/11/2569)
+  }, [assignments, persistA, persistS, persistR, sync, removeAssignmentFromScopes]);
 
   const getAssignment= useCallback((id: string) => assignments.find(a => a.id === id), [assignments]);
 
@@ -220,7 +223,7 @@ export default function AssignmentProvider({ children }: { children: React.React
 
   const updateSubmission = useCallback((
     id: string,
-    data: Partial<Pick<Submission, "aiScore" | "instructorScore" | "instructorComment" | "criterionComments" | "criterionScores" | "aiCriterionScores" | "aiCriterionReasons" | "status" | "attachments" | "submittedAt" | "late">>
+    data: Partial<Pick<Submission, "aiScore" | "instructorScore" | "instructorComment" | "criterionComments" | "criterionScores" | "aiCriterionScores" | "aiEvidence" | "snapshot" | "status" | "attachments" | "submittedAt" | "late">>
   ) => {
     persistS(prev => prev.map(s => s.id === id ? { ...s, ...data, updatedAt: new Date().toISOString() } : s));
     sync(() => api.updateSubmission(id, data));

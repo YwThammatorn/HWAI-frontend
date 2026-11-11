@@ -8,11 +8,12 @@ import { useAssignments, Submission, finalScoreOf } from "@/lib/assignments";
 import { useStudentGroups } from "@/lib/studentGroups";
 import { groupSubmissionsByTeam, SubmissionRow } from "@/lib/groupSubmissions";
 import { useLanguage } from "@/context/LanguageContext";
+import { useCan } from "@/lib/useCan";
 import SearchInput from "@/components/SearchInput";
 import ExamStatsCard from "@/components/ExamStatsCard";
 import { statsFromScores } from "@/lib/examStats";
 import { SCORE_TONE_CLASSES } from "@/lib/scoreBook";
-
+
 import Icon from "@/components/Icon";
 import MetricCard from "@/components/MetricCard";
 import Avatar from "@/components/Avatar";
@@ -25,6 +26,7 @@ function initials(name: string) {
 export default function ResultsPage() {
   const { id, assignmentId } = useParams<{ id: string; assignmentId: string }>();
   const { t, lang } = useLanguage();
+  const can = useCan();
   const { getCourse } = useCourses();
   const { getAssignment, getSubmissionsByAssignment } = useAssignments();
   const { getGroupsByAssignment } = useStudentGroups();
@@ -143,12 +145,11 @@ export default function ResultsPage() {
       icon: "alert-triangle" as const,
     },
     {
-      labelTh: "คะแนนเฉลี่ย",
-      labelEn: "Avg. Score",
-      value: avgScore !== null ? avgScore.toFixed(1) : "—",
-      // Average, highest and lowest only (21/10/2569, same as the Grading page card)
-      subTh: scoredRows.length > 0 ? `เต็ม ${max} · สูงสุด ${Math.max(...scoredRows.map((r) => sc(r.rep)))} · ต่ำสุด ${Math.min(...scoredRows.map((r) => sc(r.rep)))}` : `เต็ม ${max} · สูงสุด — · ต่ำสุด —`,
-      subEn: scoredRows.length > 0 ? `of ${max} · Max ${Math.max(...scoredRows.map((r) => sc(r.rep)))} · Min ${Math.min(...scoredRows.map((r) => sc(r.rep)))}` : `of ${max} · Max — · Min —`,
+      // Three small blocks (9/11/2569): average · highest · lowest; the full score is in the label.
+      labelTh: `คะแนน (เต็ม ${max})`,
+      labelEn: `Score (of ${max})`,
+      partsTh: [["เฉลี่ย", avgScore !== null ? avgScore.toFixed(1) : "—"], ["สูงสุด", scoredRows.length > 0 ? Math.max(...scoredRows.map((r) => sc(r.rep))) : "—"], ["ต่ำสุด", scoredRows.length > 0 ? Math.min(...scoredRows.map((r) => sc(r.rep))) : "—"]] as [string, string | number][],
+      partsEn: [["Average", avgScore !== null ? avgScore.toFixed(1) : "—"], ["Highest", scoredRows.length > 0 ? Math.max(...scoredRows.map((r) => sc(r.rep))) : "—"], ["Lowest", scoredRows.length > 0 ? Math.min(...scoredRows.map((r) => sc(r.rep))) : "—"]] as [string, string | number][],
       tone: "rating" as const,
       icon: "star" as const,
     },
@@ -184,13 +185,13 @@ export default function ResultsPage() {
             >
               {t("กลับรายวิชา", "Back to Course")}
             </Link>
-            <button
+            {can.exportScores && <button
               onClick={exportCSV}
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-sm font-semibold transition-colors"
             >
-              <Icon name="file-download" />
+              <Icon name="upload" />
               {t("ส่งออกผลลัพธ์", "Export Result")}
-            </button>
+            </button>}
           </div>
         </div>
 
@@ -229,7 +230,7 @@ export default function ResultsPage() {
         {/* Stats */}
         <div className="grid grid-cols-4 gap-4 mb-6">
           {statCards.map((s) => (
-            <MetricCard key={s.labelEn} label={lang === "th" ? s.labelTh : s.labelEn} value={s.value} sub={lang === "th" ? s.subTh : s.subEn} tone={s.tone} icon={s.icon} filled={s.icon === "star"} />
+            <MetricCard key={s.icon} label={lang === "th" ? s.labelTh : s.labelEn} value={s.value} sub={lang === "th" ? s.subTh : s.subEn} parts={(lang === "th" ? s.partsTh : s.partsEn)?.map(([label, value]) => ({ label, value }))} tone={s.tone} icon={s.icon} />
           ))}
         </div>
 
@@ -416,9 +417,9 @@ export default function ResultsPage() {
               />
               <button
                 onClick={() => { setFeedbackSent(true); setTimeout(() => setFeedbackSent(false), 3000); }}
-                className="w-full mt-3 py-2.5 rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-xs font-semibold transition-colors"
+                className="w-full mt-3 inline-flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-[var(--accent-solid)] hover:bg-[var(--accent-solid-hover)] text-[var(--accent-solid-text)] text-xs font-semibold transition-colors"
               >
-                {feedbackSent ? `✓ ${t("ส่งแล้ว!", "Sent!")}` : t("ส่ง Feedback", "Feedback Grading")}
+                {feedbackSent ? <><Icon name="check" size="sm" />{t("ส่งแล้ว!", "Sent!")}</> : t("ส่ง Feedback", "Feedback Grading")}
               </button>
             </div>
           </div>
