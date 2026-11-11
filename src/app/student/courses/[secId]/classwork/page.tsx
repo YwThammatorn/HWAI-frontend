@@ -7,7 +7,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { dateLocale } from "@/lib/dateLocale";
 import { useAuth } from "@/context/AuthContext";
 import { useCourses } from "@/lib/courses";
-import { useAssignments, Assignment, Submission, studentVisibleSubmission, finalScoreOf, DUE_SOON_DAYS, URGENT_HOURS } from "@/lib/assignments";
+import { useAssignments, Assignment, Submission, studentVisibleSubmission, finalScoreOf, dueAt, DUE_SOON_DAYS, URGENT_HOURS } from "@/lib/assignments";
 import { useGradingCategories, GradingCategory } from "@/lib/gradingCategories";
 import AssignmentStatusBadge, { AssignmentStatus } from "@/components/AssignmentStatusBadge";
 import AssignmentTypeBadge from "@/components/AssignmentTypeBadge";
@@ -32,8 +32,8 @@ function getWorkStatus(
   // An Exam is never submitted: it's either scored or still waiting for the teacher (25/9/2569).
   if (assignment.isExam) return submission?.status === "graded" ? "graded" : "awaiting_score";
   if (!submission) {
-    const due = new Date((assignment.dueDate ?? "") + "T23:59:59");
-    return new Date() > due ? "overdue" : "not_submitted";
+    const due = dueAt(assignment);
+    return due && new Date() > due ? "overdue" : "not_submitted";
   }
   if (submission.status === "graded") return "graded";
   return "submitted";
@@ -52,7 +52,7 @@ function ClassworkCard({
 }) {
   const { t, lang } = useLanguage();
   const status = getWorkStatus(assignment, submission);
-  const due = assignment.dueDate ? new Date(assignment.dueDate + "T23:59:59") : null;
+  const due = dueAt(assignment);
   const hoursLeft = due ? (due.getTime() - Date.now()) / 3_600_000 : Infinity;
   const isUrgent = hoursLeft > 0 && hoursLeft < URGENT_HOURS;
 
@@ -191,7 +191,7 @@ export default function StudentClassworkPage() {
         submitted.push(a);
         return;
       }
-      const daysUntilDue = (new Date((a.dueDate ?? "") + "T23:59:59").getTime() - now) / (24 * 3_600_000);
+      const daysUntilDue = ((dueAt(a)?.getTime() ?? NaN) - now) / (24 * 3_600_000);
       (daysUntilDue < 0 ? overdue : daysUntilDue <= DUE_SOON_DAYS ? dueSoon : notSubmitted).push(a);
     });
     overdue.sort((a, b) => (a.dueDate ?? "").localeCompare(b.dueDate ?? ""));

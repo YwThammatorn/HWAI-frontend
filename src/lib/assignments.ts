@@ -25,6 +25,9 @@ export interface Assignment {
   attachments?: AssignmentAttachment[];
   /** YYYY-MM-DD. Absent for an Exam (isExam): it has no deadline and students never submit it. */
   dueDate?: string;
+  /** The deadline as a moment, ISO (11/11/2569, advisor: "due_date is a date but the screen shows 11:59 PM"): the teacher picks the time
+   *  too. Absent on older assignments = the end of `dueDate` (23:59:59). Use `dueAt(a)`, never this field directly. */
+  dueAt?: string;
   /** Late work (21/10/2569): until when it is accepted and what it costs. Absent = work closes at the deadline. See LatePolicy. */
   latePolicy?: LatePolicy;
   maxPoints: number;
@@ -62,7 +65,7 @@ export function isManualGrading(a: Pick<Assignment, "isExam" | "acceptsFiles" | 
 }
 
 // ── when students may submit, what late work costs, and when the teacher may start grading ─────────────────────────────────────
-// `dueDate` is a date only; the deadline is the end of that day. Late work is the teacher's choice per assignment (21/10/2569, replacing the
+// `dueDate` is the day and `dueAt` the moment (11/11/2569; older assignments without `dueAt`: the end of that day). Late work is the teacher's choice per assignment (21/10/2569, replacing the
 // fixed "one late hour" of 15/10): an optional `latePolicy` sets the last day work is still accepted (`closeDate`) and what each late day costs.
 // Without a policy the work closes at the deadline. Grading may start only once submissions have closed: nothing is graded while the work can
 // still change. An exam (scores are typed or imported) and an assignment without a due date are never locked. `now` is epoch ms (lib/clock.ts).
@@ -71,6 +74,8 @@ export function isManualGrading(a: Pick<Assignment, "isExam" | "acceptsFiles" | 
 export interface LatePolicy {
   /** YYYY-MM-DD, after the due date: the last day work is still accepted (the end of that day). */
   closeDate: string;
+  /** The same as a moment, ISO, as HWAI-backend returns it (11/11/2569). Absent = the end of `closeDate`. */
+  closeAt?: string;
   mode: "none" | "perDay" | "tiers" | "flat";
   unit: "percent" | "points";
   /** perDay: taken for every late day. flat: taken once, however late. */
@@ -81,10 +86,30 @@ export interface LatePolicy {
   tiers?: { untilDay: number; amount: number }[];
 }
 
-type Dated = Pick<Assignment, "dueDate" | "isExam"> & { latePolicy?: LatePolicy };
+type Dated = Pick<Assignment, "dueDate" | "dueAt" | "isExam"> & { latePolicy?: LatePolicy };
 const endOfDay = (ymd: string) => new Date(ymd + "T23:59:59");
-/** The deadline: 23:59:59 of the due date. Null without one. */
-export const dueAt = (a: Pick<Assignment, "dueDate">): Date | null => (a.dueDate ? endOfDay(a.dueDate) : null);
+/** The time a new assignment is due unless the teacher picks another (HH:MM, 24-hour). */
+export const DEFAULT_DUE_TIME = "23:59";
+/** The deadline moment for a day and a time picked on screen (local time; the last second of that minute), as ISO. */
+export const deadlineIso = (ymd: string, hhmm: string = DEFAULT_DUE_TIME): string => new Date(`${ymd}T${hhmm || DEFAULT_DUE_TIME}:59`).toISOString();
+/** The deadline: `dueAt` when set, otherwise 23:59:59 of the due date. Null without a due date. */
+export const dueAt = (a: Pick<Assignment, "dueDate" | "dueAt">): Date | null => {
+  if (a.dueAt) { const d = new Date(a.dueAt); if (!Number.isNaN(d.getTime())) return d; }
+  return a.dueDate ? endOfDay(a.dueDate) : null;
+};
+/** The time of the deadline as HH:MM (24-hour, local) for a time picker; the default when there is none. */
+export const dueTimeOf = (a: Pick<Assignment, "dueDate" | "dueAt">): string => {
+  const d = a.dueAt ? dueAt(a) : null;
+  return d ? `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}` : DEFAULT_DUE_TIME;
+};
+/** The deadline's time for display ("23:59 น." / "11:59 PM"). */
+export const dueTimeLabel = (a: Pick<Assignment, "dueDate" | "dueAt">, lang: "th" | "en"): string => {
+  const d = dueAt(a);
+  if (!d) return "";
+  return lang === "th"
+    ? `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")} น.`
+    : d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+};
 /** The policy when it is usable (a close date after the due date), otherwise undefined: no late work. */
 export const activeLatePolicy = (a: Dated): LatePolicy | undefined => {
   const p = a.latePolicy;
@@ -95,7 +120,9 @@ export const submissionClosesAt = (a: Dated): Date | null => {
   const d = a.isExam ? null : dueAt(a);
   if (!d) return null;
   const p = activeLatePolicy(a);
-  return p ? endOfDay(p.closeDate) : d;
+  if (!p) return d;
+  const close = p.closeAt ? new Date(p.closeAt) : endOfDay(p.closeDate);
+  return Number.isNaN(close.getTime()) ? endOfDay(p.closeDate) : close;
 };
 /** Past the deadline but still inside the accepted-late period. */
 export const isLate = (a: Dated, now: number): boolean => {
@@ -119,10 +146,10 @@ export const gradingOpensAt = (a: Dated): Date | null => {
 const ymdLocal = (ms: number) => { const d = new Date(ms); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
 const DAY_MS = 86_400_000;
 /** Whole calendar days a hand-in at `submittedAt` is past the due date: 0 = on time, 1 = the day after, … */
-export const daysLate = (a: Pick<Assignment, "dueDate">, submittedAt: string | number): number => {
+export const daysLate = (a: Pick<Assignment, "dueDate" | "dueAt">, submittedAt: string | number): number => {
   if (!a.dueDate) return 0;
   const at = typeof submittedAt === "number" ? submittedAt : new Date(submittedAt).getTime();
-  if (Number.isNaN(at) || at <= endOfDay(a.dueDate).getTime()) return 0;
+  if (Number.isNaN(at) || at <= dueAt(a)!.getTime()) return 0;
   const due = new Date(a.dueDate + "T00:00:00").getTime(), day = new Date(ymdLocal(at) + "T00:00:00").getTime();
   return Math.max(1, Math.round((day - due) / DAY_MS));
 };
@@ -142,7 +169,7 @@ export function latePenaltyFor(policy: LatePolicy | undefined, late: number, max
 }
 /** Points taken off a submission for being late (0 when on time, or no policy). Uses the latest hand-in's time. */
 export const latePenaltyOf = (a: Dated & Pick<Assignment, "maxPoints">, s: { submittedAt: string }): number =>
-  latePenaltyFor(activeLatePolicy(a), daysLate(a as Pick<Assignment, "dueDate">, s.submittedAt), a.maxPoints);
+  latePenaltyFor(activeLatePolicy(a), daysLate(a as Pick<Assignment, "dueDate" | "dueAt">, s.submittedAt), a.maxPoints);
 /** The score that counts: the teacher's (or else the AI's) score minus the late deduction, never below 0. Null when nothing is scored. */
 export function finalScoreOf(a: Dated & Pick<Assignment, "maxPoints">, s: { submittedAt: string; instructorScore: number | null; aiScore: number | null }): number | null {
   const raw = s.instructorScore ?? s.aiScore;

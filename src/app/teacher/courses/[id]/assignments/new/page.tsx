@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useCourses } from "@/lib/courses";
-import { useAssignments, Assignment, cleanLatePolicy, latePolicyProblem, type LatePolicy } from "@/lib/assignments";
+import { useAssignments, Assignment, cleanLatePolicy, latePolicyProblem, deadlineIso, DEFAULT_DUE_TIME, type LatePolicy } from "@/lib/assignments";
 import LatePolicyEditor from "@/components/LatePolicyEditor";
 import { useGradingCategories } from "@/lib/gradingCategories";
 import { useLanguage } from "@/context/LanguageContext";
@@ -36,6 +36,7 @@ export default function NewAssignmentPage() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState("");
+  const [dueTime, setDueTime] = useState(DEFAULT_DUE_TIME);   // the teacher picks the time too (11/11/2569)
   const [latePolicy, setLatePolicy] = useState<LatePolicy | undefined>();
   const [isExam, setIsExam] = useState(false);
   const [maxPoints, setMaxPoints] = useState("100");
@@ -62,7 +63,7 @@ export default function NewAssignmentPage() {
   const needsManualScore = isExam || !acceptsFiles;
 
   const isDirty =
-    name.trim() !== "" || description.trim() !== "" || dueDate !== "" || !!latePolicy || isExam || maxPoints !== "100" ||
+    name.trim() !== "" || description.trim() !== "" || dueDate !== "" || dueTime !== DEFAULT_DUE_TIME || !!latePolicy || isExam || maxPoints !== "100" ||
     submissionType !== "individual" || maxGroupSize !== "" || att.items.length > 0 ||
     (rubricTouched && JSON.stringify(criteria) !== initialCriteriaJson);
 
@@ -99,6 +100,7 @@ export default function NewAssignmentPage() {
       description: description.trim(),
       attachments: att.items.length > 0 ? att.items : undefined,
       dueDate: isExam ? undefined : dueDate,
+      dueAt: isExam || !dueDate ? undefined : deadlineIso(dueDate, dueTime),
       latePolicy: !isExam && latePolicy ? cleanLatePolicy(latePolicy) : undefined,
       maxPoints: points,
       categoryId: categoryId || undefined,
@@ -317,7 +319,8 @@ export default function NewAssignmentPage() {
                 <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">
                   {t("วันครบกำหนด", "Due Date")} <span className="text-[var(--s-err-text)]">*</span>
                 </label>
-                <div className="relative">
+                <div className="flex gap-2">
+                <div className="relative min-w-0 flex-1">
                   <Icon name="calendar" size="sm" className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]" />
                   <input
                     type="date" value={dueDate} min={todayStr}
@@ -325,6 +328,16 @@ export default function NewAssignmentPage() {
                     className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-[var(--border)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
                     required
                   />
+                </div>
+                <div className="relative w-32 shrink-0">
+                  <Icon name="clock" size="sm" className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]" />
+                  <input
+                    type="time" value={dueTime} aria-label={t("เวลาครบกำหนด", "Due time")}
+                    onChange={(e) => setDueTime(e.target.value || DEFAULT_DUE_TIME)}
+                    className="w-full pl-9 pr-2 py-2.5 rounded-xl border border-[var(--border)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
+                    required
+                  />
+                </div>
                 </div>
               </div>
               )}

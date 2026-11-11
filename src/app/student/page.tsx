@@ -9,13 +9,13 @@ import { useCohortStudents } from "@/lib/cohort-students";
 import { useStudents, isWithdrawn } from "@/lib/students";
 import { courseTermStatus } from "@/lib/academicTerm";
 import { useCourses } from "@/lib/courses";
-import { useAssignments, URGENT_HOURS } from "@/lib/assignments";
+import { useAssignments, dueAt, URGENT_HOURS } from "@/lib/assignments";
 import { useManagedTeachers } from "@/lib/managed-teachers";
 import { useAnnouncements, announcementReachesCourse } from "@/lib/announcements";
 import { CourseIcon } from "@/components/CourseIcon";
 import StudentCalendar, { StudentCalendarItem } from "@/components/StudentCalendar";
 import { ANNOUNCEMENTS_DISABLED } from "@/lib/featureFlags";
-
+
 import Icon from "@/components/Icon";
 import IconTile from "@/components/IconTile";
 function fmtAnnouncementDate(iso: string, lang: string) {
@@ -62,13 +62,13 @@ export default function StudentHome() {
 
   const upcomingAssignments = useMemo(() => {
     const now = Date.now();
-    const items: { assignmentId: string; name: string; dueDate: string; courseId: string; courseName: string; hoursLeft: number }[] = [];
+    const items: { assignmentId: string; name: string; dueDate: string; dueAt: string; courseId: string; courseName: string; hoursLeft: number }[] = [];
 
     enrolledCourses.forEach((course) => {
       const assignments = getAssignmentsByCourse(course.id);
       assignments.forEach((a) => {
         if (!a.dueDate) return; // an Exam has no deadline and nothing to submit
-        const due = new Date(a.dueDate + "T23:59:59");
+        const due = dueAt(a)!;
         const hoursLeft = (due.getTime() - now) / 3_600_000;
         if (hoursLeft <= 0) return;
 
@@ -78,7 +78,7 @@ export default function StudentHome() {
         );
         if (mySub?.status === "graded" || mySub?.status === "not_graded") return;
 
-        items.push({ assignmentId: a.id, name: a.name, dueDate: a.dueDate, courseId: course.id, courseName: course.name, hoursLeft });
+        items.push({ assignmentId: a.id, name: a.name, dueDate: a.dueDate, dueAt: due.toISOString(), courseId: course.id, courseName: course.name, hoursLeft });
       });
     });
 
@@ -93,7 +93,7 @@ export default function StudentHome() {
       const assignments = getAssignmentsByCourse(course.id);
       assignments.forEach((a) => {
         if (!a.dueDate) return; // an Exam has no date to put on the calendar
-        const due = new Date(a.dueDate + "T23:59:59");
+        const due = dueAt(a)!;
         const allSubs = getSubmissionsByAssignment(a.id);
         const mySub = allSubs.find(
           (s) => s.studentId === (user?.studentId ?? user?.email ?? "")
@@ -189,7 +189,7 @@ export default function StudentHome() {
                 <div className="flex flex-col gap-2">
                   {upcomingAssignments.map((item) => {
                     const isUrgent = item.hoursLeft < URGENT_HOURS;
-                    const due = new Date(item.dueDate + "T23:59:59");
+                    const due = new Date(item.dueAt);
                     return (
                       <Link
                         key={item.assignmentId}

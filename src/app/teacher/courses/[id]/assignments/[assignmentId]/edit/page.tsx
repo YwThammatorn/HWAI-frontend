@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCourses } from "@/lib/courses";
-import { useAssignments, Assignment, gradingOpen, cleanLatePolicy, latePolicyProblem, activeLatePolicy, describeLatePolicy, type LatePolicy } from "@/lib/assignments";
+import { useAssignments, Assignment, gradingOpen, cleanLatePolicy, latePolicyProblem, activeLatePolicy, describeLatePolicy, deadlineIso, dueTimeOf, DEFAULT_DUE_TIME, type LatePolicy } from "@/lib/assignments";
 import LatePolicyEditor from "@/components/LatePolicyEditor";
 import { useGradingCategories } from "@/lib/gradingCategories";
 import { useLanguage } from "@/context/LanguageContext";
@@ -51,6 +51,7 @@ export default function EditAssignmentPage() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState("");
+  const [dueTime, setDueTime] = useState(DEFAULT_DUE_TIME);   // the teacher picks the time too (11/11/2569)
   const [latePolicy, setLatePolicy] = useState<LatePolicy | undefined>();
   const [isExam, setIsExam] = useState(false);
   const [maxPoints, setMaxPoints] = useState("100");
@@ -70,7 +71,7 @@ export default function EditAssignmentPage() {
   const [sourceRubricId, setSourceRubricId] = useState<string | undefined>();
 
   const origRef = useRef({
-    name: "", description: "", dueDate: "", latePolicyJson: "", isExam: false, maxPoints: "", categoryId: "",
+    name: "", description: "", dueDate: "", dueTime: DEFAULT_DUE_TIME, latePolicyJson: "", isExam: false, maxPoints: "", categoryId: "",
     acceptsFiles: true, fileTypesJson: "[]",
     submissionType: "individual" as "individual" | "group",
     maxGroupSizeStr: "", criteriaJson: "[]", scoringSig: "[]",
@@ -93,6 +94,7 @@ export default function EditAssignmentPage() {
         name: assignment.name,
         description: assignment.description,
         dueDate: assignment.dueDate ?? "",
+        dueTime: dueTimeOf(assignment),
         latePolicyJson: JSON.stringify(assignment.latePolicy ?? null),
         isExam: assignment.isExam ?? false,
         maxPoints: String(assignment.maxPoints),
@@ -107,6 +109,7 @@ export default function EditAssignmentPage() {
       setName(orig.name);
       setDescription(orig.description);
       setDueDate(orig.dueDate);
+      setDueTime(orig.dueTime);
       setLatePolicy(assignment.latePolicy);
       setIsExam(orig.isExam);
       setMaxPoints(orig.maxPoints);
@@ -131,6 +134,7 @@ export default function EditAssignmentPage() {
       name !== origRef.current.name ||
       description !== origRef.current.description ||
       dueDate !== origRef.current.dueDate ||
+      dueTime !== origRef.current.dueTime ||
       JSON.stringify(latePolicy ?? null) !== origRef.current.latePolicyJson ||
       isExam !== origRef.current.isExam ||
       maxPoints !== origRef.current.maxPoints ||
@@ -183,6 +187,7 @@ export default function EditAssignmentPage() {
       attachments: att.items,
       // An Exam has no deadline and students never submit it (25/9/2569)
       dueDate: isExam ? undefined : dueDate,
+      dueAt: isExam || !dueDate ? undefined : deadlineIso(dueDate, dueTime),
       latePolicy: !isExam && latePolicy ? cleanLatePolicy(latePolicy) : undefined,
       maxPoints: needsManualScore ? (parseInt(maxPoints) || 100) : criteriaTotalPoints(criteria),
       categoryId: categoryId || undefined,
@@ -421,7 +426,8 @@ export default function EditAssignmentPage() {
                 <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">
                   {t("วันครบกำหนด", "Due Date")} <span className="text-[var(--s-err-text)]">*</span>
                 </label>
-                <div className="relative">
+                <div className="flex gap-2">
+                <div className="relative min-w-0 flex-1">
                   <Icon name="calendar" size="sm" className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]" />
                   <input
                     type="date" value={dueDate} min={minDate}
@@ -429,6 +435,16 @@ export default function EditAssignmentPage() {
                     className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-[var(--border)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
                     required
                   />
+                </div>
+                <div className="relative w-32 shrink-0">
+                  <Icon name="clock" size="sm" className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]" />
+                  <input
+                    type="time" value={dueTime} aria-label={t("เวลาครบกำหนด", "Due time")}
+                    onChange={(e) => setDueTime(e.target.value || DEFAULT_DUE_TIME)}
+                    className="w-full pl-9 pr-2 py-2.5 rounded-xl border border-[var(--border)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors"
+                    required
+                  />
+                </div>
                 </div>
               </div>
               )}

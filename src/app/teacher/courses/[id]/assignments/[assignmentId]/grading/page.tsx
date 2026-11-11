@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useCourses } from "@/lib/courses";
-import { useAssignments, isManualGrading, gradingOpen, gradingOpensAt, submissionClosesAt, finalScoreOf, activeLatePolicy } from "@/lib/assignments";
+import { useAssignments, isManualGrading, gradingOpen, gradingOpensAt, submissionClosesAt, finalScoreOf, activeLatePolicy, dueTimeLabel } from "@/lib/assignments";
 import { appNow, useNow } from "@/lib/clock";
 import { aiGradingUpdate } from "@/lib/aiGrading";
 import { useStudents, isWithdrawn } from "@/lib/students";
@@ -257,7 +257,7 @@ export default function GradingProgressPage() {
                   ? <>{t("ส่งภายใน", "Due")}{" "}{new Date(assignment.dueDate + "T00:00:00").toLocaleDateString(dateLocale(lang), {
                       month: "short", day: "numeric", year: "numeric",
                     })}{" "}
-                    {t("เวลา 23:59 น.", "at 11:59 PM")}</>
+                    {t(`เวลา ${dueTimeLabel(assignment, "th")}`, `at ${dueTimeLabel(assignment, "en")}`)}</>
                   : t("สอบ · ไม่มีกำหนดส่ง", "Exam · no due date")}
               </span>
               <span className="inline-flex items-center gap-1.5 font-medium text-[var(--accent)]"><Icon name="check-square" size="sm" />{t("ตรวจงาน", "Grading")}</span>

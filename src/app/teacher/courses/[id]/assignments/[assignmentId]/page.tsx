@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useCourses } from "@/lib/courses";
-import { useAssignments, submissionClosesAt, gradingOpensAt, activeLatePolicy, describeLatePolicy } from "@/lib/assignments";
+import { useAssignments, submissionClosesAt, gradingOpensAt, activeLatePolicy, describeLatePolicy, dueTimeLabel } from "@/lib/assignments";
 import { useGradingCategories } from "@/lib/gradingCategories";
 import { useLanguage } from "@/context/LanguageContext";
 import { useCan } from "@/lib/useCan";
@@ -60,7 +60,7 @@ export default function ViewAssignmentPage() {
           label: t("กำหนดส่ง", "Due date"),
           value: (
             <span>
-              {fmtDate(assignment.dueDate, lang)} {t("เวลา 23:59 น.", "at 11:59 PM")}
+              {fmtDate(assignment.dueDate, lang)} {t(`เวลา ${dueTimeLabel(assignment, "th")}`, `at ${dueTimeLabel(assignment, "en")}`)}
             </span>
           ),
         }
