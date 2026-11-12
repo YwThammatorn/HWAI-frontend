@@ -9,7 +9,7 @@ import { findMultiRoleAccount, identityEmail } from "@/lib/accounts";
 import { ADMIN_DASHBOARD_DISABLED } from "@/lib/featureFlags";
 import { useTaCourseIds } from "@/lib/taAccess";
 import type { UserRole } from "@/context/AuthContext";
-
+
 import Icon from "@/components/Icon";
 const ROLE_ROUTE: Record<UserRole, string> = {
   admin:   "/admin",
@@ -18,12 +18,43 @@ const ROLE_ROUTE: Record<UserRole, string> = {
   student: "/student",
 };
 
-const ROLE_LABELS: Record<UserRole, { th: string; en: string; color: string; bg: string }> = {
-  admin:   { th: "แอดมิน", en: "Admin",   color: "var(--brand-bright)", bg: "color-mix(in srgb, var(--brand-bright) 15%, transparent)" },
-  teacher: { th: "อาจารย์", en: "Teacher", color: "var(--on-chrome-info)", bg: "color-mix(in srgb, var(--on-chrome-info) 15%, transparent)" },
-  ta:      { th: "TA",      en: "TA",      color: "var(--on-chrome-ta)", bg: "color-mix(in srgb, var(--on-chrome-ta) 15%, transparent)" },
-  student: { th: "นักศึกษา", en: "Student", color: "var(--on-chrome-ok)", bg: "color-mix(in srgb, var(--on-chrome-ok) 15%, transparent)" },
+const ROLE_LABELS: Record<UserRole, RoleMeta> = {
+  admin:   { th: "แอดมิน", en: "Admin",   color: "var(--brand-bright)", bg: "color-mix(in srgb, var(--brand-bright) 15%, transparent)", icon: "user" },
+  teacher: { th: "อาจารย์", en: "Teacher", color: "var(--on-chrome-info)", bg: "color-mix(in srgb, var(--on-chrome-info) 15%, transparent)", icon: "graduation-cap" },
+  ta:      { th: "TA",      en: "TA",      color: "var(--on-chrome-ta)", bg: "color-mix(in srgb, var(--on-chrome-ta) 15%, transparent)", icon: "user" },
+  student: { th: "นักศึกษา", en: "Student", color: "var(--on-chrome-ok)", bg: "color-mix(in srgb, var(--on-chrome-ok) 15%, transparent)", icon: "user" },
 };
+
+type RoleMeta = { th: string; en: string; color: string; bg: string; icon: "user" | "graduation-cap" };
+/** the ink on a solid role chip: the top bar's own colour, dark on every role colour (a token, so both chrome themes work) */
+const ROLE_INK = "var(--navbar-bg)";
+
+/**
+ * The role chip of the top bar, as a button that looks like one (11/11/2569; the advisor circled the old 10px dashed pill and asked "what button is this?").
+ * Same height and type size as the language toggle next to it, a person icon in front of the role and a chevron after it; the border is solid, in the role's colour.
+ */
+function RoleButton({ meta, lang, open, onClick, label, title, testId, suffix }: {
+  meta: RoleMeta; lang: "th" | "en"; open: boolean; onClick: () => void; label: string; title?: string; testId?: string; suffix?: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      aria-haspopup="menu"
+      aria-expanded={open}
+      title={title ?? label}
+      data-testid={testId}
+      className="inline-flex h-7 items-center gap-1.5 rounded-lg border px-2.5 text-xs font-bold transition-[filter] hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]"
+      style={{ color: ROLE_INK, background: meta.color, borderColor: meta.color }}
+    >
+      <Icon name={meta.icon} size="sm" />
+      {lang === "th" ? meta.th : meta.en}
+      {suffix && <span className="font-normal opacity-70">{suffix}</span>}
+      <Icon name="chevron-down" size="sm" className={`transition-transform ${open ? "rotate-180" : ""}`} />
+    </button>
+  );
+}
 
 // Dev tool (any role, any target) vs. real teacher-facing preview feature
 // (teacher only, never admin — see meeting 26/8/2569, [[project-hwai-meeting-20260826]]).
@@ -68,22 +99,10 @@ export default function RoleSwitcher() {
     };
     return (
       <div ref={ref} className="relative">
-        <button
-          type="button"
-          onClick={() => setOpen((o) => !o)}
-          aria-label={t("สลับบทบาท", "Switch role")}
-          aria-haspopup="menu"
-          aria-expanded={open}
-          data-testid="hat-switch"
-          className="flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[10px] font-bold transition-colors hover:opacity-80"
-          style={{ color: meta.color, background: meta.bg, borderColor: `color-mix(in srgb, ${meta.color} 50%, transparent)` }}
-        >
-          {lang === "th" ? meta.th : meta.en}
-          <Icon name="chevron-down" size="xs" style={{ opacity: .6 }} />
-        </button>
+        <RoleButton meta={meta} lang={lang} open={open} onClick={() => setOpen((o) => !o)} label={t("สลับบทบาท", "Switch role")} title={t("สลับระหว่างบทบาทนักศึกษากับผู้ช่วยสอน", "Switch between your Student and TA roles")} testId="hat-switch" />
         {open && (
           <div role="menu" className="absolute right-0 top-full mt-1.5 w-60 rounded-xl border border-white/10 bg-[var(--chrome-menu-bg)] shadow-xl z-50 py-1 overflow-hidden">
-            <p className="text-[9px] font-bold tracking-widest uppercase text-white/30 px-3 pt-2 pb-1">{t("สลับบทบาท", "Switch role")}</p>
+            <p className="text-[11px] font-bold tracking-widest uppercase text-white/60 px-3 pt-2 pb-1">{t("สลับบทบาท", "Switch role")}</p>
             {hats.map((h) => {
               const m = ROLE_LABELS[h];
               const isActive = user.role === h;
@@ -128,22 +147,11 @@ export default function RoleSwitcher() {
     };
     return (
       <div ref={ref} className="relative">
-        <button
-          type="button"
-          onClick={() => setOpen((o) => !o)}
-          aria-label={t("สลับบทบาท", "Switch role")}
-          aria-haspopup="menu"
-          aria-expanded={open}
-          className="flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[10px] font-bold transition-colors hover:opacity-80"
-          style={{ color: meta.color, background: meta.bg, borderColor: `color-mix(in srgb, ${meta.color} 50%, transparent)` }}
-        >
-          {lang === "th" ? meta.th : meta.en}
-          <Icon name="chevron-down" size="xs" style={{ opacity: .6 }} />
-        </button>
+        <RoleButton meta={meta} lang={lang} open={open} onClick={() => setOpen((o) => !o)} label={t("สลับบทบาท", "Switch role")} title={t("สลับบทบาทของบัญชีนี้", "Switch between the roles of this account")} />
 
         {open && (
           <div role="menu" className="absolute right-0 top-full mt-1.5 w-60 rounded-xl border border-white/10 bg-[var(--chrome-menu-bg)] shadow-xl z-50 py-1 overflow-hidden">
-            <p className="text-[9px] font-bold tracking-widest uppercase text-white/30 px-3 pt-2 pb-1">{t("สลับบทบาท", "Switch role")}</p>
+            <p className="text-[11px] font-bold tracking-widest uppercase text-white/60 px-3 pt-2 pb-1">{t("สลับบทบาท", "Switch role")}</p>
             {account.roles.map((r) => {
               const m = ROLE_LABELS[r];
               const isActive = user.role === r;
@@ -177,9 +185,12 @@ export default function RoleSwitcher() {
   if (!interactive) {
     return (
       <span
-        className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-        style={{ color: meta.color, background: meta.bg }}
+        data-testid="role-badge"
+        className="inline-flex h-7 cursor-default select-none items-center gap-1.5 rounded-lg px-2.5 text-xs font-bold"
+        style={{ color: ROLE_INK, background: meta.color }}
+        title={lang === "th" ? "บทบาทของบัญชีนี้" : "The role of this account"}
       >
+        <Icon name={meta.icon} size="sm" />
         {lang === "th" ? meta.th : meta.en}
       </span>
     );
@@ -187,28 +198,16 @@ export default function RoleSwitcher() {
 
   return (
     <div ref={ref} className="relative">
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        aria-label={isDev ? "Switch role (dev)" : t("สลับมุมมอง", "Switch view")}
-        title={isDev ? "Dev: switch role" : t("ดูหน้าจอในมุมมองอื่น", "Preview as a different role")}
-        className="flex items-center gap-1.5 px-2 py-0.5 rounded-full border border-dashed text-[10px] font-bold transition-colors hover:opacity-80"
-        style={{
-          color: meta.color,
-          background: meta.bg,
-          borderColor: `color-mix(in srgb, ${meta.color} 50%, transparent)`,
-        }}
-      >
-        {lang === "th" ? meta.th : meta.en}
-        {viewAs && (
-          <span className="opacity-60 font-normal">{t("มุมมอง", "view")}</span>
-        )}
-        <Icon name="chevron-down" size="xs" style={{ opacity: .6 }} />
-      </button>
+      <RoleButton
+        meta={meta} lang={lang} open={open} onClick={() => setOpen((o) => !o)}
+        label={isDev ? "Switch role (dev)" : t("สลับมุมมอง", "Switch view")}
+        title={isDev ? "Dev: switch role" : t("ดูหน้าจอในมุมมองอื่น (ตัวอย่างเท่านั้น ไม่เปลี่ยนบัญชี)", "Preview the screens as another role (a preview only — your account does not change)")}
+        suffix={viewAs ? t("· มุมมอง", "· preview") : undefined}
+      />
 
       {open && (
         <div className="absolute right-0 top-full mt-1.5 w-36 rounded-xl border border-white/10 bg-[var(--chrome-menu-bg)] shadow-xl z-50 py-1 overflow-hidden">
-          <p className="text-[9px] font-bold tracking-widest uppercase text-white/30 px-3 pt-2 pb-1">{t("ดูในมุมมอง", "View as")}</p>
+          <p className="text-[11px] font-bold tracking-widest uppercase text-white/60 px-3 pt-2 pb-1">{t("ดูในมุมมอง", "View as")}</p>
           {switchTargets.map((r) => {
             const m = ROLE_LABELS[r];
             const isActive = displayRole === r;

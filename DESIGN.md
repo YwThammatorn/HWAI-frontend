@@ -242,6 +242,11 @@ Two separate tokens drive this, not `--bg-nav` (which is a general-purpose navy 
 
 **Teal chrome (14/10/2569)** — the navbar and the 3 portal sidebars are teal for every role, in light and dark mode: navbar `--navbar-bg` `#084541`, sidebar `--sidebar-bg` `#0F766E` (the navbar takes the darker colour). This began on 22/9/2569 as an opt-in navy/teal toggle (advisor feedback: the same teal as the Sign-in button); the toggle, `NavThemeToggle.tsx`, `ThemeProvider`'s `navTheme` and the `data-nav-theme` attribute were removed on 14/10 and teal became the only chrome. It repaints only `--navbar-bg` / `--sidebar-bg` / `--sidebar-text-muted` / `--nav-active-bg` / `--nav-active-text` — never `--bg-nav`, which ~15 unrelated tab/chip/card backgrounds read. Contrast: the flat teal is lighter than navy at the same visual depth, so the sidebar's inactive text is white at 0.9 alpha (≈ 4.8:1; the old `white/55` gave ~2.8:1) and the active row *darkens* (black at 18–20%) instead of lightening, with plain white text (4.76:1 light / 4.73:1 dark) — lightening teal leaves no text colour able to reach 4.5:1. Dark mode uses a deeper pair — navbar `#052E2B`, sidebar `#0A4640` (the light-mode `#0F766E` sidebar glared against the dark page; white/90 on it is ≈ 10:1, and the active row lightens again with white at 12%). This departs from §1's "calm stays within ~40° of navy" rule on purpose.
 
+### The role chip in the top bar (11/11/2569)
+`RoleSwitcher.tsx` draws one of two things. Where the role can be switched (a teacher's "View as" preview, a student's Student ↔ TA switch, a multi-role account) it is a **button that looks like one**: 28px tall and 12px type like the language toggle beside it, a `user` icon, the role, a `chevron-down` that turns over when the menu is open, a solid 1px border in the role's colour (never dashed — the old 10px dashed pill made an examiner ask "what button is this?"), a `title` that says what it does ("Preview the screens as another role"), and a menu titled "View as" / "Switch role" at 11px. Where nothing can be switched (an admin, a plain student) it is a **badge**: the same solid role-colour fill, icon and type size but no border, no chevron, a default cursor and no hover — so it reads as a tag, not as a button that does nothing.
+
+**Each role has its own colour, solid** (`--on-chrome-info` Teacher, `--on-chrome-ok` Student, `--on-chrome-ta` TA, `--brand-bright` Admin) with the chrome colour as ink: the advisor said (3.41) that two screens looked the same and an examiner could not tell a teacher's from a student's, so the chip is the one thing on the top bar that changes colour with the role, and it is filled so it reads in a small picture. The Teacher chip also has its own icon (`graduation-cap`). Both live in `RoleButton` / the label in that file; do not draw a role chip anywhere else.
+
 ## 9. Accent strip pattern
 
 Unchanged in mechanism from the existing `AccentColorStrip` KB pattern — only the color token changes.
@@ -347,6 +352,7 @@ One component draws every icon: `components/Icon.tsx`. A page never contains an 
 | Grading, to-do check | `check-square` | |
 | Done, saved, sent, OK | `check` (`check-circle` on a status card) | never the character ✓ — `<Icon name="check" size="sm" />` before the word |
 | Trend up, "used" | `trending-up` | never ↗ or ↑ |
+| A role in the top bar (11/11/2569) | Teacher `graduation-cap`, every other role `user` | the role chip only (§ "The role chip in the top bar"); the admin's Teachers tab already uses `graduation-cap` for the same meaning |
 | A teal glyph | `text-[var(--accent)]` | never `--accent-bright` (2.79:1 as a glyph) |
 | An empty or drop area | `<IconTile icon=… size="lg" tone="accent" />` or `<EmptyState>` | never a bare `xl` `<Icon>` with `mx-auto` |
 | A symbol or emoji as an icon (✓ ✕ ↑ ↗ ▲ ▼ ★ 👋) | not used | an arrow inside a sentence (A → B) is punctuation and stays |
