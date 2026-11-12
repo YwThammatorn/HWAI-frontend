@@ -63,7 +63,7 @@ const DEMO_ALSO = ["01076215", "01076321"];
 export const FAMILIES: string[][] = [
   ["01076371"],                                                                            // embedded systems
   ["01077351", "01078351"],                                                                // human-computer interaction
-  ["01076114"],                                                                            // discrete structures
+  ["01076114"],                                                                            // discrete structures — removed from the mock 11/11/2569 (not a real subject); the entry stays so the other families keep their teachers
   ["01076351", "หัวข้อพิเศษ: ปัญญาประดิษฐ์เชิงสร้างสรรค์สำหรับงานวิศวกรรมซอฟต์แวร์"],     // software engineering + the AI special topic
   ["01076241"],                                                                            // operating systems
   ["01076355", "01077355", "01078365"],                                                    // UX/UI — taught by chompoonuch.te (the user's own change, 15/10/2569: this family sits in the slot that reaches her)

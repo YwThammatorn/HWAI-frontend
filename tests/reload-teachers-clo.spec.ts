@@ -42,7 +42,7 @@ for (const lang of ["th", "en"] as const) {
     }));
 
     // courses: whole list replaced — the untaught ML courses are gone, every remaining course has a teacher
-    expect(after.courses.length).toBe(50);
+    expect(after.courses.length).toBe(48);
     expect(after.courses.map((c) => c.id)).not.toContain("c-mock-15");
     expect(after.courses.filter((c) => !after.teachers.some((t) => t.courseIds.includes(c.id)))).toEqual([]);
 

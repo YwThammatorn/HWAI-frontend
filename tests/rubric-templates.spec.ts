@@ -121,7 +121,7 @@ for (const sfx of ["", "-en"]) {
           expect(c.levels.every((l) => l.description.length > 10), c.id).toBe(true);
         });
       }
-      expect(n).toBe(7 + 45 + 21);
+      expect(n).toBe(7 + 39 + 21);
     });
 
     test("every graded score is built from levels: each criterion sits on one of its four steps, and the criteria add up to the score", () => {
@@ -132,7 +132,7 @@ for (const sfx of ["", "-en"]) {
         expect(r.criteria.reduce((t, c) => t + sub.criterionScores![c.id], 0), sub.id).toBe(sub.instructorScore);
         n++;
       }
-      expect(n).toBe(175 + 48 + 600);
+      expect(n).toBe(175 + 42 + 600);
     });
 
     test("the content fits the subject: DSA labs measure algorithms, digital-logic labs circuits, c-mock-1 quizzes their topic", () => {

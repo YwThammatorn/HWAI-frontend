@@ -176,7 +176,7 @@ test.describe("Admin Courses — filters", () => {
   test("curriculum (incl. a whole program), year, term and status each narrow the list, and the counts follow", async ({ page }) => {
     await open(page);
     const summary = page.getByText(/sections? ·/).first();
-    await expect(summary).toHaveText("50 sections · 26 subjects · 8 curriculum");
+    await expect(summary).toHaveText("48 sections · 25 subjects · 8 curriculum");
 
     await page.getByLabel("Filter by curriculum").selectOption({ label: "All Computer Engineering International" });
     await expect(summary).toHaveText("4 sections · 3 subjects · 2 curriculum");
@@ -185,7 +185,7 @@ test.describe("Admin Courses — filters", () => {
 
     await page.getByRole("button", { name: "Clear filters" }).click();
     await page.getByLabel("Filter by status").selectOption("archived");
-    await expect(summary).toHaveText("23 sections · 12 subjects · 4 curriculum");
+    await expect(summary).toHaveText("21 sections · 11 subjects · 4 curriculum");
     await expect(page.getByText("Archived", { exact: true }).first()).toBeVisible();
 
     await page.getByLabel("Filter by status").selectOption("all");
@@ -232,7 +232,7 @@ test.describe("Admin Courses — filters", () => {
     await search.fill("zzz nothing");
     await expect(page.getByText("No courses match these filters")).toBeVisible();
     await page.getByRole("main").getByRole("button", { name: "Clear filters" }).last().click();
-    await expect(page.getByText("50 sections · 26 subjects · 8 curriculum")).toBeVisible();
+    await expect(page.getByText("48 sections · 25 subjects · 8 curriculum")).toBeVisible();
   });
 });
 

@@ -35,8 +35,8 @@ for (const lang of ["th", "en"] as const) {
       assignments: JSON.parse(localStorage.getItem("hwai_assignments_v1")!),
     }));
 
-    // every rubric of the three files is in (7 + 45 + 21) next to the one that was not ours
-    expect(after.rubrics.length).toBe(7 + 45 + 21 + 1);
+    // every rubric of the three files is in (7 + 39 + 21) next to the one that was not ours
+    expect(after.rubrics.length).toBe(7 + 39 + 21 + 1);
     expect(after.rubrics.some((r) => r.id === "r-keep")).toBe(true);
     for (const id of ["r-mock-1", histRubricId, "r-mock-10"]) {
       const r = after.rubrics.find((x) => x.id === id)!;

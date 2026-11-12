@@ -83,7 +83,7 @@ for (const sfx of ["", "-en"]) {
         const key = `${s.studentId}|${a.courseId}`;
         groups.set(key, [...(groups.get(key) ?? []), Math.round(pct)]);
       }
-      expect(groups.size).toBeGreaterThanOrEqual(16);
+      expect(groups.size).toBeGreaterThanOrEqual(14);
       for (const [key, p] of groups) {
         expect(p).toHaveLength(3);
         expect(new Set(p).size, key).toBeGreaterThan(1);

@@ -206,8 +206,8 @@ test.describe("term-history mock (console command [14])", () => {
       const h = rd(f);
       const of = (sid: string) => (h.courseStudents as Roster[]).filter((r) => r.studentId === sid);
       for (const sid of ["66010101", "67010201", "68020101"]) expect(cohortIds.has(sid), `${sid} is in the [12] student list`).toBe(true);
-      expect(of("66010101")).toHaveLength(3 + 6);
-      expect(of("67010201")).toHaveLength(3 + 5);
+      expect(of("66010101")).toHaveLength(3 + 5);
+      expect(of("67010201")).toHaveLength(3 + 4);
       expect(of("68020101").map((r) => r.courseId).sort()).toEqual(["c-mock-19", "c-mock-51", "c-mock-52", "c-mock-6"]);
       expect(of("68020101").find((r) => r.courseId === "c-mock-6")?.enrollmentStatus).toBe("withdrawn");
       for (const r of h.courseStudents as Roster[]) expect(courses.has(r.courseId), `${r.courseId} exists in the courses mock`).toBe(true);
@@ -242,8 +242,8 @@ test.describe("term-history mock (console command [14])", () => {
       return Math.round(sum * 10) / 10;
     };
     const courseIdsOf = (sid: string) => (h.courseStudents as Roster[]).filter((r) => r.studentId === sid && h.gradingCategories.some((c: { courseId: string }) => c.courseId === r.courseId)).map((r) => r.courseId);
-    expect(courseIdsOf("66010101").map((c: string) => total("66010101", c))).toEqual([91, 84, 78, 65, 58, 88]);   // A A B C D A
-    expect(courseIdsOf("67010201").map((c: string) => total("67010201", c))).toEqual([86, 79, 47, 55, 75]);       // A B F D, and one not-yet-announced
+    expect(courseIdsOf("66010101").map((c: string) => total("66010101", c))).toEqual([91, 78, 65, 58, 88]);   // A B C D A
+    expect(courseIdsOf("67010201").map((c: string) => total("67010201", c))).toEqual([86, 47, 55, 75]);          // A F D, and one not-yet-announced
     expect(courseIdsOf("68020101").map((c: string) => total("68020101", c))).toEqual([88, 65, 78]);               // A C B
   });
 
@@ -281,7 +281,7 @@ test.describe("term-history mock (console command [14])", () => {
     await expect(groups.nth(2)).toHaveAccessibleName("Term 2/2566");
     await expect(groups.nth(3)).toHaveAccessibleName("Term 1/2566");   // their own first term — nothing earlier exists
     const totals = await pastSection(page).getByLabel(/^Total /).evaluateAll((els) => els.map((e) => e.getAttribute("aria-label")));
-    expect(totals).toHaveLength(6);                                                     // six finished subjects with a score, no subject repeated
+    expect(totals).toHaveLength(5);                                                     // five finished subjects with a score, no subject repeated
   });
 
   test("67010201 (3rd year, admitted 2567): the F, the D, and a term whose results are not announced yet — nothing before 2567", async ({ page }) => {
@@ -291,7 +291,7 @@ test.describe("term-history mock (console command [14])", () => {
     await expect(past.getByRole("group").nth(0)).toHaveAccessibleName("Term 1/2568");
     await expect(past.getByRole("group").nth(0)).toContainText("No score yet");
     await expect(past.getByRole("group").nth(2)).toHaveAccessibleName("Term 1/2567");   // their own first term
-    await expect(past.getByLabel(/^Total /)).toHaveCount(4);   // 47.0 (was the F), 55.0 (the D), 86.0 and 79.0 — percentages only now
+    await expect(past.getByLabel(/^Total /)).toHaveCount(3);   // 47.0 (was the F), 55.0 (the D) and 86.0 — percentages only now
     await expect(past.getByLabel(/^Grade /)).toHaveCount(0);
     await expect(past.getByText("47.0%")).toBeVisible();
   });

@@ -22,7 +22,6 @@
     { "id": "ct-8", "curriculumVersionId": "cv-ce-2559", "code": "01076341", "name": "เครือข่ายคอมพิวเตอร์", "description": "Computer Networks" },
 
     { "id": "ct-9",  "curriculumVersionId": "cv-ce-2564", "code": "01076112", "name": "การเขียนโปรแกรมคอมพิวเตอร์", "description": "Computer Programming" },
-    { "id": "ct-10", "curriculumVersionId": "cv-ce-2564", "code": "01076114", "name": "โครงสร้างไม่ต่อเนื่อง", "description": "Discrete Structures" },
     { "id": "ct-11", "curriculumVersionId": "cv-ce-2564", "code": "01076215", "name": "โครงสร้างข้อมูลและอัลกอริทึม", "description": "Data Structures and Algorithms" },
     { "id": "ct-12", "curriculumVersionId": "cv-ce-2564", "code": "01076231", "name": "ตรรกะดิจิทัลและการออกแบบ", "description": "Digital Logic Design" },
     { "id": "ct-13", "curriculumVersionId": "cv-ce-2564", "code": "01076232", "name": "สถาปัตยกรรมคอมพิวเตอร์", "description": "Computer Architecture" },
@@ -32,7 +31,6 @@
     { "id": "ct-17", "curriculumVersionId": "cv-ce-2564", "code": "01076497", "name": "โครงงานวิศวกรรมคอมพิวเตอร์", "description": "Computer Engineering Senior Project" },
 
     { "id": "ct-18", "curriculumVersionId": "cv-ce-2569", "code": "01076112", "name": "การเขียนโปรแกรมคอมพิวเตอร์", "description": "Computer Programming" },
-    { "id": "ct-19", "curriculumVersionId": "cv-ce-2569", "code": "01076114", "name": "โครงสร้างไม่ต่อเนื่อง", "description": "Discrete Structures" },
     { "id": "ct-20", "curriculumVersionId": "cv-ce-2569", "code": "01076215", "name": "โครงสร้างข้อมูลและอัลกอริทึม", "description": "Data Structures and Algorithms" },
     { "id": "ct-21", "curriculumVersionId": "cv-ce-2569", "code": "01076232", "name": "สถาปัตยกรรมคอมพิวเตอร์", "description": "Computer Architecture" },
     { "id": "ct-22", "curriculumVersionId": "cv-ce-2569", "code": "01076241", "name": "ระบบปฏิบัติการ", "description": "Operating Systems" },

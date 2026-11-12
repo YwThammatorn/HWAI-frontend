@@ -65,10 +65,7 @@
     "email": "orachat.ch@kmitl.ac.th",
     "role": "teacher",
     "status": "active",
-    "courseIds": [
-      "c-mock-39",
-      "c-mock-47"
-    ]
+    "courseIds": []
   },
   {
     "id": "t-mock-8",
