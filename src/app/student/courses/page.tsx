@@ -18,6 +18,7 @@ import { useManagedTeachers } from "@/lib/managed-teachers";
 
 import Icon from "@/components/Icon";
 import IconTile from "@/components/IconTile";
+import CourseMeta from "@/components/CourseMeta";
 export default function StudentCoursesPage() {
   const { t } = useLanguage();
   const { user } = useAuth();
@@ -125,34 +126,10 @@ export default function StudentCoursesPage() {
                   {/* Card body — flex column so footer pins to bottom */}
                   <div className="flex flex-col flex-1 p-4">
                     <div className="flex-1">
-                      {/* DEEP-QA-style two-column meta row — matches teacher's own course card */}
-                      <div className="grid grid-cols-2 gap-3 pb-3 border-b border-[var(--border-subtle)]">
-                        <div className="min-w-0">
-                          <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wide mb-0.5">{t("กลุ่ม", "Section")}</p>
-                          <p className="text-xs font-semibold text-[var(--text-primary)] truncate">{course.sectionNumber || "—"}</p>
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wide mb-0.5">{t("ภาคเรียนที่", "Term")}</p>
-                          <p className="text-xs font-semibold text-[var(--text-primary)] truncate">{termLabel}</p>
-                        </div>
-                      </div>
-
-                      {instructorLabel && (
-                        <p className="pt-2 text-xs text-[var(--text-muted)] truncate">{instructorLabel}</p>
-                      )}
-
-                      {(course.schedule || course.room) && (
-                        <div className="grid grid-cols-2 gap-3 pt-2">
-                          <div className="min-w-0">
-                            <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wide mb-0.5">{t("วันเวลาเรียน", "Schedule")}</p>
-                            <p className="text-xs font-semibold text-[var(--text-primary)] truncate">{course.schedule || "—"}</p>
-                          </div>
-                          <div className="min-w-0">
-                            <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wide mb-0.5">{t("ห้องเรียน", "Room")}</p>
-                            <p className="text-xs font-semibold text-[var(--text-primary)] truncate">{course.room || "—"}</p>
-                          </div>
-                        </div>
-                      )}
+                      <CourseMeta
+                        section={course.sectionNumber} term={termLabel} room={course.room} schedule={course.schedule}
+                        between={instructorLabel ? <p className="pt-2 text-xs text-[var(--text-muted)] truncate">{instructorLabel}</p> : undefined}
+                      />
                     </div>
 
                     <div className="flex items-center justify-between text-xs text-[var(--text-muted)] border-t border-[var(--border-subtle)] pt-3 mt-3">

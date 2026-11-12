@@ -27,3 +27,13 @@ export function parseSchedule(schedule?: string): { day: string; slot: string } 
   const slot = SLOT_OPTIONS.find((s) => schedule.includes(s.value))?.value ?? "";
   return { day, slot };
 }
+
+/**
+ * Split a free-text schedule ("Thursday 13:00-15:00", "จันทร์ 9:00-12:00") into the day and the time, so a card can show them as
+ * two fields (the advisor asked for "day / time" in separate boxes, 11/11/2569). Anything that has no clock time stays whole as the day.
+ */
+export function splitSchedule(schedule?: string): { day: string; time: string } {
+  const s = (schedule ?? "").trim();
+  const m = s.match(/^(.*?)\s*(\d{1,2}[:.]\d{2}.*)$/);
+  return m ? { day: m[1].trim(), time: m[2].trim() } : { day: s, time: "" };
+}

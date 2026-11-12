@@ -17,6 +17,7 @@ import Icon from "@/components/Icon";
 import { toGradeCount } from "@/lib/gradingStage";
 import { useGradableAssignmentsOf } from "@/lib/useGradableAssignments";
 import { queueFigures } from "@/lib/taWork";
+import CourseMeta from "@/components/CourseMeta";
 export default function CoursesPage() {
   const { t } = useLanguage();
   const { courses: allCourses, updateCourse } = useCourses();
@@ -236,31 +237,8 @@ function CourseCard({ course, studentCount, allGraded, toGrade, graded, assigned
       {/* Card body — flex column so footer pins to bottom */}
       <div className="flex flex-col flex-1 p-4">
         <div className="flex-1">
-          {/* DEEP-QA-style meta rows — always shown for a consistent card shape;
-              em-dash when a course has no Section / CourseTemplate link */}
-          <div className="grid grid-cols-2 gap-3 pb-3 border-b border-[var(--border-subtle)]">
-            <div className="min-w-0">
-              <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wide mb-0.5">{t("กลุ่ม", "Section")}</p>
-              <p className="text-xs font-semibold text-[var(--text-primary)] truncate">{course.sectionNumber || "—"}</p>
-            </div>
-            <div className="min-w-0">
-              <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wide mb-0.5">{t("ภาคเรียนที่", "Term")}</p>
-              <p className="text-xs font-semibold text-[var(--text-primary)] truncate">{termLabel}</p>
-            </div>
-          </div>
-
-          {(course.schedule || course.room) && (
-            <div className="grid grid-cols-2 gap-3 pt-3">
-              <div className="min-w-0">
-                <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wide mb-0.5">{t("วันเวลาเรียน", "Schedule")}</p>
-                <p className="text-xs font-semibold text-[var(--text-primary)] truncate">{course.schedule || "—"}</p>
-              </div>
-              <div className="min-w-0">
-                <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wide mb-0.5">{t("ห้องเรียน", "Room")}</p>
-                <p className="text-xs font-semibold text-[var(--text-primary)] truncate">{course.room || "—"}</p>
-              </div>
-            </div>
-          )}
+          {/* Section · Term · Room, then Day · Time — shared with the student card; em dash when a value is missing */}
+          <CourseMeta section={course.sectionNumber} term={termLabel} room={course.room} schedule={course.schedule} />
         </div>
 
         {isArchived ? (

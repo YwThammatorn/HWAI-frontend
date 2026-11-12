@@ -3,8 +3,8 @@ import { test, expect, Page } from "@playwright/test";
 import { BASE } from "./base";
 
 // My Courses cards (21/9/2569): the course code and name sit in the colour band together with
-// the icon (teacher and student cards share <CourseBanner>); Section / Term / Schedule / Room
-// stay in the body. Text tone follows the cover colour so pastel and dark covers both read.
+// the icon (teacher and student cards share <CourseBanner>); Section / Term / Room and Day / Time
+// stay in the body (11/11/2569: the schedule is split into a Day box and a Time box — the advisor asked for it). Text tone follows the cover colour so pastel and dark covers both read.
 
 const NOW = "2026-01-01T00:00:00.000Z";
 const mk = (id: string, name: string, code: string, cover: string, extra: Record<string, unknown> = {}) => ({
@@ -52,7 +52,7 @@ for (const role of ["teacher", "student"] as const) {
   const cardOf = (page: Page, name: string) => page.getByRole("link", { name: new RegExp(name) });
 
   test.describe(`${role} My Courses card — code and name in the colour band`, () => {
-    test("name and code sit inside the band; Section / Term / Schedule / Room stay in the body", async ({ page }) => {
+    test("name and code sit inside the band; Section / Term / Room and Day / Time stay in the body", async ({ page }) => {
       await seed(page, role);
       await page.goto(`${BASE}${url}`);
       await page.waitForLoadState("networkidle");
@@ -69,7 +69,9 @@ for (const role of ["teacher", "student"] as const) {
       const field = (label: string) => card.getByText(label, { exact: true }).locator("xpath=following-sibling::p[1]");
       await expect(field("Section")).toHaveText("2");
       await expect(field("Term")).toHaveText("1/2569");
-      await expect(field("Schedule")).toHaveText("Mon 9:00-12:00");
+      await expect(field("Day")).toHaveText("Mon");                  // the schedule is split: the day in one box...
+      await expect(field("Time")).toHaveText("9:00-12:00");          // ...the time in another
+      await expect(card.getByText("Schedule", { exact: true })).toHaveCount(0);
       await expect(field("Room")).toHaveText("811");
       // code is no longer a body field and never fused with the section
       await expect(card.getByText("Code", { exact: true })).toHaveCount(0);
@@ -136,3 +138,26 @@ test("teacher: an archived course keeps its veil on the band", async ({ page }) 
   await expect(card.locator("h3")).toHaveText("Retired Course");
   await expect(card.getByText("01076999", { exact: true })).toBeVisible();
 });
+
+for (const role of ["teacher", "student"] as const) {
+  test(`${role}: Thai schedule splits into Day and Time; a course with no schedule shows dashes in both`, async ({ page }) => {
+    await page.addInitScript(() => localStorage.setItem("hwai_lang", "th"));
+    const th = mk("c-th", "Thai Course", "01076888", "#2DD4BF", { schedule: "พฤหัสบดี 13:00-15:00" });
+    const none = mk("c-none", "No Schedule Course", "01076889", "#0F766E", { schedule: "" });
+    await page.addInitScript((d) => {
+      localStorage.setItem("hwai_courses_v2", JSON.stringify(d.courses));
+      localStorage.setItem("hwai_managed_teachers_v1", JSON.stringify([d.teacher]));
+      localStorage.setItem("hwai_students_v1", JSON.stringify(d.roster));
+      localStorage.setItem("hwai_user", JSON.stringify(d.role === "student"
+        ? { name: "Somchai", email: "69070101@kmitl.ac.th", role: "student", studentId: "69070101" }
+        : { name: "Somsak", email: "somsak@kmitl.ac.th", role: "teacher" }));
+    }, { courses: [th, none], teacher: { ...TEACHER, courseIds: [th.id, none.id] }, roster: [th, none].map((c, i) => ({ ...ROSTER[0], id: `s-th-${i}`, courseId: c.id })), role });
+    await page.goto(`${BASE}${role === "teacher" ? "/teacher/courses" : "/student/courses"}`);
+    await page.waitForLoadState("networkidle");
+    const field = (name: string, label: string) => page.getByRole("link", { name: new RegExp(name) }).getByText(label, { exact: true }).locator("xpath=following-sibling::p[1]");
+    await expect(field("Thai Course", "วัน")).toHaveText("พฤหัสบดี");
+    await expect(field("Thai Course", "เวลา")).toHaveText("13:00-15:00");
+    await expect(field("No Schedule Course", "วัน")).toHaveText("—");
+    await expect(field("No Schedule Course", "เวลา")).toHaveText("—");
+  });
+}
