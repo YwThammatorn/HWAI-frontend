@@ -60,7 +60,7 @@ export default function ViewAssignmentPage() {
           label: t("กำหนดส่ง", "Due date"),
           value: (
             <span>
-              {fmtDate(assignment.dueDate, lang)} {t("เวลา 23:59 น.", "at 11:59 PM")}
+              {fmtDate(assignment.dueDate, lang)} {t("เวลา 23:59 น.", "at 23:59")}
             </span>
           ),
         }
@@ -102,19 +102,27 @@ export default function ViewAssignmentPage() {
   // When submissions close and what late work costs (21/10/2569, the teacher's own settings): grading can start only once they have closed.
   const closes = submissionClosesAt(assignment), opens = gradingOpensAt(assignment);
   if (closes && opens) {
-    const when = (d: Date) => d.toLocaleString(dateLocale(lang), { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+    // Two plain rows, one fact each (advisor, 11/11/2569: the old single sentence "Late work accepted until … · grading opens …" was hard to read):
+    // the last moment a student can still hand in, then when grading opens. The late-work rule sits under the first as a small line.
+    const when = (d: Date) => d.toLocaleString(dateLocale(lang), { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });   // no year: the Due date row above carries it, and the narrow column must not wrap the time
     const policy = activeLatePolicy(assignment);
-    detailRows.splice(1, 0, {
-      label: t("ปิดรับงาน · เริ่มตรวจ", "Closes · grading"),
-      value: (
-        <span data-testid="grading-window-row">
-          {policy
-            ? t(`รับงานส่งช้าได้ถึง ${when(closes)} น. · เริ่มตรวจได้ตั้งแต่ ${when(opens)} น.`, `Late work accepted until ${when(closes)} · grading opens ${when(opens)}`)
-            : t(`ปิดรับงาน ${when(closes)} น. (ไม่รับงานส่งช้า) · เริ่มตรวจได้ตั้งแต่ ${when(opens)} น.`, `Closes ${when(closes)} (no late work) · grading opens ${when(opens)}`)}
-          {policy && <span data-testid="late-policy-row" className="block text-xs text-[var(--text-secondary)] mt-0.5">{describeLatePolicy(policy, t)}</span>}
-        </span>
-      ),
-    });
+    detailRows.splice(1, 0,
+      {
+        label: policy ? t("ส่งช้าได้ถึง", "Late until") : t("ปิดรับงาน", "Closes"),
+        value: (
+          <span data-testid="closes-row">
+            <span className="whitespace-nowrap">{when(closes)}{lang === "th" ? " น." : ""}</span>
+            {policy
+              ? <span data-testid="late-policy-row" className="block text-xs text-[var(--text-secondary)] mt-0.5">{describeLatePolicy(policy, t)}</span>
+              : <span data-testid="no-late-row" className="block text-xs text-[var(--text-secondary)] mt-0.5">{t("ไม่รับงานส่งช้า", "No late work")}</span>}
+          </span>
+        ),
+      },
+      {
+        label: t("เริ่มตรวจได้", "Grading opens"),
+        value: <span data-testid="grading-opens-row" className="whitespace-nowrap">{when(opens)}{lang === "th" ? " น." : ""}</span>,
+      },
+    );
   }
 
   return (

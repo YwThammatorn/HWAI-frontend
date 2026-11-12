@@ -213,8 +213,8 @@ test.describe("teacher — one assignment", () => {
     await page.goto(`${BASE}/teacher/courses/c-gw/assignments/a-late/grading`);
     const note = page.getByTestId("grading-window-note");
     await expect(note).toContainText("Not open for grading yet");
-    await expect(note).toContainText("Mar 13, 11:59 PM");
-    await expect(note).toContainText("Mar 14, 12:00 AM");
+    await expect(note).toContainText("Mar 13, 23:59");
+    await expect(note).toContainText("Mar 14, 00:00");
     await expect(page.getByTestId("grade-locked")).toHaveCount(2);
     await expect(page.getByRole("link", { name: "Grade", exact: true })).toHaveCount(0);
     await page.locator("main tbody tr").first().click();                                  // Re-grade lives in the detail of a picked row now
@@ -261,11 +261,15 @@ test.describe("teacher — one assignment", () => {
   test("the assignment page states when work closes and what late work costs", async ({ page }) => {
     await seed(page, BEFORE_DUE, { assignments: ASSIGNMENTS, subs: SUBS });
     await page.goto(`${BASE}/teacher/courses/c-gw/assignments/a-late`);
-    await expect(page.getByTestId("grading-window-row")).toContainText("Late work accepted until Mar 13, 11:59 PM");
-    await expect(page.getByTestId("grading-window-row")).toContainText("grading opens Mar 14, 12:00 AM");
+    // two plain rows, one fact each (11/11/2569): the last moment to hand in, and when grading opens — not one long sentence
+    await expect(page.getByText("Late until", { exact: true })).toBeVisible();
+    await expect(page.getByTestId("closes-row")).toContainText("Mar 13, 23:59");
+    await expect(page.getByText("Grading opens", { exact: true })).toBeVisible();
+    await expect(page.getByTestId("grading-opens-row")).toHaveText("Mar 14, 00:00");
     await expect(page.getByTestId("late-policy-row")).toContainText("Late work loses 2 pts per day, up to 6 pts");
     await page.goto(`${BASE}/teacher/courses/c-gw/assignments/a-plain`);
-    await expect(page.getByTestId("grading-window-row")).toContainText("no late work");
+    await expect(page.getByText("Closes", { exact: true })).toBeVisible();
+    await expect(page.getByTestId("no-late-row")).toHaveText("No late work");
     await expect(page.getByTestId("late-policy-row")).toHaveCount(0);
   });
 

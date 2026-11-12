@@ -161,7 +161,7 @@ export default function RecheckPage() {
   // in early lands here instead of on the grading panel.
   if (!gradingOpen(assignment, now)) {
     const opens = gradingOpensAt(assignment);
-    const when = opens ? opens.toLocaleString(dateLocale(lang), { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "";
+    const when = opens ? opens.toLocaleString(dateLocale(lang), { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }) : "";
     return (
       <main className="flex-1 flex items-center justify-center p-8">
         <div data-testid="grade-window-closed" role="note" className="max-w-md rounded-2xl border border-[var(--s-warn-bd)] bg-[var(--s-warn-bg)] px-6 py-5 text-center text-[var(--s-warn-text)]">
@@ -587,7 +587,7 @@ export default function RecheckPage() {
             caption={[
               submission.studentName,
               team ? t(`ทีม ${team.name}`, `Team ${team.name}`) : null,
-              `${t("ส่งเมื่อ", "Submitted")} ${new Date(submission.submittedAt).toLocaleDateString(lang === "th" ? "th-TH" : "en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}`,
+              `${t("ส่งเมื่อ", "Submitted")} ${new Date(submission.submittedAt).toLocaleDateString(lang === "th" ? "th-TH" : "en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", hourCycle: "h23" })}`,
             ].filter(Boolean).join(" · ")}
             empty={
           <div className="flex-1 overflow-auto flex items-start justify-center p-8">
@@ -607,7 +607,7 @@ export default function RecheckPage() {
                   <p className="text-xs text-[var(--text-muted)]">
                     {t("ส่งเมื่อ", "Submitted")}{" "}
                     {new Date(submission.submittedAt).toLocaleDateString(lang === "th" ? "th-TH" : "en-US", {
-                      month: "short", day: "numeric", hour: "2-digit", minute: "2-digit",
+                      month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", hourCycle: "h23",
                     })}
                   </p>
                   <p className="text-xs text-[var(--text-muted)] mt-3">

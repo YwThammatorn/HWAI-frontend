@@ -37,7 +37,7 @@ function fmtDate(dateStr: string, lang: string) {
 /** "16 Oct, 01:00" — when grading opens for this assignment. */
 function opensText(a: Assignment, lang: string) {
   const d = gradingOpensAt(a);
-  return d ? d.toLocaleString(dateLocale(lang), { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "";
+  return d ? d.toLocaleString(dateLocale(lang), { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }) : "";
 }
 
 /** What still needs doing on one assignment — the numbers every row and stat card is built from. */

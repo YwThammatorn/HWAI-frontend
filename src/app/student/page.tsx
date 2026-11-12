@@ -15,12 +15,12 @@ import { useAnnouncements, announcementReachesCourse } from "@/lib/announcements
 import { CourseIcon } from "@/components/CourseIcon";
 import StudentCalendar, { StudentCalendarItem } from "@/components/StudentCalendar";
 import { ANNOUNCEMENTS_DISABLED } from "@/lib/featureFlags";
-
+
 import Icon from "@/components/Icon";
 import IconTile from "@/components/IconTile";
 function fmtAnnouncementDate(iso: string, lang: string) {
   return new Date(iso).toLocaleDateString(lang === "th" ? "th-TH" : "en-US", {
-    day: "numeric", month: "short", hour: "2-digit", minute: "2-digit",
+    day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23",
   });
 }
 

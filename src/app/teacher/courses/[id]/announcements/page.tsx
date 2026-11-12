@@ -12,7 +12,7 @@ import IconTile from "@/components/IconTile";
 import IconButton from "@/components/IconButton";
 function fmtDateTime(iso: string, lang: string) {
   return new Date(iso).toLocaleDateString(lang === "th" ? "th-TH" : "en-US", {
-    day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit",
+    day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hourCycle: "h23",
   });
 }
 

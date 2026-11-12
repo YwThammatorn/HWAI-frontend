@@ -175,7 +175,7 @@ export default function ResultsPage() {
             <p className="text-sm text-[var(--text-muted)]">
               {t("ตรวจเมื่อ", "Graded on")}{" "}
               {new Date().toLocaleDateString(lang === "th" ? "th-TH" : "en-US", { month: "short", day: "numeric", year: "numeric" })}{" "}
-              {t("เวลา 23:59 น.", "at 11:59 PM")}
+              {t("เวลา 23:59 น.", "at 23:59")}
             </p>
           </div>
           <div className="flex items-center gap-3 shrink-0">

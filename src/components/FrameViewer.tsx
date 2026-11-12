@@ -42,7 +42,7 @@ export default function FrameViewer({ snapshot, zoom, caption, anonymous = false
           {caption && <p className="truncate font-medium text-[var(--text-primary)]">{caption}</p>}
           <p data-testid="snapshot-note" className="flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
             <Icon name="lock" size="sm" />
-            {t("สำเนาตอนส่งงาน", "Snapshot at submission")} · {taken.toLocaleString(dateLocale(lang), { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+            {t("สำเนาตอนส่งงาน", "Snapshot at submission")} · {taken.toLocaleString(dateLocale(lang), { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23" })}
           </p>
         </div>
         {snapshot.sourceUrl && !anonymous && (

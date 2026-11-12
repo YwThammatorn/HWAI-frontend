@@ -369,7 +369,7 @@ function ClassworkDetail() {
                       <p className="text-xs font-semibold">{t("ส่งแล้ว รอผล", "Submitted — awaiting grade")}</p>
                       {mySubmission?.submittedAt && (
                         <p className="text-[10px] opacity-75 mt-0.5">
-                          {new Date(mySubmission.submittedAt).toLocaleString(dateLocale(lang), { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                          {new Date(mySubmission.submittedAt).toLocaleString(dateLocale(lang), { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23" })}
                         </p>
                       )}
                     </div>

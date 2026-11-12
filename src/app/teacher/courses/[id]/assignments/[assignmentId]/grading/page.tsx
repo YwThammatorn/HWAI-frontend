@@ -102,7 +102,7 @@ export default function GradingProgressPage() {
 
   // Grading opens only after the due date and the students' late hour (15/10/2569); an exam is never locked.
   const gradeOpen = gradingOpen(assignment, now);
-  const fmtWhen = (d: Date | null) => (d ? d.toLocaleString(dateLocale(lang), { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "");
+  const fmtWhen = (d: Date | null) => (d ? d.toLocaleString(dateLocale(lang), { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }) : "");
 
   // Group assignments: one row per team instead of one row per student — see
   // groupSubmissionsByTeam / TeamFormationModal / RecheckPage.handleSave.
@@ -259,7 +259,7 @@ export default function GradingProgressPage() {
                   ? <>{t("ส่งภายใน", "Due")}{" "}{new Date(assignment.dueDate + "T00:00:00").toLocaleDateString(dateLocale(lang), {
                       month: "short", day: "numeric", year: "numeric",
                     })}{" "}
-                    {t("เวลา 23:59 น.", "at 11:59 PM")}</>
+                    {t("เวลา 23:59 น.", "at 23:59")}</>
                   : t("สอบ · ไม่มีกำหนดส่ง", "Exam · no due date")}
               </span>
               <span className="inline-flex items-center gap-1.5 font-medium text-[var(--accent)]"><Icon name="check-square" size="sm" />{t("ตรวจงาน", "Grading")}</span>
