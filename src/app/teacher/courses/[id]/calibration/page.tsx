@@ -412,7 +412,7 @@ function ResultSection({ run, units, assignment, rubric, locked, courseId, grade
       {/* One picture of the whole run before the criteria: how often the two chose the very same level, within one level, and weighted kappa */}
       <dl data-testid="cal-overall" className="mb-5 grid gap-3 sm:grid-cols-3">
         <div className="rounded-xl bg-[var(--bg-app)] px-4 py-3">
-          <dt className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">{t("ตรงระดับพอดี", "Same level")}</dt>
+          <dt className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">{t("ความตรงกัน", "Similarity")}<span className="ml-1 font-normal normal-case tracking-normal">· {t("ระดับเดียวกัน", "same level")}</span></dt>
           <dd data-testid="overall-exact" className="mt-1 text-xl font-bold tabular-nums text-[var(--text-primary)]">{pct(overall.exact, overall.pairs)}% <span className="text-sm font-medium text-[var(--text-muted)]">({overall.exact}/{overall.pairs})</span></dd>
         </div>
         <div className="rounded-xl bg-[var(--bg-app)] px-4 py-3">
@@ -427,6 +427,11 @@ function ResultSection({ run, units, assignment, rubric, locked, courseId, grade
           </dd>
         </div>
       </dl>
+      {/* what a "level" is (advisor, 11/11/2569: "what does level mean?") */}
+      <p data-testid="cal-level-note" className="mb-5 max-w-3xl text-xs text-[var(--text-muted)]">
+        {t("ระดับ (level) = ระดับผลงานของแต่ละเกณฑ์ใน rubric เช่น Level 1 ต่ำสุด ไล่ไปถึงระดับสูงสุด · “ความตรงกัน” = อาจารย์กับ AI เลือกระดับเดียวกันในเกณฑ์เดียวกัน",
+           "A level is one of the performance levels of a rubric criterion — Level 1 is the lowest, up to the top level. Similarity = you and the AI chose the same level on the same criterion.")}
+      </p>
       {overall.fewPairs && (
         <p data-testid="cal-few-pairs" className="-mt-2 mb-5 text-xs text-[var(--text-muted)]">
           {t(`มีแค่ ${overall.pairs} คู่ — อ่านเป็นแนวโน้ม ไม่ใช่ค่าวัดที่แน่นอน (ควรมีอย่างน้อย 20 คู่)`, `Only ${overall.pairs} pairs — read this as a trend, not a measurement (20 or more is a fair base)`)}
@@ -438,7 +443,7 @@ function ResultSection({ run, units, assignment, rubric, locked, courseId, grade
           <thead>
             <tr className="bg-[var(--bg-app)] text-left text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">
               <th scope="col" className="px-4 py-3">{t("เกณฑ์", "Criterion")}</th>
-              <th scope="col" className="px-4 py-3">{t("ตรงระดับพอดี", "Same level")}</th>
+              <th scope="col" className="px-4 py-3">{t("ความตรงกัน", "Similarity")}<span className="ml-1 font-normal normal-case tracking-normal">· {t("ระดับเดียวกัน", "same level")}</span></th>
               <th scope="col" className="px-4 py-3">{t("ห่างไม่เกิน 1 ระดับ", "Within one level")}</th>
               <th scope="col" className="px-4 py-3">{t("ผล", "Result")}</th>
             </tr>

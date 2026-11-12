@@ -411,6 +411,11 @@ test.describe("Calibration", () => {
     await expect(page.getByTestId("overall-kappa")).toContainText(overall.kappa === null ? "—" : overall.kappa.toFixed(2));
     await expect(page.getByTestId("cal-few-pairs")).toContainText(`Only ${overall.pairs} pairs`);          // 15 pairs: a trend, not a measurement
     await expect(page.getByTestId("cal-thresholds")).toContainText("at least 80%");
+    // the advisor's two questions (11/11/2569): "what does level mean?" and the column called "Similarity"
+    await expect(page.getByTestId("cal-level-note")).toContainText("A level is one of the performance levels of a rubric criterion");
+    await expect(page.getByRole("columnheader", { name: /Similarity/ })).toBeVisible();
+    await expect(page.getByTestId("cal-overall")).toContainText("Similarity");
+    await expect(page.getByText("Same level", { exact: true })).toHaveCount(0);
     // C2 was scored exactly as the AI would: full agreement. C1 and C3 always differ by one level: 0 % same level, so NOT aligned, though the mean difference is only one level
     expect(cmp.find((c) => c.criterionId === "k2")).toMatchObject({ agreement: 1, bias: 0, verdict: "aligned", lean: null });
     expect(cmp.find((c) => c.criterionId === "k1")).toMatchObject({ verdict: "off", within1: 1 });
