@@ -16,7 +16,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 const BASE = process.env.REPORT_BASE ?? "http://localhost:3000";
-const OUT = path.resolve("report-ui/shots");
+const OUT = path.resolve(process.env.REPORT_OUT ?? "report-ui/shots");   // REPORT_OUT: another folder (for a size test that must not overwrite the real set)
 fs.mkdirSync(OUT, { recursive: true });
 const DOC = fs.readFileSync("test-data/seed-commands.txt", "utf8").split(/\r?\n/);
 const only = new Set(process.argv.slice(2));
@@ -128,6 +128,7 @@ async function rewindData(iso) {
 }
 async function restoreData() {
   await page.evaluate(() => {
+    if (localStorage.getItem("__bk_asg") === null) return;   // nothing was rewound (NO_REWIND), so there is nothing to put back
     localStorage.setItem("hwai_assignments_v1", localStorage.getItem("__bk_asg") || "[]");
     localStorage.setItem("hwai_submissions_v1", localStorage.getItem("__bk_sub") || "[]");
     localStorage.removeItem("__bk_asg"); localStorage.removeItem("__bk_sub");
@@ -186,6 +187,15 @@ if (want("teacher")) {
   await shot("teacher-02-course-overview", U);
   await shot("teacher-03-assignments", U + "/assignments");
   await shot("teacher-04-assignment-detail", U + "/assignments/a-mock-10");
+  // extra cases of the same page (11/11/2569, the "Closes / Grading opens" rows): an assignment with no late policy, and the Thai interface
+  await shot("teacher-04b-assignment-detail-no-late", U + "/assignments/a-uxui-13");
+  await page.evaluate(() => localStorage.setItem("hwai_lang", "th"));
+  await shot("teacher-04c-assignment-detail-th", U + "/assignments/a-mock-10");
+  await page.evaluate(() => localStorage.setItem("hwai_lang", "en"));
+  // ...and one WITH a late policy (the teacher allows work until 23 Sep, 2 pts off per day, at most 6): set on a copy of the data, then taken off again
+  await page.evaluate(() => { const k = "hwai_assignments_v1"; const all = JSON.parse(localStorage.getItem(k) || "[]"); localStorage.setItem("__bk_late", JSON.stringify(all)); localStorage.setItem(k, JSON.stringify(all.map((a) => a.id === "a-uxui-13" ? { ...a, latePolicy: { closeDate: "2026-09-23", mode: "perDay", unit: "points", amount: 2, cap: 6 } } : a))); });
+  await shot("teacher-04d-assignment-detail-late-policy", U + "/assignments/a-uxui-13");
+  await page.evaluate(() => { localStorage.setItem("hwai_assignments_v1", localStorage.getItem("__bk_late")); localStorage.removeItem("__bk_late"); });
   await shot("teacher-05-new-assignment", U + "/assignments/new");
   await shot("teacher-06-new-assignment-rubric", U + "/assignments/new", async (p) => { await p.getByRole("heading", { name: /Grading Rubric/ }).first().scrollIntoViewIfNeeded(); await p.evaluate(() => window.scrollBy(0, -80)); });
   // the AI Rubric Assistant: English interface, Thai brief (the Final project's own) → the assistant writes the criteria in Thai, the language of the brief.
@@ -214,7 +224,7 @@ if (want("teacher")) {
   // grading opens only after submissions close (due date, or the close date of the late policy): the clock is moved to the evening of 28 Sep, before Reorder / Usability Testing
   // are due (23:59), so the not-yet-open state shows. Those assignments are not announced, so they are the ones that show the lock.
   await clock("2026-09-28T20:00:00+07:00");
-  await rewindData("2026-09-28T20:00:00+07:00");
+  if (!process.env.NO_REWIND) await rewindData("2026-09-28T20:00:00+07:00");   // NO_REWIND=1: leave the data as it is (used to capture the old app's original, inconsistent state for a before / after)
   await shot("teacher-07b-grading-locked", U + "/grading", center("Reorder / Redesign UI"));
   await shot("teacher-08c-assignment-grading-locked", U + "/assignments/a-uxui-17/grading", undefined, { height: 1000 });
   await restoreData();
