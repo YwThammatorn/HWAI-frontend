@@ -442,8 +442,8 @@ export default function ScoreBookPage() {
                         className="sticky z-10 px-4 py-1 bg-[var(--bg-surface)] group-hover:bg-[var(--bg-subtle)] border-b border-[var(--border-subtle)]"
                         style={{ left: ID_W, width: NAME_W, minWidth: NAME_W }}
                       >
-                        <span className="block truncate font-medium text-[var(--text-primary)]" style={{ maxWidth: NAME_W - 32 }}>
-                          {r.student.title && <span className="font-normal text-[var(--text-secondary)]">{r.student.title} </span>}
+                        <span className="block truncate text-[var(--text-secondary)]" style={{ maxWidth: NAME_W - 32 }}>
+                          {r.student.title && <span>{r.student.title} </span>}
                           {r.student.firstName} {r.student.lastName}
                         </span>
                       </td>

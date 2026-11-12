@@ -146,6 +146,16 @@ test.describe("Score Book — layout", () => {
     await expect(page.getByRole("link", { name: "HW 1" })).toHaveAttribute("href", "/teacher/courses/c-sb/assignments/hw1/grading");
   });
 
+  test("a name reads like the rest of the row: regular weight, the same ink as the Student ID beside it (advisor, 11/11/2569: \"why is the name darker than usual?\")", async ({ page }) => {
+    await open(page);
+    const idStyle = await cell(page, "69070101", "id").evaluate((el) => { const c = getComputedStyle(el); return { color: c.color, weight: c.fontWeight }; });
+    const nameSpan = cell(page, "69070101", "name").locator("span").first();
+    const nameStyle = await nameSpan.evaluate((el) => { const c = getComputedStyle(el); return { color: c.color, weight: c.fontWeight }; });
+    expect(nameStyle.weight).toBe("400");
+    expect(nameStyle.color).toBe(idStyle.color);
+    expect(nameStyle.weight).toBe(idStyle.weight);
+  });
+
   test("students show their honorific from the central record", async ({ page }) => {
     await open(page);
     await expect(cell(page, "69070101", "name")).toContainText("Mr. Somchai Jaidee");
